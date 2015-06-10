@@ -1,0 +1,14 @@
+# Distribution / packaging
+*.egg-info/
+*.egg
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# OS X
+.DS_Store
