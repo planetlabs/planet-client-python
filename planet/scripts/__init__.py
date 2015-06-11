@@ -5,7 +5,7 @@ from planet import api
 client = api.Client()
 
 pretty = click.option('-pp', '--pretty', default=False, is_flag=True)
-scene_type = click.option('-s', '--scene-type')
+scene_type = click.option('-s', '--scene-type', default='ortho')
 
 
 def check(func, *args, **kw):
@@ -74,10 +74,18 @@ def fetch_scene_info(id, scene_type, pretty):
 
 @pretty
 @scene_type
-@cli.command()
-def get_scenes_list(scene_type, pretty):
+@cli.command('get-scenes-list')
+@click.argument("aoi", default="-", required=False)
+def get_scenes_list(scene_type, pretty, aoi):
     '''Get a list of scenes'''
-    res = check(client.get_scenes_list, scene_type)
+    
+    if aoi == "-":
+        src = click.open_file('-')
+        if not src.isatty():
+            lines = src.readlines()
+            aoi = ''.join([ line.strip() for line in lines ])
+    
+    res = client.get_scenes_list(scene_type=scene_type, intersects=aoi)
     if pretty:
         res = json.dumps(json.loads(res), indent=2)
     click.echo(res)
