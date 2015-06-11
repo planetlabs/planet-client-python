@@ -12,3 +12,5 @@ coverage.xml
 
 # OS X
 .DS_Store
+
+*.pyc
