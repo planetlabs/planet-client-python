@@ -115,9 +115,8 @@ class Client(object):
     def list_all_scene_types(self):
         return self._get('scenes').content
 
-    def get_scenes_list(self, scene_type=None, order_by=None, count=None,
+    def get_scenes_list(self, scene_type='ortho', order_by=None, count=None,
                         intersects=None, **filters):
-        scene_type = scene_type or 'ortho'
         params = {}
         push_params(params, order_by=order_by, count=count)
         push_params(params, intersects=intersects)
