@@ -38,7 +38,7 @@ basics and help:
 
 OR specific command help
 
-    planet get_scenes_list --help
+    planet get-scenes-list --help
 
 To do anything real, one must provide an API key. This can be done via the environment variable `PL_API_KEY` or the flag `-k` or `--api-key`.
 
@@ -51,6 +51,7 @@ Get a visual ortho scene by id (writes to working directory):
 Get scene metadata by id (and pretty print):
 
     planet fetch_scene_info -pp 20141008_170544_0907
+
 
 TODO!
 -----
