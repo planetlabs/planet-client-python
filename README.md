@@ -46,7 +46,11 @@ Examples:
 
 Get a visual ortho scene by id (writes to working directory):
 
-    planet fetch_scene_geotiff 20141008_170544_0907
+    planet download 20141008_170544_0907
+    
+Get an analytic ortho scene by id:
+
+    planet download 20141008_170544_0907 --analytic
     
 Get scene metadata by id (and pretty print):
 
