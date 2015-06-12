@@ -88,6 +88,8 @@ def get_scenes_list(scene_type, pretty, aoi):
         if not src.isatty():
             lines = src.readlines()
             aoi = ''.join([ line.strip() for line in lines ])
+        else:
+            aoi = None
     
     
     res = client.get_scenes_list(scene_type=scene_type, intersects=aoi)
