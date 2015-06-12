@@ -38,7 +38,7 @@ basics and help:
 
 OR specific command help
 
-    planet get_scenes_list --help
+    planet get-scenes-list --help
 
 To do anything real, one must provide an API key. This can be done via the environment variable `PL_API_KEY` or the flag `-k` or `--api-key`.
 
