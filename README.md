@@ -14,6 +14,10 @@ Shellish:
     cd planet-client-python
     pip install -e .
 
+Enabling bash completion (planet <tab> <tab>):
+
+    eval "$(_PLANET_COMPLETE=source planet)"
+
 Usage
 -----
 
