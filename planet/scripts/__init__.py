@@ -42,17 +42,18 @@ def list_all_scene_types():
 
 
 @scene_type
-@click.argument('id', nargs=-1)
-@click.option('--product-type', default=None)
-@cli.command()
-def fetch_scene_geotiff(id, scene_type, product_type):
+@click.argument('scene_ids', nargs=-1)
+@click.option('--product-type', default='visual')
+@cli.command('download')
+def fetch_scene_geotiff(scene_ids, scene_type, product_type):
     '''Fetch full scene image(s)'''
-    for i in id:
-        img = call_and_wrap(client.fetch_scene_geotiff, i, scene_type, product_type)
-        click.echo('fetching %s' % img.name)
-        with click.progressbar(length=img.size) as bar:
-            callback = lambda n: bar.update(n)
-            img.write(callback=callback)
+    
+    if len(scene_ids) == 0:
+        src = click.open_file('-')
+        if not src.isatty():
+            scene_ids = map(lambda s: s.strip(), src.readlines())
+    
+    call_and_wrap(client.fetch_scene_geotiffs, scene_ids, scene_type, product_type)
 
 
 @scene_type
@@ -68,7 +69,7 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt):
         if not src.isatty():
             scene_ids = map(lambda s: s.strip(), src.readlines())
     
-    check(client.fetch_scene_thumbnails, scene_ids, scene_type, size, fmt)
+    call_and_wrap(client.fetch_scene_thumbnails, scene_ids, scene_type, size, fmt)
 
 
 @pretty

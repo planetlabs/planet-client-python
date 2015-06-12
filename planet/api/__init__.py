@@ -141,13 +141,20 @@ class Client(object):
         scene_type = scene_type or 'ortho'
         return self._get('scenes/%s/%s' % (scene_type, scene_id)).content
 
-    def fetch_scene_geotiff(self, scene_id, scene_type=None,
-                            product_type=None):
-        scene_type = scene_type or 'ortho'
-        product_type = product_type or 'visual'
-        path = 'scenes/%s/%s/full' % (scene_type, scene_id)
-        r = self._get(path, stream=True)
-        return Image(r)
+
+    def fetch_scene_geotiffs(self, scene_ids, scene_type='ortho', product_type='visual'):
+        
+        params = {
+            'product-type': product_type
+        }
+        headers = {
+            'Authorization': 'api-key %s' % self.api_key
+        }
+        paths = [ 'scenes/%s/%s/full' % (scene_type, sid) for sid in scene_ids ]
+        
+        session = FuturesSession(max_workers=20)
+        session.headers.update(headers)
+        futures = [ session.get(self.base_url + path, stream=True, background_callback=download_in_background) for path in paths ]
     
     
     def fetch_scene_thumbnails(self, scene_ids, scene_type='ortho', size='md', fmt='png'):
@@ -156,11 +163,14 @@ class Client(object):
             'size': size,
             'format': fmt
         }
+        headers = {
+            'Authorization': 'api-key %s' % self.api_key
+        }
         paths = [ 'scenes/%s/%s/thumb' % (scene_type, sid) for sid in scene_ids ]
-        session = FuturesSession(max_workers=20)
-        headers = {'Authorization': 'api-key ' + self.api_key}
         
-        futures = [ session.get(self.base_url + path, params=params, headers=headers, stream=True, background_callback=download_in_background) for path in paths ]
+        session = FuturesSession(max_workers=20)
+        session.headers.update(headers)
+        futures = [ session.get(self.base_url + path, params=params, stream=True, background_callback=download_in_background) for path in paths ]
 
     
     def fetch_scene_thumbnail(self, scene_id, scene_type=None, size=None,
