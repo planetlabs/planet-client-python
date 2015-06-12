@@ -52,6 +52,23 @@ Get scene metadata by id (and pretty print):
 
     planet fetch_scene_info -pp 20141008_170544_0907
 
+Testing
+-------
+
+### Install Test Dependencies ###
+
+A few extra libraries are needed for testing:
+
+    pip install -e .[test]
+
+### Running the Tests ###
+
+There are two suites of tests, one for the cli, the other for the library module.
+
+Both can be run using:
+
+    py.test
+
 TODO!
 -----
 

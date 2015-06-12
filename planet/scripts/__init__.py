@@ -17,6 +17,8 @@ def call_and_wrap(func, *args, **kw):
     try:
         return func(*args, **kw)
     except api.APIException, ex:
+        if type(ex) is api.APIException:
+            raise click.ClickException('Unexpected response: %s' % ex.message)
         msg = "%s: %s" % (type(ex).__name__, ex.message)
         raise click.ClickException(msg)
 

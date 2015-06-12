@@ -7,6 +7,7 @@ ENV_KEY = 'PL_API_KEY'
 
 
 class APIException(Exception):
+    '''also used as placeholder for unexpected response status_code'''
     pass
 
 
@@ -35,17 +36,20 @@ class ServerError(APIException):
 
 
 def check_status(response):
+    status = response.status_code
+    if status == 200:
+        return
     exc = {
-        200: None,
         400: BadQuery,
         401: InvalidAPIKey,
         403: NoPermission,
         404: MissingResource,
         429: OverQuota,
         500: ServerError
-    }.get(response.status_code, APIException)
+    }.get(status, None)
     if exc:
         raise exc(response.content)
+    raise APIException('%s: %s' % (status, response.content))
 
 
 def push_params(params, **kv):

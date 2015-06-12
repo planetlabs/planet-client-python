@@ -7,7 +7,7 @@ with codecs_open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 
-setup(name='plapi',
+setup(name='planet',
       version='0.0.1',
       description=u"Planet API Client",
       long_description=long_description,
@@ -25,7 +25,11 @@ setup(name='plapi',
           'requests',
       ],
       extras_require={
-          'test': ['pytest'],
+          'test': [
+              'pytest',
+              'mock',
+              'requests-mock',
+          ],
       },
       entry_points="""
       [console_scripts]
