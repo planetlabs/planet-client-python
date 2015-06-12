@@ -8,7 +8,12 @@ pretty = click.option('-pp', '--pretty', default=False, is_flag=True)
 scene_type = click.option('-s', '--scene-type', default='ortho')
 
 
-def check(func, *args, **kw):
+def call_and_wrap(func, *args, **kw):
+    '''call the provided function and wrap any API exception with a click
+    exception. this means no stack trace is visible to the user but instead
+    a (hopefully) nice message is provided.
+    note: could be a decorator but didn't play well with click
+    '''
     try:
         return func(*args, **kw)
     except api.APIException, ex:
@@ -31,7 +36,7 @@ def cli(api_key, base_url):
 @cli.command()
 def list_all_scene_types():
     '''List all scene types.'''
-    click.echo(check(client.list_all_scene_types))
+    click.echo(call_and_wrap(client.list_all_scene_types))
 
 
 @scene_type
@@ -41,7 +46,7 @@ def list_all_scene_types():
 def fetch_scene_geotiff(id, scene_type, product_type):
     '''Fetch full scene image(s)'''
     for i in id:
-        img = check(client.fetch_scene_geotiff, i, scene_type, product_type)
+        img = call_and_wrap(client.fetch_scene_geotiff, i, scene_type, product_type)
         click.echo('fetching %s' % img.name)
         with click.progressbar(length=img.size) as bar:
             callback = lambda n: bar.update(n)
@@ -59,7 +64,7 @@ def fetch_scene_thumbnail(scene_ids, scene_type, product_type):
         scene_ids = map(lambda s: s.strip(), click.open_file('-').readlines())
     
     for i in scene_ids:
-        img = check(client.fetch_scene_thumbnail, i, scene_type, product_type)
+        img = call_and_wrap(client.fetch_scene_thumbnail, i, scene_type, product_type)
         click.echo('fetching %s' % img.name)
         img.write()
 
@@ -70,7 +75,7 @@ def fetch_scene_thumbnail(scene_ids, scene_type, product_type):
 @cli.command()
 def fetch_scene_info(id, scene_type, pretty):
     '''Fetch scene metadata'''
-    res = check(client.fetch_scene_info, id, scene_type)
+    res = call_and_wrap(client.fetch_scene_info, id, scene_type)
     if pretty:
         res = json.dumps(json.loads(res), indent=2)
     click.echo(res)
@@ -90,9 +95,8 @@ def get_scenes_list(scene_type, pretty, aoi):
             aoi = ''.join([ line.strip() for line in lines ])
         else:
             aoi = None
-    
-    
-    res = client.get_scenes_list(scene_type=scene_type, intersects=aoi)
+
+    res = call_and_wrap(client.get_scenes_list, scene_type=scene_type, intersects=aoi)
     if pretty:
         res = json.dumps(json.loads(res), indent=2)
     click.echo(res)
