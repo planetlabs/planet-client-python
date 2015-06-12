@@ -64,9 +64,11 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt):
     '''Fetch scene thumbnail(s)'''
     
     if len(scene_ids) == 0:
-        scene_ids = map(lambda s: s.strip(), click.open_file('-').readlines())
+        src = click.open_file('-')
+        if not src.isatty():
+            scene_ids = map(lambda s: s.strip(), src.readlines())
     
-    check(client.fetch_scene_thumbnails, scene_ids, scene_type, product_type)
+    check(client.fetch_scene_thumbnails, scene_ids, scene_type, size, fmt)
 
 
 @pretty
