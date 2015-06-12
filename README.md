@@ -18,6 +18,11 @@ Enabling bash completion (planet <tab> <tab>):
 
     eval "$(_PLANET_COMPLETE=source planet)"
 
+If you receive nasty looking error messages regarding a SSLContext object not being available, see:
+http://stackoverflow.com/questions/29134512/insecureplatformwarning-a-true-sslcontext-object-is-not-available-this-prevent
+(verified to work on Ubuntu 14.04)
+
+
 Usage
 -----
 
