@@ -65,11 +65,7 @@ def fetch_scene_thumbnail(scene_ids, scene_type, product_type):
         if not src.isatty():
             scene_ids = map(lambda s: s.strip(), src.readlines())
     
-<<<<<<< HEAD
-    check(client.fetch_scene_thumbnails, scene_ids, scene_type, product_type)
-=======
     check(client.fetch_scene_thumbnails, scene_ids, scene_type, size, fmt)
->>>>>>> check if stdin is empty
 
 
 @pretty
