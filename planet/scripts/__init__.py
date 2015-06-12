@@ -41,7 +41,7 @@ def list_all_scene_types():
 
 @scene_type
 @click.argument('scene_ids', nargs=-1)
-@click.option('--product', type=click.Choice(['visual', 'analytic']), default='visual')
+@click.option('--product', type=click.Choice([ "band_%d" % i for i in range(1, 12) ] + ['visual', 'analytic', 'qa']), default='visual')
 @cli.command('download')
 @click.pass_context
 def fetch_scene_geotiff(ctx, scene_ids, scene_type, product):
@@ -76,7 +76,7 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt):
 @pretty
 @scene_type
 @click.argument('id', nargs=1)
-@cli.command()
+@cli.command('metadata')
 def fetch_scene_info(id, scene_type, pretty):
     '''Fetch scene metadata'''
     res = call_and_wrap(client.fetch_scene_info, id, scene_type)
