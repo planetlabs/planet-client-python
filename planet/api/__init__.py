@@ -136,10 +136,10 @@ class Client(object):
         return self._get('scenes/%s/%s' % (scene_type, scene_id)).content
 
 
-    def fetch_scene_geotiffs(self, scene_ids, scene_type='ortho', product_type='visual'):
+    def fetch_scene_geotiffs(self, scene_ids, scene_type='ortho', product='visual'):
         
         params = {
-            'product-type': product_type
+            'product': product
         }
         headers = {
             'Authorization': 'api-key %s' % self.api_key
