@@ -50,15 +50,16 @@ def fetch_scene_geotiff(id, scene_type, product_type):
 
 @scene_type
 @click.argument("scene-ids", nargs=-1)
-@click.option('--product-type', default=None)
+@click.option('--size', type=click.Choice(['sm', 'md', 'lg']), default='md')
+@click.option('--format', 'fmt', type=click.Choice(['png', 'jpg', 'jpeg']), default='png')
 @cli.command('thumbnails')
-def fetch_scene_thumbnail(scene_ids, scene_type, product_type):
+def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt):
     '''Fetch scene thumbnail(s)'''
     
     if len(scene_ids) == 0:
         scene_ids = map(lambda s: s.strip(), click.open_file('-').readlines())
     
-    check(client.fetch_scene_thumbnails, scene_ids, scene_type, product_type)
+    check(client.fetch_scene_thumbnails, scene_ids, scene_type, size, fmt)
     
     # for i in scene_ids:
     #     img = check(client.fetch_scene_thumbnail, i, scene_type, product_type)
