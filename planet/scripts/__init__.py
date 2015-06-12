@@ -65,10 +65,7 @@ def fetch_scene_thumbnail(scene_ids, scene_type, product_type):
     if len(scene_ids) == 0:
         scene_ids = map(lambda s: s.strip(), click.open_file('-').readlines())
     
-    for i in scene_ids:
-        img = call_and_wrap(client.fetch_scene_thumbnail, i, scene_type, product_type)
-        click.echo('fetching %s' % img.name)
-        img.write()
+    check(client.fetch_scene_thumbnails, scene_ids, scene_type, product_type)
 
 
 @pretty
