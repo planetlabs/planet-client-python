@@ -144,7 +144,7 @@ class Client(object):
         return Image(r)
     
     
-    def fetch_scene_thumbnails(self, scene_ids, scene_type='ortho', size='lg', fmt='jpg'):
+    def fetch_scene_thumbnails(self, scene_ids, scene_type='ortho', size='md', fmt='png'):
         
         params = {
             'size': size,
