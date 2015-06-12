@@ -1,7 +1,10 @@
+
 from datetime import datetime
 import os
 import re
+
 import requests
+from requests_futures.sessions import FuturesSession
 
 ENV_KEY = 'PL_API_KEY'
 
@@ -63,6 +66,11 @@ def get_filename(response):
 
 def _find_api_key():
     return os.getenv(ENV_KEY)
+    
+
+def download_in_background(session, response):
+    img = Image(response)
+    img.write()
 
 
 class Image(object):
@@ -134,7 +142,21 @@ class Client(object):
         path = 'scenes/%s/%s/full' % (scene_type, scene_id)
         r = self._get(path, stream=True)
         return Image(r)
+    
+    
+    def fetch_scene_thumbnails(self, scene_ids, scene_type='ortho', size='lg', fmt='jpg'):
+        
+        params = {
+            'size': size,
+            'format': fmt
+        }
+        paths = [ 'scenes/%s/%s/thumb' % (scene_type, sid) for sid in scene_ids ]
+        session = FuturesSession(max_workers=20)
+        headers = {'Authorization': 'api-key ' + self.api_key}
+        
+        futures = [ session.get(self.base_url + path, params=params, headers=headers, stream=True, background_callback=download_in_background) for path in paths ]
 
+    
     def fetch_scene_thumbnail(self, scene_id, scene_type=None, size=None,
                               format=None):
         scene_type = scene_type or 'ortho'
