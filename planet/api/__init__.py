@@ -148,7 +148,7 @@ class Client(object):
         
         session = FuturesSession(max_workers=20)
         session.headers.update(headers)
-        futures = [ session.get(self.base_url + path, stream=True, background_callback=download_in_background) for path in paths ]
+        futures = [ session.get(self.base_url + path, params=params, stream=True, background_callback=download_in_background) for path in paths ]
     
     
     def fetch_scene_thumbnails(self, scene_ids, scene_type='ortho', size='md', fmt='png'):
