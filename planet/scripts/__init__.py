@@ -41,17 +41,20 @@ def list_all_scene_types():
 
 @scene_type
 @click.argument('scene_ids', nargs=-1)
-@click.option('--product-type', default='visual')
+@click.option('--product', type=click.Choice(['visual', 'analytic']), default='visual')
 @cli.command('download')
-def fetch_scene_geotiff(scene_ids, scene_type, product_type):
+@click.pass_context
+def fetch_scene_geotiff(ctx, scene_ids, scene_type, product):
     '''Fetch full scene image(s)'''
     
     if len(scene_ids) == 0:
         src = click.open_file('-')
         if not src.isatty():
             scene_ids = map(lambda s: s.strip(), src.readlines())
+        else:
+            click.echo(ctx.get_usage())
     
-    call_and_wrap(client.fetch_scene_geotiffs, scene_ids, scene_type, product_type)
+    call_and_wrap(client.fetch_scene_geotiffs, scene_ids, scene_type, product)
 
 
 @scene_type
