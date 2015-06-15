@@ -110,6 +110,8 @@ class Client(object):
         self.base_url = base_url
 
     def _get(self, path, params=None, stream=False):
+        if not self.api_key:
+            raise InvalidAPIKey('No API key provided')
         url = self.base_url + path
         headers = {'Authorization': 'api-key ' + self.api_key}
         r = requests.get(url, headers=headers, params=params, stream=stream)

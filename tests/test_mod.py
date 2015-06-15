@@ -49,6 +49,19 @@ def test_assert_client_exc():
         assert "'not test' == 'test'" in ae.message
 
 
+def test_missing_api_key():
+    client = api.Client()
+    def assert_missing():
+        try:
+            client._get('whatevs')
+            assert False
+        except api.InvalidAPIKey, ex:
+            assert ex.message == 'No API key provided'
+    assert_missing()
+    client.api_key = ''
+    assert_missing()
+
+
 @mockget('whatevs', 'not exist', status_code=404)
 def test_status_code_404():
     assert_client_exc(api.MissingResource, 'not exist')
