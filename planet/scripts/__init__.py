@@ -42,39 +42,43 @@ def list_all_scene_types():
 
 
 @scene_type
-@click.argument('id', nargs=-1)
-@click.option('--product-type', default=None)
-@cli.command()
-def fetch_scene_geotiff(id, scene_type, product_type):
+@click.argument('scene_ids', nargs=-1)
+@click.option('--product', type=click.Choice([ "band_%d" % i for i in range(1, 12) ] + ['visual', 'analytic', 'qa']), default='visual')
+@cli.command('download')
+@click.pass_context
+def fetch_scene_geotiff(ctx, scene_ids, scene_type, product):
     '''Fetch full scene image(s)'''
-    for i in id:
-        img = call_and_wrap(client.fetch_scene_geotiff, i, scene_type, product_type)
-        click.echo('fetching %s' % img.name)
-        with click.progressbar(length=img.size) as bar:
-            callback = lambda n: bar.update(n)
-            img.write(callback=callback)
+    
+    if len(scene_ids) == 0:
+        src = click.open_file('-')
+        if not src.isatty():
+            scene_ids = map(lambda s: s.strip(), src.readlines())
+        else:
+            click.echo(ctx.get_usage())
+    
+    call_and_wrap(client.fetch_scene_geotiffs, scene_ids, scene_type, product)
 
 
 @scene_type
 @click.argument("scene-ids", nargs=-1)
-@click.option('--product-type', default=None)
+@click.option('--size', type=click.Choice(['sm', 'md', 'lg']), default='md')
+@click.option('--format', 'fmt', type=click.Choice(['png', 'jpg', 'jpeg']), default='png')
 @cli.command('thumbnails')
-def fetch_scene_thumbnail(scene_ids, scene_type, product_type):
+def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt):
     '''Fetch scene thumbnail(s)'''
     
     if len(scene_ids) == 0:
-        scene_ids = map(lambda s: s.strip(), click.open_file('-').readlines())
+        src = click.open_file('-')
+        if not src.isatty():
+            scene_ids = map(lambda s: s.strip(), src.readlines())
     
-    for i in scene_ids:
-        img = call_and_wrap(client.fetch_scene_thumbnail, i, scene_type, product_type)
-        click.echo('fetching %s' % img.name)
-        img.write()
+    call_and_wrap(client.fetch_scene_thumbnails, scene_ids, scene_type, size, fmt)
 
 
 @pretty
 @scene_type
 @click.argument('id', nargs=1)
-@cli.command()
+@cli.command('metadata')
 def fetch_scene_info(id, scene_type, pretty):
     '''Fetch scene metadata'''
     res = call_and_wrap(client.fetch_scene_info, id, scene_type)

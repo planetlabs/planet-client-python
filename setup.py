@@ -7,8 +7,21 @@ with codecs_open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 
+with open('planet/__init__.py') as f:
+    for line in f:
+        if line.find("__version__") >= 0:
+            version = line.split("=")[1].strip()
+            version = version.strip('"')
+            version = version.strip("'")
+            continue
+
+
+<<<<<<< HEAD
 setup(name='planet',
-      version='0.0.1',
+=======
+setup(name='plapi',
+>>>>>>> a5ab62669b97cbe1f9b82403654a7b1cfe17c68d
+      version=version,
       description=u"Planet API Client",
       long_description=long_description,
       classifiers=[],
@@ -23,6 +36,7 @@ setup(name='planet',
       install_requires=[
           'click',
           'requests',
+          'requests_futures>=0.9.5'
       ],
       extras_require={
           'test': [

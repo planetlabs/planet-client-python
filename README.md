@@ -38,7 +38,7 @@ basics and help:
 
 OR specific command help
 
-    planet get_scenes_list --help
+    planet get-scenes-list --help
 
 To do anything real, one must provide an API key. This can be done via the environment variable `PL_API_KEY` or the flag `-k` or `--api-key`.
 
@@ -46,12 +46,17 @@ Examples:
 
 Get a visual ortho scene by id (writes to working directory):
 
-    planet fetch_scene_geotiff 20141008_170544_0907
+    planet download 20141008_170544_0907
+    
+Get an analytic ortho scene by id:
+
+    planet download 20141008_170544_0907 --analytic
     
 Get scene metadata by id (and pretty print):
 
     planet fetch_scene_info -pp 20141008_170544_0907
 
+<<<<<<< HEAD
 Testing
 -------
 
@@ -68,6 +73,8 @@ There are two suites of tests, one for the cli, the other for the library module
 Both can be run using:
 
     py.test
+=======
+>>>>>>> a5ab62669b97cbe1f9b82403654a7b1cfe17c68d
 
 TODO!
 -----
