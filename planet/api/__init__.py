@@ -11,6 +11,7 @@ _logger = logging.getLogger(__name__)
 
 ENV_KEY = 'PL_API_KEY'
 
+_ISO_FMT = '%Y-%m-%dT%H:%M:%S.%f+00:00'
 
 class APIException(Exception):
     '''also used as placeholder for unexpected response status_code'''
@@ -69,13 +70,21 @@ def _find_api_key():
     return os.getenv(ENV_KEY)
 
 
-def write_to_file(directory=None):
+def write_to_file(directory=None, callback=None):
     def writer(session, response):
         _check_status(response)
         img = Image(response)
         file = os.path.join(directory, img.name) if directory else None
-        img.write(file)
+        img.write(file, callback)
     return writer
+
+
+def strp_timestamp(value):
+    return datetime.strptime(value, _ISO_FMT)
+
+
+def strf_timestamp(when):
+    return datetime.strftime(when, _ISO_FMT)
 
 
 class Response(object):
@@ -139,6 +148,7 @@ class Image(Response):
         for chunk in self:
             fp.write(chunk)
             callback(len(chunk))
+        callback(self)
 
     def write(self, file=None, callback=None):
         if not file:
