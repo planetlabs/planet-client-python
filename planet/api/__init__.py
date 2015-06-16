@@ -78,6 +78,7 @@ def write_to_file(session, response):
 class Response(object):
 
     def __init__(self, response):
+        
         self.response = response
         self.size = int(self.response.headers.get('content-length', -1))
         self.name = _get_filename(self.response)
@@ -125,6 +126,7 @@ class Image(Response):
 
 class Client(object):
 
+
     def __init__(self, api_key=None, base_url='https://api.planet.com/v0/'):
         self.api_key = api_key or _find_api_key()
         self.base_url = base_url
@@ -153,7 +155,7 @@ class Client(object):
             self._get(path, params=params, callback=callback) for path in paths
         ]
 
-    def list_all_scene_types(self):
+    def list_scene_types(self):
         return JSON(self._get('scenes'))
 
     def get_scenes_list(self, scene_type='ortho', order_by=None, count=None,
@@ -166,8 +168,15 @@ class Client(object):
         params.update(**filters)
         return JSON(self._get('scenes/%s' % scene_type, params=params))
 
-    def fetch_scene_info(self, scene_id, scene_type='ortho'):
+
+    def get_scene_metadata(self, scene_id, scene_type='ortho'):
+        """
+        Get metadata for a given scene.
+        
+        .. todo:: Generalize to accept multiple scene ids.
+        """
         return JSON(self._get('scenes/%s/%s' % (scene_type, scene_id)))
+
 
     def fetch_scene_geotiffs(self, scene_ids, scene_type='ortho',
                              product='visual', callback=None):
