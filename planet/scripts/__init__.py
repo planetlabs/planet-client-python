@@ -17,6 +17,13 @@ def configure_logging(verbosity):
     logging.basicConfig(stream=sys.stderr, level=log_level)
 
 
+def click_exception(ex):
+    if type(ex) is api.APIException:
+        raise click.ClickException('Unexpected response: %s' % ex.message)
+    msg = "%s: %s" % (type(ex).__name__, ex.message)
+    raise click.ClickException(msg)
+
+
 def call_and_wrap(func, *args, **kw):
     '''call the provided function and wrap any API exception with a click
     exception. this means no stack trace is visible to the user but instead
@@ -26,64 +33,82 @@ def call_and_wrap(func, *args, **kw):
     try:
         return func(*args, **kw)
     except api.APIException, ex:
-        if type(ex) is api.APIException:
-            raise click.ClickException('Unexpected response: %s' % ex.message)
-        msg = "%s: %s" % (type(ex).__name__, ex.message)
-        raise click.ClickException(msg)
+        click_exception(ex)
+
+
+def check_futures(futures):
+    for f in futures:
+        try:
+            f.result()
+        except api.InvalidAPIKey, invalid:
+            click_exception(invalid)
+        except api.APIException, other:
+            click.echo('WARNING %s' % other.message)
 
 
 @click.group()
+@click.option('-w', '--workers', default=4)
 @click.option('-v', '--verbose', count=True)
 @click.option('-k', '--api-key',
               help='Valid API key - or via env variable %s' % api.ENV_KEY)
 @click.option('-u', '--base-url', help='Optional for testing')
-def cli(verbose, api_key, base_url):
+def cli(verbose, api_key, base_url, workers):
     configure_logging(verbose)
     '''Planet API Client'''
     if api_key:
         client.api_key = api_key
     if base_url:
         client.base_url = base_url
+    client._workers = workers
 
 
 @cli.command()
 def list_all_scene_types():
     '''List all scene types.'''
-    click.echo(call_and_wrap(client.list_all_scene_types))
+    click.echo(call_and_wrap(client.list_all_scene_types).get_raw())
 
 
 @scene_type
 @click.argument('scene_ids', nargs=-1)
-@click.option('--product', type=click.Choice([ "band_%d" % i for i in range(1, 12) ] + ['visual', 'analytic', 'qa']), default='visual')
+@click.option('--product',
+              type=click.Choice(
+                  ["band_%d" % i for i in range(1, 12)] +
+                  ['visual', 'analytic', 'qa']
+              ), default='visual')
 @cli.command('download')
 @click.pass_context
 def fetch_scene_geotiff(ctx, scene_ids, scene_type, product):
     '''Fetch full scene image(s)'''
-    
+
     if len(scene_ids) == 0:
         src = click.open_file('-')
         if not src.isatty():
             scene_ids = map(lambda s: s.strip(), src.readlines())
         else:
             click.echo(ctx.get_usage())
-    
-    call_and_wrap(client.fetch_scene_geotiffs, scene_ids, scene_type, product)
+
+    futures = client.fetch_scene_geotiffs(scene_ids, scene_type, product,
+                                          api.write_to_file)
+    check_futures(futures)
 
 
 @scene_type
 @click.argument("scene-ids", nargs=-1)
 @click.option('--size', type=click.Choice(['sm', 'md', 'lg']), default='md')
-@click.option('--format', 'fmt', type=click.Choice(['png', 'jpg', 'jpeg']), default='png')
+@click.option('--format', 'fmt', type=click.Choice(['png', 'jpg', 'jpeg']),
+              default='png')
 @cli.command('thumbnails')
 def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt):
     '''Fetch scene thumbnail(s)'''
-    
+
     if len(scene_ids) == 0:
         src = click.open_file('-')
         if not src.isatty():
             scene_ids = map(lambda s: s.strip(), src.readlines())
-    
-    call_and_wrap(client.fetch_scene_thumbnails, scene_ids, scene_type, size, fmt)
+
+    futures = client.fetch_scene_thumbnails(scene_ids, scene_type, size, fmt,
+                                            api.write_to_file)
+    check_futures(futures)
 
 
 @pretty
@@ -92,7 +117,7 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt):
 @cli.command('metadata')
 def fetch_scene_info(id, scene_type, pretty):
     '''Fetch scene metadata'''
-    res = call_and_wrap(client.fetch_scene_info, id, scene_type)
+    res = call_and_wrap(client.fetch_scene_info, id, scene_type).get_raw()
     if pretty:
         res = json.dumps(json.loads(res), indent=2)
     click.echo(res)
@@ -104,16 +129,17 @@ def fetch_scene_info(id, scene_type, pretty):
 @click.argument("aoi", default="-", required=False)
 def get_scenes_list(scene_type, pretty, aoi):
     '''Get a list of scenes'''
-    
+
     if aoi == "-":
         src = click.open_file('-')
         if not src.isatty():
             lines = src.readlines()
-            aoi = ''.join([ line.strip() for line in lines ])
+            aoi = ''.join([line.strip() for line in lines])
         else:
             aoi = None
 
-    res = call_and_wrap(client.get_scenes_list, scene_type=scene_type, intersects=aoi)
+    res = call_and_wrap(client.get_scenes_list, scene_type=scene_type,
+                        intersects=aoi).get_raw()
     if pretty:
         res = json.dumps(json.loads(res), indent=2)
     click.echo(res)

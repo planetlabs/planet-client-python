@@ -35,10 +35,11 @@ def test_exception_translation():
     assert_cli_exception(api.APIException('911: alert'),
                          "Unexpected response: 911: alert")
 
-    
 
 def test_list_all_scene_types():
     retval = 'list_all_scene_types ran'
-    scripts.client.list_all_scene_types.return_value = retval
+    response = MagicMock(spec=api.JSON)
+    response.get_raw.return_value = retval
+    scripts.client.list_all_scene_types.return_value = response
     result = runner.invoke(scripts.cli, ['list_all_scene_types'])
     assert_success(result, retval)

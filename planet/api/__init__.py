@@ -41,7 +41,7 @@ class ServerError(APIException):
     pass
 
 
-def check_status(response):
+def _check_status(response):
     status = response.status_code
     if status == 200:
         return
@@ -58,44 +58,51 @@ def check_status(response):
     raise APIException('%s: %s' % (status, response.content))
 
 
-def push_params(params, **kv):
-    params.update([(k, v) for k, v in kv.items() if v])
-    return params
-
-
-def get_filename(response):
-    cd = response.headers['content-disposition']
+def _get_filename(response):
+    cd = response.headers.get('content-disposition', '')
     match = re.search('filename="?([^"]+)"?', cd)
     if match:
         return match.group(1)
-    raise APIException('Unable to locate filename in response: %s' % cd)
 
 
 def _find_api_key():
     return os.getenv(ENV_KEY)
-    
 
-def download_in_background(session, response):
+
+def write_to_file(session, response):
+    _check_status(response)
     img = Image(response)
     img.write()
 
 
-class Image(object):
+class Response(object):
 
     def __init__(self, response):
         self.response = response
         self.size = int(self.response.headers.get('content-length', -1))
-        self.name = get_filename(self.response)
+        self.name = _get_filename(self.response)
 
     def __len__(self):
         return self.size
 
     def __iter__(self):
-        return (chunk for chunk in self.response.iter_content(chunk_size=8096))
+        return (chunk for chunk in self.response.iter_content(chunk_size=8192))
 
     def last_modified(self):
         lm = self.response.headers['last-modified']
         return datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S GMT')
+
+    def get_raw(self):
+        return self.response.content
+
+
+class JSON(Response):
+
+    def get(self):
+        return self.response.json()
+
+
+class Image(Response):
 
     def _write(self, fp, callback):
         if not callback:
@@ -107,6 +114,8 @@ class Image(object):
     def write(self, file=None, callback=None):
         if not file:
             file = self.name
+        if not file:
+            raise ValueError('no file name provided or discovered in response')
         if isinstance(file, basestring):
             with open(file, 'wb') as fp:
                 self._write(fp, callback)
@@ -119,69 +128,60 @@ class Client(object):
     def __init__(self, api_key=None, base_url='https://api.planet.com/v0/'):
         self.api_key = api_key or _find_api_key()
         self.base_url = base_url
+        self._workers = 4
+        self._session = None
 
-    def _get(self, path, params=None, stream=False):
+    def _get(self, path, params=None, stream=False, callback=None):
         if not self.api_key:
             raise InvalidAPIKey('No API key provided')
         url = self.base_url + path
         headers = {'Authorization': 'api-key ' + self.api_key}
-        r = requests.get(url, headers=headers, params=params, stream=stream)
-        check_status(r)
+        session = requests
+        if callback:
+            if self._session is None:
+                self._session = FuturesSession(max_workers=self._workers)
+            session = self._session
+            r = session.get(url, headers=headers, params=params, stream=True,
+                            background_callback=callback)
+        else:
+            r = session.get(url, headers=headers, params=params, stream=stream)
+            _check_status(r)
         return r
 
+    def _get_many(self, paths, params, callback=None):
+        return [
+            self._get(path, params=params, callback=callback) for path in paths
+        ]
+
     def list_all_scene_types(self):
-        return self._get('scenes').content
+        return JSON(self._get('scenes'))
 
     def get_scenes_list(self, scene_type='ortho', order_by=None, count=None,
                         intersects=None, **filters):
-        params = {}
-        push_params(params, order_by=order_by, count=count)
-        push_params(params, intersects=intersects)
-        push_params(params, **filters)
-        return self._get('scenes/%s' % scene_type, params=params).content
+        params = {
+            'order_by': order_by,
+            'count': count,
+            'intersects': intersects
+        }
+        params.update(**filters)
+        return JSON(self._get('scenes/%s' % scene_type, params=params))
 
-    def fetch_scene_info(self, scene_id, scene_type=None):
-        scene_type = scene_type or 'ortho'
-        return self._get('scenes/%s/%s' % (scene_type, scene_id)).content
+    def fetch_scene_info(self, scene_id, scene_type='ortho'):
+        return JSON(self._get('scenes/%s/%s' % (scene_type, scene_id)))
 
-
-    def fetch_scene_geotiffs(self, scene_ids, scene_type='ortho', product='visual'):
-        
+    def fetch_scene_geotiffs(self, scene_ids, scene_type='ortho',
+                             product='visual', callback=None):
         params = {
             'product': product
         }
-        headers = {
-            'Authorization': 'api-key %s' % self.api_key
-        }
-        paths = [ 'scenes/%s/%s/full' % (scene_type, sid) for sid in scene_ids ]
-        
-        session = FuturesSession(max_workers=20)
-        session.headers.update(headers)
-        futures = [ session.get(self.base_url + path, params=params, stream=True, background_callback=download_in_background) for path in paths ]
-    
-    
-    def fetch_scene_thumbnails(self, scene_ids, scene_type='ortho', size='md', fmt='png'):
-        
+        paths = ['scenes/%s/%s/full' % (scene_type, sid) for sid in scene_ids]
+        return self._get_many(paths, params, callback)
+
+    def fetch_scene_thumbnails(self, scene_ids, scene_type='ortho', size='md',
+                               fmt='png', callback=None):
         params = {
             'size': size,
             'format': fmt
         }
-        headers = {
-            'Authorization': 'api-key %s' % self.api_key
-        }
-        paths = [ 'scenes/%s/%s/thumb' % (scene_type, sid) for sid in scene_ids ]
-        
-        session = FuturesSession(max_workers=20)
-        session.headers.update(headers)
-        futures = [ session.get(self.base_url + path, params=params, stream=True, background_callback=download_in_background) for path in paths ]
-
-    
-    def fetch_scene_thumbnail(self, scene_id, scene_type=None, size=None,
-                              format=None):
-        scene_type = scene_type or 'ortho'
-        size = size or 'lg'
-        format = format or 'jpg'
-        params = {'size': size, 'format': format}
-        path = 'scenes/%s/%s/thumb' % (scene_type, scene_id)
-        r = self._get(path, params=params)
-        return Image(r)
+        paths = ['scenes/%s/%s/thumb' % (scene_type, sid) for sid in scene_ids]
+        return self._get_many(paths, params, callback)

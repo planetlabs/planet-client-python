@@ -20,6 +20,7 @@ def mockget(path, data, status_code=200):
         return inner
     return outer
 
+
 def assert_client_exc(clz, msg, status=None):
     try:
         client._get('whatevs')
@@ -30,7 +31,7 @@ def assert_client_exc(clz, msg, status=None):
 
 
 @mockget('whatevs', 'test', status_code=200)
-def test_assert_client_exc():
+def test_assert_client_exc_success():
     '''make sure our test works'''
     try:
         assert_client_exc(Exception, '')
@@ -40,7 +41,7 @@ def test_assert_client_exc():
 
 
 @mockget('whatevs', 'test', status_code=400)
-def test_assert_client_exc():
+def test_assert_client_exc_fail():
     '''make sure our test works'''
     try:
         assert_client_exc(api.BadQuery, 'not test')
@@ -51,6 +52,9 @@ def test_assert_client_exc():
 
 def test_missing_api_key():
     client = api.Client()
+    # make sure any detected key is cleared
+    client.api_key = None
+
     def assert_missing():
         try:
             client._get('whatevs')
@@ -71,11 +75,12 @@ def test_status_code_404():
 def test_status_code_other():
     assert_client_exc(api.APIException, '911: emergency')
 
+
 @mockget('scenes', 'oranges')
 def test_list_all_scene_types():
-    assert client.list_all_scene_types() == 'oranges'
+    assert client.list_all_scene_types().get_raw() == 'oranges'
 
 
 @mockget('scenes/ortho/x22', 'bananas')
 def test_fetch_scene_info_scene_id():
-    assert client.fetch_scene_info('x22') == 'bananas'
+    assert client.fetch_scene_info('x22').get_raw() == 'bananas'
