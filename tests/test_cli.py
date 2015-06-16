@@ -61,6 +61,22 @@ def test_list_scene_types():
     assert_success(result, expected)
 
 
+def test_search():
+    
+    fixture_path = os.path.join(FIXTURE_DIR, 'search.geojson')
+    with open(fixture_path, 'r') as src:
+        expected = src.read()
+    
+    response = MagicMock(spec=api.JSON)
+    response.get_raw.return_value = expected
+    
+    scripts.client.get_scenes_list.return_value = response
+    
+    result = runner.invoke(scripts.cli, ['search'])
+    
+    assert_success(result, expected)
+    
+
 def test_metadata():
     
     # Read in fixture
