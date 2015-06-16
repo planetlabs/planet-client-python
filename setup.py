@@ -16,11 +16,7 @@ with open('planet/__init__.py') as f:
             continue
 
 
-<<<<<<< HEAD
 setup(name='planet',
-=======
-setup(name='plapi',
->>>>>>> a5ab62669b97cbe1f9b82403654a7b1cfe17c68d
       version=version,
       description=u"Planet API Client",
       long_description=long_description,
