@@ -8,7 +8,8 @@ client = api.Client()
 
 pretty = click.option('-pp', '--pretty', default=False, is_flag=True)
 scene_type = click.option('-s', '--scene-type', default='ortho')
-
+dest_dir = click.option('-d', '--dest', help='Destination directory',
+                        type=click.Path(file_okay=False, resolve_path=True))
 
 def configure_logging(verbosity):
     '''configure logging via verbosity level of between 0 and 2 corresponding
@@ -69,6 +70,7 @@ def list_all_scene_types():
 
 
 @scene_type
+@dest_dir
 @click.argument('scene_ids', nargs=-1)
 @click.option('--product',
               type=click.Choice(
@@ -77,7 +79,7 @@ def list_all_scene_types():
               ), default='visual')
 @cli.command('download')
 @click.pass_context
-def fetch_scene_geotiff(ctx, scene_ids, scene_type, product):
+def fetch_scene_geotiff(ctx, scene_ids, scene_type, product, dest):
     '''Fetch full scene image(s)'''
 
     if len(scene_ids) == 0:
@@ -88,17 +90,18 @@ def fetch_scene_geotiff(ctx, scene_ids, scene_type, product):
             click.echo(ctx.get_usage())
 
     futures = client.fetch_scene_geotiffs(scene_ids, scene_type, product,
-                                          api.write_to_file)
+                                          api.write_to_file(dest))
     check_futures(futures)
 
 
 @scene_type
+@dest_dir
 @click.argument("scene-ids", nargs=-1)
 @click.option('--size', type=click.Choice(['sm', 'md', 'lg']), default='md')
 @click.option('--format', 'fmt', type=click.Choice(['png', 'jpg', 'jpeg']),
               default='png')
 @cli.command('thumbnails')
-def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt):
+def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
     '''Fetch scene thumbnail(s)'''
 
     if len(scene_ids) == 0:
@@ -107,7 +110,7 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt):
             scene_ids = map(lambda s: s.strip(), src.readlines())
 
     futures = client.fetch_scene_thumbnails(scene_ids, scene_type, size, fmt,
-                                            api.write_to_file)
+                                            api.write_to_file(dest))
     check_futures(futures)
 
 

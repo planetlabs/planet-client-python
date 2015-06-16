@@ -69,10 +69,13 @@ def _find_api_key():
     return os.getenv(ENV_KEY)
 
 
-def write_to_file(session, response):
-    _check_status(response)
-    img = Image(response)
-    img.write()
+def write_to_file(directory=None):
+    def writer(session, response):
+        _check_status(response)
+        img = Image(response)
+        file = os.path.join(directory, img.name) if directory else None
+        img.write(file)
+    return writer
 
 
 class Response(object):
