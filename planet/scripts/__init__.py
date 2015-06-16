@@ -48,7 +48,7 @@ def check_futures(futures):
 
 
 @click.group()
-@click.option('-w', '--workers', default=4)
+@click.option('-w', '--workers', default=4, help='The number of concurrent downloads when requesting multiple scenes.')
 @click.option('-v', '--verbose', count=True)
 @click.option('-k', '--api-key',
               help='Valid API key - or via env variable %s' % api.ENV_KEY)
@@ -63,10 +63,57 @@ def cli(verbose, api_key, base_url, workers):
     client._workers = workers
 
 
-@cli.command()
-def list_all_scene_types():
+@cli.command('list-scene-types')
+def list_scene_types():
     '''List all scene types.'''
-    click.echo(call_and_wrap(client.list_all_scene_types).get_raw())
+    click.echo(call_and_wrap(client.list_scene_types).get_raw())
+
+
+@pretty
+@scene_type
+@cli.command('search')
+@click.argument("aoi", default="-", required=False)
+@click.option('--count', type=click.INT, required=False, help="Set the number of returned scenes.")
+@click.option("--where", nargs=3, multiple=True, help="Provide additional search criteria. See https://www.planet.com/docs/v0/scenes/#metadata for search metadata fields.")
+def get_scenes_list(scene_type, pretty, aoi, count, where):
+    '''Get a list of scenes'''
+
+    if aoi == "-":
+        src = click.open_file('-')
+        if not src.isatty():
+            lines = src.readlines()
+            aoi = ''.join([line.strip() for line in lines])
+        else:
+            aoi = None
+    
+    if where:
+        conditions = {
+            "%s.%s" % condition[0:2]: condition[2]
+            for condition in where
+        }
+    else:
+        conditions = {}
+    
+    res = call_and_wrap(client.get_scenes_list, scene_type=scene_type,
+                        intersects=aoi, count=count, **conditions).get_raw()
+    if pretty:
+        res = json.dumps(json.loads(res), indent=2)
+    click.echo(res)
+
+
+@pretty
+@scene_type
+@click.argument('scene_id', nargs=1)
+@cli.command('metadata')
+def metadata(scene_id, scene_type, pretty):
+    '''Get scene metadata'''
+    
+    res = call_and_wrap(client.get_scene_metadata, scene_id, scene_type).get_raw()
+    
+    if pretty:
+        res = json.dumps(json.loads(res), indent=2)
+    
+    click.echo(res)
 
 
 @scene_type
@@ -112,37 +159,3 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
     futures = client.fetch_scene_thumbnails(scene_ids, scene_type, size, fmt,
                                             api.write_to_file(dest))
     check_futures(futures)
-
-
-@pretty
-@scene_type
-@click.argument('id', nargs=1)
-@cli.command('metadata')
-def fetch_scene_info(id, scene_type, pretty):
-    '''Fetch scene metadata'''
-    res = call_and_wrap(client.fetch_scene_info, id, scene_type).get_raw()
-    if pretty:
-        res = json.dumps(json.loads(res), indent=2)
-    click.echo(res)
-
-
-@pretty
-@scene_type
-@cli.command('get-scenes-list')
-@click.argument("aoi", default="-", required=False)
-def get_scenes_list(scene_type, pretty, aoi):
-    '''Get a list of scenes'''
-
-    if aoi == "-":
-        src = click.open_file('-')
-        if not src.isatty():
-            lines = src.readlines()
-            aoi = ''.join([line.strip() for line in lines])
-        else:
-            aoi = None
-
-    res = call_and_wrap(client.get_scenes_list, scene_type=scene_type,
-                        intersects=aoi).get_raw()
-    if pretty:
-        res = json.dumps(json.loads(res), indent=2)
-    click.echo(res)

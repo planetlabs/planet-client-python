@@ -78,9 +78,9 @@ def test_status_code_other():
 
 @mockget('scenes', 'oranges')
 def test_list_all_scene_types():
-    assert client.list_all_scene_types().get_raw() == 'oranges'
+    assert client.list_scene_types().get_raw() == 'oranges'
 
 
 @mockget('scenes/ortho/x22', 'bananas')
 def test_fetch_scene_info_scene_id():
-    assert client.fetch_scene_info('x22').get_raw() == 'bananas'
+    assert client.get_scene_metadata('x22').get_raw() == 'bananas'
