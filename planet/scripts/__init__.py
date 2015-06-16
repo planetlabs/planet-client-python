@@ -63,7 +63,7 @@ def cli(verbose, api_key, base_url, workers):
     client._workers = workers
 
 
-@cli.command()
+@cli.command('list-scene-types')
 def list_all_scene_types():
     '''List all scene types.'''
     click.echo(call_and_wrap(client.list_all_scene_types).get_raw())
@@ -128,9 +128,10 @@ def fetch_scene_info(id, scene_type, pretty):
 
 @pretty
 @scene_type
-@cli.command('get-scenes-list')
+@cli.command('search')
 @click.argument("aoi", default="-", required=False)
-def get_scenes_list(scene_type, pretty, aoi):
+@click.option('--count', type=click.INT, required=False)
+def get_scenes_list(scene_type, pretty, aoi, count):
     '''Get a list of scenes'''
 
     if aoi == "-":
@@ -142,7 +143,7 @@ def get_scenes_list(scene_type, pretty, aoi):
             aoi = None
 
     res = call_and_wrap(client.get_scenes_list, scene_type=scene_type,
-                        intersects=aoi).get_raw()
+                        intersects=aoi, count=count).get_raw()
     if pretty:
         res = json.dumps(json.loads(res), indent=2)
     click.echo(res)
