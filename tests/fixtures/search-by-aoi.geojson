@@ -1,0 +1,996 @@
+{
+  "count": 12,
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -104.86138949750158,
+              40.55446683789775
+            ],
+            [
+              -104.87882920022997,
+              40.65109023264127
+            ],
+            [
+              -105.02888367556005,
+              40.635339753029065
+            ],
+            [
+              -105.01122155503984,
+              40.538630626648576
+            ],
+            [
+              -104.86138949750158,
+              40.55446683789775
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "20141205_171245_0905",
+      "properties": {
+        "links": {
+          "self": "https://api.planet.com/v0/scenes/ortho/20141205_171245_0905",
+          "full": "https://view.planet.com/v0/scenes/ortho/20141205_171245_0905/full",
+          "square_thumbnail": "https://view.planet.com/v0/scenes/ortho/20141205_171245_0905/square-thumb",
+          "thumbnail": "https://view.planet.com/v0/scenes/ortho/20141205_171245_0905/thumb"
+        },
+        "acquired": "2014-12-05T17:12:45.380110+00:00",
+        "sun": {
+          "altitude": 23.13386096411694,
+          "azimuth": 155.69951699874994,
+          "local_time_of_day": 10.232847827933332
+        },
+        "image_statistics": {
+          "image_quality": "standard",
+          "snr": 96.1417615888608,
+          "gsd": 4.11479477677
+        },
+        "cloud_cover": {
+          "estimated": 0.06
+        },
+        "camera": {
+          "exposure_time": 1170,
+          "bit_depth": 8,
+          "color_mode": "RGB",
+          "tdi_pulses": 24,
+          "gain": 150
+        },
+        "strip_id": 1417799358.408923,
+        "data": {
+          "products": {
+            "analytic": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141205_171245_0905/full?product=analytic"
+            },
+            "visual": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141205_171245_0905/full?product=visual"
+            },
+            "unrectified": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141205_171245_0905/full?product=unrectified",
+              "zip": "https://view.planet.com/v0/scenes/ortho/20141205_171245_0905/full.zip?product=unrectified"
+            }
+          }
+        },
+        "sat": {
+          "lat": 40.5938706213,
+          "alt": 608.549963591,
+          "id": "0905",
+          "lng": -104.694782581,
+          "off_nadir": 1.9919609882311111
+        }
+      }
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -104.84451427440241,
+              40.49390502056729
+            ],
+            [
+              -104.86202754504876,
+              40.5905861019001
+            ],
+            [
+              -105.01202865777132,
+              40.57490861891107
+            ],
+            [
+              -104.99422614118389,
+              40.47815264908727
+            ],
+            [
+              -104.84451427440241,
+              40.49390502056729
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "20141205_171244_0905",
+      "properties": {
+        "links": {
+          "self": "https://api.planet.com/v0/scenes/ortho/20141205_171244_0905",
+          "full": "https://view.planet.com/v0/scenes/ortho/20141205_171244_0905/full",
+          "square_thumbnail": "https://view.planet.com/v0/scenes/ortho/20141205_171244_0905/square-thumb",
+          "thumbnail": "https://view.planet.com/v0/scenes/ortho/20141205_171244_0905/thumb"
+        },
+        "acquired": "2014-12-05T17:12:44.380107+00:00",
+        "sun": {
+          "altitude": 23.19414079863689,
+          "azimuth": 155.70297307446998,
+          "local_time_of_day": 10.233848662288887
+        },
+        "image_statistics": {
+          "image_quality": "standard",
+          "snr": 98.29942868218455,
+          "gsd": 4.11477688667
+        },
+        "cloud_cover": {
+          "estimated": 0.01
+        },
+        "camera": {
+          "exposure_time": 1170,
+          "bit_depth": 8,
+          "color_mode": "RGB",
+          "tdi_pulses": 24,
+          "gain": 150
+        },
+        "strip_id": 1417799358.408923,
+        "data": {
+          "products": {
+            "analytic": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141205_171244_0905/full?product=analytic"
+            },
+            "visual": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141205_171244_0905/full?product=visual"
+            },
+            "unrectified": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141205_171244_0905/full?product=unrectified",
+              "zip": "https://view.planet.com/v0/scenes/ortho/20141205_171244_0905/full.zip?product=unrectified"
+            }
+          }
+        },
+        "sat": {
+          "lat": 40.5327648197,
+          "alt": 608.544021591,
+          "id": "0905",
+          "lng": -104.675603399,
+          "off_nadir": 2.0069147366507543
+        }
+      }
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -104.82733459375794,
+              40.43279100864816
+            ],
+            [
+              -104.84472250523022,
+              40.529491745827215
+            ],
+            [
+              -104.99463386100807,
+              40.51386896162188
+            ],
+            [
+              -104.97694668585407,
+              40.41705525599126
+            ],
+            [
+              -104.82733459375794,
+              40.43279100864816
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "20141205_171243_0905",
+      "properties": {
+        "links": {
+          "self": "https://api.planet.com/v0/scenes/ortho/20141205_171243_0905",
+          "full": "https://view.planet.com/v0/scenes/ortho/20141205_171243_0905/full",
+          "square_thumbnail": "https://view.planet.com/v0/scenes/ortho/20141205_171243_0905/square-thumb",
+          "thumbnail": "https://view.planet.com/v0/scenes/ortho/20141205_171243_0905/thumb"
+        },
+        "acquired": "2014-12-05T17:12:43.380103+00:00",
+        "sun": {
+          "altitude": 23.254420633156837,
+          "azimuth": 155.70638816905497,
+          "local_time_of_day": 10.234847693577779
+        },
+        "image_statistics": {
+          "image_quality": "standard",
+          "snr": 95.86937927564684,
+          "gsd": 4.11477738362
+        },
+        "cloud_cover": {
+          "estimated": 0.03
+        },
+        "camera": {
+          "exposure_time": 1170,
+          "bit_depth": 8,
+          "color_mode": "RGB",
+          "tdi_pulses": 24,
+          "gain": 150
+        },
+        "strip_id": 1417799358.408923,
+        "data": {
+          "products": {
+            "analytic": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141205_171243_0905/full?product=analytic"
+            },
+            "visual": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141205_171243_0905/full?product=visual"
+            },
+            "unrectified": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141205_171243_0905/full?product=unrectified",
+              "zip": "https://view.planet.com/v0/scenes/ortho/20141205_171243_0905/full.zip?product=unrectified"
+            }
+          }
+        },
+        "sat": {
+          "lat": 40.4716564927,
+          "alt": 608.538101432,
+          "id": "0905",
+          "lng": -104.656451263,
+          "off_nadir": 2.034638332427825
+        }
+      }
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -105.02910272186134,
+              40.51872757699671
+            ],
+            [
+              -105.04747843391917,
+              40.617555592454096
+            ],
+            [
+              -105.20077325450177,
+              40.60083169065282
+            ],
+            [
+              -105.18187572635938,
+              40.501904350001574
+            ],
+            [
+              -105.02910272186134,
+              40.51872757699671
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "20141116_171229_090c",
+      "properties": {
+        "links": {
+          "self": "https://api.planet.com/v0/scenes/ortho/20141116_171229_090c",
+          "full": "https://view.planet.com/v0/scenes/ortho/20141116_171229_090c/full",
+          "square_thumbnail": "https://view.planet.com/v0/scenes/ortho/20141116_171229_090c/square-thumb",
+          "thumbnail": "https://view.planet.com/v0/scenes/ortho/20141116_171229_090c/thumb"
+        },
+        "acquired": "2014-11-16T17:12:29.526938+00:00",
+        "sun": {
+          "altitude": 27.144230440952025,
+          "azimuth": 155.63174786180508,
+          "local_time_of_day": 10.224214764488886
+        },
+        "image_statistics": {
+          "image_quality": "test",
+          "snr": 42.750745732145546,
+          "gsd": 4.19951383649
+        },
+        "cloud_cover": {
+          "estimated": 63.17
+        },
+        "camera": {
+          "exposure_time": 1170,
+          "bit_depth": 8,
+          "color_mode": "RGB",
+          "tdi_pulses": 4,
+          "gain": 560
+        },
+        "strip_id": 1416157750.380446,
+        "data": {
+          "products": {
+            "analytic": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141116_171229_090c/full?product=analytic"
+            },
+            "visual": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141116_171229_090c/full?product=visual"
+            },
+            "unrectified": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141116_171229_090c/full?product=unrectified",
+              "zip": "https://view.planet.com/v0/scenes/ortho/20141116_171229_090c/full.zip?product=unrectified"
+            }
+          }
+        },
+        "sat": {
+          "lat": 40.3490112581,
+          "alt": 621.072072173,
+          "id": "090c",
+          "lng": -104.757611866,
+          "off_nadir": 3.4016268382116888
+        }
+      }
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -104.99948241447088,
+              40.433952390682926
+            ],
+            [
+              -105.01756469912434,
+              40.532781215643716
+            ],
+            [
+              -105.17063171471295,
+              40.51623770275881
+            ],
+            [
+              -105.152287372935,
+              40.41746267732321
+            ],
+            [
+              -104.99948241447088,
+              40.433952390682926
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "20141116_171228_090c",
+      "properties": {
+        "links": {
+          "self": "https://api.planet.com/v0/scenes/ortho/20141116_171228_090c",
+          "full": "https://view.planet.com/v0/scenes/ortho/20141116_171228_090c/full",
+          "square_thumbnail": "https://view.planet.com/v0/scenes/ortho/20141116_171228_090c/square-thumb",
+          "thumbnail": "https://view.planet.com/v0/scenes/ortho/20141116_171228_090c/thumb"
+        },
+        "acquired": "2014-11-16T17:12:28.326931+00:00",
+        "sun": {
+          "altitude": 27.20533331326696,
+          "azimuth": 155.637048088601,
+          "local_time_of_day": 10.225479214711111
+        },
+        "image_statistics": {
+          "image_quality": "test",
+          "snr": 47.30284890018912,
+          "gsd": 4.1996097473
+        },
+        "cloud_cover": {
+          "estimated": 82.76
+        },
+        "camera": {
+          "exposure_time": 1170,
+          "bit_depth": 8,
+          "color_mode": "RGB",
+          "tdi_pulses": 4,
+          "gain": 560
+        },
+        "strip_id": 1416157750.380446,
+        "data": {
+          "products": {
+            "analytic": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141116_171228_090c/full?product=analytic"
+            },
+            "visual": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141116_171228_090c/full?product=visual"
+            },
+            "unrectified": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141116_171228_090c/full?product=unrectified",
+              "zip": "https://view.planet.com/v0/scenes/ortho/20141116_171228_090c/full.zip?product=unrectified"
+            }
+          }
+        },
+        "sat": {
+          "lat": 40.2881106598,
+          "alt": 621.068532037,
+          "id": "090c",
+          "lng": -104.734478446,
+          "off_nadir": 3.210498515211511
+        }
+      }
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -105.09161073900974,
+              40.5219597860288
+            ],
+            [
+              -105.11207589983904,
+              40.62057848080114
+            ],
+            [
+              -105.26497439582619,
+              40.60192115148212
+            ],
+            [
+              -105.2442522590454,
+              40.50340286380076
+            ],
+            [
+              -105.09161073900974,
+              40.5219597860288
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "20141109_171230_0905",
+      "properties": {
+        "links": {
+          "self": "https://api.planet.com/v0/scenes/ortho/20141109_171230_0905",
+          "full": "https://view.planet.com/v0/scenes/ortho/20141109_171230_0905/full",
+          "square_thumbnail": "https://view.planet.com/v0/scenes/ortho/20141109_171230_0905/square-thumb",
+          "thumbnail": "https://view.planet.com/v0/scenes/ortho/20141109_171230_0905/thumb"
+        },
+        "acquired": "2014-11-09T17:12:30.535509+00:00",
+        "sun": {
+          "altitude": 28.808095258618394,
+          "azimuth": 154.95561377548717,
+          "local_time_of_day": 10.208725306799998
+        },
+        "image_statistics": {
+          "image_quality": "standard",
+          "snr": 39.86346788273233,
+          "gsd": 4.2191651161
+        },
+        "cloud_cover": {
+          "estimated": 0.23
+        },
+        "camera": {
+          "exposure_time": 1170,
+          "bit_depth": 8,
+          "color_mode": "RGB",
+          "tdi_pulses": 4,
+          "gain": 450
+        },
+        "strip_id": 1415552904.58569,
+        "data": {
+          "products": {
+            "analytic": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141109_171230_0905/full?product=analytic"
+            },
+            "visual": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141109_171230_0905/full?product=visual"
+            },
+            "unrectified": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141109_171230_0905/full?product=unrectified",
+              "zip": "https://view.planet.com/v0/scenes/ortho/20141109_171230_0905/full.zip?product=unrectified"
+            }
+          }
+        },
+        "sat": {
+          "lat": 40.4485245371,
+          "alt": 623.961469898,
+          "id": "0905",
+          "lng": -104.994120398,
+          "off_nadir": 1.7351016514843882
+        }
+      }
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -105.07851994703546,
+              40.457450304307905
+            ],
+            [
+              -105.09913391872371,
+              40.55608852239163
+            ],
+            [
+              -105.2519245116886,
+              40.53735924405915
+            ],
+            [
+              -105.23109306641115,
+              40.43879445745991
+            ],
+            [
+              -105.07851994703546,
+              40.457450304307905
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "20141109_171229_0905",
+      "properties": {
+        "links": {
+          "self": "https://api.planet.com/v0/scenes/ortho/20141109_171229_0905",
+          "full": "https://view.planet.com/v0/scenes/ortho/20141109_171229_0905/full",
+          "square_thumbnail": "https://view.planet.com/v0/scenes/ortho/20141109_171229_0905/square-thumb",
+          "thumbnail": "https://view.planet.com/v0/scenes/ortho/20141109_171229_0905/thumb"
+        },
+        "acquired": "2014-11-09T17:12:29.535505+00:00",
+        "sun": {
+          "altitude": 28.867937961031462,
+          "azimuth": 154.95666562461935,
+          "local_time_of_day": 10.209712994822219
+        },
+        "image_statistics": {
+          "image_quality": "standard",
+          "snr": 39.43201169605766,
+          "gsd": 4.21914672906
+        },
+        "cloud_cover": {
+          "estimated": 0.27
+        },
+        "camera": {
+          "exposure_time": 1170,
+          "bit_depth": 8,
+          "color_mode": "RGB",
+          "tdi_pulses": 4,
+          "gain": 450
+        },
+        "strip_id": 1415552904.58569,
+        "data": {
+          "products": {
+            "analytic": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141109_171229_0905/full?product=analytic"
+            },
+            "visual": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141109_171229_0905/full?product=visual"
+            },
+            "unrectified": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20141109_171229_0905/full?product=unrectified",
+              "zip": "https://view.planet.com/v0/scenes/ortho/20141109_171229_0905/full.zip?product=unrectified"
+            }
+          }
+        },
+        "sat": {
+          "lat": 40.3876678723,
+          "alt": 623.958187215,
+          "id": "0905",
+          "lng": -104.975138411,
+          "off_nadir": 1.74255978260762
+        }
+      }
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -104.97948202198357,
+              40.53358883359318
+            ],
+            [
+              -104.99519549742722,
+              40.63282710377607
+            ],
+            [
+              -105.1499520010284,
+              40.61865447158438
+            ],
+            [
+              -105.13368014525868,
+              40.51923499920643
+            ],
+            [
+              -104.97948202198357,
+              40.53358883359318
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "20140926_170659_0908",
+      "properties": {
+        "links": {
+          "self": "https://api.planet.com/v0/scenes/ortho/20140926_170659_0908",
+          "full": "https://view.planet.com/v0/scenes/ortho/20140926_170659_0908/full",
+          "square_thumbnail": "https://view.planet.com/v0/scenes/ortho/20140926_170659_0908/square-thumb",
+          "thumbnail": "https://view.planet.com/v0/scenes/ortho/20140926_170659_0908/thumb"
+        },
+        "acquired": "2014-09-26T17:06:59.224269+00:00",
+        "sun": {
+          "altitude": 42.223942581073686,
+          "azimuth": 144.74631145701568,
+          "local_time_of_day": 10.166611870822225
+        },
+        "image_statistics": {
+          "image_quality": "standard",
+          "snr": 38.29361613091752,
+          "gsd": 5.0300452731
+        },
+        "cloud_cover": {
+          "estimated": 0.26
+        },
+        "camera": {
+          "exposure_time": 1170,
+          "bit_depth": 8,
+          "color_mode": "RGB",
+          "tdi_pulses": 4,
+          "gain": 560
+        },
+        "strip_id": 1411750971.278022,
+        "data": {
+          "products": {
+            "analytic": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140926_170659_0908/full?product=analytic"
+            },
+            "visual": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140926_170659_0908/full?product=visual"
+            },
+            "unrectified": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140926_170659_0908/full?product=unrectified",
+              "zip": "https://view.planet.com/v0/scenes/ortho/20140926_170659_0908/full.zip?product=unrectified"
+            }
+          }
+        },
+        "sat": {
+          "lat": 40.4423613663,
+          "alt": 617.906317277,
+          "id": "0908",
+          "lng": -104.246655271,
+          "off_nadir": 6.505382271861905
+        }
+      }
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -104.96329686833984,
+              40.46312794899144
+            ],
+            [
+              -104.97900544910055,
+              40.56239665766743
+            ],
+            [
+              -105.13347919239907,
+              40.548256712915055
+            ],
+            [
+              -105.11739740927106,
+              40.448765927265946
+            ],
+            [
+              -104.96329686833984,
+              40.46312794899144
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "20140926_170658_0908",
+      "properties": {
+        "links": {
+          "self": "https://api.planet.com/v0/scenes/ortho/20140926_170658_0908",
+          "full": "https://view.planet.com/v0/scenes/ortho/20140926_170658_0908/full",
+          "square_thumbnail": "https://view.planet.com/v0/scenes/ortho/20140926_170658_0908/square-thumb",
+          "thumbnail": "https://view.planet.com/v0/scenes/ortho/20140926_170658_0908/thumb"
+        },
+        "acquired": "2014-09-26T17:06:58.224263+00:00",
+        "sun": {
+          "altitude": 42.28018235869957,
+          "azimuth": 144.73221394656878,
+          "local_time_of_day": 10.167594033444447
+        },
+        "image_statistics": {
+          "image_quality": "standard",
+          "snr": 39.97787614721762,
+          "gsd": 4.17799453239
+        },
+        "cloud_cover": {
+          "estimated": 0.23
+        },
+        "camera": {
+          "exposure_time": 1170,
+          "bit_depth": 8,
+          "color_mode": "RGB",
+          "tdi_pulses": 4,
+          "gain": 560
+        },
+        "strip_id": 1411750971.278022,
+        "data": {
+          "products": {
+            "analytic": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140926_170658_0908/full?product=analytic"
+            },
+            "visual": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140926_170658_0908/full?product=visual"
+            },
+            "unrectified": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140926_170658_0908/full?product=unrectified",
+              "zip": "https://view.planet.com/v0/scenes/ortho/20140926_170658_0908/full.zip?product=unrectified"
+            }
+          }
+        },
+        "sat": {
+          "lat": 40.3813808306,
+          "alt": 617.884244879,
+          "id": "0908",
+          "lng": -104.227756165,
+          "off_nadir": 6.509402470646311
+        }
+      }
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -104.88690955753546,
+              40.56244051079205
+            ],
+            [
+              -104.91014545664592,
+              40.658272717681314
+            ],
+            [
+              -105.05968225997768,
+              40.637081958346954
+            ],
+            [
+              -105.03613747726283,
+              40.54106334490748
+            ],
+            [
+              -104.88690955753546,
+              40.56244051079205
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "20140903_170547_0903",
+      "properties": {
+        "links": {
+          "self": "https://api.planet.com/v0/scenes/ortho/20140903_170547_0903",
+          "full": "https://view.planet.com/v0/scenes/ortho/20140903_170547_0903/full",
+          "square_thumbnail": "https://view.planet.com/v0/scenes/ortho/20140903_170547_0903/square-thumb",
+          "thumbnail": "https://view.planet.com/v0/scenes/ortho/20140903_170547_0903/thumb"
+        },
+        "acquired": "2014-09-03T17:05:47.371376+00:00",
+        "sun": {
+          "altitude": 48.71080546226658,
+          "azimuth": 135.77275428393958,
+          "local_time_of_day": 10.14445929528889
+        },
+        "image_statistics": {
+          "image_quality": "test",
+          "snr": 43.978296737206996,
+          "gsd": 4.11282935064
+        },
+        "cloud_cover": {
+          "estimated": 0.47
+        },
+        "camera": {
+          "exposure_time": 1170,
+          "bit_depth": 8,
+          "color_mode": "RGB",
+          "tdi_pulses": 4,
+          "gain": 450
+        },
+        "strip_id": 1409763693.424718,
+        "data": {
+          "products": {
+            "analytic": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140903_170547_0903/full?product=analytic"
+            },
+            "visual": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140903_170547_0903/full?product=visual"
+            },
+            "unrectified": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140903_170547_0903/full?product=unrectified",
+              "zip": "https://view.planet.com/v0/scenes/ortho/20140903_170547_0903/full.zip?product=unrectified"
+            }
+          }
+        },
+        "sat": {
+          "lat": 40.5263277931,
+          "alt": 608.266787746,
+          "id": "0903",
+          "lng": -104.278943904,
+          "off_nadir": 5.5189765403303515
+        }
+      }
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -104.86452167638912,
+              40.51057345920474
+            ],
+            [
+              -104.8878995004,
+              40.60629493794964
+            ],
+            [
+              -105.03711478867929,
+              40.585138290587075
+            ],
+            [
+              -105.01352842261511,
+              40.48915475146759
+            ],
+            [
+              -104.86452167638912,
+              40.51057345920474
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "20140903_170546_0903",
+      "properties": {
+        "links": {
+          "self": "https://api.planet.com/v0/scenes/ortho/20140903_170546_0903",
+          "full": "https://view.planet.com/v0/scenes/ortho/20140903_170546_0903/full",
+          "square_thumbnail": "https://view.planet.com/v0/scenes/ortho/20140903_170546_0903/square-thumb",
+          "thumbnail": "https://view.planet.com/v0/scenes/ortho/20140903_170546_0903/thumb"
+        },
+        "acquired": "2014-09-03T17:05:46.371367+00:00",
+        "sun": {
+          "altitude": 48.76241778672978,
+          "azimuth": 135.7428653761316,
+          "local_time_of_day": 10.14544226471111
+        },
+        "image_statistics": {
+          "image_quality": "test",
+          "snr": 42.9439449154203,
+          "gsd": 4.11275928108
+        },
+        "cloud_cover": {
+          "estimated": 0.48
+        },
+        "camera": {
+          "exposure_time": 1170,
+          "bit_depth": 8,
+          "color_mode": "RGB",
+          "tdi_pulses": 4,
+          "gain": 450
+        },
+        "strip_id": 1409763693.424718,
+        "data": {
+          "products": {
+            "analytic": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140903_170546_0903/full?product=analytic"
+            },
+            "visual": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140903_170546_0903/full?product=visual"
+            },
+            "unrectified": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140903_170546_0903/full?product=unrectified",
+              "zip": "https://view.planet.com/v0/scenes/ortho/20140903_170546_0903/full.zip?product=unrectified"
+            }
+          }
+        },
+        "sat": {
+          "lat": 40.4651753683,
+          "alt": 608.254577847,
+          "id": "0903",
+          "lng": -104.260032696,
+          "off_nadir": 5.529041592918939
+        }
+      }
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -104.83806097755132,
+              40.45836625249982
+            ],
+            [
+              -104.86134042019484,
+              40.55421002441804
+            ],
+            [
+              -105.01039883056876,
+              40.53308478414504
+            ],
+            [
+              -104.98668482942503,
+              40.43703004238454
+            ],
+            [
+              -104.83806097755132,
+              40.45836625249982
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "20140903_170545_0903",
+      "properties": {
+        "links": {
+          "self": "https://api.planet.com/v0/scenes/ortho/20140903_170545_0903",
+          "full": "https://view.planet.com/v0/scenes/ortho/20140903_170545_0903/full",
+          "square_thumbnail": "https://view.planet.com/v0/scenes/ortho/20140903_170545_0903/square-thumb",
+          "thumbnail": "https://view.planet.com/v0/scenes/ortho/20140903_170545_0903/thumb"
+        },
+        "acquired": "2014-09-03T17:05:45.371358+00:00",
+        "sun": {
+          "altitude": 48.81400620553088,
+          "azimuth": 135.7128398645402,
+          "local_time_of_day": 10.14642345693333
+        },
+        "image_statistics": {
+          "image_quality": "test",
+          "snr": 43.41104719985852,
+          "gsd": 4.11274387572
+        },
+        "cloud_cover": {
+          "estimated": 0.06
+        },
+        "camera": {
+          "exposure_time": 1170,
+          "bit_depth": 8,
+          "color_mode": "RGB",
+          "tdi_pulses": 4,
+          "gain": 450
+        },
+        "strip_id": 1409763693.424718,
+        "data": {
+          "products": {
+            "analytic": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140903_170545_0903/full?product=analytic"
+            },
+            "visual": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140903_170545_0903/full?product=visual"
+            },
+            "unrectified": {
+              "full": "https://view.planet.com/v0/scenes/ortho/20140903_170545_0903/full?product=unrectified",
+              "zip": "https://view.planet.com/v0/scenes/ortho/20140903_170545_0903/full.zip?product=unrectified"
+            }
+          }
+        },
+        "sat": {
+          "lat": 40.4040203766,
+          "alt": 608.242391566,
+          "id": "0903",
+          "lng": -104.241148146,
+          "off_nadir": 5.486380177325104
+        }
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.planet.com/v0/scenes/ortho/?intersects=%7B%22type%22%3A+%22FeatureCollection%22%2C%22features%22%3A+%5B%7B%22type%22%3A+%22Feature%22%2C%22properties%22%3A+%7B%7D%2C%22geometry%22%3A+%7B%22type%22%3A+%22Polygon%22%2C%22coordinates%22%3A+%5B%5B%5B-105.10620117187499%2C40.513277131087484%5D%2C%5B-105.10620117187499%2C40.58997103470645%5D%2C%5B-104.96475219726562%2C40.58997103470645%5D%2C%5B-104.96475219726562%2C40.513277131087484%5D%2C%5B-105.10620117187499%2C40.513277131087484%5D%5D%5D%7D%7D%5D%7D",
+    "prev": "https://api.planet.com/v0/scenes/ortho/?intersects=%7B%22type%22%3A+%22FeatureCollection%22%2C%22features%22%3A+%5B%7B%22type%22%3A+%22Feature%22%2C%22properties%22%3A+%7B%7D%2C%22geometry%22%3A+%7B%22type%22%3A+%22Polygon%22%2C%22coordinates%22%3A+%5B%5B%5B-105.10620117187499%2C40.513277131087484%5D%2C%5B-105.10620117187499%2C40.58997103470645%5D%2C%5B-104.96475219726562%2C40.58997103470645%5D%2C%5B-104.96475219726562%2C40.513277131087484%5D%2C%5B-105.10620117187499%2C40.513277131087484%5D%5D%5D%7D%7D%5D%7D&_page.acquired.gt=2014-12-05T17%3A12%3A45.380110%2B00%3A00",
+    "first": "https://api.planet.com/v0/scenes/ortho/?intersects=%7B%22type%22%3A+%22FeatureCollection%22%2C%22features%22%3A+%5B%7B%22type%22%3A+%22Feature%22%2C%22properties%22%3A+%7B%7D%2C%22geometry%22%3A+%7B%22type%22%3A+%22Polygon%22%2C%22coordinates%22%3A+%5B%5B%5B-105.10620117187499%2C40.513277131087484%5D%2C%5B-105.10620117187499%2C40.58997103470645%5D%2C%5B-104.96475219726562%2C40.58997103470645%5D%2C%5B-104.96475219726562%2C40.513277131087484%5D%2C%5B-105.10620117187499%2C40.513277131087484%5D%5D%5D%7D%7D%5D%7D",
+    "next": "https://api.planet.com/v0/scenes/ortho/?intersects=%7B%22type%22%3A+%22FeatureCollection%22%2C%22features%22%3A+%5B%7B%22type%22%3A+%22Feature%22%2C%22properties%22%3A+%7B%7D%2C%22geometry%22%3A+%7B%22type%22%3A+%22Polygon%22%2C%22coordinates%22%3A+%5B%5B%5B-105.10620117187499%2C40.513277131087484%5D%2C%5B-105.10620117187499%2C40.58997103470645%5D%2C%5B-104.96475219726562%2C40.58997103470645%5D%2C%5B-104.96475219726562%2C40.513277131087484%5D%2C%5B-105.10620117187499%2C40.513277131087484%5D%5D%5D%7D%7D%5D%7D&_page.acquired.lt=2014-09-03T17%3A05%3A45.371358%2B00%3A00"
+  }
+}
