@@ -102,6 +102,31 @@ class JSON(Response):
         return self.response.json()
 
 
+class Scenes(JSON):
+
+    def __init__(self, response, client):
+        super(Scenes, self).__init__(response)
+        self._client = client
+
+    def next(self):
+        links = self.get()['links']
+        next = links.get('next', None)
+        if next:
+            response = self._client._get(next)
+            return Scenes(response, self._client)
+
+    def iter(self, pages=None):
+        pages = int(10e10) if pages is None else pages
+        page = self
+        if pages > 0:
+            yield page
+            pages -= 1
+        while pages > 0:
+            page = page.next()
+            yield page
+            pages -= 1
+
+
 class Image(Response):
 
     def _write(self, fp, callback):
@@ -134,7 +159,10 @@ class Client(object):
     def _get(self, path, params=None, stream=False, callback=None):
         if not self.api_key:
             raise InvalidAPIKey('No API key provided')
-        url = self.base_url + path
+        if path.startswith('http'):
+            url = path
+        else:
+            url = self.base_url + path
         headers = {'Authorization': 'api-key ' + self.api_key}
         session = requests
         if callback:
@@ -164,7 +192,7 @@ class Client(object):
             'intersects': intersects
         }
         params.update(**filters)
-        return JSON(self._get('scenes/%s' % scene_type, params=params))
+        return Scenes(self._get('scenes/%s' % scene_type, params=params), self)
 
     def fetch_scene_info(self, scene_id, scene_type='ortho'):
         return JSON(self._get('scenes/%s/%s' % (scene_type, scene_id)))
