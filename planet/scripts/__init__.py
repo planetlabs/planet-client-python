@@ -128,7 +128,7 @@ def fetch_scene_info(id, scene_type, pretty):
 @cli.command('search')
 @click.argument("aoi", default="-", required=False)
 @click.option('--count', type=click.INT, required=False, help="Set the number of returned scenes.")
-@click.option("--where", nargs=3, multiple=True, help="Provide additional search criteria.")
+@click.option("--where", nargs=3, multiple=True, default={}, help="Provide additional search criteria. See https://www.planet.com/docs/v0/scenes/#metadata for search metadata fields.")
 def get_scenes_list(scene_type, pretty, aoi, count, where):
     '''Get a list of scenes'''
 
