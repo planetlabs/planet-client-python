@@ -48,7 +48,7 @@ def check_futures(futures):
 
 
 @click.group()
-@click.option('-w', '--workers', default=4)
+@click.option('-w', '--workers', default=4, help='The number of concurrent downloads when requesting multiple scenes.')
 @click.option('-v', '--verbose', count=True)
 @click.option('-k', '--api-key',
               help='Valid API key - or via env variable %s' % api.ENV_KEY)
@@ -64,9 +64,24 @@ def cli(verbose, api_key, base_url, workers):
 
 
 @cli.command('list-scene-types')
-def list_all_scene_types():
+def list_scene_types():
     '''List all scene types.'''
-    click.echo(call_and_wrap(client.list_all_scene_types).get_raw())
+    click.echo(call_and_wrap(client.list_scene_types).get_raw())
+
+
+@pretty
+@scene_type
+@click.argument('scene_id', nargs=1)
+@cli.command('metadata')
+def metadata(scene_id, scene_type, pretty):
+    '''Get scene metadata'''
+    
+    res = call_and_wrap(client.get_scene_metadata, scene_id, scene_type).get_raw()
+    
+    if pretty:
+        res = json.dumps(json.loads(res), indent=2)
+    
+    click.echo(res)
 
 
 @scene_type
@@ -116,22 +131,10 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
 
 @pretty
 @scene_type
-@click.argument('id', nargs=1)
-@cli.command('metadata')
-def fetch_scene_info(id, scene_type, pretty):
-    '''Fetch scene metadata'''
-    res = call_and_wrap(client.fetch_scene_info, id, scene_type).get_raw()
-    if pretty:
-        res = json.dumps(json.loads(res), indent=2)
-    click.echo(res)
-
-
-@pretty
-@scene_type
 @cli.command('search')
 @click.argument("aoi", default="-", required=False)
 @click.option('--count', type=click.INT, required=False, help="Set the number of returned scenes.")
-@click.option("--where", nargs=3, multiple=True, default={}, help="Provide additional search criteria. See https://www.planet.com/docs/v0/scenes/#metadata for search metadata fields.")
+@click.option("--where", nargs=3, multiple=True, help="Provide additional search criteria. See https://www.planet.com/docs/v0/scenes/#metadata for search metadata fields.")
 def get_scenes_list(scene_type, pretty, aoi, count, where):
     '''Get a list of scenes'''
 
