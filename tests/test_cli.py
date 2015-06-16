@@ -77,6 +77,27 @@ def test_search():
     assert_success(result, expected)
     
 
+def test_search_by_aoi():
+    
+    aoi_path = os.path.join(FIXTURE_DIR, 'aoi.geojson')
+    with open(aoi_path, 'r') as src:
+        aoi = src.read()
+    
+    fixture_path = os.path.join(FIXTURE_DIR, 'search-by-aoi.geojson')
+    with open(fixture_path, 'r') as src:
+        expected = src.read()
+    
+    response = MagicMock(spec=api.JSON)
+    response.get_raw.return_value = expected
+    
+    scripts.client.get_scenes_list.return_value = response
+    
+    # input kwarg simulates stdin
+    result = runner.invoke(scripts.cli, ['search'], input=aoi)
+    
+    assert_success(result, expected)
+    
+
 def test_metadata():
     
     # Read in fixture
