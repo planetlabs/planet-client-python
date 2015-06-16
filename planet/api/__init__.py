@@ -1,10 +1,13 @@
 
 from datetime import datetime
+import logging
 import os
 import re
 
 import requests
 from requests_futures.sessions import FuturesSession
+
+_logger = logging.getLogger(__name__)
 
 ENV_KEY = 'PL_API_KEY'
 

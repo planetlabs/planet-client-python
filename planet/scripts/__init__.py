@@ -1,11 +1,20 @@
 import click
 import json
+import logging
 from planet import api
+import sys
 
 client = api.Client()
 
 pretty = click.option('-pp', '--pretty', default=False, is_flag=True)
 scene_type = click.option('-s', '--scene-type', default='ortho')
+
+
+def configure_logging(verbosity):
+    '''configure logging via verbosity level of between 0 and 2 corresponding
+    to log levels warning, info and debug respectfully.'''
+    log_level = max(logging.DEBUG, logging.WARNING - logging.DEBUG*verbosity)
+    logging.basicConfig(stream=sys.stderr, level=log_level)
 
 
 def call_and_wrap(func, *args, **kw):
@@ -24,10 +33,12 @@ def call_and_wrap(func, *args, **kw):
 
 
 @click.group()
+@click.option('-v', '--verbose', count=True)
 @click.option('-k', '--api-key',
               help='Valid API key - or via env variable %s' % api.ENV_KEY)
 @click.option('-u', '--base-url', help='Optional for testing')
-def cli(api_key, base_url):
+def cli(verbose, api_key, base_url):
+    configure_logging(verbose)
     '''Planet API Client'''
     if api_key:
         client.api_key = api_key
