@@ -1,0 +1,82 @@
+{
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [
+          -143.0043622417889,
+          69.3847738854277
+        ],
+        [
+          -143.1281804378499,
+          69.47744935811004
+        ],
+        [
+          -143.52433425304486,
+          69.41172917566918
+        ],
+        [
+          -143.39939224306457,
+          69.31930925533831
+        ],
+        [
+          -143.0043622417889,
+          69.3847738854277
+        ]
+      ]
+    ]
+  },
+  "type": "Feature",
+  "id": "20150615_190229_0905",
+  "properties": {
+    "links": {
+      "self": "https://api.planet.com/v0/scenes/ortho/20150615_190229_0905",
+      "full": "https://view.planet.com/v0/scenes/ortho/20150615_190229_0905/full",
+      "square_thumbnail": "https://view.planet.com/v0/scenes/ortho/20150615_190229_0905/square-thumb",
+      "thumbnail": "https://view.planet.com/v0/scenes/ortho/20150615_190229_0905/thumb"
+    },
+    "acquired": "2015-06-15T19:02:29+00:00",
+    "sun": {
+      "altitude": 38.65789398522086,
+      "azimuth": 133.7270989671424,
+      "local_time_of_day": 9.479588411555557
+    },
+    "image_statistics": {
+      "image_quality": "standard",
+      "snr": 81.38550133387872,
+      "gsd": 4.17968207477
+    },
+    "cloud_cover": {
+      "estimated": 2.75
+    },
+    "camera": {
+      "exposure_time": 1170,
+      "bit_depth": 12,
+      "color_mode": "RGB",
+      "tdi_pulses": 12,
+      "gain": 100
+    },
+    "strip_id": 1272069249.34323,
+    "data": {
+      "products": {
+        "analytic": {
+          "full": "https://view.planet.com/v0/scenes/ortho/20150615_190229_0905/full?product=analytic"
+        },
+        "visual": {
+          "full": "https://view.planet.com/v0/scenes/ortho/20150615_190229_0905/full?product=visual"
+        },
+        "unrectified": {
+          "full": "https://view.planet.com/v0/scenes/ortho/20150615_190229_0905/full?product=unrectified",
+          "zip": "https://view.planet.com/v0/scenes/ortho/20150615_190229_0905/full.zip?product=unrectified"
+        }
+      }
+    },
+    "sat": {
+      "lat": 69.4981740211,
+      "alt": 619.612944475,
+      "id": "0905",
+      "lng": -143.42700716,
+      "off_nadir": 1.283742331788465
+    }
+  }
+}
