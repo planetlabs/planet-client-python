@@ -24,7 +24,7 @@ def mockget(path, data, status_code=200):
 def assert_client_exc(clz, msg, status=None):
     try:
         client._get('whatevs')
-    except clz, ex:
+    except clz as ex:
         assert msg == ex.message
     else:
         raise AssertionError('expected %s' % clz.__name__)
@@ -36,7 +36,7 @@ def test_assert_client_exc_success():
     try:
         assert_client_exc(Exception, '')
         assert False
-    except AssertionError, ae:
+    except AssertionError as ae:
         assert ae.message == 'expected Exception'
 
 
@@ -46,7 +46,7 @@ def test_assert_client_exc_fail():
     try:
         assert_client_exc(api.BadQuery, 'not test')
         assert False
-    except AssertionError, ae:
+    except AssertionError as ae:
         assert "'not test' == 'test'" in ae.message
 
 
@@ -59,8 +59,8 @@ def test_missing_api_key():
         try:
             client._get('whatevs')
             assert False
-        except api.InvalidAPIKey, ex:
-            assert ex.message == 'No API key provided'
+        except api.InvalidAPIKey as ex:
+            assert str(ex) == 'No API key provided'
     assert_missing()
     client.api_key = ''
     assert_missing()
