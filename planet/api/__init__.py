@@ -42,10 +42,11 @@ class ServerError(APIException):
 
 
 def _check_status(response):
+    
     status = response.status_code
     if status == 200:
         return
-    exc = {
+    exception = {
         400: BadQuery,
         401: InvalidAPIKey,
         403: NoPermission,
@@ -53,8 +54,10 @@ def _check_status(response):
         429: OverQuota,
         500: ServerError
     }.get(status, None)
-    if exc:
-        raise exc(response.content)
+    
+    if exception:
+        raise exception(response.content)
+        
     raise APIException('%s: %s' % (status, response.content))
 
 
@@ -162,13 +165,17 @@ class Client(object):
         self._session = None
 
     def _get(self, path, params=None, stream=False, callback=None):
+        
         if not self.api_key:
             raise InvalidAPIKey('No API key provided')
+        
         if path.startswith('http'):
             url = path
         else:
             url = self.base_url + path
+        
         headers = {'Authorization': 'api-key ' + self.api_key}
+        
         session = requests
         if callback:
             if self._session is None:
