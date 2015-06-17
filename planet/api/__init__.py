@@ -100,7 +100,7 @@ class Response(object):
         return datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S GMT')
 
     def get_raw(self):
-        return self.response.content
+        return self.response.content.decode('utf-8')
 
 
 class JSON(Response):

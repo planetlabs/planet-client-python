@@ -136,8 +136,8 @@ def test_list_all_scene_types():
         m.get(uri, text='oranges', status_code=200)
         
         # TODO: Check returned string. Currently issues between Python 3 bytes and Python 2 strings
-        # assert client.list_scene_types().get_raw() == 'oranges'
-        assert True
+        assert client.list_scene_types().get_raw() == 'oranges'
+
 
 
 def test_fetch_scene_info_scene_id():
@@ -148,4 +148,3 @@ def test_fetch_scene_info_scene_id():
         m.get(uri, text='bananas', status_code=200)
         
         client.get_scene_metadata('x22').get_raw() == 'bananas'
-        assert True
