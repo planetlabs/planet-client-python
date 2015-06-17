@@ -3,8 +3,12 @@ from setuptools import setup, find_packages
 
 
 # Get the long description from the relevant file
-with codecs_open('README.md', encoding='utf-8') as f:
-    long_description = f.read()
+try:
+    with codecs_open('README.md', encoding='utf-8') as f:
+        long_description = f.read()
+except:
+    # @todo for now, fall back to this - pex fails to resolve the README
+    long_description = ''
 
 
 with open('planet/__init__.py') as f:
@@ -14,6 +18,13 @@ with open('planet/__init__.py') as f:
             version = version.strip('"')
             version = version.strip("'")
             continue
+
+
+test_requires = [
+    'pytest',
+    'mock',
+    'requests-mock',
+]
 
 
 setup(name='planet',
@@ -35,11 +46,10 @@ setup(name='planet',
           'requests_futures>=0.9.5'
       ],
       extras_require={
-          'test': [
-              'pytest',
-              'mock',
-              'requests-mock',
-          ],
+          'test': test_requires,
+          'dev': test_requires + [
+              'pex'
+          ]
       },
       entry_points="""
       [console_scripts]

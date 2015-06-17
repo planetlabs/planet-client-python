@@ -1,6 +1,7 @@
 # Distribution / packaging
 *.egg-info/
 *.egg
+dist
 
 # Unit test / coverage reports
 htmlcov/
