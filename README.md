@@ -79,7 +79,6 @@ Both can be run using:
 TODO!
 -----
 
-* license
 * more command line flags/tools (query filters, for example)
 * more docs
 * tests
