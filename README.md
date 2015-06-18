@@ -89,7 +89,6 @@ This can be executed directly on systems with a python executable and in an envi
 TODO!
 -----
 
-* license
 * more command line flags/tools (query filters, for example)
 * more docs
 * tests
