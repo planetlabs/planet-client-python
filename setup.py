@@ -48,7 +48,8 @@ setup(name='planet',
       extras_require={
           'test': test_requires,
           'dev': test_requires + [
-              'pex'
+              'pex',
+              'sphinx',
           ]
       },
       entry_points="""
