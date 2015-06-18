@@ -1,15 +1,22 @@
-import click
+
+import sys
 import json
 import logging
+
+import click
+
+import planet
 from planet import api
-import sys
+
 
 client = api.Client()
+
 
 pretty = click.option('-pp', '--pretty', default=False, is_flag=True)
 scene_type = click.option('-s', '--scene-type', default='ortho')
 dest_dir = click.option('-d', '--dest', help='Destination directory',
                         type=click.Path(file_okay=False, resolve_path=True))
+
 
 def configure_logging(verbosity):
     '''configure logging via verbosity level of between 0 and 2 corresponding
@@ -53,9 +60,12 @@ def check_futures(futures):
 @click.option('-k', '--api-key',
               help='Valid API key - or via env variable %s' % api.ENV_KEY)
 @click.option('-u', '--base-url', help='Optional for testing')
-def cli(verbose, api_key, base_url, workers):
-    configure_logging(verbose)
+@click.version_option(version=planet.__version__, message='%(version)s')
+def cli(verbose, api_key, base_url, workers, version):
     '''Planet API Client'''
+    
+    configure_logging(verbose)
+    
     if api_key:
         client.api_key = api_key
     if base_url:

@@ -13,6 +13,7 @@ from click.testing import CliRunner
 
 from mock import MagicMock
 
+import planet
 from planet import api
 from planet import scripts
 
@@ -43,6 +44,12 @@ def test_exception_translation():
     assert_cli_exception(api.BadQuery('bogus'), 'BadQuery: bogus')
     assert_cli_exception(api.APIException('911: alert'),
                          "Unexpected response: 911: alert")
+
+
+def test_version_flag():
+    
+    results = runner.invoke(scripts.cli, ['--version'])
+    assert results.output == "%s\n" % planet.__version__
 
 
 def test_list_scene_types():
