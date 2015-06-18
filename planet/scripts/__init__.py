@@ -61,7 +61,7 @@ def check_futures(futures):
               help='Valid API key - or via env variable %s' % api.ENV_KEY)
 @click.option('-u', '--base-url', help='Optional for testing')
 @click.version_option(version=planet.__version__, message='%(version)s')
-def cli(verbose, api_key, base_url, workers, version):
+def cli(verbose, api_key, base_url, workers):
     '''Planet API Client'''
     
     configure_logging(verbose)
