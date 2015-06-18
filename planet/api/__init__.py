@@ -4,7 +4,7 @@ import logging
 import os
 import re
 
-import requests
+from requests import Session
 from requests_futures.sessions import FuturesSession
 
 _logger = logging.getLogger(__name__)
@@ -169,7 +169,7 @@ class Client(object):
         self.futureSession = FuturesSession(max_workers=self._workers)
         self.futureSession.headers.update(headers)
         
-        self.session = requests.Session()
+        self.session = Session()
         self.session.headers.update(headers)
 
 
