@@ -156,30 +156,41 @@ class Client(object):
 
 
     def __init__(self, api_key=None, base_url='https://api.planet.com/v0/'):
+        
         self.api_key = api_key or _find_api_key()
         self.base_url = base_url
         self._workers = 4
-        self._session = None
+        
+        headers = {
+            'Authorization': 'api-key %s' % self.api_key
+        }
+        
+        # Prepare session and future session objects once
+        self.futureSession = FuturesSession(max_workers=self._workers)
+        self.futureSession.headers.update(headers)
+        
+        self.session = requests.Session()
+        self.session.headers.update(headers)
+
 
     def _get(self, path, params=None, stream=False, callback=None):
+        
         if not self.api_key:
             raise InvalidAPIKey('No API key provided')
+        
         if path.startswith('http'):
             url = path
         else:
             url = self.base_url + path
-        headers = {'Authorization': 'api-key ' + self.api_key}
-        session = requests
+        
         if callback:
-            if self._session is None:
-                self._session = FuturesSession(max_workers=self._workers)
-            session = self._session
-            r = session.get(url, headers=headers, params=params, stream=True,
-                            background_callback=callback)
+            r = self.futureSession.get(url, params=params, stream=True, background_callback=callback)
         else:
-            r = session.get(url, headers=headers, params=params, stream=stream)
+            r = self.session.get(url, params=params, stream=stream)
             _check_status(r)
+        
         return r
+
 
     def _get_many(self, paths, params, callback=None):
         return [
