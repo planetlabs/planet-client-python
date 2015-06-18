@@ -1,11 +1,17 @@
-import click
+
+import sys
 import json
 import logging
+
+import click
+
+import planet
 from planet import api
 from os import path
-import sys
+
 
 client = api.Client()
+
 
 pretty = click.option('-pp', '--pretty', default=False, is_flag=True)
 scene_type = click.option('-s', '--scene-type', default='ortho')
@@ -55,9 +61,12 @@ def check_futures(futures):
 @click.option('-k', '--api-key',
               help='Valid API key - or via env variable %s' % api.ENV_KEY)
 @click.option('-u', '--base-url', help='Optional for testing')
+@click.version_option(version=planet.__version__, message='%(version)s')
 def cli(verbose, api_key, base_url, workers):
-    configure_logging(verbose)
     '''Planet API Client'''
+
+    configure_logging(verbose)
+
     if api_key:
         client.api_key = api_key
     if base_url:
