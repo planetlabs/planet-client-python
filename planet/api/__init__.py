@@ -56,10 +56,11 @@ class ServerError(APIException):
 
 
 def _check_status(response):
+    
     status = response.status_code
     if status == 200:
         return
-    exc = {
+    exception = {
         400: BadQuery,
         401: InvalidAPIKey,
         403: NoPermission,
@@ -67,8 +68,10 @@ def _check_status(response):
         429: OverQuota,
         500: ServerError
     }.get(status, None)
-    if exc:
-        raise exc(response.content)
+    
+    if exception:
+        raise exception(response.content)
+        
     raise APIException('%s: %s' % (status, response.content))
 
 
@@ -119,7 +122,7 @@ class Response(object):
         return datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S GMT')
 
     def get_raw(self):
-        return self.response.content
+        return self.response.content.decode('utf-8')
 
 
 class JSON(Response):

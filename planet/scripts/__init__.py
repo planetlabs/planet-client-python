@@ -41,8 +41,8 @@ def configure_logging(verbosity):
 
 def click_exception(ex):
     if type(ex) is api.APIException:
-        raise click.ClickException('Unexpected response: %s' % ex.message)
-    msg = "%s: %s" % (type(ex).__name__, ex.message)
+        raise click.ClickException('Unexpected response: %s' % str(ex))
+    msg = "%s: %s" % (type(ex).__name__, str(ex))
     raise click.ClickException(msg)
 
 
@@ -54,7 +54,7 @@ def call_and_wrap(func, *args, **kw):
     '''
     try:
         return func(*args, **kw)
-    except api.APIException, ex:
+    except api.APIException as ex:
         click_exception(ex)
 
 
@@ -62,9 +62,9 @@ def check_futures(futures):
     for f in futures:
         try:
             f.result()
-        except api.InvalidAPIKey, invalid:
+        except api.InvalidAPIKey as invalid:
             click_exception(invalid)
-        except api.APIException, other:
+        except api.APIException as other:
             click.echo('WARNING %s' % other.message)
 
 
