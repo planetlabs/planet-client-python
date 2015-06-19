@@ -87,6 +87,20 @@ def cli(verbose, api_key, base_url, workers):
     client._workers = workers
 
 
+@cli.command('help')
+@click.argument("command", default="")
+@click.pass_context
+def help(context, command):
+    if command:
+        cmd = cli.commands.get(command, None)
+        if cmd:
+            click.echo(cmd.get_help())
+        else:
+            raise click.ClickException('no command: %s' % command)
+    else:
+        click.echo(cli.get_help(context))
+
+
 @cli.command('list-scene-types')
 def list_scene_types():
     '''List all scene types.'''
