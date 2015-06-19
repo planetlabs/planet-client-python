@@ -1,16 +1,30 @@
+# Copyright 2015 Planet Labs, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from datetime import datetime
 import logging
 import os
 import re
 
-import requests
+from requests import Session
 from requests_futures.sessions import FuturesSession
 
 _logger = logging.getLogger(__name__)
 
 ENV_KEY = 'PL_API_KEY'
 
+_ISO_FMT = '%Y-%m-%dT%H:%M:%S.%f+00:00'
 
 class APIException(Exception):
     '''also used as placeholder for unexpected response status_code'''
@@ -72,19 +86,27 @@ def _find_api_key():
     return os.getenv(ENV_KEY)
 
 
-def write_to_file(directory=None):
+def write_to_file(directory=None, callback=None):
     def writer(session, response):
         _check_status(response)
         img = Image(response)
         file = os.path.join(directory, img.name) if directory else None
-        img.write(file)
+        img.write(file, callback)
     return writer
+
+
+def strp_timestamp(value):
+    return datetime.strptime(value, _ISO_FMT)
+
+
+def strf_timestamp(when):
+    return datetime.strftime(when, _ISO_FMT)
 
 
 class Response(object):
 
     def __init__(self, response):
-        
+
         self.response = response
         self.size = int(self.response.headers.get('content-length', -1))
         self.name = _get_filename(self.response)
@@ -142,6 +164,7 @@ class Image(Response):
         for chunk in self:
             fp.write(chunk)
             callback(len(chunk))
+        callback(self)
 
     def write(self, file=None, callback=None):
         if not file:
@@ -159,10 +182,22 @@ class Client(object):
 
 
     def __init__(self, api_key=None, base_url='https://api.planet.com/v0/'):
+        
         self.api_key = api_key or _find_api_key()
         self.base_url = base_url
         self._workers = 4
-        self._session = None
+        
+        headers = {
+            'Authorization': 'api-key %s' % self.api_key
+        }
+        
+        # Prepare session and future session objects once
+        self.futureSession = FuturesSession(max_workers=self._workers)
+        self.futureSession.headers.update(headers)
+        
+        self.session = Session()
+        self.session.headers.update(headers)
+
 
     def _get(self, path, params=None, stream=False, callback=None):
         
@@ -174,19 +209,14 @@ class Client(object):
         else:
             url = self.base_url + path
         
-        headers = {'Authorization': 'api-key ' + self.api_key}
-        
-        session = requests
         if callback:
-            if self._session is None:
-                self._session = FuturesSession(max_workers=self._workers)
-            session = self._session
-            r = session.get(url, headers=headers, params=params, stream=True,
-                            background_callback=callback)
+            r = self.futureSession.get(url, params=params, stream=True, background_callback=callback)
         else:
-            r = session.get(url, headers=headers, params=params, stream=stream)
+            r = self.session.get(url, params=params, stream=stream)
             _check_status(r)
+        
         return r
+
 
     def _get_many(self, paths, params, callback=None):
         return [
@@ -210,7 +240,7 @@ class Client(object):
     def get_scene_metadata(self, scene_id, scene_type='ortho'):
         """
         Get metadata for a given scene.
-        
+
         .. todo:: Generalize to accept multiple scene ids.
         """
         return JSON(self._get('scenes/%s/%s' % (scene_type, scene_id)))

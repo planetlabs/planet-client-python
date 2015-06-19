@@ -28,7 +28,7 @@ Usage
 
 ### As a library ###
 
-todo
+Pending
 
 ### Command line use ###
 
@@ -56,7 +56,6 @@ Get scene metadata by id (and pretty print):
 
     planet fetch_scene_info -pp 20141008_170544_0907
 
-<<<<<<< HEAD
 Testing
 -------
 
@@ -73,13 +72,23 @@ There are two suites of tests, one for the cli, the other for the library module
 Both can be run using:
 
     py.test
-=======
->>>>>>> a5ab62669b97cbe1f9b82403654a7b1cfe17c68d
+
+Distributing
+------------
+
+This requires that development libraries are installed:
+
+    pip install -e .[test]
+
+An executable python file can be built by running:
+
+    pex  .  -o dist/planet -m planet.scripts:cli
+
+This can be executed directly on systems with a python executable and in an environment (bash shell) capable of interpreting a shebang.
 
 TODO!
 -----
 
-* license
 * more command line flags/tools (query filters, for example)
 * more docs
 * tests
