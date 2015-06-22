@@ -62,5 +62,5 @@ print 'fetching tiffs for'
 print '\n'.join(ids)
 results = client.fetch_scene_thumbnails(ids, callback=api.write_to_file(dest_dir))
 
-# results are 'future' objects and we have to ensure they all process
-map(lambda r: r.result(), results)
+# results are async objects and we have to ensure they all process
+map(lambda r: r.await(), results)

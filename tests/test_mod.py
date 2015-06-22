@@ -81,7 +81,7 @@ def test_assert_client_execution_failure():
         
         # Check that an exception is raised
         try:
-            client._get('whatevs')
+            client._get('whatevs').get_body()
         except api.APIException as e:
             assert True
             return
@@ -115,7 +115,7 @@ def test_status_code_404():
         m.get(uri, text='not exist', status_code=404)
         
         try:
-            client._get('whatevs')
+            client._get('whatevs').get_body()
         except api.MissingResource as e:
             
             # TODO: Check returned string. Currently issues between Python 3 bytes and Python 2 strings
@@ -133,7 +133,7 @@ def test_status_code_other():
         m.get(uri, text='emergency', status_code=911)
         
         try:
-            client._get('whatevs')
+            client._get('whatevs').get_body()
         except api.APIException as e:
             
             assert True
