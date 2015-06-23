@@ -21,6 +21,7 @@ import planet
 from planet import api
 from os import path
 import sys
+import time
 
 
 client = api.Client()
@@ -224,6 +225,8 @@ def sync(destination, scene_type, limit):
     filters = {}
     if 'latest' in sync:
         filters['acquired.gt'] = sync['latest']
+    start_time = time.time()
+    transferred = 0
     res = call_and_wrap(client.get_scenes_list, scene_type=scene_type,
                         intersects=aoi, count=100, order_by='acquired asc',
                         **filters)
@@ -251,6 +254,7 @@ def sync(destination, scene_type, limit):
             with open(metadata, 'wb') as fp:
                 fp.write(json.dumps(f, indent=2))
         check_futures(futures)
+        transferred += sum([len(f.get_body()) for f in futures])
         recent = max([
             api.strp_timestamp(f['properties']['acquired']) for f in features]
         )
@@ -261,3 +265,8 @@ def sync(destination, scene_type, limit):
         sync['latest'] = api.strf_timestamp(latest)
         with open(sync_file, 'wb') as fp:
             fp.write(json.dumps(sync, indent=2))
+    if transferred:
+        elapsed = time.time() - start_time
+        mb = float(transferred) / (1024 * 1024)
+        click.echo('transferred %s bytes in %.2f seconds (%.2f MB/s)' %
+                   (transferred, elapsed, mb/elapsed))
