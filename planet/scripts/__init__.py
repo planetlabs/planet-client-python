@@ -20,8 +20,10 @@ import click
 import planet
 from planet import api
 from os import path
+from requests.packages.urllib3 import exceptions as urllib3exc
 import sys
 import time
+import warnings
 
 
 client = api.Client()
@@ -31,6 +33,23 @@ pretty = click.option('-pp', '--pretty', default=False, is_flag=True)
 scene_type = click.option('-s', '--scene-type', default='ortho')
 dest_dir = click.option('-d', '--dest', help='Destination directory',
                         type=click.Path(file_okay=False, resolve_path=True))
+
+
+
+# monkey patch warnings module to hide InsecurePlatformWarning - the warning
+# notes 'may cause certain SSL connections to fail' so it doesn't seem to
+# introduce any vulnerabilities
+# we capture the warning if present and present this if any SSLError is caught
+# just in case this configuration is an issue
+_insecure_warning = []
+showwarning = warnings.showwarning
+def hack(message, category, filename, lineno):
+    if category is urllib3exc.InsecurePlatformWarning:
+        if len(_insecure_warning) == 0:
+            _insecure_warning.append(message)
+        return
+    showwarning(message, category, filename, lineno)
+warnings.showwarning = hack
 
 
 def configure_logging(verbosity):
@@ -57,6 +76,11 @@ def call_and_wrap(func, *args, **kw):
         return func(*args, **kw)
     except api.APIException as ex:
         click_exception(ex)
+    except urllib3exc.SSLError:
+        # see monkey patch above re InsecurePlatformWarning
+        if _insecure_warning:
+            click.echo(click.style(str(_insecure_warning[0]), fg='red'))
+        raise
 
 
 def check_futures(futures):
