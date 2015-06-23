@@ -61,7 +61,7 @@ def call_and_wrap(func, *args, **kw):
 def check_futures(futures):
     for f in futures:
         try:
-            f.result()
+            f.await()
         except api.InvalidAPIKey as invalid:
             click_exception(invalid)
         except api.APIException as other:
@@ -243,7 +243,7 @@ def sync(destination, scene_type, limit):
         features = page.get()['features'][:counter.remaining]
         if not features: break
         ids = [f['id'] for f in features]
-        futures = client.fetch_scene_thumbnails(
+        futures = client.fetch_scene_geotiffs(
             ids, scene_type, callback=write_callback
         )
         for f in features:

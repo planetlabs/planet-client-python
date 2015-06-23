@@ -17,7 +17,6 @@ import logging
 import os
 import re
 
-from requests import Session
 from requests_futures.sessions import FuturesSession
 
 _logger = logging.getLogger(__name__)
@@ -25,6 +24,7 @@ _logger = logging.getLogger(__name__)
 ENV_KEY = 'PL_API_KEY'
 
 _ISO_FMT = '%Y-%m-%dT%H:%M:%S.%f+00:00'
+
 
 class APIException(Exception):
     '''also used as placeholder for unexpected response status_code'''
@@ -56,7 +56,7 @@ class ServerError(APIException):
 
 
 def _check_status(response):
-    
+    '''check the status of the response and if needed raise an APIException'''
     status = response.status_code
     if status == 200:
         return
@@ -68,10 +68,10 @@ def _check_status(response):
         429: OverQuota,
         500: ServerError
     }.get(status, None)
-    
+
     if exception:
         raise exception(response.content)
-        
+
     raise APIException('%s: %s' % (status, response.content))
 
 
@@ -87,11 +87,9 @@ def _find_api_key():
 
 
 def write_to_file(directory=None, callback=None):
-    def writer(session, response):
-        _check_status(response)
-        img = Image(response)
-        file = os.path.join(directory, img.name) if directory else None
-        img.write(file, callback)
+    def writer(body):
+        file = os.path.join(directory, body.name) if directory else None
+        body.write(file, callback)
     return writer
 
 
@@ -105,9 +103,55 @@ def strf_timestamp(when):
 
 class Response(object):
 
-    def __init__(self, response):
+    def __init__(self, request, dispatcher):
+        self.request = request
+        self._dispatcher = dispatcher
+        self._body = None
+        self._future = None
 
-        self.response = response
+    def _create_body(self, response):
+        return self.request.body_type(response, self._dispatcher)
+
+    def get_body(self):
+        if self._body is None:
+            resp = self._dispatcher._dispatch(self.request)
+            self._body = self._create_body(resp)
+        return self._body
+
+    def _async_callback(self, session, response):
+        _check_status(response)
+        self._body = self._create_body(response)
+        self._handler(self._body)
+        if self._await:
+            self._await(self._body)
+
+    def get_body_async(self, handler, await=None):
+        if self._future is None:
+            self._handler = handler
+            self._await = await
+            self._future = self._dispatcher._dispatch_async(
+                self.request, self._async_callback
+            )
+
+    def await(self):
+        if self._future:
+            self._future.result()
+            return self._body
+
+
+class Request(object):
+
+    def __init__(self, url, params=None, body_type=Response):
+        self.url = url
+        self.params = params
+        self.body_type = body_type
+
+
+class Body(object):
+
+    def __init__(self, http_response, dispatcher):
+        self.response = http_response
+        self._dispatcher = dispatcher
         self.size = int(self.response.headers.get('content-length', -1))
         self.name = _get_filename(self.response)
 
@@ -123,40 +167,6 @@ class Response(object):
 
     def get_raw(self):
         return self.response.content.decode('utf-8')
-
-
-class JSON(Response):
-
-    def get(self):
-        return self.response.json()
-
-
-class Scenes(JSON):
-
-    def __init__(self, response, client):
-        super(Scenes, self).__init__(response)
-        self._client = client
-
-    def next(self):
-        links = self.get()['links']
-        next = links.get('next', None)
-        if next:
-            response = self._client._get(next)
-            return Scenes(response, self._client)
-
-    def iter(self, pages=None):
-        pages = int(10e10) if pages is None else pages
-        page = self
-        if pages > 0:
-            yield page
-            pages -= 1
-        while pages > 0:
-            page = page.next()
-            yield page
-            pages -= 1
-
-
-class Image(Response):
 
     def _write(self, fp, callback):
         if not callback:
@@ -178,53 +188,88 @@ class Image(Response):
             self._write(file, callback)
 
 
+class JSON(Body):
+
+    def get(self):
+        return self.response.json()
+
+
+class Scenes(JSON):
+
+    def next(self):
+        links = self.get()['links']
+        next = links.get('next', None)
+        if next:
+            request = Request(next, body_type=Scenes)
+            return self._dispatcher.response(request).get_body()
+
+    def iter(self, pages=None):
+        pages = int(10e10) if pages is None else pages
+        page = self
+        if pages > 0:
+            yield page
+            pages -= 1
+        while pages > 0:
+            page = page.next()
+            yield page
+            pages -= 1
+
+
+class Image(Body):
+    pass
+
+
+class Dispatcher(object):
+
+    def __init__(self, api_key, workers=4):
+        self.session = FuturesSession(max_workers=workers)
+        self.set_api_key(api_key)
+
+    def set_api_key(self, api_key):
+        if api_key:
+            self.session.headers.update({
+                'Authorization': 'api-key %s' % api_key
+            })
+
+    def response(self, request):
+        return Response(request, self)
+
+    def _dispatch_async(self, request, callback):
+        return self.session.get(request.url, params=request.params,
+                                stream=True, background_callback=callback)
+
+    def _dispatch(self, request, callback=None):
+        response = self._dispatch_async(request, callback).result()
+        _check_status(response)
+        return response
+
+
 class Client(object):
 
-
     def __init__(self, api_key=None, base_url='https://api.planet.com/v0/'):
-        
         self.api_key = api_key or _find_api_key()
         self.base_url = base_url
-        self._workers = 4
-        
-        headers = {
-            'Authorization': 'api-key %s' % self.api_key
-        }
-        
-        # Prepare session and future session objects once
-        self.futureSession = FuturesSession(max_workers=self._workers)
-        self.futureSession.headers.update(headers)
-        
-        self.session = Session()
-        self.session.headers.update(headers)
+        self.dispatcher = Dispatcher(self.api_key)
 
-
-    def _get(self, path, params=None, stream=False, callback=None):
-        
+    def _get(self, path, body_type=JSON, params=None, callback=None):
         if not self.api_key:
             raise InvalidAPIKey('No API key provided')
-        
         if path.startswith('http'):
             url = path
         else:
             url = self.base_url + path
-        
+        request = Request(url, params, body_type)
+        response = self.dispatcher.response(request)
         if callback:
-            r = self.futureSession.get(url, params=params, stream=True, background_callback=callback)
-        else:
-            r = self.session.get(url, params=params, stream=stream)
-            _check_status(r)
-        
-        return r
+            response.get_body_async(callback)
+        return response
 
-
-    def _get_many(self, paths, params, callback=None):
-        return [
-            self._get(path, params=params, callback=callback) for path in paths
-        ]
+    def _download_many(self, paths, params, callback):
+        return [self._get(path, params=params, callback=callback)
+                for path in paths]
 
     def list_scene_types(self):
-        return JSON(self._get('scenes'))
+        return self._get('scenes').get_body()
 
     def get_scenes_list(self, scene_type='ortho', order_by=None, count=None,
                         intersects=None, **filters):
@@ -234,8 +279,8 @@ class Client(object):
             'intersects': intersects
         }
         params.update(**filters)
-        return Scenes(self._get('scenes/%s' % scene_type, params=params), self)
-
+        return self._get('scenes/%s' % scene_type,
+                         Scenes, params=params).get_body()
 
     def get_scene_metadata(self, scene_id, scene_type='ortho'):
         """
@@ -243,8 +288,7 @@ class Client(object):
 
         .. todo:: Generalize to accept multiple scene ids.
         """
-        return JSON(self._get('scenes/%s/%s' % (scene_type, scene_id)))
-
+        return self._get('scenes/%s/%s' % (scene_type, scene_id)).get_body()
 
     def fetch_scene_geotiffs(self, scene_ids, scene_type='ortho',
                              product='visual', callback=None):
@@ -252,7 +296,7 @@ class Client(object):
             'product': product
         }
         paths = ['scenes/%s/%s/full' % (scene_type, sid) for sid in scene_ids]
-        return self._get_many(paths, params, callback)
+        return self._download_many(paths, params, callback)
 
     def fetch_scene_thumbnails(self, scene_ids, scene_type='ortho', size='md',
                                fmt='png', callback=None):
@@ -261,4 +305,4 @@ class Client(object):
             'format': fmt
         }
         paths = ['scenes/%s/%s/thumb' % (scene_type, sid) for sid in scene_ids]
-        return self._get_many(paths, params, callback)
+        return self._download_many(paths, params, callback)
