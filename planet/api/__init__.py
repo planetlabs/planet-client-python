@@ -230,11 +230,15 @@ class Dispatcher(object):
             self.session.headers.update({
                 'Authorization': 'api-key %s' % api_key
             })
+        elif 'authorization' in self.session.headers:
+            self.session.headers.pop('authorization')
 
     def response(self, request):
         return Response(request, self)
 
     def _dispatch_async(self, request, callback):
+        if not 'authorization' in self.session.headers:
+            raise InvalidAPIKey('No API key provided')
         return self.session.get(request.url, params=request.params,
                                 stream=True, background_callback=callback)
 
@@ -247,13 +251,11 @@ class Dispatcher(object):
 class Client(object):
 
     def __init__(self, api_key=None, base_url='https://api.planet.com/v0/'):
-        self.api_key = api_key or _find_api_key()
+        api_key = api_key or _find_api_key()
         self.base_url = base_url
-        self.dispatcher = Dispatcher(self.api_key)
+        self.dispatcher = Dispatcher(api_key)
 
     def _get(self, path, body_type=JSON, params=None, callback=None):
-        if not self.api_key:
-            raise InvalidAPIKey('No API key provided')
         if path.startswith('http'):
             url = path
         else:

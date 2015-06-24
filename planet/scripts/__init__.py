@@ -117,7 +117,7 @@ def cli(verbose, api_key, base_url, workers):
     configure_logging(verbose)
 
     if api_key:
-        client.api_key = api_key
+        client.dispatcher.set_api_key(api_key)
     if base_url:
         client.base_url = base_url
     client._workers = workers

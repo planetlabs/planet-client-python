@@ -18,15 +18,13 @@ specifically needed (e.g., JSON format), the response content should not
 matter'''
 
 import os
-import pytest
 
 from planet import api
-import requests
 import requests_mock
 
 
 client = api.Client()
-client.api_key = 'foobar'
+client.dispatcher.set_api_key('foobar')
 
 
 # @pytest.fixture(scope="module")
@@ -92,18 +90,17 @@ def test_assert_client_execution_failure():
 def test_missing_api_key():
     
     client = api.Client()
-    # make sure any detected key is cleared
-    client.api_key = None
 
     def assert_missing():
         try:
-            client._get('whatevs')
+            client._get('whatevs').get_body()
             assert False
         except api.InvalidAPIKey as ex:
             assert str(ex) == 'No API key provided'
-    
-    assert_missing()
-    client.api_key = ''
+
+    # verify no auth headers trigger the exception
+    # have to clear the dispatcher in case key is picked up via env
+    client.dispatcher.set_api_key(None)
     assert_missing()
 
 
