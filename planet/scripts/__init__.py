@@ -69,6 +69,17 @@ def check_futures(futures):
             click.echo('WARNING %s' % other.message)
 
 
+def summarize_throughput(bytes, start_time):
+    elapsed = time.time() - start_time
+    mb = float(bytes) / (1024 * 1024)
+    click.echo('transferred %s bytes in %.2f seconds (%.2f MB/s)' %
+               (bytes, elapsed, mb/elapsed))
+
+
+def total_bytes(responses):
+    return sum([len(r.get_body()) for r in responses])
+
+
 @click.group()
 @click.option('-w', '--workers', default=4, help='The number of concurrent downloads when requesting multiple scenes.')
 @click.option('-v', '--verbose', count=True)
@@ -175,9 +186,11 @@ def fetch_scene_geotiff(ctx, scene_ids, scene_type, product, dest):
         else:
             click.echo(ctx.get_usage())
 
+    start_time = time.time()
     futures = client.fetch_scene_geotiffs(scene_ids, scene_type, product,
                                           api.write_to_file(dest))
     check_futures(futures)
+    summarize_throughput(total_bytes(futures), start_time)
 
 
 @scene_type
@@ -254,7 +267,7 @@ def sync(destination, scene_type, limit):
             with open(metadata, 'wb') as fp:
                 fp.write(json.dumps(f, indent=2))
         check_futures(futures)
-        transferred += sum([len(f.get_body()) for f in futures])
+        transferred += total_bytes(futures)
         recent = max([
             api.strp_timestamp(f['properties']['acquired']) for f in features]
         )
@@ -266,7 +279,4 @@ def sync(destination, scene_type, limit):
         with open(sync_file, 'wb') as fp:
             fp.write(json.dumps(sync, indent=2))
     if transferred:
-        elapsed = time.time() - start_time
-        mb = float(transferred) / (1024 * 1024)
-        click.echo('transferred %s bytes in %.2f seconds (%.2f MB/s)' %
-                   (transferred, elapsed, mb/elapsed))
+        summarize_throughput(transferred, start_time)
