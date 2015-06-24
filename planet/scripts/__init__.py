@@ -25,8 +25,10 @@ import sys
 import time
 import warnings
 
+client_params = {}
 
-client = api.Client()
+def client():
+    return api.Client(**client_params)
 
 
 pretty = click.option('-pp', '--pretty', default=False, is_flag=True)
@@ -116,11 +118,11 @@ def cli(verbose, api_key, base_url, workers):
 
     configure_logging(verbose)
 
-    if api_key:
-        client.dispatcher.set_api_key(api_key)
+    client_params.clear()
+    client_params['api_key'] = api_key
+    client_params['workers'] = workers
     if base_url:
-        client.base_url = base_url
-    client._workers = workers
+        client_params['base_url'] = base_url
 
 
 @cli.command('help')
@@ -140,7 +142,7 @@ def help(context, command):
 @cli.command('list-scene-types')
 def list_scene_types():
     '''List all scene types.'''
-    click.echo(call_and_wrap(client.list_scene_types).get_raw())
+    click.echo(call_and_wrap(client().list_scene_types).get_raw())
 
 
 @pretty
@@ -168,7 +170,7 @@ def get_scenes_list(scene_type, pretty, aoi, count, where):
     else:
         conditions = {}
 
-    res = call_and_wrap(client.get_scenes_list, scene_type=scene_type,
+    res = call_and_wrap(client().get_scenes_list, scene_type=scene_type,
                         intersects=aoi, count=count, **conditions).get_raw()
     if pretty:
         res = json.dumps(json.loads(res), indent=2)
@@ -182,7 +184,7 @@ def get_scenes_list(scene_type, pretty, aoi, count, where):
 def metadata(scene_id, scene_type, pretty):
     '''Get scene metadata'''
 
-    res = call_and_wrap(client.get_scene_metadata, scene_id, scene_type).get_raw()
+    res = call_and_wrap(client().get_scene_metadata, scene_id, scene_type).get_raw()
 
     if pretty:
         res = json.dumps(json.loads(res), indent=2)
@@ -211,7 +213,7 @@ def fetch_scene_geotiff(ctx, scene_ids, scene_type, product, dest):
             click.echo(ctx.get_usage())
 
     start_time = time.time()
-    futures = client.fetch_scene_geotiffs(scene_ids, scene_type, product,
+    futures = client().fetch_scene_geotiffs(scene_ids, scene_type, product,
                                           api.write_to_file(dest))
     check_futures(futures)
     summarize_throughput(total_bytes(futures), start_time)
@@ -232,7 +234,7 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
         if not src.isatty():
             scene_ids = map(lambda s: s.strip(), src.readlines())
 
-    futures = client.fetch_scene_thumbnails(scene_ids, scene_type, size, fmt,
+    futures = client().fetch_scene_thumbnails(scene_ids, scene_type, size, fmt,
                                             api.write_to_file(dest))
     check_futures(futures)
 
@@ -264,7 +266,8 @@ def sync(destination, scene_type, limit):
         filters['acquired.gt'] = sync['latest']
     start_time = time.time()
     transferred = 0
-    res = call_and_wrap(client.get_scenes_list, scene_type=scene_type,
+    _client = client()
+    res = call_and_wrap(_client.get_scenes_list, scene_type=scene_type,
                         intersects=aoi, count=100, order_by='acquired asc',
                         **filters)
     click.echo('total scenes to fetch: %s' % res.get()['count'])
@@ -283,7 +286,7 @@ def sync(destination, scene_type, limit):
         features = page.get()['features'][:counter.remaining]
         if not features: break
         ids = [f['id'] for f in features]
-        futures = client.fetch_scene_geotiffs(
+        futures = _client.fetch_scene_geotiffs(
             ids, scene_type, callback=write_callback
         )
         for f in features:

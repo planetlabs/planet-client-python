@@ -35,7 +35,8 @@ from planet import scripts
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.join(TEST_DIR, 'fixtures')
 
-scripts.client = MagicMock(name='client', spec=api.Client)
+client = MagicMock(name='client', spec=api.Client)
+scripts.client = lambda: client
 runner = CliRunner()
 
 
@@ -68,6 +69,19 @@ def test_version_flag():
     assert results.output == "%s\n" % planet.__version__
 
 
+def test_workers_flag():
+    assert 'workers' not in scripts.client_params
+    runner.invoke(scripts.cli, ['--workers', '19', 'list-scene-types'])
+    assert 'workers' in scripts.client_params
+    assert scripts.client_params['workers'] == 19
+
+
+def test_api_key_flag():
+    runner.invoke(scripts.cli, ['-k', 'shazbot', 'list-scene-types'])
+    assert 'api_key' in scripts.client_params
+    assert scripts.client_params['api_key'] == 'shazbot'
+
+
 def test_list_scene_types():
 
     fixture_path = os.path.join(FIXTURE_DIR, 'scene-types.json')
@@ -77,7 +91,7 @@ def test_list_scene_types():
     response = MagicMock(spec=api.JSON)
     response.get_raw.return_value = expected
 
-    scripts.client.list_scene_types.return_value = response
+    client.list_scene_types.return_value = response
 
     result = runner.invoke(scripts.cli, ['list-scene-types'])
 
@@ -93,7 +107,7 @@ def test_search():
     response = MagicMock(spec=api.JSON)
     response.get_raw.return_value = expected
 
-    scripts.client.get_scenes_list.return_value = response
+    client.get_scenes_list.return_value = response
 
     result = runner.invoke(scripts.cli, ['search'])
 
@@ -113,7 +127,7 @@ def test_search_by_aoi():
     response = MagicMock(spec=api.JSON)
     response.get_raw.return_value = expected
 
-    scripts.client.get_scenes_list.return_value = response
+    client.get_scenes_list.return_value = response
 
     # input kwarg simulates stdin
     result = runner.invoke(scripts.cli, ['search'], input=aoi)
@@ -133,7 +147,7 @@ def test_metadata():
     response.get_raw.return_value = expected
 
     # Construct the return response for the client method
-    scripts.client.get_scene_metadata.return_value = response
+    client.get_scene_metadata.return_value = response
 
     result = runner.invoke(scripts.cli, ['metadata', '20150615_190229_0905'])
 

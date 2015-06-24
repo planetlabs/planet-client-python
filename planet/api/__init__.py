@@ -152,7 +152,7 @@ class Body(object):
     def __init__(self, http_response, dispatcher):
         self.response = http_response
         self._dispatcher = dispatcher
-        self.size = int(self.response.headers.get('content-length', -1))
+        self.size = int(self.response.headers.get('content-length', 0))
         self.name = _get_filename(self.response)
 
     def __len__(self):
@@ -169,11 +169,17 @@ class Body(object):
         return self.response.content.decode('utf-8')
 
     def _write(self, fp, callback):
+        total = 0
         if not callback:
             callback = lambda x: None
         for chunk in self:
             fp.write(chunk)
-            callback(len(chunk))
+            size = len(chunk)
+            total += size
+            callback(size)
+        # seems some responses don't have a content-length header
+        if self.size is 0:
+            self.size = total
         callback(self)
 
     def write(self, file=None, callback=None):
@@ -250,10 +256,10 @@ class Dispatcher(object):
 
 class Client(object):
 
-    def __init__(self, api_key=None, base_url='https://api.planet.com/v0/'):
+    def __init__(self, api_key=None, base_url='https://api.planet.com/v0/', workers=4):
         api_key = api_key or _find_api_key()
         self.base_url = base_url
-        self.dispatcher = Dispatcher(api_key)
+        self.dispatcher = Dispatcher(api_key, workers)
 
     def _get(self, path, body_type=JSON, params=None, callback=None):
         if path.startswith('http'):
