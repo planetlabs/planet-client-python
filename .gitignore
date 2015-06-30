@@ -2,6 +2,7 @@
 *.egg-info/
 *.egg
 dist
+build
 
 # Unit test / coverage reports
 htmlcov/
