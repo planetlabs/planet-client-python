@@ -256,7 +256,8 @@ class Dispatcher(object):
 
 class Client(object):
 
-    def __init__(self, api_key=None, base_url='https://api.planet.com/v0/', workers=4):
+    def __init__(self, api_key=None, base_url='https://api.planet.com/v0/',
+                 workers=4):
         api_key = api_key or _find_api_key()
         self.base_url = base_url
         self.dispatcher = Dispatcher(api_key, workers)

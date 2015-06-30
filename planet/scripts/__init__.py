@@ -27,6 +27,7 @@ import warnings
 
 client_params = {}
 
+
 def client():
     return api.Client(**client_params)
 
@@ -37,7 +38,6 @@ dest_dir = click.option('-d', '--dest', help='Destination directory',
                         type=click.Path(file_okay=False, resolve_path=True))
 
 
-
 # monkey patch warnings module to hide InsecurePlatformWarning - the warning
 # notes 'may cause certain SSL connections to fail' so it doesn't seem to
 # introduce any vulnerabilities
@@ -45,6 +45,8 @@ dest_dir = click.option('-d', '--dest', help='Destination directory',
 # just in case this configuration is an issue
 _insecure_warning = []
 showwarning = warnings.showwarning
+
+
 def hack(message, category, filename, lineno):
     if category is urllib3exc.InsecurePlatformWarning:
         if len(_insecure_warning) == 0:
@@ -107,7 +109,9 @@ def total_bytes(responses):
 
 
 @click.group()
-@click.option('-w', '--workers', default=4, help='The number of concurrent downloads when requesting multiple scenes.')
+@click.option('-w', '--workers', default=4,
+              help=('The number of concurrent downloads when requesting '
+                    'multiple scenes.'))
 @click.option('-v', '--verbose', count=True)
 @click.option('-k', '--api-key',
               help='Valid API key - or via env variable %s' % api.ENV_KEY)
@@ -149,8 +153,12 @@ def list_scene_types():
 @scene_type
 @cli.command('search')
 @click.argument("aoi", default="-", required=False)
-@click.option('--count', type=click.INT, required=False, help="Set the number of returned scenes.")
-@click.option("--where", nargs=3, multiple=True, help="Provide additional search criteria. See https://www.planet.com/docs/v0/scenes/#metadata for search metadata fields.")
+@click.option('--count', type=click.INT, required=False,
+              help="Set the number of returned scenes.")
+@click.option("--where", nargs=3, multiple=True,
+              help=("Provide additional search criteria. See "
+                    "https://www.planet.com/docs/v0/scenes/#metadata for "
+                    " search metadata fields."))
 def get_scenes_list(scene_type, pretty, aoi, count, where):
     '''Get a list of scenes'''
 
@@ -184,7 +192,8 @@ def get_scenes_list(scene_type, pretty, aoi, count, where):
 def metadata(scene_id, scene_type, pretty):
     '''Get scene metadata'''
 
-    res = call_and_wrap(client().get_scene_metadata, scene_id, scene_type).get_raw()
+    res = call_and_wrap(client().get_scene_metadata,
+                        scene_id, scene_type).get_raw()
 
     if pretty:
         res = json.dumps(json.loads(res), indent=2)
@@ -214,7 +223,7 @@ def fetch_scene_geotiff(ctx, scene_ids, scene_type, product, dest):
 
     start_time = time.time()
     futures = client().fetch_scene_geotiffs(scene_ids, scene_type, product,
-                                          api.write_to_file(dest))
+                                            api.write_to_file(dest))
     check_futures(futures)
     summarize_throughput(total_bytes(futures), start_time)
 
@@ -235,7 +244,7 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
             scene_ids = map(lambda s: s.strip(), src.readlines())
 
     futures = client().fetch_scene_thumbnails(scene_ids, scene_type, size, fmt,
-                                            api.write_to_file(dest))
+                                              api.write_to_file(dest))
     check_futures(futures)
 
 
@@ -274,8 +283,9 @@ def sync(destination, scene_type, limit):
     if limit > 0:
         click.echo('limiting to %s' % limit)
     counter = type('counter', (object,),
-        {'remaining': res.get()['count'] if limit < 1 else limit})()
+                   {'remaining': res.get()['count'] if limit < 1 else limit})()
     latest = None
+
     def progress_callback(arg):
         if not isinstance(arg, int):
             counter.remaining -= 1
@@ -284,7 +294,8 @@ def sync(destination, scene_type, limit):
     write_callback = api.write_to_file(destination, progress_callback)
     for page in res.iter():
         features = page.get()['features'][:counter.remaining]
-        if not features: break
+        if not features:
+            break
         ids = [f['id'] for f in features]
         futures = _client.fetch_scene_geotiffs(
             ids, scene_type, callback=write_callback

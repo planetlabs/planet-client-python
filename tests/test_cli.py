@@ -52,8 +52,6 @@ def assert_cli_exception(cause, expected):
         scripts.call_and_wrap(thrower)
         assert False, 'did not throw'
     except ClickException as ex:
-        print("HERE")
-        # print(str(ex))
         assert str(ex) == expected
 
 
