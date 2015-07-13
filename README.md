@@ -1,6 +1,11 @@
 Planet API Client
 =================
 
+Documentation
+-------------
+
+[https://planetlabs.github.io/planet-client-python/index.html](https://planetlabs.github.io/planet-client-python/index.html)
+
 Initial, incomplete, strawman effort at a Python client to Planet's public API.
 
 Installation
