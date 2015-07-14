@@ -325,3 +325,13 @@ class Client(object):
         """
         return self._get('mosaics').get_body()
 
+
+    def get_mosaic(self, name):
+        """
+        Get metadata for a given mosaic.
+        
+        :param name:
+            Mosaic name as returned by `list_mosaics`.
+        """
+        return self._get('mosaics/%s' % name).get_body()
+

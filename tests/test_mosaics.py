@@ -47,3 +47,21 @@ class TestMosaics(unittest.TestCase):
 
             assert r.response.status_code == 200
             assert r.get() == json.loads(text)
+
+
+    def test_get_mosaic(self):
+
+        mosaic_name = 'color_balance_mosaic'
+
+        fixture_path = os.path.join(FIXTURE_DIR, 'get-mosaic.json')
+        with Mocker() as m, open(fixture_path) as f:
+
+            text = f.read()
+            uri = os.path.join(self.client.base_url, 'mosaics/%s' % mosaic_name)
+            m.get(uri, text=text, status_code=200)
+            
+            r = self.client.get_mosaic(mosaic_name)
+            
+            assert r.response.status_code == 200
+            assert r.get() == json.loads(text)
+        

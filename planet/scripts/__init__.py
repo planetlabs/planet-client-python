@@ -325,8 +325,19 @@ def sync(destination, scene_type, limit):
 #
 
 
-@cli.command('list-mosaics')
+@cli.command('mosaics')
 def list_mosaics():
+    """
+    List all mosaics
+    """
     click.echo(call_and_wrap(client().list_mosaics).get_raw())
+
+@cli.command('mosaic')
+@click.argument('mosaic_name', nargs=1)
+def get_mosaic(mosaic_name):
+    """
+    Describe a specified mosaic
+    """
+    click.echo(call_and_wrap(client().get_mosaic, mosaic_name).get_raw())
 
 
