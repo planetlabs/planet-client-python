@@ -315,3 +315,13 @@ class Client(object):
         }
         paths = ['scenes/%s/%s/thumb' % (scene_type, sid) for sid in scene_ids]
         return self._download_many(paths, params, callback)
+
+
+    def list_mosaics(self):
+        """
+        List all mosaics.
+        
+        .. todo:: Pagination
+        """
+        return self._get('mosaics').get_body()
+

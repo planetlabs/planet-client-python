@@ -318,3 +318,15 @@ def sync(destination, scene_type, limit):
             fp.write(json.dumps(sync, indent=2))
     if transferred:
         summarize_throughput(transferred, start_time)
+
+
+#
+#   Mosaics CLI
+#
+
+
+@cli.command('list-mosaics')
+def list_mosaics():
+    click.echo(call_and_wrap(client().list_mosaics).get_raw())
+
+

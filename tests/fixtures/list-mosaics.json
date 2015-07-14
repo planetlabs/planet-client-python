@@ -1,0 +1,27 @@
+{
+  "links": {
+    "next": "https://api.planet.com/v0/mosaics/?next=params",
+    "prev": null,
+    "self": "https://api.planet.com/v0/mosaics/"
+  },
+  "mosaics": [
+    {
+      "coordinate_system": "EPSG:3857",
+      "datatype": "byte",
+      "first_acquired": "2014-03-20T15:57:11+00:00",
+      "last_acquired": "2015-01-22T19:50:45.060477+00:00",
+      "level": 15,
+      "links": {
+        "quadmap": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quad-map.png",
+        "quads": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/",
+        "self": "https://api.planet.com/v0/mosaics/color_balance_mosaic",
+        "tiles": "https://tiles{0-3}.planet.com/v0/mosaics/color_balance_mosaic/{z}/{x}/{y}.png"
+      },
+      "name": "color_balance_mosaic",
+      "quad_pattern": "L{glevel:d}-{tilex:04d}E-{tiley:04d}N",
+      "quad_size": 4096,
+      "resolution": 4.77731426716,
+      "title": "Color-Balanced Mosaic"
+    }
+  ]
+}
