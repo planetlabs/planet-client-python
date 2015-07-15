@@ -56,8 +56,8 @@ def test_status_code_404():
         m.get(uri, text='test', status_code=404)
         try:
             client._get('whatevs').get_body()
-        except api.MissingResource, ex:
-            assert ex.message == 'test'
+        except api.MissingResource as ex:
+            assert str(ex) == 'test'
         else:
             assert False
 
@@ -70,8 +70,8 @@ def test_status_code_other():
         m.get(uri, text='emergency', status_code=911)
         try:
             client._get('whatevs').get_body()
-        except api.APIException, ex:
-            assert ex.message == '911: emergency'
+        except api.APIException as ex:
+            assert str(ex) == '911: emergency'
         else:
             assert False
 

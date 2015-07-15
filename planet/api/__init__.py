@@ -70,9 +70,9 @@ def _check_status(response):
     }.get(status, None)
 
     if exception:
-        raise exception(response.content)
+        raise exception(response.text)
 
-    raise APIException('%s: %s' % (status, response.content))
+    raise APIException('%s: %s' % (status, response.text))
 
 
 def _get_filename(response):
