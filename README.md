@@ -1,6 +1,8 @@
 Planet API Client
 =================
 
+[![Current Status](https://travis-ci.org/planetlabs/planet-client-python.svg?branch=master)](https://travis-ci.org/planetlabs/planet-client-python)
+
 Documentation
 -------------
 
