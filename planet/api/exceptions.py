@@ -12,12 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .exceptions import (APIException, BadQuery, InvalidAPIKey)
-from .exceptions import (NoPermission, MissingResource, OverQuota)
-from .exceptions import (ServerError,)
-from .client import Client
 
-__all__ = [
-    Client, APIException, BadQuery, InvalidAPIKey,
-    NoPermission, MissingResource, OverQuota, ServerError
-]
+class APIException(Exception):
+    '''also used as placeholder for unexpected response status_code'''
+    pass
+
+
+class BadQuery(APIException):
+    pass
+
+
+class InvalidAPIKey(APIException):
+    pass
+
+
+class NoPermission(APIException):
+    pass
+
+
+class MissingResource(APIException):
+    pass
+
+
+class OverQuota(APIException):
+    pass
+
+
+class ServerError(APIException):
+    pass

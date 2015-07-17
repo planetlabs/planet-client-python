@@ -29,6 +29,7 @@ from mock import MagicMock
 
 import planet
 from planet import api
+from planet.api import models
 from planet import scripts
 
 
@@ -56,8 +57,8 @@ def assert_cli_exception(cause, expected):
 
 
 def test_exception_translation():
-    assert_cli_exception(api.BadQuery('bogus'), 'BadQuery: bogus')
-    assert_cli_exception(api.APIException('911: alert'),
+    assert_cli_exception(api.exceptions.BadQuery('bogus'), 'BadQuery: bogus')
+    assert_cli_exception(api.exceptions.APIException('911: alert'),
                          "Unexpected response: 911: alert")
 
 
@@ -80,29 +81,13 @@ def test_api_key_flag():
     assert scripts.client_params['api_key'] == 'shazbot'
 
 
-def test_list_scene_types():
-
-    fixture_path = os.path.join(FIXTURE_DIR, 'scene-types.json')
-    with open(fixture_path, 'r') as src:
-        expected = src.read()
-
-    response = MagicMock(spec=api.JSON)
-    response.get_raw.return_value = expected
-
-    client.list_scene_types.return_value = response
-
-    result = runner.invoke(scripts.cli, ['list-scene-types'])
-
-    assert_success(result, expected)
-
-
 def test_search():
 
     fixture_path = os.path.join(FIXTURE_DIR, 'search.geojson')
     with open(fixture_path, 'r') as src:
         expected = src.read()
 
-    response = MagicMock(spec=api.JSON)
+    response = MagicMock(spec=models.JSON)
     response.get_raw.return_value = expected
 
     client.get_scenes_list.return_value = response
@@ -122,7 +107,7 @@ def test_search_by_aoi():
     with open(fixture_path, 'r') as src:
         expected = src.read()
 
-    response = MagicMock(spec=api.JSON)
+    response = MagicMock(spec=models.JSON)
     response.get_raw.return_value = expected
 
     client.get_scenes_list.return_value = response
@@ -141,7 +126,7 @@ def test_metadata():
         expected = src.read()
 
     # Construct a response from the fixture
-    response = MagicMock(spec=api.JSON)
+    response = MagicMock(spec=models.JSON)
     response.get_raw.return_value = expected
 
     # Construct the return response for the client method

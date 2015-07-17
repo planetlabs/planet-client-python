@@ -64,7 +64,7 @@ def configure_logging(verbosity):
 
 
 def click_exception(ex):
-    if type(ex) is api.APIException:
+    if type(ex) is api.exceptions.APIException:
         raise click.ClickException('Unexpected response: %s' % str(ex))
     msg = "%s: %s" % (type(ex).__name__, str(ex))
     raise click.ClickException(msg)
@@ -78,7 +78,7 @@ def call_and_wrap(func, *args, **kw):
     '''
     try:
         return func(*args, **kw)
-    except api.APIException as ex:
+    except api.exceptions.APIException as ex:
         click_exception(ex)
     except urllib3exc.SSLError:
         # see monkey patch above re InsecurePlatformWarning
@@ -114,7 +114,7 @@ def total_bytes(responses):
                     'multiple scenes.'))
 @click.option('-v', '--verbose', count=True)
 @click.option('-k', '--api-key',
-              help='Valid API key - or via env variable %s' % api.ENV_KEY)
+              help='Valid API key - or via env variable %s' % api.auth.ENV_KEY)
 @click.option('-u', '--base-url', help='Optional for testing')
 @click.version_option(version=planet.__version__, message='%(version)s')
 def cli(verbose, api_key, base_url, workers):

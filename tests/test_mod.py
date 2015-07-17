@@ -20,15 +20,21 @@ matter'''
 import os
 
 from planet import api
+import pytest
 import requests_mock
 
+# have to clear in case key is picked up via env
+if api.auth.ENV_KEY in os.environ:
+    os.environ.pop(api.auth.ENV_KEY)
 
-client = api.Client()
-client.dispatcher.set_api_key('foobar')
+
+@pytest.fixture()
+def client():
+    return api.Client('foobar')
 
 
-def test_assert_client_execution_success():
-    'verify simple mock success response'
+def test_assert_client_execution_success(client):
+    '''verify simple mock success response'''
     with requests_mock.Mocker() as m:
         uri = os.path.join(client.base_url, 'whatevs')
         m.get(uri, text='test', status_code=200)
@@ -37,32 +43,29 @@ def test_assert_client_execution_success():
 
 def test_missing_api_key():
     '''verify exception raised on missing API key'''
-    client = api.Client()
-    # verify no auth headers trigger the exception
-    # have to clear the dispatcher in case key is picked up via env
-    client.dispatcher.set_api_key(None)
+    client = api.Client(api_key=None)
     try:
         client._get('whatevs').get_body()
-    except api.InvalidAPIKey as ex:
+    except api.exceptions.InvalidAPIKey as ex:
         assert str(ex) == 'No API key provided'
     else:
         assert False
 
 
-def test_status_code_404():
+def test_status_code_404(client):
     '''Verify 404 handling'''
     with requests_mock.Mocker() as m:
         uri = os.path.join(client.base_url, 'whatevs')
         m.get(uri, text='test', status_code=404)
         try:
             client._get('whatevs').get_body()
-        except api.MissingResource as ex:
+        except api.exceptions.MissingResource as ex:
             assert str(ex) == 'test'
         else:
             assert False
 
 
-def test_status_code_other():
+def test_status_code_other(client):
     '''Verify other unexpected HTTP status codes'''
     with requests_mock.Mocker() as m:
         uri = os.path.join(client.base_url, 'whatevs')
@@ -70,21 +73,13 @@ def test_status_code_other():
         m.get(uri, text='emergency', status_code=911)
         try:
             client._get('whatevs').get_body()
-        except api.APIException as ex:
+        except api.exceptions.APIException as ex:
             assert str(ex) == '911: emergency'
         else:
             assert False
 
 
-def test_list_all_scene_types():
-    '''Verify list_all_scene_types path handling'''
-    with requests_mock.Mocker() as m:
-        uri = os.path.join(client.base_url, 'scenes')
-        m.get(uri, text='oranges', status_code=200)
-        assert client.list_scene_types().get_raw() == 'oranges'
-
-
-def test_fetch_scene_info_scene_id():
+def test_fetch_scene_info_scene_id(client):
     '''Verify get_scene_metadata path handling'''
     with requests_mock.Mocker() as m:
         uri = os.path.join(client.base_url, 'scenes/ortho/x22')

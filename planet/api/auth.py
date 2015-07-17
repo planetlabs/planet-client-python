@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .exceptions import (APIException, BadQuery, InvalidAPIKey)
-from .exceptions import (NoPermission, MissingResource, OverQuota)
-from .exceptions import (ServerError,)
-from .client import Client
+import os
 
-__all__ = [
-    Client, APIException, BadQuery, InvalidAPIKey,
-    NoPermission, MissingResource, OverQuota, ServerError
-]
+ENV_KEY = 'PL_API_KEY'
+
+
+class APIKey(object):
+    def __init__(self, value):
+        self.value = value
+
+
+def find_api_key():
+    return os.getenv(ENV_KEY)

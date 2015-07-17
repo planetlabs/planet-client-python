@@ -26,8 +26,7 @@ class TestMosaics(unittest.TestCase):
 
     def setUp(self):
 
-        self.client = api.Client()
-        self.client.dispatcher.set_api_key('xyz')
+        self.client = api.Client(api_key='xyz')
 
     def test_list_mosaics(self):
 
