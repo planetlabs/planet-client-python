@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 # Get the long description from the relevant file
 try:
-    with codecs_open('README.md', encoding='utf-8') as f:
+    with codecs_open('README.rst', encoding='utf-8') as f:
         long_description = f.read()
 except:
     # @todo for now, fall back to this - pex fails to resolve the README
@@ -45,8 +45,18 @@ setup(name='planet',
       version=version,
       description=u"Planet API Client",
       long_description=long_description,
-      classifiers=[],
-      keywords='',
+      classifiers=[
+        'Development Status :: 2 - Pre-Alpha',
+        'Environment :: Console',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: Apache Software License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Software Development',
+        'Topic :: Utilities'
+      ],
+      keywords='planet api client',
       author=u"Ian Schneider",
       author_email='ischneider@planet.com',
       url='https://github.com/planetlabs/planet-client-python',
