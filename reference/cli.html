@@ -79,7 +79,43 @@ window.onresize = function(e) {
 }
 
 window.onresize();
-</script></div>
+</script><p>The CLI can be used to rapidly search an area of interest (AOI). Suppose you have an AOI in GeoJSON format:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>cat santiago-de-chile.geojson <span class="p">|</span> planet search
+<span class="o">{</span>
+  <span class="s2">&quot;count&quot;</span>: 1135,
+  <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;FeatureCollection&quot;</span>,
+  <span class="s2">&quot;features&quot;</span>: <span class="o">[</span>
+  ...
+  <span class="o">]</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<p>Searching an area of interest described by a Shapefile, can be accomplished by chaining commands with <a class="reference external" href="https://github.com/Toblerity/Fiona">Fiona</a>.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>fio dump santiago-de-chile.shp <span class="p">|</span> planet search
+</pre></div>
+</div>
+<p>Using <a class="reference external" href="http://stedolan.github.io/jq/">jq</a>, useful information can be parsed from data returned by the Planet API.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>cat santiago-de-chile.geojson <span class="p">|</span> planet search <span class="p">|</span> jq -r <span class="s2">&quot;.features[].id&quot;</span>
+20150707_160055_090b
+20150707_160054_090b
+20150707_160053_090b
+20150707_160051_090b
+20150707_160050_090b
+20150707_160048_090b
+20150707_160047_090b
+20150707_160046_090b
+...
+</pre></div>
+</div>
+<p>Querying for Planet scenes that overlap another data source is easily accomplished by using <a class="reference external" href="https://github.com/mapbox/rasterio">Rasterio</a>.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>rio bounds LC82210682015104LGN00_B1.TIF <span class="p">|</span> planet search
+</pre></div>
+</div>
+<p>Given that this Landsat scene was taken on April 14, 2015, it might be useful to search for Planet scenes that were taken in a similar timeframe.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>rio bounds LC82210682015104LGN00_B1.TIF <span class="p">|</span> planet search --where acquired lt 2015-04-12 --where acquired gt 2015-04-14
+</pre></div>
+</div>
+</div>
 
 
           </div>
