@@ -187,11 +187,11 @@ class Body(object):
             file = self.name
         if not file:
             raise ValueError('no file name provided or discovered in response')
-        if isinstance(file, basestring):
+        if hasattr(file, 'write'):
+            self._write(file, callback)
+        else:
             with open(file, 'wb') as fp:
                 self._write(fp, callback)
-        else:
-            self._write(file, callback)
 
 
 class JSON(Body):
