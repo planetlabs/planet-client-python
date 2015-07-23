@@ -243,7 +243,7 @@ class Dispatcher(object):
         return Response(request, self)
 
     def _dispatch_async(self, request, callback):
-        if not 'authorization' in self.session.headers:
+        if 'authorization' not in self.session.headers:
             raise InvalidAPIKey('No API key provided')
         return self.session.get(request.url, params=request.params,
                                 stream=True, background_callback=callback)
@@ -316,22 +316,19 @@ class Client(object):
         paths = ['scenes/%s/%s/thumb' % (scene_type, sid) for sid in scene_ids]
         return self._download_many(paths, params, callback)
 
-
     def list_mosaics(self):
         """
         List all mosaics.
-        
+
         .. todo:: Pagination
         """
         return self._get('mosaics').get_body()
 
-
     def get_mosaic(self, name):
         """
         Get metadata for a given mosaic.
-        
+
         :param name:
             Mosaic name as returned by `list_mosaics`.
         """
         return self._get('mosaics/%s' % name).get_body()
-
