@@ -25,8 +25,8 @@ FIXTURE_DIR = os.path.join(TEST_DIR, 'fixtures')
 class TestMosaics(unittest.TestCase):
 
     def setUp(self):
-
         self.client = api.Client(api_key='xyz')
+
 
     def test_list_mosaics(self):
 
@@ -41,6 +41,7 @@ class TestMosaics(unittest.TestCase):
 
             assert r.response.status_code == 200
             assert r.get() == json.loads(text)
+
 
     def test_get_mosaic(self):
 
@@ -58,3 +59,22 @@ class TestMosaics(unittest.TestCase):
 
             assert r.response.status_code == 200
             assert r.get() == json.loads(text)
+
+
+    def test_get_mosaic_quads(self):
+        
+        mosaic_name = 'color_balance_mosaic'
+        
+        fixture_path = os.path.join(FIXTURE_DIR, 'get-mosaic-quads.json')
+        with Mocker() as m, open(fixture_path) as f:
+            
+            text = f.read()
+            uri = os.path.join(self.client.base_url, 'mosaics/%s/quads' % mosaic_name)
+            
+            m.get(uri, text=text, status_code=200)
+            
+            r = self.client.get_mosaic_quads(mosaic_name, intersect='', count=50)
+            
+            assert r.response.status_code == 200
+            assert r.get() == json.loads(text)
+
