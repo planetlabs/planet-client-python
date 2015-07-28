@@ -12,18 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+import time
 import json
 import logging
+import warnings
+from os import path
 
 import click
 
 import planet
 from planet import api
-from os import path
+
 from requests.packages.urllib3 import exceptions as urllib3exc
-import sys
-import time
-import warnings
 
 client_params = {}
 
@@ -212,7 +213,9 @@ def metadata(scene_id, scene_type, pretty):
 @cli.command('download')
 @click.pass_context
 def fetch_scene_geotiff(ctx, scene_ids, scene_type, product, dest):
-    '''Fetch full scene image(s)'''
+    """
+    Download full scene image(s).
+    """
 
     if len(scene_ids) == 0:
         src = click.open_file('-')
@@ -223,7 +226,7 @@ def fetch_scene_geotiff(ctx, scene_ids, scene_type, product, dest):
 
     start_time = time.time()
     futures = client().fetch_scene_geotiffs(scene_ids, scene_type, product,
-                                            api.write_to_file(dest))
+                                            api.utils.write_to_file(dest))
     check_futures(futures)
     summarize_throughput(total_bytes(futures), start_time)
 
