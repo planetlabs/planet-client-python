@@ -19,7 +19,6 @@ from . import models
 
 class Client(object):
 
-
     def __init__(self, api_key=None, base_url='https://api.planet.com/v0/',
                  workers=4):
         api_key = api_key or auth.find_api_key()
