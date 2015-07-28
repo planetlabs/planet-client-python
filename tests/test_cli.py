@@ -141,5 +141,3 @@ def test_download():
     
     result = runner.invoke(scripts.cli, ['download', '20150615_190229_0905'])
     assert result.exit_code == 0
-    
-    
