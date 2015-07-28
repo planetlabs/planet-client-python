@@ -135,3 +135,11 @@ def test_metadata():
     result = runner.invoke(scripts.cli, ['metadata', '20150615_190229_0905'])
 
     assert_success(result, expected)
+
+
+def test_download():
+    
+    result = runner.invoke(scripts.cli, ['download', '20150615_190229_0905'])
+    assert result.exit_code == 0
+    
+    
