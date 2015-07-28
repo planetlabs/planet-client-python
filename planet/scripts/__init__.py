@@ -420,3 +420,20 @@ def set_workspace(id, aoi, name, create, workspace):
 
     echo_json_response(call_and_wrap(client().set_workspace,
                        workspace, id), pretty)
+
+
+@cli.command('mosaic-quads')
+@click.argument('mosaic_name', nargs=1)
+@click.argument("aoi", default="-", required=False)
+@click.option('--count', type=click.INT, required=False, help="Set the number of returned quads.")
+def get_mosaic_quads(mosaic_name, aoi, count):
+    
+    if aoi == "-":
+        src = click.open_file('-')
+        if not src.isatty():
+            aoi = src.read()
+        else:
+            aoi = None
+
+    echo_json_response(call_and_wrap(client().get_mosaic_quads,
+                                     mosaic_name, intersects=aoi, count=count))
