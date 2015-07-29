@@ -144,10 +144,13 @@ def help(context, command):
         click.echo(cli.get_help(context))
 
 
-@cli.command('list-scene-types')
-def list_scene_types():
-    '''List all scene types.'''
-    click.echo(call_and_wrap(client().list_scene_types).get_raw())
+@cli.command('init')
+@click.option('--email', default=None, prompt=True)
+@click.option('--password', default=None, prompt=True, hide_input=True)
+def init(email, password):
+    response = call_and_wrap(client().login, email, password)
+    planet.api.utils.write_planet_json({'key': response['api_key']})
+    click.echo('initialized')
 
 
 @pretty

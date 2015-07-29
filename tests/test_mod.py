@@ -17,6 +17,8 @@ a request is made to the expected URL and the response is as provided. Unless
 specifically needed (e.g., JSON format), the response content should not
 matter'''
 
+import base64
+import json
 import os
 
 from planet import api
@@ -26,6 +28,8 @@ import requests_mock
 # have to clear in case key is picked up via env
 if api.auth.ENV_KEY in os.environ:
     os.environ.pop(api.auth.ENV_KEY)
+# and monkey patch the dot file to avoid picking an existing one up
+api.utils._planet_json_file = lambda: '.whyyounameafilelikethis123'
 
 
 @pytest.fixture()
@@ -85,3 +89,29 @@ def test_fetch_scene_info_scene_id(client):
         uri = os.path.join(client.base_url, 'scenes/ortho/x22')
         m.get(uri, text='bananas', status_code=200)
         client.get_scene_metadata('x22').get_raw() == 'bananas'
+
+
+def test_login(client):
+    '''Verify login functionality'''
+    with requests_mock.Mocker() as m:
+        uri = os.path.join(client.base_url, 'auth/login')
+        response = json.dumps({'api_key': 'foobar'}).encode('utf-8')
+        b64 = base64.urlsafe_b64encode(response)
+        response = 'whatever.%s.whatever' % b64.decode('utf-8')
+        m.post(uri, text=response, status_code=200)
+        resp = client.login('jimmy', 'crackcorn')
+        assert resp['api_key'] == 'foobar'
+
+
+def test_login_failure(client):
+    '''Verify login functionality'''
+    with requests_mock.Mocker() as m:
+        uri = os.path.join(client.base_url, 'auth/login')
+        response = json.dumps({'message': 'invalid'})
+        m.post(uri, text=response, status_code=400)
+        try:
+            client.login('jimmy', 'crackcorn')
+        except api.exceptions.InvalidIdentity as ex:
+            assert str(ex) == 'invalid'
+        else:
+            assert False

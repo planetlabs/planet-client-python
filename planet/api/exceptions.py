@@ -40,3 +40,8 @@ class OverQuota(APIException):
 
 class ServerError(APIException):
     pass
+
+
+class InvalidIdentity(APIException):
+    '''raised when logging in with identity'''
+    pass

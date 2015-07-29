@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
+import json
 from .dispatch import RequestsDispatcher
 from . import auth
+from .exceptions import InvalidIdentity
 from . import models
 
 
@@ -26,12 +29,16 @@ class Client(object):
         self.base_url = base_url
         self.dispatcher = RequestsDispatcher(workers)
 
-    def _request(self, path, body_type=models.JSON, params=None):
+    def _url(self, path):
         if path.startswith('http'):
             url = path
         else:
             url = self.base_url + path
-        return models.Request(url, self.auth, params, body_type)
+        return url
+
+    def _request(self, path, body_type=models.JSON, params=None, auth=None):
+        return models.Request(self._url(path), auth or self.auth, params,
+                              body_type)
 
     def _get(self, path, body_type=models.JSON, params=None, callback=None):
         request = self._request(path, body_type, params)
@@ -43,6 +50,26 @@ class Client(object):
     def _download_many(self, paths, params, callback):
         return [self._get(path, params=params, callback=callback)
                 for path in paths]
+
+    def login(self, identity, credentials):
+        result = self.dispatcher.session.post(self._url('auth/login'), {
+            'email': identity,
+            'password': credentials
+        }).result()
+        if result.status_code == 400:
+            # do our best to get something out to the user
+            msg = result.text
+            try:
+                msg = json.loads(result.text)['message']
+            finally:
+                raise InvalidIdentity(msg)
+        jwt = result.text
+        payload = jwt.split('.')[1]
+        rem = len(payload) % 4
+        if rem > 0:
+            payload += '=' * (4 - rem)
+        payload = base64.urlsafe_b64decode(payload.encode('utf-8'))
+        return json.loads(payload.decode('utf-8'))
 
     def get_scenes_list(self, scene_type='ortho', order_by=None, count=None,
                         intersects=None, **filters):
