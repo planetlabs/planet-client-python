@@ -65,7 +65,7 @@ def test_exception_translation():
 def test_version_flag():
 
     results = runner.invoke(scripts.cli, ['--version'])
-    assert results.output == "%s\n" % planet.__version__
+    assert results.output == "%s\n" % planet.api.__version__
 
 
 def test_workers_flag():

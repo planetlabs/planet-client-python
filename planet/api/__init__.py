@@ -21,3 +21,5 @@ __all__ = [
     Client, APIException, BadQuery, InvalidAPIKey,
     NoPermission, MissingResource, OverQuota, ServerError
 ]
+
+__version__ = '0.0.1'
