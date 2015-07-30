@@ -22,6 +22,8 @@ import json
 import os
 
 from planet import api
+from _common import read_fixture
+from _common import clone
 import pytest
 import requests_mock
 
@@ -88,7 +90,7 @@ def test_fetch_scene_info_scene_id(client):
     with requests_mock.Mocker() as m:
         uri = os.path.join(client.base_url, 'scenes/ortho/x22')
         m.get(uri, text='bananas', status_code=200)
-        client.get_scene_metadata('x22').get_raw() == 'bananas'
+        assert client.get_scene_metadata('x22').get_raw() == 'bananas'
 
 
 def test_login(client):
@@ -141,3 +143,13 @@ def test_get_scenes_list(client):
         # total of 5 responses
         assert len(pages) == 5
         assert all([p is not None for p in pages])
+
+
+def test_workspace_set_create(client):
+    with requests_mock.Mocker() as m:
+        uri = os.path.join(client.base_url, 'workspaces/')
+        workspace = json.loads(read_fixture('workspace.json'))
+        request = clone(workspace)
+        request.pop('id')
+        m.post(uri, text=json.dumps(workspace), status_code=200)
+        assert client.set_workspace(request).get_raw() == json.dumps(workspace)

@@ -34,10 +34,72 @@ def read_planet_json():
     return contents
 
 
+def build_conditions(workspace):
+    '''Convert a workspace to conditions/filters that can be used in API
+    queries. Walks the workspace.filters object and returns a dict of query
+    parameters in the form of [metadata name].[comparator]:[value] pairs.
+    '''
+    conditions = {}
+    filters = workspace.get('filters')
+
+    keys = set(filters.keys())
+    keys.remove('geometry')
+
+    # workspace stores this as an int, API wants a label
+    rules = filters.get('image_statistics.image_quality', None)
+    if rules:
+        labels = ['test', 'standard', 'target']
+        for k, v in rules.items():
+            rules[k] = labels[int(v)]
+        filters['image_statistics.image_quality'] = rules
+
+    for key in keys:
+        rules = filters[key]
+        conditions.update([
+            ('%s.%s' % (key, r), v) for r, v in rules.items()
+        ])
+    return conditions
+
+
 def write_planet_json(contents):
     fname = _planet_json_file()
     with open(fname, 'w') as fp:
         fp.write(json.dumps(contents))
+
+
+def feature_collection(geometry):
+    return {
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "properties": {},
+            "geometry": geometry
+        }]
+    }
+
+
+def get_workspace_geometry(workspace):
+    return workspace['filters'].get('geometry', {}).get('intersects', None)
+
+
+def geometry_from_json(obj):
+    '''try to find a geometry in the provided JSON object'''
+    obj_type = obj.get('type', None)
+    if not obj_type:
+        return None
+    if obj_type == 'FeatureCollection':
+        features = obj.get('features', [])
+        if len(features):
+            obj = obj['features'][0]
+            obj_type = obj.get('type', None)
+        else:
+            return None
+    if obj_type == 'Feature':
+        geom = obj['geometry']
+    else:
+        # @todo we're just assuming it's a geometry at this point
+        geom = obj
+    return geom
 
 
 def check_status(response):

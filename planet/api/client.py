@@ -18,6 +18,7 @@ from .dispatch import RequestsDispatcher
 from . import auth
 from .exceptions import InvalidIdentity
 from . import models
+from .utils import check_status
 
 
 class Client(object):
@@ -41,6 +42,11 @@ class Client(object):
                               body_type)
 
     def _get(self, path, body_type=models.JSON, params=None, callback=None):
+        # convert any JSON objects to text explicitly
+        for k, v in (params or {}).items():
+            if isinstance(v, dict):
+                params[k] = json.dumps(v)
+
         request = self._request(path, body_type, params)
         response = self.dispatcher.response(request)
         if callback:
@@ -123,3 +129,31 @@ class Client(object):
             Mosaic name as returned by `list_mosaics`.
         """
         return self._get('mosaics/%s' % name).get_body()
+
+    def get_workspaces(self):
+        return self._get('workspaces').get_body()
+
+    def get_workspace(self, id):
+        return self._get('workspaces/%s' % id).get_body()
+
+    def set_workspace(self, workspace, id=None):
+        if id:
+            workspace['id'] = id
+            url = 'workspaces/%s' % id
+            method = 'PUT'
+        else:
+            'id' in workspace and workspace.pop('id')
+            url = 'workspaces/'
+            method = 'POST'
+        # without these, scenes UI breaks
+        defaults = {
+            "image_statistics.image_quality": {
+                "gte": 1
+            }
+        }
+        defaults.update(workspace)
+        result = self.dispatcher.dispatch_request(method, self.base_url + url,
+                                                  data=json.dumps(defaults),
+                                                  auth=self.auth)
+        check_status(result)
+        return models.JSON(None, result, self.dispatcher)
