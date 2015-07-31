@@ -117,7 +117,7 @@ def total_bytes(responses):
 @click.option('-k', '--api-key',
               help='Valid API key - or via env variable %s' % api.auth.ENV_KEY)
 @click.option('-u', '--base-url', help='Optional for testing')
-@click.version_option(version=planet.__version__, message='%(version)s')
+@click.version_option(version=planet.api.__version__, message='%(version)s')
 def cli(verbose, api_key, base_url, workers):
     '''Planet API Client'''
 
