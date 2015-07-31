@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+from .utils import read_planet_json
 
 ENV_KEY = 'PL_API_KEY'
 
@@ -23,4 +24,8 @@ class APIKey(object):
 
 
 def find_api_key():
-    return os.getenv(ENV_KEY)
+    api_key = os.getenv(ENV_KEY)
+    if api_key is None:
+        contents = read_planet_json()
+        api_key = contents.get('key', None)
+    return api_key

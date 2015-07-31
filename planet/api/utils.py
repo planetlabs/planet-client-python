@@ -14,10 +14,30 @@
 
 from datetime import datetime
 from . import exceptions
+import json
 import os
 import re
 
 _ISO_FMT = '%Y-%m-%dT%H:%M:%S.%f+00:00'
+
+
+def _planet_json_file():
+    return os.path.join(os.path.expanduser('~'), '.planet.json')
+
+
+def read_planet_json():
+    fname = _planet_json_file()
+    contents = {}
+    if os.path.exists(fname):
+        with open(fname, 'r') as fp:
+            contents = json.loads(fp.read())
+    return contents
+
+
+def write_planet_json(contents):
+    fname = _planet_json_file()
+    with open(fname, 'w') as fp:
+        fp.write(json.dumps(contents))
 
 
 def check_status(response):

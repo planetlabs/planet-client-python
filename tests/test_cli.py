@@ -70,13 +70,13 @@ def test_version_flag():
 
 def test_workers_flag():
     assert 'workers' not in scripts.client_params
-    runner.invoke(scripts.cli, ['--workers', '19', 'list-scene-types'])
+    runner.invoke(scripts.cli, ['--workers', '19', 'search'])
     assert 'workers' in scripts.client_params
     assert scripts.client_params['workers'] == 19
 
 
 def test_api_key_flag():
-    runner.invoke(scripts.cli, ['-k', 'shazbot', 'list-scene-types'])
+    runner.invoke(scripts.cli, ['-k', 'shazbot', 'search'])
     assert 'api_key' in scripts.client_params
     assert scripts.client_params['api_key'] == 'shazbot'
 
@@ -141,3 +141,22 @@ def test_download():
 
     result = runner.invoke(scripts.cli, ['download', '20150615_190229_0905'])
     assert result.exit_code == 0
+
+
+def test_init():
+    # monkey patch the storage file
+    test_file = '.test_planet_json'
+    api.utils._planet_json_file = lambda: test_file
+    client.login.return_value = {
+        'api_key': 'SECRIT'
+    }
+    try:
+        result = runner.invoke(scripts.cli, ['init',
+                                             '--email', 'bil@ly',
+                                             '--password', 'secret'])
+        assert result.exit_code == 0
+        with open(test_file) as fp:
+            data = json.loads(fp.read())
+        assert data['key'] == 'SECRIT'
+    finally:
+        os.unlink(test_file)
