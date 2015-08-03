@@ -16,8 +16,10 @@ from .exceptions import (APIException, BadQuery, InvalidAPIKey)
 from .exceptions import (NoPermission, MissingResource, OverQuota)
 from .exceptions import (ServerError,)
 from .client import Client
+from .utils import write_to_file
 
 __all__ = [
     Client, APIException, BadQuery, InvalidAPIKey,
-    NoPermission, MissingResource, OverQuota, ServerError
+    NoPermission, MissingResource, OverQuota, ServerError,
+    write_to_file
 ]
