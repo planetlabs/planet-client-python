@@ -28,7 +28,7 @@ class Response(object):
         self._future = None
 
     def _create_body(self, response):
-        return self.request.body_type(response, self._dispatcher)
+        return self.request.body_type(self.request, response, self._dispatcher)
 
     def get_body(self):
         if self._body is None:
@@ -68,7 +68,8 @@ class Request(object):
 
 class Body(object):
 
-    def __init__(self, http_response, dispatcher):
+    def __init__(self, request, http_response, dispatcher):
+        self._request = request
         self.response = http_response
         self._dispatcher = dispatcher
         self.size = int(self.response.headers.get('content-length', 0))
@@ -125,7 +126,7 @@ class Scenes(JSON):
         links = self.get()['links']
         next = links.get('next', None)
         if next:
-            request = Request(next, body_type=Scenes)
+            request = Request(next, self._request.auth, body_type=Scenes)
             return self._dispatcher.response(request).get_body()
 
     def iter(self, pages=None):
@@ -136,6 +137,8 @@ class Scenes(JSON):
             pages -= 1
         while pages > 0:
             page = page.next()
+            if page is None:
+                break
             yield page
             pages -= 1
 

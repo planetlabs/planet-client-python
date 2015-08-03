@@ -115,3 +115,29 @@ def test_login_failure(client):
             assert str(ex) == 'invalid'
         else:
             assert False
+
+
+def test_get_scenes_list(client):
+    with requests_mock.Mocker() as m:
+        uri = os.path.join(client.base_url, 'scenes/ortho')
+
+        def fake_response(i):
+            return json.dumps({'links': {
+                'next': client.base_url + 'next/link/%s' % i
+            }})
+        # the first request will be to the endpoint
+        m.get(uri, text=fake_response(0), status_code=200)
+        # subsequent 3 requests should follow whatever the response says
+        for i in range(3):
+            m.get(client.base_url + 'next/link/%s' % i,
+                  text=fake_response(i + 1), status_code=200)
+        # the last response will have no next link provided
+        m.get(client.base_url + 'next/link/%s' % 3,
+              text=json.dumps({'links': {}}),
+              status_code=200)
+
+        scenes = client.get_scenes_list().iter()
+        pages = list(scenes)
+        # total of 5 responses
+        assert len(pages) == 5
+        assert all([p is not None for p in pages])
