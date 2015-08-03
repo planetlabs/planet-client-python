@@ -3,6 +3,7 @@
 *.egg
 dist
 build
+scratch
 
 # Unit test / coverage reports
 htmlcov/
