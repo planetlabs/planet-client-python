@@ -312,14 +312,13 @@ def sync(destination, scene_type, limit):
                 fp.write(json.dumps(f, indent=2))
         check_futures(futures)
         transferred += total_bytes(futures)
-        recent = max([
-            api.strp_timestamp(f['properties']['published']) for f in features]
-        )
+        recent = max([api.utils.strp_timestamp(f['properties']['published'])
+                      for f in features])
         latest = max(latest, recent) if latest else recent
         if counter.remaining <= 0:
             break
     if latest:
-        sync['latest'] = api.strf_timestamp(latest)
+        sync['latest'] = api.utils.strf_timestamp(latest)
         with open(sync_file, 'wb') as fp:
             fp.write(json.dumps(sync, indent=2))
     if transferred:
