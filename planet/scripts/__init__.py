@@ -278,7 +278,7 @@ def sync(destination, scene_type, limit):
         sync = {}
     filters = {}
     if 'latest' in sync:
-        filters['acquired.gt'] = sync['latest']
+        filters['published.gt'] = sync['latest']
     start_time = time.time()
     transferred = 0
     _client = client()
@@ -313,7 +313,7 @@ def sync(destination, scene_type, limit):
         check_futures(futures)
         transferred += total_bytes(futures)
         recent = max([
-            api.strp_timestamp(f['properties']['acquired']) for f in features]
+            api.strp_timestamp(f['properties']['published']) for f in features]
         )
         latest = max(latest, recent) if latest else recent
         if counter.remaining <= 0:
