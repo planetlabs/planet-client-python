@@ -12,16 +12,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 from requests_futures.sessions import FuturesSession
 from . utils import check_status
 from . models import Response
 from . exceptions import InvalidAPIKey
+from requests.compat import urlparse
+
+
+def _is_subdomain_of_tld(url1, url2):
+    orig_host = urlparse(url1).hostname
+    re_host = urlparse(url2).hostname
+    return orig_host.split('.')[-2:] == re_host.split('.')[-2:]
+
+
+class RedirectSession(FuturesSession):
+    '''This exists to override the existing behavior of requests that will
+    strip Authorization headers from any redirect requests that resolve to a
+    new domain. Instead, we'll keep headers if the redirect is a subdomain
+    and if not, extract the api-key from the header and add it to the url
+    as a parameter.
+    '''
+    def rebuild_auth(self, prepared_request, response):
+        existing_auth = prepared_request.headers.get('Authorization', None)
+        if existing_auth:
+            orig = response.request.url
+            redir = prepared_request.url
+            if not _is_subdomain_of_tld(orig, redir):
+                prepared_request.headers.pop('Authorization')
+            key = re.match('api-key (\S+)', existing_auth)
+            if key:
+                prepared_request.prepare_url(
+                    prepared_request.url, {
+                        'api_key': key.group(1)
+                    }
+                )
 
 
 class RequestsDispatcher(object):
 
     def __init__(self, workers=4):
-        self.session = FuturesSession(max_workers=workers)
+        self.session = RedirectSession(max_workers=workers)
 
     def response(self, request):
         return Response(request, self)
@@ -30,11 +61,16 @@ class RequestsDispatcher(object):
         auth = request.auth
         if not auth:
             raise InvalidAPIKey('No API key provided')
-        self.session.headers.update({
-            'Authorization': 'api-key %s' % auth.value
-        })
+
+        def _auth_callback(req):
+            req.headers.update({
+                'Authorization': 'api-key %s' % auth.value
+            })
+            return req
+
         return self.session.get(request.url, params=request.params,
-                                stream=True, background_callback=callback)
+                                stream=True, background_callback=callback,
+                                auth=_auth_callback)
 
     def _dispatch(self, request, callback=None):
         response = self._dispatch_async(request, callback).result()
