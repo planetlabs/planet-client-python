@@ -1,0 +1,24 @@
+#!/bin/bash
+
+: ${TAG:?'Provide TAG'}
+DRAFT=${DRAFT:=true}
+BODY="${BODY:=$TAG}"
+REQUEST=$(printf '{"tag_name": "v%s","draft": %s, "name": "%s", "body": "%s"}' $TAG $DRAFT $TAG "$BODY")
+URL="https://api.github.com/repos/planetlabs/planet-client-python/releases"
+
+echo 'Creating release with request:'
+echo $REQUEST
+echo -n 'Looking good? (Y/N) :'
+read CREATE
+[ $CREATE != "Y" ] && exit 0
+
+echo 'creating release in github'
+RELEASE=$(curl -n -XPOST --data "${REQUEST}" "${URL}")
+RELEASE_ID=$(echo $RELEASE | jq .id)
+RELEASE_URL=$(echo $RELEASE | jq -r .upload_url)
+RELEASE_URL=${RELEASE_URL/\{?name\}/?}
+echo 'uploading binary to' ${RELEASE_URL}
+curl -H 'Content-Type: application/zip' -n -XPOST --data-binary @dist/planet ${RELEASE_URL}name=planet
+echo 'uploading docs to' ${RELEASE_URL}
+curl -H 'Content-Type: application/zip' -n -XPOST --data-binary @dist/planet-docs.zip ${RELEASE_URL}name=planet
+echo "created ${TAG}, draft=${DRAFT}"
