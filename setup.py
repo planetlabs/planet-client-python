@@ -35,11 +35,18 @@ with open('planet/__init__.py') as f:
 
 
 test_requires = [
-    'pytest',
     'mock',
+    'pytest',
     'requests-mock',
 ]
 
+dev_requires = [
+    'flake8',
+    'pex',
+    'pytest-cov',
+    'sphinx',
+    'wheel',
+]
 
 setup(name='planet',
       version=version,
@@ -67,14 +74,11 @@ setup(name='planet',
       install_requires=[
           'click',
           'requests',
-          'requests_futures>=0.9.5'
+          'requests_futures>=0.9.5',
       ],
       extras_require={
           'test': test_requires,
-          'dev': test_requires + [
-              'pex',
-              'sphinx',
-          ]
+          'dev': test_requires + dev_requires,
       },
       entry_points="""
       [console_scripts]
