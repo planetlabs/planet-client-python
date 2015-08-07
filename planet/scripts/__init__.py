@@ -16,6 +16,7 @@ import sys
 import time
 import json
 import logging
+import re
 import warnings
 from os import path
 
@@ -37,6 +38,7 @@ pretty = click.option('-pp', '--pretty', default=False, is_flag=True)
 scene_type = click.option('-s', '--scene-type', default='ortho')
 dest_dir = click.option('-d', '--dest', help='Destination directory',
                         type=click.Path(file_okay=False, resolve_path=True))
+workspace = click.option('--workspace')
 
 
 # monkey patch warnings module to hide InsecurePlatformWarning - the warning
@@ -109,6 +111,49 @@ def total_bytes(responses):
     return sum([len(r.get_body()) for r in responses])
 
 
+def echo_json_response(response, pretty):
+    res = response.get_raw()
+    if pretty:
+        res = json.dumps(json.loads(res), indent=2)
+    click.echo(res)
+
+
+def read(value, split=False):
+    '''Get the value of an option interpreting as a file implicitly or
+    explicitly and falling back to the value if not explicitly specified.
+    If the value is '@name', then a file must exist with name and the returned
+    value will be the contents of that file. If the value is '@-' or '-', then
+    stdin will be read and returned as the value. Finally, if a file exists
+    with the provided value, that file will be read. Otherwise, the value
+    will be returned.
+    '''
+    v = str(value)
+    retval = value
+    if v[0] == '@' or v == '-':
+        fname = '-' if v == '-' else v[1:]
+        try:
+            with click.open_file(fname) as fp:
+                if not fp.isatty():
+                    retval = fp.read()
+                else:
+                    retval = None
+        except IOError as ioe:
+            # if explicit and problems, raise
+            if v[0] == '@':
+                raise click.ClickException(str(ioe))
+    elif path.exists(v) and path.isfile(v):
+        with click.open_file(v) as fp:
+            retval = fp.read()
+    if retval and split and type(retval) != tuple:
+        retval = _split(retval.strip())
+    return retval
+
+
+def _split(value):
+    '''return input split on any whitespace'''
+    return re.split('\s+', value)
+
+
 @click.group()
 @click.option('-w', '--workers', default=4,
               help=('The number of concurrent downloads when requesting '
@@ -156,37 +201,37 @@ def init(email, password):
 @pretty
 @scene_type
 @cli.command('search')
-@click.argument("aoi", default="-", required=False)
+@click.argument('aoi', default='@-', required=False)
 @click.option('--count', type=click.INT, required=False,
               help="Set the number of returned scenes.")
-@click.option("--where", nargs=3, multiple=True,
-              help=("Provide additional search criteria. See "
-                    "https://www.planet.com/docs/v0/scenes/#metadata for "
-                    " search metadata fields."))
-def get_scenes_list(scene_type, pretty, aoi, count, where):
+@click.option('--where', nargs=3, multiple=True,
+              help=('Provide additional search criteria. See '
+                    'https://www.planet.com/docs/v0/scenes/#metadata for '
+                    'search metadata fields.'))
+@click.option('--workspace')
+def get_scenes_list(scene_type, pretty, aoi, count, where, workspace):
     '''Get a list of scenes'''
 
-    if aoi == "-":
-        src = click.open_file('-')
-        if not src.isatty():
-            lines = src.readlines()
-            aoi = ''.join([line.strip() for line in lines])
-        else:
-            aoi = None
+    aoi = read(aoi)
+    conditions = {}
+
+    if workspace:
+        workspace = call_and_wrap(client().get_workspace, workspace).get()
+        ws_filters = api.utils.build_conditions(workspace)
+        if aoi is None:
+            aoi = api.utils.get_workspace_geometry(workspace)
+            aoi = api.utils.feature_collection(aoi)
+        conditions.update(ws_filters)
 
     if where:
-        conditions = {
-            "%s.%s" % condition[0:2]: condition[2]
+        conditions.update([
+            ("%s.%s" % condition[0:2], condition[2])
             for condition in where
-        }
-    else:
-        conditions = {}
+        ])
 
-    res = call_and_wrap(client().get_scenes_list, scene_type=scene_type,
-                        intersects=aoi, count=count, **conditions).get_raw()
-    if pretty:
-        res = json.dumps(json.loads(res), indent=2)
-    click.echo(res)
+    echo_json_response(call_and_wrap(client().get_scenes_list,
+                       scene_type=scene_type, intersects=aoi, count=count,
+                       **conditions), pretty)
 
 
 @pretty
@@ -196,13 +241,8 @@ def get_scenes_list(scene_type, pretty, aoi, count, where):
 def metadata(scene_id, scene_type, pretty):
     '''Get scene metadata'''
 
-    res = call_and_wrap(client().get_scene_metadata,
-                        scene_id, scene_type).get_raw()
-
-    if pretty:
-        res = json.dumps(json.loads(res), indent=2)
-
-    click.echo(res)
+    echo_json_response(call_and_wrap(client().get_scene_metadata,
+                       scene_id, scene_type), pretty)
 
 
 @scene_type
@@ -214,18 +254,14 @@ def metadata(scene_id, scene_type, pretty):
                   ['visual', 'analytic', 'qa']
               ), default='visual')
 @cli.command('download')
-@click.pass_context
-def fetch_scene_geotiff(ctx, scene_ids, scene_type, product, dest):
+def fetch_scene_geotiff(scene_ids, scene_type, product, dest):
     """
     Download full scene image(s).
     """
 
-    if len(scene_ids) == 0:
-        src = click.open_file('-')
-        if not src.isatty():
-            scene_ids = map(lambda s: s.strip(), src.readlines())
-        else:
-            click.echo(ctx.get_usage())
+    scene_ids = read(scene_ids, split=True)
+    if not scene_ids:
+        return
 
     start_time = time.time()
     futures = client().fetch_scene_geotiffs(scene_ids, scene_type, product,
@@ -244,10 +280,9 @@ def fetch_scene_geotiff(ctx, scene_ids, scene_type, product, dest):
 def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
     '''Fetch scene thumbnail(s)'''
 
-    if len(scene_ids) == 0:
-        src = click.open_file('-')
-        if not src.isatty():
-            scene_ids = map(lambda s: s.strip(), src.readlines())
+    scene_ids = read(scene_ids, split=True)
+    if not scene_ids:
+        return
 
     futures = client().fetch_scene_thumbnails(scene_ids, scene_type, size, fmt,
                                               api.write_to_file(dest))
@@ -325,18 +360,79 @@ def sync(destination, scene_type, limit):
         summarize_throughput(transferred, start_time)
 
 
+@pretty
 @cli.command('mosaics')
-def list_mosaics():
+def list_mosaics(pretty):
     """
     List all mosaics
     """
-    click.echo(call_and_wrap(client().list_mosaics).get_raw())
+    echo_json_response(call_and_wrap(client().list_mosaics), pretty)
 
 
+@pretty
 @cli.command('mosaic')
 @click.argument('mosaic_name', nargs=1)
-def get_mosaic(mosaic_name):
+def get_mosaic(mosaic_name, pretty):
     """
     Describe a specified mosaic
     """
-    click.echo(call_and_wrap(client().get_mosaic, mosaic_name).get_raw())
+    echo_json_response(call_and_wrap(client().get_mosaic, mosaic_name), pretty)
+
+
+@pretty
+@cli.command('list-workspaces')
+def list_workspaces(pretty):
+    """
+    List workspaces.
+    """
+    echo_json_response(call_and_wrap(client().get_workspaces), pretty)
+
+
+@pretty
+@cli.command('get-workspace')
+@click.argument('id', nargs=1)
+def get_workspace(pretty, id):
+    """
+    Get workspace.
+    """
+    echo_json_response(call_and_wrap(client().get_workspace, id), pretty)
+
+
+@cli.command('set-workspace')
+@click.argument("workspace", default="@-", required=False)
+@click.option('--id', help='if provided, update the workspace with this id')
+@click.option('--aoi', help='the geometry to use')
+@click.option('--name')
+@click.option('--create', is_flag=True)
+def set_workspace(id, aoi, name, create, workspace):
+    '''Create or modify a workspace'''
+    workspace = read(workspace)
+    try:
+        workspace = json.loads(workspace) if workspace else {}
+    except ValueError:
+        raise click.ClickException('workspace must be JSON')
+    # what workspace id are we working with
+    if not id:
+        id = workspace.get('id', None)
+    if create:
+        id = None
+
+    aoi = read(aoi)
+    if aoi:
+        try:
+            aoi = json.loads(aoi)
+        except ValueError:
+            raise click.ClickException('workspace aoi must be JSON')
+        geom = api.utils.geometry_from_json(aoi)
+        if geom is None:
+            raise click.ClickException('unable to find geometry in aoi')
+        workspace['filters'] = {
+            'geometry': {
+                'intersects': geom
+            }
+        }
+    if name:
+        workspace['name'] = name
+
+    echo_json_response(call_and_wrap(client().set_workspace,
+                       workspace, id), pretty)

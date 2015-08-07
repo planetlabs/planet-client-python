@@ -19,8 +19,14 @@ focus should be on asserting any CLI logic prior to client method invocation
 lower level lib/client tests go in the test_mod suite
 '''
 
-import os
+from contextlib import contextmanager
 import json
+import os
+import sys
+try:
+    from StringIO import StringIO as Buffy
+except ImportError:
+    from io import BytesIO as Buffy
 
 from click import ClickException
 from click.testing import CliRunner
@@ -31,10 +37,9 @@ import planet
 from planet import api
 from planet.api import models
 from planet import scripts
+from _common import read_fixture
+from _common import clone
 
-
-TEST_DIR = os.path.dirname(os.path.realpath(__file__))
-FIXTURE_DIR = os.path.join(TEST_DIR, 'fixtures')
 
 client = MagicMock(name='client', spec=api.Client)
 scripts.client = lambda: client
@@ -54,6 +59,52 @@ def assert_cli_exception(cause, expected):
         assert False, 'did not throw'
     except ClickException as ex:
         assert str(ex) == expected
+
+
+@contextmanager
+def stdin(content):
+    saved = sys.stdin
+    sys.stdin = Buffy(content.encode('utf-8'))
+    yield
+    sys.stdin = saved
+
+
+def test_read(tmpdir):
+    # no special files in arguments, expect what's been passed in
+    assert None == scripts.read(None)
+    assert 'foo' == scripts.read('foo')
+    assert (1,) == scripts.read((1,))
+
+    # same but with split
+    assert None == scripts.read(None, split=True)
+    assert ['foo'] == scripts.read('foo', split=True)
+    assert (1,) == scripts.read((1,), split=True)
+
+    # stdin specifiers
+    with stdin('text'):
+        assert 'text' == scripts.read('-')
+    with stdin('text'):
+        assert 'text' == scripts.read('@-')
+
+    # explicit file specifier
+    infile = tmpdir.join('infile')
+    infile.write('farb')
+    assert 'farb' == scripts.read('@%s' % infile)
+
+    # implied file
+    assert 'farb' == scripts.read('%s' % infile)
+
+    # failed explict file
+    try:
+        noexist = 'not-here-hopefully'
+        scripts.read('@%s' % noexist)
+        assert False
+    except ClickException as ex:
+        assert str(ex) == "[Errno 2] No such file or directory: '%s'" % noexist
+
+    # splitting
+    xs = scripts.read(' x\nx\r\nx\t\tx\t\n x ', split=True)
+    assert ['x'] * 5 == xs
 
 
 def test_exception_translation():
@@ -83,9 +134,7 @@ def test_api_key_flag():
 
 def test_search():
 
-    fixture_path = os.path.join(FIXTURE_DIR, 'search.geojson')
-    with open(fixture_path, 'r') as src:
-        expected = src.read()
+    expected = read_fixture('search.geojson')
 
     response = MagicMock(spec=models.JSON)
     response.get_raw.return_value = expected
@@ -99,13 +148,8 @@ def test_search():
 
 def test_search_by_aoi():
 
-    aoi_path = os.path.join(FIXTURE_DIR, 'aoi.geojson')
-    with open(aoi_path, 'r') as src:
-        aoi = src.read()
-
-    fixture_path = os.path.join(FIXTURE_DIR, 'search-by-aoi.geojson')
-    with open(fixture_path, 'r') as src:
-        expected = src.read()
+    aoi = read_fixture('search-by-aoi.geojson')
+    expected = read_fixture('search-by-aoi.geojson')
 
     response = MagicMock(spec=models.JSON)
     response.get_raw.return_value = expected
@@ -121,9 +165,7 @@ def test_search_by_aoi():
 def test_metadata():
 
     # Read in fixture
-    fixture_path = os.path.join(FIXTURE_DIR, '20150615_190229_0905.geojson')
-    with open(fixture_path, 'r') as src:
-        expected = src.read()
+    expected = read_fixture('20150615_190229_0905.geojson')
 
     # Construct a response from the fixture
     response = MagicMock(spec=models.JSON)
@@ -160,3 +202,69 @@ def test_init():
         assert data['key'] == 'SECRIT'
     finally:
         os.unlink(test_file)
+
+
+def _set_workspace(workspace, *args, **kw):
+    response = MagicMock(spec=models.JSON)
+    response.get_raw.return_value = '{"status": "OK"}'
+
+    client.set_workspace.return_value = response
+    client.set_workspace.reset_mock()
+    args = ['set-workspace'] + list(args)
+    if workspace is not None:
+        args += [json.dumps(workspace)]
+    result = runner.invoke(scripts.cli, args, input=kw.get('input', None))
+    assert result.exit_code == kw.get('expected_status', 0)
+
+
+def test_workspace_create_no_id():
+
+    workspace = json.loads(read_fixture('workspace.json'))
+    workspace.pop('id')
+    expected = clone(workspace)
+    _set_workspace(workspace)
+    client.set_workspace.assert_called_once_with(expected, None)
+
+
+def test_workspace_create_from_existing():
+
+    workspace = json.loads(read_fixture('workspace.json'))
+    expected = clone(workspace)
+    _set_workspace(workspace, '--create')
+    client.set_workspace.assert_called_once_with(expected, None)
+
+
+def test_workspace_update_from_existing_with_id():
+
+    workspace = json.loads(read_fixture('workspace.json'))
+    expected = clone(workspace)
+    _set_workspace(workspace, '--id', '12345')
+    client.set_workspace.assert_called_once_with(expected, '12345')
+
+
+def test_workspace_update_stdin():
+    workspace = json.loads(read_fixture('workspace.json'))
+    expected = clone(workspace)
+    _set_workspace(workspace)
+    client.set_workspace.assert_called_once_with(expected, workspace['id'])
+
+
+def test_workspace_create_aoi_stdin():
+    geometry = {'type': 'Geometry'}
+    expected = {
+        'name': 'foobar',
+        'filters': {
+            'geometry': {
+                'intersects': geometry
+            }
+        }
+    }
+
+    # since the CLI wants to read from stdin for the 'workspace' arg,
+    # provide an empty workspace
+    _set_workspace({}, '--name', 'foobar', '--aoi', json.dumps(geometry))
+    client.set_workspace.assert_called_once_with(expected, None)
+
+    _set_workspace({}, '--name', 'foobar', '--aoi', '@-',
+                   input=json.dumps(geometry))
+    client.set_workspace.assert_called_once_with(expected, None)
