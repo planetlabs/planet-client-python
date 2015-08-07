@@ -108,11 +108,25 @@ def test_login_failure(client):
     with requests_mock.Mocker() as m:
         uri = os.path.join(client.base_url, 'auth/login')
         response = json.dumps({'message': 'invalid'})
-        m.post(uri, text=response, status_code=400)
+        m.post(uri, text=response, status_code=401)
         try:
             client.login('jimmy', 'crackcorn')
         except api.exceptions.InvalidIdentity as ex:
             assert str(ex) == 'invalid'
+        else:
+            assert False
+
+
+def test_login_errors(client):
+    '''Verify login functionality'''
+    with requests_mock.Mocker() as m:
+        uri = os.path.join(client.base_url, 'auth/login')
+        response = 'An error occurred'
+        m.post(uri, text=response, status_code=500)
+        try:
+            client.login('jimmy', 'crackcorn')
+        except api.exceptions.APIException as ex:
+            assert str(ex) == '500: %s' % response
         else:
             assert False
 

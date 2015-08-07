@@ -16,7 +16,7 @@ import base64
 import json
 from .dispatch import RequestsDispatcher
 from . import auth
-from .exceptions import InvalidIdentity
+from .exceptions import (InvalidIdentity, APIException)
 from . import models
 
 
@@ -56,13 +56,18 @@ class Client(object):
             'email': identity,
             'password': credentials
         }).result()
-        if result.status_code == 400:
+        status = result.status_code
+        if status == 400:
+            raise APIException('invalid parameters, login process has changed')
+        elif status == 401:
             # do our best to get something out to the user
             msg = result.text
             try:
                 msg = json.loads(result.text)['message']
             finally:
                 raise InvalidIdentity(msg)
+        elif status != 200:
+            raise APIException('%s: %s' % (status, result.text))
         jwt = result.text
         payload = jwt.split('.')[1]
         rem = len(payload) % 4
