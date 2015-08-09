@@ -172,6 +172,24 @@ def read(value, split=False):
     return retval
 
 
+def read_aoi(value):
+    '''See if the provided AOI looks like a WKT or GeoJSON and if so, return
+    as text or a parsed dict. If the value resolves to nothing, return None.
+    Otherwise raise ClickException if the provided value is not either.
+    '''
+    aoi = None
+    raw = read(value)
+    if raw is not None:
+        if api.utils.probably_wkt(raw):
+            aoi = raw
+        else:
+            aoi = api.utils.probably_geojson(raw)
+        if aoi is None:
+            raise click.ClickException('The provided AOI does not look like '
+                                       'WKT or GeoJSON')
+    return aoi
+
+
 def _split(value):
     '''return input split on any whitespace'''
     return re.split('\s+', value)
@@ -235,7 +253,7 @@ def init(email, password):
 def get_scenes_list(scene_type, pretty, aoi, limit, where, workspace):
     '''Get a list of scenes'''
 
-    aoi = read(aoi)
+    aoi = read_aoi(aoi)
     conditions = {}
 
     if workspace:
@@ -444,12 +462,8 @@ def set_workspace(id, aoi, name, create, workspace):
     if create:
         id = None
 
-    aoi = read(aoi)
+    aoi = read_aoi(aoi)
     if aoi:
-        try:
-            aoi = json.loads(aoi)
-        except ValueError:
-            raise click.ClickException('workspace aoi must be JSON')
         geom = api.utils.geometry_from_json(aoi)
         if geom is None:
             raise click.ClickException('unable to find geometry in aoi')

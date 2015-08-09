@@ -43,3 +43,29 @@ def test_build_conditions():
     assert c['sat.alt.gte'] == 200
     assert c['sat.alt.lte'] == 650
     assert c['age.lte'] == 63072000
+
+
+def test_probably_wkt():
+    # not wkt
+    assert not utils.probably_wkt('')
+    assert not utils.probably_wkt('{ geojson }')
+    # it is wkt but we don't support it
+    assert not utils.probably_wkt('POLYHEDRALSURFACE ()')
+    assert not utils.probably_wkt('TRIANGLE((0 0 0,0 1 0,1 1 0,0 0 0))')
+
+    # all valid wkt
+    wkt = read_fixture('valid-wkt.txt').split('\n')
+    assert len(wkt) > 0
+    for valid in wkt:
+        assert utils.probably_wkt(valid)
+
+
+def test_probably_geojson():
+    # nope
+    assert utils.probably_geojson('') is None
+    assert utils.probably_geojson('{}') is None
+    assert utils.probably_geojson({}) is None
+    assert utils.probably_geojson({'type': 'random'}) is None
+    # yep
+    assert utils.probably_geojson({'type': 'Point'}) == {'type': 'Point'}
+    assert utils.probably_geojson('{"type": "Point"}') == {'type': 'Point'}
