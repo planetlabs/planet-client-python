@@ -124,7 +124,7 @@ class Client(object):
 
         .. todo:: Pagination
         """
-        return self._get('mosaics').get_body()
+        return self._get('mosaics', models.Mosaics).get_body()
 
     def get_mosaic(self, name):
         """
@@ -134,6 +134,31 @@ class Client(object):
             Mosaic name as returned by `list_mosaics`.
         """
         return self._get('mosaics/%s' % name).get_body()
+
+    def get_mosaic_quads(self, name, intersects=None, count=50):
+        """
+        Get metadata for mosaic quads.
+
+        :param name:
+            Mosaic name as retured by `list_mosaics`.
+        :param intersects:
+            WKT or GeoJSON describing a region of interest.
+        :param count:
+            Number of results to return.
+        """
+
+        params = {}
+        if intersects:
+            params['intersects'] = intersects
+        if count:
+            params['count'] = count
+
+        return self._get('mosaics/%s/quads/' % name, params=params).get_body()
+
+    def fetch_mosaic_quad_geotiffs(self, mosaic_name, quad_ids, callback=None):
+        pt = 'mosaics/%s/quads/%s/full'
+        paths = [pt % (mosaic_name, qid) for qid in quad_ids]
+        return self._download_many(paths, {}, callback)
 
     def get_workspaces(self):
         return self._get('workspaces').get_body()

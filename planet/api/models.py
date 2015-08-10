@@ -121,13 +121,13 @@ class JSON(Body):
         return self.response.json()
 
 
-class Scenes(JSON):
+class Paged(JSON):
 
     def next(self):
         links = self.get()['links']
         next = links.get('next', None)
         if next:
-            request = Request(next, self._request.auth, body_type=Scenes)
+            request = Request(next, self._request.auth, body_type=type(self))
             return self._dispatcher.response(request).get_body()
 
     def iter(self, pages=None):
@@ -142,6 +142,14 @@ class Scenes(JSON):
                 break
             yield page
             pages -= 1
+
+
+class Scenes(Paged):
+    pass
+
+
+class Mosaics(Paged):
+    pass
 
 
 class Image(Body):

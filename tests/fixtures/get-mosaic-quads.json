@@ -1,0 +1,140 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -45.8789062436,
+              -11.1784018721
+            ],
+            [
+              -45.8789062436,
+              -11.3507967208
+            ],
+            [
+              -45.7031249936,
+              -11.3507967208
+            ],
+            [
+              -45.7031249936,
+              -11.1784018721
+            ],
+            [
+              -45.8789062436,
+              -11.1784018721
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "L15-0763E-0959N",
+      "properties": {
+        "updated": "2015-07-20T17:10:41.309135+00:00",
+        "num_input_scenes": 17,
+        "links": {
+          "self": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/L15-0763E-0959N",
+          "full": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/L15-0763E-0959N/full",
+          "thumbnail": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/L15-0763E-0959N/thumb",
+          "mosaic": "https://api.planet.com/v0/mosaics/color_balance_mosaic",
+          "scenes": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/L15-0763E-0959N/scenes/"
+        },
+        "percent_covered": 90.03
+      }
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -72.5976562399,
+              -51.0690166544
+            ],
+            [
+              -72.5976562399,
+              -51.1793429741
+            ],
+            [
+              -72.4218749899,
+              -51.1793429741
+            ],
+            [
+              -72.4218749899,
+              -51.0690166544
+            ],
+            [
+              -72.5976562399,
+              -51.0690166544
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "L15-0611E-0684N",
+      "properties": {
+        "updated": "2015-07-20T16:13:37.104462+00:00",
+        "num_input_scenes": 43,
+        "links": {
+          "self": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/L15-0611E-0684N",
+          "full": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/L15-0611E-0684N/full",
+          "thumbnail": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/L15-0611E-0684N/thumb",
+          "mosaic": "https://api.planet.com/v0/mosaics/color_balance_mosaic",
+          "scenes": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/L15-0611E-0684N/scenes/"
+        },
+        "percent_covered": 100
+      }
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -72.4218749899,
+              -51.0690166544
+            ],
+            [
+              -72.4218749899,
+              -51.1793429741
+            ],
+            [
+              -72.2460937399,
+              -51.1793429741
+            ],
+            [
+              -72.2460937399,
+              -51.0690166544
+            ],
+            [
+              -72.4218749899,
+              -51.0690166544
+            ]
+          ]
+        ]
+      },
+      "type": "Feature",
+      "id": "L15-0612E-0684N",
+      "properties": {
+        "updated": "2015-07-20T16:11:54.962205+00:00",
+        "num_input_scenes": 35,
+        "links": {
+          "self": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/L15-0612E-0684N",
+          "full": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/L15-0612E-0684N/full",
+          "thumbnail": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/L15-0612E-0684N/thumb",
+          "mosaic": "https://api.planet.com/v0/mosaics/color_balance_mosaic",
+          "scenes": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/L15-0612E-0684N/scenes/"
+        },
+        "percent_covered": 100
+      }
+    }
+  ],
+  "links": {
+    "next": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/?count=3&_page.updated.lt=2015-07-20T16%3A11%3A54.962205%2B00%3A00",
+    "self": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/?count=3",
+    "prev": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/?count=3&_page.updated.gt=2015-07-20T17%3A10%3A41.309135%2B00%3A00",
+    "first": "https://api.planet.com/v0/mosaics/color_balance_mosaic/quads/?count=3"
+  }
+}

@@ -364,6 +364,34 @@ def get_mosaic(mosaic_name, pretty):
 
 
 @pretty
+@cli.command('mosaic-quads')
+@click.argument('mosaic_name', nargs=1)
+@click.option('--count', type=click.INT, required=False,
+              help="Set the number of returned quads.")
+def get_mosaic_quads(mosaic_name, count, pretty):
+    """
+    Get quad info for the specified mosaic
+    """
+    echo_json_response(
+        call_and_wrap(client().get_mosaic_quads,
+                      mosaic_name, count=count), pretty)
+
+
+@cli.command('download-quads')
+@dest_dir
+@click.argument('mosaic_name', nargs=1)
+@click.argument('quad_ids', nargs=-1)
+def download_quads(mosaic_name, quad_ids, dest):
+    """
+    Download quad geotiffs
+    """
+    quad_ids = read(quad_ids, split=True)
+    futures = call_and_wrap(client().fetch_mosaic_quad_geotiffs, mosaic_name,
+                            quad_ids, api.write_to_file(dest))
+    check_futures(futures)
+
+
+@pretty
 @cli.command('list-workspaces')
 def list_workspaces(pretty):
     """
