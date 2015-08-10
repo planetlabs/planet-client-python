@@ -11,70 +11,60 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
+from _common import read_fixture
 import json
-import unittest
-from requests_mock import Mocker
+import os
 from planet import api
+from requests_mock import Mocker
 
 
-TEST_DIR = os.path.dirname(os.path.realpath(__file__))
-FIXTURE_DIR = os.path.join(TEST_DIR, 'fixtures')
+client = api.Client(api_key='xyz')
 
 
-class TestMosaics(unittest.TestCase):
+def test_list_mosaics():
 
-    def setUp(self):
-        self.client = api.Client(api_key='xyz')
+    with Mocker() as m:
 
+        text = read_fixture('list-mosaics.json')
+        uri = os.path.join(client.base_url, 'mosaics')
+        m.get(uri, text=text, status_code=200)
 
-    def test_list_mosaics(self):
+        r = client.list_mosaics()
 
-        fixture_path = os.path.join(FIXTURE_DIR, 'list-mosaics.json')
-        with Mocker() as m, open(fixture_path) as f:
-
-            text = f.read()
-            uri = os.path.join(self.client.base_url, 'mosaics')
-            m.get(uri, text=text, status_code=200)
-
-            r = self.client.list_mosaics()
-
-            assert r.response.status_code == 200
-            assert r.get() == json.loads(text)
+        assert r.response.status_code == 200
+        assert r.get() == json.loads(text)
 
 
-    def test_get_mosaic(self):
+def test_get_mosaic():
 
-        mosaic_name = 'color_balance_mosaic'
+    mosaic_name = 'color_balance_mosaic'
 
-        fixture_path = os.path.join(FIXTURE_DIR, 'get-mosaic.json')
-        with Mocker() as m, open(fixture_path) as f:
+    with Mocker() as m:
 
-            text = f.read()
-            uri = os.path.join(self.client.base_url,
-                               'mosaics/%s' % mosaic_name)
-            m.get(uri, text=text, status_code=200)
+        text = read_fixture('get-mosaic.json')
+        uri = os.path.join(client.base_url,
+                           'mosaics/%s' % mosaic_name)
+        m.get(uri, text=text, status_code=200)
 
-            r = self.client.get_mosaic(mosaic_name)
+        r = client.get_mosaic(mosaic_name)
 
-            assert r.response.status_code == 200
-            assert r.get() == json.loads(text)
+        assert r.response.status_code == 200
+        assert r.get() == json.loads(text)
 
 
-    def test_get_mosaic_quads(self):
-        
-        mosaic_name = 'color_balance_mosaic'
-        
-        fixture_path = os.path.join(FIXTURE_DIR, 'get-mosaic-quads.json')
-        with Mocker() as m, open(fixture_path) as f:
-            
-            text = f.read()
-            uri = os.path.join(self.client.base_url, 'mosaics/%s/quads' % mosaic_name)
-            
-            m.get(uri, text=text, status_code=200)
-            
-            r = self.client.get_mosaic_quads(mosaic_name, intersect='', count=50)
-            
-            assert r.response.status_code == 200
-            assert r.get() == json.loads(text)
+def test_get_mosaic_quads():
 
+    mosaic_name = 'color_balance_mosaic'
+
+    with Mocker() as m:
+
+        text = read_fixture('get-mosaic-quads.json')
+        uri = os.path.join(client.base_url,
+                           'mosaics/%s/quads/?count=50' % mosaic_name)
+
+        m.get(uri, text=text, status_code=200)
+
+        r = client.get_mosaic_quads(mosaic_name, count=50)
+
+        assert r.response.status_code == 200
+        assert r.get() == json.loads(text)
