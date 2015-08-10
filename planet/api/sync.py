@@ -16,6 +16,7 @@ import json
 import os
 from os import path
 import threading
+from ._fatomic import atomic_open
 from .utils import write_to_file
 from .utils import strp_timestamp
 from .utils import strf_timestamp
@@ -98,7 +99,7 @@ class _SyncTool(object):
         if summary.latest:
             sync = self._read_sync_file()
             sync['latest'] = strf_timestamp(summary.latest)
-            with open(self.sync_file, 'wb') as fp:
+            with atomic_open(self.sync_file, 'wb') as fp:
                 fp.write(json.dumps(sync, indent=2).encode('utf-8'))
 
         return summary
@@ -144,7 +145,7 @@ class _SyncHandler(object):
         # write out metadata
         metadata = os.path.join(self.destination,
                                 '%s_metadata.json' % self.metadata['id'])
-        with open(metadata, 'wb') as fp:
+        with atomic_open(metadata, 'wb') as fp:
             fp.write(json.dumps(self.metadata, indent=2).encode('utf-8'))
 
         # summarize

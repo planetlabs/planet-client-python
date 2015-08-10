@@ -17,6 +17,7 @@ from . import exceptions
 import json
 import os
 import re
+from ._fatomic import atomic_open
 
 _ISO_FMT = '%Y-%m-%dT%H:%M:%S.%f+00:00'
 
@@ -63,7 +64,7 @@ def build_conditions(workspace):
 
 def write_planet_json(contents):
     fname = _planet_json_file()
-    with open(fname, 'w') as fp:
+    with atomic_open(fname, 'w') as fp:
         fp.write(json.dumps(contents))
 
 

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from ._fatomic import atomic_open
 from .utils import get_filename
 from .utils import check_status
 from datetime import datetime
@@ -110,7 +111,7 @@ class Body(object):
         if hasattr(file, 'write'):
             self._write(file, callback)
         else:
-            with open(file, 'wb') as fp:
+            with atomic_open(file, 'wb') as fp:
                 self._write(fp, callback)
 
 
