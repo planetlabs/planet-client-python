@@ -35,7 +35,8 @@ def client():
     return api.Client(**client_params)
 
 
-pretty = click.option('-pp', '--pretty', default=False, is_flag=True)
+pretty = click.option('-pp/-r', '--pretty/--no-pretty', default=None,
+                      is_flag=True)
 scene_type = click.option('-s', '--scene-type', default='ortho')
 dest_dir = click.option('-d', '--dest', help='Destination directory',
                         type=click.Path(file_okay=False, resolve_path=True))
@@ -113,10 +114,17 @@ def total_bytes(responses):
 
 
 def echo_json_response(response, pretty):
+    '''Wrapper to echo JSON with optional 'pretty' printing. If pretty is not
+    provided explicity and stdout is a terminal (and not redirected or piped),
+    the default will be to indent and sort keys'''
     res = response.get_raw()
-    if pretty:
-        res = json.dumps(json.loads(res), indent=2)
-    click.echo(res)
+    if pretty or (pretty is None and sys.stdout.isatty()):
+        res = json.dumps(json.loads(res), indent=2, sort_keys=True)
+    try:
+        click.echo(res)
+    except IOError as ioe:
+        # hide scary looking broken pipe stack traces
+        raise click.ClickException(str(ioe))
 
 
 def read(value, split=False):
