@@ -143,3 +143,15 @@ def strp_timestamp(value):
 
 def strf_timestamp(when):
     return datetime.strftime(when, _ISO_FMT)
+
+
+class GeneratorAdapter(list):
+    '''Allow a generator to be used in JSON serialization'''
+    def __init__(self, gen):
+        self.gen = gen
+
+    def __iter__(self):
+        return self.gen
+
+    def __len__(self):
+        return 1
