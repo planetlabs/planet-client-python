@@ -39,7 +39,8 @@ pretty = click.option('-pp/-r', '--pretty/--no-pretty', default=None,
                       is_flag=True)
 scene_type = click.option('-s', '--scene-type', default='ortho')
 dest_dir = click.option('-d', '--dest', help='Destination directory',
-                        type=click.Path(file_okay=False, resolve_path=True))
+                        type=click.Path(file_okay=False, resolve_path=True,
+                                        exists=True))
 workspace = click.option('--workspace')
 
 
