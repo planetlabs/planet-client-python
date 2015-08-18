@@ -205,6 +205,7 @@ def help(context, command):
     if command:
         cmd = cli.commands.get(command, None)
         if cmd:
+            context.info_name = command
             click.echo(cmd.get_help(context))
         else:
             raise click.ClickException('no command: %s' % command)
