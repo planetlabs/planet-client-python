@@ -72,7 +72,7 @@ setup(name='planet',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'click',
+          'click==4.1',
           'requests',
           'requests_futures>=0.9.5',
       ],
