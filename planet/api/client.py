@@ -90,7 +90,7 @@ class Client(object):
             'intersects': intersects
         }
         params.update(**filters)
-        return self._get('scenes/%s' % scene_type,
+        return self._get('scenes/%s/' % scene_type,
                          models.Scenes, params=params).get_body()
 
     def get_scene_metadata(self, scene_id, scene_type='ortho'):
@@ -99,14 +99,14 @@ class Client(object):
 
         .. todo:: Generalize to accept multiple scene ids.
         """
-        return self._get('scenes/%s/%s' % (scene_type, scene_id)).get_body()
+        return self._get('scenes/%s/%s/' % (scene_type, scene_id)).get_body()
 
     def fetch_scene_geotiffs(self, scene_ids, scene_type='ortho',
                              product='visual', callback=None):
         params = {
             'product': product
         }
-        paths = ['scenes/%s/%s/full' % (scene_type, sid) for sid in scene_ids]
+        paths = ['scenes/%s/%s/full/' % (scene_type, id) for id in scene_ids]
         return self._download_many(paths, params, callback)
 
     def fetch_scene_thumbnails(self, scene_ids, scene_type='ortho', size='md',
@@ -115,7 +115,7 @@ class Client(object):
             'size': size,
             'format': fmt
         }
-        paths = ['scenes/%s/%s/thumb' % (scene_type, sid) for sid in scene_ids]
+        paths = ['scenes/%s/%s/thumb/' % (scene_type, id) for id in scene_ids]
         return self._download_many(paths, params, callback)
 
     def list_mosaics(self):
@@ -124,7 +124,7 @@ class Client(object):
 
         .. todo:: Pagination
         """
-        return self._get('mosaics', models.Mosaics).get_body()
+        return self._get('mosaics/', models.Mosaics).get_body()
 
     def get_mosaic(self, name):
         """
@@ -133,7 +133,7 @@ class Client(object):
         :param name:
             Mosaic name as returned by `list_mosaics`.
         """
-        return self._get('mosaics/%s' % name).get_body()
+        return self._get('mosaics/%s/' % name).get_body()
 
     def get_mosaic_quads(self, name, intersects=None, count=50):
         """
@@ -156,15 +156,15 @@ class Client(object):
         return self._get(path, models.Quads, params).get_body()
 
     def fetch_mosaic_quad_geotiffs(self, mosaic_name, quad_ids, callback=None):
-        pt = 'mosaics/%s/quads/%s/full'
+        pt = 'mosaics/%s/quads/%s/full/'
         paths = [pt % (mosaic_name, qid) for qid in quad_ids]
         return self._download_many(paths, {}, callback)
 
     def get_workspaces(self):
-        return self._get('workspaces').get_body()
+        return self._get('workspaces/').get_body()
 
     def get_workspace(self, id):
-        return self._get('workspaces/%s' % id).get_body()
+        return self._get('workspaces/%s/' % id).get_body()
 
     def set_workspace(self, workspace, id=None):
         if id:
