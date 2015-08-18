@@ -54,7 +54,7 @@ class Client(object):
         return response
 
     def _download_many(self, paths, params, callback):
-        return [self._get(path, params=params, callback=callback)
+        return [self._get(path, models.Image, params=params, callback=callback)
                 for path in paths]
 
     def login(self, identity, credentials):
@@ -152,8 +152,8 @@ class Client(object):
             params['intersects'] = intersects
         if count:
             params['count'] = count
-
-        return self._get('mosaics/%s/quads/' % name, params=params).get_body()
+        path = 'mosaics/%s/quads/' % name
+        return self._get(path, models.Quads, params).get_body()
 
     def fetch_mosaic_quad_geotiffs(self, mosaic_name, quad_ids, callback=None):
         pt = 'mosaics/%s/quads/%s/full'

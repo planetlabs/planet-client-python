@@ -15,7 +15,10 @@
 from ._fatomic import atomic_open
 from .utils import get_filename
 from .utils import check_status
+from .utils import GeneratorAdapter
 from datetime import datetime
+import itertools
+import json
 
 chunk_size = 32 * 1024
 
@@ -67,7 +70,7 @@ class Request(object):
         self.body_type = body_type
 
 
-class Body(object):
+class _Body(object):
 
     def __init__(self, request, http_response, dispatcher):
         self._request = request
@@ -115,13 +118,15 @@ class Body(object):
                 self._write(fp, callback)
 
 
-class JSON(Body):
+class JSON(_Body):
 
     def get(self):
         return self.response.json()
 
 
-class Paged(JSON):
+class _Paged(JSON):
+
+    ITEM_KEY = 'features'
 
     def next(self):
         links = self.get()['links']
@@ -130,27 +135,58 @@ class Paged(JSON):
             request = Request(next, self._request.auth, body_type=type(self))
             return self._dispatcher.response(request).get_body()
 
-    def iter(self, pages=None):
-        pages = int(10e10) if pages is None else pages
+    def _pages(self):
         page = self
-        if pages > 0:
+        while page is not None:
             yield page
-            pages -= 1
-        while pages > 0:
             page = page.next()
-            if page is None:
-                break
-            yield page
-            pages -= 1
+
+    def iter(self, pages=None):
+        i = self._pages()
+        if pages is not None:
+            i = itertools.islice(i, pages)
+        return i
+
+    def json_encode(self, out, limit=None, sort_keys=False, indent=None):
+        stream = self._json_stream(limit)
+        enc = json.JSONEncoder(indent=indent, sort_keys=sort_keys)
+        for chunk in enc.iterencode(stream):
+            out.write(chunk)
+
+    def items_iter(self, limit):
+        pages = (page.get() for page in self._pages())
+        items = itertools.chain.from_iterable(
+            (p[self.ITEM_KEY] for p in pages)
+        )
+        if limit is not None:
+            items = itertools.islice(items, limit)
+        return items
+
+    def _json_stream(self, limit):
+        return {
+            self.ITEM_KEY: GeneratorAdapter(self.items_iter(limit))
+        }
 
 
-class Scenes(Paged):
+class _Features(_Paged):
+
+    def _json_stream(self, limit):
+        stream = super(_Features, self)._json_stream(limit)
+        stream['type'] = 'FeatureCollection'
+        return stream
+
+
+class Scenes(_Features):
     pass
 
 
-class Mosaics(Paged):
+class Mosaics(_Paged):
+    ITEM_KEY = 'mosaics'
+
+
+class Quads(_Features):
     pass
 
 
-class Image(Body):
+class Image(_Body):
     pass

@@ -90,6 +90,9 @@ def test_sync_tool_sync(tmpdir):
             return search_json
 
     class FakeScenes:
+        def items_iter(self, limit):
+            return (f for f in Page().get()['features'][:limit])
+
         def iter(self):
             return iter([Page()])
 

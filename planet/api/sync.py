@@ -72,12 +72,7 @@ class _SyncTool(object):
         return count
 
     def get_scenes_to_sync(self):
-        # @todo move to response class or utility function
-        pages = (page.get() for page in self._scenes.iter())
-        features = itertools.chain.from_iterable(
-            (p['features'] for p in pages)
-        )
-        return itertools.islice(features, self._scene_count)
+        return self._scenes.items_iter(limit=self._scene_count)
 
     def sync(self, callback):
         summary = _SyncSummary(self._scene_count)

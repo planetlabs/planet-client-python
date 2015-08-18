@@ -43,6 +43,11 @@ dest_dir = click.option('-d', '--dest', help='Destination directory',
 workspace = click.option('--workspace')
 
 
+def limit_option(default):
+    return click.option('--limit', type=click.INT, required=False,
+                        default=default, help="Limit the number of items.")
+
+
 # monkey patch warnings module to hide InsecurePlatformWarning - the warning
 # notes 'may cause certain SSL connections to fail' so it doesn't seem to
 # introduce any vulnerabilities
@@ -113,15 +118,23 @@ def total_bytes(responses):
     return sum([len(r.get_body()) for r in responses])
 
 
-def echo_json_response(response, pretty):
+def echo_json_response(response, pretty, limit=None):
     '''Wrapper to echo JSON with optional 'pretty' printing. If pretty is not
     provided explicity and stdout is a terminal (and not redirected or piped),
     the default will be to indent and sort keys'''
-    res = response.get_raw()
+    indent = 0
+    sort_keys = False
     if pretty or (pretty is None and sys.stdout.isatty()):
-        res = json.dumps(json.loads(res), indent=2, sort_keys=True)
+        indent = 2
+        sort_keys = True
     try:
-        click.echo(res)
+        if hasattr(response, 'json_encode'):
+            response.json_encode(click.get_text_stream('stdout'), limit=limit,
+                                 indent=indent, sort_keys=sort_keys)
+        else:
+            res = response.get_raw()
+            res = json.dumps(json.loads(res), indent=2, sort_keys=True)
+            click.echo(res)
     except IOError as ioe:
         # hide scary looking broken pipe stack traces
         raise click.ClickException(str(ioe))
@@ -211,14 +224,13 @@ def init(email, password):
 @scene_type
 @cli.command('search')
 @click.argument('aoi', default='@-', required=False)
-@click.option('--count', type=click.INT, required=False,
-              help="Set the number of returned scenes.")
+@limit_option(1000)
 @click.option('--where', nargs=3, multiple=True,
               help=('Provide additional search criteria. See '
                     'https://www.planet.com/docs/v0/scenes/#metadata for '
                     'search metadata fields.'))
 @click.option('--workspace')
-def get_scenes_list(scene_type, pretty, aoi, count, where, workspace):
+def get_scenes_list(scene_type, pretty, aoi, limit, where, workspace):
     '''Get a list of scenes'''
 
     aoi = read(aoi)
@@ -238,9 +250,10 @@ def get_scenes_list(scene_type, pretty, aoi, count, where, workspace):
             for condition in where
         ])
 
-    echo_json_response(call_and_wrap(client().get_scenes_list,
-                       scene_type=scene_type, intersects=aoi, count=count,
-                       **conditions), pretty)
+    echo_json_response(call_and_wrap(
+        client().get_scenes_list,
+        scene_type=scene_type, intersects=aoi,
+        **conditions), pretty, limit=limit)
 
 
 @pretty
@@ -301,7 +314,7 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
 @scene_type
 @workspace
 @click.argument("destination")
-@click.option("--limit", default=-1, help='limit scene syncing')
+@limit_option(default=-1)
 @click.option("--dryrun", is_flag=True, help='do not actually download')
 @cli.command('sync')
 def sync(destination, workspace, scene_type, limit, dryrun):
@@ -345,6 +358,7 @@ def sync(destination, workspace, scene_type, limit, dryrun):
 
 
 @pretty
+@limit_option(default=50)
 @cli.command('mosaics')
 def list_mosaics(pretty):
     """
@@ -365,16 +379,15 @@ def get_mosaic(mosaic_name, pretty):
 
 @pretty
 @cli.command('mosaic-quads')
+@limit_option(default=100)
 @click.argument('mosaic_name', nargs=1)
-@click.option('--count', type=click.INT, required=False,
-              help="Set the number of returned quads.")
-def get_mosaic_quads(mosaic_name, count, pretty):
+def get_mosaic_quads(mosaic_name, limit, pretty):
     """
     Get quad info for the specified mosaic
     """
     echo_json_response(
         call_and_wrap(client().get_mosaic_quads,
-                      mosaic_name, count=count), pretty)
+                      mosaic_name), pretty, limit)
 
 
 @cli.command('download-quads')
