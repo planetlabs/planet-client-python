@@ -41,13 +41,13 @@ class RedirectSession(FuturesSession):
             redir = prepared_request.url
             if not _is_subdomain_of_tld(orig, redir):
                 prepared_request.headers.pop('Authorization')
-            key = re.match('api-key (\S+)', existing_auth)
-            if key:
-                prepared_request.prepare_url(
-                    prepared_request.url, {
-                        'api_key': key.group(1)
-                    }
-                )
+                key = re.match('api-key (\S+)', existing_auth)
+                if key:
+                    prepared_request.prepare_url(
+                        prepared_request.url, {
+                            'api_key': key.group(1)
+                        }
+                    )
 
 
 class RequestsDispatcher(object):
