@@ -58,7 +58,7 @@ class Response(object):
     def await(self):
         if self._future:
             self._future.result()
-            return self._body
+        return self._body
 
 
 class Request(object):

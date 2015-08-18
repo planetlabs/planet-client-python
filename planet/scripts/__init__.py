@@ -39,7 +39,8 @@ pretty = click.option('-pp/-r', '--pretty/--no-pretty', default=None,
                       is_flag=True)
 scene_type = click.option('-s', '--scene-type', default='ortho')
 dest_dir = click.option('-d', '--dest', help='Destination directory',
-                        type=click.Path(file_okay=False, resolve_path=True))
+                        type=click.Path(file_okay=False, resolve_path=True,
+                                        exists=True))
 workspace = click.option('--workspace')
 
 
@@ -204,6 +205,7 @@ def help(context, command):
     if command:
         cmd = cli.commands.get(command, None)
         if cmd:
+            context.info_name = command
             click.echo(cmd.get_help(context))
         else:
             raise click.ClickException('no command: %s' % command)
@@ -273,7 +275,7 @@ def metadata(scene_id, scene_type, pretty):
 @click.option('--product',
               type=click.Choice(
                   ["band_%d" % i for i in range(1, 12)] +
-                  ['visual', 'analytic', 'qa']
+                  ['visual', 'analytic', 'unrectified', 'qa']
               ), default='visual')
 @cli.command('download')
 def fetch_scene_geotiff(scene_ids, scene_type, product, dest):
@@ -459,5 +461,7 @@ def set_workspace(id, aoi, name, create, workspace):
     if name:
         workspace['name'] = name
 
+    if not workspace:
+        raise click.ClickException('nothing to do')
     echo_json_response(call_and_wrap(client().set_workspace,
                        workspace, id), pretty)
