@@ -49,6 +49,7 @@ def atomic_open(filename, mode, *args, **kwargs):
         raise ValueError("invalid mode: '{}'".format(mode))
     f = tempfile.NamedTemporaryFile(mode=mode,
                                     prefix=os.path.basename(filename),
+                                    dir=os.path.dirname(filename),
                                     suffix='.tmp',
                                     delete=False)
     _discard = [False]

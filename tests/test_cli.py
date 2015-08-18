@@ -197,11 +197,13 @@ def test_init():
                                              '--email', 'bil@ly',
                                              '--password', 'secret'])
         assert result.exit_code == 0
+        assert os.path.exists(test_file)
         with open(test_file) as fp:
             data = json.loads(fp.read())
         assert data['key'] == 'SECRIT'
     finally:
-        os.unlink(test_file)
+        if os.path.exists(test_file):
+            os.unlink(test_file)
 
 
 def _set_workspace(workspace, *args, **kw):
