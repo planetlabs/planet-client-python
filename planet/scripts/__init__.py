@@ -275,7 +275,7 @@ def metadata(scene_id, scene_type, pretty):
 @click.option('--product',
               type=click.Choice(
                   ["band_%d" % i for i in range(1, 12)] +
-                  ['visual', 'analytic', 'qa']
+                  ['visual', 'analytic', 'unrectified', 'qa']
               ), default='visual')
 @cli.command('download')
 def fetch_scene_geotiff(scene_ids, scene_type, product, dest):
