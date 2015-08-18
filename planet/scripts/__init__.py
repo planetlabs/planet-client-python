@@ -461,5 +461,7 @@ def set_workspace(id, aoi, name, create, workspace):
     if name:
         workspace['name'] = name
 
+    if not workspace:
+        raise click.ClickException('nothing to do')
     echo_json_response(call_and_wrap(client().set_workspace,
                        workspace, id), pretty)
