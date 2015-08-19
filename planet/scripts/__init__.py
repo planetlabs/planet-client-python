@@ -179,7 +179,7 @@ def read_aoi(value):
     '''
     aoi = None
     raw = read(value)
-    if raw is not None:
+    if raw:
         if api.utils.probably_wkt(raw):
             aoi = raw
         else:
