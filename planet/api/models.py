@@ -163,8 +163,13 @@ class _Paged(JSON):
         return items
 
     def _json_stream(self, limit):
+        # if there are no results, the GeneratorAdapter doesn't play well
+        if self.get().get('count', 0):
+            items = GeneratorAdapter(self.items_iter(limit))
+        else:
+            items = []
         return {
-            self.ITEM_KEY: GeneratorAdapter(self.items_iter(limit))
+            self.ITEM_KEY: items
         }
 
 
