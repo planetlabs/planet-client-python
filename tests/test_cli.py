@@ -252,7 +252,7 @@ def test_workspace_update_stdin():
 
 
 def test_workspace_create_aoi_stdin():
-    geometry = {'type': 'Geometry'}
+    geometry = {'type': 'Point'}
     expected = {
         'name': 'foobar',
         'filters': {

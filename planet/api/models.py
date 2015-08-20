@@ -172,6 +172,7 @@ class _Features(_Paged):
 
     def _json_stream(self, limit):
         stream = super(_Features, self)._json_stream(limit)
+        stream['count'] = self.get()['count']
         stream['type'] = 'FeatureCollection'
         return stream
 
