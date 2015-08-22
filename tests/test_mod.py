@@ -88,7 +88,7 @@ def test_status_code_other(client):
 def test_fetch_scene_info_scene_id(client):
     '''Verify get_scene_metadata path handling'''
     with requests_mock.Mocker() as m:
-        uri = os.path.join(client.base_url, 'scenes/ortho/x22/')
+        uri = os.path.join(client.base_url, 'scenes/ortho/x22')
         m.get(uri, text='bananas', status_code=200)
         assert client.get_scene_metadata('x22').get_raw() == 'bananas'
 

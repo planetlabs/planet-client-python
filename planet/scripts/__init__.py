@@ -380,11 +380,11 @@ def sync(destination, workspace, scene_type, limit, dryrun):
 @pretty
 @limit_option(default=50)
 @cli.command('mosaics')
-def list_mosaics(pretty):
+def list_mosaics(limit, pretty):
     """
     List all mosaics
     """
-    echo_json_response(call_and_wrap(client().list_mosaics), pretty)
+    echo_json_response(call_and_wrap(client().list_mosaics), pretty, limit)
 
 
 @pretty
