@@ -1,16 +1,52 @@
-.. module:: planet.scripts
+Examples
+========
 
-.. cli:
 
-Planet CLI
-==========
+Searching for Scenes
+--------------------
 
-This library comes with a command line interface to expose many common requests, such as searching, downloading, and obtaining metadata.
+Get latest 10 scenes::
 
-Here's an example of what can be done using the cli and GitHub Gists.
+    planet search --limit 10
+
+Get scenes acquired recently::
+
+    planet search --where acquired gt 2015-08-23
+
+Get scenes that intersect a single point::
+
+    planet search 'POINT(-105,40)'
+
+Get scenes that intersect a geometry specified in a file named `aoi.geojson`::
+
+    planet search aoi.geojson
+
+Get latest 10 `landsat` scenes::
+
+    planet search -s landsat --limit 10planet search -s landsat --limit 10
+
+
+Downloading Scenes
+------------------
+
+Download a ortho visual scene by ID to the current directory::
+
+    planet download 20150810_235347_0b10
+
+Download 2 `landsat` `qa` band scenes by ID to the `fetched` directory::
+
+    planet download -d fetched -s landsat -product qa LC81300472015235LGN00 LC81300482015235LGN00
+
+
+Integration With Other Tools
+----------------------------
+
+GitHub Gists
+............
+
+Create a `gist` using the `gist <http://defunkt.io/gist/>`_ command.
 
 .. code-block:: bash
-
 
     # Search Planet's API for imagery acquired between June 17, 2015 and June 18, 2015
     planet search --where acquired gt 2015-06-17 --where acquired lt 2015-06-18 | gist -f planet-imagery-20150617-20150618.geojson
@@ -34,28 +70,19 @@ Here's an example of what can be done using the cli and GitHub Gists.
     window.onresize();
     </script>
 
-The CLI can be used to rapidly search an area of interest (AOI). Suppose you have an AOI in GeoJSON format:
+Searching Using a Shapefile
+...........................
 
-.. code-block:: bash
-
-    $ cat santiago-de-chile.geojson | planet search
-    {
-      "count": 1135,
-      "type": "FeatureCollection",
-      "features": [
-      ...
-      ]
-    }
-
-Searching an area of interest described by a Shapefile, can be accomplished by chaining commands with `Fiona
-<https://github.com/Toblerity/Fiona>`_.
+Searching an area of interest described by a Shapefile, can be accomplished by chaining commands with `Fiona <https://github.com/Toblerity/Fiona>`_.
 
 .. code-block:: bash
 
     $ fio dump santiago-de-chile.shp | planet search
 
-Using `jq
-<http://stedolan.github.io/jq/>`_, useful information can be parsed from data returned by the Planet API.
+Extracting Metadata Fields
+..........................
+
+Using `jq <http://stedolan.github.io/jq/>`_, useful information can be parsed from data returned by the Planet API.
 
 .. code-block:: bash
 
@@ -70,8 +97,10 @@ Using `jq
     20150707_160046_090b
     ...
 
-Querying for Planet scenes that overlap another data source is easily accomplished by using `Rasterio
-<https://github.com/mapbox/rasterio>`_.
+Search Overlapping Imagery
+..........................
+
+Querying for Planet scenes that overlap another data source is easily accomplished by using `Rasterio <https://github.com/mapbox/rasterio>`_.
 
 .. code-block:: bash
 

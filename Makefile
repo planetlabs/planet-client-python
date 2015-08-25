@@ -8,6 +8,7 @@ pex:
 	pex .  -o dist/planet -m planet.scripts:cli
 
 html-docs:
+	python docs/source/generate.py
 	$(MAKE) -C docs clean html
 
 docs-zip: html-docs

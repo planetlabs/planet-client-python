@@ -22,9 +22,14 @@ from .utils import check_status
 
 
 class Client(object):
-
+    '''High-level access to Planet's API.'''
     def __init__(self, api_key=None, base_url='https://api.planet.com/v0/',
                  workers=4):
+        '''
+        :param str api_key: API key to use. Defaults to environment variable.
+        :param str base_url: The base URL to use. Not required.
+        :param int workers: The number of concurrent download workers
+        '''
         api_key = api_key or auth.find_api_key()
         self.auth = api_key and auth.APIKey(api_key)
         self.base_url = base_url
@@ -58,6 +63,12 @@ class Client(object):
                 for path in paths]
 
     def login(self, identity, credentials):
+        '''Login using email identity and credentials. Returns a JSON
+        object containing an `api_key` property with the user's API_KEY.
+        :param str identity: email
+        :param str credentials: password
+        :returns: JSON object (Python dict)
+        '''
         result = self.dispatcher.session.post(self._url('auth/login'), {
             'email': identity,
             'password': credentials
@@ -84,6 +95,18 @@ class Client(object):
 
     def get_scenes_list(self, scene_type='ortho', order_by=None, count=None,
                         intersects=None, **filters):
+        '''Get scenes matching the specified parameters and filters.
+
+        :param str scene_type: The type of scene, defaults to 'ortho'
+        :param str order_by: Results order 'acquired asc' or 'acquired desc'.
+           Defaults to 'acquired desc'
+        :param int count: Number of results per page. Defaults to 50.
+        :param intersects: A geometry to filter results by. Can be one of:
+           WKT or GeoJSON text or a GeoJSON-like dict.
+        :param filters: Zero or more metadata filters in the form of
+           param.name.comparison -> value.
+        :returns: :py:class:`Scenes` body
+        '''
         params = {
             'order_by': order_by,
             'count': count,
@@ -97,12 +120,27 @@ class Client(object):
         """
         Get metadata for a given scene.
 
-        .. todo:: Generalize to accept multiple scene ids.
+        :param str scene_id: The scene ID
+        :param str scene_type: The type: either 'ortho' or 'landsat'
+        :return: :py:class:`JSON` body
         """
+        # todo: accept/return multiple scenes
         return self._get('scenes/%s/%s' % (scene_type, scene_id)).get_body()
 
     def fetch_scene_geotiffs(self, scene_ids, scene_type='ortho',
                              product='visual', callback=None):
+        """
+        Download scene geotiffs. The provided callback will be called with a
+        single argument, the :py:class:`Body` object, when the response is
+        ready and successful (it will be initiated with response headers).
+
+        :param sequence scene_ids: The scene IDs to download
+        :param str scene_type: The type: either 'ortho' or 'landsat'
+        :param str product: The product type, varies on scene_type.
+        :param function callback: A callback for handling asynchronous results
+        :return: a sequence of :py:class:`Response` objects, one for each scene
+           id provided
+        """
         params = {
             'product': product
         }
@@ -111,6 +149,19 @@ class Client(object):
 
     def fetch_scene_thumbnails(self, scene_ids, scene_type='ortho', size='md',
                                fmt='png', callback=None):
+        """
+        Download scene thumbnails. The provided callback will be called with a
+        single argument, the :py:class:`Body` object, when the response is
+        ready and successful (it will be initiated with response headers).
+
+        :param sequence scene_ids: The scene IDs to download
+        :param str scene_type: The type: either 'ortho' or 'landsat'
+        :param str size: The size: 'sm', 'md', 'lg'
+        :param str format: The image format: 'png', 'jpg'
+        :param function callback: A callback for handling asynchronous results
+        :return: a sequence of :py:class:`Response` objects, one for each scene
+           id provided
+        """
         params = {
             'size': size,
             'format': fmt
@@ -121,8 +172,6 @@ class Client(object):
     def list_mosaics(self):
         """
         List all mosaics.
-
-        .. todo:: Pagination
         """
         return self._get('mosaics/', models.Mosaics).get_body()
 

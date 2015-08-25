@@ -21,7 +21,7 @@ import planet
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('.'))
 
 # -- General configuration ------------------------------------------------
 
@@ -35,6 +35,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
+    'alabaster',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -53,7 +54,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Planet Labs Client'
-copyright = u'2015, Planet Labs'
+copyright = u'2015 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103'
 author = u'Planet Labs'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -116,6 +117,8 @@ todo_include_todos = True
 # a list of builtin themes.
 html_theme = 'alabaster'
 
+from .alabaster_planet import html_theme_options
+
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
@@ -159,7 +162,13 @@ html_static_path = ['_static']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {
+    '**' : [
+        'about.html',
+        'searchbox.html',
+        'navigation.html'
+    ]
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
