@@ -24,7 +24,7 @@ gh-docs:
 	mv -fv docs/build/html/* ./
 	rm -rf $(GH_PAGES_SOURCES)
 	git add -A
-	git commit -m "gh-pages for `git log master -1 --oneline"
+	git commit -m "gh-pages for `git log master -1 --oneline`"
 
 release:
 	@[ $(TAG) ] || exit 1
