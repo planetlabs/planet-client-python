@@ -36,12 +36,14 @@ def client():
 
 
 pretty = click.option('-pp/-r', '--pretty/--no-pretty', default=None,
-                      is_flag=True)
-scene_type = click.option('-s', '--scene-type', default='ortho')
+                      is_flag=True, help='Format JSON output')
+scene_type = click.option('-s', '--scene-type', default='ortho',
+                          help='Type of scene',
+                          type=click.Choice(['ortho', 'landsat']))
 dest_dir = click.option('-d', '--dest', help='Destination directory',
                         type=click.Path(file_okay=False, resolve_path=True,
                                         exists=True))
-workspace = click.option('--workspace')
+workspace = click.option('--workspace', help='Workspace ID', type=int)
 
 
 def limit_option(default):
@@ -199,7 +201,7 @@ def _split(value):
 @click.option('-w', '--workers', default=4,
               help=('The number of concurrent downloads when requesting '
                     'multiple scenes.'))
-@click.option('-v', '--verbose', count=True)
+@click.option('-v', '--verbose', count=True, help='Specify verbosity')
 @click.option('-k', '--api-key',
               help='Valid API key - or via env variable %s' % api.auth.ENV_KEY)
 @click.option('-u', '--base-url', help='Optional for testing')
@@ -220,6 +222,7 @@ def cli(verbose, api_key, base_url, workers):
 @click.argument("command", default="")
 @click.pass_context
 def help(context, command):
+    '''Get command help'''
     if command:
         cmd = cli.commands.get(command, None)
         if cmd:
@@ -235,6 +238,7 @@ def help(context, command):
 @click.option('--email', default=None, prompt=True)
 @click.option('--password', default=None, prompt=True, hide_input=True)
 def init(email, password):
+    '''Login using email/password'''
     response = call_and_wrap(client().login, email, password)
     planet.api.utils.write_planet_json({'key': response['api_key']})
     click.echo('initialized')
@@ -242,6 +246,7 @@ def init(email, password):
 
 @pretty
 @scene_type
+@workspace
 @cli.command('search')
 @click.argument('aoi', default='@-', required=False)
 @limit_option(1000)
@@ -249,9 +254,8 @@ def init(email, password):
               help=('Provide additional search criteria. See '
                     'https://www.planet.com/docs/v0/scenes/#metadata for '
                     'search metadata fields.'))
-@click.option('--workspace')
 def get_scenes_list(scene_type, pretty, aoi, limit, where, workspace):
-    '''Get a list of scenes'''
+    '''Get a list of scenes.'''
 
     aoi = read_aoi(aoi)
     conditions = {}
@@ -315,9 +319,10 @@ def fetch_scene_geotiff(scene_ids, scene_type, product, dest):
 @scene_type
 @dest_dir
 @click.argument("scene-ids", nargs=-1)
-@click.option('--size', type=click.Choice(['sm', 'md', 'lg']), default='md')
+@click.option('--size', type=click.Choice(['sm', 'md', 'lg']), default='md',
+              help='Thumbnail size')
 @click.option('--format', 'fmt', type=click.Choice(['png', 'jpg', 'jpeg']),
-              default='png')
+              default='png', help='Thumbnail format')
 @cli.command('thumbnails')
 def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
     '''Fetch scene thumbnail(s)'''
@@ -335,7 +340,7 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
 @workspace
 @click.argument("destination")
 @limit_option(default=-1)
-@click.option("--dryrun", is_flag=True, help='do not actually download')
+@click.option("--dryrun", is_flag=True, help='Do not actually download')
 @cli.command('sync')
 def sync(destination, workspace, scene_type, limit, dryrun):
     '''Synchronize a directory to a specified AOI or workspace'''
@@ -445,10 +450,10 @@ def get_workspace(pretty, id):
 
 @cli.command('set-workspace')
 @click.argument("workspace", default="@-", required=False)
-@click.option('--id', help='if provided, update the workspace with this id')
-@click.option('--aoi', help='the geometry to use')
-@click.option('--name')
-@click.option('--create', is_flag=True)
+@click.option('--id', help='If provided, update the workspace with this id')
+@click.option('--aoi', help='The geometry to use')
+@click.option('--name', help='Workspace name')
+@click.option('--create', is_flag=True, help='Specify workspace creation')
 def set_workspace(id, aoi, name, create, workspace):
     '''Create or modify a workspace'''
     workspace = read(workspace)
