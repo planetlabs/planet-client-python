@@ -1,4 +1,16 @@
-0.0.2 (2015-09-05)
+0.0.3 (2015-08-25)
+------------------
+- Resolve extraneous 'None' appearing in CLI usage
+- Documentation reworking
+- Check for destination directory existence
+- Some AOI validity checking for WKT/GeoJSON
+- Paging improvements + support in CLI search results
+- Mosaic/quads support
+- Atomic file writing
+- Pretty print by default when attached to terminal output
+- Initial workspace support
+
+0.0.2 (2015-08-05)
 ------------------
 - Add init command for fetching and storing key
 - Paging fixes for search/metadata
