@@ -1,87 +1,17 @@
-Planet Labs Client
-==================
+Planet Labs Python Client
+=========================
 
-Client library for interfacing with the Planet Labs Public Data API. The API supports a variety of requests for searching and downloading Planet Labs metadata and imagery.
+This library provides a command-line-interface (CLI) and Python library to make access to Planet's public API easy to use.
 
-.. note:: A Planet Labs API key is required to access the API.
+The command line interface is intended to be functional for many tasks but is just a thin layer on the lower level Python API.
 
-Installation
-------------
-
-.. code-block:: bash
-
-    pip install planet
-
-
-Examples
---------
-
-These two example demonstrate how to access metadata for a Planet Labs scene.
-
-
-Python
-******
-
-.. code-block:: python
-
-    # Import the module
-    from planet import api
-    
-    # Initialize a client object with a valid API key
-    client = api.Client(api_key='xyz')
-    
-    scene_id = '20150603_183927_090b'
-    
-    metadata = client.get_scene_metadata(scene_id)
-
-
-Command Line
-************
-
-.. code-block:: bash
-    
-    $ planet metadata 20150603_183927_090b
-    {
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -143.0043622417889,
-              69.3847738854277
-            ],
-            [
-              -143.1281804378499,
-              69.47744935811004
-            ],
-            [
-              -143.52433425304486,
-              69.41172917566918
-            ],
-            [
-              -143.39939224306457,
-              69.31930925533831
-            ],
-            [
-              -143.0043622417889,
-              69.3847738854277
-            ]
-          ]
-        ]
-      },
-      "type": "Feature",
-      "id": "20150615_190229_0905",
-      ...
-
-
-Contents:
+Also see the `API Reference Docs <https://www.planet.com/docs>`_ for more information.
 
 .. toctree::
    :maxdepth: 2
-   
-   reference/cli
-   reference/api
 
+   cli/index
+   api/index
 
 Indices and tables
 ==================
