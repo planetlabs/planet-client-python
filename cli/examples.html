@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Planet CLI &mdash; Planet Labs Client 0.0.1 documentation</title>
+    <title>Examples &mdash; Planet Labs Client 0.0.3 documentation</title>
     
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.0.1',
+        VERSION:     '0.0.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,43 +23,63 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="Planet Labs Client 0.0.1 documentation" href="../index.html" />
-    <link rel="next" title="&lt;no title&gt;" href="api.html" />
-    <link rel="prev" title="Planet Labs Client" href="../index.html" />
+    <link rel="top" title="Planet Labs Client 0.0.3 documentation" href="../index.html" />
+    <link rel="up" title="Command Line" href="index.html" />
+    <link rel="next" title="API" href="../api/index.html" />
+    <link rel="prev" title="CLI Reference" href="reference.html" />
    
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
-  <body role="document">
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="api.html" title="&lt;no title&gt;"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="../index.html" title="Planet Labs Client"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Planet Labs Client 0.0.1 documentation</a> &raquo;</li> 
-      </ul>
-    </div>  
+  <body role="document">  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <span class="target" id="module-planet.scripts"></span><div class="section" id="planet-cli">
-<h1>Planet CLI<a class="headerlink" href="#planet-cli" title="Permalink to this headline">¶</a></h1>
-<p>This library comes with a command line interface to expose many common requests, such as searching, downloading, and obtaining metadata.</p>
-<p>Here&#8217;s an example of what can be done using the cli and GitHub Gists.</p>
+  <div class="section" id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="searching-for-scenes">
+<h2>Searching for Scenes<a class="headerlink" href="#searching-for-scenes" title="Permalink to this headline">¶</a></h2>
+<p>Get latest 10 scenes:</p>
+<div class="highlight-python"><div class="highlight"><pre>planet search --limit 10
+</pre></div>
+</div>
+<p>Get scenes acquired recently:</p>
+<div class="highlight-python"><div class="highlight"><pre>planet search --where acquired gt 2015-08-23
+</pre></div>
+</div>
+<p>Get scenes that intersect a single point:</p>
+<div class="highlight-python"><div class="highlight"><pre>planet search &#39;POINT(-105,40)&#39;
+</pre></div>
+</div>
+<p>Get scenes that intersect a geometry specified in a file named <cite>aoi.geojson</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre>planet search aoi.geojson
+</pre></div>
+</div>
+<p>Get latest 10 <cite>landsat</cite> scenes:</p>
+<div class="highlight-python"><div class="highlight"><pre>planet search -s landsat --limit 10planet search -s landsat --limit 10
+</pre></div>
+</div>
+</div>
+<div class="section" id="downloading-scenes">
+<h2>Downloading Scenes<a class="headerlink" href="#downloading-scenes" title="Permalink to this headline">¶</a></h2>
+<p>Download a ortho visual scene by ID to the current directory:</p>
+<div class="highlight-python"><div class="highlight"><pre>planet download 20150810_235347_0b10
+</pre></div>
+</div>
+<p>Download 2 <cite>landsat</cite> <cite>qa</cite> band scenes by ID to the <cite>fetched</cite> directory:</p>
+<div class="highlight-python"><div class="highlight"><pre>planet download -d fetched -s landsat -product qa LC81300472015235LGN00 LC81300482015235LGN00
+</pre></div>
+</div>
+</div>
+<div class="section" id="integration-with-other-tools">
+<h2>Integration With Other Tools<a class="headerlink" href="#integration-with-other-tools" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="github-gists">
+<h3>GitHub Gists<a class="headerlink" href="#github-gists" title="Permalink to this headline">¶</a></h3>
+<p>Create a <cite>gist</cite> using the <a class="reference external" href="http://defunkt.io/gist/">gist</a> command.</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="c"># Search Planet&#39;s API for imagery acquired between June 17, 2015 and June 18, 2015</span>
 planet search --where acquired gt 2015-06-17 --where acquired lt 2015-06-18 <span class="p">|</span> gist -f planet-imagery-20150617-20150618.geojson
 </pre></div>
@@ -79,21 +99,16 @@ window.onresize = function(e) {
 }
 
 window.onresize();
-</script><p>The CLI can be used to rapidly search an area of interest (AOI). Suppose you have an AOI in GeoJSON format:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>cat santiago-de-chile.geojson <span class="p">|</span> planet search
-<span class="o">{</span>
-  <span class="s2">&quot;count&quot;</span>: 1135,
-  <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;FeatureCollection&quot;</span>,
-  <span class="s2">&quot;features&quot;</span>: <span class="o">[</span>
-  ...
-  <span class="o">]</span>
-<span class="o">}</span>
-</pre></div>
-</div>
+</script></div>
+<div class="section" id="searching-using-a-shapefile">
+<h3>Searching Using a Shapefile<a class="headerlink" href="#searching-using-a-shapefile" title="Permalink to this headline">¶</a></h3>
 <p>Searching an area of interest described by a Shapefile, can be accomplished by chaining commands with <a class="reference external" href="https://github.com/Toblerity/Fiona">Fiona</a>.</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>fio dump santiago-de-chile.shp <span class="p">|</span> planet search
 </pre></div>
 </div>
+</div>
+<div class="section" id="extracting-metadata-fields">
+<h3>Extracting Metadata Fields<a class="headerlink" href="#extracting-metadata-fields" title="Permalink to this headline">¶</a></h3>
 <p>Using <a class="reference external" href="http://stedolan.github.io/jq/">jq</a>, useful information can be parsed from data returned by the Planet API.</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>cat santiago-de-chile.geojson <span class="p">|</span> planet search <span class="p">|</span> jq -r <span class="s2">&quot;.features[].id&quot;</span>
 20150707_160055_090b
@@ -107,6 +122,9 @@ window.onresize();
 ...
 </pre></div>
 </div>
+</div>
+<div class="section" id="search-overlapping-imagery">
+<h3>Search Overlapping Imagery<a class="headerlink" href="#search-overlapping-imagery" title="Permalink to this headline">¶</a></h3>
 <p>Querying for Planet scenes that overlap another data source is easily accomplished by using <a class="reference external" href="https://github.com/mapbox/rasterio">Rasterio</a>.</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>rio bounds LC82210682015104LGN00_B1.TIF <span class="p">|</span> planet search
 </pre></div>
@@ -116,6 +134,8 @@ window.onresize();
 </pre></div>
 </div>
 </div>
+</div>
+</div>
 
 
           </div>
@@ -123,19 +143,19 @@ window.onresize();
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="../index.html"
-                        title="previous chapter">Planet Labs Client</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="api.html"
-                        title="next chapter">&lt;no title&gt;</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/reference/cli.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -148,21 +168,31 @@ window.onresize();
     Enter search terms or a module, class or function name.
     </p>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Command Line</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reference.html">CLI Reference</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">API</a></li>
+</ul>
+
+
         </div>
       </div>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2015, Planet Labs.
+      &copy;2015 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
       
       |
-      <a href="../_sources/reference/cli.txt"
-          rel="nofollow">Page source</a></li>
+      <a href="../_sources/cli/examples.txt"
+          rel="nofollow">Page source</a>
     </div>
 
     

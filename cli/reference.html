@@ -1,0 +1,488 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>CLI Reference &mdash; Planet Labs Client 0.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Planet Labs Client 0.0.3 documentation" href="../index.html" />
+    <link rel="up" title="Command Line" href="index.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="Command Line" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cli-reference">
+<h1>CLI Reference<a class="headerlink" href="#cli-reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="general-options">
+<h2>General Options<a class="headerlink" href="#general-options" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">--workers</span></code></dt>
+<dd>The number of concurrent downloads when requesting multiple scenes.</dd>
+<dt><code class="docutils literal"><span class="pre">--verbose</span></code></dt>
+<dd>Specify verbosity</dd>
+<dt><code class="docutils literal"><span class="pre">--api_key</span></code></dt>
+<dd>Valid API key - or via env variable PL_API_KEY</dd>
+<dt><code class="docutils literal"><span class="pre">--base_url</span></code></dt>
+<dd>Optional for testing</dd>
+<dt><code class="docutils literal"><span class="pre">--version</span></code></dt>
+<dd>Show the version and exit.</dd>
+</dl>
+</div>
+<div class="section" id="commands">
+<h2>Commands<a class="headerlink" href="#commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#cli-command-download"><span>download</span></a> Download full scene image(s).</p>
+<p><a class="reference internal" href="#cli-command-download-quads"><span>download-quads</span></a> Download quad geotiffs</p>
+<p><a class="reference internal" href="#cli-command-get-workspace"><span>get-workspace</span></a> Get workspace.</p>
+<p><a class="reference internal" href="#cli-command-help"><span>help</span></a> Get command help</p>
+<p><a class="reference internal" href="#cli-command-init"><span>init</span></a> Login using email/password</p>
+<p><a class="reference internal" href="#cli-command-list-workspaces"><span>list-workspaces</span></a> List workspaces.</p>
+<p><a class="reference internal" href="#cli-command-metadata"><span>metadata</span></a> Get scene metadata</p>
+<p><a class="reference internal" href="#cli-command-mosaic"><span>mosaic</span></a> Describe a specified mosaic</p>
+<p><a class="reference internal" href="#cli-command-mosaic-quads"><span>mosaic-quads</span></a> Get quad info for the specified mosaic</p>
+<p><a class="reference internal" href="#cli-command-mosaics"><span>mosaics</span></a> List all mosaics</p>
+<p><a class="reference internal" href="#cli-command-search"><span>search</span></a> Get a list of scenes.</p>
+<p><a class="reference internal" href="#cli-command-set-workspace"><span>set-workspace</span></a> Create or modify a workspace</p>
+<p><a class="reference internal" href="#cli-command-sync"><span>sync</span></a> Synchronize a directory to a specified AOI or...</p>
+<p><a class="reference internal" href="#cli-command-thumbnails"><span>thumbnails</span></a> Fetch scene thumbnail(s)</p>
+<div class="section" id="download">
+<span id="cli-command-download"></span><span id="index-0"></span><h3>download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h3>
+<p>Download full scene image(s).</p>
+<p>Usage: download [OPTIONS] [SCENE_IDS]...</p>
+<table border="1" class="docutils" id="id1">
+<caption><span class="caption-text">Options</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>product</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>dest</td>
+<td>Destination directory</td>
+</tr>
+<tr class="row-even"><td>scene_type</td>
+<td>Type of scene</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="download-quads">
+<span id="cli-command-download-quads"></span><span id="index-1"></span><h3>download-quads<a class="headerlink" href="#download-quads" title="Permalink to this headline">¶</a></h3>
+<p>Download quad geotiffs</p>
+<p>Usage: download-quads [OPTIONS] MOSAIC_NAME [QUAD_IDS]...</p>
+<table border="1" class="docutils" id="id2">
+<caption><span class="caption-text">Options</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>dest</td>
+<td>Destination directory</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="get-workspace">
+<span id="cli-command-get-workspace"></span><span id="index-2"></span><h3>get-workspace<a class="headerlink" href="#get-workspace" title="Permalink to this headline">¶</a></h3>
+<p>Get workspace.</p>
+<p>Usage: get-workspace [OPTIONS] ID</p>
+<table border="1" class="docutils" id="id3">
+<caption><span class="caption-text">Options</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>pretty</td>
+<td>Format JSON output</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="help">
+<span id="cli-command-help"></span><span id="index-3"></span><h3>help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h3>
+<p>Get command help</p>
+<p>Usage: help [OPTIONS] [COMMAND]</p>
+</div>
+<div class="section" id="init">
+<span id="cli-command-init"></span><span id="index-4"></span><h3>init<a class="headerlink" href="#init" title="Permalink to this headline">¶</a></h3>
+<p>Login using email/password</p>
+<p>Usage: init [OPTIONS]</p>
+<table border="1" class="docutils" id="id4">
+<caption><span class="caption-text">Options</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>email</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>password</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="list-workspaces">
+<span id="cli-command-list-workspaces"></span><span id="index-5"></span><h3>list-workspaces<a class="headerlink" href="#list-workspaces" title="Permalink to this headline">¶</a></h3>
+<p>List workspaces.</p>
+<p>Usage: list-workspaces [OPTIONS]</p>
+<table border="1" class="docutils" id="id5">
+<caption><span class="caption-text">Options</span><a class="headerlink" href="#id5" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>pretty</td>
+<td>Format JSON output</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="metadata">
+<span id="cli-command-metadata"></span><span id="index-6"></span><h3>metadata<a class="headerlink" href="#metadata" title="Permalink to this headline">¶</a></h3>
+<p>Get scene metadata</p>
+<p>Usage: metadata [OPTIONS] SCENE_ID</p>
+<table border="1" class="docutils" id="id6">
+<caption><span class="caption-text">Options</span><a class="headerlink" href="#id6" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>scene_type</td>
+<td>Type of scene</td>
+</tr>
+<tr class="row-odd"><td>pretty</td>
+<td>Format JSON output</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="mosaic">
+<span id="cli-command-mosaic"></span><span id="index-7"></span><h3>mosaic<a class="headerlink" href="#mosaic" title="Permalink to this headline">¶</a></h3>
+<p>Describe a specified mosaic</p>
+<p>Usage: mosaic [OPTIONS] MOSAIC_NAME</p>
+<table border="1" class="docutils" id="id7">
+<caption><span class="caption-text">Options</span><a class="headerlink" href="#id7" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>pretty</td>
+<td>Format JSON output</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="mosaic-quads">
+<span id="cli-command-mosaic-quads"></span><span id="index-8"></span><h3>mosaic-quads<a class="headerlink" href="#mosaic-quads" title="Permalink to this headline">¶</a></h3>
+<p>Get quad info for the specified mosaic</p>
+<p>Usage: mosaic-quads [OPTIONS] MOSAIC_NAME</p>
+<table border="1" class="docutils" id="id8">
+<caption><span class="caption-text">Options</span><a class="headerlink" href="#id8" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>limit</td>
+<td>Limit the number of items.</td>
+</tr>
+<tr class="row-odd"><td>pretty</td>
+<td>Format JSON output</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="mosaics">
+<span id="cli-command-mosaics"></span><span id="index-9"></span><h3>mosaics<a class="headerlink" href="#mosaics" title="Permalink to this headline">¶</a></h3>
+<p>List all mosaics</p>
+<p>Usage: mosaics [OPTIONS]</p>
+<table border="1" class="docutils" id="id9">
+<caption><span class="caption-text">Options</span><a class="headerlink" href="#id9" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>limit</td>
+<td>Limit the number of items.</td>
+</tr>
+<tr class="row-odd"><td>pretty</td>
+<td>Format JSON output</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="search">
+<span id="cli-command-search"></span><span id="index-10"></span><h3>search<a class="headerlink" href="#search" title="Permalink to this headline">¶</a></h3>
+<p>Get a list of scenes.</p>
+<p>Usage: search [OPTIONS] [AOI]</p>
+<table border="1" class="docutils" id="id10">
+<caption><span class="caption-text">Options</span><a class="headerlink" href="#id10" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>limit</td>
+<td>Limit the number of items.</td>
+</tr>
+<tr class="row-odd"><td>where</td>
+<td>Provide additional search criteria. See <a class="reference external" href="https://www.planet.com/docs/v0/scenes/#metadata">https://www.planet.com/docs/v0/scenes/#metadata</a> for search metadata fields.</td>
+</tr>
+<tr class="row-even"><td>workspace</td>
+<td>Workspace ID</td>
+</tr>
+<tr class="row-odd"><td>scene_type</td>
+<td>Type of scene</td>
+</tr>
+<tr class="row-even"><td>pretty</td>
+<td>Format JSON output</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="set-workspace">
+<span id="cli-command-set-workspace"></span><span id="index-11"></span><h3>set-workspace<a class="headerlink" href="#set-workspace" title="Permalink to this headline">¶</a></h3>
+<p>Create or modify a workspace</p>
+<p>Usage: set-workspace [OPTIONS] [WORKSPACE]</p>
+<table border="1" class="docutils" id="id11">
+<caption><span class="caption-text">Options</span><a class="headerlink" href="#id11" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>id</td>
+<td>If provided, update the workspace with this id</td>
+</tr>
+<tr class="row-odd"><td>aoi</td>
+<td>The geometry to use</td>
+</tr>
+<tr class="row-even"><td>name</td>
+<td>Workspace name</td>
+</tr>
+<tr class="row-odd"><td>create</td>
+<td>Specify workspace creation</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="sync">
+<span id="cli-command-sync"></span><span id="index-12"></span><h3>sync<a class="headerlink" href="#sync" title="Permalink to this headline">¶</a></h3>
+<p>Synchronize a directory to a specified AOI or workspace</p>
+<p>Usage: sync [OPTIONS] DESTINATION</p>
+<table border="1" class="docutils" id="id12">
+<caption><span class="caption-text">Options</span><a class="headerlink" href="#id12" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>dryrun</td>
+<td>Do not actually download</td>
+</tr>
+<tr class="row-odd"><td>limit</td>
+<td>Limit the number of items.</td>
+</tr>
+<tr class="row-even"><td>workspace</td>
+<td>Workspace ID</td>
+</tr>
+<tr class="row-odd"><td>scene_type</td>
+<td>Type of scene</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="thumbnails">
+<span id="cli-command-thumbnails"></span><span id="index-13"></span><h3>thumbnails<a class="headerlink" href="#thumbnails" title="Permalink to this headline">¶</a></h3>
+<p>Fetch scene thumbnail(s)</p>
+<p>Usage: thumbnails [OPTIONS] [SCENE_IDS]...</p>
+<table border="1" class="docutils" id="id13">
+<caption><span class="caption-text">Options</span><a class="headerlink" href="#id13" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>fmt</td>
+<td>Thumbnail format</td>
+</tr>
+<tr class="row-odd"><td>size</td>
+<td>Thumbnail size</td>
+</tr>
+<tr class="row-even"><td>dest</td>
+<td>Destination directory</td>
+</tr>
+<tr class="row-odd"><td>scene_type</td>
+<td>Type of scene</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Command Line</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">CLI Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">API</a></li>
+</ul>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="../_sources/cli/reference.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

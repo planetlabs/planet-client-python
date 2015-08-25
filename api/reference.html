@@ -1,0 +1,437 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Reference &mdash; Planet Labs Client 0.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Planet Labs Client 0.0.3 documentation" href="../index.html" />
+    <link rel="up" title="API" href="index.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="API" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-planet.api">
+<span id="reference"></span><h1>Reference<a class="headerlink" href="#module-planet.api" title="Permalink to this headline">¶</a></h1>
+<p>The public and stable API functions, classes and exceptions are all provided by the <cite>planet.api</cite> namespace.</p>
+<div class="section" id="the-client-object">
+<h2>The Client Object<a class="headerlink" href="#the-client-object" title="Permalink to this headline">¶</a></h2>
+<p>The Client class is the supported way to access the API.</p>
+<p>Unless specific functionality is needed, the correct way to instantiate a Client is with zero arguments.</p>
+<p>The Client will resolve the API_KEY from the operating system environment using the <cite>PL_API_KEY</cite> value.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">client</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="class">
+<dt id="planet.api.Client">
+<em class="property">class </em><code class="descclassname">planet.api.</code><code class="descname">Client</code><a class="reference internal" href="../_modules/planet/api/client.html#Client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.Client" title="Permalink to this definition">¶</a></dt>
+<dd><p>High-level access to Planet&#8217;s API.</p>
+<dl class="method">
+<dt id="planet.api.Client.fetch_scene_geotiffs">
+<code class="descname">fetch_scene_geotiffs</code><span class="sig-paren">(</span><em>scene_ids</em>, <em>scene_type='ortho'</em>, <em>product='visual'</em>, <em>callback=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/client.html#Client.fetch_scene_geotiffs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.Client.fetch_scene_geotiffs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download scene geotiffs. The provided callback will be called with a
+single argument, the <code class="xref py py-class docutils literal"><span class="pre">Body</span></code> object, when the response is
+ready and successful (it will be initiated with response headers).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>scene_ids</strong> (<em>sequence</em>) &#8211; The scene IDs to download</li>
+<li><strong>scene_type</strong> (<em>str</em>) &#8211; The type: either &#8216;ortho&#8217; or &#8216;landsat&#8217;</li>
+<li><strong>product</strong> (<em>str</em>) &#8211; The product type, varies on scene_type.</li>
+<li><strong>callback</strong> (<em>function</em>) &#8211; A callback for handling asynchronous results</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a sequence of <code class="xref py py-class docutils literal"><span class="pre">Response</span></code> objects, one for each scene
+id provided</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.Client.fetch_scene_thumbnails">
+<code class="descname">fetch_scene_thumbnails</code><span class="sig-paren">(</span><em>scene_ids</em>, <em>scene_type='ortho'</em>, <em>size='md'</em>, <em>fmt='png'</em>, <em>callback=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/client.html#Client.fetch_scene_thumbnails"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.Client.fetch_scene_thumbnails" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download scene thumbnails. The provided callback will be called with a
+single argument, the <code class="xref py py-class docutils literal"><span class="pre">Body</span></code> object, when the response is
+ready and successful (it will be initiated with response headers).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>scene_ids</strong> (<em>sequence</em>) &#8211; The scene IDs to download</li>
+<li><strong>scene_type</strong> (<em>str</em>) &#8211; The type: either &#8216;ortho&#8217; or &#8216;landsat&#8217;</li>
+<li><strong>size</strong> (<em>str</em>) &#8211; The size: &#8216;sm&#8217;, &#8216;md&#8217;, &#8216;lg&#8217;</li>
+<li><strong>format</strong> (<em>str</em>) &#8211; The image format: &#8216;png&#8217;, &#8216;jpg&#8217;</li>
+<li><strong>callback</strong> (<em>function</em>) &#8211; A callback for handling asynchronous results</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a sequence of <code class="xref py py-class docutils literal"><span class="pre">Response</span></code> objects, one for each scene
+id provided</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.Client.get_mosaic">
+<code class="descname">get_mosaic</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/client.html#Client.get_mosaic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.Client.get_mosaic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata for a given mosaic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> &#8211; Mosaic name as returned by <cite>list_mosaics</cite>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.Client.get_mosaic_quads">
+<code class="descname">get_mosaic_quads</code><span class="sig-paren">(</span><em>name</em>, <em>intersects=None</em>, <em>count=50</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/client.html#Client.get_mosaic_quads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.Client.get_mosaic_quads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata for mosaic quads.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> &#8211; Mosaic name as retured by <cite>list_mosaics</cite>.</li>
+<li><strong>intersects</strong> &#8211; WKT or GeoJSON describing a region of interest.</li>
+<li><strong>count</strong> &#8211; Number of results to return.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.Client.get_scene_metadata">
+<code class="descname">get_scene_metadata</code><span class="sig-paren">(</span><em>scene_id</em>, <em>scene_type='ortho'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/client.html#Client.get_scene_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.Client.get_scene_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get metadata for a given scene.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>scene_id</strong> (<em>str</em>) &#8211; The scene ID</li>
+<li><strong>scene_type</strong> (<em>str</em>) &#8211; The type: either &#8216;ortho&#8217; or &#8216;landsat&#8217;</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">JSON</span></code> body</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.Client.get_scenes_list">
+<code class="descname">get_scenes_list</code><span class="sig-paren">(</span><em>scene_type='ortho'</em>, <em>order_by=None</em>, <em>count=None</em>, <em>intersects=None</em>, <em>**filters</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/client.html#Client.get_scenes_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.Client.get_scenes_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get scenes matching the specified parameters and filters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>scene_type</strong> (<em>str</em>) &#8211; The type of scene, defaults to &#8216;ortho&#8217;</li>
+<li><strong>order_by</strong> (<em>str</em>) &#8211; Results order &#8216;acquired asc&#8217; or &#8216;acquired desc&#8217;.
+Defaults to &#8216;acquired desc&#8217;</li>
+<li><strong>count</strong> (<em>int</em>) &#8211; Number of results per page. Defaults to 50.</li>
+<li><strong>intersects</strong> &#8211; A geometry to filter results by. Can be one of:
+WKT or GeoJSON text or a GeoJSON-like dict.</li>
+<li><strong>filters</strong> &#8211; Zero or more metadata filters in the form of
+param.name.comparison -&gt; value.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">Scenes</span></code> body</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.Client.list_mosaics">
+<code class="descname">list_mosaics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/client.html#Client.list_mosaics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.Client.list_mosaics" title="Permalink to this definition">¶</a></dt>
+<dd><p>List all mosaics.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.Client.login">
+<code class="descname">login</code><span class="sig-paren">(</span><em>identity</em>, <em>credentials</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/client.html#Client.login"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.Client.login" title="Permalink to this definition">¶</a></dt>
+<dd><p>Login using email identity and credentials. Returns a JSON
+object containing an <cite>api_key</cite> property with the user&#8217;s API_KEY.
+:param str identity: email
+:param str credentials: password
+:returns: JSON object (Python dict)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-planet.api.models">
+<span id="client-return-values"></span><h2>Client Return Values<a class="headerlink" href="#module-planet.api.models" title="Permalink to this headline">¶</a></h2>
+<p>Most <cite>Client</cite> methods return a <a class="reference internal" href="#planet.api.models._Body" title="planet.api.models._Body"><code class="xref py py-class docutils literal"><span class="pre">_Body</span></code></a> subclass that provides acccess to the HTTP response body in addition to the HTTP request and response details.</p>
+<p>For many responses, it is sufficient to use the <cite>get</cite> method to obtain the HTTP response as JSON.</p>
+<p>For paginated responses, the <a class="reference internal" href="#planet.api.models._Body" title="planet.api.models._Body"><code class="xref py py-class docutils literal"><span class="pre">_Body</span></code></a> provides convenience functions to explicitly page through results as well as an iterator to the underlying items in each response.</p>
+<p>Download functions return a <a class="reference internal" href="#planet.api.models.Response" title="planet.api.models.Response"><code class="xref py py-class docutils literal"><span class="pre">Response</span></code></a> object that handles some aspects of asynchronous execution. Namely, streaming chunks to a handler to prevent memory issues and awaiting completion of the task.</p>
+<p>The basic <cite>Body</cite> methods include:</p>
+<dl class="class">
+<dt id="planet.api.models._Body">
+<em class="property">class </em><code class="descclassname">planet.api.models.</code><code class="descname">_Body</code><a class="reference internal" href="../_modules/planet/api/models.html#_Body"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.models._Body" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="planet.api.models._Body.get_raw">
+<code class="descname">get_raw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/models.html#_Body.get_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.models._Body.get_raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the decoded text content from the response</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.models._Body.last_modified">
+<code class="descname">last_modified</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/models.html#_Body.last_modified"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.models._Body.last_modified" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the last-modified header as a datetime</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.models._Body.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>file=None</em>, <em>callback=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/models.html#_Body.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.models._Body.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the contents of the body to the optionally provided file and
+providing progress to the optional callback. The callback first with
+this Body, zero or more times for each chunk streamed down, and once
+again on completion. File writing is atomic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>file</strong> &#8211; file name or file-like object</li>
+<li><strong>callback</strong> &#8211; optional progress callback</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<p>The <cite>Response</cite> class returned by download functions has two methods:</p>
+<dl class="class">
+<dt id="planet.api.models.Response">
+<em class="property">class </em><code class="descclassname">planet.api.models.</code><code class="descname">Response</code><a class="reference internal" href="../_modules/planet/api/models.html#Response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.models.Response" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="planet.api.models.Response.await">
+<code class="descname">await</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/models.html#Response.await"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.models.Response.await" title="Permalink to this definition">¶</a></dt>
+<dd><p>Await completion of this request.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns Body:</th><td class="field-body">A Body object containing the response.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.models.Response.get_body">
+<code class="descname">get_body</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/models.html#Response.get_body"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.models.Response.get_body" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the response Body</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns Body:</th><td class="field-body">A Body object containing the response.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<p>Most responses are more specific than a body. The JSON body provides the contents as JSON.</p>
+<dl class="class">
+<dt id="planet.api.models.JSON">
+<em class="property">class </em><code class="descclassname">planet.api.models.</code><code class="descname">JSON</code><a class="reference internal" href="../_modules/planet/api/models.html#JSON"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.models.JSON" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Body that contains JSON</p>
+<dl class="method">
+<dt id="planet.api.models.JSON.get">
+<code class="descname">get</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/models.html#JSON.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.models.JSON.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the response as a JSON dict</p>
+</dd></dl>
+
+</dd></dl>
+
+<p>Paginated responses provide a paging iterator as well as an iterator of each pages contents.</p>
+<p>The <a class="reference internal" href="#planet.api.models._Paged.items_iter" title="planet.api.models._Paged.items_iter"><code class="xref py py-meth docutils literal"><span class="pre">_Paged.items_iter()</span></code></a> method provides iteration over the contents of each page response.</p>
+<p>For examples, a <a class="reference internal" href="#planet.api.models.Scenes" title="planet.api.models.Scenes"><code class="xref py py-class docutils literal"><span class="pre">Scenes</span></code></a> response page contains a FeatureCollection of zero or more Feature objects. When using the <cite>iterator</cite> from the <a class="reference internal" href="#planet.api.models._Paged.items_iter" title="planet.api.models._Paged.items_iter"><code class="xref py py-meth docutils literal"><span class="pre">_Paged.items_iter()</span></code></a> method, only Feature objects will be returned.</p>
+<p>To handle assembling the items from each page into a collection again and streaming them as JSON, use the <a class="reference internal" href="#planet.api.models._Paged.json_encode" title="planet.api.models._Paged.json_encode"><code class="xref py py-meth docutils literal"><span class="pre">_Paged.json_encode()</span></code></a> method.</p>
+<dl class="class">
+<dt id="planet.api.models._Paged">
+<em class="property">class </em><code class="descclassname">planet.api.models.</code><code class="descname">_Paged</code><a class="reference internal" href="../_modules/planet/api/models.html#_Paged"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.models._Paged" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="planet.api.models._Paged.items_iter">
+<code class="descname">items_iter</code><span class="sig-paren">(</span><em>limit</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/models.html#_Paged.items_iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.models._Paged.items_iter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an iterator of the &#8216;items&#8217; in each page. Instead of a feature
+collection from each page, the iterator yields the features.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>limit</strong> (<em>int</em>) &#8211; The number of &#8216;items&#8217; to limit to.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">iter of items in page</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.models._Paged.iter">
+<code class="descname">iter</code><span class="sig-paren">(</span><em>pages=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/models.html#_Paged.iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.models._Paged.iter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an iterator of pages.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pages</strong> (<em>int</em>) &#8211; optional limit to number of pages</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">iter of this and subsequent pages</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.models._Paged.json_encode">
+<code class="descname">json_encode</code><span class="sig-paren">(</span><em>out</em>, <em>limit=None</em>, <em>sort_keys=False</em>, <em>indent=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/planet/api/models.html#_Paged.json_encode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.models._Paged.json_encode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encode the results of this paged response as JSON writing to the
+provided file-like <cite>out</cite> object. This function will iteratively read
+as many pages as present, streaming the contents out as JSON.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>out</strong> (<em>file-like</em>) &#8211; an object with a <cite>write</cite> function</li>
+<li><strong>limit</strong> (<em>int</em>) &#8211; optional maximum number of items to write</li>
+<li><strong>sort_keys</strong> (<em>bool</em>) &#8211; if True, output keys sorted, default is False</li>
+<li><strong>indent</strong> (<em>bool</em>) &#8211; if True, indent output, default is False</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="planet.api.models.Scenes">
+<em class="property">class </em><code class="descclassname">planet.api.models.</code><code class="descname">Scenes</code><a class="reference internal" href="../_modules/planet/api/models.html#Scenes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#planet.api.models.Scenes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scenes is a body that contains a FeatureCollection so when using <cite>items_iter</cite>, it will yield <cite>Feature</cite> GeoJSON objects.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../cli/index.html">Command Line</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+</li>
+</ul>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="../_sources/api/reference.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
