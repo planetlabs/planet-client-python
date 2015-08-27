@@ -404,15 +404,18 @@ def get_mosaic(mosaic_name, pretty):
 
 @pretty
 @cli.command('mosaic-quads')
-@limit_option(default=100)
 @click.argument('mosaic_name', nargs=1)
-def get_mosaic_quads(mosaic_name, limit, pretty):
+@click.argument('aoi', default='@-', required=False)
+@limit_option(default=100)
+def get_mosaic_quads(mosaic_name, aoi, limit, pretty):
     """
     Get quad info for the specified mosaic
     """
+    aoi = read_aoi(aoi)
+
     echo_json_response(
         call_and_wrap(client().get_mosaic_quads,
-                      mosaic_name), pretty, limit)
+                      mosaic_name, intersects=aoi), pretty, limit)
 
 
 @cli.command('download-quads')
