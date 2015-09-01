@@ -213,7 +213,7 @@ class Client(object):
         return self._get('workspaces/').get_body()
 
     def get_workspace(self, id):
-        return self._get('workspaces/%s/' % id).get_body()
+        return self._get('workspaces/%s' % id).get_body()
 
     def set_workspace(self, workspace, id=None):
         if id:
