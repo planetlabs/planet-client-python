@@ -412,6 +412,8 @@ def get_mosaic_quads(mosaic_name, aoi, limit, pretty):
     Get quad info for the specified mosaic
     """
     aoi = read_aoi(aoi)
+    # work around backend limitation of using a FeatureCollection
+    aoi = api.utils.geometry_from_json(aoi)
 
     echo_json_response(
         call_and_wrap(client().get_mosaic_quads,
