@@ -30,6 +30,8 @@ from requests.packages.urllib3 import exceptions as urllib3exc
 
 client_params = {}
 
+ORTHO_PRODUCTS = ['visual', 'analytic', 'unrectified']
+
 
 def client():
     return api.Client(**client_params)
@@ -268,7 +270,7 @@ def get_scenes_list(scene_type, pretty, aoi, limit, where, workspace):
 
     echo_json_response(call_and_wrap(
         client().get_scenes_list,
-        scene_type=scene_type, intersects=aoi,
+        scene_type=scene_type, intersects=aoi, count=limit,
         **conditions), pretty, limit=limit)
 
 
@@ -289,7 +291,7 @@ def metadata(scene_id, scene_type, pretty):
 @click.option('--product',
               type=click.Choice(
                   ["band_%d" % i for i in range(1, 12)] +
-                  ['visual', 'analytic', 'unrectified', 'qa']
+                  ORTHO_PRODUCTS + ['qa']
               ), default='visual')
 @cli.command('download')
 def fetch_scene_geotiff(scene_ids, scene_type, product, dest):
@@ -333,20 +335,28 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
 @click.argument("destination")
 @limit_option(default=-1)
 @click.option("--dryrun", is_flag=True, help='Do not actually download')
+@click.option("--products", multiple=True,
+              type=click.Choice(ORTHO_PRODUCTS + ['all']),
+              help='Specifiy products to download, default is visual')
 @cli.command('sync')
-def sync(destination, workspace, scene_type, limit, dryrun):
+def sync(destination, workspace, scene_type, limit, dryrun, products):
     '''Synchronize a directory to a specified AOI or workspace'''
     aoi = None
     filters = {'workspace': workspace}
 
+    if 'all' in products:
+        products = ORTHO_PRODUCTS
+    else:
+        products = products or ('visual',)
+
     sync_tool = _SyncTool(client(), destination, aoi,
-                          scene_type, **filters)
+                          scene_type, products, **filters)
 
     try:
         to_fetch = sync_tool.init(limit)
     except ValueError as ve:
         raise click.ClickException(str(ve))
-    click.echo('total scenes to fetch: %s' % to_fetch)
+    click.echo('total scene products to fetch: %s' % to_fetch)
     if limit > -1:
         click.echo('limiting to %s' % limit)
 

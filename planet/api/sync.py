@@ -24,11 +24,13 @@ from .utils import strf_timestamp
 
 class _SyncTool(object):
 
-    def __init__(self, client, destination, aoi, scene_type, **filters):
+    def __init__(self, client, destination, aoi, scene_type, products,
+                 **filters):
         self.client = client
         self.destination = destination
         self.aoi = aoi
         self.scene_type = scene_type
+        self.products = products
         self.filters = filters
         self.workspace = filters.get('workspace', None)
         self._init()
@@ -75,13 +77,14 @@ class _SyncTool(object):
         self._scenes = resp
         count = resp.get()['count']
         self._scene_count = count if limit < 0 else limit
-        return count
+        return count * len(self.products)
 
     def get_scenes_to_sync(self):
         return self._scenes.items_iter(limit=self._scene_count)
 
     def sync(self, callback):
-        summary = _SyncSummary(self._scene_count)
+        # init with number of scenes * products
+        summary = _SyncSummary(self._scene_count * len(self.products))
 
         all_scenes = self.get_scenes_to_sync()
         while True:
@@ -93,9 +96,12 @@ class _SyncTool(object):
                 _SyncHandler(self.destination, summary, scene, callback) for
                 scene in scenes
             ]
-            futures = [h.run(self.client, self.scene_type) for h in handlers]
-            for f in futures:
-                f.await()
+            # start all downloads asynchronously
+            for h in handlers:
+                h.run(self.client, self.scene_type, self.products)
+            # synchronously await them and then write metadata
+            for h in handlers:
+                h.finish()
 
         if summary.latest:
             sync = self._read_sync_file()
@@ -132,22 +138,28 @@ class _SyncHandler(object):
         self.metadata = metadata
         self.user_callback = user_callback or (lambda *args: None)
 
-    def run(self, client, scene_type):
-        return client.fetch_scene_geotiffs(
-            [self.metadata['id']],
-            scene_type,
-            callback=self)[0]
+    def run(self, client, scene_type, products):
+        self.futures = []
+        for product in products:
+            self.futures.extend(client.fetch_scene_geotiffs(
+                                [self.metadata['id']],
+                                scene_type, product,
+                                callback=self))
 
-    def __call__(self, body):
-        '''implement the callback that runs when the scene response is ready'''
-        # first write scene to disk
-        write_to_file(self.destination)(body)
+    def finish(self):
+        for f in self.futures:
+            f.await()
 
         # write out metadata
         metadata = os.path.join(self.destination,
                                 '%s_metadata.json' % self.metadata['id'])
         with atomic_open(metadata, 'wb') as fp:
             fp.write(json.dumps(self.metadata, indent=2).encode('utf-8'))
+
+    def __call__(self, body):
+        '''implement the callback that runs when the scene response is ready'''
+        # first write scene to disk
+        write_to_file(self.destination)(body)
 
         # summarize
         self.summary.transfer_complete(body, self.metadata)
