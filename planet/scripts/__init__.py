@@ -470,9 +470,9 @@ def set_workspace(id, aoi, name, create, workspace, where):
         workspace = json.loads(workspace) if workspace else None
     except ValueError:
         raise click.ClickException('workspace must be JSON')
-    
+
     cl = client()
-    
+
     if workspace is None and id:
         workspace = cl.get_workspace(id).get()
 
@@ -499,7 +499,7 @@ def set_workspace(id, aoi, name, create, workspace, where):
         if 'filters' not in workspace:
             workspace['filters'] = {}
         filters = workspace['filters']
-        for k,c,v in where:
+        for k, c, v in where:
             if k not in filters:
                 filters[k] = {}
             group = filters.get(k)

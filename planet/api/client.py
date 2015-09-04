@@ -226,7 +226,7 @@ class Client(object):
             method = 'POST'
         # without these, scenes UI breaks
         defaults = {
-            "filters" : {}
+            "filters": {}
         }
         defaults.update(workspace)
         result = self.dispatcher.dispatch_request(method, self.base_url + url,
