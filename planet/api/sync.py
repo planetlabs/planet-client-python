@@ -30,6 +30,7 @@ class _SyncTool(object):
         self.aoi = aoi
         self.scene_type = scene_type
         self.filters = filters
+        self.workspace = filters.get('workspace', None)
         self._init()
         self.sync_file = path.join(self.destination, 'sync.json')
 
@@ -39,14 +40,19 @@ class _SyncTool(object):
             raise ValueError('destination must exist and be a directory')
         if self.aoi is None:
             aoi_file = path.join(dest, 'aoi.geojson')
-            if not path.exists(aoi_file):
+            missing = not path.exists(aoi_file)
+            if missing and self.workspace is None:
                 raise ValueError('no aoi provided and no aoi.geojson file')
-            with open(aoi_file) as fp:
-                try:
-                    self.aoi = json.loads(fp.read())
-                except ValueError:
-                    msg = '%s does not contain valid JSON' % aoi_file
-                    raise ValueError(msg)
+            elif not missing:
+                self._read_aoi(aoi_file)
+
+    def _read_aoi(self, aoi_file):
+        with open(aoi_file) as fp:
+            try:
+                self.aoi = json.loads(fp.read())
+            except ValueError:
+                msg = '%s does not contain valid JSON' % aoi_file
+                raise ValueError(msg)
 
     def _read_sync_file(self):
         if path.exists(self.sync_file):

@@ -258,15 +258,7 @@ def get_scenes_list(scene_type, pretty, aoi, limit, where, workspace):
     '''Get a list of scenes.'''
 
     aoi = read_aoi(aoi)
-    conditions = {}
-
-    if workspace:
-        workspace = call_and_wrap(client().get_workspace, workspace).get()
-        ws_filters = api.utils.build_conditions(workspace)
-        if aoi is None:
-            aoi = api.utils.get_workspace_geometry(workspace)
-            aoi = api.utils.feature_collection(aoi)
-        conditions.update(ws_filters)
+    conditions = {'workspace': workspace}
 
     if where:
         conditions.update([
@@ -345,13 +337,7 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
 def sync(destination, workspace, scene_type, limit, dryrun):
     '''Synchronize a directory to a specified AOI or workspace'''
     aoi = None
-    filters = {}
-
-    if workspace:
-        workspace = call_and_wrap(client().get_workspace, workspace).get()
-        filters = api.utils.build_conditions(workspace)
-        aoi = planet.api.utils.get_workspace_geometry(workspace)
-        aoi = json.dumps(planet.api.utils.feature_collection(aoi))
+    filters = {'workspace': workspace}
 
     sync_tool = _SyncTool(client(), destination, aoi,
                           scene_type, **filters)
