@@ -26,14 +26,14 @@ client = MagicMock(name='client', spec=api.Client)
 def test_sync_tool(tmpdir):
     # test non-existing destination
     try:
-        _SyncTool(client, 'should-not-exist', None, None)
+        _SyncTool(client, 'should-not-exist', None, None, None)
     except ValueError as ve:
         assert str(ve) == 'destination must exist and be a directory'
 
     # test existing destination, no aoi.geojson
     td = tmpdir.mkdir('sync-dest')
     try:
-        _SyncTool(client, td.strpath, None, None)
+        _SyncTool(client, td.strpath, None, None, None)
     except ValueError as ve:
         assert str(ve) == 'no aoi provided and no aoi.geojson file'
 
@@ -41,7 +41,7 @@ def test_sync_tool(tmpdir):
     aoi_file = td.join('aoi.geojson')
     aoi_file.write('not geojson')
     try:
-        _SyncTool(client, td.strpath, None, None)
+        _SyncTool(client, td.strpath, None, None, None)
     except ValueError as ve:
         assert str(ve) == '%s does not contain valid JSON' % aoi_file
 
@@ -51,7 +51,7 @@ def test_sync_tool(tmpdir):
 def test_sync_tool_init(tmpdir):
     td = tmpdir.mkdir('sync-dest')
     aoi = read_fixture('aoi.geojson')
-    st = _SyncTool(client, td.strpath, aoi, 'ortho')
+    st = _SyncTool(client, td.strpath, aoi, 'ortho', ('visual', 'analytic'))
     search_json = json.loads(read_fixture('search.geojson'))
     response = MagicMock(spec=Scenes)
     response.get.return_value = search_json
@@ -59,11 +59,14 @@ def test_sync_tool_init(tmpdir):
 
     # init w/ no limit should return count from response
     count = st.init()
-    assert search_json['count'] == count
+    # confusing but we'll download 2 products one for each scene
+    assert search_json['count'] * 2 == count
 
-    # expect limiting
+    # expect limiting to 10 ids
     count = st.init(limit=10)
-    assert count == search_json['count']
+    # still replies with total jobs despite the limit
+    assert search_json['count'] * 2 == count
+    # this tracks the internal number of ids, still 10
     assert 10 == st._scene_count
 
     # create a stored 'latest' date and ensure it's used
@@ -82,7 +85,7 @@ def test_sync_tool_init(tmpdir):
 def test_sync_tool_sync(tmpdir):
     td = tmpdir.mkdir('sync-dest')
     aoi = read_fixture('aoi.geojson')
-    st = _SyncTool(client, td.strpath, aoi, 'ortho')
+    st = _SyncTool(client, td.strpath, aoi, 'ortho', ('visual',))
     search_json = json.loads(read_fixture('search.geojson'))
 
     class Page:
@@ -146,7 +149,7 @@ def test_sync_tool_sync(tmpdir):
 
     # because process is normally async, as a sideeffect of this mock getting
     # called, we have to dispatch the callback
-    def run_callbacks(ids, scene_type, callback):
+    def run_callbacks(ids, scene_type, product, callback):
         resp = responses.pop(0)
         callback(resp)
         return DEFAULT
@@ -172,7 +175,8 @@ def test_sync_tool_sync(tmpdir):
     # implementation detail - because we're making requests separately,
     # fetch_scene_geotiffs will be called once for each id (instead of in bulk)
     assert items == len(args)
-    assert [a[0] for a in args] == [([f['id']], 'ortho') for f in first_items]
+    assert [a[0] for a in args] == \
+        [([f['id']], 'ortho', 'visual') for f in first_items]
     # callbacks should be made - arguments are 'tiff name', remaining
     assert called_back == [(str(i), 4 - i) for i in range(5)]
 
