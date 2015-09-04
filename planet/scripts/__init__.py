@@ -445,13 +445,23 @@ def get_workspace(pretty, id):
 @click.option('--aoi', help='The geometry to use')
 @click.option('--name', help='Workspace name')
 @click.option('--create', is_flag=True, help='Specify workspace creation')
-def set_workspace(id, aoi, name, create, workspace):
+@click.option('--where', nargs=3, multiple=True,
+              help=('Provide additional search criteria. See '
+                    'https://www.planet.com/docs/v0/scenes/#metadata for '
+                    'search metadata fields.'))
+def set_workspace(id, aoi, name, create, workspace, where):
     '''Create or modify a workspace'''
     workspace = read(workspace)
     try:
-        workspace = json.loads(workspace) if workspace else {}
+        workspace = json.loads(workspace) if workspace else None
     except ValueError:
         raise click.ClickException('workspace must be JSON')
+
+    cl = client()
+
+    if workspace is None and id:
+        workspace = cl.get_workspace(id).get()
+
     # what workspace id are we working with
     if not id:
         id = workspace.get('id', None)
@@ -471,7 +481,20 @@ def set_workspace(id, aoi, name, create, workspace):
     if name:
         workspace['name'] = name
 
+    if where:
+        if 'filters' not in workspace:
+            workspace['filters'] = {}
+        filters = workspace['filters']
+        for k, c, v in where:
+            if k not in filters:
+                filters[k] = {}
+            group = filters.get(k)
+            if v == '-' and c in group:
+                group.pop(c)
+            if not group:
+                filters.pop(k)
+
     if not workspace:
         raise click.ClickException('nothing to do')
-    echo_json_response(call_and_wrap(client().set_workspace,
+    echo_json_response(call_and_wrap(cl.set_workspace,
                        workspace, id), pretty)
