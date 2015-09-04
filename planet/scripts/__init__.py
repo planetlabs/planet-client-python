@@ -501,6 +501,8 @@ def set_workspace(id, aoi, name, create, workspace, where):
             group = filters.get(k)
             if v == '-' and c in group:
                 group.pop(c)
+            else:
+                group[c] = v
             if not group:
                 filters.pop(k)
 

@@ -270,3 +270,15 @@ def test_workspace_create_aoi_stdin():
     _set_workspace({}, '--name', 'foobar', '--aoi', '@-',
                    input=json.dumps(geometry))
     client.set_workspace.assert_called_once_with(expected, None)
+
+
+def test_set_workspace_filters():
+    _set_workspace({}, '--where', 'sat.id', 'eq', '0')
+    expected = {
+        'filters': {
+            'sat.id': {
+                'eq': '0'
+            }
+        }
+    }
+    client.set_workspace.assert_called_once_with(expected, None)
