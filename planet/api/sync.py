@@ -125,7 +125,7 @@ class _SyncSummary(object):
         with self._lock:
             self.remaining -= 1
             self.transferred += len(body)
-            recent = strp_timestamp(metadata['properties']['acquired'])
+            recent = strp_timestamp(metadata['properties']['published'])
             self.latest = max(self.latest, recent) if self.latest else recent
 
 
