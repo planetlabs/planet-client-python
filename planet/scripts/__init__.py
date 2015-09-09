@@ -127,7 +127,7 @@ def echo_json_response(response, pretty, limit=None):
     '''Wrapper to echo JSON with optional 'pretty' printing. If pretty is not
     provided explicity and stdout is a terminal (and not redirected or piped),
     the default will be to indent and sort keys'''
-    indent = 0
+    indent = None
     sort_keys = False
     if pretty or (pretty is None and sys.stdout.isatty()):
         indent = 2
