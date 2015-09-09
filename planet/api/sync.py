@@ -13,13 +13,19 @@
 # limitations under the License.
 import itertools
 import json
+import logging
 import os
 from os import path
 import threading
 from ._fatomic import atomic_open
-from .utils import write_to_file
+from . import exceptions
+from .utils import complete
 from .utils import strp_timestamp
 from .utils import strf_timestamp
+from .utils import write_to_file
+
+
+_logger = logging.getLogger(__name__)
 
 
 class _SyncTool(object):
@@ -35,6 +41,8 @@ class _SyncTool(object):
         self.workspace = filters.get('workspace', None)
         self._init()
         self.sync_file = path.join(self.destination, 'sync.json')
+        self.error_handler = _logger.exception
+        self._cancel = False
 
     def _init(self):
         dest = self.destination
@@ -87,7 +95,7 @@ class _SyncTool(object):
         summary = _SyncSummary(self._scene_count * len(self.products))
 
         all_scenes = self.get_scenes_to_sync()
-        while True:
+        while not self._cancel:
             # bite of chunks of work to not bog down on too many queued jobs
             scenes = list(itertools.islice(all_scenes, 100))
             if not scenes:
@@ -100,16 +108,25 @@ class _SyncTool(object):
             for h in handlers:
                 h.run(self.client, self.scene_type, self.products)
             # synchronously await them and then write metadata
-            for h in handlers:
-                h.finish()
+            complete(handlers, self._future_handler, self.client)
 
-        if summary.latest:
+        if summary.latest and not self._cancel:
             sync = self._read_sync_file()
             sync['latest'] = strf_timestamp(summary.latest)
             with atomic_open(self.sync_file, 'wb') as fp:
                 fp.write(json.dumps(sync, indent=2).encode('utf-8'))
 
         return summary
+
+    def _future_handler(self, futures):
+        for f in futures:
+            try:
+                f.finish()
+            except exceptions.RequestCancelled:
+                self._cancel = True
+                break
+            except:
+                self.error_handler('Unexpected error')
 
 
 class _SyncSummary(object):
@@ -137,18 +154,39 @@ class _SyncHandler(object):
         self.summary = summary
         self.metadata = metadata
         self.user_callback = user_callback or (lambda *args: None)
+        self._cancel = False
+        self.futures = []
 
     def run(self, client, scene_type, products):
-        self.futures = []
+        '''start asynchronous execution, must call finish to await'''
+        if self._cancel:
+            return
         for product in products:
             self.futures.extend(client.fetch_scene_geotiffs(
                                 [self.metadata['id']],
                                 scene_type, product,
                                 callback=self))
 
+    def cancel(self):
+        '''cancel pending downloads'''
+        self._cancel = True
+        futures = getattr(self, 'futures', [])
+        for f in futures:
+            f.cancel()
+
     def finish(self):
+        '''await pending downloads and write out metadata
+        @todo this is not an atomic operation - it's possible that one
+              product gets downloaded and the other fails.
+        '''
+        if self._cancel:
+            return
+
         for f in self.futures:
             f.await()
+
+        if self._cancel:
+            return
 
         # write out metadata
         metadata = os.path.join(self.destination,

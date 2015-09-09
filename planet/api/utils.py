@@ -17,6 +17,7 @@ from . import exceptions
 import json
 import os
 import re
+import threading
 from ._fatomic import atomic_open
 
 _ISO_FMT = '%Y-%m-%dT%H:%M:%S.%f+00:00'
@@ -187,3 +188,33 @@ def probably_geojson(input):
     ])
     valid = typename in supported_types
     return input if valid else None
+
+
+def complete(futures, check, client):
+    '''Wait for the future requests to complete without blocking the main
+    thread. This is a means to intercept a KeyboardInterrupt and gracefully
+    shutdown current requests without waiting for them to complete.
+
+    The cancel function on each future object should abort processing - any
+    blocking functions/IO will not be interrupted and this function should
+    return immediately.
+
+    :param futures: sequence of objects with a cancel function
+    :param check: function that will be called with the provided futures from
+                  a background thread
+    :param client: the Client to termintate on interrupt
+    '''
+    # start a background thread to not block main (otherwise hangs on 2.7)
+    def run():
+        check(futures)
+    t = threading.Thread(target=run)
+    t.start()
+    # poll (or we miss the interrupt) and await completion
+    try:
+        while t.isAlive():
+            t.join(.1)
+    except KeyboardInterrupt:
+        for f in futures:
+            f.cancel()
+        client.shutdown()
+        raise

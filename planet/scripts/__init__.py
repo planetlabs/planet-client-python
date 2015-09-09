@@ -25,6 +25,7 @@ import click
 import planet
 from planet.api.sync import _SyncTool
 from planet import api
+from planet.api.utils import complete
 
 from requests.packages.urllib3 import exceptions as urllib3exc
 
@@ -110,6 +111,8 @@ def check_futures(futures):
             click_exception(invalid)
         except api.APIException as other:
             click.echo('WARNING %s' % other.message)
+        except api.RequestCancelled:
+            pass
 
 
 def summarize_throughput(bytes, start_time):
@@ -303,9 +306,10 @@ def fetch_scene_geotiff(scene_ids, scene_type, product, dest):
         return
 
     start_time = time.time()
-    futures = client().fetch_scene_geotiffs(scene_ids, scene_type, product,
-                                            api.utils.write_to_file(dest))
-    check_futures(futures)
+    cl = client()
+    futures = cl.fetch_scene_geotiffs(scene_ids, scene_type, product,
+                                      api.utils.write_to_file(dest))
+    complete(futures, check_futures, cl)
     summarize_throughput(total_bytes(futures), start_time)
 
 
@@ -324,9 +328,10 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
     if not scene_ids:
         return
 
-    futures = client().fetch_scene_thumbnails(scene_ids, scene_type, size, fmt,
-                                              api.write_to_file(dest))
-    check_futures(futures)
+    cl = client()
+    futures = cl.fetch_scene_thumbnails(scene_ids, scene_type, size, fmt,
+                                        api.write_to_file(dest))
+    complete(futures, check_futures, cl)
 
 
 @scene_type
@@ -426,9 +431,10 @@ def download_quads(mosaic_name, quad_ids, dest):
     Download quad geotiffs
     """
     quad_ids = read(quad_ids, split=True)
-    futures = call_and_wrap(client().fetch_mosaic_quad_geotiffs, mosaic_name,
+    cl = client()
+    futures = call_and_wrap(cl.fetch_mosaic_quad_geotiffs, mosaic_name,
                             quad_ids, api.write_to_file(dest))
-    check_futures(futures)
+    complete(futures, check_futures, cl)
 
 
 @pretty
