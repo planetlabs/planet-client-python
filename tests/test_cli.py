@@ -180,9 +180,55 @@ def test_metadata():
 
 
 def test_download():
+    response = MagicMock(spec=models.Image)
+    client.fetch_scene_geotiffs.return_value = response
 
-    result = runner.invoke(scripts.cli, ['download', '20150615_190229_0905'])
-    assert result.exit_code == 0
+    def test(ids, as_std_in=False):
+        args, input = ['download'], None
+        if as_std_in:
+            input = '\n'.join(ids)
+        else:
+            args.extend(ids)
+        assert_correct(runner.invoke(scripts.cli,
+                       args, input=input), ids)
+
+    def assert_correct(result, expected_ids):
+        assert result.exit_code == 0
+        called_with = client.fetch_scene_geotiffs.call_args[0]
+        assert list(expected_ids) == list(called_with[0])
+        assert 'ortho' == called_with[1]
+        assert 'visual' == called_with[2]
+
+    test(['20150615_190229_0905'])
+    test(['20150615_190229_0905', '20150615_190229_0906'])
+    test(['20150615_190229_0905'], as_std_in=True)
+    test(['20150615_190229_0905', '20150615_190229_0906'], as_std_in=True)
+
+
+def test_thumbs():
+    response = MagicMock(spec=models.Image)
+    client.fetch_scene_thumbnails.return_value = response
+
+    def test(ids, as_std_in=False):
+        args, input = ['thumbnails'], None
+        if as_std_in:
+            input = '\n'.join(ids)
+        else:
+            args.extend(ids)
+        assert_correct(runner.invoke(scripts.cli,
+                       args, input=input), ids)
+
+    def assert_correct(result, expected_ids):
+        assert result.exit_code == 0
+        called_with = client.fetch_scene_thumbnails.call_args[0]
+        assert list(expected_ids) == list(called_with[0])
+        assert 'ortho' == called_with[1]
+        assert 'md' == called_with[2]
+
+    test(['20150615_190229_0905'])
+    test(['20150615_190229_0905', '20150615_190229_0906'])
+    test(['20150615_190229_0905'], as_std_in=True)
+    test(['20150615_190229_0905', '20150615_190229_0906'], as_std_in=True)
 
 
 def test_init():
