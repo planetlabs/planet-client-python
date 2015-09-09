@@ -127,7 +127,7 @@ def echo_json_response(response, pretty, limit=None):
     '''Wrapper to echo JSON with optional 'pretty' printing. If pretty is not
     provided explicity and stdout is a terminal (and not redirected or piped),
     the default will be to indent and sort keys'''
-    indent = 0
+    indent = None
     sort_keys = False
     if pretty or (pretty is None and sys.stdout.isatty()):
         indent = 2
@@ -298,8 +298,7 @@ def fetch_scene_geotiff(scene_ids, scene_type, product, dest):
     """
     Download full scene image(s).
     """
-
-    scene_ids = read(scene_ids, split=True)
+    scene_ids = read(scene_ids or '@-', split=True)
     if not scene_ids:
         return
 
@@ -321,7 +320,7 @@ def fetch_scene_geotiff(scene_ids, scene_type, product, dest):
 def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
     '''Fetch scene thumbnail(s)'''
 
-    scene_ids = read(scene_ids, split=True)
+    scene_ids = read(scene_ids or '@-', split=True)
     if not scene_ids:
         return
 

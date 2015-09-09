@@ -11,11 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from planet.api._fatomic import atomic_open
 
 
 def test_atomic_open(tmpdir):
     outfile = str(tmpdir.join('foo'))
+    lsdir = lambda: os.listdir(str(tmpdir))
 
     def assert_content_is(expected):
         with open(outfile, 'r') as fp:
@@ -25,6 +27,8 @@ def test_atomic_open(tmpdir):
     with atomic_open(outfile, 'w') as fp:
         fp.write('bar')
     assert_content_is('bar')
+    # no tmp files remain
+    assert ['foo'] == lsdir()
 
     # exception during write, assert file remains untouched
     try:
@@ -35,9 +39,13 @@ def test_atomic_open(tmpdir):
         assert_content_is('bar')
     else:
         assert False
+    # no tmp files remain
+    assert ['foo'] == lsdir()
 
     # manual discarding
     with atomic_open(outfile, 'w') as fp:
             fp.write('bazzy')
             fp.discard()
     assert_content_is('bar')
+    # no tmp files remain
+    assert ['foo'] == lsdir()
