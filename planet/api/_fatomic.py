@@ -73,5 +73,7 @@ def atomic_open(filename, mode, *args, **kwargs):
         raise
     finally:
         f.close()
-        if not _discard[0]:
+        if _discard[0]:
+            os.unlink(f.name)
+        else:
             _replace_file(f.name, filename)
