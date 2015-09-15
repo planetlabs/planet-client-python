@@ -252,6 +252,18 @@ def test_init():
             os.unlink(test_file)
 
 
+def test_mosaic_quads():
+    response = MagicMock(spec=models.JSON)
+    response.get_raw.return_value = '{"quads": []}'
+
+    client.get_mosaic_quads.return_value = response
+    result = runner.invoke(scripts.cli, ['mosaic-quads', 'some_mosaic_name'])
+    assert result.exit_code == 0
+    assert result.output == '{\n  "quads": []\n}\n'
+    called_with = client.get_mosaic_quads.call_args[0]
+    assert called_with[0] == 'some_mosaic_name'
+
+
 def _set_workspace(workspace, *args, **kw):
     response = MagicMock(spec=models.JSON)
     response.get_raw.return_value = '{"status": "OK"}'
