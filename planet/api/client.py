@@ -184,7 +184,7 @@ class Client(object):
         :param name:
             Mosaic name as returned by `list_mosaics`.
         """
-        return self._get('mosaics/%s/' % name).get_body()
+        return self._get('mosaics/%s' % name).get_body()
 
     def get_mosaic_quads(self, name, intersects=None, count=50):
         """
