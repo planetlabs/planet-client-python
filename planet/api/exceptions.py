@@ -45,3 +45,7 @@ class ServerError(APIException):
 class InvalidIdentity(APIException):
     '''raised when logging in with identity'''
     pass
+
+
+class RequestCancelled(Exception):
+    '''When requests get cancelled'''

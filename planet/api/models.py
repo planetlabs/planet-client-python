@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from ._fatomic import atomic_open
+from .exceptions import RequestCancelled
 from .utils import get_filename
 from .utils import check_status
 from .utils import GeneratorAdapter
@@ -30,6 +31,7 @@ class Response(object):
         self._dispatcher = dispatcher
         self._body = None
         self._future = None
+        self._cancel = False
 
     def _create_body(self, response):
         return self.request.body_type(self.request, response, self._dispatcher)
@@ -45,6 +47,8 @@ class Response(object):
         return self._body
 
     def _async_callback(self, session, response):
+        if self._cancel:
+            raise RequestCancelled()
         check_status(response)
         self._body = self._create_body(response)
         self._handler(self._body)
@@ -68,6 +72,13 @@ class Response(object):
             self._future.result()
         return self._body
 
+    def cancel(self):
+        '''Cancel any request.'''
+        if self._body:
+            self._body._cancel = True
+        else:
+            self._cancel = True
+
 
 class Request(object):
 
@@ -86,6 +97,7 @@ class _Body(object):
         self._dispatcher = dispatcher
         self.size = int(self.response.headers.get('content-length', 0))
         self.name = get_filename(self.response)
+        self._cancel = False
 
     def __len__(self):
         return self.size
@@ -108,6 +120,8 @@ class _Body(object):
             callback = lambda x: None
         callback(self)
         for chunk in self:
+            if self._cancel:
+                raise RequestCancelled()
             fp.write(chunk)
             size = len(chunk)
             total += size

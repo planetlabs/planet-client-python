@@ -35,6 +35,9 @@ class Client(object):
         self.base_url = base_url
         self.dispatcher = RequestsDispatcher(workers)
 
+    def shutdown(self):
+        self.dispatcher.session.executor.shutdown(wait=False)
+
     def _url(self, path):
         if path.startswith('http'):
             url = path
