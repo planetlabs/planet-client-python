@@ -463,6 +463,7 @@ def get_workspace(pretty, id):
 def set_workspace(id, aoi, name, create, workspace, where):
     '''Create or modify a workspace'''
     workspace = read(workspace)
+
     try:
         workspace = json.loads(workspace) if workspace else None
     except ValueError:
@@ -470,12 +471,18 @@ def set_workspace(id, aoi, name, create, workspace, where):
 
     cl = client()
 
-    if workspace is None and id:
-        workspace = cl.get_workspace(id).get()
+    if workspace is None:
+        if id:
+            workspace = cl.get_workspace(id).get()
+        else:
+            workspace = {}
 
     # what workspace id are we working with
     if not id:
         id = workspace.get('id', None)
+        if not create:
+            raise click.ClickException('must either provide an existing '
+                                       'workspace or create a new one')
     if create:
         id = None
 
