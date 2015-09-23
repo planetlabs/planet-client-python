@@ -43,7 +43,7 @@ def test_get_mosaic():
 
         text = read_fixture('get-mosaic.json')
         uri = os.path.join(client.base_url,
-                           'mosaics/%s/' % mosaic_name)
+                           'mosaics/%s' % mosaic_name)
         m.get(uri, text=text, status_code=200)
 
         r = client.get_mosaic(mosaic_name)
