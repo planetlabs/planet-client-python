@@ -73,7 +73,7 @@ setup(name='planet',
       zip_safe=False,
       install_requires=[
           'click==4.1',
-          'requests',
+          'requests==2.7.0',
           'requests_futures>=0.9.5',
       ],
       extras_require={
