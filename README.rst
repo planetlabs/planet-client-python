@@ -37,23 +37,23 @@ Basics and help::
 
 OR specific command help::
 
-    planet get-scenes-list --help
+    planet search --help
 
 An API key is `required <https://www.planet.com/explorers/>`__.
 
-This can be provided via the environment variable `PL_API_KEY` or the flag `-k` or `--api-key`.
+This can be provided via the environment variable `PL_API_KEY` or the flag `-k` or `--api-key`. Using the `planet init` the username and password can be used and saved instead.
 
 Examples
 ~~~~~~~~
 
 Get a visual ortho scene by id (writes to working directory)::
 
-    planet download 20141008_170544_0907
-
-Get an analytic ortho scene by id::
-
-    planet download 20141008_170544_0907 --analytic
+    planet download 20150825_180952_1_0b07
 
 Get scene metadata by id (and pretty print)::
 
-    planet fetch_scene_info -pp 20141008_170544_0907
+    planet metadata -pp 20150825_180952_1_0b07
+
+Get a list of all mosaics::
+
+    planet mosaics
