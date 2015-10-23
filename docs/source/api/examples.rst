@@ -28,6 +28,12 @@ Get the most recent Planet scenes.
 
    body = client.get_scenes_list(scene_type='ortho')
 
+Get the most recent RapidEye scenes.
+
+.. code-block:: python
+
+   body = client.get_scenes_list(scene_type='rapideye')
+
 Get the most recent Landsat scenes.
 
 .. code-block:: python
