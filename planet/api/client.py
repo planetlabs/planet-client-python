@@ -126,7 +126,7 @@ class Client(object):
         Get metadata for a given scene.
 
         :param str scene_id: The scene ID
-        :param str scene_type: The type: either 'ortho' or 'landsat'
+        :param str scene_type: The type: either 'ortho', 'rapideye' or 'landsat'
         :return: :py:class:`JSON` body
         """
         # todo: accept/return multiple scenes
@@ -140,7 +140,7 @@ class Client(object):
         ready and successful (it will be initiated with response headers).
 
         :param sequence scene_ids: The scene IDs to download
-        :param str scene_type: The type: either 'ortho' or 'landsat'
+        :param str scene_type: The type: either 'ortho', 'rapideye' or 'landsat'
         :param str product: The product type, varies on scene_type.
         :param function callback: A callback for handling asynchronous results
         :return: a sequence of :py:class:`Response` objects, one for each scene
@@ -160,7 +160,7 @@ class Client(object):
         ready and successful (it will be initiated with response headers).
 
         :param sequence scene_ids: The scene IDs to download
-        :param str scene_type: The type: either 'ortho' or 'landsat'
+        :param str scene_type: The type: either 'ortho', 'rapideye' or 'landsat'
         :param str size: The size: 'sm', 'md', 'lg'
         :param str format: The image format: 'png', 'jpg'
         :param function callback: A callback for handling asynchronous results
