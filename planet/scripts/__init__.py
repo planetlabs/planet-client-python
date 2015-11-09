@@ -42,7 +42,7 @@ pretty = click.option('-pp/-r', '--pretty/--no-pretty', default=None,
                       is_flag=True, help='Format JSON output')
 scene_type = click.option('-s', '--scene-type', default='ortho',
                           help='Type of scene',
-                          type=click.Choice(['ortho', 'landsat']))
+                          type=click.Choice(['ortho', 'landsat', 'rapideye']))
 dest_dir = click.option('-d', '--dest', help='Destination directory',
                         type=click.Path(file_okay=False, resolve_path=True,
                                         exists=True))
