@@ -21,9 +21,13 @@ Get scenes that intersect a geometry specified in a file named `aoi.geojson`::
 
     planet search aoi.geojson
 
+Get `rapideye` scenes that have an estimated cloud cover of less than 5%::
+
+    planet search -s rapideye --where cloud_cover.estimated lt 5
+
 Get latest 10 `landsat` scenes::
 
-    planet search -s landsat --limit 10planet search -s landsat --limit 10
+    planet search -s landsat --limit 10
 
 
 Downloading Scenes
