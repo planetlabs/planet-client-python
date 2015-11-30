@@ -23,7 +23,7 @@ Get scenes that intersect a geometry specified in a file named `aoi.geojson`::
 
 Get latest 10 `landsat` scenes::
 
-    planet search -s landsat --limit 10planet search -s landsat --limit 10
+    planet search -s landsat --limit 10
 
 
 Downloading Scenes
