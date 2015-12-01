@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>CLI Reference &mdash; Planet Labs Client 0.0.3 documentation</title>
+    <title>CLI Reference &mdash; Planet Labs Client 0.0.5 documentation</title>
     
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.0.3',
+        VERSION:     '0.0.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="Planet Labs Client 0.0.3 documentation" href="../index.html" />
+    <link rel="top" title="Planet Labs Client 0.0.5 documentation" href="../index.html" />
     <link rel="up" title="Command Line" href="index.html" />
     <link rel="next" title="Examples" href="examples.html" />
     <link rel="prev" title="Command Line" href="index.html" />
@@ -246,7 +246,7 @@
 <div class="section" id="mosaic-quads">
 <span id="cli-command-mosaic-quads"></span><span id="index-8"></span><h3>mosaic-quads<a class="headerlink" href="#mosaic-quads" title="Permalink to this headline">¶</a></h3>
 <p>Get quad info for the specified mosaic</p>
-<p>Usage: mosaic-quads [OPTIONS] MOSAIC_NAME</p>
+<p>Usage: mosaic-quads [OPTIONS] MOSAIC_NAME [AOI]</p>
 <table border="1" class="docutils" id="id8">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id8" title="Permalink to this table">¶</a></caption>
 <colgroup>
@@ -355,6 +355,9 @@
 <tr class="row-odd"><td>create</td>
 <td>Specify workspace creation</td>
 </tr>
+<tr class="row-even"><td>where</td>
+<td>Provide additional search criteria. See <a class="reference external" href="https://www.planet.com/docs/v0/scenes/#metadata">https://www.planet.com/docs/v0/scenes/#metadata</a> for search metadata fields.</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -374,16 +377,19 @@
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>dryrun</td>
+<tr class="row-even"><td>products</td>
+<td>Specifiy products to download, default is visual</td>
+</tr>
+<tr class="row-odd"><td>dryrun</td>
 <td>Do not actually download</td>
 </tr>
-<tr class="row-odd"><td>limit</td>
+<tr class="row-even"><td>limit</td>
 <td>Limit the number of items.</td>
 </tr>
-<tr class="row-even"><td>workspace</td>
+<tr class="row-odd"><td>workspace</td>
 <td>Workspace ID</td>
 </tr>
-<tr class="row-odd"><td>scene_type</td>
+<tr class="row-even"><td>scene_type</td>
 <td>Type of scene</td>
 </tr>
 </tbody>

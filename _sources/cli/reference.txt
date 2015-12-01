@@ -265,7 +265,7 @@ mosaic-quads
 
 Get quad info for the specified mosaic
 
-Usage: mosaic-quads [OPTIONS] MOSAIC_NAME
+Usage: mosaic-quads [OPTIONS] MOSAIC_NAME [AOI]
 
 .. list-table:: Options
    :header-rows: 1
@@ -352,6 +352,8 @@ Usage: set-workspace [OPTIONS] [WORKSPACE]
      - Workspace name
    * - create
      - Specify workspace creation
+   * - where
+     - Provide additional search criteria. See https://www.planet.com/docs/v0/scenes/#metadata for search metadata fields.
 .. index:: sync
 
 .. _cli-command-sync:
@@ -370,6 +372,8 @@ Usage: sync [OPTIONS] DESTINATION
 
    * - Name
      - Description
+   * - products
+     - Specifiy products to download, default is visual
    * - dryrun
      - Do not actually download
    * - limit

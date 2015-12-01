@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>planet.api.client &mdash; Planet Labs Client 0.0.3 documentation</title>
+    <title>planet.api.client &mdash; Planet Labs Client 0.0.5 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.0.3',
+        VERSION:     '0.0.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="Planet Labs Client 0.0.3 documentation" href="../../../index.html" />
+    <link rel="top" title="Planet Labs Client 0.0.5 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" />
    
   
@@ -74,6 +74,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">auth</span> <span class="o">=</span> <span class="n">api_key</span> <span class="ow">and</span> <span class="n">auth</span><span class="o">.</span><span class="n">APIKey</span><span class="p">(</span><span class="n">api_key</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_url</span> <span class="o">=</span> <span class="n">base_url</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dispatcher</span> <span class="o">=</span> <span class="n">RequestsDispatcher</span><span class="p">(</span><span class="n">workers</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dispatcher</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;http&#39;</span><span class="p">):</span>
@@ -134,7 +137,7 @@
         <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">payload</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">))</span>
 </div>
 <div class="viewcode-block" id="Client.get_scenes_list"><a class="viewcode-back" href="../../../api/reference.html#planet.api.Client.get_scenes_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_scenes_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene_type</span><span class="o">=</span><span class="s">&#39;ortho&#39;</span><span class="p">,</span> <span class="n">order_by</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                        <span class="n">intersects</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">filters</span><span class="p">):</span>
+                        <span class="n">intersects</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">filters</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Get scenes matching the specified parameters and filters.</span>
 
 <span class="sd">        :param str scene_type: The type of scene, defaults to &#39;ortho&#39;</span>
@@ -152,6 +155,8 @@
             <span class="s">&#39;count&#39;</span><span class="p">:</span> <span class="n">count</span><span class="p">,</span>
             <span class="s">&#39;intersects&#39;</span><span class="p">:</span> <span class="n">intersects</span>
         <span class="p">}</span>
+        <span class="k">if</span> <span class="n">workspace</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s">&#39;workspace&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">workspace</span>
         <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">filters</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s">&#39;scenes/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">scene_type</span><span class="p">,</span>
                          <span class="n">models</span><span class="o">.</span><span class="n">Scenes</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span><span class="o">.</span><span class="n">get_body</span><span class="p">()</span>
@@ -222,7 +227,7 @@
 <span class="sd">        :param name:</span>
 <span class="sd">            Mosaic name as returned by `list_mosaics`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s">&#39;mosaics/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">get_body</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s">&#39;mosaics/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">get_body</span><span class="p">()</span>
 </div>
 <div class="viewcode-block" id="Client.get_mosaic_quads"><a class="viewcode-back" href="../../../api/reference.html#planet.api.Client.get_mosaic_quads">[docs]</a>    <span class="k">def</span> <span class="nf">get_mosaic_quads</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">intersects</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -253,7 +258,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s">&#39;workspaces/&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_body</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">get_workspace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s">&#39;workspaces/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">get_body</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="s">&#39;workspaces/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">get_body</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">set_workspace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workspace</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">id</span><span class="p">:</span>
@@ -266,9 +271,7 @@
             <span class="n">method</span> <span class="o">=</span> <span class="s">&#39;POST&#39;</span>
         <span class="c"># without these, scenes UI breaks</span>
         <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s">&quot;image_statistics.image_quality&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s">&quot;gte&quot;</span><span class="p">:</span> <span class="mi">1</span>
-            <span class="p">}</span>
+            <span class="s">&quot;filters&quot;</span><span class="p">:</span> <span class="p">{}</span>
         <span class="p">}</span>
         <span class="n">defaults</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">workspace</span><span class="p">)</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispatcher</span><span class="o">.</span><span class="n">dispatch_request</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_url</span> <span class="o">+</span> <span class="n">url</span><span class="p">,</span>
