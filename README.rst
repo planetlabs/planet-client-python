@@ -57,3 +57,20 @@ Get scene metadata by id (and pretty print)::
 Get a list of all mosaics::
 
     planet mosaics
+
+
+Contributing
+~~~~~~~~~~~~
+
+You'll want to set up a virtualenv dev environment:
+
+  virtualenv venv
+  . venv/bin/activate
+
+And install development dependencies:
+
+  pip install -e '.dev
+
+Confirm tests pass:
+
+  make check
