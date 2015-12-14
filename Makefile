@@ -1,7 +1,7 @@
 GH_PAGES_SOURCES = planet docs Makefile
 
 check:
-	py.test
+	py.test tests
 	flake8 planet tests
 
 pex:
@@ -42,4 +42,3 @@ release:
 
 release-gh: check pex docs-zip
 	TAG="$(TAG)" BODY="$(BODY)" DRAFT="$(DRAFT)" ./gh-release
-

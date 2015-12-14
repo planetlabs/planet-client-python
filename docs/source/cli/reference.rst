@@ -18,12 +18,12 @@ General Options
 
 
 
-``--api_key``
+``--api-key``
    Valid API key - or via env variable PL_API_KEY
 
 
 
-``--base_url``
+``--base-url``
    Optional for testing
 
 

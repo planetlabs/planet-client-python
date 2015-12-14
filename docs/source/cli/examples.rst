@@ -13,6 +13,10 @@ Get scenes acquired recently::
 
     planet search --where acquired gt 2015-08-23
 
+Additional criteria can be specified with multiple 3-part where clauses::
+
+    planet search --where acquired gt 2015-08-23 --where acquired lt 2015-09-01
+
 Get scenes that intersect a single point::
 
     planet search 'POINT(-105,40)'
