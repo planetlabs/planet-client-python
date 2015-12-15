@@ -307,8 +307,8 @@ def fetch_scene_geotiff(scene_ids, scene_type, product, dest):
 
     start_time = time.time()
     cl = client()
-    futures = cl.fetch_scene_geotiffs(scene_ids, scene_type, product,
-                                      api.utils.write_to_file(dest))
+    futures = call_and_wrap(cl.fetch_scene_geotiffs, scene_ids, scene_type,
+                            product, api.utils.write_to_file(dest))
     complete(futures, check_futures, cl)
     summarize_throughput(total_bytes(futures), start_time)
 
@@ -329,8 +329,8 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
         return
 
     cl = client()
-    futures = cl.fetch_scene_thumbnails(scene_ids, scene_type, size, fmt,
-                                        api.write_to_file(dest))
+    futures = call_and_wrap(cl.fetch_scene_thumbnails, scene_ids, scene_type,
+                            size, fmt, api.write_to_file(dest))
     complete(futures, check_futures, cl)
 
 
