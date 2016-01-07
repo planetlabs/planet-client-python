@@ -11,4 +11,4 @@ install:
 before_script:
   - flake8 planet tests
 script:
-  - "py.test test"
+  - "py.test tests"

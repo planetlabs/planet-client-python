@@ -1,7 +1,7 @@
 GH_PAGES_SOURCES = planet docs Makefile
 
 check:
-	py.test
+	py.test tests
 	flake8 planet tests
 
 pex:

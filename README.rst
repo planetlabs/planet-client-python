@@ -69,7 +69,7 @@ You'll want to set up a virtualenv dev environment:
 
 And install development dependencies:
 
-  pip install -e '.dev
+  pip install -e .[dev]
 
 Confirm tests pass:
 
