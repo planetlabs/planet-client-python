@@ -18,10 +18,10 @@ from _common import read_fixture
 
 def test_geometry_from_json():
     # base case, no geometry
-    assert None == utils.geometry_from_json({})
+    assert None is utils.geometry_from_json({})
     # from an empty feature collection
     collection = {'type': 'FeatureCollection', 'features': []}
-    assert None == utils.geometry_from_json(collection)
+    assert None is utils.geometry_from_json(collection)
 
     # simple geometry, we're guessing by the type property w/ no further checks
     geom = {'type': 'Polygon'}

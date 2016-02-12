@@ -81,12 +81,12 @@ def stdin(content):
 
 def test_read(tmpdir):
     # no special files in arguments, expect what's been passed in
-    assert None == scripts.read(None)
+    assert None is scripts.read(None)
     assert 'foo' == scripts.read('foo')
     assert (1,) == scripts.read((1,))
 
     # same but with split
-    assert None == scripts.read(None, split=True)
+    assert None is scripts.read(None, split=True)
     assert ['foo'] == scripts.read('foo', split=True)
     assert (1,) == scripts.read((1,), split=True)
 

@@ -117,7 +117,9 @@ class _Body(object):
     def _write(self, fp, callback):
         total = 0
         if not callback:
-            callback = lambda x: None
+            def noop(x):
+                pass
+            callback = noop
         callback(self)
         for chunk in self:
             if self._cancel:
