@@ -17,7 +17,9 @@ from planet.api._fatomic import atomic_open
 
 def test_atomic_open(tmpdir):
     outfile = str(tmpdir.join('foo'))
-    lsdir = lambda: os.listdir(str(tmpdir))
+
+    def lsdir():
+        return os.listdir(str(tmpdir))
 
     def assert_content_is(expected):
         with open(outfile, 'r') as fp:
