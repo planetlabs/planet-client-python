@@ -176,6 +176,12 @@ def test_search():
     assert_success(result, expected)
 
 
+def test_aoi_id_flag():
+    run_cli(['search', '--aoi_id', 'dangbat'])
+    client.get_scenes_list.assert_called_with(
+        aoi_id='dangbat', count=1000, intersects=None, scene_type='ortho')
+
+
 def test_search_by_aoi():
 
     aoi = read_fixture('search-by-aoi.geojson')

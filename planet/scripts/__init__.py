@@ -259,11 +259,14 @@ def init(email, password):
               help=('Provide additional search criteria. See '
                     'https://www.planet.com/docs/v0/scenes/#metadata for '
                     'search metadata fields.'))
-def get_scenes_list(scene_type, pretty, aoi, limit, where, workspace):
+@click.option('--aoi_id', help=(
+    'Provider the identifier of an uploaded geometry'))
+def get_scenes_list(scene_type, pretty, aoi, limit, where, workspace, aoi_id):
     '''Get a list of scenes.'''
 
     aoi = read_aoi(aoi)
     conditions = {'workspace': workspace}
+    conditions = {'aoi_id': aoi_id}
 
     if where:
         conditions.update([

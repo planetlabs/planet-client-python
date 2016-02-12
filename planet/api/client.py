@@ -97,7 +97,8 @@ class Client(object):
         return json.loads(payload.decode('utf-8'))
 
     def get_scenes_list(self, scene_type='ortho', order_by=None, count=None,
-                        intersects=None, workspace=None, **filters):
+                        intersects=None, workspace=None, aoi_id=None,
+                        **filters):
         '''Get scenes matching the specified parameters and filters.
 
         :param str scene_type: The type of scene, defaults to 'ortho'
@@ -117,6 +118,8 @@ class Client(object):
         }
         if workspace:
             params['workspace'] = workspace
+        if aoi_id:
+            params['aoi'] = aoi_id
         params.update(**filters)
         return self._get('scenes/%s/' % scene_type,
                          models.Scenes, params=params).get_body()
