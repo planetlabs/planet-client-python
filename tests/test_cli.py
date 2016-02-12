@@ -32,6 +32,7 @@ from click import ClickException
 from click.testing import CliRunner
 
 from mock import MagicMock
+from mock import patch
 
 import planet
 from planet import api
@@ -41,9 +42,18 @@ from _common import read_fixture
 from _common import clone
 
 
+# have to clear in case key is picked up via env
+if api.auth.ENV_KEY in os.environ:
+    os.environ.pop(api.auth.ENV_KEY)
+
+
 client = MagicMock(name='client', spec=api.Client)
-scripts.client = lambda: client
-runner = CliRunner()
+
+
+def run_cli(*args, **kw):
+    runner = CliRunner()
+    with patch('planet.scripts.client', lambda: client):
+        return runner.invoke(scripts.cli, *args, **kw)
 
 
 def assert_success(result, expected):
@@ -115,21 +125,41 @@ def test_exception_translation():
 
 def test_version_flag():
 
-    results = runner.invoke(scripts.cli, ['--version'])
+    results = run_cli(['--version'])
     assert results.output == "%s\n" % planet.__version__
 
 
 def test_workers_flag():
     assert 'workers' not in scripts.client_params
-    runner.invoke(scripts.cli, ['--workers', '19', 'search'])
+    run_cli(['--workers', '19', 'search'])
     assert 'workers' in scripts.client_params
     assert scripts.client_params['workers'] == 19
 
 
 def test_api_key_flag():
-    runner.invoke(scripts.cli, ['-k', 'shazbot', 'search'])
+    run_cli(['-k', 'shazbot', 'search'])
     assert 'api_key' in scripts.client_params
     assert scripts.client_params['api_key'] == 'shazbot'
+
+
+def test_no_api_key():
+    runner = CliRunner()
+
+    def assert_no_api_key(*args):
+        result = runner.invoke(scripts.cli, *args)
+        assert result.exit_code != 0
+        assert 'Error: InvalidAPIKey: No API key provided\n' == result.output
+        return True
+
+    # the following should all fail w/ the same error
+    assert all(map(assert_no_api_key, [
+        ('search',),
+        ('metadata', 'whatever'),
+        ('download', 'whatever'),
+        ('thumbnails', 'whatever'),
+        ('mosaic-quads', 'whatever'),
+        ('list-workspaces',),
+    ]))
 
 
 def test_search():
@@ -141,7 +171,7 @@ def test_search():
 
     client.get_scenes_list.return_value = response
 
-    result = runner.invoke(scripts.cli, ['search'])
+    result = run_cli(['search'])
 
     assert_success(result, expected)
 
@@ -157,7 +187,7 @@ def test_search_by_aoi():
     client.get_scenes_list.return_value = response
 
     # input kwarg simulates stdin
-    result = runner.invoke(scripts.cli, ['search'], input=aoi)
+    result = run_cli(['search'], input=aoi)
 
     assert_success(result, expected)
 
@@ -174,7 +204,7 @@ def test_metadata():
     # Construct the return response for the client method
     client.get_scene_metadata.return_value = response
 
-    result = runner.invoke(scripts.cli, ['metadata', '20150615_190229_0905'])
+    result = run_cli(['metadata', '20150615_190229_0905'])
 
     assert_success(result, expected)
 
@@ -189,8 +219,7 @@ def test_download():
             input = '\n'.join(ids)
         else:
             args.extend(ids)
-        assert_correct(runner.invoke(scripts.cli,
-                       args, input=input), ids)
+        assert_correct(run_cli(args, input=input), ids)
 
     def assert_correct(result, expected_ids):
         assert result.exit_code == 0
@@ -215,8 +244,7 @@ def test_thumbs():
             input = '\n'.join(ids)
         else:
             args.extend(ids)
-        assert_correct(runner.invoke(scripts.cli,
-                       args, input=input), ids)
+        assert_correct(run_cli(args, input=input), ids)
 
     def assert_correct(result, expected_ids):
         assert result.exit_code == 0
@@ -239,9 +267,8 @@ def test_init():
         'api_key': 'SECRIT'
     }
     try:
-        result = runner.invoke(scripts.cli, ['init',
-                                             '--email', 'bil@ly',
-                                             '--password', 'secret'])
+        result = run_cli(['init', '--email', 'bil@ly',
+                          '--password', 'secret'])
         assert result.exit_code == 0
         assert os.path.exists(test_file)
         with open(test_file) as fp:
@@ -257,7 +284,7 @@ def test_mosaic_quads():
     response.get_raw.return_value = '{"quads": []}'
 
     client.get_mosaic_quads.return_value = response
-    result = runner.invoke(scripts.cli, ['mosaic-quads', 'some_mosaic_name'])
+    result = run_cli(['mosaic-quads', 'some_mosaic_name'])
     assert result.exit_code == 0
     assert result.output == '{\n  "quads": []\n}\n'
     called_with = client.get_mosaic_quads.call_args[0]
@@ -273,7 +300,7 @@ def _set_workspace(workspace, *args, **kw):
     args = ['set-workspace'] + list(args)
     if workspace is not None:
         args += [json.dumps(workspace)]
-    result = runner.invoke(scripts.cli, args, input=kw.get('input', None))
+    result = run_cli(args, input=kw.get('input', None))
     assert result.exit_code == kw.get('expected_status', 0)
 
 
