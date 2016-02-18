@@ -320,6 +320,8 @@ Usage: search [OPTIONS] [AOI]
      - Limit the number of items.
    * - where
      - Provide additional search criteria. See https://www.planet.com/docs/v0/scenes/#metadata for search metadata fields.
+   * - aoi_id
+     - Provider the identifier of an uploaded geometry
    * - workspace
      - Workspace ID
    * - scene_type
