@@ -46,7 +46,7 @@ Using an AOI (in WKT in this example) to search.
 .. code-block:: python
 
    wkt = 'POINT(-100 40)'
-   body = client.get_scenes_list(scene_type='landsat', intersection=wkt)
+   body = client.get_scenes_list(scene_type='landsat', intersects=wkt)
 
 Handling a response `body` - the `get` method returns JSON (in this case, GeoJSON).
 
