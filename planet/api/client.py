@@ -19,7 +19,7 @@ from . import auth
 from .exceptions import (InvalidIdentity, APIException)
 from . import models
 from .utils import check_status
-
+from retrying import retry
 
 class Client(object):
     '''High-level access to Planet's API.'''
@@ -49,6 +49,14 @@ class Client(object):
         return models.Request(self._url(path), auth or self.auth, params,
                               body_type)
 
+    def retry_on_rate_limit(result):
+        return result.status_code == 429
+
+    # Wait 2^x * 1000 milliseconds between each retry, up to 10 seconds, then 10 seconds afterwards
+    @retry(
+        retry_on_result=retry_on_rate_limit,
+        wait_exponential_multiplier=1000,
+        wait_exponential_max=10000)
     def _get(self, path, body_type=models.JSON, params=None, callback=None):
         # convert any JSON objects to text explicitly
         for k, v in (params or {}).items():
