@@ -19,7 +19,7 @@ from . utils import check_status
 from . models import Response
 from . exceptions import InvalidAPIKey
 from requests.compat import urlparse
-
+from retrying import retry
 
 def _is_subdomain_of_tld(url1, url2):
     orig_host = urlparse(url1).hostname
@@ -73,6 +73,10 @@ class RequestsDispatcher(object):
                                 stream=True, background_callback=callback,
                                 auth=_auth_callback)
 
+    def retry_on_rate_limit(result):
+        return result.status_code == 429
+
+    @retry(retry_on_result=retry_on_rate_limit)
     def _dispatch(self, request, callback=None):
         response = self._dispatch_async(request, callback).result()
         check_status(response)
