@@ -76,7 +76,11 @@ class RequestsDispatcher(object):
     def retry_on_rate_limit(result):
         return result.status_code == 429
 
-    @retry(retry_on_result=retry_on_rate_limit)
+
+    @retry(
+        retry_on_result=retry_on_rate_limit,
+        wait_exponential_multiplier=1000,
+        wait_exponential_max=10000)
     def _dispatch(self, request, callback=None):
         response = self._dispatch_async(request, callback).result()
         check_status(response)
