@@ -20,7 +20,6 @@ from .exceptions import (InvalidIdentity, APIException)
 from . import models
 from .utils import check_status
 
-
 class Client(object):
     '''High-level access to Planet's API.'''
     def __init__(self, api_key=None, base_url='https://api.planet.com/v0/',
