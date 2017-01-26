@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import re
 from requests_futures.sessions import FuturesSession
 from requests import Request
@@ -19,6 +20,9 @@ from . utils import check_status
 from . models import Response
 from . exceptions import InvalidAPIKey
 from requests.compat import urlparse
+
+
+USE_STRICT_SSL = not (os.getenv('DISABLE_STRICT_SSL', '').lower() == 'true')
 
 
 def _is_subdomain_of_tld(url1, url2):
@@ -71,7 +75,7 @@ class RequestsDispatcher(object):
 
         return self.session.get(request.url, params=request.params,
                                 stream=True, background_callback=callback,
-                                auth=_auth_callback)
+                                auth=_auth_callback, verify=USE_STRICT_SSL)
 
     def _dispatch(self, request, callback=None):
         response = self._dispatch_async(request, callback).result()
@@ -87,4 +91,4 @@ class RequestsDispatcher(object):
                 'content-Type': content_type
             })
         req = Request(method, url, params=params, data=data, headers=headers)
-        return self.session.send(req.prepare())
+        return self.session.send(req.prepare(), verify=USE_STRICT_SSL)
