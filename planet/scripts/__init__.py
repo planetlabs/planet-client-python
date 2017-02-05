@@ -15,6 +15,7 @@
 from os import path
 import sys
 import time
+from itertools import chain
 import json
 import logging
 import re
@@ -26,6 +27,9 @@ import planet
 from planet.api.sync import _SyncTool
 from planet import api
 from planet.api.utils import complete
+from planet.api.utils import geometry_from_json
+from planet.api.utils import strp_lenient
+from planet.api import filters
 
 from requests.packages.urllib3 import exceptions as urllib3exc
 
@@ -36,6 +40,10 @@ ORTHO_PRODUCTS = ['visual', 'analytic', 'unrectified']
 
 def client():
     return api.Client(**client_params)
+
+
+def clientv1():
+    return api.ClientV1(**client_params)
 
 
 pretty = click.option('-pp/-r', '--pretty/--no-pretty', default=None,
@@ -69,6 +77,8 @@ def hack(message, category, filename, lineno):
             _insecure_warning.append(message)
         return
     showwarning(message, category, filename, lineno)
+
+
 warnings.showwarning = hack
 
 
@@ -126,22 +136,27 @@ def total_bytes(responses):
     return sum([len(r.get_body()) for r in responses])
 
 
-def echo_json_response(response, pretty, limit=None):
+def echo_json_response(response, pretty, limit=None, ndjson=False):
     '''Wrapper to echo JSON with optional 'pretty' printing. If pretty is not
     provided explicity and stdout is a terminal (and not redirected or piped),
     the default will be to indent and sort keys'''
     indent = None
     sort_keys = False
-    if pretty or (pretty is None and sys.stdout.isatty()):
+    if not ndjson and (pretty or (pretty is None and sys.stdout.isatty())):
         indent = 2
         sort_keys = True
     try:
-        if hasattr(response, 'json_encode'):
+        if ndjson and hasattr(response, 'items_iter'):
+            items = response.items_iter(limit)
+            for item in items:
+                click.echo(json.dumps(item))
+        elif not ndjson and hasattr(response, 'json_encode'):
             response.json_encode(click.get_text_stream('stdout'), limit=limit,
                                  indent=indent, sort_keys=sort_keys)
         else:
             res = response.get_raw()
-            res = json.dumps(json.loads(res), indent=2, sort_keys=True)
+            res = json.dumps(json.loads(res), indent=indent,
+                             sort_keys=sort_keys)
             click.echo(res)
     except IOError as ioe:
         # hide scary looking broken pipe stack traces
@@ -252,7 +267,7 @@ def init(email, password):
 @pretty
 @scene_type
 @workspace
-@cli.command('search')
+@cli.command('v0-search')
 @click.argument('aoi', default='@-', required=False)
 @limit_option(1000)
 @click.option('--where', nargs=3, multiple=True,
@@ -283,7 +298,7 @@ def get_scenes_list(scene_type, pretty, aoi, limit, where, workspace, aoi_id):
 @pretty
 @scene_type
 @click.argument('scene_id', nargs=1)
-@cli.command('metadata')
+@cli.command('v0-metadata')
 def metadata(scene_id, scene_type, pretty):
     '''Get scene metadata'''
 
@@ -299,7 +314,7 @@ def metadata(scene_id, scene_type, pretty):
                   ["band_%d" % i for i in range(1, 12)] +
                   ORTHO_PRODUCTS + ['qa']
               ), default='visual')
-@cli.command('download')
+@cli.command('v0-download')
 def fetch_scene_geotiff(scene_ids, scene_type, product, dest):
     """
     Download full scene image(s).
@@ -323,7 +338,7 @@ def fetch_scene_geotiff(scene_ids, scene_type, product, dest):
               help='Thumbnail size')
 @click.option('--format', 'fmt', type=click.Choice(['png', 'jpg', 'jpeg']),
               default='png', help='Thumbnail format')
-@cli.command('thumbnails')
+@cli.command('v0-thumbnails')
 def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
     '''Fetch scene thumbnail(s)'''
 
@@ -345,7 +360,7 @@ def fetch_scene_thumbnails(scene_ids, scene_type, size, fmt, dest):
 @click.option("--products", multiple=True,
               type=click.Choice(ORTHO_PRODUCTS + ['all']),
               help='Specifiy products to download, default is visual')
-@cli.command('sync')
+@cli.command('v0-sync')
 def sync(destination, workspace, scene_type, limit, dryrun, products):
     '''Synchronize a directory to a specified AOI or workspace'''
     aoi = None
@@ -387,7 +402,7 @@ def sync(destination, workspace, scene_type, limit, dryrun, products):
 
 @pretty
 @limit_option(default=50)
-@cli.command('mosaics')
+@cli.command('v0-mosaics')
 def list_mosaics(limit, pretty):
     """
     List all mosaics
@@ -396,7 +411,7 @@ def list_mosaics(limit, pretty):
 
 
 @pretty
-@cli.command('mosaic')
+@cli.command('v0-mosaic')
 @click.argument('mosaic_name', nargs=1)
 def get_mosaic(mosaic_name, pretty):
     """
@@ -406,7 +421,7 @@ def get_mosaic(mosaic_name, pretty):
 
 
 @pretty
-@cli.command('mosaic-quads')
+@cli.command('v0-mosaic-quads')
 @click.argument('mosaic_name', nargs=1)
 @click.argument('aoi', default='@-', required=False)
 @limit_option(default=100)
@@ -425,7 +440,7 @@ def get_mosaic_quads(mosaic_name, aoi, limit, pretty):
                       mosaic_name, intersects=aoi), pretty, limit)
 
 
-@cli.command('download-quads')
+@cli.command('v0-download-quads')
 @dest_dir
 @click.argument('mosaic_name', nargs=1)
 @click.argument('quad_ids', nargs=-1)
@@ -441,7 +456,7 @@ def download_quads(mosaic_name, quad_ids, dest):
 
 
 @pretty
-@cli.command('list-workspaces')
+@cli.command('v0-list-workspaces')
 def list_workspaces(pretty):
     """
     List workspaces.
@@ -450,7 +465,7 @@ def list_workspaces(pretty):
 
 
 @pretty
-@cli.command('get-workspace')
+@cli.command('v0-get-workspace')
 @click.argument('id', nargs=1)
 def get_workspace(pretty, id):
     """
@@ -459,7 +474,7 @@ def get_workspace(pretty, id):
     echo_json_response(call_and_wrap(client().get_workspace, id), pretty)
 
 
-@cli.command('set-workspace')
+@cli.command('v0-set-workspace')
 @click.argument("workspace", default="@-", required=False)
 @click.option('--id', help='If provided, update the workspace with this id')
 @click.option('--aoi', help='The geometry to use')
@@ -520,3 +535,226 @@ def set_workspace(id, aoi, name, create, workspace, where):
         raise click.ClickException('nothing to do')
     echo_json_response(call_and_wrap(cl.set_workspace,
                        workspace, id), pretty)
+
+
+comp_ops = ['lt', 'lte', 'gt', 'gte']
+
+
+def _validate_comparison_op(op):
+    if op not in comp_ops:
+        msg = ('invalid comparison operator, : %s'
+               'options: %s' % (op, comp_ops))
+        raise click.BadParameter(msg)
+
+
+def _date_range_parse(vals):
+    field, comp, date_spec = vals
+    parsed = strp_lenient(date_spec)
+    _validate_comparison_op(comp)
+    if not parsed:
+        raise click.BadParameter("invalid date spec: %s" % date_spec)
+    return filters.date_range(field, **dict([(comp, parsed)]))
+
+
+def _range_filter_parse(vals):
+    field, comp, val = vals
+    _validate_comparison_op(comp)
+    return filters.range_filter(field, **dict([(comp, val)]))
+
+
+def _number_in_filter_parse(vals):
+    field, csv = vals
+    try:
+        nums = [float(v) for v in csv.split(',')]
+    except ValueError:
+        raise click.BadParameter("invalid number in filter : %s", csv)
+    return filters.num_filter(field, nums)
+
+
+def _string_in_filter_parse(vals):
+    field, csv = vals
+    return filters.string_filter(field, csv.split(','))
+
+
+def _filter_builder(handler):
+    '''Return an option validator that uses the provided handler to assemble
+    one or more filters from the input options. e.g. if --date is used twice,
+    the handler will be called twice, with it's respective option values.
+    '''
+    def validate(ctx, param, values):
+        return [handler(opt_vals) for opt_vals in values]
+
+    return validate
+
+
+_allowed_item_types = [
+    "PSScene4Band", "PSScene3Band", "REScene",
+    "REOrthoTile", "Sentinel2L1C", "PSOrthoTile", "Landsat8L1G"]
+
+
+def _item_types_parse(ctx, param, values):
+    if '*' in values:
+        return _allowed_item_types
+    # this won't work with type=click.Choice unless the latter is modified
+    match = [it.lower() for it in _allowed_item_types]
+    matched = []
+    for it in values:
+        try:
+            matched.append(_allowed_item_types[match.index(it.lower())])
+        except ValueError:
+            # click will provide more messaging
+            raise click.BadParameter(it)
+    return matched
+
+
+def _geom_filter_parse(ctx, param, value):
+    '''Special case handling for geom filter'''
+    val = read(value)
+    if val is None:
+        return []
+    try:
+        geoj = json.loads(val)
+    except ValueError:
+        raise click.BadParameter('invalid geojson')
+    geom = geometry_from_json(geoj)
+    if geom is None:
+        raise click.BadParameter('unable to find geometry in input')
+    return [filters.geom_filter(geom)]
+
+# NOTE: all filter options are expected to return a list of 0+ filters
+
+
+geom_filter = click.option('--geom', help=(
+    'Specify a geometry filter as geojson. "-" for stdin or @file'
+), callback=_geom_filter_parse)
+
+date_range_filter = click.option('--date', nargs=3, multiple=True, help=(
+    'Filter field by date.\n'
+    '\b--date FIELD %s DATE' % comp_ops),
+    callback=_filter_builder(_date_range_parse))
+
+range_filter = click.option(
+    '--range', type=(str, str, float), multiple=True, help=(
+        'Filter field by numeric range.\n'
+        '\b--range FIELD %s NUMBER' % comp_ops),
+    callback=_filter_builder(_range_filter_parse)
+)
+
+number_in_filter = click.option('--number-in', nargs=2, multiple=True, help=(
+    'Filter field by numeric in.\n'
+    '\b--number-in FIELD CSV'),
+    callback=_filter_builder(_number_in_filter_parse))
+
+string_in_filter = click.option('--string-in', nargs=2, multiple=True, help=(
+    'Filter field by numeric in.\n'
+    '\b--string-in FIELD CSV'),
+    callback=_filter_builder(_string_in_filter_parse))
+
+item_type_option = click.option('--item-type', default='*', help=(
+    'Specify item types'
+), multiple=True, callback=_item_types_parse,
+   type=click.Choice(['*'] + _allowed_item_types)
+)
+
+ndjson_option = click.option('--ndjson', is_flag=True, help=(
+    'Request output as new-line delimited json.'
+))
+
+
+def filter_options(fun):
+    '''Decorator for all filter options'''
+    for o in [date_range_filter, range_filter, number_in_filter,
+              string_in_filter, geom_filter]:
+        fun = o(fun)
+    return fun
+
+
+def and_filter_from_opts(opts):
+    '''build an AND filter from the provided opts dict as passed to a command
+    from the filter_options decorator. Assumes all dict values are lists of
+    filter dict constructs.'''
+    return filters.and_filter(*list(chain.from_iterable(opts.values())))
+
+
+@cli.command('filter', context_settings=dict(max_content_width=120))
+@filter_options
+def filter_dump(**kw):
+    '''Build a AND filter from the specified filter options and output to
+    stdout'''
+    click.echo(json.dumps(and_filter_from_opts(kw), indent=2))
+
+
+@cli.command('quick-search')
+@limit_option(100)
+@pretty
+@item_type_option
+@filter_options
+@ndjson_option
+def quick_search(limit, pretty, item_type, **kw):
+    '''Execute a quick search'''
+    anded = and_filter_from_opts(kw)
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.quick_search, anded, *item_type),
+                       pretty, limit)
+
+
+@cli.command('create-search')
+@pretty
+@item_type_option
+@filter_options
+@click.option('--name', required=True)
+@click.option('--filter-json', default='@-', help=('Use the specified filter'))
+def create_search(pretty, item_type, name, filter_json, **kw):
+    '''Create a saved search'''
+    active = and_filter_from_opts(kw)
+    no_filters = len(active['config']) == 0
+    filter_in = read(filter_json)
+    if no_filters and not filter_in:
+        raise click.ClickException(
+            'Specify filter options or provide using --filter-json')
+    if not no_filters and filter_in:
+        raise click.ClickException(
+            'Specify filter options or provide using --filter-json, not both')
+    if filter_in:
+        try:
+            parsed = json.loads(filter_in)
+            active = parsed
+        except ValueError:
+            raise click.ClickException('Input filter is not valid JSON')
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.create_search, name, active,
+                       *item_type), pretty)
+
+
+@cli.command('saved-search')
+@click.argument('search_id', default='@-', required=False)
+def saved_search(search_id):
+    '''Execute a saved search'''
+    sid = read(search_id)
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.saved_search, sid), True)
+
+
+@cli.command('searches')
+@click.option('--quick', is_flag=True, help='Quick searches')
+@click.option('--saved', is_flag=True, help='Saved searches (default)')
+def get_searches(quick, saved):
+    '''List searches'''
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.get_searches, quick, saved), True)
+
+
+@pretty
+@item_type_option
+@filter_options
+@click.option('--interval', default='month',
+              type=click.Choice(['hour', 'day', 'month', 'week', 'year']))
+@cli.command('stats')
+def stats(pretty, item_type, interval, **kw):
+    '''Get search stats'''
+    anded = and_filter_from_opts(kw)
+    cl = clientv1()
+    echo_json_response(
+        call_and_wrap(
+            cl.stats, anded, interval, *item_type
+        ), True)

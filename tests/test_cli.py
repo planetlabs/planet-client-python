@@ -41,6 +41,10 @@ from planet import scripts
 from _common import read_fixture
 from _common import clone
 
+import pytest
+
+pytestmark = pytest.mark.skipif(True, reason='v0 cli tests disabled')
+
 
 # have to clear in case key is picked up via env
 if api.auth.ENV_KEY in os.environ:
