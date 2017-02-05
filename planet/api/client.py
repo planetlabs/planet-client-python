@@ -21,7 +21,7 @@ from . import models
 from .utils import check_status
 
 
-class Client(object):
+class _Base(object):
     '''High-level access to Planet's API.'''
     def __init__(self, api_key=None, base_url='https://api.planet.com/v0/',
                  workers=4):
@@ -95,6 +95,9 @@ class Client(object):
             payload += '=' * (4 - rem)
         payload = base64.urlsafe_b64decode(payload.encode('utf-8'))
         return json.loads(payload.decode('utf-8'))
+
+
+class Client(_Base):
 
     def get_scenes_list(self, scene_type='ortho', order_by=None, count=None,
                         intersects=None, workspace=None, aoi_id=None,
@@ -242,3 +245,51 @@ class Client(object):
                                                   auth=self.auth)
         check_status(result)
         return models.JSON(None, result, self.dispatcher)
+
+
+class ClientV1(_Base):
+    def __init__(self, api_key=None, base_url='https://api.planet.com/',
+                 workers=4):
+        _Base.__init__(self, api_key, base_url, workers)
+
+    def create_search(self, name, filt, *item_types):
+        body = json.dumps({
+            'name': name,
+            'item_types': item_types,
+            'filter': filt
+        })
+        return self.dispatcher.response(models.Request(
+            self._url('data/v1/searches/'), self.auth,
+            body_type=models.JSON, data=body, method='POST')).get_body()
+
+    def quick_search(self, filt, *item_types):
+        body = json.dumps({
+            'item_types': item_types,
+            'filter': filt
+        })
+        return self.dispatcher.response(models.Request(
+            self._url('data/v1/quick-search'), self.auth,
+            body_type=models.Items, data=body, method='POST')).get_body()
+
+    def saved_search(self, sid):
+        path = 'data/v1/searches/%s/results' % sid
+        return self._get(self._url(path), body_type=models.Items).get_body()
+
+    def get_searches(self, quick=True, saved=False):
+        params = {}
+        if saved and not quick:
+            params['search_type'] = 'saved'
+        elif quick:
+            params['search_type'] = 'quick'
+        return self._get(self._url('data/v1/searches/'),
+                         params=params).get_body()
+
+    def stats(self, filt, interval, *item_types):
+        body = json.dumps({
+            'item_types': item_types,
+            'filter': filt,
+            'interval': interval,
+        })
+        return self.dispatcher.response(models.Request(
+            self._url('data/v1/stats'), self.auth,
+            body_type=models.JSON, data=body, method='POST')).get_body()

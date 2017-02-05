@@ -82,11 +82,14 @@ class Response(object):
 
 class Request(object):
 
-    def __init__(self, url, auth, params=None, body_type=Response):
+    def __init__(self, url, auth, params=None, body_type=Response, data=None,
+                 method='GET'):
         self.url = url
         self.auth = auth
         self.params = params
         self.body_type = body_type
+        self.data = data
+        self.method = method
 
 
 class _Body(object):
@@ -164,10 +167,12 @@ class JSON(_Body):
 class _Paged(JSON):
 
     ITEM_KEY = 'features'
+    LINKS_KEY = 'links'
+    NEXT_KEY = 'next'
 
     def next(self):
-        links = self.get()['links']
-        next = links.get('next', None)
+        links = self.get()[self.LINKS_KEY]
+        next = links.get(self.NEXT_KEY, None)
         if next:
             request = Request(next, self._request.auth, body_type=type(self))
             return self._dispatcher.response(request).get_body()
@@ -258,3 +263,8 @@ class Quads(_Features):
 
 class Image(_Body):
     pass
+
+
+class Items(_Features):
+    LINKS_KEY = '_links'
+    NEXT_KEY = '_next'

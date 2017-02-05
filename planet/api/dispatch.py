@@ -73,9 +73,14 @@ class RequestsDispatcher(object):
             })
             return req
 
-        return self.session.get(request.url, params=request.params,
-                                stream=True, background_callback=callback,
-                                auth=_auth_callback, verify=USE_STRICT_SSL)
+        headers = {}
+        if request.data:
+            headers['Content-Type'] = 'application/json'
+        return self.session.request(
+            request.method, request.url, data=request.data, headers=headers,
+            params=request.params, stream=True, background_callback=callback,
+            auth=_auth_callback, verify=USE_STRICT_SSL
+        )
 
     def _dispatch(self, request, callback=None):
         response = self._dispatch_async(request, callback).result()
@@ -88,7 +93,7 @@ class RequestsDispatcher(object):
         if auth:
             headers.update({
                 'Authorization': 'api-key %s' % auth.value,
-                'content-Type': content_type
+                'Content-Type': content_type
             })
         req = Request(method, url, params=params, data=data, headers=headers)
         return self.session.send(req.prepare(), verify=USE_STRICT_SSL)
