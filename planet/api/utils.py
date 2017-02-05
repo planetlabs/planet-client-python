@@ -146,6 +146,14 @@ def strf_timestamp(when):
     return datetime.strftime(when, _ISO_FMT)
 
 
+def strp_lenient(when):
+    for i in range(0, 7):
+        try:
+            return datetime.strptime(when, _ISO_FMT[:i*-3 or len(_ISO_FMT)])
+        except ValueError:
+            pass
+
+
 class GeneratorAdapter(list):
     '''Allow a generator to be used in JSON serialization'''
     def __init__(self, gen):

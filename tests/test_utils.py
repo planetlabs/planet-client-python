@@ -11,9 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from datetime import datetime
 import json
 from planet.api import utils
 from _common import read_fixture
+
+
+def test_strp_lenient():
+    for spec in [
+        '2017-02-02T16:45:43.887484+00:00',
+        '2017-02-02T16:45:43.887484+00',
+        '2017-02-02T16:45:43.887484',
+        '2017-02-02T16:45:43',
+        '2017-02-02T16:45',
+        '2017-02-02T16',
+        '2017-02-02',
+    ]:
+        p = utils.strp_lenient(spec)
+        assert datetime.strftime(p, utils._ISO_FMT).startswith(spec)
 
 
 def test_geometry_from_json():
