@@ -656,6 +656,9 @@ item_type_option = click.option('--item-type', default='*', help=(
    type=click.Choice(['*'] + _allowed_item_types)
 )
 
+filter_json_option = click.option('--filter-json', default='@-',
+                                  help=('Use the specified filter'))
+
 ndjson_option = click.option('--ndjson', is_flag=True, help=(
     'Request output as new-line delimited json.'
 ))
@@ -676,6 +679,24 @@ def and_filter_from_opts(opts):
     return filters.and_filter(*list(chain.from_iterable(opts.values())))
 
 
+def _active_filter(filter_json, **kw):
+    active = and_filter_from_opts(kw)
+    no_filters = len(active['config']) == 0
+    filter_in = read(filter_json)
+    if no_filters and not filter_in:
+        return filters.and_filter()
+    if not no_filters and filter_in:
+        raise click.ClickException(
+            'Specify filter options or provide using --filter-json, not both')
+    if filter_in:
+        try:
+            parsed = json.loads(filter_in)
+            active = parsed
+        except ValueError:
+            raise click.ClickException('Input filter is not valid JSON')
+    return active
+
+
 @cli.command('filter', context_settings=dict(max_content_width=120))
 @filter_options
 def filter_dump(**kw):
@@ -688,13 +709,13 @@ def filter_dump(**kw):
 @limit_option(100)
 @pretty
 @item_type_option
+@filter_json_option
 @filter_options
-@ndjson_option
-def quick_search(limit, pretty, item_type, **kw):
+def quick_search(limit, pretty, item_type, filter_json, **kw):
     '''Execute a quick search'''
-    anded = and_filter_from_opts(kw)
+    active = _active_filter(filter_json, **kw)
     cl = clientv1()
-    echo_json_response(call_and_wrap(cl.quick_search, anded, *item_type),
+    echo_json_response(call_and_wrap(cl.quick_search, active, *item_type),
                        pretty, limit)
 
 
@@ -702,25 +723,11 @@ def quick_search(limit, pretty, item_type, **kw):
 @pretty
 @item_type_option
 @filter_options
+@filter_json_option
 @click.option('--name', required=True)
-@click.option('--filter-json', default='@-', help=('Use the specified filter'))
 def create_search(pretty, item_type, name, filter_json, **kw):
     '''Create a saved search'''
-    active = and_filter_from_opts(kw)
-    no_filters = len(active['config']) == 0
-    filter_in = read(filter_json)
-    if no_filters and not filter_in:
-        raise click.ClickException(
-            'Specify filter options or provide using --filter-json')
-    if not no_filters and filter_in:
-        raise click.ClickException(
-            'Specify filter options or provide using --filter-json, not both')
-    if filter_in:
-        try:
-            parsed = json.loads(filter_in)
-            active = parsed
-        except ValueError:
-            raise click.ClickException('Input filter is not valid JSON')
+    active = _active_filter(filter_json, **kw)
     cl = clientv1()
     echo_json_response(call_and_wrap(cl.create_search, name, active,
                        *item_type), pretty)
@@ -747,14 +754,15 @@ def get_searches(quick, saved):
 @pretty
 @item_type_option
 @filter_options
+@filter_json_option
 @click.option('--interval', default='month',
               type=click.Choice(['hour', 'day', 'month', 'week', 'year']))
 @cli.command('stats')
-def stats(pretty, item_type, interval, **kw):
+def stats(pretty, item_type, interval, filter_json, **kw):
     '''Get search stats'''
-    anded = and_filter_from_opts(kw)
+    active = _active_filter(filter_json, **kw)
     cl = clientv1()
     echo_json_response(
         call_and_wrap(
-            cl.stats, anded, interval, *item_type
+            cl.stats, active, interval, *item_type
         ), True)
