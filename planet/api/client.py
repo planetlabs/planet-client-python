@@ -296,3 +296,15 @@ class ClientV1(_Base):
         return self.dispatcher.response(models.Request(
             self._url('data/v1/stats'), self.auth,
             body_type=models.JSON, data=body, method='POST')).get_body()
+
+    def get_assets(self, item):
+        assets_url = item['_links']['assets']
+        return self._get(assets_url).get_body()
+
+    def activate(self, asset):
+        activate_url = asset['_links']['activate']
+        return self._get(activate_url).get_body()
+
+    def download(self, asset, callback=None):
+        download_url = asset['location']
+        return self._get(download_url, models.Image, callback=callback)
