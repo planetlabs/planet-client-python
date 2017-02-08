@@ -262,13 +262,16 @@ class ClientV1(_Base):
             self._url('data/v1/searches/'), self.auth,
             body_type=models.JSON, data=body, method='POST')).get_body()
 
-    def quick_search(self, filt, *item_types):
+    def quick_search(self, filt, *item_types, **kw):
         body = json.dumps({
             'item_types': item_types,
             'filter': filt
         })
+        params = {}
+        if 'page_size' in kw:
+            params['_page_size'] = kw['page_size']
         return self.dispatcher.response(models.Request(
-            self._url('data/v1/quick-search'), self.auth,
+            self._url('data/v1/quick-search'), self.auth, params=params,
             body_type=models.Items, data=body, method='POST')).get_body()
 
     def saved_search(self, sid):
