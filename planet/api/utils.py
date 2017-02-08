@@ -129,6 +129,7 @@ def get_filename(response):
     match = re.search('filename="?([^"]+)"?', cd)
     if match:
         return match.group(1)
+    return cd
 
 
 def write_to_file(directory=None, callback=None):
