@@ -199,6 +199,23 @@ def probably_geojson(input):
     return input if valid else None
 
 
+def handle_interrupt(cancel, f, *a, **kw):
+    '''Execute a function f(*a, **kw) listening for KeyboardInterrupt and if
+    handled, invoke the cancel function. Blocks until f is complete or the
+    interrupt is handled.
+    '''
+    def run():
+        f(*a, **kw)
+    t = threading.Thread(target=run)
+    t.start()
+    # poll (or we miss the interrupt) and await completion
+    try:
+        while t.isAlive():
+            t.join(.1)
+    except KeyboardInterrupt:
+        cancel()
+
+
 def complete(futures, check, client):
     '''Wait for the future requests to complete without blocking the main
     thread. This is a means to intercept a KeyboardInterrupt and gracefully

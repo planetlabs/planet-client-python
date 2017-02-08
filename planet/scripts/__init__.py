@@ -26,9 +26,11 @@ import click
 import planet
 from planet.api.sync import _SyncTool
 from planet import api
+from planet.api.helpers import _Downloader
 from planet.api.utils import complete
 from planet.api.utils import geometry_from_json
 from planet.api.utils import strp_lenient
+from planet.api.utils import handle_interrupt
 from planet.api import filters
 
 from requests.packages.urllib3 import exceptions as urllib3exc
@@ -591,6 +593,58 @@ _allowed_item_types = [
     "PSScene4Band", "PSScene3Band", "REScene",
     "REOrthoTile", "Sentinel2L1C", "PSOrthoTile", "Landsat8L1G"]
 
+_allowed_asset_types = [
+  "analytic",
+  "analytic_b1",
+  "analytic_b10",
+  "analytic_b11",
+  "analytic_b12",
+  "analytic_b2",
+  "analytic_b3",
+  "analytic_b4",
+  "analytic_b5",
+  "analytic_b6",
+  "analytic_b7",
+  "analytic_b8",
+  "analytic_b8a",
+  "analytic_b9",
+  "analytic_bqa",
+  "analytic_dn",
+  "analytic_dn_xml",
+  "analytic_ms",
+  "analytic_xml",
+  "basic_analytic",
+  "basic_analytic_b1",
+  "basic_analytic_b1_nitf",
+  "basic_analytic_b2",
+  "basic_analytic_b2_nitf",
+  "basic_analytic_b3",
+  "basic_analytic_b3_nitf",
+  "basic_analytic_b4",
+  "basic_analytic_b4_nitf",
+  "basic_analytic_b5",
+  "basic_analytic_b5_nitf",
+  "basic_analytic_dn",
+  "basic_analytic_dn_nitf",
+  "basic_analytic_dn_rpc",
+  "basic_analytic_dn_rpc_nitf",
+  "basic_analytic_dn_xml",
+  "basic_analytic_dn_xml_nitf",
+  "basic_analytic_nitf",
+  "basic_analytic_rpc",
+  "basic_analytic_rpc_nitf",
+  "basic_analytic_sci",
+  "basic_analytic_xml",
+  "basic_analytic_xml_nitf",
+  "basic_udm",
+  "browse",
+  "metadata_aux",
+  "metadata_txt",
+  "udm",
+  "visual",
+  "visual_xml"
+]
+
 
 def _item_types_parse(ctx, param, values):
     if '*' in values:
@@ -654,6 +708,12 @@ item_type_option = click.option('--item-type', default='*', help=(
     'Specify item types'
 ), multiple=True, callback=_item_types_parse,
    type=click.Choice(['*'] + _allowed_item_types)
+)
+
+asset_type_option = click.option('--asset-type', required=True, help=(
+    'Specify asset types'
+), multiple=True,
+   type=click.Choice(_allowed_asset_types)
 )
 
 filter_json_option = click.option('--filter-json', default='@-',
@@ -766,3 +826,29 @@ def stats(pretty, item_type, interval, filter_json, **kw):
         call_and_wrap(
             cl.stats, active, interval, *item_type
         ), True)
+
+
+@item_type_option
+@asset_type_option
+@filter_options
+@filter_json_option
+@click.option('--dest', type=click.Path(exists=True), help=('Location to'
+              'download files to'))
+@cli.command('download')
+def download(item_type, asset_type, filter_json, dest, **kw):
+    active = _active_filter(filter_json, **kw)
+    cl = clientv1()
+    item_pages = cl.quick_search(active, *item_type, page_size=2)
+    downloader = _Downloader(cl, asset_type, dest or '.')
+    handle_interrupt(downloader.shutdown,
+                     downloader.download, item_pages.iter(4))
+
+
+def _dump_threads():
+    import traceback
+    for threadId, stack in sys._current_frames().items():
+        print "\n# ThreadID: %s" % threadId
+        for filename, lineno, name, line in traceback.extract_stack(stack):
+            print 'File: "%s", line %d, in %s' % (filename, lineno, name)
+            if line:
+                print "  %s" % (line.strip())
