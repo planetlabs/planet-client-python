@@ -568,12 +568,12 @@ def _number_in_filter_parse(vals):
         nums = [float(v) for v in csv.split(',')]
     except ValueError:
         raise click.BadParameter("invalid number in filter : %s", csv)
-    return filters.num_filter(field, nums)
+    return filters.num_filter(field, *nums)
 
 
 def _string_in_filter_parse(vals):
     field, csv = vals
-    return filters.string_filter(field, csv.split(','))
+    return filters.string_filter(field, *csv.split(','))
 
 
 def _filter_builder(handler):
