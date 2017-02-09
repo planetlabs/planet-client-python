@@ -26,7 +26,7 @@ import click
 import planet
 from planet.api.sync import _SyncTool
 from planet import api
-from planet.api.helpers import _Downloader
+from planet.api.helpers import downloader
 from planet.api.utils import complete
 from planet.api.utils import geometry_from_json
 from planet.api.utils import strp_lenient
