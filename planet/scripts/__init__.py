@@ -594,55 +594,20 @@ _allowed_item_types = [
     "REOrthoTile", "Sentinel2L1C", "PSOrthoTile", "Landsat8L1G"]
 
 _allowed_asset_types = [
-  "analytic",
-  "analytic_b1",
-  "analytic_b10",
-  "analytic_b11",
-  "analytic_b12",
-  "analytic_b2",
-  "analytic_b3",
-  "analytic_b4",
-  "analytic_b5",
-  "analytic_b6",
-  "analytic_b7",
-  "analytic_b8",
-  "analytic_b8a",
-  "analytic_b9",
-  "analytic_bqa",
-  "analytic_dn",
-  "analytic_dn_xml",
-  "analytic_ms",
-  "analytic_xml",
-  "basic_analytic",
-  "basic_analytic_b1",
-  "basic_analytic_b1_nitf",
-  "basic_analytic_b2",
-  "basic_analytic_b2_nitf",
-  "basic_analytic_b3",
-  "basic_analytic_b3_nitf",
-  "basic_analytic_b4",
-  "basic_analytic_b4_nitf",
-  "basic_analytic_b5",
-  "basic_analytic_b5_nitf",
-  "basic_analytic_dn",
-  "basic_analytic_dn_nitf",
-  "basic_analytic_dn_rpc",
-  "basic_analytic_dn_rpc_nitf",
-  "basic_analytic_dn_xml",
-  "basic_analytic_dn_xml_nitf",
-  "basic_analytic_nitf",
-  "basic_analytic_rpc",
-  "basic_analytic_rpc_nitf",
-  "basic_analytic_sci",
-  "basic_analytic_xml",
-  "basic_analytic_xml_nitf",
-  "basic_udm",
-  "browse",
-  "metadata_aux",
-  "metadata_txt",
-  "udm",
-  "visual",
-  "visual_xml"
+    "analytic", "analytic_b1", "analytic_b10", "analytic_b11", "analytic_b12",
+    "analytic_b2", "analytic_b3", "analytic_b4", "analytic_b5", "analytic_b6",
+    "analytic_b7", "analytic_b8", "analytic_b8a", "analytic_b9",
+    "analytic_bqa", "analytic_dn", "analytic_dn_xml", "analytic_ms",
+    "analytic_xml", "basic_analytic", "basic_analytic_b1",
+    "basic_analytic_b1_nitf", "basic_analytic_b2", "basic_analytic_b2_nitf",
+    "basic_analytic_b3", "basic_analytic_b3_nitf", "basic_analytic_b4",
+    "basic_analytic_b4_nitf", "basic_analytic_b5", "basic_analytic_b5_nitf",
+    "basic_analytic_dn", "basic_analytic_dn_nitf", "basic_analytic_dn_rpc",
+    "basic_analytic_dn_rpc_nitf", "basic_analytic_dn_xml",
+    "basic_analytic_dn_xml_nitf", "basic_analytic_nitf", "basic_analytic_rpc",
+    "basic_analytic_rpc_nitf", "basic_analytic_sci", "basic_analytic_xml",
+    "basic_analytic_xml_nitf", "basic_udm", "browse", "metadata_aux",
+    "metadata_txt", "udm", "visual", "visual_xml"
 ]
 
 
@@ -678,44 +643,57 @@ def _geom_filter_parse(ctx, param, value):
 # NOTE: all filter options are expected to return a list of 0+ filters
 
 
-geom_filter = click.option('--geom', help=(
+geom_filter = click.option('--geom', callback=_geom_filter_parse, help=(
     'Specify a geometry filter as geojson. "-" for stdin or @file'
-), callback=_geom_filter_parse)
+))
 
-date_range_filter = click.option('--date', nargs=3, multiple=True, help=(
-    'Filter field by date.\n'
-    '\b--date FIELD %s DATE' % comp_ops),
-    callback=_filter_builder(_date_range_parse))
+date_range_filter = click.option(
+    '--date', nargs=3, multiple=True,
+    callback=_filter_builder(_date_range_parse), help=(
+        'Filter field by date.\n'
+        '\b--date FIELD %s DATE' % comp_ops
+    )
+)
 
 range_filter = click.option(
-    '--range', type=(str, str, float), multiple=True, help=(
+    '--range', type=(str, str, float), multiple=True,
+    callback=_filter_builder(_range_filter_parse), help=(
         'Filter field by numeric range.\n'
-        '\b--range FIELD %s NUMBER' % comp_ops),
-    callback=_filter_builder(_range_filter_parse)
+        '\b--range FIELD %s NUMBER' % comp_ops
+    )
 )
 
-number_in_filter = click.option('--number-in', nargs=2, multiple=True, help=(
-    'Filter field by numeric in.\n'
-    '\b--number-in FIELD CSV'),
-    callback=_filter_builder(_number_in_filter_parse))
-
-string_in_filter = click.option('--string-in', nargs=2, multiple=True, help=(
-    'Filter field by numeric in.\n'
-    '\b--string-in FIELD CSV'),
-    callback=_filter_builder(_string_in_filter_parse))
-
-item_type_option = click.option('--item-type', default='*', help=(
-    'Specify item types'
-), multiple=True, callback=_item_types_parse,
-   type=click.Choice(['*'] + _allowed_item_types)
+number_in_filter = click.option(
+    '--number-in', nargs=2, multiple=True,
+    callback=_filter_builder(_number_in_filter_parse), help=(
+        'Filter field by numeric in.\n'
+        '\b--number-in FIELD CSV'
+    )
 )
 
-asset_type_option = click.option('--asset-type', required=True, help=(
-    'Specify asset types'
-), multiple=True,
-   type=click.Choice(_allowed_asset_types)
+string_in_filter = click.option(
+    '--string-in', nargs=2, multiple=True,
+    callback=_filter_builder(_string_in_filter_parse), help=(
+        'Filter field by numeric in.\n'
+        '\b--string-in FIELD CSV'
+    )
 )
 
+item_type_option = click.option(
+    '--item-type', default=None, multiple=True, callback=_item_types_parse,
+    type=click.Choice(['all'] + _allowed_item_types), help=(
+       'Specify item types'
+    )
+)
+
+asset_type_option = click.option(
+    '--asset-type', required=True, multiple=True,
+    type=click.Choice(_allowed_asset_types), help=(
+        'Specify asset types'
+    )
+)
+
+# @todo add validate/parse
 filter_json_option = click.option('--filter-json', default='@-',
                                   help=('Use the specified filter'))
 
