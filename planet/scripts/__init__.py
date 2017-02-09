@@ -647,18 +647,18 @@ _allowed_asset_types = [
 
 
 def _item_types_parse(ctx, param, values):
-    if '*' in values:
+    if 'all' in values:
         return _allowed_item_types
-    # this won't work with type=click.Choice unless the latter is modified
-    match = [it.lower() for it in _allowed_item_types]
-    matched = []
-    for it in values:
+    if not values:
+        incoming = []
+        # accept no input from item-type if filter_json has some
         try:
-            matched.append(_allowed_item_types[match.index(it.lower())])
+            incoming = json.loads(
+                ctx.params['filter_json']).get('item_types', [])
         except ValueError:
-            # click will provide more messaging
-            raise click.BadParameter(it)
-    return matched
+            pass
+        return incoming or _allowed_item_types
+    return values
 
 
 def _geom_filter_parse(ctx, param, value):
@@ -773,9 +773,9 @@ def filter_dump(**kw):
 @filter_options
 def quick_search(limit, pretty, item_type, filter_json, **kw):
     '''Execute a quick search'''
-    active = _active_filter(filter_json, **kw)
+    req = filters.build_request(_active_filter(filter_json, **kw), item_type)
     cl = clientv1()
-    echo_json_response(call_and_wrap(cl.quick_search, active, *item_type),
+    echo_json_response(call_and_wrap(cl.quick_search, req),
                        pretty, limit)
 
 
@@ -787,10 +787,10 @@ def quick_search(limit, pretty, item_type, filter_json, **kw):
 @click.option('--name', required=True)
 def create_search(pretty, item_type, name, filter_json, **kw):
     '''Create a saved search'''
-    active = _active_filter(filter_json, **kw)
+    req = filters.build_request(_active_filter(filter_json, **kw), item_type,
+                                name=name)
     cl = clientv1()
-    echo_json_response(call_and_wrap(cl.create_search, name, active,
-                       *item_type), pretty)
+    echo_json_response(call_and_wrap(cl.create_search, req), pretty)
 
 
 @cli.command('saved-search')
@@ -820,35 +820,24 @@ def get_searches(quick, saved):
 @cli.command('stats')
 def stats(pretty, item_type, interval, filter_json, **kw):
     '''Get search stats'''
-    active = _active_filter(filter_json, **kw)
+    req = filters.build_request(_active_filter(filter_json, **kw), item_type,
+                                interval=interval)
     cl = clientv1()
-    echo_json_response(
-        call_and_wrap(
-            cl.stats, active, interval, *item_type
-        ), True)
+    echo_json_response(call_and_wrap(cl.stats, req), pretty)
 
 
 @item_type_option
 @asset_type_option
 @filter_options
 @filter_json_option
-@click.option('--dest', type=click.Path(exists=True), help=('Location to'
+@click.option('--dest', type=click.Path(exists=True), help=('Location to '
               'download files to'))
+@limit_option(None)
 @cli.command('download')
-def download(item_type, asset_type, filter_json, dest, **kw):
-    active = _active_filter(filter_json, **kw)
+def download(item_type, asset_type, filter_json, dest, limit, **kw):
+    '''Activate and download'''
+    req = filters.build_request(_active_filter(filter_json, **kw), item_type)
     cl = clientv1()
-    item_pages = cl.quick_search(active, *item_type, page_size=2)
-    downloader = _Downloader(cl, asset_type, dest or '.')
-    handle_interrupt(downloader.shutdown,
-                     downloader.download, item_pages.iter(4))
-
-
-def _dump_threads():
-    import traceback
-    for threadId, stack in sys._current_frames().items():
-        print "\n# ThreadID: %s" % threadId
-        for filename, lineno, name, line in traceback.extract_stack(stack):
-            print 'File: "%s", line %d, in %s' % (filename, lineno, name)
-            if line:
-                print "  %s" % (line.strip())
+    items = cl.quick_search(active, req)
+    dl = downloader(cl, asset_type, dest or '.')
+    handle_interrupt(dl.shutdown, dl.download, items.items_iter(limit))

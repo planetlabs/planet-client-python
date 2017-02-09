@@ -252,21 +252,14 @@ class ClientV1(_Base):
                  workers=4):
         _Base.__init__(self, api_key, base_url, workers)
 
-    def create_search(self, name, filt, *item_types):
-        body = json.dumps({
-            'name': name,
-            'item_types': item_types,
-            'filter': filt
-        })
+    def create_search(self, request):
+        body = json.dumps(request)
         return self.dispatcher.response(models.Request(
             self._url('data/v1/searches/'), self.auth,
             body_type=models.JSON, data=body, method='POST')).get_body()
 
-    def quick_search(self, filt, *item_types, **kw):
-        body = json.dumps({
-            'item_types': item_types,
-            'filter': filt
-        })
+    def quick_search(self, request, **kw):
+        body = json.dumps(request)
         params = {}
         if 'page_size' in kw:
             params['_page_size'] = kw['page_size']
@@ -287,12 +280,8 @@ class ClientV1(_Base):
         return self._get(self._url('data/v1/searches/'),
                          params=params).get_body()
 
-    def stats(self, filt, interval, *item_types):
-        body = json.dumps({
-            'item_types': item_types,
-            'filter': filt,
-            'interval': interval,
-        })
+    def stats(self, request):
+        body = json.dumps(request)
         return self.dispatcher.response(models.Request(
             self._url('data/v1/stats'), self.auth,
             body_type=models.JSON, data=body, method='POST')).get_body()

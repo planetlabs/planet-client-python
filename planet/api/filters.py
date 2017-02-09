@@ -13,6 +13,23 @@
 # limitations under the License.
 
 
+def build_request(filter_like, item_types, name=None, interval=None):
+    '''Accept a filter or request containing a filter body and return a data
+    search request for use with search and stats. If filter_like is a request,
+    item_types will be merged and, if name or interval is provided, will
+    replace any existing values.'''
+    filter_spec = filter_like.get('filter', filter_like)
+    all_items = list(set(filter_like.get('item_types', [])).union(item_types))
+    name = filter_like.get('name', name)
+    interval = filter_like.get('interval', interval)
+    req = {'item_types': all_items, 'filter': filter_spec}
+    if name:
+        req['name'] = name
+    if interval:
+        req['interval'] = interval
+    return req
+
+
 def _filter(ftype, config=None, **kwargs):
     kwargs.update({
         'type': ftype,
