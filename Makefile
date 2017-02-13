@@ -5,7 +5,8 @@ check:
 	flake8 planet tests
 
 pex:
-	pex .  -o dist/planet -m planet.scripts:cli
+	# disable-cache seemed required or the older version would be used
+	pex . -o dist/planet -e planet.scripts:cli --disable-cache
 
 html-docs:
 	python docs/source/generate.py

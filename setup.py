@@ -42,6 +42,10 @@ test_requires = [
 
 dev_requires = [
     'flake8',
+    # with pex 1.2.2, seems that more recent setuptools break things
+    # and the planet package will not be found
+    # see https://github.com/pantsbuild/pex/issues/301
+    'setuptools<21',
     'pex',
     'pytest-cov',
     'sphinx',
