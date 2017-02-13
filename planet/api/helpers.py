@@ -91,6 +91,10 @@ class _Stage(object):
         # this makes us not alive
         self._running = False
         self._tasks = []
+        while not self._results.empty():
+            r = self._results.get()
+            if hasattr(r, 'cancel'):
+                r.cancel()
 
     def _task(self, t):
         return t
@@ -212,6 +216,7 @@ class _Downloader(object):
         self.client = client
         self.asset_types = asset_types
         self.dest = dest
+        self._client = client
         self._running = True
         self._opts = opts
         self._awaiting = None
@@ -268,6 +273,7 @@ class _Downloader(object):
         self._awaiting and self._awaiting.cancel()
         for s in self._stages:
             s.cancel()
+        self._client.shutdown()
 
 
 downloader = _Downloader

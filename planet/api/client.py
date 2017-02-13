@@ -36,7 +36,7 @@ class _Base(object):
         self.dispatcher = RequestsDispatcher(workers)
 
     def shutdown(self):
-        self.dispatcher.session.executor.shutdown(wait=False)
+        self.dispatcher._asyncpool.shutdown(wait=False)
 
     def _url(self, path):
         if path.startswith('http'):
