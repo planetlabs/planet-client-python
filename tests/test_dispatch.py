@@ -26,14 +26,14 @@ def test_redirectsession_rebuilt_auth_called():
         m.get('http://newredirect.com', text='redirected!')
 
         # base assertion, works as intended
-        resp = session.get('http://redirect.com').result()
+        resp = session.get('http://redirect.com')
         assert resp.url == 'http://newredirect.com'
         assert resp.text == 'redirected!'
 
         # Authorization headers unpacked and URL is rewritten
         resp = session.get('http://redirect.com', headers={
             'Authorization': 'api-key foobar'
-        }).result()
+        })
         assert resp.url == 'http://newredirect.com/?api_key=foobar'
         assert resp.text == 'redirected!'
 
@@ -44,7 +44,7 @@ def test_redirectsession_rebuilt_auth_called():
         m.get('http://newredirect.com?param=yep', text='param!')
         resp = session.get('http://redirect.com?param=yep', headers={
             'Authorization': 'api-key foobar'
-        }).result()
+        })
         assert resp.url == 'http://newredirect.com/?param=yep&api_key=foobar'
         assert resp.text == 'param!'
 

@@ -75,7 +75,7 @@ class _Base(object):
         result = self.dispatcher.session.post(self._url('auth/login'), {
             'email': identity,
             'password': credentials
-        }).result()
+        })
         status = result.status_code
         if status == 400:
             raise APIException('invalid parameters, login process has changed')
