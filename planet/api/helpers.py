@@ -75,6 +75,8 @@ class _Stage(object):
         self._doing = None
         self._results = queue.Queue()
         self._min_sleep = 1. / max_dps if max_dps else 0
+
+    def start(self):
         threading.Thread(target=self._run).start()
 
     def next(self):
@@ -213,6 +215,7 @@ class _Downloader(object):
         self._running = True
         self._opts = opts
         self._awaiting = None
+        self._stages = None
 
     def _apply_opts(self, to):
         opts = self._opts
@@ -238,6 +241,8 @@ class _Downloader(object):
 
         # sneaky little hack to allow tests to inject options
         self._apply_opts(vars())
+
+        [s.start() for s in self._stages]
 
         # poll download for futures to await - at this point these have
         # all been backgrounded and are likely actively streaming
