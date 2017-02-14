@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
 from datetime import datetime
 from . import exceptions
 import json
 import os
 import re
 import threading
+import time
 from ._fatomic import atomic_open
 
 _ISO_FMT = '%Y-%m-%dT%H:%M:%S.%f+00:00'
@@ -213,7 +215,26 @@ def handle_interrupt(cancel, f, *a, **kw):
         while t.isAlive():
             t.join(.1)
     except KeyboardInterrupt:
+        print('exiting')
         cancel()
+
+
+def monitor_stats(fun, write):
+    last = ['']
+    thread = threading.current_thread()
+    start = time.time()
+
+    def _stats():
+        stats = fun()
+        stats['elapsed'] = '%d' % (time.time() - start)
+        msg = '\r'
+        for k in stats:
+            msg += '%s:%s ' % (k, stats[k])
+        write(msg)
+        last[0] = msg
+        if thread.is_alive():
+            threading.Timer(1, _stats).start()
+    _stats()
 
 
 def complete(futures, check, client):

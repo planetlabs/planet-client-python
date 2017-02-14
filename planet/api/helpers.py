@@ -32,8 +32,8 @@ def _all_status(assets, types, status):
     return all([assets[t]['status'] == status for t in types if t in assets])
 
 
-def _debug(msg, *args):
-    logging.debug(msg, *args)
+_debug = logging.debug
+_info = logging.info
 
 
 class _Stage(object):
@@ -87,6 +87,9 @@ class _Stage(object):
             if not self._alive():
                 return False
 
+    def _i(self, msg, *args):
+        _info(type(self).__name__ + ' : ' + msg, *args)
+
     def cancel(self):
         # this makes us not alive
         self._running = False
@@ -107,11 +110,6 @@ class _Stage(object):
 
     def _run(self):
         while self._alive():
-            t = time.time()
-            if self._tasks:
-                self._doing = self._tasks.pop(0)
-                self._do(self._doing)
-                self._doing = None
             # if there is capacity and upstream or us is 'on', try to get
             # another task from upstream
             if len(self._tasks) < self._size and self._running:
@@ -124,17 +122,24 @@ class _Stage(object):
                         n = next(self._source)
                 except StopIteration:
                     n = False
-                if n is False:
-                    self._running = False
-                elif n is not None:
+                # upstream is done if False
+                self._running = n is not False
+                # if not None (results pending), queue at head
+                if n:
                     n = self._task(n)
-                    n and self._tasks.append(n)
-            # note - this is conservative compared to timer invocation. we are
-            # allowing _at most_ 1 'do' per min_sleep
-            wait = self._min_sleep - (time.time() - t)
-            if wait > 0 and self._running:
-                _debug('sleep for %d', wait)
-                time.sleep(wait)
+                    n and self._tasks.insert(0, n)
+            # if there is a task, run it
+            if self._tasks:
+                t = time.time()
+                self._doing = self._tasks.pop(0)
+                self._do(self._doing)
+                self._doing = None
+                # note - this is conservative compared to timer invocation.
+                # allow _at most_ 1 'do' per min_sleep
+                wait = self._min_sleep - (time.time() - t)
+                if wait > 0 and self._running:
+                    _info('sleep for %d', wait)
+                    time.sleep(wait)
 
 
 class _AStage(_Stage):
@@ -195,14 +200,18 @@ class _DStage(_Stage):
         self._client = client
         self._asset_types = asset_types
         self._dest = dest
+        self._written = 0
 
     def _task(self, t):
         item, assets = t
         for at in self._asset_types:
             self._tasks.append((item, assets[at]))
 
+    def _track_write(self, **kw):
+        self._written += kw.get('wrote', 0)
+
     def _get_writer(self, item, asset):
-        return write_to_file(self._dest)
+        return write_to_file(self._dest, self._track_write)
 
     def _do(self, task):
         item, asset = task
@@ -220,6 +229,7 @@ class _Downloader(object):
         self._running = True
         self._opts = opts
         self._awaiting = None
+        self._completed = 0
         self._stages = None
 
     def _apply_opts(self, to):
@@ -229,12 +239,26 @@ class _Downloader(object):
             for s in self._stages:
                 s._min_sleep = 0
         for k in opts:
-            v, a = k.split('_')
+            v, a = k.split('_', 1)
             t = to.get(v, None)
             if t is None:
                 logging.warn('option not supported %s', k)
             else:
                 setattr(t, a, opts[k])
+
+    def stats(self):
+        if not self._stages:
+            return {}
+        astage, pstage, dstage = self._stages
+        return {
+            'paging': astage._running,
+            'activating': len(pstage._tasks),
+            'pending': len(dstage._tasks),
+            'downloading': dstage._results.qsize() +
+            (1 if self._awaiting else 0),
+            'downloaded': self._completed,
+            'total': dstage._written,
+        }
 
     def download(self, items):
         # build pipeline
@@ -261,6 +285,8 @@ class _Downloader(object):
                     # while awaiting, store a ref since to allow cancelling
                     self._awaiting = n[2]
                     self._awaiting.await()
+                    self._completed += 1
+                    self._awaiting = None
             except StopIteration:
                 break
             except RequestCancelled:
