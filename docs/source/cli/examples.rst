@@ -1,5 +1,48 @@
+.. highlight:: text
+
 Examples
 ========
+
+Get the latest 10 items from the API of any ItemType::
+
+    planet quick-search --limit 10
+
+Get recently acquired PSScene3Band ItemType records::
+
+    planet quick-search --item-type PSScene3Band --date gt 2017-02-14
+
+Search for a month. Note: criteria are applied as an AND filter::
+
+    planet quick-search --item-type PSScene3Band --date gt 2017-02-14 --date lt 2017-03-14
+
+Use the geometry defined in `aoi.json` to constrain a search for both PSScene3Band and PSScene4Band::
+
+    planet quick-search --item-type PSScene3Band --item-type PSScene4Band --geom aoi.json
+
+Output a search filter to a file::
+
+    planet filter --range cloud_cover lt .1 --geom aoi.json > my-search.json
+
+Create a saved search from a filter in a file with some additional options::
+
+    planet create-search --item-type PSScene3Band --string-in satellite_id 0c12 --name my-search --filter-json my-search.json
+
+Execute a saved search::
+
+    planet saved-search 4782d4118fee4275860665129a1e23c1
+
+Get statistics using a filter from a file::
+
+    planet stats --item-type Sentinel2L1C --filter-json my-search.json
+
+Activate and download the latest 3 PSScene3Band items to `images-download-directory`.
+
+Note: this might take some time and directory must exist::
+
+    planet download --item-type PSScene3Band --limit 3 --dest images-download-directory
+
+V0 Examples
+=================
 
 
 Searching for Scenes
