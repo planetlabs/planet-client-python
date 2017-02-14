@@ -24,13 +24,14 @@ import warnings
 import click
 
 import planet
-from planet.api.sync import _SyncTool
 from planet import api
+from planet.api.sync import _SyncTool
 from planet.api.helpers import downloader
 from planet.api.utils import complete
 from planet.api.utils import geometry_from_json
 from planet.api.utils import strp_lenient
 from planet.api.utils import handle_interrupt
+from planet.api.utils import monitor_stats
 from planet.api import filters
 
 from requests.packages.urllib3 import exceptions as urllib3exc
@@ -88,7 +89,14 @@ def configure_logging(verbosity):
     '''configure logging via verbosity level of between 0 and 2 corresponding
     to log levels warning, info and debug respectfully.'''
     log_level = max(logging.DEBUG, logging.WARNING - logging.DEBUG*verbosity)
-    logging.basicConfig(stream=sys.stderr, level=log_level)
+    logging.basicConfig(
+        stream=sys.stderr, level=log_level,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+    urllib3_logger = logging.getLogger(
+        'requests.packages.urllib3.connectionpool')
+    urllib3_logger.setLevel(logging.CRITICAL)
 
 
 def click_exception(ex):
