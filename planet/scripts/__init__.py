@@ -625,11 +625,12 @@ def _item_types_parse(ctx, param, values):
     if not values:
         incoming = []
         # accept no input from item-type if filter_json has some
-        try:
-            incoming = json.loads(
-                ctx.params['filter_json']).get('item_types', [])
-        except ValueError:
-            pass
+        if 'filter_json' in ctx.params:
+            try:
+                incoming = json.loads(
+                    ctx.params['filter_json']).get('item_types', [])
+            except ValueError:
+                pass
         return incoming or _allowed_item_types
     return values
 
