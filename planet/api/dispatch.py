@@ -23,6 +23,7 @@ from requests import Session
 from . utils import check_status
 from . models import Response
 from . exceptions import InvalidAPIKey
+from . exceptions import OverQuota
 from requests.compat import urlparse
 
 
@@ -98,6 +99,23 @@ def _headers(request):
     return headers
 
 
+def _do_request(sess, req, **kwargs):
+    for i in range(5):
+        try:
+            _log_request(req)
+            t = time.time()
+            resp = sess.request(
+                req.method, req.url, data=req.data, headers=_headers(req),
+                params=req.params, verify=USE_STRICT_SSL, **kwargs
+            )
+            log.info('request took %.03f', time.time() - t)
+            check_status(resp)
+            return resp
+        except OverQuota:
+            time.sleep(1)
+    raise Exception('too many throttles, giving up')
+
+
 class RequestsDispatcher(object):
 
     def __init__(self, workers=4):
@@ -114,25 +132,12 @@ class RequestsDispatcher(object):
 
     def _dispatch_async(self, request, callback):
         with self._throttler:
-            _log_request(request)
-            return self._asyncpool.request(
-                request.method, request.url, data=request.data,
-                headers=_headers(request), params=request.params, stream=True,
-                background_callback=callback, verify=USE_STRICT_SSL
-            )
+            return _do_request(self._asyncpool, request, stream=True,
+                               background_callback=callback)
 
     def _dispatch(self, request, callback=None):
         with self._throttler:
-            _log_request(request)
-            t = time.time()
-            response = self.session.request(
-                request.method, request.url, data=request.data,
-                headers=_headers(request), params=request.params, stream=True,
-                verify=USE_STRICT_SSL
-            )
-            check_status(response)
-            log.info('request took %.03f', time.time() - t)
-            return response
+            return _do_request(self.session, request)
 
     # @todo delete me w/ v0 removal
     def dispatch_request(self, method, url, auth=None, params=None, data=None):
