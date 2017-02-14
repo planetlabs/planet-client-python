@@ -123,18 +123,18 @@ class _Body(object):
             def noop(x):
                 pass
             callback = noop
-        callback(self)
+        callback(start=self)
         for chunk in self:
             if self._cancel:
                 raise RequestCancelled()
             fp.write(chunk)
             size = len(chunk)
             total += size
-            callback(total)
+            callback(wrote=size, total=total)
         # seems some responses don't have a content-length header
         if self.size is 0:
             self.size = total
-        callback(self)
+        callback(finish=self)
 
     def write(self, file=None, callback=None):
         '''Write the contents of the body to the optionally provided file and
