@@ -109,7 +109,10 @@ def _do_request(sess, req, **kwargs):
                 params=req.params, verify=USE_STRICT_SSL, **kwargs
             )
             log.info('request took %.03f', time.time() - t)
-            check_status(resp)
+            # futures session returns futures so only check actual responses
+            # for futures these will be checked in the wrapper model
+            if hasattr(resp, 'status_code'):
+                check_status(resp)
             return resp
         except OverQuota:
             time.sleep(1)
