@@ -816,6 +816,8 @@ def download(item_type, asset_type, filter_json, dest, limit, **kw):
     '''Activate and download'''
     req = filters.build_request(_active_filter(filter_json, **kw), item_type)
     cl = clientv1()
-    items = cl.quick_search(active, req)
+    page_size = min(limit, 250)
+    items = cl.quick_search(req, page_size=page_size)
     dl = downloader(cl, asset_type, dest or '.')
+    monitor_stats(dl.stats, lambda x: click.echo(x, nl=False))
     handle_interrupt(dl.shutdown, dl.download, items.items_iter(limit))
