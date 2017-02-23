@@ -28,6 +28,9 @@ from .opts import (
     search_request_opts,
     sort_order
 )
+from .types import (
+    metavar_docs
+)
 from .util import (
     filter_from_opts,
     call_and_wrap,
@@ -45,6 +48,11 @@ from planet.api.helpers import (
 )
 
 
+filter_opts_epilog = '\nFilter Formats:\n\n' + \
+                     '\n'.join(['%s\n\n%s' % (k, v.replace('    ', ''))
+                                for k, v in metavar_docs.items()])
+
+
 @cli.command('init')
 @click.option('--email', default=None, prompt=True)
 @click.option('--password', default=None, prompt=True, hide_input=True)
@@ -55,21 +63,26 @@ def init(email, password):
     click.echo('initialized')
 
 
-@cli.command('filter', context_settings=dict(max_content_width=119))
+@cli.command('filter', epilog=filter_opts_epilog)
 @filter_opts
 def filter_dump(**kw):
-    '''Build a AND filter from the specified filter options and output to
-    stdout'''
+    '''Output a AND filter as JSON to stdout.
+
+    If provided using --filter-json, combine the filters.
+
+    The output is suitable for use in other commands via the
+    --filter-json option.
+    '''
     click.echo(json.dumps(filter_from_opts(**kw), indent=2))
 
 
-@cli.command('quick-search')
+@cli.command('quick-search', epilog=filter_opts_epilog)
 @limit_option(100)
 @pretty
 @search_request_opts
 @sort_order
 def quick_search(limit, pretty, sort, **kw):
-    '''Execute a quick search'''
+    '''Execute a quick search.'''
     req = request_from_opts(**kw)
     cl = clientv1()
     page_size = min(limit, 250)
@@ -78,7 +91,7 @@ def quick_search(limit, pretty, sort, **kw):
     ), pretty, limit)
 
 
-@cli.command('create-search')
+@cli.command('create-search', epilog=filter_opts_epilog)
 @pretty
 @click.option('--name', required=True)
 @search_request_opts
@@ -119,7 +132,7 @@ def get_searches(quick, saved):
 @click.option('--interval', default='month',
               type=click.Choice(['hour', 'day', 'month', 'week', 'year']),
               help='Specify the interval to aggregate by.')
-@cli.command('stats')
+@cli.command('stats', epilog=filter_opts_epilog)
 def stats(pretty, **kw):
     '''Get search stats'''
     req = request_from_opts(**kw)
@@ -138,7 +151,7 @@ def stats(pretty, **kw):
 @click.option('--dest', type=click.Path(exists=True), help=('Location to '
               'download files to'))
 @limit_option(None)
-@cli.command('download')
+@cli.command('download', epilog=filter_opts_epilog)
 def download(asset_type, dest, limit, search_id, dry_run, **kw):
     '''Activate and download'''
     cl = clientv1()

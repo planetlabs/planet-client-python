@@ -50,27 +50,28 @@ metavar_docs = {
     property of the item-type and COMP is one of lt, lte, gt, gte and VALUE is
     the number or date to compare against.
 
-    ISO-8601 variants are supported. For example, `2017` is short for the full
-    `2017-01-01T00:00:00+00:00`.
+    Note: ISO-8601 variants are supported. For example, ``2017`` is short for
+    ``2017-01-01T00:00:00+00:00``.
     ''',
     'FIELD VALUES...': '''Specifies an 'in' query where FIELD is a property
     of the item-type and VALUES is space or comma separated text or numbers.
     ''',
     'GEOM': '''Specify a geometry in GeoJSON format either as an inline value,
-    stdin, or a file. `@-` specifies stdin and `@filename` specifies reading
-    from a file named 'filename'. Other wise, the value is assumed to be
-    GeoJSON.
+    stdin, or a file. ``@-`` specifies stdin and ``@filename`` specifies
+    reading from a file named 'filename'. Otherwise, the value is assumed to
+    be GeoJSON.
     ''',
     'FILTER': '''Specify a Data API search filter provided as JSON.
-    `@-` specifies stdin and `@filename` specifies reading from a file named
-    'filename'. Other wise, the value is assumed to be JSON.
+    ``@-`` specifies stdin and ``@filename`` specifies reading from a file
+    named 'filename'. Otherwise, the value is assumed to be JSON.
     ''',
     'ITEM-TYPE': '''Specify Item-Type(s) of interest. Case-insensitive,
-    supports glob-matching, e.g. `psscene*` means `PSScene3Band` and
-    `PSScene4Band`. The `all` value specifies every Item-Type.
+    supports glob-matching, e.g. ``psscene*`` means ``PSScene3Band`` and
+    ``PSScene4Band``. The ``all`` value specifies every Item-Type.
     ''',
     'ASSET-TYPE': '''Specify Asset-Type(s) of interest. Case-insenstive,
-    supports glob-matching, e.g. `visual*` specifies `visual` and `visual_xml`.
+    supports glob-matching, e.g. ``visual*`` specifies ``visual`` and
+    ``visual_xml``.
     '''
 }
 

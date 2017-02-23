@@ -107,11 +107,13 @@ sort_order = click.option(
     )
 )
 
+_filter_opts = [date_range_filter, range_filter, number_in_filter,
+                string_in_filter, geom_filter, filter_json_option]
+
 
 def filter_opts(fun):
     '''Decorator for all search filter options'''
-    for o in [date_range_filter, range_filter, number_in_filter,
-              string_in_filter, geom_filter, filter_json_option]:
+    for o in _filter_opts:
         fun = o(fun)
     return fun
 
