@@ -86,6 +86,6 @@ setup(name='planet',
       },
       entry_points="""
       [console_scripts]
-      planet=planet.scripts:cli
+      planet=planet.scripts:main
       """
       )
