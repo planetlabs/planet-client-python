@@ -1,7 +1,7 @@
 from planet.api.helpers import downloader
 import time
 
-SPEED_UP = 100.
+SPEED_UP = 1000.
 WRITE_DELAY = 3 / SPEED_UP
 ACTIVATE_DELAY = .5 / SPEED_UP
 DOWNLOAD_DELAY = .5 / SPEED_UP
@@ -104,7 +104,7 @@ def test_pipeline():
         astage__size=10, pstage__size=10, dstage__size=2)
     monitor_stats(dl.stats, sys.stdout.write)
     handle_interrupt(dl.shutdown, dl.download, items)
-    print dl.stats()
+    print(dl.stats())
 
 
 if __name__ == '__main__':
