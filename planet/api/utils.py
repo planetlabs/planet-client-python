@@ -150,7 +150,7 @@ def strf_timestamp(when):
 
 
 def strp_lenient(when):
-    for i in range(0, 7):
+    for i in range(0, 9):
         try:
             return datetime.strptime(when, _ISO_FMT[:i*-3 or len(_ISO_FMT)])
         except ValueError:
