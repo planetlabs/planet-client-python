@@ -228,3 +228,22 @@ class FilterJSON(click.ParamType):
         except ValueError:
             raise click.BadParameter('invalid JSON')
         return filt
+
+
+class SortSpec(CompositeParamType):
+    name = 'field order'
+    arity = 2
+
+    def convert(self, val, param, ctx):
+        if not val:
+            return ''
+        field, order = val
+        fields = ('published', 'acquired')
+        if field not in fields:
+            raise click.BadParameter(
+                'sort only supports: %s' % ' '.join(fields))
+        orders = ('asc', 'desc')
+        if order not in orders:
+            raise click.BadParameter(
+                'order only supports: %s' % ' '.join(orders))
+        return ' '.join(val)

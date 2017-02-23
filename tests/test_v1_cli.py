@@ -115,6 +115,9 @@ def test_quick_search(runner, client):
         runner.invoke(main, [
             'quick-search', '--item-type', 'all', '--limit', '1'
         ]), fake_response)
+    assert client.quick_search.call_args[1]['page_size'] == 1
+
+
 
 
 def test_create_search(runner, client):

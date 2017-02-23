@@ -23,9 +23,10 @@ from .cli import (
 from .opts import (
     asset_type_option,
     filter_opts,
-    request_opts,
     limit_option,
-    pretty
+    pretty,
+    search_request_opts,
+    sort_order
 )
 from .util import (
     filter_from_opts,
@@ -65,19 +66,22 @@ def filter_dump(**kw):
 @cli.command('quick-search')
 @limit_option(100)
 @pretty
-@request_opts
-def quick_search(limit, pretty, **kw):
+@search_request_opts
+@sort_order
+def quick_search(limit, pretty, sort, **kw):
     '''Execute a quick search'''
     req = request_from_opts(**kw)
     cl = clientv1()
-    echo_json_response(call_and_wrap(cl.quick_search, req),
-                       pretty, limit)
+    page_size = min(limit, 250)
+    echo_json_response(call_and_wrap(
+        cl.quick_search, req, page_size=page_size, sort=sort
+    ), pretty, limit)
 
 
 @cli.command('create-search')
 @pretty
 @click.option('--name', required=True)
-@request_opts
+@search_request_opts
 def create_search(pretty, **kw):
     '''Create a saved search'''
     req = request_from_opts(**kw)
@@ -87,11 +91,17 @@ def create_search(pretty, **kw):
 
 @cli.command('saved-search')
 @click.argument('search_id', default='@-', required=False)
-def saved_search(search_id):
+@sort_order
+@pretty
+@limit_option(100)
+def saved_search(search_id, sort, pretty, limit):
     '''Execute a saved search'''
     sid = read(search_id)
     cl = clientv1()
-    echo_json_response(call_and_wrap(cl.saved_search, sid), True)
+    page_size = min(limit, 250)
+    echo_json_response(call_and_wrap(
+        cl.saved_search, sid, page_size=page_size, sort=sort
+    ), limit=limit, pretty=pretty)
 
 
 @cli.command('searches')
@@ -104,7 +114,7 @@ def get_searches(quick, saved):
 
 
 @pretty
-@request_opts
+@search_request_opts
 @click.option('--interval', default='month',
               type=click.Choice(['hour', 'day', 'month', 'week', 'year']),
               help='Specify the interval to aggregate by.')
@@ -117,7 +127,7 @@ def stats(pretty, **kw):
 
 
 @asset_type_option
-@request_opts
+@search_request_opts
 @click.option('--dest', type=click.Path(exists=True), help=('Location to '
               'download files to'))
 @limit_option(None)

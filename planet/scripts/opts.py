@@ -22,6 +22,7 @@ from .types import (
     ItemType,
     NumberIn,
     Range,
+    SortSpec,
     StringIn
 )
 
@@ -100,13 +101,21 @@ ndjson_option = click.option('--ndjson', is_flag=True, help=(
 ))
 
 
+sort_order = click.option(
+    '--sort', type=SortSpec(), help=(
+        'Specify sort ordering as published/acquired asc/desc'
+    )
+)
+
+
 def filter_opts(fun):
-    '''Decorator for all filter options'''
+    '''Decorator for all search filter options'''
     for o in [date_range_filter, range_filter, number_in_filter,
               string_in_filter, geom_filter, filter_json_option]:
         fun = o(fun)
     return fun
 
 
-def request_opts(fun):
-    return item_type_option(filter_opts(fun))
+def search_request_opts(fun):
+    '''Decorator for common search request options'''
+    return sort_order(item_type_option(filter_opts(fun)))

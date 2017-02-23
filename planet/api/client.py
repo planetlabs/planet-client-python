@@ -252,6 +252,14 @@ class ClientV1(_Base):
                  workers=4):
         _Base.__init__(self, api_key, base_url, workers)
 
+    def _params(self, kw):
+        params = {}
+        if 'page_size' in kw:
+            params['_page_size'] = kw['page_size']
+        if 'sort' in kw and kw['sort']:
+            params['_sort'] = ''.join(kw['sort'])
+        return params
+
     def create_search(self, request):
         body = json.dumps(request)
         return self.dispatcher.response(models.Request(
@@ -260,18 +268,16 @@ class ClientV1(_Base):
 
     def quick_search(self, request, **kw):
         body = json.dumps(request)
-        params = {}
-        if 'page_size' in kw:
-            params['_page_size'] = kw['page_size']
-        if 'sort' in kw:
-            params['_sort'] = ''.join(kw['sort'])
+        params = self._params(kw)
         return self.dispatcher.response(models.Request(
             self._url('data/v1/quick-search'), self.auth, params=params,
             body_type=models.Items, data=body, method='POST')).get_body()
 
-    def saved_search(self, sid):
+    def saved_search(self, sid, **kw):
         path = 'data/v1/searches/%s/results' % sid
-        return self._get(self._url(path), body_type=models.Items).get_body()
+        params = self._params(kw)
+        return self._get(self._url(path), body_type=models.Items,
+                         params=params).get_body()
 
     def get_searches(self, quick=True, saved=False):
         params = {}
