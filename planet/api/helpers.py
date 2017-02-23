@@ -132,7 +132,12 @@ class _Stage(object):
             if self._tasks:
                 t = time.time()
                 self._doing = self._tasks.pop(0)
-                self._do(self._doing)
+                try:
+                    self._do(self._doing)
+                except Exception:
+                    self._running = False
+                    logging.exception('unexpected error in %s', self)
+                    return
                 self._doing = None
                 # note - this is conservative compared to timer invocation.
                 # allow _at most_ 1 'do' per min_sleep
