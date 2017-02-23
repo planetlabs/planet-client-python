@@ -79,30 +79,38 @@ class _LenientChoice(click.Choice):
     '''Like click.Choice but allows
     case-insensitive prefix matching
     optional 'all' matching
+    optional prefix matching
+    glob matching
     format fail msges for large selection of choices
 
     returns a list unlike choice (to support 'all')
     '''
 
     allow_all = False
+    allow_prefix = False
 
     def get_metavar(self, param):
         return self.name.upper()
 
     def _fail(self, msg, val, param, ctx):
-        self.fail('%s choice: %s.\nChoose from:\n\t%s)' %
+        self.fail('%s choice: %s.\nChoose from:\n\t%s' %
                   (msg, val, '\n\t'.join(self.choices)), param, ctx)
 
     def convert(self, val, param, ctx):
         lval = val.lower()
         if lval == 'all' and self.allow_all:
             return self.choices
-        matches = [c for c in self.choices if
-                   c.lower().startswith(lval)]
+        if '*' in lval:
+            pat = lval.replace('*', '.*')
+            matches = [c for c in self.choices
+                       if re.match(pat, c.lower())]
+        elif self.allow_prefix:
+            matches = [c for c in self.choices
+                       if c.lower().startswith(lval)]
+        else:
+            matches = [c for c in self.choices if c.lower() == lval]
         if not matches:
             self._fail('invalid', val, param, ctx)
-        # elif len(matches) > 1:
-        #     self._fail('ambiguous', val, param, ctx)
         else:
             return matches
 
@@ -110,6 +118,7 @@ class _LenientChoice(click.Choice):
 class ItemType(_LenientChoice):
     name = 'item-type'
     allow_all = True
+    allow_prefix = True
 
     def __init__(self):
         _LenientChoice.__init__(self, _allowed_item_types)
