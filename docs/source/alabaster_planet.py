@@ -1,13 +1,15 @@
-pblue = '#008fd5'
-sblue = '#18aae6'
-pgrey = ' #666666'
+pgrey = '#191919'
+pprimary_dark = '#006c72'
+
 
 html_theme_options = {
-    'logo': 'logo.png',
-    'body_text': '#000',
+    'logo': 'logo.svg',
+    'body_text': 'lighten(black, 20%)',
     'gray_1': pgrey,
-    'link': pblue,
-    'sidebar_search_button': pblue,
-    'sidebar_link': pblue,
+    'link': pgrey,
+    'font_family': 'Helvetica, sans-serif',
+    'font_size': '14px',
+    'sidebar_search_button': pprimary_dark,
+    'sidebar_link': pprimary_dark,
     'github_button': 'false',
 }
