@@ -41,52 +41,11 @@ Note: this might take some time and directory must exist::
 
     planet download --item-type PSScene3Band --limit 3 --dest images-download-directory
 
-V0 Examples
-=================
-
-
-Searching for Scenes
---------------------
-
-Get latest 10 scenes::
-
-    planet search --limit 10
-
-Get scenes acquired recently::
-
-    planet search --where acquired gt 2015-08-23
-
-Additional criteria can be specified with multiple 3-part where clauses::
-
-    planet search --where acquired gt 2015-08-23 --where acquired lt 2015-09-01
-
-Get scenes that intersect a single point::
-
-    planet search 'POINT(-105,40)'
-
-Get scenes that intersect a geometry specified in a file named `aoi.geojson`::
-
-    planet search aoi.geojson
-
-Get latest 10 `landsat` scenes::
-
-    planet search -s landsat --limit 10
-
-
-Downloading Scenes
-------------------
-
-Download a ortho visual scene by ID to the current directory::
-
-    planet download 20150810_235347_0b10
-
-Download 2 `landsat` `qa` band scenes by ID to the `fetched` directory::
-
-    planet download -d fetched -s landsat -product qa LC81300472015235LGN00 LC81300482015235LGN00
-
 
 Integration With Other Tools
 ----------------------------
+
+TODO THESE NEED UPDATING
 
 GitHub Gists
 ............
