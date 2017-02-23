@@ -106,7 +106,8 @@ def saved_search(search_id, sort, pretty, limit):
 
 @cli.command('searches')
 @click.option('--quick', is_flag=True, help='Quick searches')
-@click.option('--saved', is_flag=True, help='Saved searches (default)')
+@click.option('--saved', default=True, is_flag=True,
+              help='Saved searches (default)')
 def get_searches(quick, saved):
     '''List searches'''
     cl = clientv1()
