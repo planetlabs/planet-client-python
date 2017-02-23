@@ -230,7 +230,11 @@ def monitor_stats(fun, write):
         msg = '\r'
         for k in stats:
             msg += '%s:%s ' % (k, stats[k])
-        write(msg)
+        try:
+            write(msg)
+        except ValueError:
+            # someone closed the file, bail out
+            return
         last[0] = msg
         if thread.is_alive():
             threading.Timer(1, _stats).start()
