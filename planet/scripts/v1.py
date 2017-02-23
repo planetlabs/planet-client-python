@@ -129,17 +129,47 @@ def stats(pretty, **kw):
 
 @asset_type_option
 @search_request_opts
+@click.option('--search-id', type=str, help=(
+    'Use the specified search'
+))
+@click.option('--dry-run', is_flag=True, help=(
+    'Only report the number of items that would be downloaded.'
+))
 @click.option('--dest', type=click.Path(exists=True), help=('Location to '
               'download files to'))
 @limit_option(None)
 @cli.command('download')
-def download(asset_type, dest, limit, **kw):
+def download(asset_type, dest, limit, search_id, dry_run, **kw):
     '''Activate and download'''
-    req = request_from_opts(**kw)
     cl = clientv1()
     page_size = min(limit, 250)
-    items = cl.quick_search(req, page_size=page_size)
     asset_type = list(chain.from_iterable(asset_type))
+    if search_id:
+        if dry_run:
+            raise click.ClickException(
+                'dry-run not supported with saved search')
+        if any(kw[s] for s in kw if s not in ('item_type',)):
+            raise click.ClickException(
+                'search options not supported with saved search')
+        items = cl.saved_search(search_id, page_size=page_size)
+    else:
+        req = request_from_opts(**kw)
+        if dry_run:
+            req['interval'] = 'year'
+            if not req['filter']['config']:
+                raise click.ClickException(
+                    'dry-run not supported with open query')
+            stats = cl.stats(req).get()
+            item_cnt = sum([b['count'] for b in stats['buckets']])
+            asset_cnt = item_cnt * len(asset_type)
+            click.echo(
+                'would download approximately %d assets from %s items' %
+                (asset_cnt, item_cnt)
+            )
+            return
+        else:
+            items = cl.quick_search(req, page_size=page_size)
+
     dl = downloader(cl, asset_type, dest or '.')
     monitor_stats(dl.stats, lambda x: click.echo(x, nl=False))
     handle_interrupt(dl.shutdown, dl.download, items.items_iter(limit))

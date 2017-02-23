@@ -33,8 +33,14 @@ def assert_success(result, expected_output, exit_code=0):
         raise Exception(traceback.format_tb(result.exc_info[2]))
     assert result.exit_code == exit_code, result.output
     if not isinstance(expected_output, dict):
-        expected_output = json.loads(expected_output)
-    assert json.loads(result.output) == expected_output
+        try:
+            expected_output = json.loads(expected_output)
+        except ValueError:
+            pass
+    try:
+        assert json.loads(result.output) == expected_output
+    except:
+        assert result.output == expected_output
 
 
 def assert_failure(result, error):
@@ -105,6 +111,7 @@ def test_filter_options_invalid(runner):
 def configure_response(func, raw, body=models.JSON):
     body = MagicMock(name='body', spec=body)
     body.get_raw.return_value = raw
+    body.get.return_value = json.loads(raw)
     func.return_value = body
 
 
@@ -118,6 +125,53 @@ def test_quick_search(runner, client):
     assert client.quick_search.call_args[1]['page_size'] == 1
 
 
+def test_download_errors(runner):
+    '''test download cli error handling'''
+    def download(opts):
+        return runner.invoke(main, ['download'] + opts.split(' '))
+    assert_failure(
+        download(('--search-id foobar --asset-type visual --item-type all'
+                  ' --string-in a b')),
+        'search options not supported with saved search'
+    )
+    assert_failure(
+        download(('--search-id foobar --asset-type visual --item-type all'
+                  ' --dry-run')),
+        'dry-run not supported with saved search'
+    )
+    assert_failure(
+        download(('--asset-type visual --item-type all'
+                  ' --dry-run')),
+        'dry-run not supported with open query'
+    )
+
+
+def test_download_dry_run(runner, client, monkeypatch):
+    configure_response(client.stats,
+                       '{"buckets": [{"count": 1}, {"count": 2}]}')
+    assert_success(
+        runner.invoke(main, [
+            'download', '--asset-type', 'visual*', '--item-type', 'all',
+            '--dry-run', '--string-in', 'foo', 'xyz'
+        ]), 'would download approximately 6 assets from 3 items\n')
+
+
+def test_download_quick(runner, client, monkeypatch):
+    resp = MagicMock('response')
+    resp.items_iter = lambda x: None
+    client.quick_search.return_value = resp
+    dl = MagicMock(name='downloader')
+    monkeypatch.setattr('planet.scripts.v1.downloader', dl)
+    monkeypatch.setattr('planet.scripts.v1.monitor_stats',
+                        lambda *a, **kw: None)
+    monkeypatch.setattr('planet.scripts.v1.handle_interrupt',
+                        lambda *a, **kw: None)
+    assert_success(
+        runner.invoke(main, [
+            'download', '--asset-type', 'visual', '--item-type', 'all',
+            '--limit', '1'
+        ]), '')
+    print client.quick_search.call_args
 
 
 def test_create_search(runner, client):

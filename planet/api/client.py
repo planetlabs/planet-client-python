@@ -289,6 +289,7 @@ class ClientV1(_Base):
                          params=params).get_body()
 
     def stats(self, request):
+        # @todo warn if empty and filter provided - will return no results
         body = json.dumps(request)
         return self.dispatcher.response(models.Request(
             self._url('data/v1/stats'), self.auth,
