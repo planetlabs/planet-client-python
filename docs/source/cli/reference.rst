@@ -4,6 +4,86 @@ CLI Reference
 =============
 
 
+.. include:: _reference_forward.rst
+
+Option Types Formatting
+-----------------------
+
+
+.. _cli-metavar-FIELD-COMP-VALUE:
+
+
+FIELD COMP VALUE...
+...................
+
+
+A comparison query format where FIELD is a
+property of the item-type and COMP is one of lt, lte, gt, gte and VALUE is
+the number or date to compare against.
+
+ISO-8601 variants are supported. For example, `2017` is short for the full
+`2017-01-01T00:00:00+00:00`.
+
+
+.. _cli-metavar-FIELD-VALUES:
+
+
+FIELD VALUES...
+...............
+
+
+Specifies an 'in' query where FIELD is a property
+of the item-type and VALUES is space or comma separated text or numbers.
+
+
+.. _cli-metavar-GEOM:
+
+
+GEOM
+....
+
+
+Specify a geometry in GeoJSON format either as an inline value,
+stdin, or a file. `@-` specifies stdin and `@filename` specifies reading
+from a file named 'filename'. Other wise, the value is assumed to be
+GeoJSON.
+
+
+.. _cli-metavar-FILTER:
+
+
+FILTER
+......
+
+
+Specify a Data API search filter provided as JSON.
+`@-` specifies stdin and `@filename` specifies reading from a file named
+'filename'. Other wise, the value is assumed to be JSON.
+
+
+.. _cli-metavar-ITEM-TYPE:
+
+
+ITEM-TYPE
+.........
+
+
+Specify Item-Type(s) of interest. Case-insensitive,
+supports glob-matching, e.g. `psscene*` means `PSScene3Band` and
+`PSScene4Band`. The `all` value specifies every Item-Type.
+
+
+.. _cli-metavar-ASSET-TYPE:
+
+
+ASSET-TYPE
+..........
+
+
+Specify Asset-Type(s) of interest. Case-insenstive,
+supports glob-matching, e.g. `visual*` specifies `visual` and `visual_xml`.
+
+
 General Options
 ---------------
 
@@ -18,13 +98,13 @@ General Options
 
 
 
-``--api-key``
+``--api_key``
    Valid API key - or via env variable PL_API_KEY
 
 
 
-``--base-url``
-   Optional for testing
+``--base_url``
+   Change the base Planet API URL
 
 
 
@@ -37,15 +117,15 @@ Commands
 --------
 
 
-:ref:`cli-command-download` Download full scene image(s).
+:ref:`cli-command-create-search` Create a saved search
 
 
 
-:ref:`cli-command-download-quads` Download quad geotiffs
+:ref:`cli-command-download` Activate and download
 
 
 
-:ref:`cli-command-get-workspace` Get workspace.
+:ref:`cli-command-filter` Build a AND filter from the specified filter...
 
 
 
@@ -57,41 +137,89 @@ Commands
 
 
 
-:ref:`cli-command-list-workspaces` List workspaces.
+:ref:`cli-command-quick-search` Execute a quick search
 
 
 
-:ref:`cli-command-metadata` Get scene metadata
+:ref:`cli-command-saved-search` Execute a saved search
 
 
 
-:ref:`cli-command-mosaic` Describe a specified mosaic
+:ref:`cli-command-searches` List searches
 
 
 
-:ref:`cli-command-mosaic-quads` Get quad info for the specified mosaic
+:ref:`cli-command-stats` Get search stats
 
 
 
-:ref:`cli-command-mosaics` List all mosaics
+.. index:: create-search
+
+.. _cli-command-create-search:
 
 
-
-:ref:`cli-command-search` Get a list of scenes.
-
-
-
-:ref:`cli-command-set-workspace` Create or modify a workspace
+create-search
+.............
 
 
+Create a saved search
 
-:ref:`cli-command-sync` Synchronize a directory to a specified AOI or...
+Usage: create-search [OPTIONS]
 
+.. list-table:: Options
+   :widths: 10 80 10
+   :header-rows: 1
 
+   * - Name
+     - Description
 
-:ref:`cli-command-thumbnails` Fetch scene thumbnail(s)
+     - Format
 
+   * - pretty
+     - Format JSON output
 
+     - BOOLEAN
+
+   * - name
+     - 
+
+     - TEXT
+
+   * - item_type
+     - Specify item type(s)
+
+     - :ref:`cli-metavar-item-type`
+
+   * - filter_json
+     - Use the specified filter
+
+       DEFAULT: `@-`
+     - :ref:`cli-metavar-filter`
+
+   * - geom
+     - Specify a geometry filter as geojson. "-" for stdin or @file
+
+     - :ref:`cli-metavar-geom`
+
+   * - string_in
+     - Filter field by string in.
+
+     - :ref:`cli-metavar-field-values`
+
+   * - number_in
+     - Filter field by numeric in.
+
+     - :ref:`cli-metavar-field-values`
+
+   * - range
+     - Filter field by numeric range.
+
+     - :ref:`cli-metavar-field-comp-value`
+
+   * - date
+     - Filter field by date.
+
+     - :ref:`cli-metavar-field-comp-value`
 
 .. index:: download
 
@@ -102,61 +230,124 @@ download
 ........
 
 
-Download full scene image(s).
+Activate and download
 
-Usage: download [OPTIONS] [SCENE_IDS]...
+Usage: download [OPTIONS]
 
 .. list-table:: Options
+   :widths: 10 80 10
    :header-rows: 1
 
    * - Name
      - Description
-   * - product
-     - 
+
+     - Format
+
+   * - limit
+     - Limit the number of items.
+
+     - NUMBER
+
    * - dest
-     - Destination directory
-   * - scene_type
-     - Type of scene
-.. index:: download-quads
+     - Location to download files to
 
-.. _cli-command-download-quads:
+     - PATH
+
+   * - date
+     - Filter field by date.
+
+     - :ref:`cli-metavar-field-comp-value`
+
+   * - range
+     - Filter field by numeric range.
+
+     - :ref:`cli-metavar-field-comp-value`
+
+   * - number_in
+     - Filter field by numeric in.
+
+     - :ref:`cli-metavar-field-values`
+
+   * - string_in
+     - Filter field by string in.
+
+     - :ref:`cli-metavar-field-values`
+
+   * - geom
+     - Specify a geometry filter as geojson. "-" for stdin or @file
+
+     - :ref:`cli-metavar-geom`
+
+   * - filter_json
+     - Use the specified filter
+
+       DEFAULT: `@-`
+     - :ref:`cli-metavar-filter`
+
+   * - item_type
+     - Specify item type(s)
+
+     - :ref:`cli-metavar-item-type`
+
+   * - asset_type
+     - Specify asset type(s)
+
+     - :ref:`cli-metavar-asset-type`
+
+.. index:: filter
+
+.. _cli-command-filter:
 
 
-download-quads
-..............
+filter
+......
 
 
-Download quad geotiffs
+Build a AND filter from the specified filter options and output to
+stdout
 
-Usage: download-quads [OPTIONS] MOSAIC_NAME [QUAD_IDS]...
+Usage: filter [OPTIONS]
 
 .. list-table:: Options
+   :widths: 10 80 10
    :header-rows: 1
 
    * - Name
      - Description
-   * - dest
-     - Destination directory
-.. index:: get-workspace
 
-.. _cli-command-get-workspace:
+     - Format
 
+   * - filter_json
+     - Use the specified filter
 
-get-workspace
-.............
+       DEFAULT: `@-`
+     - :ref:`cli-metavar-filter`
 
+   * - geom
+     - Specify a geometry filter as geojson. "-" for stdin or @file
 
-Get workspace.
+     - :ref:`cli-metavar-geom`
 
-Usage: get-workspace [OPTIONS] ID
+   * - string_in
+     - Filter field by string in.
 
-.. list-table:: Options
-   :header-rows: 1
+     - :ref:`cli-metavar-field-values`
 
-   * - Name
-     - Description
-   * - pretty
-     - Format JSON output
+   * - number_in
+     - Filter field by numeric in.
+
+     - :ref:`cli-metavar-field-values`
+
+   * - range
+     - Filter field by numeric range.
+
+     - :ref:`cli-metavar-field-comp-value`
+
+   * - date
+     - Filter field by date.
+
+     - :ref:`cli-metavar-field-comp-value`
+
 .. index:: help
 
 .. _cli-command-help:
@@ -184,223 +375,204 @@ Login using email/password
 Usage: init [OPTIONS]
 
 .. list-table:: Options
+   :widths: 10 80 10
    :header-rows: 1
 
    * - Name
      - Description
+
+     - Format
+
    * - email
      - 
+
+     - TEXT
+
    * - password
      - 
-.. index:: list-workspaces
 
-.. _cli-command-list-workspaces:
+     - TEXT
 
+.. index:: quick-search
 
-list-workspaces
-...............
-
-
-List workspaces.
-
-Usage: list-workspaces [OPTIONS]
-
-.. list-table:: Options
-   :header-rows: 1
-
-   * - Name
-     - Description
-   * - pretty
-     - Format JSON output
-.. index:: metadata
-
-.. _cli-command-metadata:
+.. _cli-command-quick-search:
 
 
-metadata
-........
-
-
-Get scene metadata
-
-Usage: metadata [OPTIONS] SCENE_ID
-
-.. list-table:: Options
-   :header-rows: 1
-
-   * - Name
-     - Description
-   * - scene_type
-     - Type of scene
-   * - pretty
-     - Format JSON output
-.. index:: mosaic
-
-.. _cli-command-mosaic:
-
-
-mosaic
-......
-
-
-Describe a specified mosaic
-
-Usage: mosaic [OPTIONS] MOSAIC_NAME
-
-.. list-table:: Options
-   :header-rows: 1
-
-   * - Name
-     - Description
-   * - pretty
-     - Format JSON output
-.. index:: mosaic-quads
-
-.. _cli-command-mosaic-quads:
-
-
-mosaic-quads
+quick-search
 ............
 
 
-Get quad info for the specified mosaic
+Execute a quick search
 
-Usage: mosaic-quads [OPTIONS] MOSAIC_NAME
+Usage: quick-search [OPTIONS]
 
 .. list-table:: Options
+   :widths: 10 80 10
    :header-rows: 1
 
    * - Name
      - Description
+
+     - Format
+
    * - limit
      - Limit the number of items.
+
+       DEFAULT: `100`
+     - NUMBER
+
    * - pretty
      - Format JSON output
-.. index:: mosaics
 
-.. _cli-command-mosaics:
+     - BOOLEAN
+
+   * - item_type
+     - Specify item type(s)
+
+     - :ref:`cli-metavar-item-type`
+
+   * - filter_json
+     - Use the specified filter
+
+       DEFAULT: `@-`
+     - :ref:`cli-metavar-filter`
+
+   * - geom
+     - Specify a geometry filter as geojson. "-" for stdin or @file
+
+     - :ref:`cli-metavar-geom`
+
+   * - string_in
+     - Filter field by string in.
+
+     - :ref:`cli-metavar-field-values`
+
+   * - number_in
+     - Filter field by numeric in.
+
+     - :ref:`cli-metavar-field-values`
+
+   * - range
+     - Filter field by numeric range.
+
+     - :ref:`cli-metavar-field-comp-value`
+
+   * - date
+     - Filter field by date.
+
+     - :ref:`cli-metavar-field-comp-value`
+
+.. index:: saved-search
+
+.. _cli-command-saved-search:
 
 
-mosaics
-.......
+saved-search
+............
 
 
-List all mosaics
+Execute a saved search
 
-Usage: mosaics [OPTIONS]
+Usage: saved-search [OPTIONS] [SEARCH_ID]
+
+.. index:: searches
+
+.. _cli-command-searches:
+
+
+searches
+........
+
+
+List searches
+
+Usage: searches [OPTIONS]
 
 .. list-table:: Options
+   :widths: 10 80 10
    :header-rows: 1
 
    * - Name
      - Description
-   * - limit
-     - Limit the number of items.
+
+     - Format
+
+   * - quick
+     - Quick searches
+
+     - BOOLEAN
+
+   * - saved
+     - Saved searches (default)
+
+     - BOOLEAN
+
+.. index:: stats
+
+.. _cli-command-stats:
+
+
+stats
+.....
+
+
+Get search stats
+
+Usage: stats [OPTIONS]
+
+.. list-table:: Options
+   :widths: 10 80 10
+   :header-rows: 1
+
+   * - Name
+     - Description
+
+     - Format
+
+   * - interval
+     - Specify the interval to aggregate by.
+
+       DEFAULT: `month`
+     - [hour|day|month|week|year]
+
+   * - date
+     - Filter field by date.
+
+     - :ref:`cli-metavar-field-comp-value`
+
+   * - range
+     - Filter field by numeric range.
+
+     - :ref:`cli-metavar-field-comp-value`
+
+   * - number_in
+     - Filter field by numeric in.
+
+     - :ref:`cli-metavar-field-values`
+
+   * - string_in
+     - Filter field by string in.
+
+     - :ref:`cli-metavar-field-values`
+
+   * - geom
+     - Specify a geometry filter as geojson. "-" for stdin or @file
+
+     - :ref:`cli-metavar-geom`
+
+   * - filter_json
+     - Use the specified filter
+
+       DEFAULT: `@-`
+     - :ref:`cli-metavar-filter`
+
+   * - item_type
+     - Specify item type(s)
+
+     - :ref:`cli-metavar-item-type`
+
    * - pretty
      - Format JSON output
-.. index:: search
 
-.. _cli-command-search:
+     - BOOLEAN
 
-
-search
-......
-
-
-Get a list of scenes.
-
-Usage: search [OPTIONS] [AOI]
-
-.. list-table:: Options
-   :header-rows: 1
-
-   * - Name
-     - Description
-   * - limit
-     - Limit the number of items.
-   * - where
-     - Provide additional search criteria. See https://www.planet.com/docs/v0/scenes/#metadata for search metadata fields.
-   * - workspace
-     - Workspace ID
-   * - scene_type
-     - Type of scene
-   * - pretty
-     - Format JSON output
-.. index:: set-workspace
-
-.. _cli-command-set-workspace:
-
-
-set-workspace
-.............
-
-
-Create or modify a workspace
-
-Usage: set-workspace [OPTIONS] [WORKSPACE]
-
-.. list-table:: Options
-   :header-rows: 1
-
-   * - Name
-     - Description
-   * - id
-     - If provided, update the workspace with this id
-   * - aoi
-     - The geometry to use
-   * - name
-     - Workspace name
-   * - create
-     - Specify workspace creation
-.. index:: sync
-
-.. _cli-command-sync:
-
-
-sync
-....
-
-
-Synchronize a directory to a specified AOI or workspace
-
-Usage: sync [OPTIONS] DESTINATION
-
-.. list-table:: Options
-   :header-rows: 1
-
-   * - Name
-     - Description
-   * - dryrun
-     - Do not actually download
-   * - limit
-     - Limit the number of items.
-   * - workspace
-     - Workspace ID
-   * - scene_type
-     - Type of scene
-.. index:: thumbnails
-
-.. _cli-command-thumbnails:
-
-
-thumbnails
-..........
-
-
-Fetch scene thumbnail(s)
-
-Usage: thumbnails [OPTIONS] [SCENE_IDS]...
-
-.. list-table:: Options
-   :header-rows: 1
-
-   * - Name
-     - Description
-   * - fmt
-     - Thumbnail format
-   * - size
-     - Thumbnail size
-   * - dest
-     - Destination directory
-   * - scene_type
-     - Type of scene

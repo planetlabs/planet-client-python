@@ -4,8 +4,11 @@ Generate CLI reference ReST for Sphinx. Write the file cli/reference.rst
 Ideally, this would be more tightly integrated with Sphinx (as an extension),
 but this 'works' for now.
 '''
+import click
 from planet import scripts
+from planet.scripts.types import metavar_docs
 from os import path
+import re
 
 root = path.dirname(__file__)
 dest = path.join(root, 'cli')
@@ -31,36 +34,61 @@ def list_row(e, row):
     for r in row[1:]:
         parts = [''] if not r else r.split('\n')
         e.write('     - %s\n' % parts[0])
-        if len(parts) > 1:
-            e.write('\n')
-            e.write('       ``%s``' % ' '.join(parts[1:]))
-            e.write('\n')
+        for p in parts[1:]:
+            e.write('\n       ' + p)
+        e.write('\n')
 
 
 def param_block(e, cmd):
     params = [p for p in cmd.params
-              if isinstance(p, scripts.click.core.Option)]
+              if isinstance(p, click.core.Option)]
     if not params:
         return
     e.write('.. list-table:: Options\n')
-    e.write('   :widths: 10 90\n')
+    e.write('   :widths: 10 80 10\n')
     e.write('   :header-rows: 1\n\n')
-    list_row(e, ('Name', 'Description'))
+    list_row(e, ('Name', 'Description', 'Format'))
     for p in params:
-        list_row(e, (p.name, p.help))
+        metavar = p.make_metavar()
+        # @todo enable once metavar target generation in place
+        if metavar in metavar_docs:
+            target = metavar.replace(' ', '-').replace('...', '')
+            link = ':ref:`cli-metavar-%s`' % (target.lower())
+        else:
+            link = metavar
+        desc = p.help
+        if p.default:
+            desc = desc + '\nDEFAULT: `%s`' % p.default
+        list_row(e, (p.name, desc, link))
 
 
 def generate_cli_reference(e):
     e.e('.. THIS IS A GENERATED FILE')
     e.e(h('CLI Reference', '='))
+    e.e('.. include:: _reference_forward.rst')
+
+    e.e(h('Option Types Formatting'))
+    seen = set()
+    for cmd in scripts.main.commands.values():
+        params = [p for p in cmd.params
+                  if isinstance(p, click.core.Option)]
+        for p in params:
+            metavar = p.make_metavar()
+            if metavar in metavar_docs and metavar not in seen:
+                target = metavar.replace(' ', '-').replace('...', '')
+                e.e('.. _cli-metavar-%s:\n' % target)
+                e.e(h(metavar, '.'))
+                cleaned, _ = re.subn('  +', '', metavar_docs[metavar])
+                e.e(cleaned)
+                seen.add(metavar)
 
     e.e(h('General Options'))
-    for p in scripts.cli.params:
+    for p in scripts.main.params:
         e.e('``--%s``\n   %s\n\n' % (p.name, p.help))
 
     e.e(h('Commands'))
-    commands = sorted(scripts.cli.commands.values(),
-                      lambda a, b: cmp(a.name, b.name))
+    commands = list(sorted(scripts.main.commands.values(),
+                    lambda a, b: cmp(a.name, b.name)))
     for cmd in commands:
         e.e(':ref:`%s` %s\n\n' % (cmd_ref(cmd), cmd.short_help))
 
@@ -69,7 +97,7 @@ def generate_cli_reference(e):
         e.e('.. _%s:\n' % cmd_ref(cmd))
         e.e(h(cmd.name, '.'))
         e.e(cmd.help)
-        ctx = scripts.click.Context(cmd)
+        ctx = click.Context(cmd)
         ctx.info_name = cmd.name
         e.e(ctx.get_usage())
         param_block(e, cmd)
