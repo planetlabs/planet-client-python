@@ -21,8 +21,8 @@ A comparison query format where FIELD is a
 property of the item-type and COMP is one of lt, lte, gt, gte and VALUE is
 the number or date to compare against.
 
-ISO-8601 variants are supported. For example, `2017` is short for the full
-`2017-01-01T00:00:00+00:00`.
+Note: ISO-8601 variants are supported. For example, ``2017`` is short for
+``2017-01-01T00:00:00+00:00``.
 
 
 .. _cli-metavar-FIELD-VALUES:
@@ -44,9 +44,9 @@ GEOM
 
 
 Specify a geometry in GeoJSON format either as an inline value,
-stdin, or a file. `@-` specifies stdin and `@filename` specifies reading
-from a file named 'filename'. Other wise, the value is assumed to be
-GeoJSON.
+stdin, or a file. ``@-`` specifies stdin and ``@filename`` specifies
+reading from a file named 'filename'. Otherwise, the value is assumed to
+be GeoJSON.
 
 
 .. _cli-metavar-FILTER:
@@ -57,8 +57,8 @@ FILTER
 
 
 Specify a Data API search filter provided as JSON.
-`@-` specifies stdin and `@filename` specifies reading from a file named
-'filename'. Other wise, the value is assumed to be JSON.
+``@-`` specifies stdin and ``@filename`` specifies reading from a file
+named 'filename'. Otherwise, the value is assumed to be JSON.
 
 
 .. _cli-metavar-ITEM-TYPE:
@@ -69,8 +69,8 @@ ITEM-TYPE
 
 
 Specify Item-Type(s) of interest. Case-insensitive,
-supports glob-matching, e.g. `psscene*` means `PSScene3Band` and
-`PSScene4Band`. The `all` value specifies every Item-Type.
+supports glob-matching, e.g. ``psscene*`` means ``PSScene3Band`` and
+``PSScene4Band``. The ``all`` value specifies every Item-Type.
 
 
 .. _cli-metavar-ASSET-TYPE:
@@ -81,7 +81,8 @@ ASSET-TYPE
 
 
 Specify Asset-Type(s) of interest. Case-insenstive,
-supports glob-matching, e.g. `visual*` specifies `visual` and `visual_xml`.
+supports glob-matching, e.g. ``visual*`` specifies ``visual`` and
+``visual_xml``.
 
 
 General Options
@@ -125,7 +126,7 @@ Commands
 
 
 
-:ref:`cli-command-filter` Build a AND filter from the specified filter...
+:ref:`cli-command-filter` Output a AND filter as JSON to stdout.
 
 
 
@@ -137,7 +138,7 @@ Commands
 
 
 
-:ref:`cli-command-quick-search` Execute a quick search
+:ref:`cli-command-quick-search` Execute a quick search.
 
 
 
@@ -184,6 +185,11 @@ Usage: create-search [OPTIONS]
      - 
 
      - TEXT
+
+   * - sort
+     - Specify sort ordering as published/acquired asc/desc
+
+     - FIELD ORDER...
 
    * - item_type
      - Specify item type(s)
@@ -253,6 +259,16 @@ Usage: download [OPTIONS]
 
      - PATH
 
+   * - dry_run
+     - Only report the number of items that would be downloaded.
+
+     - BOOLEAN
+
+   * - search_id
+     - Use the specified search
+
+     - TEXT
+
    * - date
      - Filter field by date.
 
@@ -289,6 +305,11 @@ Usage: download [OPTIONS]
 
      - :ref:`cli-metavar-item-type`
 
+   * - sort
+     - Specify sort ordering as published/acquired asc/desc
+
+     - FIELD ORDER...
+
    * - asset_type
      - Specify asset type(s)
 
@@ -303,8 +324,12 @@ filter
 ......
 
 
-Build a AND filter from the specified filter options and output to
-stdout
+Output a AND filter as JSON to stdout.
+
+If provided using --filter-json, combine the filters.
+
+The output is suitable for use in other commands via the
+--filter-json option.
 
 Usage: filter [OPTIONS]
 
@@ -402,7 +427,7 @@ quick-search
 ............
 
 
-Execute a quick search
+Execute a quick search.
 
 Usage: quick-search [OPTIONS]
 
@@ -425,6 +450,11 @@ Usage: quick-search [OPTIONS]
      - Format JSON output
 
      - BOOLEAN
+
+   * - sort
+     - Specify sort ordering as published/acquired asc/desc
+
+     - FIELD ORDER...
 
    * - item_type
      - Specify item type(s)
@@ -462,6 +492,11 @@ Usage: quick-search [OPTIONS]
 
      - :ref:`cli-metavar-field-comp-value`
 
+   * - sort
+     - Specify sort ordering as published/acquired asc/desc
+
+     - FIELD ORDER...
+
 .. index:: saved-search
 
 .. _cli-command-saved-search:
@@ -474,6 +509,31 @@ saved-search
 Execute a saved search
 
 Usage: saved-search [OPTIONS] [SEARCH_ID]
+
+.. list-table:: Options
+   :widths: 10 80 10
+   :header-rows: 1
+
+   * - Name
+     - Description
+
+     - Format
+
+   * - sort
+     - Specify sort ordering as published/acquired asc/desc
+
+     - FIELD ORDER...
+
+   * - pretty
+     - Format JSON output
+
+     - BOOLEAN
+
+   * - limit
+     - Limit the number of items.
+
+       DEFAULT: `100`
+     - NUMBER
 
 .. index:: searches
 
@@ -505,6 +565,7 @@ Usage: searches [OPTIONS]
    * - saved
      - Saved searches (default)
 
+       DEFAULT: `True`
      - BOOLEAN
 
 .. index:: stats
@@ -570,6 +631,11 @@ Usage: stats [OPTIONS]
      - Specify item type(s)
 
      - :ref:`cli-metavar-item-type`
+
+   * - sort
+     - Specify sort ordering as published/acquired asc/desc
+
+     - FIELD ORDER...
 
    * - pretty
      - Format JSON output
