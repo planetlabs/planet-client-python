@@ -261,12 +261,30 @@ class ClientV1(_Base):
         return params
 
     def create_search(self, request):
+        '''Create a new saved search from the specified request.
+        The request must contain a ``name`` property.
+
+        :param request: see :ref:`api-search-request`
+        :returns: :py:class:`planet.api.models.JSON`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
         body = json.dumps(request)
         return self.dispatcher.response(models.Request(
             self._url('data/v1/searches/'), self.auth,
             body_type=models.JSON, data=body, method='POST')).get_body()
 
     def quick_search(self, request, **kw):
+        '''Execute a quick search with the specified request.
+
+        :param request: see :ref:`api-search-request`
+        :param \**kw: See Options below
+        :returns: :py:class:`planet.api.models.Items`
+        :raises planet.api.exceptions.APIException: On API error.
+
+        :Options:
+        * page_size (int): Size of response pages
+        * sort (string): Sorting order in the form `field (asc|desc)`
+        '''
         body = json.dumps(request)
         params = self._params(kw)
         return self.dispatcher.response(models.Request(
@@ -274,6 +292,16 @@ class ClientV1(_Base):
             body_type=models.Items, data=body, method='POST')).get_body()
 
     def saved_search(self, sid, **kw):
+        '''Execute a saved search by search id.
+
+        :param sid string: The id of the search
+        :returns: :py:class:`planet.api.models.Items`
+        :raises planet.api.exceptions.APIException: On API error.
+
+        :Options:
+        * page_size (int): Size of response pages
+        * sort (string): Sorting order in the form `field (asc|desc)`
+        '''
         path = 'data/v1/searches/%s/results' % sid
         params = self._params(kw)
         return self._get(self._url(path), body_type=models.Items,

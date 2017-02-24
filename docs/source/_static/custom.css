@@ -44,3 +44,8 @@ pre span {
 {
   color: #b294bb;
 }
+
+.highlight-javascript .highlight .p
+{
+  color: #f2f2f2;
+}

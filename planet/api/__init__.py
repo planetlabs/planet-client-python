@@ -15,11 +15,11 @@
 from .exceptions import (APIException, BadQuery, InvalidAPIKey)
 from .exceptions import (NoPermission, MissingResource, OverQuota)
 from .exceptions import (ServerError, RequestCancelled)
-from .client import (Client, ClientV1)
+from .client import (ClientV1)
 from .utils import write_to_file
 
 __all__ = [
-    Client, ClientV1, APIException, BadQuery, InvalidAPIKey,
+    ClientV1, APIException, BadQuery, InvalidAPIKey,
     NoPermission, MissingResource, OverQuota, ServerError, RequestCancelled,
     write_to_file
 ]

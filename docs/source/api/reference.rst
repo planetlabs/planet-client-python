@@ -16,11 +16,42 @@ The Client will resolve the API_KEY from the operating system environment using 
 
 .. code-block:: python
 
-   client = api.Client()
+   client = api.ClientV1()
 
-.. autoclass:: Client()
+.. autoclass:: ClientV1()
    :members:
 
+
+.. _api-search-request:
+
+Client Search Requests
+----------------------
+
+The general search request form is a Python dict, for example.
+
+.. code-block:: javascript
+
+  {
+    "item_types": ['PSScene3Band'],
+    "filter": {
+      "type": "AndFilter",
+      "config": [
+        "type": "RangeFilter",
+        "field_name": "cloud_cover",
+        "config": {
+          "lte": 0.5
+        }
+      ]
+    }
+  }
+
+The ``stats`` function requires an additional ``interval`` property in the
+request body.
+
+When creating a saved search, the ``name`` property in the request body will
+be used to give the new search a name.
+
+.. note:: Request and Filter logic is not validated on the client.
 
 
 Client Return Values
@@ -64,6 +95,17 @@ To handle assembling the items from each page into a collection again and stream
 .. autoclass:: _Paged()
    :members:
 
-.. py:class:: Scenes()
+.. py:class:: Items()
 
-   Scenes is a body that contains a FeatureCollection so when using `items_iter`, it will yield `Feature` GeoJSON objects.
+   Items is a body that contains a FeatureCollection so when using `items_iter`, it will yield `Feature` GeoJSON objects.
+
+Client Exceptions
+-----------------
+
+In addition to other exceptions, expected or otherwise, each HTTP operation has
+the potential to raise one of the following exceptions:
+
+.. py:module:: planet.api.exceptions
+
+.. automodule:: planet.api.exceptions
+   :members:

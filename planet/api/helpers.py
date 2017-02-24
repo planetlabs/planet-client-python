@@ -57,7 +57,7 @@ class _Stage(object):
 
     search-iter -> activation -> polling -> download
 
-    Downloader syncrhronously drains the download stage allowing for completion
+    Downloader synchronously drains the download stage allowing for completion
     and cancellation of any in-flight backgrounded requests.
 
     Where search-iter is an endless iterator of 'item' features from the API.
