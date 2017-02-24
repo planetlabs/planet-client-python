@@ -171,7 +171,7 @@ def test_download_quick(runner, client, monkeypatch):
             'download', '--asset-type', 'visual', '--item-type', 'all',
             '--limit', '1'
         ]), '')
-    print client.quick_search.call_args
+    assert client.quick_search.call_args[1]['page_size'] == 1
 
 
 def test_create_search(runner, client):
