@@ -1,8 +1,11 @@
 GH_PAGES_SOURCES = planet docs Makefile
 
 check:
-	py.test tests
+	py.test --doctest-modules planet tests
 	flake8 planet tests
+
+coverage:
+	py.test --doctest-modules --cov planet --cov-report=html:htmlcov tests planet/api
 
 pex:
 	# disable-cache seemed required or the older version would be used
@@ -11,6 +14,10 @@ pex:
 html-docs:
 	python docs/source/generate.py
 	$(MAKE) -C docs clean html
+
+auto-docs:
+	which sphinx-autobuild || ( echo 'PLEASE INSTALL sphinx-autobuild: pip install sphinx-autobuild'; exit 1 )
+	sphinx-autobuild --watch planet docs/source docs/build/html
 
 docs-zip: html-docs
 	cp -a docs/build/html planet-docs
