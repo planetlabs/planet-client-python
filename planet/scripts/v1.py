@@ -155,7 +155,7 @@ def stats(pretty, **kw):
 def download(asset_type, dest, limit, search_id, dry_run, **kw):
     '''Activate and download'''
     cl = clientv1()
-    page_size = min(limit, 250)
+    page_size = min(limit or 250, 250)
     asset_type = list(chain.from_iterable(asset_type))
     if search_id:
         if dry_run:
