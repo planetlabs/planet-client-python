@@ -36,7 +36,7 @@ from .util import (
     call_and_wrap,
     echo_json_response,
     read,
-    request_from_opts,
+    search_req_from_opts,
 )
 from planet.api.utils import (
     handle_interrupt,
@@ -83,7 +83,7 @@ def filter_dump(**kw):
 @sort_order
 def quick_search(limit, pretty, sort, **kw):
     '''Execute a quick search.'''
-    req = request_from_opts(**kw)
+    req = search_req_from_opts(**kw)
     cl = clientv1()
     page_size = min(limit, 250)
     echo_json_response(call_and_wrap(
@@ -97,7 +97,7 @@ def quick_search(limit, pretty, sort, **kw):
 @search_request_opts
 def create_search(pretty, **kw):
     '''Create a saved search'''
-    req = request_from_opts(**kw)
+    req = search_req_from_opts(**kw)
     cl = clientv1()
     echo_json_response(call_and_wrap(cl.create_search, req), pretty)
 
@@ -135,7 +135,7 @@ def get_searches(quick, saved):
 @cli.command('stats', epilog=filter_opts_epilog)
 def stats(pretty, **kw):
     '''Get search stats'''
-    req = request_from_opts(**kw)
+    req = search_req_from_opts(**kw)
     cl = clientv1()
     echo_json_response(call_and_wrap(cl.stats, req), pretty)
 
@@ -166,7 +166,7 @@ def download(asset_type, dest, limit, search_id, dry_run, **kw):
                 'search options not supported with saved search')
         items = cl.saved_search(search_id, page_size=page_size)
     else:
-        req = request_from_opts(**kw)
+        req = search_req_from_opts(**kw)
         if dry_run:
             req['interval'] = 'year'
             if not req['filter']['config']:

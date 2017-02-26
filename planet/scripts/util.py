@@ -78,12 +78,12 @@ def filter_from_opts(**kw):
     return active
 
 
-def request_from_opts(**kw):
+def search_req_from_opts(**kw):
     item_types = kw.pop('item_type')
     name = kw.pop('name', '')
     interval = kw.pop('interval', '')
     filt = filter_from_opts(**kw)
-    return filters.build_request(
+    return filters.build_search_request(
         filt, item_types, name=name, interval=interval)
 
 

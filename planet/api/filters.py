@@ -13,11 +13,16 @@
 # limitations under the License.
 
 
-def build_request(filter_like, item_types, name=None, interval=None):
-    '''Accept a filter or request containing a filter body and return a data
-    search request for use with search and stats. If filter_like is a request,
-    item_types will be merged and, if name or interval is provided, will
-    replace any existing values.'''
+def build_search_request(filter_like, item_types, name=None, interval=None):
+    '''Build a data-api search request body for the specified item_types.
+    If 'filter_like' is a request, item_types will be merged and, if name or
+    interval is provided, will replace any existing values.
+
+    :param dict filter_like: a filter or request with a filter
+    :param sequence(str) item_types: item-types to specify in the request
+    :param str name: optional name
+    :param str interval: optional interval [year, month, week, day]
+    '''
     filter_spec = filter_like.get('filter', filter_like)
     all_items = list(set(filter_like.get('item_types', [])).union(*item_types))
     name = filter_like.get('name', name)
