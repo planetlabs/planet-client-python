@@ -45,6 +45,9 @@ def assert_success(result, expected_output, exit_code=0):
 
 def assert_failure(result, error):
     assert result.exit_code != 0
+    if error not in result.output:
+        print(result.output)
+        raise Exception(traceback.format_tb(result.exc_info[2]))
     assert error in result.output
 
 
@@ -185,6 +188,10 @@ def test_create_search(runner, client):
         runner.invoke(main, [
             'create-search', '--item-type', 'all', '--name', 'new-search'
         ]), fake_response)
+    args, kw = client.create_search.call_args
+    req = args[0]
+    assert 'filter' in req
+    assert req['name'] == 'new-search'
 
 
 def test_geom_filter(runner, client):
