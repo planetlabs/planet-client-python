@@ -74,9 +74,13 @@ def check_status(response):
         401: exceptions.InvalidAPIKey,
         403: exceptions.NoPermission,
         404: exceptions.MissingResource,
-        429: exceptions.OverQuota,
+        429: exceptions.TooManyRequests,
         500: exceptions.ServerError
     }.get(status, None)
+
+    # differentiate between over quota and rate-limiting
+    if status == 429 and 'quota' in response.text.lower():
+        exception = exceptions.OverQuota
 
     if exception:
         raise exception(response.text)

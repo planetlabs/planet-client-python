@@ -23,7 +23,7 @@ from requests import Session
 from . utils import check_status
 from . models import Response
 from . exceptions import InvalidAPIKey
-from . exceptions import OverQuota
+from . exceptions import TooManyRequests
 from requests.compat import urlparse
 
 
@@ -114,7 +114,7 @@ def _do_request(sess, req, **kwargs):
             if hasattr(resp, 'status_code'):
                 check_status(resp)
             return resp
-        except OverQuota:
+        except TooManyRequests:
             time.sleep(1)
     raise Exception('too many throttles, giving up')
 

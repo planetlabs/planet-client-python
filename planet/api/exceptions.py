@@ -38,8 +38,13 @@ class MissingResource(APIException):
     pass
 
 
+class TooManyRequests(APIException):
+    '''Too many requests, HTTP 429'''
+    pass
+
+
 class OverQuota(APIException):
-    '''Too many requests or exceeding quote, HTTP 429'''
+    '''Quota exceeded, HTTP 429'''
     pass
 
 

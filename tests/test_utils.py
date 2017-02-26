@@ -11,9 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from mock import Mock
+import pytest
 from datetime import datetime
-import json
 from planet.api import utils
+from planet.api import exceptions
 from _common import read_fixture
 
 
@@ -73,3 +75,14 @@ def test_probably_geojson():
     # yep
     assert utils.probably_geojson({'type': 'Point'}) == {'type': 'Point'}
     assert utils.probably_geojson('{"type": "Point"}') == {'type': 'Point'}
+
+
+def test_check_status():
+    r = Mock()
+    r.status_code = 429
+    r.text = ''
+    with pytest.raises(exceptions.TooManyRequests):
+        utils.check_status(r)
+    r.text = 'exceeded QUOTA dude'
+    with pytest.raises(exceptions.OverQuota):
+        utils.check_status(r)
