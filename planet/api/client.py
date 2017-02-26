@@ -156,14 +156,21 @@ class ClientV1(_Base):
         return self._get(self._url(path), body_type=models.Items,
                          params=params).get_body()
 
-    def get_searches(self, quick=True, saved=False):
+    def get_searches(self, quick=False, saved=True):
+        '''Get searches listing.
+
+        :param quick bool: Include quick searches (default False)
+        :param quick saved: Include saved searches (default True)
+        :returns: :py:class:`planet.api.models.Searches`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
         params = {}
         if saved and not quick:
             params['search_type'] = 'saved'
         elif quick:
             params['search_type'] = 'quick'
         return self._get(self._url('data/v1/searches/'),
-                         params=params).get_body()
+                         body_type=models.Searches, params=params).get_body()
 
     def stats(self, request):
         # @todo warn if empty and filter provided - will return no results

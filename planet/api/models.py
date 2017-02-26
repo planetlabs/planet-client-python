@@ -92,7 +92,7 @@ class Request(object):
         self.method = method
 
 
-class _Body(object):
+class Body(object):
 
     def __init__(self, request, http_response, dispatcher):
         self._request = request
@@ -120,7 +120,7 @@ class _Body(object):
     def _write(self, fp, callback):
         total = 0
         if not callback:
-            def noop(x):
+            def noop(*a, **kw):
                 pass
             callback = noop
         callback(start=self)
@@ -156,7 +156,7 @@ class _Body(object):
                 self._write(fp, callback)
 
 
-class JSON(_Body):
+class JSON(Body):
     '''A Body that contains JSON'''
 
     def get(self):
@@ -164,11 +164,11 @@ class JSON(_Body):
         return self.response.json()
 
 
-class _Paged(JSON):
+class Paged(JSON):
 
     ITEM_KEY = 'features'
-    LINKS_KEY = 'links'
-    NEXT_KEY = 'next'
+    LINKS_KEY = '_links'
+    NEXT_KEY = '_next'
 
     def next(self):
         links = self.get()[self.LINKS_KEY]
@@ -207,7 +207,7 @@ class _Paged(JSON):
         stream = self._json_stream(limit)
         enc = json.JSONEncoder(indent=indent, sort_keys=sort_keys)
         for chunk in enc.iterencode(stream):
-            out.write(chunk)
+            out.write(u'%s' % chunk)
 
     def items_iter(self, limit):
         '''Get an iterator of the 'items' in each page. Instead of a feature
@@ -237,10 +237,10 @@ class _Paged(JSON):
         }
 
 
-class _Features(_Paged):
+class Features(Paged):
 
     def _json_stream(self, limit):
-        stream = super(_Features, self)._json_stream(limit)
+        stream = super(Features, self)._json_stream(limit)
         json_body = self.get()
         # patch back in the count if present
         if 'count' in json_body:
@@ -249,22 +249,13 @@ class _Features(_Paged):
         return stream
 
 
-class Scenes(_Features):
+class Image(Body):
     pass
 
 
-class Mosaics(_Paged):
-    ITEM_KEY = 'mosaics'
-
-
-class Quads(_Features):
+class Items(Features):
     pass
 
 
-class Image(_Body):
-    pass
-
-
-class Items(_Features):
-    LINKS_KEY = '_links'
-    NEXT_KEY = '_next'
+class Searches(Paged):
+    ITEM_KEY = 'searches'
