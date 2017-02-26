@@ -1,4 +1,4 @@
-# Copyright 2015 Planet Labs, Inc.
+# Copyright 2017 Planet Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ if api.auth.ENV_KEY in os.environ:
     os.environ.pop(api.auth.ENV_KEY)
 
 
-client = MagicMock(name='client', spec=api.Client)
+client = MagicMock(name='client', spec=api.ClientV1)
 
 
 def run_cli(*args, **kw):
