@@ -49,17 +49,6 @@ def test_geometry_from_json():
     assert geom == utils.geometry_from_json(collection)
 
 
-def test_build_conditions():
-    workspace = json.loads(read_fixture('workspace.json'))
-    c = utils.build_conditions(workspace)
-    assert c['image_statistics.image_quality.gte'] == 'standard'
-    assert c['image_statistics.snr.gt'] == 10
-    assert c['sat.off_nadir.lte'] == 25
-    assert c['sat.alt.gte'] == 200
-    assert c['sat.alt.lte'] == 650
-    assert c['age.lte'] == 63072000
-
-
 def test_probably_wkt():
     # not wkt
     assert not utils.probably_wkt('')

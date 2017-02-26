@@ -38,52 +38,10 @@ def read_planet_json():
     return contents
 
 
-def build_conditions(workspace):
-    '''Convert a workspace to conditions/filters that can be used in API
-    queries. Walks the workspace.filters object and returns a dict of query
-    parameters in the form of [metadata name].[comparator]:[value] pairs.
-    '''
-    conditions = {}
-    filters = workspace.get('filters')
-
-    keys = set(filters.keys())
-    keys.remove('geometry')
-
-    # workspace stores this as an int, API wants a label
-    rules = filters.get('image_statistics.image_quality', None)
-    if rules:
-        labels = ['test', 'standard', 'target']
-        for k, v in rules.items():
-            rules[k] = labels[int(v)]
-        filters['image_statistics.image_quality'] = rules
-
-    for key in keys:
-        rules = filters[key]
-        conditions.update([
-            ('%s.%s' % (key, r), v) for r, v in rules.items()
-        ])
-    return conditions
-
-
 def write_planet_json(contents):
     fname = _planet_json_file()
     with atomic_open(fname, 'w') as fp:
         fp.write(json.dumps(contents))
-
-
-def feature_collection(geometry):
-    return {
-        "type": "FeatureCollection",
-        "features": [{
-            "type": "Feature",
-            "properties": {},
-            "geometry": geometry
-        }]
-    }
-
-
-def get_workspace_geometry(workspace):
-    return workspace['filters'].get('geometry', {}).get('intersects', None)
 
 
 def geometry_from_json(obj):
@@ -239,33 +197,3 @@ def monitor_stats(fun, write):
         if thread.is_alive():
             threading.Timer(1, _stats).start()
     _stats()
-
-
-def complete(futures, check, client):
-    '''Wait for the future requests to complete without blocking the main
-    thread. This is a means to intercept a KeyboardInterrupt and gracefully
-    shutdown current requests without waiting for them to complete.
-
-    The cancel function on each future object should abort processing - any
-    blocking functions/IO will not be interrupted and this function should
-    return immediately.
-
-    :param futures: sequence of objects with a cancel function
-    :param check: function that will be called with the provided futures from
-                  a background thread
-    :param client: the Client to termintate on interrupt
-    '''
-    # start a background thread to not block main (otherwise hangs on 2.7)
-    def run():
-        check(futures)
-    t = threading.Thread(target=run)
-    t.start()
-    # poll (or we miss the interrupt) and await completion
-    try:
-        while t.isAlive():
-            t.join(.1)
-    except KeyboardInterrupt:
-        for f in futures:
-            f.cancel()
-        client.shutdown()
-        raise
