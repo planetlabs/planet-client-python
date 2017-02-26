@@ -59,9 +59,10 @@ def geometry_from_json(obj):
     if obj_type == 'Feature':
         geom = obj['geometry']
     else:
-        # @todo we're just assuming it's a geometry at this point
         geom = obj
-    return geom
+    # @todo we're just assuming it's a geometry at this point
+    if 'coordinates' in geom:
+        return geom
 
 
 def check_status(response):

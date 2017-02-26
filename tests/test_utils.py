@@ -40,8 +40,9 @@ def test_geometry_from_json():
     collection = {'type': 'FeatureCollection', 'features': []}
     assert None is utils.geometry_from_json(collection)
 
-    # simple geometry, we're guessing by the type property w/ no further checks
-    geom = {'type': 'Polygon'}
+    # simple geometry, we're guessing by the type property and presence of
+    # the coordinates property
+    geom = {'type': 'Polygon', 'coordinates': [1, 2]}
     assert geom == utils.geometry_from_json(geom)
     # from a feature
     feature = {'type': 'Feature', 'geometry': geom}

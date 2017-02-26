@@ -185,3 +185,20 @@ def test_create_search(runner, client):
         runner.invoke(main, [
             'create-search', '--item-type', 'all', '--name', 'new-search'
         ]), fake_response)
+
+
+def test_geom_filter(runner, client):
+    geom = json.dumps({
+        'type': 'Point',
+        'coordinates': [100, 100]
+    })
+    fake_response = '{"chowda":true}'
+    configure_response(client.create_search, fake_response)
+    assert_success(
+        runner.invoke(main, [
+            'create-search', '--item-type', 'all', '--name', 'new-search',
+            '--geom', geom
+        ]), fake_response)
+    args, kw = client.create_search.call_args
+    req = args[0]
+    assert req['filter']['config'][0]['type'] == 'GeometryFilter'

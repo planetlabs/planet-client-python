@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
+import json
 from planet.scripts.types import _allowed_item_types
 from planet.scripts.types import AssetType
+from planet.scripts.types import GeomFilter
 from planet.scripts.types import ItemType
 import pytest
 
@@ -41,3 +43,24 @@ def test_asset_type():
     with pytest.raises(Exception) as e:
         t.convert('x', None, None)
     assert 'invalid choice: x' in str(e.value)
+
+
+def test_geom_type():
+    t = GeomFilter()
+    geom = {"type": "Point", "coordinates": [1, 2]}
+    feature = {"type": "Feature", "geometry": geom}
+    coll = {"type": "FeatureCollection", "features": [feature]}
+    expect = [{
+        'config': {
+            u'type': u'Point',
+            u'coordinates': [1, 2]
+        },
+        'field_name': 'geometry',
+        'type': 'GeometryFilter'
+    }]
+    expect == t.convert(json.dumps(geom), None, None)
+    expect == t.convert(json.dumps(feature), None, None)
+    expect == t.convert(json.dumps(coll), None, None)
+    with pytest.raises(Exception) as e:
+        t.convert('{"type": "Point"}', None, None)
+    assert 'unable to find geometry in input' in str(e.value)
