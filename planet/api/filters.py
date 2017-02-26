@@ -30,6 +30,13 @@ def build_request(filter_like, item_types, name=None, interval=None):
     return req
 
 
+def is_filter_like(filter_like):
+    '''Check if the provided dict looks like a search request or filter.'''
+    if 'item_types' in filter_like or 'filter' in filter_like:
+        filter_like = filter_like.get('filter', {})
+    return 'type' in filter_like and 'config' in filter_like
+
+
 def _filter(ftype, config=None, **kwargs):
     kwargs.update({
         'type': ftype,

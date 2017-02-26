@@ -102,6 +102,10 @@ def test_filter_options_invalid(runner):
         '"--filter-json": invalid JSON'
     )
     assert_failure(
+        filt('--filter-json {"foo":true}'),
+        '"--filter-json": Does not appear to be valid filter'
+    )
+    assert_failure(
         filt('--filter-json @not-file'),
         # @todo this is not a nice errror - see note in 'util:read'
         'Error: [Errno 2] No such file or directory: \'not-file\''

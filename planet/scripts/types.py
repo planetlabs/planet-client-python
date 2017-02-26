@@ -228,6 +228,8 @@ class FilterJSON(click.ParamType):
             filt = json.loads(val)
         except ValueError:
             raise click.BadParameter('invalid JSON')
+        if not filters.is_filter_like(filt):
+            self.fail('Does not appear to be valid filter', param, ctx)
         return filt
 
 
