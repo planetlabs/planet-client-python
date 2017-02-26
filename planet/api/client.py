@@ -131,8 +131,10 @@ class ClientV1(_Base):
         :raises planet.api.exceptions.APIException: On API error.
 
         :Options:
+
         * page_size (int): Size of response pages
         * sort (string): Sorting order in the form `field (asc|desc)`
+
         '''
         body = json.dumps(request)
         params = self._params(kw)
@@ -148,8 +150,10 @@ class ClientV1(_Base):
         :raises planet.api.exceptions.APIException: On API error.
 
         :Options:
+
         * page_size (int): Size of response pages
         * sort (string): Sorting order in the form `field (asc|desc)`
+
         '''
         path = 'data/v1/searches/%s/results' % sid
         params = self._params(kw)

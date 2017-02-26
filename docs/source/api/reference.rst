@@ -53,6 +53,16 @@ be used to give the new search a name.
 
 .. note:: Request and Filter logic is not validated on the client.
 
+Filters
+-------
+
+The filters module provides a small convenience layer for building filters
+and requests.
+
+.. automodule:: planet.api.filters
+   :members:
+
+
 
 Client Return Values
 --------------------
@@ -110,8 +120,6 @@ Client Exceptions
 
 In addition to other exceptions, expected or otherwise, each HTTP operation has
 the potential to raise one of the following exceptions:
-
-.. py:module:: planet.api.exceptions
 
 .. automodule:: planet.api.exceptions
    :members:

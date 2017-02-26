@@ -13,7 +13,7 @@ Get recently acquired PSScene3Band ItemType records::
 
 Search for a month. Note: criteria are applied as an AND filter::
 
-    planet quick-search --item-type PSScene3Band --date gt 2017-02-14 --date lt 2017-03-14
+    planet quick-search --item-type PSScene3Band --date acquired gt 2017-02-14 --date acquired lt 2017-03-14
 
 Use the geometry defined in `aoi.json` to constrain a search for both PSScene3Band and PSScene4Band::
 
