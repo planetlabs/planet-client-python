@@ -9,7 +9,7 @@ coverage:
 
 pex:
 	# disable-cache seemed required or the older version would be used
-	pex . -o dist/planet -e planet.scripts:cli --disable-cache
+	pex . -o dist/planet -e planet.scripts:main --disable-cache
 
 html-docs:
 	python docs/source/generate.py
