@@ -69,23 +69,24 @@ class _Stage(object):
     def __init__(self, source, size=0, max_dps=0):
         self._source = source
         self._running = True
+        self._cancelled = False
         self._size = size
         self._tasks = []
         # track the current task
         self._doing = None
         self._results = queue.Queue()
         self._min_sleep = 1. / max_dps if max_dps else 0
+        self._cond = threading.Condition()
 
     def __len__(self):
-        return len(self._tasks) + 1 if self._doing else 0
+        return len(self._tasks) + (1 if self._doing else 0)
 
     def start(self):
         threading.Thread(target=self._run).start()
 
     def next(self):
         try:
-            # @todo to avoid blocking, possible to feed sentinel None/False?
-            return self._results.get(timeout=1)
+            return self._results.get(timeout=.1)
         except queue.Empty:
             if not self._alive():
                 return False
@@ -93,14 +94,27 @@ class _Stage(object):
     def _i(self, msg, *args):
         _info(type(self).__name__ + ' : ' + msg, *args)
 
+    def _cancel(self, result):
+        pass
+
     def cancel(self):
         # this makes us not alive
+        self._cancelled = True
         self._running = False
         self._tasks = []
+        self._doing = None
+        # drain any results and cancel them
         while not self._results.empty():
             r = self._results.get()
-            if hasattr(r, 'cancel'):
-                r.cancel()
+            r and self._cancel(r)
+        # poison the results queue with sentinel
+        self._results.put(False)
+        # notify any sleepers
+        try:
+            self._cond.acquire()
+            self._cond.notify_all()
+        finally:
+            self._cond.release()
 
     def _task(self, t):
         return t
@@ -109,7 +123,9 @@ class _Stage(object):
         # alive means upstream source has pending stuff or neither upstream
         # or this stage have been cancelled or we have some pending tasks
         # in the case upstream is done, but we're not
-        return self._running or len(self._tasks) or self._doing
+        return not self._cancelled and (
+            self._running or len(self._tasks) or self._doing
+        )
 
     def _run(self):
         while self._alive():
@@ -138,6 +154,7 @@ class _Stage(object):
                 try:
                     self._do(self._doing)
                 except Exception:
+                    # @todo should cancel the entire process?
                     self._running = False
                     logging.exception('unexpected error in %s', self)
                     return
@@ -145,9 +162,12 @@ class _Stage(object):
                 # note - this is conservative compared to timer invocation.
                 # allow _at most_ 1 'do' per min_sleep
                 wait = self._min_sleep - (time.time() - t)
-                if wait > 0 and self._running:
-                    _info('sleep for %d', wait)
-                    time.sleep(wait)
+                if wait > 0 and not self._cancelled:
+                    _info('sleep for %.2f', wait)
+                    # waiting on the condition allows interrupting sleep
+                    self._cond.acquire()
+                    self._cond.wait(wait)
+                    self._cond.release()
 
 
 class _AStage(_Stage):
@@ -159,7 +179,7 @@ class _AStage(_Stage):
     def _do(self, item):
         assets = self._client.get_assets(item).get()
         if not any([t in assets for t in self._asset_types]):
-            _debug('no desired assets in item, skipping')
+            _info('no desired assets in item, skipping')
             return
         inactive = _by_status(assets, self._asset_types, 'inactive')
         if inactive:
@@ -178,28 +198,30 @@ class _AStage(_Stage):
 
 
 class _PStage(_Stage):
+    _min_poll_interval = 5
+
     def __init__(self, source, client, asset_types):
-        _Stage.__init__(self, source, 100, max_dps=0)
+        _Stage.__init__(self, source, 100, max_dps=2)
         self._client = client
         self._asset_types = asset_types
-        self._min_sleep = 5
 
     def _task(self, t):
         item, assets = t
-        return item, assets, time.time()
+        now = time.time()
+        return item, assets, now, now
 
     def _do(self, task):
-        item, assets, start = task
-        # if everything is ready, don't poll again, just pass on to results
-        if _all_status(assets, self._asset_types, 'active'):
-            self._results.put((item, assets))
-            return
-        assets = self._client.get_assets(item).get()
+        item, assets, start, last = task
+        now = time.time()
+        # don't poll until min interval elapsed
+        if now - last > self._min_poll_interval:
+            assets = self._client.get_assets(item).get()
+            last = now
         if _all_status(assets, self._asset_types, 'active'):
             _debug('activation took %d', time.time() - start)
             self._results.put((item, assets))
         else:
-            self._tasks.append((item, assets, start))
+            self._tasks.append((item, assets, start, last))
 
 
 class _DStage(_Stage):
@@ -208,6 +230,7 @@ class _DStage(_Stage):
         self._client = client
         self._asset_types = asset_types
         self._dest = dest
+        self._write_lock = threading.Lock()
         self._written = 0
 
     def _task(self, t):
@@ -215,8 +238,13 @@ class _DStage(_Stage):
         for at in self._asset_types:
             self._tasks.append((item, assets[at]))
 
+    def _cancel(self, result):
+        item, asset, dl = result
+        dl.cancel()
+
     def _track_write(self, **kw):
-        self._written += kw.get('wrote', 0)
+        with self._write_lock:
+            self._written += kw.get('wrote', 0)
 
     def _get_writer(self, item, asset):
         return write_to_file(self._dest, self._track_write)
@@ -261,8 +289,8 @@ class _Downloader(object):
         mb_written = '%.2fMB' % (dstage._written / 1.0e6)
         return {
             'paging': astage._running,
-            'activating': len(pstage),
-            'pending': len(dstage),
+            'activating': len(astage),
+            'pending': len(pstage),
             'downloading': dstage._results.qsize() +
             (1 if self._awaiting else 0),
             'downloaded': self._completed,

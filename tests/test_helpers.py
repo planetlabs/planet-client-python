@@ -89,7 +89,6 @@ def items_iter(cnt):
 
 def test_pipeline():
     from planet.api.utils import handle_interrupt
-    from planet.api.utils import monitor_stats
     import logging
     import sys
     logging.basicConfig(
@@ -101,10 +100,13 @@ def test_pipeline():
     asset_types = ['a', 'b']
     dl = downloader(
         cl, asset_types, 'whatever', no_sleep=True,
-        astage__size=10, pstage__size=10, dstage__size=2)
-    monitor_stats(dl.stats, sys.stdout.write)
+        astage__size=10, pstage__size=10, pstage__min_poll_interval=0,
+        dstage__size=2)
     handle_interrupt(dl.shutdown, dl.download, items)
-    print(dl.stats())
+    assert dl.stats() == {
+        'downloading': 0, 'downloaded': 200, 'paging': False,
+        'total': '0.20MB', 'activating': 0, 'pending': 0
+    }
 
 
 if __name__ == '__main__':
