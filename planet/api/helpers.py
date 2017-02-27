@@ -76,6 +76,9 @@ class _Stage(object):
         self._results = queue.Queue()
         self._min_sleep = 1. / max_dps if max_dps else 0
 
+    def __len__(self):
+        return len(self._tasks) + 1 if self._doing else 0
+
     def start(self):
         threading.Thread(target=self._run).start()
 
@@ -255,14 +258,15 @@ class _Downloader(object):
         if not self._stages:
             return {}
         astage, pstage, dstage = self._stages
+        mb_written = '%.2fMB' % (dstage._written / 1.0e6)
         return {
             'paging': astage._running,
-            'activating': len(pstage._tasks),
-            'pending': len(dstage._tasks),
+            'activating': len(pstage),
+            'pending': len(dstage),
             'downloading': dstage._results.qsize() +
             (1 if self._awaiting else 0),
             'downloaded': self._completed,
-            'total': dstage._written,
+            'total': mb_written,
         }
 
     def download(self, items):

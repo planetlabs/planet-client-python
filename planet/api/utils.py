@@ -180,6 +180,7 @@ def handle_interrupt(cancel, f, *a, **kw):
     except KeyboardInterrupt:
         print('exiting')
         cancel()
+        raise
 
 
 def monitor_stats(fun, write):
@@ -187,7 +188,7 @@ def monitor_stats(fun, write):
     thread = threading.current_thread()
     start = time.time()
 
-    def _stats():
+    def _stats(exit=False):
         stats = fun()
         stats['elapsed'] = '%d' % (time.time() - start)
         msg = '\r'
@@ -201,4 +202,6 @@ def monitor_stats(fun, write):
         last[0] = msg
         if thread.is_alive():
             threading.Timer(1, _stats).start()
+        elif not exit:
+            _stats(True)
     _stats()
