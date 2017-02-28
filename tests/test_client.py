@@ -86,7 +86,7 @@ def test_status_code_other(client):
 def test_login(client):
     '''Verify login functionality'''
     with requests_mock.Mocker() as m:
-        uri = os.path.join(client.base_url, 'auth/login')
+        uri = os.path.join(client.base_url, 'v0/auth/login')
         response = json.dumps({'api_key': 'foobar'}).encode('utf-8')
         b64 = base64.urlsafe_b64encode(response)
         response = 'whatever.%s.whatever' % b64.decode('utf-8')
@@ -98,7 +98,7 @@ def test_login(client):
 def test_login_failure(client):
     '''Verify login functionality'''
     with requests_mock.Mocker() as m:
-        uri = os.path.join(client.base_url, 'auth/login')
+        uri = os.path.join(client.base_url, 'v0/auth/login')
         response = json.dumps({'message': 'invalid'})
         m.post(uri, text=response, status_code=401)
         try:
@@ -112,7 +112,7 @@ def test_login_failure(client):
 def test_login_errors(client):
     '''Verify login functionality'''
     with requests_mock.Mocker() as m:
-        uri = os.path.join(client.base_url, 'auth/login')
+        uri = os.path.join(client.base_url, 'v0/auth/login')
         response = 'An error occurred'
         m.post(uri, text=response, status_code=500)
         try:

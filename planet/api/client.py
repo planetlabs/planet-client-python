@@ -22,7 +22,7 @@ from . import models
 
 class _Base(object):
     '''High-level access to Planet's API.'''
-    def __init__(self, api_key=None, base_url='https://api.planet.com/v0/',
+    def __init__(self, api_key=None, base_url='https://api.planet.com/',
                  workers=4):
         '''
         :param str api_key: API key to use. Defaults to environment variable.
@@ -71,7 +71,7 @@ class _Base(object):
         :param str credentials: password
         :returns: JSON object (Python dict)
         '''
-        result = self.dispatcher.session.post(self._url('auth/login'), {
+        result = self.dispatcher.session.post(self._url('v0/auth/login'), {
             'email': identity,
             'password': credentials
         })
@@ -97,9 +97,6 @@ class _Base(object):
 
 
 class ClientV1(_Base):
-    def __init__(self, api_key=None, base_url='https://api.planet.com/',
-                 workers=4):
-        _Base.__init__(self, api_key, base_url, workers)
 
     def _params(self, kw):
         params = {}
