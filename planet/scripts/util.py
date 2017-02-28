@@ -17,6 +17,7 @@ import json
 import re
 import sys
 from os import path
+import tempfile
 import warnings
 
 import click
@@ -59,6 +60,14 @@ def and_filter_from_opts(opts):
     return filters.and_filter(*list(chain.from_iterable([
         o for o in opts.values() if o]
     )))
+
+
+def check_writable(dirpath):
+    try:
+        tempfile.NamedTemporaryFile(dir=dirpath).close()
+    except OSError:
+        return False
+    return True
 
 
 def filter_from_opts(**kw):

@@ -32,8 +32,9 @@ from .types import (
     metavar_docs
 )
 from .util import (
-    filter_from_opts,
     call_and_wrap,
+    check_writable,
+    filter_from_opts,
     echo_json_response,
     read,
     search_req_from_opts,
@@ -148,8 +149,8 @@ def stats(pretty, **kw):
 @click.option('--dry-run', is_flag=True, help=(
     'Only report the number of items that would be downloaded.'
 ))
-@click.option('--dest', type=click.Path(exists=True), help=('Location to '
-              'download files to'))
+@click.option('--dest', default='.', type=click.Path(exists=True), help=(
+    'Location to download files to'))
 @limit_option(None)
 @cli.command('download', epilog=filter_opts_epilog)
 def download(asset_type, dest, limit, search_id, dry_run, **kw):
@@ -157,6 +158,9 @@ def download(asset_type, dest, limit, search_id, dry_run, **kw):
     cl = clientv1()
     page_size = min(limit or 250, 250)
     asset_type = list(chain.from_iterable(asset_type))
+    if not check_writable(dest):
+        raise click.ClickException(
+            'download destination "%s" is not writable' % dest)
     if search_id:
         if dry_run:
             raise click.ClickException(
