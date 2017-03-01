@@ -41,8 +41,7 @@ from .util import (
 )
 from planet.api.utils import (
     handle_interrupt,
-    monitor_stats,
-    write_planet_json
+    monitor_stats
 )
 from planet.api.helpers import (
     downloader,
@@ -54,17 +53,13 @@ filter_opts_epilog = '\nFilter Formats:\n\n' + \
                                 for k, v in metavar_docs.items()])
 
 
-@cli.command('init')
-@click.option('--email', default=None, prompt=True)
-@click.option('--password', default=None, prompt=True, hide_input=True)
-def init(email, password):
-    '''Login using email/password'''
-    response = call_and_wrap(clientv1().login, email, password)
-    write_planet_json({'key': response['api_key']})
-    click.echo('initialized')
+@cli.group('data')
+def data():
+    '''Commands for interacting with the Data API'''
+    pass
 
 
-@cli.command('filter', epilog=filter_opts_epilog)
+@data.command('filter', epilog=filter_opts_epilog)
 @filter_opts
 def filter_dump(**kw):
     '''Output a AND filter as JSON to stdout.
@@ -77,7 +72,7 @@ def filter_dump(**kw):
     click.echo(json.dumps(filter_from_opts(**kw), indent=2))
 
 
-@cli.command('quick-search', epilog=filter_opts_epilog)
+@data.command('search', epilog=filter_opts_epilog)
 @limit_option(100)
 @pretty
 @search_request_opts
@@ -92,7 +87,7 @@ def quick_search(limit, pretty, sort, **kw):
     ), pretty, limit)
 
 
-@cli.command('create-search', epilog=filter_opts_epilog)
+@data.command('create-search', epilog=filter_opts_epilog)
 @pretty
 @click.option('--name', required=True)
 @search_request_opts
@@ -103,7 +98,7 @@ def create_search(pretty, **kw):
     echo_json_response(call_and_wrap(cl.create_search, req), pretty)
 
 
-@cli.command('saved-search')
+@data.command('saved-search')
 @click.argument('search_id', default='@-', required=False)
 @sort_order
 @pretty
@@ -118,7 +113,7 @@ def saved_search(search_id, sort, pretty, limit):
     ), limit=limit, pretty=pretty)
 
 
-@cli.command('searches')
+@data.command('searches')
 @click.option('--quick', is_flag=True, help='Quick searches')
 @click.option('--saved', default=True, is_flag=True,
               help='Saved searches (default)')
@@ -133,7 +128,7 @@ def get_searches(quick, saved):
 @click.option('--interval', default='month',
               type=click.Choice(['hour', 'day', 'month', 'week', 'year']),
               help='Specify the interval to aggregate by.')
-@cli.command('stats', epilog=filter_opts_epilog)
+@data.command('stats', epilog=filter_opts_epilog)
 def stats(pretty, **kw):
     '''Get search stats'''
     req = search_req_from_opts(**kw)
@@ -152,7 +147,7 @@ def stats(pretty, **kw):
 @click.option('--dest', default='.', type=click.Path(exists=True), help=(
     'Location to download files to'))
 @limit_option(None)
-@cli.command('download', epilog=filter_opts_epilog)
+@data.command('download', epilog=filter_opts_epilog)
 def download(asset_type, dest, limit, search_id, dry_run, **kw):
     '''Activate and download'''
     cl = clientv1()

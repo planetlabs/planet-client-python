@@ -67,9 +67,15 @@ def generate_cli_reference(e):
     e.e(h('CLI Reference', '='))
     e.e('.. include:: _reference_forward.rst')
 
+    general = [cmd for cmd in scripts.main.commands.values()
+               if not hasattr(cmd, 'commands')]
+    groups = [cmd for cmd in scripts.main.commands.values()
+              if hasattr(cmd, 'commands')]
+
     e.e(h('Option Types Formatting'))
     seen = set()
-    for cmd in scripts.main.commands.values():
+    # hack - we only have one group
+    for cmd in groups[0].commands.values():
         params = [p for p in cmd.params
                   if isinstance(p, click.core.Option)]
         for p in params:
@@ -86,8 +92,13 @@ def generate_cli_reference(e):
     for p in scripts.main.params:
         e.e('``--%s``\n   %s\n\n' % (p.name, p.help))
 
-    e.e(h('Commands'))
-    commands = list(sorted(scripts.main.commands.values(),
+    generate_command_section(e, 'General Commands', general)
+    generate_command_section(e, 'Data API', groups[0].commands.values())
+
+
+def generate_command_section(e, title, commands):
+    e.e(h(title))
+    commands = list(sorted(commands,
                     lambda a, b: cmp(a.name, b.name)))
     for cmd in commands:
         e.e(':ref:`%s` %s\n\n' % (cmd_ref(cmd), cmd.short_help))

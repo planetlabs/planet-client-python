@@ -17,7 +17,9 @@ import logging
 import sys
 
 from planet import api
+from planet.api.utils import write_planet_json
 from planet import __version__
+from .util import call_and_wrap
 
 client_params = {}
 
@@ -78,3 +80,17 @@ def help(context, command):
             raise click.ClickException('no command: %s' % command)
     else:
         click.echo(cli.get_help(context))
+
+
+@cli.command('init')
+@click.option('--email', default=None, prompt=True, help=(
+    'The email address associated with your Planet credentials.'
+))
+@click.option('--password', default=None, prompt=True, hide_input=True, help=(
+    'Account password. Will not be saved.'
+))
+def init(email, password):
+    '''Login using email/password'''
+    response = call_and_wrap(clientv1().login, email, password)
+    write_planet_json({'key': response['api_key']})
+    click.echo('initialized')

@@ -10,30 +10,28 @@ Option Types Formatting
 -----------------------
 
 
-.. _cli-metavar-FIELD-COMP-VALUE:
+.. _cli-metavar-ITEM-TYPE:
 
 
-FIELD COMP VALUE...
-...................
+ITEM-TYPE
+.........
 
 
-A comparison query format where FIELD is a
-property of the item-type and COMP is one of lt, lte, gt, gte and VALUE is
-the number or date to compare against.
-
-Note: ISO-8601 variants are supported. For example, ``2017`` is short for
-``2017-01-01T00:00:00+00:00``.
+Specify Item-Type(s) of interest. Case-insensitive,
+supports glob-matching, e.g. ``psscene*`` means ``PSScene3Band`` and
+``PSScene4Band``. The ``all`` value specifies every Item-Type.
 
 
-.. _cli-metavar-FIELD-VALUES:
+.. _cli-metavar-FILTER:
 
 
-FIELD VALUES...
-...............
+FILTER
+......
 
 
-Specifies an 'in' query where FIELD is a property
-of the item-type and VALUES is space or comma separated text or numbers.
+Specify a Data API search filter provided as JSON.
+``@-`` specifies stdin and ``@filename`` specifies reading from a file
+named 'filename'. Otherwise, the value is assumed to be JSON.
 
 
 .. _cli-metavar-GEOM:
@@ -49,28 +47,30 @@ reading from a file named 'filename'. Otherwise, the value is assumed to
 be GeoJSON.
 
 
-.. _cli-metavar-FILTER:
+.. _cli-metavar-FIELD-VALUES:
 
 
-FILTER
-......
+FIELD VALUES...
+...............
 
 
-Specify a Data API search filter provided as JSON.
-``@-`` specifies stdin and ``@filename`` specifies reading from a file
-named 'filename'. Otherwise, the value is assumed to be JSON.
+Specifies an 'in' query where FIELD is a property
+of the item-type and VALUES is space or comma separated text or numbers.
 
 
-.. _cli-metavar-ITEM-TYPE:
+.. _cli-metavar-FIELD-COMP-VALUE:
 
 
-ITEM-TYPE
-.........
+FIELD COMP VALUE...
+...................
 
 
-Specify Item-Type(s) of interest. Case-insensitive,
-supports glob-matching, e.g. ``psscene*`` means ``PSScene3Band`` and
-``PSScene4Band``. The ``all`` value specifies every Item-Type.
+A comparison query format where FIELD is a
+property of the item-type and COMP is one of lt, lte, gt, gte and VALUE is
+the number or date to compare against.
+
+Note: ISO-8601 variants are supported. For example, ``2017`` is short for
+``2017-01-01T00:00:00+00:00``.
 
 
 .. _cli-metavar-ASSET-TYPE:
@@ -114,7 +114,64 @@ General Options
 
 
 
-Commands
+General Commands
+----------------
+
+
+:ref:`cli-command-help` Get command help
+
+
+
+:ref:`cli-command-init` Login using email/password
+
+
+
+.. index:: help
+
+.. _cli-command-help:
+
+
+help
+....
+
+
+Get command help
+
+Usage: help [OPTIONS] [COMMAND]
+
+.. index:: init
+
+.. _cli-command-init:
+
+
+init
+....
+
+
+Login using email/password
+
+Usage: init [OPTIONS]
+
+.. list-table:: Options
+   :widths: 10 80 10
+   :header-rows: 1
+
+   * - Name
+     - Description
+
+     - Format
+
+   * - email
+     - The email address associated with your Planet credentials.
+
+     - TEXT
+
+   * - password
+     - Account password. Will not be saved.
+
+     - TEXT
+
+Data API
 --------
 
 
@@ -130,19 +187,11 @@ Commands
 
 
 
-:ref:`cli-command-help` Get command help
-
-
-
-:ref:`cli-command-init` Login using email/password
-
-
-
-:ref:`cli-command-quick-search` Execute a quick search.
-
-
-
 :ref:`cli-command-saved-search` Execute a saved search
+
+
+
+:ref:`cli-command-search` Execute a quick search.
 
 
 
@@ -257,6 +306,7 @@ Usage: download [OPTIONS]
    * - dest
      - Location to download files to
 
+       DEFAULT: `.`
      - PATH
 
    * - dry_run
@@ -373,31 +423,18 @@ Usage: filter [OPTIONS]
 
      - :ref:`cli-metavar-field-comp-value`
 
-.. index:: help
+.. index:: saved-search
 
-.. _cli-command-help:
-
-
-help
-....
+.. _cli-command-saved-search:
 
 
-Get command help
-
-Usage: help [OPTIONS] [COMMAND]
-
-.. index:: init
-
-.. _cli-command-init:
+saved-search
+............
 
 
-init
-....
+Execute a saved search
 
-
-Login using email/password
-
-Usage: init [OPTIONS]
+Usage: saved-search [OPTIONS] [SEARCH_ID]
 
 .. list-table:: Options
    :widths: 10 80 10
@@ -408,28 +445,34 @@ Usage: init [OPTIONS]
 
      - Format
 
-   * - email
-     - 
+   * - sort
+     - Specify sort ordering as published/acquired asc/desc
 
-     - TEXT
+     - FIELD ORDER...
 
-   * - password
-     - 
+   * - pretty
+     - Format JSON output
 
-     - TEXT
+     - BOOLEAN
 
-.. index:: quick-search
+   * - limit
+     - Limit the number of items.
 
-.. _cli-command-quick-search:
+       DEFAULT: `100`
+     - NUMBER
+
+.. index:: search
+
+.. _cli-command-search:
 
 
-quick-search
-............
+search
+......
 
 
 Execute a quick search.
 
-Usage: quick-search [OPTIONS]
+Usage: search [OPTIONS]
 
 .. list-table:: Options
    :widths: 10 80 10
@@ -496,44 +539,6 @@ Usage: quick-search [OPTIONS]
      - Specify sort ordering as published/acquired asc/desc
 
      - FIELD ORDER...
-
-.. index:: saved-search
-
-.. _cli-command-saved-search:
-
-
-saved-search
-............
-
-
-Execute a saved search
-
-Usage: saved-search [OPTIONS] [SEARCH_ID]
-
-.. list-table:: Options
-   :widths: 10 80 10
-   :header-rows: 1
-
-   * - Name
-     - Description
-
-     - Format
-
-   * - sort
-     - Specify sort ordering as published/acquired asc/desc
-
-     - FIELD ORDER...
-
-   * - pretty
-     - Format JSON output
-
-     - BOOLEAN
-
-   * - limit
-     - Limit the number of items.
-
-       DEFAULT: `100`
-     - NUMBER
 
 .. index:: searches
 
