@@ -42,11 +42,8 @@ def limit_option(default):
                         type=num_type, help="Limit the number of items.")
 
 
-# NOTE: all filter options are expected to return a list of 0+ filters
-
-
 geom_filter = click.option('--geom', type=GeomFilter(), help=(
-    'Specify a geometry filter as geojson. "-" for stdin or @file'
+    'Specify a geometry filter as geojson.'
 ))
 
 date_range_filter = click.option(
