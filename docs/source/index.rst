@@ -1,3 +1,5 @@
+:tocdepth: 3
+
 Planet Labs Python Client
 =========================
 
@@ -8,7 +10,7 @@ The command line interface is intended to be functional for many tasks but is ju
 Also see the `API Reference Docs <https://www.planet.com/docs>`_ for more information.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    cli/index
    api/index

@@ -12,4 +12,5 @@ html_theme_options = {
     'sidebar_search_button': pprimary_dark,
     'sidebar_link': pprimary_dark,
     'github_button': 'false',
+    'fixed_sidebar': True,
 }
