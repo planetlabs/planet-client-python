@@ -178,21 +178,3 @@ def read(value, split=False):
     if retval and split and type(retval) != tuple:
         retval = _split(retval.strip())
     return retval
-
-
-def read_aoi(value):
-    '''See if the provided AOI looks like a WKT or GeoJSON and if so, return
-    as text or a parsed dict. If the value resolves to nothing, return None.
-    Otherwise raise ClickException if the provided value is not either.
-    '''
-    aoi = None
-    raw = read(value)
-    if raw:
-        if api_utils.probably_wkt(raw):
-            aoi = raw
-        else:
-            aoi = api_utils.probably_geojson(raw)
-        if aoi is None:
-            raise click.ClickException('The provided AOI does not look like '
-                                       'WKT or GeoJSON')
-    return aoi

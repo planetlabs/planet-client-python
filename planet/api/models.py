@@ -260,10 +260,6 @@ class Features(Paged):
         return stream
 
 
-class Image(Body):
-    pass
-
-
 class Items(Features):
     pass
 

@@ -131,17 +131,59 @@ def test_create_search(client):
         assert resp.get()['ok']
 
 
+def assert_simple_search_response(uri, func, arg, method):
+    with requests_mock.Mocker() as m:
+        mfunc = getattr(m, method)
+        mfunc(uri, text='{"ok": true}')
+        resp = func(arg)
+        assert resp.get()['ok']
+    with requests_mock.Mocker() as m:
+        mfunc = getattr(m, method)
+        mfunc(uri + "?_page_size=10", text='{"ok": true}', complete_qs=True)
+        resp = func(arg, page_size=10)
+        assert resp.get()['ok']
+    with requests_mock.Mocker() as m:
+        mfunc = getattr(m, method)
+        mfunc(uri + "?_sort=foo", text='{"ok": true}', complete_qs=True)
+        resp = func(arg, sort='foo')
+        assert resp.get()['ok']
+
+
 def test_quick_search(client):
-    uri = os.path.join(client.base_url, 'data/v1/quick-search')
+    url = client.base_url + 'data/v1/quick-search'
+    assert_simple_search_response(url, client.quick_search,
+                                  '{"foo": True}', 'post')
+
+
+def test_saved_search(client):
+    url = client.base_url + 'data/v1/searches/the-id/results'
+    assert_simple_search_response(url, client.saved_search,
+                                  'the-id', 'get')
+
+
+def assert_simple_request(uri, func, method, *args):
     with requests_mock.Mocker() as m:
-        m.post(uri, text='{"ok": true}')
-        resp = client.quick_search('{"foobar": true}')
+        getattr(m, method)(uri, text='{"ok": true}')
+        resp = func(*args)
         assert resp.get()['ok']
-    with requests_mock.Mocker() as m:
-        m.post(uri + "?_page_size=10", text='{"ok": true}', complete_qs=True)
-        resp = client.quick_search('{"foobar": true}', page_size=10)
-        assert resp.get()['ok']
-    with requests_mock.Mocker() as m:
-        m.post(uri + "?_sort=foo", text='{"ok": true}', complete_qs=True)
-        resp = client.quick_search('{"foobar": true}', sort='foo')
-        assert resp.get()['ok']
+
+
+def test_get_item(client):
+    url = client.base_url + 'data/v1/item-types/the-type/items/the-id'
+    assert_simple_request(url, client.get_item, 'get', 'the-type', 'the-id')
+
+
+def test_get_assets(client):
+    url = client.base_url + 'data/v1/item-types/the-type/items/the-id/assets'
+    assert_simple_request(url, client.get_assets_by_id, 'get',
+                          'the-type', 'the-id')
+
+
+def test_get_searches(client):
+    url = client.base_url + 'data/v1/searches/?search_type=saved'
+    assert_simple_request(url, client.get_searches, 'get')
+
+
+def test_stats(client):
+    url = client.base_url + 'data/v1/stats'
+    assert_simple_request(url, client.stats, 'post', {'request': True})

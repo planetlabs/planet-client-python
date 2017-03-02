@@ -97,6 +97,15 @@ class _Base(object):
 
 
 class ClientV1(_Base):
+    '''ClientV1 provides basic low-level access to Planet's API. Only one
+    ClientV1 should be in existence for an application. The Client is thread
+    safe and takes care to avoid API throttling and also retry any throttled
+    requests. Most functions take JSON-like dict representations of API
+    request bodies. Return values are usually a subclass of
+    :py:class:`planet.api.models.Body`. Any exceptional http responses are
+    handled by translation to one of the :py:mod:`planet.api.exceptions`
+    classes.
+    '''
 
     def _params(self, kw):
         params = {}
@@ -174,6 +183,13 @@ class ClientV1(_Base):
                          body_type=models.Searches, params=params).get_body()
 
     def stats(self, request):
+        '''Get stats for the provided request.
+
+        :param request dict: A search request that also contains the 'interval'
+                             property.
+        :returns: :py:class:`planet.api.models.JSON`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
         # @todo warn if empty and filter provided - will return no results
         body = json.dumps(request)
         return self.dispatcher.response(models.Request(
@@ -181,10 +197,26 @@ class ClientV1(_Base):
             body_type=models.JSON, data=body, method='POST')).get_body()
 
     def get_assets(self, item):
+        '''Get the assets for the provided item representations.
+
+        Item representations are obtained from search requests.
+
+        :param request dict: An item representation from the API.
+        :returns: :py:class:`planet.api.models.JSON`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
         assets_url = item['_links']['assets']
         return self._get(assets_url).get_body()
 
     def activate(self, asset):
+        '''Request activation of the specified asset representation.
+
+        Asset representations are obtained from :py:meth:`get_assets`.
+
+        :param request dict: An asset representation from the API.
+        :returns: :py:class:`planet.api.models.JSON`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
         activate_url = asset['_links']['activate']
         return self._get(activate_url).get_body()
 
@@ -196,7 +228,31 @@ class ClientV1(_Base):
         :param asset dict: An asset representation from the API
         :param callback: An optional function to aysnchronsously handle the
                          download. See :py:func:`planet.api.write_to_file`
-        :returns: :py:Class:`planet.api.models.Image`
+        :returns: :py:Class:`planet.api.models.Response` containing a
+                  :py:Class:`planet.api.models.Body` of the asset.
+        :raises planet.api.exceptions.APIException: On API error.
         '''
         download_url = asset['location']
-        return self._get(download_url, models.Image, callback=callback)
+        return self._get(download_url, models.Body, callback=callback)
+
+    def get_item(self, item_type, id):
+        '''Get the an item response for the given item_type and id
+
+        :param item_type str: A valid item-type
+        :param id str: The id of the item
+        :returns: :py:Class:`planet.api.models.JSON`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        url = 'data/v1/item-types/%s/items/%s' % (item_type, id)
+        return self._get(url).get_body()
+
+    def get_assets_by_id(self, item_type, id):
+        '''Get an item's asset response for the given item_type and id
+
+        :param item_type str: A valid item-type
+        :param id str: The id of the item
+        :returns: :py:Class:`planet.api.models.JSON`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        url = 'data/v1/item-types/%s/items/%s/assets' % (item_type, id)
+        return self._get(url).get_body()
