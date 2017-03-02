@@ -108,7 +108,7 @@ def _do_request(sess, req, **kwargs):
                 req.method, req.url, data=req.data, headers=_headers(req),
                 params=req.params, verify=USE_STRICT_SSL, **kwargs
             )
-            log.info('request took %.03f', time.time() - t)
+            log.debug('request took %.03f', time.time() - t)
             # futures session returns futures so only check actual responses
             # for futures these will be checked in the wrapper model
             if hasattr(resp, 'status_code'):

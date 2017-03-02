@@ -32,8 +32,9 @@ def _all_status(assets, types, status):
     return all([assets[t]['status'] == status for t in types if t in assets])
 
 
-_debug = logging.debug
-_info = logging.info
+_logger = logging.getLogger(__name__)
+_debug = _logger.debug
+_info = _logger.info
 
 
 class _Stage(object):
@@ -93,6 +94,9 @@ class _Stage(object):
 
     def _i(self, msg, *args):
         _info(type(self).__name__ + ' : ' + msg, *args)
+
+    def _d(self, msg, *args):
+        _debug(type(self).__name__ + ' : ' + msg, *args)
 
     def _cancel(self, result):
         pass
@@ -163,7 +167,7 @@ class _Stage(object):
                 # allow _at most_ 1 'do' per min_sleep
                 wait = self._min_sleep - (time.time() - t)
                 if wait > 0 and not self._cancelled:
-                    _info('sleep for %.2f', wait)
+                    self._d('sleep for %.2f', wait)
                     # waiting on the condition allows interrupting sleep
                     self._cond.acquire()
                     self._cond.wait(wait)
