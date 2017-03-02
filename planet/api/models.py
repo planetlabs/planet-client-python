@@ -138,9 +138,13 @@ class Body(object):
 
     def write(self, file=None, callback=None):
         '''Write the contents of the body to the optionally provided file and
-        providing progress to the optional callback. The callback first with
-        this Body, zero or more times for each chunk streamed down, and once
-        again on completion. File writing is atomic.
+        providing progress to the optional callback. The callback will be
+        invoked 3 different ways:
+
+        * First as ``callback(start=self)``
+        * For each chunk of data written as
+          ``callback(wrote=chunk_size_in_bytes, total=all_byte_cnt)``
+        * Upon completion as ``callback(finish=self)``
 
         :param file: file name or file-like object
         :param callback: optional progress callback

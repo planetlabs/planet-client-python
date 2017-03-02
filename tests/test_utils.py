@@ -87,3 +87,22 @@ def test_check_status():
     r.text = 'exceeded QUOTA dude'
     with pytest.raises(exceptions.OverQuota):
         utils.check_status(r)
+
+
+def test_write_to_file(tmpdir):
+    body = Mock()
+    body.name = 'foobar'
+    body.write.return_value = None
+    utils.write_to_file(str(tmpdir))(body)
+    path, callback = body.write.call_args[0]
+    expected = tmpdir.join(body.name)
+    assert str(expected) == path
+    assert callback is None
+
+    expected.write('')
+    callback = Mock()
+    callback.return_value = None
+    utils.write_to_file(str(tmpdir), overwrite=False)(body)
+    utils.write_to_file(str(tmpdir), callback=callback, overwrite=False)(body)
+    assert body.write.call_count == 1
+    assert callback.call_args[1]['skip'] == body

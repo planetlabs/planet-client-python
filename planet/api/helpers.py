@@ -243,11 +243,14 @@ class _DStage(_Stage):
         dl.cancel()
 
     def _track_write(self, **kw):
-        with self._write_lock:
-            self._written += kw.get('wrote', 0)
+        if 'skip' in kw:
+            self._i('skipping download of %s, already exists', kw['skip'].name)
+        else:
+            with self._write_lock:
+                self._written += kw.get('wrote', 0)
 
     def _get_writer(self, item, asset):
-        return write_to_file(self._dest, self._track_write)
+        return write_to_file(self._dest, self._track_write, overwrite=False)
 
     def _do(self, task):
         item, asset = task

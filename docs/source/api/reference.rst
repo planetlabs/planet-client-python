@@ -115,6 +115,13 @@ To handle assembling the items from each page into a collection again and stream
 
    Searches is a Body that contains an array of searches, so when using `items_iter`, it will yield `Search` JSON objects.
 
+
+Utilities
+---------
+
+.. autofunction:: planet.api.write_to_file
+
+
 Client Exceptions
 -----------------
 

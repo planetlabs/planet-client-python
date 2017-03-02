@@ -189,5 +189,14 @@ class ClientV1(_Base):
         return self._get(activate_url).get_body()
 
     def download(self, asset, callback=None):
+        '''Download the specified asset. If provided, the callback will be
+        invoked asynchronously. Otherwise it is up to the caller to handle the
+        response Body.
+
+        :param asset dict: An asset representation from the API
+        :param callback: An optional function to aysnchronsously handle the
+                         download. See :py:func:`planet.api.write_to_file`
+        :returns: :py:Class:`planet.api.models.Image`
+        '''
         download_url = asset['location']
         return self._get(download_url, models.Image, callback=callback)

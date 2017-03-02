@@ -97,10 +97,31 @@ def get_filename(response):
     return cd
 
 
-def write_to_file(directory=None, callback=None):
+def write_to_file(directory=None, callback=None, overwrite=True):
+    '''Create a callback handler for asynchronous Body handling.
+
+    If provided, the callback will be invoked as described in
+    :py:meth:`planet.api.models.Body.write`. In addition, if the download
+    is skipped because the destination exists, the callback will be invoked
+    with ``callback(skip=body)``.
+
+    The name of the file written to will be determined from the Body.name
+    property.
+
+    :param directory str: The optional directory to write to.
+    :param callback func: An optional callback to receive notification of
+                          write progress.
+    :param overwrite bool: Overwrite any existing files. Defaults to True.
+    '''
     def writer(body):
-        file = os.path.join(directory, body.name) if directory else None
-        body.write(file, callback)
+        file = os.path.join(directory or '.', body.name)
+        print(os.path.exists(file), overwrite)
+        if overwrite or not os.path.exists(file):
+            body.write(file, callback)
+        else:
+            if callback:
+                callback(skip=body)
+            body.response.close()
     return writer
 
 
