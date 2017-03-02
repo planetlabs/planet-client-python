@@ -93,14 +93,21 @@ class Request(object):
 
 
 class Body(object):
+    '''A Body is a representation of a resource from the API.
+    '''
 
     def __init__(self, request, http_response, dispatcher):
         self._request = request
         self.response = http_response
         self._dispatcher = dispatcher
         self.size = int(self.response.headers.get('content-length', 0))
-        self.name = get_filename(self.response)
         self._cancel = False
+
+    @property
+    def name(self):
+        '''The name of this resource. The default is to use the
+        content-disposition header value from the response.'''
+        return get_filename(self.response)
 
     def __len__(self):
         return self.size
