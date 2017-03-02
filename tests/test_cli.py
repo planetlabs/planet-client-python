@@ -127,12 +127,12 @@ def test_version_flag():
 
 def test_workers_flag():
     assert 'workers' not in cli.client_params
-    run_cli(['--workers', '19', 'download'])
+    run_cli(['--workers', '19', 'help'])
     assert 'workers' in cli.client_params
     assert cli.client_params['workers'] == 19
 
 
 def test_api_key_flag():
-    run_cli(['-k', 'shazbot', 'quick-search'])
+    run_cli(['-k', 'shazbot', 'help'])
     assert 'api_key' in cli.client_params
     assert cli.client_params['api_key'] == 'shazbot'

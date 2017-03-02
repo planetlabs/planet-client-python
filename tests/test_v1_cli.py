@@ -53,7 +53,7 @@ def assert_failure(result, error):
 
 def test_filter(runner):
     def filt(*opts):
-        return runner.invoke(main, ['filter'] + list(opts))
+        return runner.invoke(main, ['data', 'filter'] + list(opts))
     assert_success(filt(), {
         "type": "AndFilter",
         "config": []
@@ -73,7 +73,7 @@ def test_filter_options_invalid(runner):
     # options used across commands
 
     def filt(opts):
-        return runner.invoke(main, ['filter'] + opts.split(' '))
+        return runner.invoke(main, ['data', 'filter'] + opts.split(' '))
 
     assert_failure(
         filt('--number-in a a'),
@@ -127,7 +127,7 @@ def test_quick_search(runner, client):
     configure_response(client.quick_search, fake_response)
     assert_success(
         runner.invoke(main, [
-            'quick-search', '--item-type', 'all', '--limit', '1'
+            'data', 'search', '--item-type', 'all', '--limit', '1'
         ]), fake_response)
     assert client.quick_search.call_args[1]['page_size'] == 1
 
@@ -135,7 +135,7 @@ def test_quick_search(runner, client):
 def test_download_errors(runner):
     '''test download cli error handling'''
     def download(opts):
-        return runner.invoke(main, ['download'] + opts.split(' '))
+        return runner.invoke(main, ['data', 'download'] + opts.split(' '))
     assert_failure(
         download(('--search-id foobar --asset-type visual --item-type all'
                   ' --string-in a b')),
@@ -158,8 +158,8 @@ def test_download_dry_run(runner, client, monkeypatch):
                        '{"buckets": [{"count": 1}, {"count": 2}]}')
     assert_success(
         runner.invoke(main, [
-            'download', '--asset-type', 'visual*', '--item-type', 'all',
-            '--dry-run', '--string-in', 'foo', 'xyz'
+            'data', 'download', '--asset-type', 'visual*',
+            '--item-type', 'all', '--dry-run', '--string-in', 'foo', 'xyz'
         ]), 'would download approximately 6 assets from 3 items\n')
 
 
@@ -175,7 +175,7 @@ def test_download_quick(runner, client, monkeypatch):
                         lambda *a, **kw: None)
     assert_success(
         runner.invoke(main, [
-            'download', '--asset-type', 'visual', '--item-type', 'all',
+            'data', 'download', '--asset-type', 'visual', '--item-type', 'all',
             '--limit', '1'
         ]), '')
     assert client.quick_search.call_args[1]['page_size'] == 1
@@ -186,7 +186,8 @@ def test_create_search(runner, client):
     configure_response(client.create_search, fake_response)
     assert_success(
         runner.invoke(main, [
-            'create-search', '--item-type', 'all', '--name', 'new-search'
+            'data', 'create-search', '--item-type', 'all',
+            '--name', 'new-search'
         ]), fake_response)
     args, kw = client.create_search.call_args
     req = args[0]
@@ -203,7 +204,8 @@ def test_geom_filter(runner, client):
     configure_response(client.create_search, fake_response)
     assert_success(
         runner.invoke(main, [
-            'create-search', '--item-type', 'all', '--name', 'new-search',
+            'data', 'create-search', '--item-type', 'all',
+            '--name', 'new-search',
             '--geom', geom
         ]), fake_response)
     args, kw = client.create_search.call_args
