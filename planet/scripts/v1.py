@@ -148,7 +148,7 @@ def stats(pretty, **kw):
     'Location to download files to'))
 @limit_option(None)
 @data.command('download', epilog=filter_opts_epilog)
-def download(asset_type, dest, limit, search_id, dry_run, **kw):
+def download(asset_type, dest, limit, sort, search_id, dry_run, **kw):
     '''Activate and download'''
     cl = clientv1()
     page_size = min(limit or 250, 250)
@@ -163,7 +163,8 @@ def download(asset_type, dest, limit, search_id, dry_run, **kw):
         if any(kw[s] for s in kw if s not in ('item_type',)):
             raise click.ClickException(
                 'search options not supported with saved search')
-        items = call_and_wrap(cl.saved_search, search_id, page_size=page_size)
+        items = call_and_wrap(cl.saved_search, search_id, page_size=page_size,
+                              sort=sort)
     else:
         req = search_req_from_opts(**kw)
         if dry_run:
@@ -180,7 +181,8 @@ def download(asset_type, dest, limit, search_id, dry_run, **kw):
             )
             return
         else:
-            items = call_and_wrap(cl.quick_search, req, page_size=page_size)
+            items = call_and_wrap(cl.quick_search, req, page_size=page_size,
+                                  sort=sort)
 
     dl = downloader(cl, asset_type, dest or '.')
     monitor_stats(dl.stats, lambda x: click.echo(x, nl=False))
