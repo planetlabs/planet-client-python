@@ -127,9 +127,11 @@ def echo_json_response(response, pretty, limit=None, ndjson=False):
     the default will be to indent and sort keys'''
     indent = None
     sort_keys = False
+    nl = False
     if not ndjson and (pretty or (pretty is None and sys.stdout.isatty())):
         indent = 2
         sort_keys = True
+        nl = True
     try:
         if ndjson and hasattr(response, 'items_iter'):
             items = response.items_iter(limit)
@@ -143,6 +145,8 @@ def echo_json_response(response, pretty, limit=None, ndjson=False):
             res = json.dumps(json.loads(res), indent=indent,
                              sort_keys=sort_keys)
             click.echo(res)
+        if nl:
+            click.echo()
     except IOError as ioe:
         # hide scary looking broken pipe stack traces
         raise click.ClickException(str(ioe))
