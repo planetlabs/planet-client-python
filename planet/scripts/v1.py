@@ -15,7 +15,6 @@
 import click
 from itertools import chain
 import json
-
 from .cli import (
     cli,
     clientv1
@@ -37,17 +36,15 @@ from .util import (
     call_and_wrap,
     check_writable,
     filter_from_opts,
+    downloader_output,
     echo_json_response,
     read,
     search_req_from_opts,
 )
 from planet.api.utils import (
-    handle_interrupt,
-    monitor_stats
+    handle_interrupt
 )
-from planet.api.helpers import (
-    downloader,
-)
+from planet.api import downloader
 
 
 filter_opts_epilog = '\nFilter Formats:\n\n' + \
@@ -156,11 +153,18 @@ def _disable_item_type(ctx, param, value):
 @click.option('--dry-run', is_flag=True, help=(
     'Only report the number of items that would be downloaded.'
 ))
+@click.option('--activate-only', is_flag=True, help=(
+    'Only activate the items. Outputs URLS for downloading.'
+))
+@click.option('--quiet', is_flag=True, help=(
+    'Disable ANSI control output'
+))
 @click.option('--dest', default='.', type=click.Path(exists=True), help=(
     'Location to download files to'))
 @limit_option(None)
 @data.command('download', epilog=filter_opts_epilog)
-def download(asset_type, dest, limit, sort, search_id, dry_run, **kw):
+def download(asset_type, dest, limit, sort, search_id, dry_run, activate_only,
+             quiet, **kw):
     '''Activate and download'''
     cl = clientv1()
     page_size = min(limit or 250, 250)
@@ -175,8 +179,7 @@ def download(asset_type, dest, limit, sort, search_id, dry_run, **kw):
         if any(kw[s] for s in kw):
             raise click.ClickException(
                 'search options not supported with saved search')
-        items = call_and_wrap(cl.saved_search, search_id, page_size=page_size,
-                              sort=sort)
+        search, search_arg = cl.saved_search, search_id
     else:
         # any requested asset-types should be used as permission filters
         kw['asset_type'] = [AssetTypePerm.to_permissions(asset_type)]
@@ -192,9 +195,16 @@ def download(asset_type, dest, limit, sort, search_id, dry_run, **kw):
             )
             return
         else:
-            items = call_and_wrap(cl.quick_search, req, page_size=page_size,
-                                  sort=sort)
+            search, search_arg = cl.quick_search, req
 
-    dl = downloader(cl, asset_type, dest or '.')
-    monitor_stats(dl.stats, lambda x: click.echo(x, nl=False))
-    handle_interrupt(dl.shutdown, dl.download, items.items_iter(limit))
+    dl = downloader.create(cl)
+    downloader_output(dl, disable_ansi=quiet)
+    # delay initial item search until downloader output initialized
+    items = call_and_wrap(search, search_arg, page_size=page_size, sort=sort)
+    func = dl.activate if activate_only else dl.download
+    args = [items.items_iter(limit), asset_type]
+    if not activate_only:
+        args.append(dest)
+    # invoke the function within an interrupt handler that will shut everything
+    # down properly
+    handle_interrupt(dl.shutdown, func, *args)

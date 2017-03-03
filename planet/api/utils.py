@@ -19,7 +19,6 @@ import json
 import os
 import re
 import threading
-import time
 from ._fatomic import atomic_open
 
 _ISO_FMT = '%Y-%m-%dT%H:%M:%S.%f+00:00'
@@ -115,7 +114,6 @@ def write_to_file(directory=None, callback=None, overwrite=True):
     '''
     def writer(body):
         file = os.path.join(directory or '.', body.name)
-        print(os.path.exists(file), overwrite)
         if overwrite or not os.path.exists(file):
             body.write(file, callback)
         else:
@@ -190,8 +188,10 @@ def handle_interrupt(cancel, f, *a, **kw):
     handled, invoke the cancel function. Blocks until f is complete or the
     interrupt is handled.
     '''
+    res = []
+
     def run():
-        f(*a, **kw)
+        res.append(f(*a, **kw))
     t = threading.Thread(target=run)
     t.start()
     # poll (or we miss the interrupt) and await completion
@@ -199,30 +199,6 @@ def handle_interrupt(cancel, f, *a, **kw):
         while t.isAlive():
             t.join(.1)
     except KeyboardInterrupt:
-        print('exiting')
         cancel()
         raise
-
-
-def monitor_stats(fun, write):
-    last = ['']
-    thread = threading.current_thread()
-    start = time.time()
-
-    def _stats(exit=False):
-        stats = fun()
-        stats['elapsed'] = '%d' % (time.time() - start)
-        msg = '\r'
-        for k in stats:
-            msg += '%s:%s ' % (k, stats[k])
-        try:
-            write(msg)
-        except ValueError:
-            # someone closed the file, bail out
-            return
-        last[0] = msg
-        if thread.is_alive():
-            threading.Timer(1, _stats).start()
-        elif not exit:
-            _stats(True)
-    _stats()
+    return res and res.pop()

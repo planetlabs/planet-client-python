@@ -12,15 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import deque
 from itertools import chain
 import json
+import logging
 import re
-import sys
 from os import path
+import sys
 import tempfile
+import textwrap
+import threading
+import time
 import warnings
 
 import click
+from click import termui
 from requests.packages.urllib3 import exceptions as urllib3exc
 
 from planet import api
@@ -183,3 +189,95 @@ def read(value, split=False):
     if retval and split and type(retval) != tuple:
         retval = _split(retval.strip())
     return retval
+
+
+def downloader_output(dl, disable_ansi=False):
+    # @todo make cleaner
+    thread = threading.current_thread()
+    start = time.time()
+    # do fancy output if we can or not explicitly disabled
+    if sys.stdout.isatty() and not disable_ansi and not termui.WIN:
+        # log msg ring buffer
+        records = deque(maxlen=100)
+        lock = threading.Lock()
+        __stats = {}
+
+        def _output():
+            # renders a terminal like:
+            # highlighted status rows
+            # ....
+            #
+            # scrolling log output
+            # ...
+            width, height = click.termui.get_terminal_size()
+            wrapper = textwrap.TextWrapper(width=width)
+            __stats['elapsed'] = '%d' % (time.time() - start)
+            stats = ['%s: %s' % (k, v) for k, v in sorted(__stats.items())]
+            stats = wrapper.wrap(''.join([s.ljust(25) for s in stats]))
+            remaining = height - len(stats) - 2
+            stats = [s.ljust(width) for s in stats]
+            lidx = max(0, len(records) - remaining)
+            loglines = []
+            while remaining > 0 and lidx < len(records):
+                wrapped = wrapper.wrap(records[lidx])
+                while remaining and wrapped:
+                    loglines.append(wrapped.pop(0))
+                    remaining -= 1
+                lidx += 1
+            # clear/cursor-to-1,1/hightlight
+            click.echo(u'\u001b[2J\u001b[1;1H\u001b[30;47m' + '\n'.join(stats)
+                       # unhighlight
+                       + u'\u001b[39;49m\n' + '\n'.join(loglines))
+
+        h = logging.Handler()
+
+        def emit(record):
+            with lock:
+                records.append(h.format(record))
+                _output()
+
+        # highjack the root handler, remove existing and replace with one
+        # that feeds our ring buffer
+        root = logging.getLogger('')
+        h.formatter = root.handlers[0].formatter
+        h.emit = emit
+        root.handlers = (h,)
+
+        def output(stats):
+            with lock:
+                __stats.update(stats)
+                _output()
+
+        click.clear()
+    else:
+        # fallback to simple output if ANSI output disabled
+
+        # attach a listener for completion of events that will emit valid
+        # ndjons
+        def report_complete(item, asset, path=None):
+            msg = {
+                'item': item['id'],
+                'asset': asset['type'],
+                'location': path or asset['location']
+            }
+            click.echo(json.dumps(msg))
+
+        dl.on_complete = report_complete
+
+        # and use a logger for stats output
+        def output(stats):
+            logging.info('%s', stats)
+
+    # schedule stats polling
+    def schedule():
+        if thread.is_alive():
+            threading.Timer(1, _stats).start()
+            return True
+
+    def _stats(exit=False):
+        output(dl.stats())
+        # do one final output
+        if not schedule() and not exit:
+            _stats(True)
+
+    schedule()

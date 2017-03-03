@@ -122,6 +122,22 @@ Utilities
 .. autofunction:: planet.api.write_to_file
 
 
+Activating and Downloading Many Assets
+--------------------------------------
+
+A common use case is to activate and download the results of a search. While
+the Client provides the lower-level functionality for this, the `Downloader`
+class provides convenience for managing this process for a large number of
+items and assets.
+
+Create a downloader using:
+
+.. autofunction:: planet.api.downloader.create
+
+.. autoclass:: planet.api.downloader.Downloader
+   :members:
+
+
 Client Exceptions
 -----------------
 

@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import cli as cli
-from . import v1
+from planet.scripts import cli
+from planet.scripts import v1
 
 assert v1  # appease lint
 
 main = cli.cli
+
+if __name__ == '__main__':
+    main()

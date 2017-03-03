@@ -164,7 +164,7 @@ def test_download_quick(runner, client, monkeypatch):
     client.quick_search.return_value = resp
     dl = MagicMock(name='downloader')
     monkeypatch.setattr('planet.scripts.v1.downloader', dl)
-    monkeypatch.setattr('planet.scripts.v1.monitor_stats',
+    monkeypatch.setattr('planet.scripts.v1.downloader_output',
                         lambda *a, **kw: None)
     monkeypatch.setattr('planet.scripts.v1.handle_interrupt',
                         lambda *a, **kw: None)
@@ -187,7 +187,7 @@ def test_download_search_id(runner, client, monkeypatch):
     client.saved_search.return_value = resp
     dl = MagicMock(name='downloader')
     monkeypatch.setattr('planet.scripts.v1.downloader', dl)
-    monkeypatch.setattr('planet.scripts.v1.monitor_stats',
+    monkeypatch.setattr('planet.scripts.v1.downloader_output',
                         lambda *a, **kw: None)
     monkeypatch.setattr('planet.scripts.v1.handle_interrupt',
                         lambda *a, **kw: None)

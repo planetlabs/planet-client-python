@@ -1,4 +1,9 @@
-from planet.api.helpers import downloader
+from planet.api import downloader
+from planet.api.utils import handle_interrupt
+import logging
+import sys
+from concurrent.futures import Future
+import threading
 import time
 
 SPEED_UP = 1000.
@@ -29,15 +34,30 @@ class Body(object):
         self._got_write = True
 
     def await(self):
-        time.sleep(WRITE_DELAY)
         pass
 
     def cancel(self):
         pass
 
 
+class Download(object):
+    # mirror models.Response kinda, mostly not
+    def __init__(self, body, writer):
+        self._future = Future()
+
+        def respond():
+            self._future.set_result(body)
+            writer(body)
+        # don't write to the body synchronously
+        threading.Timer(WRITE_DELAY, respond).start()
+
+    def await(self):
+        return self._future.result()
+
+
 def asset(name, type, status):
-    return {"_name": name, "type": type, 'status': status}
+    return {'_name': name, 'type': type, 'status': status,
+            'location': 'http://somewhere/%s/%s' % (type, name)}
 
 
 def assets(*assets):
@@ -75,8 +95,7 @@ class HelperClient(object):
     def download(self, asset, writer):
         time.sleep(DOWNLOAD_DELAY)
         b = Body(asset['_name'])
-        writer(b)
-        return b
+        return Download(b, writer)
 
     def shutdown(self):
         self._shutdown = True
@@ -88,9 +107,6 @@ def items_iter(cnt):
 
 
 def test_pipeline():
-    from planet.api.utils import handle_interrupt
-    import logging
-    import sys
     logging.basicConfig(
         stream=sys.stderr, level=logging.INFO,
         format='%(asctime)s %(message)s', datefmt='%M:%S'
@@ -98,15 +114,19 @@ def test_pipeline():
     cl = HelperClient()
     items = items_iter(100)
     asset_types = ['a', 'b']
-    dl = downloader(
-        cl, asset_types, 'whatever', no_sleep=True,
+    dl = downloader.create(
+        cl, no_sleep=True,
         astage__size=10, pstage__size=10, pstage__min_poll_interval=0,
         dstage__size=2)
-    handle_interrupt(dl.shutdown, dl.download, items)
-    assert dl.stats() == {
-        'downloading': 0, 'downloaded': 200, 'paging': False,
-        'total': '0.20MB', 'activating': 0, 'pending': 0
+    completed = []
+    dl.on_complete = lambda *a: completed.append(a)
+    stats = handle_interrupt(dl.shutdown, dl.download, items,
+                             asset_types, 'dest')
+    assert stats == {
+        'downloading': 0, 'complete': 200, 'paging': False,
+        'downloaded': '0.20MB', 'activating': 0, 'pending': 0
     }
+    assert 200 == len(completed)
 
 
 if __name__ == '__main__':
