@@ -24,7 +24,7 @@ def build_search_request(filter_like, item_types, name=None, interval=None):
     :param str interval: optional interval [year, month, week, day]
     '''
     filter_spec = filter_like.get('filter', filter_like)
-    all_items = list(set(filter_like.get('item_types', [])).union(*item_types))
+    all_items = list(set(filter_like.get('item_types', [])).union(item_types))
     name = filter_like.get('name', name)
     interval = filter_like.get('interval', interval)
     req = {'item_types': all_items, 'filter': filter_spec}

@@ -87,7 +87,8 @@ def filter_from_opts(**kw):
 
 
 def search_req_from_opts(**kw):
-    item_types = kw.pop('item_type')
+    # item_type will be list of lists - flatten
+    item_types = chain.from_iterable(kw.pop('item_type'))
     name = kw.pop('name', '')
     interval = kw.pop('interval', '')
     filt = filter_from_opts(**kw)
