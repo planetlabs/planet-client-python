@@ -25,7 +25,6 @@ from requests.packages.urllib3 import exceptions as urllib3exc
 
 from planet import api
 from planet.api import filters
-from planet.api import utils as api_utils
 
 
 def _split(value):
