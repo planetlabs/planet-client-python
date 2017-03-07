@@ -77,7 +77,6 @@ def filter_dump(**kw):
 @limit_option(100)
 @pretty
 @search_request_opts
-@sort_order
 def quick_search(limit, pretty, sort, **kw):
     '''Execute a quick search.'''
     req = search_req_from_opts(**kw)
