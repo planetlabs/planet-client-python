@@ -19,6 +19,7 @@ import click
 from click.types import CompositeParamType
 
 from .util import read
+from .util import _split
 
 from planet.api import filters
 from planet.api.utils import geometry_from_json
@@ -98,6 +99,12 @@ class _LenientChoice(click.Choice):
                   (msg, val, '\n\t'.join(self.choices)), param, ctx)
 
     def convert(self, val, param, ctx):
+        matched = set()
+        for p in _split(val):
+            matched = matched.union(self._match(p, param, ctx))
+        return list(matched)
+
+    def _match(self, val, param, ctx):
         lval = val.lower()
         if lval == 'all' and self.allow_all:
             return self.choices
@@ -138,7 +145,7 @@ class _FilterFieldValues(CompositeParamType):
 
     def convert(self, val, param, ctx):
         field, vals = val
-        vals = re.split('\s+|,', vals)
+        vals = _split(vals)
         parsed = []
         for v in vals:
             v = v.strip()

@@ -20,28 +20,34 @@ from planet.scripts.types import ItemType
 import pytest
 
 
+def convert_asserter(t):
+    def asserter(val, expected):
+        assert set(t.convert(val, None, None)) == set(expected)
+    return asserter
+
+
 def test_item_type():
-    t = ItemType()
-    assert t.convert('all', None, None) == _allowed_item_types
-    assert set(t.convert('psscene', None, None)) == \
-        set(['PSScene3Band', 'PSScene4Band'])
-    assert t.convert('Sentinel2L1C', None, None) == ['Sentinel2L1C']
+    check = convert_asserter(ItemType())
+
+    check('all', _allowed_item_types)
+    check('psscene', ['PSScene3Band', 'PSScene4Band'])
+    check('Sentinel2L1C', ['Sentinel2L1C'])
+    check('psscene,sent', ['PSScene3Band', 'PSScene4Band', 'Sentinel2L1C'])
 
     with pytest.raises(Exception) as e:
-        t.convert('x', None, None)
+        ItemType().convert('x', None, None)
     assert 'invalid choice: x' in str(e.value)
 
 
 def test_asset_type():
-    t = AssetType()
-    assert set(t.convert('visual*', None, None)) == \
-        set(['visual', 'visual_xml'])
-    assert set(t.convert('*data_*', None, None)) == \
-        set(['metadata_aux', 'metadata_txt'])
-    assert t.convert('analytic', None, None) == ['analytic']
+    check = convert_asserter(AssetType())
+    check('visual*', ['visual', 'visual_xml'])
+    check('*data_*', ['metadata_aux', 'metadata_txt'])
+    check('analytic', ['analytic'])
+    check('analytic,visual', ['analytic', 'visual'])
 
     with pytest.raises(Exception) as e:
-        t.convert('x', None, None)
+        AssetType().convert('x', None, None)
     assert 'invalid choice: x' in str(e.value)
 
 

@@ -28,8 +28,8 @@ from planet.api import filters
 
 
 def _split(value):
-    '''return input split on any whitespace'''
-    return re.split('\s+', value)
+    '''return input split on any whitespace or comma'''
+    return re.split('\s+|,', value)
 
 
 # monkey patch warnings module to hide InsecurePlatformWarning - the warning
