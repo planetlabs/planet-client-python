@@ -161,29 +161,38 @@ def test_saved_search(client):
                                   'the-id', 'get')
 
 
-def assert_simple_request(uri, func, method, *args):
+def assert_simple_request(uri, func, args, method='get', match=None):
+    match = match or (lambda r: True)
     with requests_mock.Mocker() as m:
-        getattr(m, method)(uri, text='{"ok": true}')
+        getattr(m, method)(uri, additional_matcher=match, text='{"ok": true}')
         resp = func(*args)
         assert resp.get()['ok']
+    return m
 
 
 def test_get_item(client):
     url = client.base_url + 'data/v1/item-types/the-type/items/the-id'
-    assert_simple_request(url, client.get_item, 'get', 'the-type', 'the-id')
+    assert_simple_request(url, client.get_item, ('the-type', 'the-id'))
 
 
 def test_get_assets(client):
     url = client.base_url + 'data/v1/item-types/the-type/items/the-id/assets'
-    assert_simple_request(url, client.get_assets_by_id, 'get',
-                          'the-type', 'the-id')
+    assert_simple_request(url, client.get_assets_by_id,
+                          ('the-type', 'the-id'))
 
 
 def test_get_searches(client):
     url = client.base_url + 'data/v1/searches/?search_type=saved'
-    assert_simple_request(url, client.get_searches, 'get')
+    assert_simple_request(url, client.get_searches, ())
 
 
 def test_stats(client):
     url = client.base_url + 'data/v1/stats'
-    assert_simple_request(url, client.stats, 'post', {'request': True})
+
+    # check that the post body contains the patched in filter
+    # see: client._patch_stats_request
+    def match(req):
+        body = req.json()
+        return body['filter']['config'] == {'gt': '1970-01-01T00:00:00Z'}
+    assert_simple_request(url, client.stats, ({'request': True},),
+                          method='post', match=match)

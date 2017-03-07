@@ -146,11 +146,6 @@ def test_download_errors(runner):
                   ' --dry-run')),
         'dry-run not supported with saved search'
     )
-    assert_failure(
-        download(('--asset-type visual --item-type all'
-                  ' --dry-run')),
-        'dry-run not supported with open query'
-    )
 
 
 def test_download_dry_run(runner, client, monkeypatch):

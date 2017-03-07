@@ -176,9 +176,6 @@ def download(asset_type, dest, limit, sort, search_id, dry_run, **kw):
         req = search_req_from_opts(**kw)
         if dry_run:
             req['interval'] = 'year'
-            if not req['filter']['config']:
-                raise click.ClickException(
-                    'dry-run not supported with open query')
             stats = cl.stats(req).get()
             item_cnt = sum([b['count'] for b in stats['buckets']])
             asset_cnt = item_cnt * len(asset_type)

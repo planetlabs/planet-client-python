@@ -18,6 +18,7 @@ from .dispatch import RequestsDispatcher
 from . import auth
 from .exceptions import (InvalidIdentity, APIException)
 from . import models
+from . import filters
 
 
 class _Base(object):
@@ -94,6 +95,18 @@ class _Base(object):
             payload += '=' * (4 - rem)
         payload = base64.urlsafe_b64decode(payload.encode('utf-8'))
         return json.loads(payload.decode('utf-8'))
+
+
+def _patch_stats_request(request):
+    '''If the request has no filter config, add one that should do what is
+    expected (include all items)
+    see: PE-11813
+    '''
+    filt = request.get('filter', {})
+    if not filt.get('config', None):
+        request['filter'] = filters.date_range('acquired',
+                                               gt='1970-01-01T00:00:00Z')
+    return request
 
 
 class ClientV1(_Base):
@@ -190,7 +203,8 @@ class ClientV1(_Base):
         :returns: :py:class:`planet.api.models.JSON`
         :raises planet.api.exceptions.APIException: On API error.
         '''
-        # @todo warn if empty and filter provided - will return no results
+        # work-around for API bug
+        request = _patch_stats_request(request)
         body = json.dumps(request)
         return self.dispatcher.response(models.Request(
             self._url('data/v1/stats'), self.auth,
