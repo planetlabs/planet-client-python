@@ -49,7 +49,8 @@ from planet.api.helpers import (
 
 
 filter_opts_epilog = '\nFilter Formats:\n\n' + \
-                     '\n'.join(['%s\n\n%s' % (k, v.replace('    ', ''))
+                     '\n'.join(['%s\n\n%s' % (k, v.replace('    ', '')
+                                              .replace('``', '\''))
                                 for k, v in metavar_docs.items()])
 
 
