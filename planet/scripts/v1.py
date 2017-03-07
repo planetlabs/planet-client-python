@@ -22,6 +22,7 @@ from .cli import (
 )
 from .opts import (
     asset_type_option,
+    asset_type_perms,
     filter_opts,
     limit_option,
     pretty,
@@ -29,6 +30,7 @@ from .opts import (
     sort_order
 )
 from .types import (
+    AssetTypePerm,
     metavar_docs
 )
 from .util import (
@@ -76,6 +78,7 @@ def filter_dump(**kw):
 @data.command('search', epilog=filter_opts_epilog)
 @limit_option(100)
 @pretty
+@asset_type_perms
 @search_request_opts
 def quick_search(limit, pretty, sort, **kw):
     '''Execute a quick search.'''
@@ -90,6 +93,7 @@ def quick_search(limit, pretty, sort, **kw):
 @data.command('create-search', epilog=filter_opts_epilog)
 @pretty
 @click.option('--name', required=True)
+@asset_type_perms
 @search_request_opts
 def create_search(pretty, **kw):
     '''Create a saved search'''
@@ -124,6 +128,7 @@ def get_searches(quick, saved):
 
 
 @pretty
+@asset_type_perms
 @search_request_opts
 @click.option('--interval', default='month',
               type=click.Choice(['hour', 'day', 'month', 'week', 'year']),
@@ -173,6 +178,8 @@ def download(asset_type, dest, limit, sort, search_id, dry_run, **kw):
         items = call_and_wrap(cl.saved_search, search_id, page_size=page_size,
                               sort=sort)
     else:
+        # any requested asset-types should be used as permission filters
+        kw['asset_type'] = [AssetTypePerm.to_permissions(asset_type)]
         req = search_req_from_opts(**kw)
         if dry_run:
             req['interval'] = 'year'

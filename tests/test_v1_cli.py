@@ -173,6 +173,11 @@ def test_download_quick(runner, client, monkeypatch):
             'data', 'download', '--asset-type', 'visual', '--item-type', 'all',
             '--limit', '1'
         ]), '')
+    req = client.quick_search.call_args[0][0]
+    perm_filt = {'type': 'PermissionFilter',
+                 'config': ('assets.visual:download',)}
+    # verify our implicit permission filter
+    assert perm_filt in req['filter']['config']
     assert client.quick_search.call_args[1]['page_size'] == 1
 
 

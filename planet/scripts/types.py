@@ -139,6 +139,19 @@ class AssetType(_LenientChoice):
         _LenientChoice.__init__(self, _allowed_asset_types)
 
 
+class AssetTypePerm(AssetType):
+
+    @staticmethod
+    def to_permissions(asset_types):
+        return filters.permission_filter(*[
+            'assets.%s:download' % a for a in asset_types
+        ])
+
+    def convert(self, val, param, ctx):
+        return AssetTypePerm.to_permissions(
+            AssetType.convert(self, val, param, ctx))
+
+
 class _FilterFieldValues(CompositeParamType):
     name = 'field values'
     arity = 2

@@ -16,6 +16,7 @@ import click
 
 from .types import (
     AssetType,
+    AssetTypePerm,
     DateRange,
     GeomFilter,
     FilterJSON,
@@ -83,6 +84,12 @@ item_type_option = click.option(
 asset_type_option = click.option(
     '--asset-type', multiple=True, required=True, type=AssetType(), help=(
         'Specify asset type(s)'
+    )
+)
+
+asset_type_perms = click.option(
+    '--asset-type', multiple=True, required=False, type=AssetTypePerm(), help=(
+        'Specify asset type(s) permissions'
     )
 )
 

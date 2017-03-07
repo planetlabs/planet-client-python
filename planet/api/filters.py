@@ -133,6 +133,16 @@ def num_filter(field_name, *vals):
     return _filter('NumberInFilter', config=vals, field_name=field_name)
 
 
+def permission_filter(*perms):
+    '''Build a PermissionFilter with the specified permissions.
+
+    >>> permission_filter('assets:download') == \
+    {'type': 'PermissionFilter', 'config': ('assets:download',)}
+    True
+    '''
+    return _filter('PermissionFilter', config=perms)
+
+
 def string_filter(field_name, *vals):
     '''Build a StringInFilter.
 

@@ -71,7 +71,8 @@ def check_writable(dirpath):
 
 def filter_from_opts(**kw):
     '''Build a AND filter from the provided filter_in OR kwargs defaulting to an
-    empty 'and' filter (@todo: API workaround)
+    empty 'and' filter (@todo: API workaround).
+    All kw values should be tuple or list
     '''
     filter_in = kw.pop('filter_json', None)
     active = and_filter_from_opts(kw)
