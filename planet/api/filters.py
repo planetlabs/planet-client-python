@@ -66,7 +66,7 @@ def and_filter(*predicates):
     {'config': {'lt': 0.2}, 'field_name': 'clouds', 'type': 'RangeFilter'}
     True
     '''
-    return _filter("AndFilter", predicates)
+    return _filter('AndFilter', predicates)
 
 
 def or_filter(*predicates):
@@ -88,11 +88,11 @@ def or_filter(*predicates):
     {'config': {'gt': 0.1}, 'field_name': 'clouds', 'type': 'RangeFilter'}
     True
     '''
-    return _filter("OrFilter", predicates)
+    return _filter('OrFilter', predicates)
 
 
 def not_filter(*predicates):
-    return _filter("NotFilter", predicates)
+    return _filter('NotFilter', predicates)
 
 
 def date_range(field_name, **kwargs):
@@ -100,45 +100,45 @@ def date_range(field_name, **kwargs):
         if hasattr(v, 'isoformat'):
             # @todo check timezone handling
             kwargs[k] = v.isoformat() + 'Z'
-    return _filter("DateRangeFilter", config=kwargs, field_name=field_name)
+    return _filter('DateRangeFilter', config=kwargs, field_name=field_name)
 
 
 def range_filter(field_name, **kwargs):
-    '''build a range filter
+    '''Build a RangeFilter.
 
     >>> range_filter('clouds', gt=0.1) == \
     {'config': {'gt': 0.1}, 'field_name': 'clouds', 'type': 'RangeFilter'}
     True
     '''
-    return _filter("RangeFilter", config=kwargs, field_name=field_name)
+    return _filter('RangeFilter', config=kwargs, field_name=field_name)
 
 
 def geom_filter(geom, field_name=None):
-    '''Build a geometry filter from the provided geosjon geom dict
+    '''Build a GeometryFilter from the provided geosjon geom dict.
 
     :param geojson geom: the geojson geom dict
     :param str field_name: optional field name, default is 'geometry'
     '''
-    return _filter("GeometryFilter", config=geom,
-                   field_name=field_name or "geometry")
+    return _filter('GeometryFilter', config=geom,
+                   field_name=field_name or 'geometry')
 
 
 def num_filter(field_name, *vals):
-    '''build a string-in filter
+    '''Build a NumberInFilter.
 
     >>> num_filter('value', 50, 100) == \
     {'config': (50, 100), 'field_name': 'value', 'type': 'NumberInFilter'}
     True
     '''
-    return _filter("NumberInFilter", config=vals, field_name=field_name)
+    return _filter('NumberInFilter', config=vals, field_name=field_name)
 
 
 def string_filter(field_name, *vals):
-    '''build a string-in filter
+    '''Build a StringInFilter.
 
     >>> string_filter('id', 'id1', 'id2', 'id3') == \
     {'config': ('id1', 'id2', 'id3'), 'field_name': 'id', \
     'type': 'StringInFilter'}
     True
     '''
-    return _filter("StringInFilter", config=vals, field_name=field_name)
+    return _filter('StringInFilter', config=vals, field_name=field_name)
