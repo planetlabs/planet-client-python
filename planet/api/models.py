@@ -116,9 +116,10 @@ class Body(object):
         return (c for c in self.response.iter_content(chunk_size=chunk_size))
 
     def last_modified(self):
-        '''Read the last-modified header as a datetime'''
-        lm = self.response.headers['last-modified']
-        return datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S GMT')
+        '''Read the last-modified header as a datetime, if present.'''
+        lm = self.response.headers.get('last-modified', None)
+        return datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S GMT') if lm \
+            else None
 
     def get_raw(self):
         '''Get the decoded text content from the response'''
