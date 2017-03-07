@@ -181,6 +181,24 @@ def test_download_quick(runner, client, monkeypatch):
     assert client.quick_search.call_args[1]['page_size'] == 1
 
 
+def test_download_search_id(runner, client, monkeypatch):
+    resp = MagicMock('response')
+    resp.items_iter = lambda x: None
+    client.saved_search.return_value = resp
+    dl = MagicMock(name='downloader')
+    monkeypatch.setattr('planet.scripts.v1.downloader', dl)
+    monkeypatch.setattr('planet.scripts.v1.monitor_stats',
+                        lambda *a, **kw: None)
+    monkeypatch.setattr('planet.scripts.v1.handle_interrupt',
+                        lambda *a, **kw: None)
+    assert_success(
+        runner.invoke(main, [
+            'data', 'download', '--search-id', 'x22', '--asset-type', 'udm',
+            '--limit', '1'
+        ]), '')
+    assert client.saved_search.call_args[0][0] == 'x22'
+
+
 def test_create_search(runner, client):
     fake_response = '{"chowda":true}'
     configure_response(client.create_search, fake_response)

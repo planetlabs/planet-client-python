@@ -136,11 +136,18 @@ def stats(pretty, **kw):
     echo_json_response(call_and_wrap(cl.stats, req), pretty)
 
 
+def _disable_item_type(ctx, param, value):
+    if value:
+        for p in ctx.command.params:
+            if p.name == 'item_type':
+                p.required = False
+    return value
+
+
 @asset_type_option
 @search_request_opts
-@click.option('--search-id', type=str, help=(
-    'Use the specified search'
-))
+@click.option('--search-id', is_eager=True, callback=_disable_item_type,
+              type=str, help='Use the specified search')
 @click.option('--dry-run', is_flag=True, help=(
     'Only report the number of items that would be downloaded.'
 ))
@@ -160,7 +167,7 @@ def download(asset_type, dest, limit, sort, search_id, dry_run, **kw):
         if dry_run:
             raise click.ClickException(
                 'dry-run not supported with saved search')
-        if any(kw[s] for s in kw if s not in ('item_type',)):
+        if any(kw[s] for s in kw):
             raise click.ClickException(
                 'search options not supported with saved search')
         items = call_and_wrap(cl.saved_search, search_id, page_size=page_size,
