@@ -228,11 +228,11 @@ class ClientV1(_Base):
         Asset representations are obtained from :py:meth:`get_assets`.
 
         :param request dict: An asset representation from the API.
-        :returns: :py:class:`planet.api.models.JSON`
+        :returns: :py:class:`planet.api.models.Body` with no response content
         :raises planet.api.exceptions.APIException: On API error.
         '''
         activate_url = asset['_links']['activate']
-        return self._get(activate_url).get_body()
+        return self._get(activate_url, body_type=models.Body).get_body()
 
     def download(self, asset, callback=None):
         '''Download the specified asset. If provided, the callback will be
