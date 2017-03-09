@@ -17,6 +17,7 @@ from planet.scripts.types import _allowed_item_types
 from planet.scripts.types import AssetType
 from planet.scripts.types import GeomFilter
 from planet.scripts.types import ItemType
+from planet.scripts.types import Range
 import pytest
 
 
@@ -70,3 +71,13 @@ def test_geom_type():
     with pytest.raises(Exception) as e:
         t.convert('{"type": "Point"}', None, None)
     assert 'unable to find geometry in input' in str(e.value)
+
+
+def test_range_type():
+    t = Range()
+
+    expect = {'config': {'gt': 42.0}, 'field_name': 'x', 'type': 'RangeFilter'}
+    assert expect == t.convert('x gt 42'.split(' '), None, None)
+    with pytest.raises(Exception) as e:
+        t.convert('x gt a'.split(' '), None, None)
+    assert 'invalid value for range: "a", must be number' in str(e.value)

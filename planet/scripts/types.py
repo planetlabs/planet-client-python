@@ -197,7 +197,10 @@ class Range(CompositeParamType):
         return filters.range_filter
 
     def _parse(self, val, param, ctx):
-        return val
+        try:
+            return float(val)
+        except ValueError:
+            self.fail('invalid value for range: "%s", must be number' % val)
 
     def convert(self, vals, param, ctx):
         field, comp_op, val = vals
