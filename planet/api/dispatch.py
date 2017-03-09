@@ -62,6 +62,12 @@ class _Throttler(object):
         self._cond.release()
         return False
 
+    def wrap(self, f):
+        def w(*a, **kw):
+            with self:
+                return f(*a, **kw)
+        return w
+
 
 class RedirectSession(Session):
     '''This exists to override the existing behavior of requests that will
@@ -108,11 +114,12 @@ def _do_request(sess, req, **kwargs):
                 req.method, req.url, data=req.data, headers=_headers(req),
                 params=req.params, verify=USE_STRICT_SSL, **kwargs
             )
-            log.debug('request took %.03f', time.time() - t)
             # futures session returns futures so only check actual responses
             # for futures these will be checked in the wrapper model
             if hasattr(resp, 'status_code'):
                 check_status(resp)
+                # only log non-async calls
+                log.debug('request took %.03f', time.time() - t)
             return resp
         except TooManyRequests:
             time.sleep(1)
@@ -124,23 +131,22 @@ class RequestsDispatcher(object):
     def __init__(self, workers=4):
         # general session for sync api calls
         self.session = RedirectSession()
+        # ensure all calls to the session are throttled
+        self.session.request = _Throttler().wrap(self.session.request)
         # the asyncpool is reserved for long-running async tasks
         self._asyncpool = FuturesSession(
             max_workers=workers,
             session=self.session)
-        self._throttler = _Throttler()
 
     def response(self, request):
         return Response(request, self)
 
     def _dispatch_async(self, request, callback):
-        with self._throttler:
-            return _do_request(self._asyncpool, request, stream=True,
-                               background_callback=callback)
+        return _do_request(self._asyncpool, request, stream=True,
+                           background_callback=callback)
 
     def _dispatch(self, request, callback=None):
-        with self._throttler:
-            return _do_request(self.session, request)
+        return _do_request(self.session, request)
 
     # @todo delete me w/ v0 removal
     def dispatch_request(self, method, url, auth=None, params=None, data=None):
