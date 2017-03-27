@@ -309,4 +309,9 @@ def downloader_output(dl, disable_ansi=False):
     # do fancy output if we can or not explicitly disabled
     if sys.stdout.isatty() and not disable_ansi and not termui.WIN:
         return AnsiOutput(thread, dl)
+    # work around for lack of nice output for downloader on windows:
+    # unless told to be quiet, set logging higher to get some output
+    # @todo fallback to simpler 'UI' when isatty on win
+    if termui.WIN and not disable_ansi:
+        logging.getLogger('').setLevel(logging.INFO)
     return Output(thread, dl)
