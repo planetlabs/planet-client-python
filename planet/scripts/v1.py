@@ -208,7 +208,7 @@ def download(asset_type, dest, limit, sort, search_id, dry_run, activate_only,
     output.start()
     try:
         items = search(search_arg, page_size=page_size, sort=sort)
-    except Exception, ex:
+    except Exception as ex:
         output.cancel()
         click_exception(ex)
     func = dl.activate if activate_only else dl.download
