@@ -254,13 +254,15 @@ class _DStage(_Stage):
             self._tasks.append((item, assets[at]))
 
     def cancel(self):
-        _Stage.cancel(self)
         while not self._results.empty():
             try:
                 r = self._results.get(block=False)
-                r and r.cancel()
+                if r:
+                    item, asset, dl = r
+                    dl.cancel()
             except queue.Empty:
                 pass
+        _Stage.cancel(self)
 
     def _write_tracker(self, item, asset):
         def _tracker(**kw):
