@@ -18,6 +18,3 @@ from planet.scripts import v1
 assert v1  # appease lint
 
 main = cli.cli
-
-if __name__ == '__main__':
-    main()
