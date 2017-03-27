@@ -191,93 +191,119 @@ def read(value, split=False):
     return retval
 
 
-def downloader_output(dl, disable_ansi=False):
-    # @todo make cleaner
-    thread = threading.current_thread()
-    start = time.time()
-    # do fancy output if we can or not explicitly disabled
-    if sys.stdout.isatty() and not disable_ansi and not termui.WIN:
+class _BaseOutput(object):
+
+    refresh_rate = 1
+
+    def __init__(self, thread, dl):
+        self._thread = thread
+        self._timer = None
+        self._dl = dl
+        self._running = False
+        dl.on_complete = self._report_complete
+
+    def _schedule(self):
+        if self._thread.is_alive() and self._running:
+            self._timer = threading.Timer(self.refresh_rate, self._run)
+            self._timer.start()
+            return True
+
+    def _run(self, exit=False):
+        if self._running:
+            self._output(self._dl.stats())
+        if not exit and self._running and not self._schedule():
+            self._run(True)
+
+    def start(self):
+        self._running = True
+        self._run()
+
+    def cancel(self):
+        self._running = False
+        self._timer and self._timer.cancel()
+
+
+class Output(_BaseOutput):
+
+    def _report_complete(item, asset, path=None):
+        msg = {
+            'item': item['id'],
+            'asset': asset['type'],
+            'location': path or asset['location']
+        }
+        click.echo(json.dumps(msg))
+
+    def _output(self, stats):
+        logging.info('%s', stats)
+
+
+class AnsiOutput(_BaseOutput):
+
+    def __init__(self, *args, **kw):
+        _BaseOutput.__init__(self, *args, **kw)
+        self._start = time.time()
         # log msg ring buffer
-        records = deque(maxlen=100)
-        lock = threading.Lock()
-        __stats = {}
-
-        def _output():
-            # renders a terminal like:
-            # highlighted status rows
-            # ....
-            #
-            # scrolling log output
-            # ...
-            width, height = click.termui.get_terminal_size()
-            wrapper = textwrap.TextWrapper(width=width)
-            __stats['elapsed'] = '%d' % (time.time() - start)
-            stats = ['%s: %s' % (k, v) for k, v in sorted(__stats.items())]
-            stats = wrapper.wrap(''.join([s.ljust(25) for s in stats]))
-            remaining = height - len(stats) - 2
-            stats = [s.ljust(width) for s in stats]
-            lidx = max(0, len(records) - remaining)
-            loglines = []
-            while remaining > 0 and lidx < len(records):
-                wrapped = wrapper.wrap(records[lidx])
-                while remaining and wrapped:
-                    loglines.append(wrapped.pop(0))
-                    remaining -= 1
-                lidx += 1
-            # clear/cursor-to-1,1/hightlight
-            click.echo(u'\u001b[2J\u001b[1;1H\u001b[30;47m' + '\n'.join(stats)
-                       # unhighlight
-                       + u'\u001b[39;49m\n' + '\n'.join(loglines))
-
-        h = logging.Handler()
-
-        def emit(record):
-            with lock:
-                records.append(h.format(record))
-                _output()
+        self._records = deque(maxlen=100)
+        self._lock = threading.Lock()
+        self._stats = {}
 
         # highjack the root handler, remove existing and replace with one
         # that feeds our ring buffer
+        h = logging.Handler()
         root = logging.getLogger('')
         h.formatter = root.handlers[0].formatter
-        h.emit = emit
+        h.emit = self._emit
         root.handlers = (h,)
+        self._handler = h
 
-        def output(stats):
-            with lock:
-                __stats.update(stats)
-                _output()
-
+    def start(self):
         click.clear()
-    else:
-        # fallback to simple output if ANSI output disabled
+        _BaseOutput.start(self)
 
-        # attach a listener for completion of events that will emit valid
-        # ndjons
-        def report_complete(item, asset, path=None):
-            msg = {
-                'item': item['id'],
-                'asset': asset['type'],
-                'location': path or asset['location']
-            }
-            click.echo(json.dumps(msg))
+    def _emit(self, record):
+        with self._lock:
+            self._records.append(self._handler.format(record))
+            self._do_output()
 
-        dl.on_complete = report_complete
+    def _output(self, stats):
+        with self._lock:
+            self._stats.update(stats)
+            self._do_output()
 
-        # and use a logger for stats output
-        def output(stats):
-            logging.info('%s', stats)
+    def _report_complete(self, item, asset, path=None):
+        pass
 
-    # schedule stats polling
-    def schedule():
-        if thread.is_alive():
-            threading.Timer(1, _stats).start()
-            return True
+    def _do_output(self):
+        # renders a terminal like:
+        # highlighted status rows
+        # ....
+        #
+        # scrolling log output
+        # ...
+        width, height = click.termui.get_terminal_size()
+        wrapper = textwrap.TextWrapper(width=width)
+        self._stats['elapsed'] = '%d' % (time.time() - self._start)
+        stats = ['%s: %s' % (k, v) for k, v in sorted(self._stats.items())]
+        stats = wrapper.wrap(''.join([s.ljust(25) for s in stats]))
+        remaining = height - len(stats) - 2
+        stats = [s.ljust(width) for s in stats]
+        lidx = max(0, len(self._records) - remaining)
+        loglines = []
+        while remaining > 0 and lidx < len(self._records):
+            wrapped = wrapper.wrap(self._records[lidx])
+            while remaining and wrapped:
+                loglines.append(wrapped.pop(0))
+                remaining -= 1
+            lidx += 1
+        # clear/cursor-to-1,1/hightlight
+        click.echo(u'\u001b[2J\u001b[1;1H\u001b[30;47m' + '\n'.join(stats)
+                   # unhighlight
+                   + u'\u001b[39;49m\n' + '\n'.join(loglines))
 
-    def _stats(exit=False):
-        output(dl.stats())
-        # do one final output
-        if not schedule() and not exit:
-            _stats(True)
 
-    schedule()
+def downloader_output(dl, disable_ansi=False):
+    thread = threading.current_thread()
+    # do fancy output if we can or not explicitly disabled
+    if sys.stdout.isatty() and not disable_ansi and not termui.WIN:
+        return AnsiOutput(thread, dl)
+    return Output(thread, dl)

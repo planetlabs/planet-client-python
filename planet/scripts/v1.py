@@ -35,6 +35,7 @@ from .types import (
 from .util import (
     call_and_wrap,
     check_writable,
+    click_exception,
     filter_from_opts,
     downloader_output,
     echo_json_response,
@@ -198,9 +199,14 @@ def download(asset_type, dest, limit, sort, search_id, dry_run, activate_only,
             search, search_arg = cl.quick_search, req
 
     dl = downloader.create(cl)
-    downloader_output(dl, disable_ansi=quiet)
+    output = downloader_output(dl, disable_ansi=quiet)
     # delay initial item search until downloader output initialized
-    items = call_and_wrap(search, search_arg, page_size=page_size, sort=sort)
+    output.start()
+    try:
+        items = search(search_arg, page_size=page_size, sort=sort)
+    except Exception, ex:
+        output.cancel()
+        click_exception(ex)
     func = dl.activate if activate_only else dl.download
     args = [items.items_iter(limit), asset_type]
     if not activate_only:
