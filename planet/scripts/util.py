@@ -72,6 +72,9 @@ def check_writable(dirpath):
         tempfile.NamedTemporaryFile(dir=dirpath).close()
     except OSError:
         return False
+    # in windows with a vagrant ro-mount, this was raised instead
+    except IOError:
+        return False
     return True
 
 

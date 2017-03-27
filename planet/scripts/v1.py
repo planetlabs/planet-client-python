@@ -160,8 +160,9 @@ def _disable_item_type(ctx, param, value):
 @click.option('--quiet', is_flag=True, help=(
     'Disable ANSI control output'
 ))
-@click.option('--dest', default='.', type=click.Path(exists=True), help=(
-    'Location to download files to'))
+@click.option('--dest', default='.', help=(
+    'Location to download files to'), type=click.Path(
+        exists=True, resolve_path=True, writable=True, file_okay=False))
 @limit_option(None)
 @data.command('download', epilog=filter_opts_epilog)
 def download(asset_type, dest, limit, sort, search_id, dry_run, activate_only,
@@ -170,6 +171,9 @@ def download(asset_type, dest, limit, sort, search_id, dry_run, activate_only,
     cl = clientv1()
     page_size = min(limit or 250, 250)
     asset_type = list(chain.from_iterable(asset_type))
+    # even though we're using functionality from click.Path, this was needed
+    # to detect inability to write on Windows in a read-only vagrant mount...
+    # @todo check/report upstream
     if not check_writable(dest):
         raise click.ClickException(
             'download destination "%s" is not writable' % dest)
