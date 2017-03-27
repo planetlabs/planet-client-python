@@ -228,7 +228,7 @@ class _BaseOutput(object):
 
 class Output(_BaseOutput):
 
-    def _report_complete(item, asset, path=None):
+    def _report_complete(self, item, asset, path=None):
         msg = {
             'item': item['id'],
             'asset': asset['type'],
