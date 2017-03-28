@@ -174,7 +174,7 @@ def download(asset_type, dest, limit, sort, search_id, dry_run, activate_only,
     # even though we're using functionality from click.Path, this was needed
     # to detect inability to write on Windows in a read-only vagrant mount...
     # @todo check/report upstream
-    if not check_writable(dest):
+    if not activate_only and not check_writable(dest):
         raise click.ClickException(
             'download destination "%s" is not writable' % dest)
     if search_id:
