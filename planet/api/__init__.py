@@ -17,10 +17,12 @@ from .exceptions import (NoPermission, MissingResource, OverQuota)
 from .exceptions import (ServerError, RequestCancelled, TooManyRequests)
 from .client import (ClientV1)
 from .utils import write_to_file
+from . import filters
 
 __all__ = [
     ClientV1, APIException, BadQuery, InvalidAPIKey,
     NoPermission, MissingResource, OverQuota, ServerError, RequestCancelled,
     TooManyRequests,
-    write_to_file
+    write_to_file,
+    filters
 ]
