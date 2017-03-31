@@ -63,7 +63,6 @@ def cli(context, verbose, api_key, base_url, workers):
     client_params['workers'] = workers
     if base_url:
         client_params['base_url'] = base_url
-#     context.obj = clientv1()
 
 
 @cli.command('help')
