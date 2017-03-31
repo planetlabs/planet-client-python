@@ -53,9 +53,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Planet Labs Client'
+project = u'Planet API Client'
 copyright = u'2017 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103'
-author = u'Planet Labs'
+author = u'Planet'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -267,7 +267,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'planetlabsclient', u'Planet Labs Client Documentation',
+    (master_doc, 'planetlabsclient', u'Planet API Client Documentation',
      [author], 1)
 ]
 
@@ -281,7 +281,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'PlanetLabsClient', u'Planet Labs Client Documentation',
+  (master_doc, 'PlanetLabsClient', u'Planet API Client Documentation',
    author, 'PlanetLabsClient', 'One line description of project.',
    'Miscellaneous'),
 ]

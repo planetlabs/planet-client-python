@@ -1,7 +1,7 @@
 :tocdepth: 3
 
-Planet Labs Python Client
-=========================
+Planet API - Python Client
+==========================
 
 This library provides a command-line-interface (CLI) and Python library to make access to Planet's public API easy to use.
 
