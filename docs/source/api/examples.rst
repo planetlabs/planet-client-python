@@ -8,7 +8,7 @@ Everything needed is provided in the `api` module.
 
 .. code-block:: python
 
-   from planet import api
+    from planet import api
 
 Creating a Client
 -----------------
@@ -17,63 +17,39 @@ Without any arguments, the Client will look for an API_KEY using the operating s
 
 .. code-block:: python
 
-   client = api.Client()
+    client = api.ClientV1()
 
-Searching for Scenes
---------------------
+Searching for Items
+-------------------
 
-Get the most recent Planet scenes.
-
-.. code-block:: python
-
-   body = client.get_scenes_list(scene_type='ortho')
-
-Get the most recent Landsat scenes.
+A common case is searching for items in an AOI.
 
 .. code-block:: python
 
-   body = client.get_scenes_list(scene_type='landsat')
+    aoi = {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [-122.54, 37.81],
+          [-122.38, 37.84],
+          [-122.35, 37.71],
+          [-122.53, 37.70],
+          [-122.54, 37.81]
+        ]
+      ]
+    }
 
-Providing metadata filters in a search.
+    # build a filter for the AOI
+    query = api.filters.and_filter(
+      api.filters.geom_filter(aoi)
+    )
+    # we are requesting PlanetScope 4 Band imagery
+    item_types = ['PSScene4Band']
+    request = api.filters.build_search_request(query, item_types)
+    # this will cause an exception if there are any API related errors
+    results = client.quick_search(request)
 
-.. code-block:: python
-
-   filters = { 'sat.id.eq' : '090b'}
-   body = client.get_scenes_list(scene_type='landsat', **filters)
-
-Using an AOI (in WKT in this example) to search.
-
-.. code-block:: python
-
-   wkt = 'POINT(-100 40)'
-   body = client.get_scenes_list(scene_type='landsat', intersects=wkt)
-
-Handling a response `body` - the `get` method returns JSON (in this case, GeoJSON).
-
-.. code-block:: python
-
-   geojson = body.get()
-   # the results are paginated and the total result set count is provided
-   print '%s total results' % geojson['count']
-   # loop over features and print the scene 'id'
-   for f in geojson['features']:
-       print f['id']
-
-Downloading Scenes
-------------------
-
-One or more scenes may be downloaded using scenes ids. Downloading is currently
-done asynchronously and a callback must be provided. The callback will execute
-when data is available.
-
-.. code-block:: python
-
-   scene_ids = ['20150810_235346_0b10', '20150810_235345_0b10']
-   # create a callback that will write scenes to the 'downloads' directory
-   # note - the directory must exist!
-   callback = api.write_to_file('downloads')
-   bodies = client.fetch_scene_geotiffs(ids, callback=callback)
-   # await the completion of the asynchronous downloads, this is where
-   # any exception handling should be performed
-   for b in bodies:
-       b.await()
+    # items_iter returns an iterator over API response pages
+    for item in results.items_iter():
+      # each item is a GeoJSON feature
+      sys.stdout.write('%s\n' % item['id'])

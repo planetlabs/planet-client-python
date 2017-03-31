@@ -2,6 +2,10 @@ div.body, body {
   background-color: #f2f2f2;
 }
 
+.documentwrapper {
+  min-height: 80vh;
+}
+
 pre {
   background-color: #191919;
   word-wrap: break-word;
