@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>API &mdash; Planet Labs Client 0.0.6 documentation</title>
+    <title>API &#8212; Planet API Client 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,64 +14,35 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.0.6',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="Planet Labs Client 0.0.6 documentation" href="../index.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Reference" href="reference.html" />
     <link rel="prev" title="Examples" href="../cli/examples.html" />
    
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="section" id="api">
-<h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
-<p>Unless noted here, other classes, modules or functions should be considered &#8216;private&#8217; and subject to change.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">As this project is still in development, there may be reorganization and modifications that cause breaking changes.</p>
-</div>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="reference.html#the-client-object">The Client Object</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference.html#module-planet.api.models">Client Return Values</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#importing-the-api">Importing the API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#creating-a-client">Creating a Client</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#searching-for-scenes">Searching for Scenes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#downloading-scenes">Downloading Scenes</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
-
-
-          </div>
-        </div>
-      </div>
+  <body role="document">
+  <div class="document">
+    
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../index.html">
-    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../_static/logo.svg" alt="Logo"/>
     
   </a>
 </p>
@@ -82,22 +53,21 @@
 
 
 
+
+
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../cli/index.html">Command Line</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">API</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="reference.html">Reference</a></li>
 <li class="toctree-l2"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
@@ -107,17 +77,50 @@
 
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="api">
+<h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
+<p>Unless noted here, other classes, modules or functions should be considered &#8216;private&#8217; and subject to change.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#the-client-object">The Client Object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#client-search-requests">Client Search Requests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#filters">Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#module-planet.api.models">Client Return Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#utilities">Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#activating-and-downloading-many-assets">Activating and Downloading Many Assets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#client-exceptions">Client Exceptions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#importing-the-api">Importing the API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#creating-a-client">Creating a Client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#searching-for-items">Searching for Items</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
     <div class="footer">
-      &copy;2015 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
+      &copy;2017 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
       |
-      <a href="../_sources/api/index.txt"
+      <a href="../_sources/api/index.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

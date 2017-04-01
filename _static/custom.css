@@ -1,0 +1,53 @@
+div.body, body {
+  background-color: #f2f2f2;
+}
+
+.documentwrapper {
+  min-height: 80vh;
+}
+
+pre {
+  background-color: #191919;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+pre span {
+  font-weight: 800;
+}
+
+.highlight-text .highlight pre,
+.highlight-bash .highlight,
+.highlight-bash .highlight .m,
+.highlight-bash .highlight .s2,
+.highlight-python .highlight .n,
+.highlight-python .highlight .p,
+.highlight-default .highlight .n,
+.highlight-default .highlight .p
+{
+  color: #f2f2f2;
+}
+
+.highlight-bash .highlight .c1,
+.highlight-python .highlight .c1,
+.highlight-python .highlight .s1,
+.highlight-default .highlight .c1,
+.highlight-default .highlight .s1
+{
+  color: #b5bd68;
+}
+
+.highlight-python .highlight .k,
+.highlight-python .highlight .kn,
+.highlight-python .highlight .ow,
+.highlight-default .highlight .k,
+.highlight-default .highlight .kn,
+.highlight-default .highlight .ow,
+.highlight-default .highlight .go
+{
+  color: #b294bb;
+}
+
+.highlight-javascript .highlight .p
+{
+  color: #f2f2f2;
+}

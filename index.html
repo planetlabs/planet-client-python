@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Planet Labs Python Client &mdash; Planet Labs Client 0.0.6 documentation</title>
+    <title>Planet API - Python Client &#8212; Planet API Client 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,66 +14,34 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.0.6',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Planet Labs Client 0.0.6 documentation" href="#" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Command Line" href="cli/index.html" />
    
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="section" id="planet-labs-python-client">
-<h1>Planet Labs Python Client<a class="headerlink" href="#planet-labs-python-client" title="Permalink to this headline">¶</a></h1>
-<p>This library provides a command-line-interface (CLI) and Python library to make access to Planet&#8217;s public API easy to use.</p>
-<p>The command line interface is intended to be functional for many tasks but is just a thin layer on the lower level Python API.</p>
-<p>Also see the <a class="reference external" href="https://www.planet.com/docs">API Reference Docs</a> for more information.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="cli/index.html">Command Line</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="cli/reference.html">CLI Reference</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cli/examples.html">Examples</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="api/index.html">API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api/reference.html">Reference</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/examples.html">Examples</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><a class="reference internal" href="genindex.html"><span>Index</span></a></li>
-<li><a class="reference internal" href="py-modindex.html"><span>Module Index</span></a></li>
-</ul>
-</div>
-
-
-          </div>
-        </div>
-      </div>
+  <body role="document">
+  <div class="document">
+    
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="#">
-    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    <img class="logo" src="_static/logo.svg" alt="Logo"/>
     
   </a>
 </p>
@@ -84,17 +52,16 @@
 
 
 
+
+
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
 <ul>
@@ -105,17 +72,77 @@
 
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="planet-api-python-client">
+<h1>Planet API - Python Client<a class="headerlink" href="#planet-api-python-client" title="Permalink to this headline">¶</a></h1>
+<p>This library provides a command-line-interface (CLI) and Python library to make access to Planet&#8217;s public API easy to use.</p>
+<p>The command line interface is intended to be functional for many tasks but is just a thin layer on the lower level Python API.</p>
+<p>Also see the <a class="reference external" href="https://www.planet.com/docs">API Reference Docs</a> for more information.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cli/index.html">Command Line</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli/reference.html">CLI Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli/reference.html#command-line-concepts">Command Line Concepts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli/reference.html#option-types-formatting">Option Types Formatting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli/reference.html#general-options">General Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli/reference.html#general-commands">General Commands</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli/reference.html#data-api">Data API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cli/examples.html">Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli/examples.html#integration-with-other-tools">Integration With Other Tools</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/reference.html">Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/reference.html#the-client-object">The Client Object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/reference.html#client-search-requests">Client Search Requests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/reference.html#filters">Filters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/reference.html#module-planet.api.models">Client Return Values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/reference.html#utilities">Utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/reference.html#activating-and-downloading-many-assets">Activating and Downloading Many Assets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/reference.html#client-exceptions">Client Exceptions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/examples.html">Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/examples.html#importing-the-api">Importing the API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/examples.html#creating-a-client">Creating a Client</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/examples.html#searching-for-items">Searching for Items</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
     <div class="footer">
-      &copy;2015 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
+      &copy;2017 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
       |
-      <a href="_sources/index.txt"
+      <a href="_sources/index.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

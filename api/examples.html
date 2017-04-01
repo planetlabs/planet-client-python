@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Examples &mdash; Planet Labs Client 0.0.6 documentation</title>
+    <title>Examples &#8212; Planet API Client 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,104 +14,34 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.0.6',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="Planet Labs Client 0.0.6 documentation" href="../index.html" />
-    <link rel="up" title="API" href="index.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="prev" title="Reference" href="reference.html" />
    
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="section" id="examples">
-<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="importing-the-api">
-<h2>Importing the API<a class="headerlink" href="#importing-the-api" title="Permalink to this headline">¶</a></h2>
-<p>Everything needed is provided in the <cite>api</cite> module.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">planet</span> <span class="kn">import</span> <span class="n">api</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="creating-a-client">
-<h2>Creating a Client<a class="headerlink" href="#creating-a-client" title="Permalink to this headline">¶</a></h2>
-<p>Without any arguments, the Client will look for an API_KEY using the operating system environment variable <cite>PL_API_KEY</cite>.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">client</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="searching-for-scenes">
-<h2>Searching for Scenes<a class="headerlink" href="#searching-for-scenes" title="Permalink to this headline">¶</a></h2>
-<p>Get the most recent Planet scenes.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">body</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_scenes_list</span><span class="p">(</span><span class="n">scene_type</span><span class="o">=</span><span class="s">&#39;ortho&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Get the most recent Landsat scenes.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">body</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_scenes_list</span><span class="p">(</span><span class="n">scene_type</span><span class="o">=</span><span class="s">&#39;landsat&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Providing metadata filters in a search.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">filters</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;sat.id.eq&#39;</span> <span class="p">:</span> <span class="s">&#39;090b&#39;</span><span class="p">}</span>
-<span class="n">body</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_scenes_list</span><span class="p">(</span><span class="n">scene_type</span><span class="o">=</span><span class="s">&#39;landsat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">filters</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Using an AOI (in WKT in this example) to search.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">wkt</span> <span class="o">=</span> <span class="s">&#39;POINT(-100 40)&#39;</span>
-<span class="n">body</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_scenes_list</span><span class="p">(</span><span class="n">scene_type</span><span class="o">=</span><span class="s">&#39;landsat&#39;</span><span class="p">,</span> <span class="n">intersection</span><span class="o">=</span><span class="n">wkt</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Handling a response <cite>body</cite> - the <cite>get</cite> method returns JSON (in this case, GeoJSON).</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">geojson</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<span class="c"># the results are paginated and the total result set count is provided</span>
-<span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> total results&#39;</span> <span class="o">%</span> <span class="n">geojson</span><span class="p">[</span><span class="s">&#39;count&#39;</span><span class="p">]</span>
-<span class="c"># loop over features and print the scene &#39;id&#39;</span>
-<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">geojson</span><span class="p">[</span><span class="s">&#39;features&#39;</span><span class="p">]:</span>
-    <span class="k">print</span> <span class="n">f</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="downloading-scenes">
-<h2>Downloading Scenes<a class="headerlink" href="#downloading-scenes" title="Permalink to this headline">¶</a></h2>
-<p>One or more scenes may be downloaded using scenes ids. Downloading is currently
-done asynchronously and a callback must be provided. The callback will execute
-when data is available.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">scene_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;20150810_235346_0b10&#39;</span><span class="p">,</span> <span class="s">&#39;20150810_235345_0b10&#39;</span><span class="p">]</span>
-<span class="c"># create a callback that will write scenes to the &#39;downloads&#39; directory</span>
-<span class="c"># note - the directory must exist!</span>
-<span class="n">callback</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">write_to_file</span><span class="p">(</span><span class="s">&#39;downloads&#39;</span><span class="p">)</span>
-<span class="n">bodies</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">fetch_scene_geotiffs</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">)</span>
-<span class="c"># await the completion of the asynchronous downloads, this is where</span>
-<span class="c"># any exception handling should be performed</span>
-<span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bodies</span><span class="p">:</span>
-    <span class="n">b</span><span class="o">.</span><span class="n">await</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
-
-
-          </div>
-        </div>
-      </div>
+  <body role="document">
+  <div class="document">
+    
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../index.html">
-    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../_static/logo.svg" alt="Logo"/>
     
   </a>
 </p>
@@ -122,24 +52,28 @@ when data is available.</p>
 
 
 
+
+
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../cli/index.html">Command Line</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">API</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference.html">Reference</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Examples</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#importing-the-api">Importing the API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-a-client">Creating a Client</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#searching-for-items">Searching for Items</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -147,17 +81,76 @@ when data is available.</p>
 
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="importing-the-api">
+<h2>Importing the API<a class="headerlink" href="#importing-the-api" title="Permalink to this headline">¶</a></h2>
+<p>Everything needed is provided in the <cite>api</cite> module.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">planet</span> <span class="kn">import</span> <span class="n">api</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-a-client">
+<h2>Creating a Client<a class="headerlink" href="#creating-a-client" title="Permalink to this headline">¶</a></h2>
+<p>Without any arguments, the Client will look for an API_KEY using the operating system environment variable <cite>PL_API_KEY</cite>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">ClientV1</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="searching-for-items">
+<h2>Searching for Items<a class="headerlink" href="#searching-for-items" title="Permalink to this headline">¶</a></h2>
+<p>A common case is searching for items in an AOI.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">aoi</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Polygon&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;coordinates&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">[</span>
+      <span class="p">[</span><span class="o">-</span><span class="mf">122.54</span><span class="p">,</span> <span class="mf">37.81</span><span class="p">],</span>
+      <span class="p">[</span><span class="o">-</span><span class="mf">122.38</span><span class="p">,</span> <span class="mf">37.84</span><span class="p">],</span>
+      <span class="p">[</span><span class="o">-</span><span class="mf">122.35</span><span class="p">,</span> <span class="mf">37.71</span><span class="p">],</span>
+      <span class="p">[</span><span class="o">-</span><span class="mf">122.53</span><span class="p">,</span> <span class="mf">37.70</span><span class="p">],</span>
+      <span class="p">[</span><span class="o">-</span><span class="mf">122.54</span><span class="p">,</span> <span class="mf">37.81</span><span class="p">]</span>
+    <span class="p">]</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+
+<span class="c1"># build a filter for the AOI</span>
+<span class="n">query</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">and_filter</span><span class="p">(</span>
+  <span class="n">api</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">geom_filter</span><span class="p">(</span><span class="n">aoi</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="c1"># we are requesting PlanetScope 4 Band imagery</span>
+<span class="n">item_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PSScene4Band&#39;</span><span class="p">]</span>
+<span class="n">request</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">build_search_request</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">item_types</span><span class="p">)</span>
+<span class="c1"># this will cause an exception if there are any API related errors</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">quick_search</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+<span class="c1"># items_iter returns an iterator over API response pages</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items_iter</span><span class="p">():</span>
+  <span class="c1"># each item is a GeoJSON feature</span>
+  <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
     <div class="footer">
-      &copy;2015 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
+      &copy;2017 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
       |
-      <a href="../_sources/api/examples.txt"
+      <a href="../_sources/api/examples.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

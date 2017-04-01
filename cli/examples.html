@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Examples &mdash; Planet Labs Client 0.0.6 documentation</title>
+    <title>Examples &#8212; Planet API Client 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,107 +14,138 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.0.6',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="Planet Labs Client 0.0.6 documentation" href="../index.html" />
-    <link rel="up" title="Command Line" href="index.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="API" href="../api/index.html" />
     <link rel="prev" title="CLI Reference" href="reference.html" />
    
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">  
+  <body role="document">
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo"/>
+    
+  </a>
+</p>
 
-    <div class="document">
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Command Line</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reference.html">CLI Reference</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#integration-with-other-tools">Integration With Other Tools</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">API</a></li>
+</ul>
+
+
+        </div>
+      </div>
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
   <div class="section" id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="searching-for-scenes">
-<h2>Searching for Scenes<a class="headerlink" href="#searching-for-scenes" title="Permalink to this headline">¶</a></h2>
-<p>Get latest 10 scenes:</p>
-<div class="highlight-python"><div class="highlight"><pre>planet search --limit 10
+<p>Get the latest 10 items from the API of any ItemType:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>planet data search --limit 10
 </pre></div>
 </div>
-<p>Get scenes acquired recently:</p>
-<div class="highlight-python"><div class="highlight"><pre>planet search --where acquired gt 2015-08-23
+<p>Get recently acquired PSScene3Band ItemType records:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>planet data search --item-type PSScene3Band --date gt 2017-02-14
 </pre></div>
 </div>
-<p>Additional criteria can be specified with multiple 3-part where clauses:</p>
-<div class="highlight-python"><div class="highlight"><pre>planet search --where acquired gt 2015-08-23 --where acquired lt 2015-09-01
+<p>Item types can be specified case-insensitively, with prefix matching in the CLI:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>planet data search --item-type psscene --date gt 2017-02-14
 </pre></div>
 </div>
-<p>Get scenes that intersect a single point:</p>
-<div class="highlight-python"><div class="highlight"><pre>planet search &#39;POINT(-105,40)&#39;
+<p>Search for a month. Note: criteria are applied as an AND filter:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>planet data search --item-type PSScene3Band --date acquired gt 2017-02-14 --date acquired lt 2017-03-14
 </pre></div>
 </div>
-<p>Get scenes that intersect a geometry specified in a file named <cite>aoi.geojson</cite>:</p>
-<div class="highlight-python"><div class="highlight"><pre>planet search aoi.geojson
+<p>Use the geometry defined in <cite>aoi.json</cite> to constrain a search for both PSScene3Band and PSScene4Band:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>planet data search --item-type PSScene3Band --item-type PSScene4Band --geom aoi.json
 </pre></div>
 </div>
-<p>Get latest 10 <cite>landsat</cite> scenes:</p>
-<div class="highlight-python"><div class="highlight"><pre>planet search -s landsat --limit 10
+<p>Output a search filter to a file:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>planet data filter --range cloud_cover lt .1 --geom aoi.json &gt; my-search.json
 </pre></div>
 </div>
-</div>
-<div class="section" id="downloading-scenes">
-<h2>Downloading Scenes<a class="headerlink" href="#downloading-scenes" title="Permalink to this headline">¶</a></h2>
-<p>Download a ortho visual scene by ID to the current directory:</p>
-<div class="highlight-python"><div class="highlight"><pre>planet download 20150810_235347_0b10
+<p>Create a saved search from a filter in a file with some additional options (this will output the search id for later use):</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>planet data create-search --item-type PSScene3Band --string-in satellite_id 0c12 --name my-search --filter-json my-search.json
 </pre></div>
 </div>
-<p>Download 2 <cite>landsat</cite> <cite>qa</cite> band scenes by ID to the <cite>fetched</cite> directory:</p>
-<div class="highlight-python"><div class="highlight"><pre>planet download -d fetched -s landsat -product qa LC81300472015235LGN00 LC81300482015235LGN00
+<p>Execute a saved search:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>planet data saved-search 4782d4118fee4275860665129a1e23c1
 </pre></div>
 </div>
+<p>Get statistics using a filter from a file:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>planet data stats --item-type Sentinel2L1C --filter-json my-search.json
+</pre></div>
+</div>
+<p>Activate and download the latest 3 PSScene3Band items to <cite>images-download-directory</cite>.</p>
+<p>Note: this might take some time and directory must exist:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>planet data download --item-type PSScene3Band --limit 3 --dest images-download-directory
+</pre></div>
 </div>
 <div class="section" id="integration-with-other-tools">
 <h2>Integration With Other Tools<a class="headerlink" href="#integration-with-other-tools" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="github-gists">
-<h3>GitHub Gists<a class="headerlink" href="#github-gists" title="Permalink to this headline">¶</a></h3>
-<p>Create a <cite>gist</cite> using the <a class="reference external" href="http://defunkt.io/gist/">gist</a> command.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="c"># Search Planet&#39;s API for imagery acquired between June 17, 2015 and June 18, 2015</span>
-planet search --where acquired gt 2015-06-17 --where acquired lt 2015-06-18 <span class="p">|</span> gist -f planet-imagery-20150617-20150618.geojson
+<p>The output of search results is valid GeoJSON so these can be piped into a file or tool.</p>
+<p>Create a <cite>gist</cite> using the <a class="reference external" href="http://defunkt.io/gist/">gist</a> command:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>planet data search --item-type psscene --limit 100 | gist -f latest-scenes.geojson
 </pre></div>
 </div>
-<div style="margin-top:10px; margin-bottom:20px">
-  <iframe class='ghmap' width="640" height="400" src="https://render.githubusercontent.com/view/geojson/?url=https%3A%2F%2Fgist.githubusercontent.com%2Fkapadia%2F6e722427cecd9ac79971%2Fraw%2Fhyperion-20150401-20150501.geojson#aa859151-d85a-414d-865c-9704fae891a1" frameborder="0"></iframe>
-</div>
-
-<script>
-window.onresize = function(e) {
-  var mainEl = document.querySelector('#planet-cli');
-
-  var mapElems = document.querySelectorAll('.ghmap');
-  for (var i = 0; i < mapElems.length; i++) {
-    mapElems[i].width = mainEl.clientWidth;
-  }
-}
-
-window.onresize();
-</script></div>
 <div class="section" id="searching-using-a-shapefile">
 <h3>Searching Using a Shapefile<a class="headerlink" href="#searching-using-a-shapefile" title="Permalink to this headline">¶</a></h3>
-<p>Searching an area of interest described by a Shapefile, can be accomplished by chaining commands with <a class="reference external" href="https://github.com/Toblerity/Fiona">Fiona</a>.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>fio dump santiago-de-chile.shp <span class="p">|</span> planet search
+<p>Searching an area of interest described by a Shapefile, can be accomplished by chaining commands with <a class="reference external" href="https://github.com/Toblerity/Fiona">Fiona</a>.:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>$ fio dump santiago-de-chile.shp | planet data search --item-type psscene --geom @-
 </pre></div>
 </div>
+<p>Note: the <cite>&#64;-</cite> value for <cite>&#8211;geom</cite> specifies reading from stdin</p>
 </div>
 <div class="section" id="extracting-metadata-fields">
 <h3>Extracting Metadata Fields<a class="headerlink" href="#extracting-metadata-fields" title="Permalink to this headline">¶</a></h3>
 <p>Using <a class="reference external" href="http://stedolan.github.io/jq/">jq</a>, useful information can be parsed from data returned by the Planet API.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>cat santiago-de-chile.geojson <span class="p">|</span> planet search <span class="p">|</span> jq -r <span class="s2">&quot;.features[].id&quot;</span>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ planet data search --item-type psscene --limit <span class="m">100</span> <span class="p">|</span> jq -r <span class="s2">&quot;.features[].id&quot;</span>
 20150707_160055_090b
 20150707_160054_090b
 20150707_160053_090b
@@ -129,12 +160,9 @@ window.onresize();
 </div>
 <div class="section" id="search-overlapping-imagery">
 <h3>Search Overlapping Imagery<a class="headerlink" href="#search-overlapping-imagery" title="Permalink to this headline">¶</a></h3>
-<p>Querying for Planet scenes that overlap another data source is easily accomplished by using <a class="reference external" href="https://github.com/mapbox/rasterio">Rasterio</a>.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>rio bounds LC82210682015104LGN00_B1.TIF <span class="p">|</span> planet search
-</pre></div>
-</div>
-<p>Given that this Landsat scene was taken on April 14, 2015, it might be useful to search for Planet scenes that were taken in a similar timeframe.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>rio bounds LC82210682015104LGN00_B1.TIF <span class="p">|</span> planet search --where acquired lt 2015-04-12 --where acquired gt 2015-04-14
+<p>Querying for Planet scenes that overlap another data source is easily accomplished by using <a class="reference external" href="https://github.com/mapbox/rasterio">Rasterio</a>.
+Given that this Landsat scene was taken on April 14, 2015, it might be useful to search for Planet scenes that were taken in a similar timeframe.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ rio bounds LC82210682015104LGN00_B1.TIF <span class="p">|</span> planet data search --item-type psscene --geom - --date acquired gt <span class="m">2015</span>-04-12 --date acquired lt <span class="m">2015</span>-04-14
 </pre></div>
 </div>
 </div>
@@ -145,57 +173,17 @@ window.onresize();
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<p class="logo">
-  <a href="../index.html">
-    <img class="logo" src="../_static/logo.png" alt="Logo"/>
-    
-  </a>
-</p>
-
-
-
-
-
-
-
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="index.html">Command Line</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="reference.html">CLI Reference</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Examples</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../api/index.html">API</a></li>
-</ul>
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
+    <div class="clearer"></div>
+  </div>
     <div class="footer">
-      &copy;2015 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
+      &copy;2017 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
       |
-      <a href="../_sources/cli/examples.txt"
+      <a href="../_sources/cli/examples.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
