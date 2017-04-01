@@ -18,7 +18,6 @@ import sys
 
 from planet import api
 from planet.api.utils import write_planet_json
-from planet import __version__
 from .util import call_and_wrap
 
 client_params = {}
@@ -52,7 +51,7 @@ def configure_logging(verbosity):
               help='Valid API key - or via env variable %s' % api.auth.ENV_KEY)
 @click.option('-u', '--base-url', envvar='PL_API_BASE_URL',
               help='Change the base Planet API URL')
-@click.version_option(version=__version__, message='%(version)s')
+@click.version_option(version=api.__version__, message='%(version)s')
 def cli(context, verbose, api_key, base_url, workers):
     '''Planet API Client'''
 
