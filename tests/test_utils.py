@@ -11,9 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
+from mock import Mock
+import pytest
+from datetime import datetime
 from planet.api import utils
+from planet.api import exceptions
 from _common import read_fixture
+
+
+def test_strp_lenient():
+    for spec in [
+        '2017-02-02T16:45:43.887484+00:00',
+        '2017-02-02T16:45:43.887484+00',
+        '2017-02-02T16:45:43.887484',
+        '2017-02-02T16:45:43',
+        '2017-02-02T16:45',
+        '2017-02-02T16',
+        '2017-02-02',
+    ]:
+        p = utils.strp_lenient(spec)
+        assert datetime.strftime(p, utils._ISO_FMT).startswith(spec)
 
 
 def test_geometry_from_json():
@@ -23,8 +40,9 @@ def test_geometry_from_json():
     collection = {'type': 'FeatureCollection', 'features': []}
     assert None is utils.geometry_from_json(collection)
 
-    # simple geometry, we're guessing by the type property w/ no further checks
-    geom = {'type': 'Polygon'}
+    # simple geometry, we're guessing by the type property and presence of
+    # the coordinates property
+    geom = {'type': 'Polygon', 'coordinates': [1, 2]}
     assert geom == utils.geometry_from_json(geom)
     # from a feature
     feature = {'type': 'Feature', 'geometry': geom}
@@ -32,17 +50,6 @@ def test_geometry_from_json():
     # from a feature collection
     collection = {'type': 'FeatureCollection', 'features': [feature]}
     assert geom == utils.geometry_from_json(collection)
-
-
-def test_build_conditions():
-    workspace = json.loads(read_fixture('workspace.json'))
-    c = utils.build_conditions(workspace)
-    assert c['image_statistics.image_quality.gte'] == 'standard'
-    assert c['image_statistics.snr.gt'] == 10
-    assert c['sat.off_nadir.lte'] == 25
-    assert c['sat.alt.gte'] == 200
-    assert c['sat.alt.lte'] == 650
-    assert c['age.lte'] == 63072000
 
 
 def test_probably_wkt():
@@ -69,3 +76,33 @@ def test_probably_geojson():
     # yep
     assert utils.probably_geojson({'type': 'Point'}) == {'type': 'Point'}
     assert utils.probably_geojson('{"type": "Point"}') == {'type': 'Point'}
+
+
+def test_check_status():
+    r = Mock()
+    r.status_code = 429
+    r.text = ''
+    with pytest.raises(exceptions.TooManyRequests):
+        utils.check_status(r)
+    r.text = 'exceeded QUOTA dude'
+    with pytest.raises(exceptions.OverQuota):
+        utils.check_status(r)
+
+
+def test_write_to_file(tmpdir):
+    body = Mock()
+    body.name = 'foobar'
+    body.write.return_value = None
+    utils.write_to_file(str(tmpdir))(body)
+    path, callback = body.write.call_args[0]
+    expected = tmpdir.join(body.name)
+    assert str(expected) == path
+    assert callback is None
+
+    expected.write('')
+    callback = Mock()
+    callback.return_value = None
+    utils.write_to_file(str(tmpdir), overwrite=False)(body)
+    utils.write_to_file(str(tmpdir), callback=callback, overwrite=False)(body)
+    assert body.write.call_count == 1
+    assert callback.call_args[1]['skip'] == body

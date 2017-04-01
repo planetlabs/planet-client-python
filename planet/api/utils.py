@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
 from datetime import datetime
 from . import exceptions
 import json
@@ -36,52 +37,10 @@ def read_planet_json():
     return contents
 
 
-def build_conditions(workspace):
-    '''Convert a workspace to conditions/filters that can be used in API
-    queries. Walks the workspace.filters object and returns a dict of query
-    parameters in the form of [metadata name].[comparator]:[value] pairs.
-    '''
-    conditions = {}
-    filters = workspace.get('filters')
-
-    keys = set(filters.keys())
-    keys.remove('geometry')
-
-    # workspace stores this as an int, API wants a label
-    rules = filters.get('image_statistics.image_quality', None)
-    if rules:
-        labels = ['test', 'standard', 'target']
-        for k, v in rules.items():
-            rules[k] = labels[int(v)]
-        filters['image_statistics.image_quality'] = rules
-
-    for key in keys:
-        rules = filters[key]
-        conditions.update([
-            ('%s.%s' % (key, r), v) for r, v in rules.items()
-        ])
-    return conditions
-
-
 def write_planet_json(contents):
     fname = _planet_json_file()
     with atomic_open(fname, 'w') as fp:
         fp.write(json.dumps(contents))
-
-
-def feature_collection(geometry):
-    return {
-        "type": "FeatureCollection",
-        "features": [{
-            "type": "Feature",
-            "properties": {},
-            "geometry": geometry
-        }]
-    }
-
-
-def get_workspace_geometry(workspace):
-    return workspace['filters'].get('geometry', {}).get('intersects', None)
 
 
 def geometry_from_json(obj):
@@ -99,24 +58,29 @@ def geometry_from_json(obj):
     if obj_type == 'Feature':
         geom = obj['geometry']
     else:
-        # @todo we're just assuming it's a geometry at this point
         geom = obj
-    return geom
+    # @todo we're just assuming it's a geometry at this point
+    if 'coordinates' in geom:
+        return geom
 
 
 def check_status(response):
     '''check the status of the response and if needed raise an APIException'''
     status = response.status_code
-    if status == 200:
+    if status < 300:
         return
     exception = {
         400: exceptions.BadQuery,
         401: exceptions.InvalidAPIKey,
         403: exceptions.NoPermission,
         404: exceptions.MissingResource,
-        429: exceptions.OverQuota,
+        429: exceptions.TooManyRequests,
         500: exceptions.ServerError
     }.get(status, None)
+
+    # differentiate between over quota and rate-limiting
+    if status == 429 and 'quota' in response.text.lower():
+        exception = exceptions.OverQuota
 
     if exception:
         raise exception(response.text)
@@ -129,12 +93,33 @@ def get_filename(response):
     match = re.search('filename="?([^"]+)"?', cd)
     if match:
         return match.group(1)
+    return cd
 
 
-def write_to_file(directory=None, callback=None):
+def write_to_file(directory=None, callback=None, overwrite=True):
+    '''Create a callback handler for asynchronous Body handling.
+
+    If provided, the callback will be invoked as described in
+    :py:meth:`planet.api.models.Body.write`. In addition, if the download
+    is skipped because the destination exists, the callback will be invoked
+    with ``callback(skip=body)``.
+
+    The name of the file written to will be determined from the Body.name
+    property.
+
+    :param directory str: The optional directory to write to.
+    :param callback func: An optional callback to receive notification of
+                          write progress.
+    :param overwrite bool: Overwrite any existing files. Defaults to True.
+    '''
     def writer(body):
-        file = os.path.join(directory, body.name) if directory else None
-        body.write(file, callback)
+        file = os.path.join(directory or '.', body.name)
+        if overwrite or not os.path.exists(file):
+            body.write(file, callback)
+        else:
+            if callback:
+                callback(skip=body)
+            body.response.close()
     return writer
 
 
@@ -144,6 +129,14 @@ def strp_timestamp(value):
 
 def strf_timestamp(when):
     return datetime.strftime(when, _ISO_FMT)
+
+
+def strp_lenient(when):
+    for i in range(0, 9):
+        try:
+            return datetime.strptime(when, _ISO_FMT[:i*-3 or len(_ISO_FMT)])
+        except ValueError:
+            pass
 
 
 class GeneratorAdapter(list):
@@ -190,23 +183,15 @@ def probably_geojson(input):
     return input if valid else None
 
 
-def complete(futures, check, client):
-    '''Wait for the future requests to complete without blocking the main
-    thread. This is a means to intercept a KeyboardInterrupt and gracefully
-    shutdown current requests without waiting for them to complete.
-
-    The cancel function on each future object should abort processing - any
-    blocking functions/IO will not be interrupted and this function should
-    return immediately.
-
-    :param futures: sequence of objects with a cancel function
-    :param check: function that will be called with the provided futures from
-                  a background thread
-    :param client: the Client to termintate on interrupt
+def handle_interrupt(cancel, f, *a, **kw):
+    '''Execute a function f(*a, **kw) listening for KeyboardInterrupt and if
+    handled, invoke the cancel function. Blocks until f is complete or the
+    interrupt is handled.
     '''
-    # start a background thread to not block main (otherwise hangs on 2.7)
+    res = []
+
     def run():
-        check(futures)
+        res.append(f(*a, **kw))
     t = threading.Thread(target=run)
     t.start()
     # poll (or we miss the interrupt) and await completion
@@ -214,7 +199,6 @@ def complete(futures, check, client):
         while t.isAlive():
             t.join(.1)
     except KeyboardInterrupt:
-        for f in futures:
-            f.cancel()
-        client.shutdown()
+        cancel()
         raise
+    return res and res.pop()

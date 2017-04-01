@@ -2,26 +2,45 @@
 Planet API Client
 =================
 
-**PRE-ALPHA SOFTWARE - MAY CHANGE**
-
-Initial, incomplete, strawman effort at a Python client to Planet's public API.
+Python client library and CLI for Planet's public API.
 
 .. image:: https://travis-ci.org/planetlabs/planet-client-python.svg?branch=master
    :target: https://travis-ci.org/planetlabs/planet-client-python
 
 
-Documentation
--------------
-
-`https://planetlabs.github.io/planet-client-python/index.html <https://planetlabs.github.io/planet-client-python/index.html>`__
-
-
 Installation
 ------------
 
-Executable CLI releases and documentation are `here <https://github.com/planetlabs/planet-client-python/releases/latest>`__.
+Via pip::
+
+    pip install planet
+
+A PEX executable (Windows not supported) and source releases are
+`here <https://github.com/planetlabs/planet-client-python/releases/latest>`__.
+
+
+Documentation
+-------------
+
+Online documentation: `https://planetlabs.github.io/planet-client-python/index.html <https://planetlabs.github.io/planet-client-python/index.html>`__
+
+Documentation is also provided for download `here <https://github.com/planetlabs/planet-client-python/releases/latest>`__.
+
+
+Development
+-----------
 
 To develop with or use the library in your own projects, see the `wiki <https://github.com/planetlabs/planet-client-python/wiki>`__.
+
+
+API Key
+-------
+
+The API requires an account for use. `Signup here <https://www.planet.com/explorer/?signup>`__.
+
+This can be provided via the environment variable `PL_API_KEY` or the flag `-k` or `--api-key`.
+
+Using `planet init` your account credentials (login/password) can be used to obtain the api key.
 
 
 Example CLI Usage
@@ -35,25 +54,10 @@ Basics and help::
 
     planet
 
+The CLI provides access to the `data API <https://www.planet.com/docs/reference/data-api/>`__ ::
+
+    planet data
+
 OR specific command help::
 
-    planet search --help
-
-An API key is `required <https://www.planet.com/explorers/>`__.
-
-This can be provided via the environment variable `PL_API_KEY` or the flag `-k` or `--api-key`. Using the `planet init` the username and password can be used and saved instead.
-
-Examples
-~~~~~~~~
-
-Get a visual ortho scene by id (writes to working directory)::
-
-    planet download 20150825_180952_1_0b07
-
-Get scene metadata by id (and pretty print)::
-
-    planet metadata -pp 20150825_180952_1_0b07
-
-Get a list of all mosaics::
-
-    planet mosaics
+    planet data download --help

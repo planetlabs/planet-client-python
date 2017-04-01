@@ -14,38 +14,50 @@
 
 
 class APIException(Exception):
-    '''also used as placeholder for unexpected response status_code'''
+    '''General unexpected response'''
     pass
 
 
 class BadQuery(APIException):
+    '''Invalid inputs, HTTP 400'''
     pass
 
 
 class InvalidAPIKey(APIException):
+    '''Invalid key, HTTP 401'''
     pass
 
 
 class NoPermission(APIException):
+    '''Insufficient permissions, HTTP 403'''
     pass
 
 
 class MissingResource(APIException):
+    '''Request for non existing resource, HTTP 404'''
+    pass
+
+
+class TooManyRequests(APIException):
+    '''Too many requests, HTTP 429'''
     pass
 
 
 class OverQuota(APIException):
+    '''Quota exceeded, HTTP 429'''
     pass
 
 
 class ServerError(APIException):
+    '''Unexpected internal server error, HTTP 500'''
     pass
 
 
 class InvalidIdentity(APIException):
-    '''raised when logging in with identity'''
+    '''Raised when logging in with invalid credentials'''
     pass
 
 
 class RequestCancelled(Exception):
-    '''When requests get cancelled'''
+    '''Internal exception when a request is cancelled'''
+    pass

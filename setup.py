@@ -25,7 +25,7 @@ except:
     long_description = ''
 
 
-with open('planet/__init__.py') as f:
+with open('planet/api/__init__.py') as f:
     for line in f:
         if line.find("__version__") >= 0:
             version = line.split("=")[1].strip()
@@ -42,6 +42,10 @@ test_requires = [
 
 dev_requires = [
     'flake8',
+    # with pex 1.2.2, seems that more recent setuptools break things
+    # and the planet package will not be found
+    # see https://github.com/pantsbuild/pex/issues/301
+    'setuptools<21',
     'pex',
     'pytest-cov',
     'sphinx',
@@ -72,9 +76,9 @@ setup(name='planet',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'click==4.1',
-          'requests==2.7.0',
-          'requests_futures>=0.9.5',
+          'click',
+          'requests',
+          'requests_futures',
       ],
       extras_require={
           'test': test_requires,
@@ -82,6 +86,6 @@ setup(name='planet',
       },
       entry_points="""
       [console_scripts]
-      planet=planet.scripts:cli
+      planet=planet.scripts:main
       """
       )

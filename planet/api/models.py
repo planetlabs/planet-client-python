@@ -82,22 +82,32 @@ class Response(object):
 
 class Request(object):
 
-    def __init__(self, url, auth, params=None, body_type=Response):
+    def __init__(self, url, auth, params=None, body_type=Response, data=None,
+                 method='GET'):
         self.url = url
         self.auth = auth
         self.params = params
         self.body_type = body_type
+        self.data = data
+        self.method = method
 
 
-class _Body(object):
+class Body(object):
+    '''A Body is a representation of a resource from the API.
+    '''
 
     def __init__(self, request, http_response, dispatcher):
         self._request = request
         self.response = http_response
         self._dispatcher = dispatcher
         self.size = int(self.response.headers.get('content-length', 0))
-        self.name = get_filename(self.response)
         self._cancel = False
+
+    @property
+    def name(self):
+        '''The name of this resource. The default is to use the
+        content-disposition header value from the response.'''
+        return get_filename(self.response)
 
     def __len__(self):
         return self.size
@@ -106,9 +116,10 @@ class _Body(object):
         return (c for c in self.response.iter_content(chunk_size=chunk_size))
 
     def last_modified(self):
-        '''Read the last-modified header as a datetime'''
-        lm = self.response.headers['last-modified']
-        return datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S GMT')
+        '''Read the last-modified header as a datetime, if present.'''
+        lm = self.response.headers.get('last-modified', None)
+        return datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S GMT') if lm \
+            else None
 
     def get_raw(self):
         '''Get the decoded text content from the response'''
@@ -117,27 +128,31 @@ class _Body(object):
     def _write(self, fp, callback):
         total = 0
         if not callback:
-            def noop(x):
+            def noop(*a, **kw):
                 pass
             callback = noop
-        callback(self)
+        callback(start=self)
         for chunk in self:
             if self._cancel:
                 raise RequestCancelled()
             fp.write(chunk)
             size = len(chunk)
             total += size
-            callback(total)
+            callback(wrote=size, total=total)
         # seems some responses don't have a content-length header
         if self.size is 0:
             self.size = total
-        callback(self)
+        callback(finish=self)
 
     def write(self, file=None, callback=None):
         '''Write the contents of the body to the optionally provided file and
-        providing progress to the optional callback. The callback first with
-        this Body, zero or more times for each chunk streamed down, and once
-        again on completion. File writing is atomic.
+        providing progress to the optional callback. The callback will be
+        invoked 3 different ways:
+
+        * First as ``callback(start=self)``
+        * For each chunk of data written as
+          ``callback(wrote=chunk_size_in_bytes, total=all_byte_cnt)``
+        * Upon completion as ``callback(finish=self)``
 
         :param file: file name or file-like object
         :param callback: optional progress callback
@@ -153,7 +168,7 @@ class _Body(object):
                 self._write(fp, callback)
 
 
-class JSON(_Body):
+class JSON(Body):
     '''A Body that contains JSON'''
 
     def get(self):
@@ -161,13 +176,15 @@ class JSON(_Body):
         return self.response.json()
 
 
-class _Paged(JSON):
+class Paged(JSON):
 
     ITEM_KEY = 'features'
+    LINKS_KEY = '_links'
+    NEXT_KEY = '_next'
 
     def next(self):
-        links = self.get()['links']
-        next = links.get('next', None)
+        links = self.get()[self.LINKS_KEY]
+        next = links.get(self.NEXT_KEY, None)
         if next:
             request = Request(next, self._request.auth, body_type=type(self))
             return self._dispatcher.response(request).get_body()
@@ -202,7 +219,7 @@ class _Paged(JSON):
         stream = self._json_stream(limit)
         enc = json.JSONEncoder(indent=indent, sort_keys=sort_keys)
         for chunk in enc.iterencode(stream):
-            out.write(chunk)
+            out.write(u'%s' % chunk)
 
     def items_iter(self, limit):
         '''Get an iterator of the 'items' in each page. Instead of a feature
@@ -232,10 +249,10 @@ class _Paged(JSON):
         }
 
 
-class _Features(_Paged):
+class Features(Paged):
 
     def _json_stream(self, limit):
-        stream = super(_Features, self)._json_stream(limit)
+        stream = super(Features, self)._json_stream(limit)
         json_body = self.get()
         # patch back in the count if present
         if 'count' in json_body:
@@ -244,17 +261,9 @@ class _Features(_Paged):
         return stream
 
 
-class Scenes(_Features):
+class Items(Features):
     pass
 
 
-class Mosaics(_Paged):
-    ITEM_KEY = 'mosaics'
-
-
-class Quads(_Features):
-    pass
-
-
-class Image(_Body):
-    pass
+class Searches(Paged):
+    ITEM_KEY = 'searches'

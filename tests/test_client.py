@@ -1,4 +1,4 @@
-# Copyright 2015 Planet Labs, Inc.
+# Copyright 2017 Planet Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,8 +22,6 @@ import json
 import os
 
 from planet import api
-from _common import read_fixture
-from _common import clone
 import pytest
 import requests_mock
 
@@ -36,7 +34,7 @@ api.utils._planet_json_file = lambda: '.whyyounameafilelikethis123'
 
 @pytest.fixture()
 def client():
-    return api.Client('foobar')
+    return api.ClientV1('foobar')
 
 
 def test_assert_client_execution_success(client):
@@ -49,7 +47,7 @@ def test_assert_client_execution_success(client):
 
 def test_missing_api_key():
     '''verify exception raised on missing API key'''
-    client = api.Client(api_key=None)
+    client = api.ClientV1(api_key=None)
     try:
         client._get('whatevs').get_body()
     except api.exceptions.InvalidAPIKey as ex:
@@ -85,18 +83,10 @@ def test_status_code_other(client):
             assert False
 
 
-def test_fetch_scene_info_scene_id(client):
-    '''Verify get_scene_metadata path handling'''
-    with requests_mock.Mocker() as m:
-        uri = os.path.join(client.base_url, 'scenes/ortho/x22')
-        m.get(uri, text='bananas', status_code=200)
-        assert client.get_scene_metadata('x22').get_raw() == 'bananas'
-
-
 def test_login(client):
     '''Verify login functionality'''
     with requests_mock.Mocker() as m:
-        uri = os.path.join(client.base_url, 'auth/login')
+        uri = os.path.join(client.base_url, 'v0/auth/login')
         response = json.dumps({'api_key': 'foobar'}).encode('utf-8')
         b64 = base64.urlsafe_b64encode(response)
         response = 'whatever.%s.whatever' % b64.decode('utf-8')
@@ -108,7 +98,7 @@ def test_login(client):
 def test_login_failure(client):
     '''Verify login functionality'''
     with requests_mock.Mocker() as m:
-        uri = os.path.join(client.base_url, 'auth/login')
+        uri = os.path.join(client.base_url, 'v0/auth/login')
         response = json.dumps({'message': 'invalid'})
         m.post(uri, text=response, status_code=401)
         try:
@@ -122,7 +112,7 @@ def test_login_failure(client):
 def test_login_errors(client):
     '''Verify login functionality'''
     with requests_mock.Mocker() as m:
-        uri = os.path.join(client.base_url, 'auth/login')
+        uri = os.path.join(client.base_url, 'v0/auth/login')
         response = 'An error occurred'
         m.post(uri, text=response, status_code=500)
         try:
@@ -133,37 +123,76 @@ def test_login_errors(client):
             assert False
 
 
-def test_get_scenes_list(client):
+def test_create_search(client):
     with requests_mock.Mocker() as m:
-        uri = os.path.join(client.base_url, 'scenes/ortho/')
-
-        def fake_response(i):
-            return json.dumps({'links': {
-                'next': client.base_url + 'next/link/%s' % i
-            }})
-        # the first request will be to the endpoint
-        m.get(uri, text=fake_response(0), status_code=200)
-        # subsequent 3 requests should follow whatever the response says
-        for i in range(3):
-            m.get(client.base_url + 'next/link/%s' % i,
-                  text=fake_response(i + 1), status_code=200)
-        # the last response will have no next link provided
-        m.get(client.base_url + 'next/link/%s' % 3,
-              text=json.dumps({'links': {}}),
-              status_code=200)
-
-        scenes = client.get_scenes_list().iter()
-        pages = list(scenes)
-        # total of 5 responses
-        assert len(pages) == 5
-        assert all([p is not None for p in pages])
+        uri = os.path.join(client.base_url, 'data/v1/searches/')
+        m.post(uri, text='{"ok": true}')
+        resp = client.create_search('{"foobar": true}')
+        assert resp.get()['ok']
 
 
-def test_workspace_set_create(client):
+def assert_simple_search_response(uri, func, arg, method):
     with requests_mock.Mocker() as m:
-        uri = os.path.join(client.base_url, 'workspaces/')
-        workspace = json.loads(read_fixture('workspace.json'))
-        request = clone(workspace)
-        request.pop('id')
-        m.post(uri, text=json.dumps(workspace), status_code=200)
-        assert client.set_workspace(request).get_raw() == json.dumps(workspace)
+        mfunc = getattr(m, method)
+        mfunc(uri, text='{"ok": true}')
+        resp = func(arg)
+        assert resp.get()['ok']
+    with requests_mock.Mocker() as m:
+        mfunc = getattr(m, method)
+        mfunc(uri + "?_page_size=10", text='{"ok": true}', complete_qs=True)
+        resp = func(arg, page_size=10)
+        assert resp.get()['ok']
+    with requests_mock.Mocker() as m:
+        mfunc = getattr(m, method)
+        mfunc(uri + "?_sort=foo", text='{"ok": true}', complete_qs=True)
+        resp = func(arg, sort='foo')
+        assert resp.get()['ok']
+
+
+def test_quick_search(client):
+    url = client.base_url + 'data/v1/quick-search'
+    assert_simple_search_response(url, client.quick_search,
+                                  '{"foo": True}', 'post')
+
+
+def test_saved_search(client):
+    url = client.base_url + 'data/v1/searches/the-id/results'
+    assert_simple_search_response(url, client.saved_search,
+                                  'the-id', 'get')
+
+
+def assert_simple_request(uri, func, args, method='get', match=None):
+    match = match or (lambda r: True)
+    with requests_mock.Mocker() as m:
+        getattr(m, method)(uri, additional_matcher=match, text='{"ok": true}')
+        resp = func(*args)
+        assert resp.get()['ok']
+    return m
+
+
+def test_get_item(client):
+    url = client.base_url + 'data/v1/item-types/the-type/items/the-id'
+    assert_simple_request(url, client.get_item, ('the-type', 'the-id'))
+
+
+def test_get_assets(client):
+    url = client.base_url + 'data/v1/item-types/the-type/items/the-id/assets'
+    assert_simple_request(url, client.get_assets_by_id,
+                          ('the-type', 'the-id'))
+
+
+def test_get_searches(client):
+    url = client.base_url + 'data/v1/searches/?search_type=saved'
+    assert_simple_request(url, client.get_searches, ())
+
+
+def test_stats(client):
+    url = client.base_url + 'data/v1/stats'
+
+    # check that the post body contains the patched in filter
+    # see: client._patch_stats_request
+    def match(req):
+        body = req.json()
+        return body['filter']['config'] == {'gt': '1970-01-01T00:00:00Z'}
+    assert_simple_request(url, client.stats, ({'request': True},),
+                          method='post', match=match)

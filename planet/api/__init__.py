@@ -1,4 +1,4 @@
-# Copyright 2015 Planet Labs, Inc.
+# Copyright 2017 Planet Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,17 @@
 
 from .exceptions import (APIException, BadQuery, InvalidAPIKey)
 from .exceptions import (NoPermission, MissingResource, OverQuota)
-from .exceptions import (ServerError, RequestCancelled)
-from .client import Client
+from .exceptions import (ServerError, RequestCancelled, TooManyRequests)
+from .client import (ClientV1)
 from .utils import write_to_file
+from . import filters
+
+__version__ = '1.0.0'
 
 __all__ = [
-    Client, APIException, BadQuery, InvalidAPIKey,
+    ClientV1, APIException, BadQuery, InvalidAPIKey,
     NoPermission, MissingResource, OverQuota, ServerError, RequestCancelled,
-    write_to_file
+    TooManyRequests,
+    write_to_file,
+    filters
 ]

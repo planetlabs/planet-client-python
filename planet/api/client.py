@@ -18,12 +18,12 @@ from .dispatch import RequestsDispatcher
 from . import auth
 from .exceptions import (InvalidIdentity, APIException)
 from . import models
-from .utils import check_status
+from . import filters
 
 
-class Client(object):
+class _Base(object):
     '''High-level access to Planet's API.'''
-    def __init__(self, api_key=None, base_url='https://api.planet.com/v0/',
+    def __init__(self, api_key=None, base_url='https://api.planet.com/',
                  workers=4):
         '''
         :param str api_key: API key to use. Defaults to environment variable.
@@ -36,7 +36,7 @@ class Client(object):
         self.dispatcher = RequestsDispatcher(workers)
 
     def shutdown(self):
-        self.dispatcher.session.executor.shutdown(wait=False)
+        self.dispatcher._asyncpool.executor.shutdown(wait=False)
 
     def _url(self, path):
         if path.startswith('http'):
@@ -72,10 +72,10 @@ class Client(object):
         :param str credentials: password
         :returns: JSON object (Python dict)
         '''
-        result = self.dispatcher.session.post(self._url('auth/login'), {
+        result = self.dispatcher.session.post(self._url('v0/auth/login'), {
             'email': identity,
             'password': credentials
-        }).result()
+        })
         status = result.status_code
         if status == 400:
             raise APIException('invalid parameters, login process has changed')
@@ -96,149 +96,177 @@ class Client(object):
         payload = base64.urlsafe_b64decode(payload.encode('utf-8'))
         return json.loads(payload.decode('utf-8'))
 
-    def get_scenes_list(self, scene_type='ortho', order_by=None, count=None,
-                        intersects=None, workspace=None, aoi_id=None,
-                        **filters):
-        '''Get scenes matching the specified parameters and filters.
 
-        :param str scene_type: The type of scene, defaults to 'ortho'
-        :param str order_by: Results order 'acquired asc' or 'acquired desc'.
-           Defaults to 'acquired desc'
-        :param int count: Number of results per page. Defaults to 50.
-        :param intersects: A geometry to filter results by. Can be one of:
-           WKT or GeoJSON text or a GeoJSON-like dict.
-        :param filters: Zero or more metadata filters in the form of
-           param.name.comparison -> value.
-        :returns: :py:class:`Scenes` body
-        '''
-        params = {
-            'order_by': order_by,
-            'count': count,
-            'intersects': intersects
-        }
-        if workspace:
-            params['workspace'] = workspace
-        if aoi_id:
-            params['aoi'] = aoi_id
-        params.update(**filters)
-        return self._get('scenes/%s/' % scene_type,
-                         models.Scenes, params=params).get_body()
+def _patch_stats_request(request):
+    '''If the request has no filter config, add one that should do what is
+    expected (include all items)
+    see: PE-11813
+    '''
+    filt = request.get('filter', {})
+    if not filt.get('config', None):
+        request['filter'] = filters.date_range('acquired',
+                                               gt='1970-01-01T00:00:00Z')
+    return request
 
-    def get_scene_metadata(self, scene_id, scene_type='ortho'):
-        """
-        Get metadata for a given scene.
 
-        :param str scene_id: The scene ID
-        :param str scene_type: The type: either 'ortho' or 'landsat'
-        :return: :py:class:`JSON` body
-        """
-        # todo: accept/return multiple scenes
-        return self._get('scenes/%s/%s' % (scene_type, scene_id)).get_body()
+class ClientV1(_Base):
+    '''ClientV1 provides basic low-level access to Planet's API. Only one
+    ClientV1 should be in existence for an application. The Client is thread
+    safe and takes care to avoid API throttling and also retry any throttled
+    requests. Most functions take JSON-like dict representations of API
+    request bodies. Return values are usually a subclass of
+    :py:class:`planet.api.models.Body`. Any exceptional http responses are
+    handled by translation to one of the :py:mod:`planet.api.exceptions`
+    classes.
+    '''
 
-    def fetch_scene_geotiffs(self, scene_ids, scene_type='ortho',
-                             product='visual', callback=None):
-        """
-        Download scene geotiffs. The provided callback will be called with a
-        single argument, the :py:class:`Body` object, when the response is
-        ready and successful (it will be initiated with response headers).
-
-        :param sequence scene_ids: The scene IDs to download
-        :param str scene_type: The type: either 'ortho' or 'landsat'
-        :param str product: The product type, varies on scene_type.
-        :param function callback: A callback for handling asynchronous results
-        :return: a sequence of :py:class:`Response` objects, one for each scene
-           id provided
-        """
-        params = {
-            'product': product
-        }
-        paths = ['scenes/%s/%s/full' % (scene_type, id) for id in scene_ids]
-        return self._download_many(paths, params, callback)
-
-    def fetch_scene_thumbnails(self, scene_ids, scene_type='ortho', size='md',
-                               fmt='png', callback=None):
-        """
-        Download scene thumbnails. The provided callback will be called with a
-        single argument, the :py:class:`Body` object, when the response is
-        ready and successful (it will be initiated with response headers).
-
-        :param sequence scene_ids: The scene IDs to download
-        :param str scene_type: The type: either 'ortho' or 'landsat'
-        :param str size: The size: 'sm', 'md', 'lg'
-        :param str format: The image format: 'png', 'jpg'
-        :param function callback: A callback for handling asynchronous results
-        :return: a sequence of :py:class:`Response` objects, one for each scene
-           id provided
-        """
-        params = {
-            'size': size,
-            'format': fmt
-        }
-        paths = ['scenes/%s/%s/thumb' % (scene_type, id) for id in scene_ids]
-        return self._download_many(paths, params, callback)
-
-    def list_mosaics(self):
-        """
-        List all mosaics.
-        """
-        return self._get('mosaics/', models.Mosaics).get_body()
-
-    def get_mosaic(self, name):
-        """
-        Get metadata for a given mosaic.
-
-        :param name:
-            Mosaic name as returned by `list_mosaics`.
-        """
-        return self._get('mosaics/%s' % name).get_body()
-
-    def get_mosaic_quads(self, name, intersects=None, count=50):
-        """
-        Get metadata for mosaic quads.
-
-        :param name:
-            Mosaic name as retured by `list_mosaics`.
-        :param intersects:
-            WKT or GeoJSON describing a region of interest.
-        :param count:
-            Number of results to return.
-        """
-
+    def _params(self, kw):
         params = {}
-        if intersects:
-            params['intersects'] = intersects
-        if count:
-            params['count'] = count
-        path = 'mosaics/%s/quads/' % name
-        return self._get(path, models.Quads, params).get_body()
+        if 'page_size' in kw:
+            params['_page_size'] = kw['page_size']
+        if 'sort' in kw and kw['sort']:
+            params['_sort'] = ''.join(kw['sort'])
+        return params
 
-    def fetch_mosaic_quad_geotiffs(self, mosaic_name, quad_ids, callback=None):
-        pt = 'mosaics/%s/quads/%s/full'
-        paths = [pt % (mosaic_name, qid) for qid in quad_ids]
-        return self._download_many(paths, {}, callback)
+    def create_search(self, request):
+        '''Create a new saved search from the specified request.
+        The request must contain a ``name`` property.
 
-    def get_workspaces(self):
-        return self._get('workspaces/').get_body()
+        :param request: see :ref:`api-search-request`
+        :returns: :py:class:`planet.api.models.JSON`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        body = json.dumps(request)
+        return self.dispatcher.response(models.Request(
+            self._url('data/v1/searches/'), self.auth,
+            body_type=models.JSON, data=body, method='POST')).get_body()
 
-    def get_workspace(self, id):
-        return self._get('workspaces/%s' % id).get_body()
+    def quick_search(self, request, **kw):
+        '''Execute a quick search with the specified request.
 
-    def set_workspace(self, workspace, id=None):
-        if id:
-            workspace['id'] = id
-            url = 'workspaces/%s' % id
-            method = 'PUT'
-        else:
-            'id' in workspace and workspace.pop('id')
-            url = 'workspaces/'
-            method = 'POST'
-        # without these, scenes UI breaks
-        defaults = {
-            "filters": {}
-        }
-        defaults.update(workspace)
-        result = self.dispatcher.dispatch_request(method, self.base_url + url,
-                                                  data=json.dumps(defaults),
-                                                  auth=self.auth)
-        check_status(result)
-        return models.JSON(None, result, self.dispatcher)
+        :param request: see :ref:`api-search-request`
+        :param \**kw: See Options below
+        :returns: :py:class:`planet.api.models.Items`
+        :raises planet.api.exceptions.APIException: On API error.
+
+        :Options:
+
+        * page_size (int): Size of response pages
+        * sort (string): Sorting order in the form `field (asc|desc)`
+
+        '''
+        body = json.dumps(request)
+        params = self._params(kw)
+        return self.dispatcher.response(models.Request(
+            self._url('data/v1/quick-search'), self.auth, params=params,
+            body_type=models.Items, data=body, method='POST')).get_body()
+
+    def saved_search(self, sid, **kw):
+        '''Execute a saved search by search id.
+
+        :param sid string: The id of the search
+        :returns: :py:class:`planet.api.models.Items`
+        :raises planet.api.exceptions.APIException: On API error.
+
+        :Options:
+
+        * page_size (int): Size of response pages
+        * sort (string): Sorting order in the form `field (asc|desc)`
+
+        '''
+        path = 'data/v1/searches/%s/results' % sid
+        params = self._params(kw)
+        return self._get(self._url(path), body_type=models.Items,
+                         params=params).get_body()
+
+    def get_searches(self, quick=False, saved=True):
+        '''Get searches listing.
+
+        :param quick bool: Include quick searches (default False)
+        :param quick saved: Include saved searches (default True)
+        :returns: :py:class:`planet.api.models.Searches`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        params = {}
+        if saved and not quick:
+            params['search_type'] = 'saved'
+        elif quick:
+            params['search_type'] = 'quick'
+        return self._get(self._url('data/v1/searches/'),
+                         body_type=models.Searches, params=params).get_body()
+
+    def stats(self, request):
+        '''Get stats for the provided request.
+
+        :param request dict: A search request that also contains the 'interval'
+                             property.
+        :returns: :py:class:`planet.api.models.JSON`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        # work-around for API bug
+        request = _patch_stats_request(request)
+        body = json.dumps(request)
+        return self.dispatcher.response(models.Request(
+            self._url('data/v1/stats'), self.auth,
+            body_type=models.JSON, data=body, method='POST')).get_body()
+
+    def get_assets(self, item):
+        '''Get the assets for the provided item representations.
+
+        Item representations are obtained from search requests.
+
+        :param request dict: An item representation from the API.
+        :returns: :py:class:`planet.api.models.JSON`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        assets_url = item['_links']['assets']
+        return self._get(assets_url).get_body()
+
+    def activate(self, asset):
+        '''Request activation of the specified asset representation.
+
+        Asset representations are obtained from :py:meth:`get_assets`.
+
+        :param request dict: An asset representation from the API.
+        :returns: :py:class:`planet.api.models.Body` with no response content
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        activate_url = asset['_links']['activate']
+        return self._get(activate_url, body_type=models.Body).get_body()
+
+    def download(self, asset, callback=None):
+        '''Download the specified asset. If provided, the callback will be
+        invoked asynchronously. Otherwise it is up to the caller to handle the
+        response Body.
+
+        :param asset dict: An asset representation from the API
+        :param callback: An optional function to aysnchronsously handle the
+                         download. See :py:func:`planet.api.write_to_file`
+        :returns: :py:Class:`planet.api.models.Response` containing a
+                  :py:Class:`planet.api.models.Body` of the asset.
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        download_url = asset['location']
+        return self._get(download_url, models.Body, callback=callback)
+
+    def get_item(self, item_type, id):
+        '''Get the an item response for the given item_type and id
+
+        :param item_type str: A valid item-type
+        :param id str: The id of the item
+        :returns: :py:Class:`planet.api.models.JSON`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        url = 'data/v1/item-types/%s/items/%s' % (item_type, id)
+        return self._get(url).get_body()
+
+    def get_assets_by_id(self, item_type, id):
+        '''Get an item's asset response for the given item_type and id
+
+        :param item_type str: A valid item-type
+        :param id str: The id of the item
+        :returns: :py:Class:`planet.api.models.JSON`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        url = 'data/v1/item-types/%s/items/%s/assets' % (item_type, id)
+        return self._get(url).get_body()
