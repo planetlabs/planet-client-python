@@ -117,7 +117,7 @@ todo_include_todos = True
 # a list of builtin themes.
 html_theme = 'alabaster'
 
-from .alabaster_planet import html_theme_options
+from alabaster_planet import html_theme_options
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

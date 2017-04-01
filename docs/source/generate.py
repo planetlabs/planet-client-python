@@ -98,8 +98,7 @@ def generate_cli_reference(e):
 
 def generate_command_section(e, title, commands):
     e.e(h(title))
-    commands = list(sorted(commands,
-                    lambda a, b: cmp(a.name, b.name)))
+    commands = list(sorted(commands, key=lambda a: a.name))
     for cmd in commands:
         e.e(':ref:`%s` %s\n\n' % (cmd_ref(cmd), cmd.short_help))
 
