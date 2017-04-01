@@ -10,6 +10,18 @@ Option Types Formatting
 -----------------------
 
 
+.. _cli-metavar-ASSET-TYPE:
+
+
+ASSET-TYPE
+..........
+
+
+Specify Asset-Type(s) of interest. Case-insenstive,
+supports glob-matching, e.g. ``visual*`` specifies ``visual`` and
+``visual_xml``.
+
+
 .. _cli-metavar-ITEM-TYPE:
 
 
@@ -71,18 +83,6 @@ the number or date to compare against.
 
 Note: ISO-8601 variants are supported. For example, ``2017`` is short for
 ``2017-01-01T00:00:00+00:00``.
-
-
-.. _cli-metavar-ASSET-TYPE:
-
-
-ASSET-TYPE
-..........
-
-
-Specify Asset-Type(s) of interest. Case-insenstive,
-supports glob-matching, e.g. ``visual*`` specifies ``visual`` and
-``visual_xml``.
 
 
 General Options
@@ -235,6 +235,11 @@ Usage: create-search [OPTIONS]
 
      - TEXT
 
+   * - asset_type
+     - Specify asset type(s) permissions
+
+     - :ref:`cli-metavar-asset-type`
+
    * - sort
      - Specify sort ordering as published/acquired asc/desc
 
@@ -252,7 +257,7 @@ Usage: create-search [OPTIONS]
      - :ref:`cli-metavar-filter`
 
    * - geom
-     - Specify a geometry filter as geojson. "-" for stdin or @file
+     - Specify a geometry filter as geojson.
 
      - :ref:`cli-metavar-geom`
 
@@ -307,7 +312,17 @@ Usage: download [OPTIONS]
      - Location to download files to
 
        DEFAULT: `.`
-     - PATH
+     - DIRECTORY
+
+   * - quiet
+     - Disable ANSI control output
+
+     - BOOLEAN
+
+   * - activate_only
+     - Only activate the items. Outputs URLS for downloading.
+
+     - BOOLEAN
 
    * - dry_run
      - Only report the number of items that would be downloaded.
@@ -340,7 +355,7 @@ Usage: download [OPTIONS]
      - :ref:`cli-metavar-field-values`
 
    * - geom
-     - Specify a geometry filter as geojson. "-" for stdin or @file
+     - Specify a geometry filter as geojson.
 
      - :ref:`cli-metavar-geom`
 
@@ -399,7 +414,7 @@ Usage: filter [OPTIONS]
      - :ref:`cli-metavar-filter`
 
    * - geom
-     - Specify a geometry filter as geojson. "-" for stdin or @file
+     - Specify a geometry filter as geojson.
 
      - :ref:`cli-metavar-geom`
 
@@ -494,6 +509,11 @@ Usage: search [OPTIONS]
 
      - BOOLEAN
 
+   * - asset_type
+     - Specify asset type(s) permissions
+
+     - :ref:`cli-metavar-asset-type`
+
    * - sort
      - Specify sort ordering as published/acquired asc/desc
 
@@ -511,7 +531,7 @@ Usage: search [OPTIONS]
      - :ref:`cli-metavar-filter`
 
    * - geom
-     - Specify a geometry filter as geojson. "-" for stdin or @file
+     - Specify a geometry filter as geojson.
 
      - :ref:`cli-metavar-geom`
 
@@ -534,11 +554,6 @@ Usage: search [OPTIONS]
      - Filter field by date.
 
      - :ref:`cli-metavar-field-comp-value`
-
-   * - sort
-     - Specify sort ordering as published/acquired asc/desc
-
-     - FIELD ORDER...
 
 .. index:: searches
 
@@ -622,7 +637,7 @@ Usage: stats [OPTIONS]
      - :ref:`cli-metavar-field-values`
 
    * - geom
-     - Specify a geometry filter as geojson. "-" for stdin or @file
+     - Specify a geometry filter as geojson.
 
      - :ref:`cli-metavar-geom`
 
@@ -641,6 +656,11 @@ Usage: stats [OPTIONS]
      - Specify sort ordering as published/acquired asc/desc
 
      - FIELD ORDER...
+
+   * - asset_type
+     - Specify asset type(s) permissions
+
+     - :ref:`cli-metavar-asset-type`
 
    * - pretty
      - Format JSON output
