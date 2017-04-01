@@ -5,11 +5,9 @@ python:
 cache:
   directories:
     - $HOME/.cache/pip
+before_install:
+  - pip install --upgrade pytest
 install:
-  - "pip install flake8"
-  - "pip install -e .[dev]"
-before_script:
-  - flake8 planet tests
+  - pip install -e .[dev]
 script:
-  - "py.test"
-
+  - make check html-docs
