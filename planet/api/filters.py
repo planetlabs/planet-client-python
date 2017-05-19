@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .utils import strp_lenient
+
 
 def build_search_request(filter_like, item_types, name=None, interval=None):
     '''Build a data-api search request body for the specified item_types.
@@ -96,10 +98,25 @@ def not_filter(*predicates):
 
 
 def date_range(field_name, **kwargs):
+    '''Build a DateRangeFilter.
+
+    Predicate arguments accept a value str that in ISO-8601 format or a value
+    that has a `isoformat` callable that returns an ISO-8601 str.
+
+    :raises: ValueError if predicate value does not parse
+
+    >>> date_range('acquired', gt='2017') == \
+    {'config': {'gt': '2017-01-01T00:00:00Z'}, \
+    'field_name': 'acquired', 'type': 'DateRangeFilter'}
+    True
+    '''
     for k, v in kwargs.items():
-        if hasattr(v, 'isoformat'):
-            # @todo check timezone handling
-            kwargs[k] = v.isoformat() + 'Z'
+        dt = v
+        if not hasattr(v, 'isoformat'):
+            dt = strp_lenient(str(v))
+            if dt is None:
+                raise ValueError("unable to use provided time: " + str(v))
+        kwargs[k] = dt.isoformat() + 'Z'
     return _filter('DateRangeFilter', config=kwargs, field_name=field_name)
 
 

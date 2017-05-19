@@ -30,7 +30,11 @@ def test_strp_lenient():
         '2017-02-02',
     ]:
         p = utils.strp_lenient(spec)
+        assert p is not None, spec + " failed"
         assert datetime.strftime(p, utils._ISO_FMT).startswith(spec)
+
+    withz = '2017-02-02T16:45:43Z'
+    assert utils.strp_lenient(withz) == utils.strp_lenient(withz[:-1])
 
 
 def test_geometry_from_json():

@@ -132,6 +132,7 @@ def strf_timestamp(when):
 
 
 def strp_lenient(when):
+    when = when[:-1] if when[-1] == 'Z' else when
     for i in range(0, 9):
         try:
             return datetime.strptime(when, _ISO_FMT[:i*-3 or len(_ISO_FMT)])
