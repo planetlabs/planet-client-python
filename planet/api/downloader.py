@@ -15,8 +15,12 @@ import logging
 import os
 import threading
 import time
+
+from typing import Iterable
+
 from .utils import write_to_file
 from planet.api.exceptions import RequestCancelled
+
 try:
     import Queue as queue
 except:
@@ -29,8 +33,10 @@ def _by_status(assets, types, status):
             t in assets and assets[t]['status'] == status]
 
 
-def _all_status(assets, types, status):
-    return all([assets[t]['status'] == status for t in types if t in assets])
+def _all_status(assets, types, statuses):
+    if not isinstance(statuses, Iterable):
+        statuses = [statuses]
+    return all([assets[t]['status'] in statuses for t in types if t in assets])
 
 
 _logger = logging.getLogger(__name__)
@@ -201,8 +207,7 @@ class _AStage(_Stage):
             self._tasks.append(item)
             return
 
-        if _all_status(assets, self._asset_types, 'activating') or \
-           _all_status(assets, self._asset_types, 'active'):
+        if _all_status(assets, self._asset_types, ['active', 'activating']):
             self._results.put((item, assets))
         else:
             # hmmm
