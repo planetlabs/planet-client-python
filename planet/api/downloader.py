@@ -279,7 +279,7 @@ class _DStage(_Stage):
 
     def _do(self, task):
         item, asset = task
-        writer = write_to_file(item['id'],
+        writer = write_to_file(item,
                                asset['type'],
                                self._dest,
                                self._write_tracker(item, asset),
