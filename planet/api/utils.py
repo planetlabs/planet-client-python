@@ -96,7 +96,8 @@ def get_filename(response):
     return cd
 
 
-def write_to_file(directory=None, callback=None, overwrite=True):
+def write_to_file(
+        item_id, asset_type, directory=None, callback=None, overwrite=True):
     '''Create a callback handler for asynchronous Body handling.
 
     If provided, the callback will be invoked as described in
@@ -113,7 +114,8 @@ def write_to_file(directory=None, callback=None, overwrite=True):
     :param overwrite bool: Overwrite any existing files. Defaults to True.
     '''
     def writer(body):
-        file = os.path.join(directory or '.', body.name)
+        filename = '{}__{}.tif'.format(item_id, asset_type)
+        file = os.path.join(directory or '.', filename)
         if overwrite or not os.path.exists(file):
             body.write(file, callback)
         else:

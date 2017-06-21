@@ -279,8 +279,11 @@ class _DStage(_Stage):
 
     def _do(self, task):
         item, asset = task
-        writer = write_to_file(
-            self._dest, self._write_tracker(item, asset), overwrite=False)
+        writer = write_to_file(item['id'],
+                               asset['type'],
+                               self._dest,
+                               self._write_tracker(item, asset),
+                               overwrite=False)
         self._downloads += 1
         self._results.put((item, asset,
                            self._client.download(asset, writer)))
