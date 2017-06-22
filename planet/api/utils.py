@@ -114,8 +114,7 @@ def write_to_file(
     :param overwrite bool: Overwrite any existing files. Defaults to True.
     '''
     def writer(body):
-        filename = '{}__{}__{}.tif'.format(
-            item['id'], item['properties']['item_type'], asset_type)
+        filename = get_custom_filename(item, asset_type)
         file = os.path.join(directory or '.', filename)
         if overwrite or not os.path.exists(file):
             body.write(file, callback)
@@ -124,6 +123,14 @@ def write_to_file(
                 callback(skip=body)
             body.response.close()
     return writer
+
+
+def get_custom_filename(item, asset_type):
+    basename = '__'.join(
+        [item['id'], item['properties']['item_type'], asset_type])
+    if asset_type == 'analytic':
+        basename += '__reflectance'
+    return basename + '.tif'
 
 
 def strp_timestamp(value):

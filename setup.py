@@ -79,6 +79,8 @@ setup(name='planet',
           'click',
           'requests',
           'requests_futures',
+          'bs4',
+          'rasterio'
       ],
       extras_require={
           'test': test_requires,

@@ -15,7 +15,7 @@ import logging
 import os
 import threading
 import time
-from .utils import write_to_file
+from .utils import write_to_file, get_custom_filename
 from planet.api.exceptions import RequestCancelled
 try:
     import Queue as queue
@@ -335,6 +335,15 @@ class Downloader(object):
         '''
         raise NotImplemented()
 
+class _Downloader(Downloader):
+    def __init__(self, client, **opts):
+        self._client = client
+        self._opts = opts
+        self._stages = []
+        self._completed = 0
+        self._awaiting = None
+
+
     def on_complete(self, item, asset, path=None):
         '''Notification of processing an item's asset, invoked on completion of
         `activate` or `download`.
@@ -347,13 +356,9 @@ class Downloader(object):
         pass
 
 
-class _Downloader(Downloader):
-    def __init__(self, client, **opts):
-        self._client = client
-        self._opts = opts
-        self._stages = []
-        self._completed = 0
-        self._awaiting = None
+    def _process_download(self, path, asset_type):
+        pass
+
 
     def activate(self, items, asset_types):
         return self._run(items, asset_types)
@@ -405,7 +410,9 @@ class _Downloader(Downloader):
                     try:
                         body = self._awaiting.await()
                         self._awaiting = None
-                        dl = os.path.join(self._dest, body.name)
+                        dl = os.path.join(
+                            self._dest,
+                            get_custom_filename(item, asset['type']))
                         self.on_complete(item, asset, dl)
                     except RequestCancelled:
                         pass
