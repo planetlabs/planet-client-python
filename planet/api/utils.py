@@ -129,7 +129,7 @@ def get_custom_filename(item, asset_type):
     basename = '__'.join(
         [item['id'], item['properties']['item_type'], asset_type])
     if asset_type == 'analytic':
-        basename += '__reflectance'
+        basename += '__reflectance_scaled'
     return basename + '.tif'
 
 

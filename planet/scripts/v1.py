@@ -14,6 +14,7 @@
 
 import json
 import logging
+import os
 import rasterio
 
 from functools import partial
@@ -51,7 +52,8 @@ from .util import (
     search_req_from_opts,
 )
 from planet.api.utils import (
-    handle_interrupt
+    handle_interrupt,
+    get_custom_filename
 )
 from planet.api import downloader
 
@@ -156,8 +158,16 @@ def _disable_item_type(ctx, param, value):
 
 
 def on_complete(item, asset, path=None):
-    if asset['type'] == 'analytic':
-        _convert_to_reflectance(item, path)
+    task = 'download' if path is not None else 'activate'
+    if task == 'download' and asset['type'] == 'analytic':
+        try:
+            _convert_to_reflectance(item, path)
+        except Exception as e:
+            logging.error(
+                'Exception encountered during preprocessing. '
+                'Removing downloaded file at {}.'.format(path))
+            os.remove(path)
+            raise
 
 
 def _convert_to_reflectance(item, path):
@@ -165,25 +175,22 @@ def _convert_to_reflectance(item, path):
     logging.info('Converting {} to reflectance values'.format(path))
 
     with rasterio.open(path) as src:
-        image = src.read().astype('float32')
-        profile = _get_rasterio_profile_for_reflectance_conversion(src)
+        image = src.read()
+        profile = src.profile
+        # 'transform' is redundant, rasterio has deprecated it
+        del profile['transform']
 
     reflectance_coefficients = _get_reflectance_coefficients(item)
-    for band_num, coef in enumerate(reflectance_coefficients):
-        image[band_num] *= coef
+    for band_num, reflectance_coefficient in enumerate(
+            reflectance_coefficients):
+        # Multiply by scale factor to avoid underflow and storing
+        # floats
+        scale_factor = 2**16 - 1
+        coefficient = int(reflectance_coefficient * scale_factor)
+        image[band_num] *= coefficient
 
     with rasterio.open(path, 'w', **profile) as dest:
         dest.write(image)
-
-
-def _get_rasterio_profile_for_reflectance_conversion(raster_reader):
-    profile = raster_reader.profile
-    profile['dtype'] = 'float32'
-
-    # 'transform' is redundant, rasterio has deprecated it
-    del profile['transform']
-
-    return profile
 
 
 def _get_reflectance_coefficients(item):

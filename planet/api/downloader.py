@@ -355,10 +355,8 @@ class _Downloader(Downloader):
         '''
         pass
 
-
     def _process_download(self, path, asset_type):
         pass
-
 
     def activate(self, items, asset_types):
         return self._run(items, asset_types)
