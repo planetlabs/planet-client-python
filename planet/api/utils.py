@@ -105,8 +105,8 @@ def write_to_file(
     is skipped because the destination exists, the callback will be invoked
     with ``callback(skip=body)``.
 
-    The name of the file written to will be determined from the Body.name
-    property.
+    The name of the file written to will be determined by the
+    get_custom_filename function.
 
     :param directory str: The optional directory to write to.
     :param callback func: An optional callback to receive notification of
