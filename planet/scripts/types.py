@@ -26,7 +26,7 @@ from planet.api.utils import geometry_from_json
 from planet.api.utils import strp_lenient
 
 _allowed_item_types = [
-    "PSScene4Band", "PSScene3Band", "REScene",
+    "PSScene4Band", "PSScene3Band", "REScene", "SkySatScene",
     "REOrthoTile", "Sentinel2L1C", "PSOrthoTile", "Landsat8L1G"]
 
 _allowed_asset_types = [
@@ -42,7 +42,8 @@ _allowed_asset_types = [
     "basic_analytic_dn_rpc_nitf", "basic_analytic_dn_xml",
     "basic_analytic_dn_xml_nitf", "basic_analytic_nitf", "basic_analytic_rpc",
     "basic_analytic_rpc_nitf", "basic_analytic_sci", "basic_analytic_xml",
-    "basic_analytic_xml_nitf", "basic_udm", "browse", "metadata_aux",
+    "basic_analytic_xml_nitf", "basic_panchromatic_dn",
+    "basic_panchromatic_dn_rpc", "basic_udm", "browse", "metadata_aux",
     "metadata_txt", "udm", "visual", "visual_xml"
 ]
 
