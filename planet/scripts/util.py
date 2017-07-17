@@ -203,7 +203,6 @@ class _BaseOutput(object):
         self._timer = None
         self._dl = dl
         self._running = False
-        dl.on_complete = self._report_complete
 
     def _schedule(self):
         if self._thread.is_alive() and self._running:

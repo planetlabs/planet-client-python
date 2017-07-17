@@ -12,9 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import click
-from itertools import chain
 import json
+import logging
+import os
+import rasterio
+
+from functools import partial
+from itertools import chain
+
+import click
+
+from bs4 import BeautifulSoup
+
 from .cli import (
     cli,
     clientv1
@@ -43,7 +52,8 @@ from .util import (
     search_req_from_opts,
 )
 from planet.api.utils import (
-    handle_interrupt
+    handle_interrupt,
+    get_custom_filename
 )
 from planet.api import downloader
 
@@ -147,6 +157,72 @@ def _disable_item_type(ctx, param, value):
     return value
 
 
+def on_complete(item, asset, path=None):
+    task = 'download' if path is not None else 'activate'
+    if task == 'download' and asset['type'] == 'analytic':
+        try:
+            _convert_to_reflectance(item, path)
+        except Exception as e:
+            logging.error(
+                'Exception encountered during preprocessing. '
+                'Removing downloaded file at {}.'.format(path))
+            os.remove(path)
+            raise
+
+
+def _convert_to_reflectance(item, path):
+    reflectance_coefficients = _get_reflectance_coefficients(item)
+    logging.info('Converting {} to reflectance values'.format(path))
+
+    with rasterio.open(path) as src:
+        image = src.read()
+        profile = src.profile
+        # 'transform' is redundant, rasterio has deprecated it
+        del profile['transform']
+
+    reflectance_coefficients = _get_reflectance_coefficients(item)
+    for band_num, reflectance_coefficient in enumerate(
+            reflectance_coefficients):
+        # Multiply by scale factor to avoid underflow and storing
+        # floats
+        scale_factor = 2**16 - 1
+        coefficient = int(reflectance_coefficient * scale_factor)
+        image[band_num] *= coefficient
+
+    with rasterio.open(path, 'w', **profile) as dest:
+        dest.write(image)
+
+
+def _get_reflectance_coefficients(item):
+    if item['properties']['item_type'] in ['PSOrthoTile', 'PSScene4Band']:
+        search_string = 'ps:reflectanceCoefficient'
+    elif item['properties']['item_type'] in 'REOrthoTile':
+        search_string = 'ps:reflectanceCoefficient'
+    else:
+        raise NotImplementedError(
+            'Conversion to reflectance values has been implemented only for '
+            'items of type PSOrthoTile, PSScene4Band, and REOrthoTile'
+        )
+
+    analytic_xml_soup = _get_analytic_xml_soup(item)
+    reflectance_coefficients = [
+        float(result.string) for result
+        in analytic_xml_soup.find_all(search_string)]
+
+    return reflectance_coefficients
+
+
+def _get_analytic_xml_soup(item):
+    cl = clientv1()
+    item_metadata = cl.get_item(item['properties']['item_type'], item['id']).get()
+    analytic_xml_asset = (
+            cl.get_assets(item_metadata).get()['analytic_xml'])
+    response = cl.download(analytic_xml_asset)
+    analytic_xml = response.get_body().get_raw()
+    analytic_xml_soup = BeautifulSoup(analytic_xml, 'xml')
+    return analytic_xml_soup
+
+
 @asset_type_option
 @search_request_opts
 @click.option('--search-id', is_eager=True, callback=_disable_item_type,
@@ -203,6 +279,7 @@ def download(asset_type, dest, limit, sort, search_id, dry_run, activate_only,
             search, search_arg = cl.quick_search, req
 
     dl = downloader.create(cl)
+    dl.on_complete = on_complete
     output = downloader_output(dl, disable_ansi=quiet)
     # delay initial item search until downloader output initialized
     output.start()

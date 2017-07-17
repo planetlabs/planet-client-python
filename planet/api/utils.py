@@ -96,7 +96,8 @@ def get_filename(response):
     return cd
 
 
-def write_to_file(directory=None, callback=None, overwrite=True):
+def write_to_file(
+        item, asset_type, directory=None, callback=None, overwrite=True):
     '''Create a callback handler for asynchronous Body handling.
 
     If provided, the callback will be invoked as described in
@@ -104,8 +105,8 @@ def write_to_file(directory=None, callback=None, overwrite=True):
     is skipped because the destination exists, the callback will be invoked
     with ``callback(skip=body)``.
 
-    The name of the file written to will be determined from the Body.name
-    property.
+    The name of the file written to will be determined by the
+    get_custom_filename function.
 
     :param directory str: The optional directory to write to.
     :param callback func: An optional callback to receive notification of
@@ -113,7 +114,8 @@ def write_to_file(directory=None, callback=None, overwrite=True):
     :param overwrite bool: Overwrite any existing files. Defaults to True.
     '''
     def writer(body):
-        file = os.path.join(directory or '.', body.name)
+        filename = get_custom_filename(item, asset_type)
+        file = os.path.join(directory or '.', filename)
         if overwrite or not os.path.exists(file):
             body.write(file, callback)
         else:
@@ -121,6 +123,14 @@ def write_to_file(directory=None, callback=None, overwrite=True):
                 callback(skip=body)
             body.response.close()
     return writer
+
+
+def get_custom_filename(item, asset_type):
+    basename = '__'.join(
+        [item['id'], item['properties']['item_type'], asset_type])
+    if asset_type == 'analytic':
+        basename += '__reflectance_scaled'
+    return basename + '.tif'
 
 
 def strp_timestamp(value):
