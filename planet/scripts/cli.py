@@ -45,12 +45,13 @@ def configure_logging(verbosity):
 @click.pass_context
 @click.option('-w', '--workers', default=4,
               help=('The number of concurrent downloads when requesting '
-                    'multiple scenes.'))
+                    'multiple scenes. - Default 4'))
 @click.option('-v', '--verbose', count=True, help='Specify verbosity')
 @click.option('-k', '--api-key',
-              help='Valid API key - or via env variable %s' % api.auth.ENV_KEY)
+              help='Valid API key - or via ENV variable %s' % api.auth.ENV_KEY)
 @click.option('-u', '--base-url', envvar='PL_API_BASE_URL',
-              help='Change the base Planet API URL')
+              help='Change the base Planet api url or ENV PL_API_BASE_URL'
+                   ' - Default https://api.planet.com/')
 @click.version_option(version=api.__version__, message='%(version)s')
 def cli(context, verbose, api_key, base_url, workers):
     '''Planet API Client'''
