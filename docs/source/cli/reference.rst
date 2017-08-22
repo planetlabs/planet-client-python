@@ -90,7 +90,7 @@ General Options
 
 
 ``--workers``
-   The number of concurrent downloads when requesting multiple scenes.
+   The number of concurrent downloads when requesting multiple scenes. - Default 4
 
 
 
@@ -100,12 +100,12 @@ General Options
 
 
 ``--api_key``
-   Valid API key - or via env variable PL_API_KEY
+   Valid API key - or via ENV variable PL_API_KEY
 
 
 
 ``--base_url``
-   Change the base Planet API URL
+   Change the base Planet API URL or ENV PL_API_BASE_URL - Default https://api.planet.com/
 
 
 
