@@ -1,3 +1,9 @@
+1.0.1 (2017-08-22)
+-------------------------------------
+- update the doc strings with defaults
+- update allowed item/asset types for skysat
+- date_range improvements, handle Z suffix in strp_lenient
+
 1.0.0 (2017-04-01) Code name: no-joke
 -------------------------------------
 - Remove V0 API support
