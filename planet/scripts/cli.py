@@ -50,7 +50,7 @@ def configure_logging(verbosity):
 @click.option('-k', '--api-key',
               help='Valid API key - or via ENV variable %s' % api.auth.ENV_KEY)
 @click.option('-u', '--base-url', envvar='PL_API_BASE_URL',
-              help='Change the base Planet api url or ENV PL_API_BASE_URL'
+              help='Change the base Planet API URL or ENV PL_API_BASE_URL'
                    ' - Default https://api.planet.com/')
 @click.version_option(version=api.__version__, message='%(version)s')
 def cli(context, verbose, api_key, base_url, workers):
