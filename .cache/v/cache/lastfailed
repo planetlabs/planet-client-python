@@ -1,0 +1,14 @@
+{
+  "tests/test_atomic.py::test_atomic_open": true,
+  "tests/test_cli.py": true,
+  "tests/test_client.py": true,
+  "tests/test_dispatch.py": true,
+  "tests/test_downloader.py::test_pipeline": true,
+  "tests/test_models.py": true,
+  "tests/test_types.py::test_asset_type": true,
+  "tests/test_types.py::test_geom_type": true,
+  "tests/test_types.py::test_item_type": true,
+  "tests/test_types.py::test_range_type": true,
+  "tests/test_utils.py": true,
+  "tests/test_v1_cli.py": true
+}

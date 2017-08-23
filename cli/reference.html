@@ -1,20 +1,17 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>CLI Reference &#8212; Planet API Client 1.0.0 documentation</title>
-    
+    <title>CLI Reference &#8212; Planet API Client 1.0.1 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0.0',
+        VERSION:     '1.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -35,7 +32,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
+  <body>
   <div class="document">
     
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -112,22 +109,22 @@ supports glob-matching, e.g. <code class="docutils literal"><span class="pre">ps
 <span id="cli-metavar-filter"></span><h3>FILTER<a class="headerlink" href="#filter" title="Permalink to this headline">¶</a></h3>
 <p>Specify a Data API search filter provided as JSON.
 <code class="docutils literal"><span class="pre">&#64;-</span></code> specifies stdin and <code class="docutils literal"><span class="pre">&#64;filename</span></code> specifies reading from a file
-named &#8216;filename&#8217;. Otherwise, the value is assumed to be JSON.</p>
+named ‘filename’. Otherwise, the value is assumed to be JSON.</p>
 </div>
 <div class="section" id="geom">
 <span id="cli-metavar-geom"></span><h3>GEOM<a class="headerlink" href="#geom" title="Permalink to this headline">¶</a></h3>
 <p>Specify a geometry in GeoJSON format either as an inline value,
 stdin, or a file. <code class="docutils literal"><span class="pre">&#64;-</span></code> specifies stdin and <code class="docutils literal"><span class="pre">&#64;filename</span></code> specifies
-reading from a file named &#8216;filename&#8217;. Otherwise, the value is assumed to
+reading from a file named ‘filename’. Otherwise, the value is assumed to
 be GeoJSON.</p>
 </div>
 <div class="section" id="field-values">
-<span id="cli-metavar-field-values"></span><h3>FIELD VALUES...<a class="headerlink" href="#field-values" title="Permalink to this headline">¶</a></h3>
-<p>Specifies an &#8216;in&#8217; query where FIELD is a property
+<span id="cli-metavar-field-values"></span><h3>FIELD VALUES…<a class="headerlink" href="#field-values" title="Permalink to this headline">¶</a></h3>
+<p>Specifies an ‘in’ query where FIELD is a property
 of the item-type and VALUES is space or comma separated text or numbers.</p>
 </div>
 <div class="section" id="field-comp-value">
-<span id="cli-metavar-field-comp-value"></span><h3>FIELD COMP VALUE...<a class="headerlink" href="#field-comp-value" title="Permalink to this headline">¶</a></h3>
+<span id="cli-metavar-field-comp-value"></span><h3>FIELD COMP VALUE…<a class="headerlink" href="#field-comp-value" title="Permalink to this headline">¶</a></h3>
 <p>A comparison query format where FIELD is a
 property of the item-type and COMP is one of lt, lte, gt, gte and VALUE is
 the number or date to compare against.</p>
@@ -139,13 +136,13 @@ the number or date to compare against.</p>
 <h2>General Options<a class="headerlink" href="#general-options" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt><code class="docutils literal"><span class="pre">--workers</span></code></dt>
-<dd>The number of concurrent downloads when requesting multiple scenes.</dd>
+<dd>The number of concurrent downloads when requesting multiple scenes. - Default 4</dd>
 <dt><code class="docutils literal"><span class="pre">--verbose</span></code></dt>
 <dd>Specify verbosity</dd>
 <dt><code class="docutils literal"><span class="pre">--api_key</span></code></dt>
-<dd>Valid API key - or via env variable PL_API_KEY</dd>
+<dd>Valid API key - or via ENV variable PL_API_KEY</dd>
 <dt><code class="docutils literal"><span class="pre">--base_url</span></code></dt>
-<dd>Change the base Planet API URL</dd>
+<dd>Change the base Planet API URL or ENV PL_API_BASE_URL - Default <a class="reference external" href="https://api.planet.com/">https://api.planet.com/</a></dd>
 <dt><code class="docutils literal"><span class="pre">--version</span></code></dt>
 <dd>Show the version and exit.</dd>
 </dl>
@@ -221,7 +218,7 @@ the number or date to compare against.</p>
 <td>BOOLEAN</td>
 </tr>
 <tr class="row-odd"><td>name</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 <td>TEXT</td>
 </tr>
 <tr class="row-even"><td>asset_type</td>
@@ -230,7 +227,7 @@ the number or date to compare against.</p>
 </tr>
 <tr class="row-odd"><td>sort</td>
 <td>Specify sort ordering as published/acquired asc/desc</td>
-<td>FIELD ORDER...</td>
+<td>FIELD ORDER…</td>
 </tr>
 <tr class="row-even"><td>item_type</td>
 <td>Specify item type(s)</td>
@@ -248,19 +245,19 @@ the number or date to compare against.</p>
 </tr>
 <tr class="row-odd"><td>string_in</td>
 <td>Filter field by string in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
 </tr>
 <tr class="row-even"><td>number_in</td>
 <td>Filter field by numeric in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
 </tr>
 <tr class="row-odd"><td>range</td>
 <td>Filter field by numeric range.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
 </tr>
 <tr class="row-even"><td>date</td>
 <td>Filter field by date.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
 </tr>
 </tbody>
 </table>
@@ -311,19 +308,19 @@ the number or date to compare against.</p>
 </tr>
 <tr class="row-even"><td>date</td>
 <td>Filter field by date.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
 </tr>
 <tr class="row-odd"><td>range</td>
 <td>Filter field by numeric range.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
 </tr>
 <tr class="row-even"><td>number_in</td>
 <td>Filter field by numeric in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
 </tr>
 <tr class="row-odd"><td>string_in</td>
 <td>Filter field by string in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
 </tr>
 <tr class="row-even"><td>geom</td>
 <td>Specify a geometry filter as geojson.</td>
@@ -341,7 +338,7 @@ the number or date to compare against.</p>
 </tr>
 <tr class="row-odd"><td>sort</td>
 <td>Specify sort ordering as published/acquired asc/desc</td>
-<td>FIELD ORDER...</td>
+<td>FIELD ORDER…</td>
 </tr>
 <tr class="row-even"><td>asset_type</td>
 <td>Specify asset type(s)</td>
@@ -353,9 +350,9 @@ the number or date to compare against.</p>
 <div class="section" id="cli-command-filter">
 <span id="index-4"></span><span id="id1"></span><h3>filter<a class="headerlink" href="#cli-command-filter" title="Permalink to this headline">¶</a></h3>
 <p>Output a AND filter as JSON to stdout.</p>
-<p>If provided using &#8211;filter-json, combine the filters.</p>
+<p>If provided using –filter-json, combine the filters.</p>
 <p>The output is suitable for use in other commands via the
-&#8211;filter-json option.</p>
+–filter-json option.</p>
 <p>Usage: filter [OPTIONS]</p>
 <table border="1" class="colwidths-given docutils" id="id5">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id5" title="Permalink to this table">¶</a></caption>
@@ -383,19 +380,19 @@ the number or date to compare against.</p>
 </tr>
 <tr class="row-even"><td>string_in</td>
 <td>Filter field by string in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
 </tr>
 <tr class="row-odd"><td>number_in</td>
 <td>Filter field by numeric in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
 </tr>
 <tr class="row-even"><td>range</td>
 <td>Filter field by numeric range.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
 </tr>
 <tr class="row-odd"><td>date</td>
 <td>Filter field by date.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
 </tr>
 </tbody>
 </table>
@@ -420,7 +417,7 @@ the number or date to compare against.</p>
 <tbody valign="top">
 <tr class="row-even"><td>sort</td>
 <td>Specify sort ordering as published/acquired asc/desc</td>
-<td>FIELD ORDER...</td>
+<td>FIELD ORDER…</td>
 </tr>
 <tr class="row-odd"><td>pretty</td>
 <td>Format JSON output</td>
@@ -469,7 +466,7 @@ the number or date to compare against.</p>
 </tr>
 <tr class="row-odd"><td>sort</td>
 <td>Specify sort ordering as published/acquired asc/desc</td>
-<td>FIELD ORDER...</td>
+<td>FIELD ORDER…</td>
 </tr>
 <tr class="row-even"><td>item_type</td>
 <td>Specify item type(s)</td>
@@ -487,19 +484,19 @@ the number or date to compare against.</p>
 </tr>
 <tr class="row-odd"><td>string_in</td>
 <td>Filter field by string in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
 </tr>
 <tr class="row-even"><td>number_in</td>
 <td>Filter field by numeric in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
 </tr>
 <tr class="row-odd"><td>range</td>
 <td>Filter field by numeric range.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
 </tr>
 <tr class="row-even"><td>date</td>
 <td>Filter field by date.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
 </tr>
 </tbody>
 </table>
@@ -561,19 +558,19 @@ the number or date to compare against.</p>
 </tr>
 <tr class="row-odd"><td>date</td>
 <td>Filter field by date.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
 </tr>
 <tr class="row-even"><td>range</td>
 <td>Filter field by numeric range.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
 </tr>
 <tr class="row-odd"><td>number_in</td>
 <td>Filter field by numeric in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
 </tr>
 <tr class="row-even"><td>string_in</td>
 <td>Filter field by string in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES...</span></a></td>
+<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
 </tr>
 <tr class="row-odd"><td>geom</td>
 <td>Specify a geometry filter as geojson.</td>
@@ -591,7 +588,7 @@ the number or date to compare against.</p>
 </tr>
 <tr class="row-even"><td>sort</td>
 <td>Specify sort ordering as published/acquired asc/desc</td>
-<td>FIELD ORDER...</td>
+<td>FIELD ORDER…</td>
 </tr>
 <tr class="row-odd"><td>asset_type</td>
 <td>Specify asset type(s) permissions</td>
@@ -617,8 +614,8 @@ the number or date to compare against.</p>
       &copy;2017 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="../_sources/cli/reference.rst.txt"
