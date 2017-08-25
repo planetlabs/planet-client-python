@@ -19,7 +19,7 @@ from .client import (ClientV1)
 from .utils import write_to_file
 from . import filters
 
-__version__ = '1.0.1'
+__version__ = '1.1.0'
 
 __all__ = [
     ClientV1, APIException, BadQuery, InvalidAPIKey,

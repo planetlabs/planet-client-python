@@ -1,3 +1,7 @@
+1.1.0(2017-08-25)
+-------------------------------------
+- Prevent download of entire world by making geo required argument.
+
 1.0.1 (2017-08-22)
 -------------------------------------
 - update the doc strings with defaults
