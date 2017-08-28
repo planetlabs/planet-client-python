@@ -43,7 +43,7 @@ def limit_option(default):
                         type=num_type, help="Limit the number of items.")
 
 
-geom_filter = click.option('--geom', type=GeomFilter(), required=True, help=(
+geom_filter = click.option('--geom', type=GeomFilter(), help=(
     'Specify a geometry filter as geojson.'
 ))
 
