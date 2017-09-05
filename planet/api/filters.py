@@ -56,16 +56,16 @@ def and_filter(*predicates):
     '''Build an `and` filter from the provided predicate filters.
 
     >>> filt = and_filter(
-    ...   range_filter('clouds', gt=0.1),
-    ...   range_filter('clouds', lt=0.2)
+    ...   range_filter('cloud_cover', gt=0.1),
+    ...   range_filter('cloud_cover', lt=0.2)
     ... )
     >>> filt['type']
     'AndFilter'
     >>> filt['config'][0] == \
-    {'config': {'gt': 0.1}, 'field_name': 'clouds', 'type': 'RangeFilter'}
+    {'config': {'gt': 0.1}, 'field_name': 'cloud_cover', 'type': 'RangeFilter'}
     True
     >>> filt['config'][1] == \
-    {'config': {'lt': 0.2}, 'field_name': 'clouds', 'type': 'RangeFilter'}
+    {'config': {'lt': 0.2}, 'field_name': 'cloud_cover', 'type': 'RangeFilter'}
     True
     '''
     return _filter('AndFilter', predicates)
@@ -78,7 +78,7 @@ def or_filter(*predicates):
     >>> n = datetime.datetime(year=2017, month=2, day=14)
     >>> filt = or_filter(
     ...   date_range('acquired', gt=n),
-    ...   range_filter('clouds', gt=0.1),
+    ...   range_filter('cloud_cover', gt=0.1),
     ... )
     >>> filt['type']
     'OrFilter'
@@ -87,7 +87,7 @@ def or_filter(*predicates):
     'type': 'DateRangeFilter'}
     True
     >>> filt['config'][1] == \
-    {'config': {'gt': 0.1}, 'field_name': 'clouds', 'type': 'RangeFilter'}
+    {'config': {'gt': 0.1}, 'field_name': 'cloud_cover', 'type': 'RangeFilter'}
     True
     '''
     return _filter('OrFilter', predicates)
@@ -123,8 +123,8 @@ def date_range(field_name, **kwargs):
 def range_filter(field_name, **kwargs):
     '''Build a RangeFilter.
 
-    >>> range_filter('clouds', gt=0.1) == \
-    {'config': {'gt': 0.1}, 'field_name': 'clouds', 'type': 'RangeFilter'}
+    >>> range_filter('cloud_cover', gt=0.1) == \
+    {'config': {'gt': 0.1}, 'field_name': 'cloud_cover', 'type': 'RangeFilter'}
     True
     '''
     return _filter('RangeFilter', config=kwargs, field_name=field_name)
