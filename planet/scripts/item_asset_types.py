@@ -31,7 +31,7 @@ _default_asset_types = [
 ]
 
 def _get_json_or_raise(url, timeout=0.7):
-    resp = requests.get(url, timeout)
+    resp = requests.get(url, timeout=timeout)
     resp.raise_for_status()
     return resp.json()
 
