@@ -24,28 +24,8 @@ from .util import _split
 from planet.api import filters
 from planet.api.utils import geometry_from_json
 from planet.api.utils import strp_lenient
+from planet.scripts.item_asset_types import get_item_types, get_asset_types
 
-_allowed_item_types = [
-    "PSScene4Band", "PSScene3Band", "REScene", "SkySatScene",
-    "REOrthoTile", "Sentinel2L1C", "PSOrthoTile", "Landsat8L1G"]
-
-_allowed_asset_types = [
-    "analytic", "analytic_b1", "analytic_b10", "analytic_b11", "analytic_b12",
-    "analytic_b2", "analytic_b3", "analytic_b4", "analytic_b5", "analytic_b6",
-    "analytic_b7", "analytic_b8", "analytic_b8a", "analytic_b9",
-    "analytic_bqa", "analytic_dn", "analytic_dn_xml", "analytic_ms",
-    "analytic_xml", "basic_analytic", "basic_analytic_b1",
-    "basic_analytic_b1_nitf", "basic_analytic_b2", "basic_analytic_b2_nitf",
-    "basic_analytic_b3", "basic_analytic_b3_nitf", "basic_analytic_b4",
-    "basic_analytic_b4_nitf", "basic_analytic_b5", "basic_analytic_b5_nitf",
-    "basic_analytic_dn", "basic_analytic_dn_nitf", "basic_analytic_dn_rpc",
-    "basic_analytic_dn_rpc_nitf", "basic_analytic_dn_xml",
-    "basic_analytic_dn_xml_nitf", "basic_analytic_nitf", "basic_analytic_rpc",
-    "basic_analytic_rpc_nitf", "basic_analytic_sci", "basic_analytic_xml",
-    "basic_analytic_xml_nitf", "basic_panchromatic_dn",
-    "basic_panchromatic_dn_rpc", "basic_udm", "browse", "metadata_aux",
-    "metadata_txt", "udm", "visual", "visual_xml"
-]
 
 metavar_docs = {
     'FIELD COMP VALUE...': '''A comparison query format where FIELD is a
@@ -130,14 +110,14 @@ class ItemType(_LenientChoice):
     allow_prefix = True
 
     def __init__(self):
-        _LenientChoice.__init__(self, _allowed_item_types)
+        _LenientChoice.__init__(self, get_item_types())
 
 
 class AssetType(_LenientChoice):
     name = 'asset-type'
 
     def __init__(self):
-        _LenientChoice.__init__(self, _allowed_asset_types)
+        _LenientChoice.__init__(self, get_asset_types())
 
 
 class AssetTypePerm(AssetType):
