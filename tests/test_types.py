@@ -13,7 +13,7 @@
 # limitations under the License
 
 import json
-from planet.scripts.types import _allowed_item_types
+from planet.scripts.types import get_item_types
 from planet.scripts.types import AssetType
 from planet.scripts.types import GeomFilter
 from planet.scripts.types import ItemType
@@ -30,7 +30,7 @@ def convert_asserter(t):
 def test_item_type():
     check = convert_asserter(ItemType())
 
-    check('all', _allowed_item_types)
+    check('all', get_item_types())
     check('psscene', ['PSScene3Band', 'PSScene4Band'])
     check('Sentinel2L1C', ['Sentinel2L1C'])
     check('psscene,sent', ['PSScene3Band', 'PSScene4Band', 'Sentinel2L1C'])
