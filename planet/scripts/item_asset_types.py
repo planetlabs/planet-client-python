@@ -30,10 +30,12 @@ _default_asset_types = [
     "metadata_txt", "udm", "visual", "visual_xml"
 ]
 
+
 def _get_json_or_raise(url, timeout=0.7):
     resp = requests.get(url, timeout=timeout)
     resp.raise_for_status()
     return resp.json()
+
 
 def get_item_types():
     global _item_types
@@ -44,6 +46,7 @@ def get_item_types():
         except:
             _item_types = _default_item_types
     return _item_types
+
 
 def get_asset_types():
     global _asset_types
