@@ -8,11 +8,11 @@ _asset_types = None
 
 # Default values here are used as a fallback
 # In case the API fails to respond or takes too long.
-_default_item_types = [
+DEFAULT_ITEM_TYPES = [
     "PSScene4Band", "PSScene3Band", "REScene", "SkySatScene",
     "REOrthoTile", "Sentinel2L1C", "PSOrthoTile", "Landsat8L1G"]
 
-_default_asset_types = [
+DEFAULT_ASSET_TYPES = [
     "analytic", "analytic_b1", "analytic_b10", "analytic_b11", "analytic_b12",
     "analytic_b2", "analytic_b3", "analytic_b4", "analytic_b5", "analytic_b6",
     "analytic_b7", "analytic_b8", "analytic_b8a", "analytic_b9",
@@ -44,7 +44,7 @@ def get_item_types():
             data = _get_json_or_raise(ITEM_TYPE_URL)
             _item_types = [it['id'] for it in data['item_types']]
         except:
-            _item_types = _default_item_types
+            _item_types = DEFAULT_ITEM_TYPES
     return _item_types
 
 
@@ -55,5 +55,5 @@ def get_asset_types():
             data = _get_json_or_raise(ASSET_TYPE_URL)
             _asset_types = [a['id'] for a in data['asset_types']]
         except:
-            _asset_types = _default_asset_types
+            _asset_types = DEFAULT_ASSET_TYPES
     return _asset_types
