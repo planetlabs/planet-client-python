@@ -24,7 +24,8 @@ from .util import _split
 from planet.api import filters
 from planet.api.utils import geometry_from_json
 from planet.api.utils import strp_lenient
-from planet.scripts.item_asset_types import get_item_types, get_asset_types
+from planet.scripts.item_asset_types import get_item_types, get_asset_types, \
+    DEFAULT_ITEM_TYPES, DEFAULT_ASSET_TYPES
 
 
 metavar_docs = {
@@ -85,7 +86,7 @@ class _LenientChoice(click.Choice):
             matched = matched.union(self._match(p, param, ctx))
         return list(matched)
 
-    def _match(self, val, param, ctx):
+    def _match(self, val, param, ctx, update_on_fail=True):
         lval = val.lower()
         if lval == 'all' and self.allow_all:
             return self.choices
@@ -98,10 +99,23 @@ class _LenientChoice(click.Choice):
                        if c.lower().startswith(lval)]
         else:
             matches = [c for c in self.choices if c.lower() == lval]
-        if not matches:
+        if not matches and update_on_fail:
+            self._update_choices()  # get choices from a remote source.
+            return self._match(val, param, ctx, False)  # Try one more time
+        elif not matches:
             self._fail('invalid', val, param, ctx)
         else:
             return matches
+
+    def _update_choices(self):
+        self.choices = self.get_remote_choices()
+
+    def get_remote_choices(self):
+        '''
+        No-op just returns current choices.
+        Subclasses should override.
+        '''
+        return self.choices
 
 
 class ItemType(_LenientChoice):
@@ -110,14 +124,20 @@ class ItemType(_LenientChoice):
     allow_prefix = True
 
     def __init__(self):
-        _LenientChoice.__init__(self, get_item_types())
+        _LenientChoice.__init__(self, DEFAULT_ITEM_TYPES)
+
+    def get_remote_choices(self):
+        return get_item_types()
 
 
 class AssetType(_LenientChoice):
     name = 'asset-type'
 
     def __init__(self):
-        _LenientChoice.__init__(self, get_asset_types())
+        _LenientChoice.__init__(self, DEFAULT_ASSET_TYPES)
+
+    def get_remote_choices(self):
+        return get_asset_types()
 
 
 class AssetTypePerm(AssetType):
