@@ -33,8 +33,8 @@ from click.testing import CliRunner
 
 from mock import MagicMock
 
-import planet
 from planet import api
+from planet.api.__version__ import __version__
 from planet.scripts import util
 from planet.scripts import main
 from planet.scripts import cli
@@ -122,7 +122,7 @@ def test_exception_translation():
 
 def test_version_flag():
     results = run_cli(['--version'])
-    assert results.output == "%s\n" % planet.api.__version__
+    assert results.output == "%s\n" % __version__
 
 
 def test_workers_flag():

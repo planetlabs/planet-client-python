@@ -17,6 +17,7 @@ import logging
 import sys
 
 from planet import api
+from planet.api.__version__ import __version__
 from planet.api.utils import write_planet_json
 from .util import call_and_wrap
 
@@ -37,8 +38,17 @@ def configure_logging(verbosity):
     )
 
     urllib3_logger = logging.getLogger(
-        'requests.packages.urllib3.connectionpool')
-    urllib3_logger.setLevel(logging.CRITICAL)
+        'requests.packages.urllib3')
+    urllib3_logger.setLevel(log_level)
+
+    # if debug level set then its nice to see the headers of the request
+    if log_level == logging.DEBUG:
+        try:
+            import http.client as http_client
+        except ImportError:
+            # Python 2
+            import httplib as http_client
+        http_client.HTTPConnection.debuglevel = 1
 
 
 @click.group()
@@ -52,7 +62,7 @@ def configure_logging(verbosity):
 @click.option('-u', '--base-url', envvar='PL_API_BASE_URL',
               help='Change the base Planet API URL or ENV PL_API_BASE_URL'
                    ' - Default https://api.planet.com/')
-@click.version_option(version=api.__version__, message='%(version)s')
+@click.version_option(version=__version__, message='%(version)s')
 def cli(context, verbose, api_key, base_url, workers):
     '''Planet API Client'''
 
