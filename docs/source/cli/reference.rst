@@ -99,12 +99,12 @@ General Options
 
 
 
-``--api_key``
+``--api-key``
    Valid API key - or via ENV variable PL_API_KEY
 
 
 
-``--base_url``
+``--base-url``
    Change the base Planet API URL or ENV PL_API_BASE_URL - Default https://api.planet.com/
 
 
@@ -231,11 +231,11 @@ Usage: create-search [OPTIONS]
      - BOOLEAN
 
    * - name
-     - 
+     -
 
      - TEXT
 
-   * - asset_type
+   * - asset-type
      - Specify asset type(s) permissions
 
      - :ref:`cli-metavar-asset-type`
@@ -245,12 +245,12 @@ Usage: create-search [OPTIONS]
 
      - FIELD ORDER...
 
-   * - item_type
+   * - item-type
      - Specify item type(s)
 
      - :ref:`cli-metavar-item-type`
 
-   * - filter_json
+   * - filter-json
      - Use the specified filter
 
        DEFAULT: `@-`
@@ -261,12 +261,12 @@ Usage: create-search [OPTIONS]
 
      - :ref:`cli-metavar-geom`
 
-   * - string_in
+   * - string-in
      - Filter field by string in.
 
      - :ref:`cli-metavar-field-values`
 
-   * - number_in
+   * - number-in
      - Filter field by numeric in.
 
      - :ref:`cli-metavar-field-values`
@@ -319,17 +319,17 @@ Usage: download [OPTIONS]
 
      - BOOLEAN
 
-   * - activate_only
+   * - activate-only
      - Only activate the items. Outputs URLS for downloading.
 
      - BOOLEAN
 
-   * - dry_run
+   * - dry-run
      - Only report the number of items that would be downloaded.
 
      - BOOLEAN
 
-   * - search_id
+   * - search-id
      - Use the specified search
 
      - TEXT
@@ -344,12 +344,12 @@ Usage: download [OPTIONS]
 
      - :ref:`cli-metavar-field-comp-value`
 
-   * - number_in
+   * - number-in
      - Filter field by numeric in.
 
      - :ref:`cli-metavar-field-values`
 
-   * - string_in
+   * - string-in
      - Filter field by string in.
 
      - :ref:`cli-metavar-field-values`
@@ -359,13 +359,13 @@ Usage: download [OPTIONS]
 
      - :ref:`cli-metavar-geom`
 
-   * - filter_json
+   * - filter-json
      - Use the specified filter
 
        DEFAULT: `@-`
      - :ref:`cli-metavar-filter`
 
-   * - item_type
+   * - item-type
      - Specify item type(s)
 
      - :ref:`cli-metavar-item-type`
@@ -375,7 +375,7 @@ Usage: download [OPTIONS]
 
      - FIELD ORDER...
 
-   * - asset_type
+   * - asset-type
      - Specify asset type(s)
 
      - :ref:`cli-metavar-asset-type`
@@ -407,7 +407,7 @@ Usage: filter [OPTIONS]
 
      - Format
 
-   * - filter_json
+   * - filter-json
      - Use the specified filter
 
        DEFAULT: `@-`
@@ -418,12 +418,12 @@ Usage: filter [OPTIONS]
 
      - :ref:`cli-metavar-geom`
 
-   * - string_in
+   * - string-in
      - Filter field by string in.
 
      - :ref:`cli-metavar-field-values`
 
-   * - number_in
+   * - number-in
      - Filter field by numeric in.
 
      - :ref:`cli-metavar-field-values`
@@ -509,7 +509,7 @@ Usage: search [OPTIONS]
 
      - BOOLEAN
 
-   * - asset_type
+   * - asset-type
      - Specify asset type(s) permissions
 
      - :ref:`cli-metavar-asset-type`
@@ -519,12 +519,12 @@ Usage: search [OPTIONS]
 
      - FIELD ORDER...
 
-   * - item_type
+   * - item-type
      - Specify item type(s)
 
      - :ref:`cli-metavar-item-type`
 
-   * - filter_json
+   * - filter-json
      - Use the specified filter
 
        DEFAULT: `@-`
@@ -535,12 +535,12 @@ Usage: search [OPTIONS]
 
      - :ref:`cli-metavar-geom`
 
-   * - string_in
+   * - string-in
      - Filter field by string in.
 
      - :ref:`cli-metavar-field-values`
 
-   * - number_in
+   * - number-in
      - Filter field by numeric in.
 
      - :ref:`cli-metavar-field-values`
@@ -626,12 +626,12 @@ Usage: stats [OPTIONS]
 
      - :ref:`cli-metavar-field-comp-value`
 
-   * - number_in
+   * - number-in
      - Filter field by numeric in.
 
      - :ref:`cli-metavar-field-values`
 
-   * - string_in
+   * - string-in
      - Filter field by string in.
 
      - :ref:`cli-metavar-field-values`
@@ -641,13 +641,13 @@ Usage: stats [OPTIONS]
 
      - :ref:`cli-metavar-geom`
 
-   * - filter_json
+   * - filter-json
      - Use the specified filter
 
        DEFAULT: `@-`
      - :ref:`cli-metavar-filter`
 
-   * - item_type
+   * - item-type
      - Specify item type(s)
 
      - :ref:`cli-metavar-item-type`
@@ -657,7 +657,7 @@ Usage: stats [OPTIONS]
 
      - FIELD ORDER...
 
-   * - asset_type
+   * - asset-type
      - Specify asset type(s) permissions
 
      - :ref:`cli-metavar-asset-type`
