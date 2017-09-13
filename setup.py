@@ -25,7 +25,7 @@ except:
     long_description = ''
 
 
-with open('planet/api/__init__.py') as f:
+with open('planet/api/__version__.py') as f:
     for line in f:
         if line.find("__version__") >= 0:
             version = line.split("=")[1].strip()

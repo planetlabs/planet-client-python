@@ -37,7 +37,7 @@ gh-docs:
 release:
 	@[ $(TAG) ] || exit 1
 	@[ $(BODY) ] || exit 1
-	@sed -i -e "s/__version__ =.*/__version__ = '$(TAG)'/" planet/api/__init__.py
+	@sed -i -e "s/__version__ =.*/__version__ = '$(TAG)'/" planet/api/__version__.py
 	git --no-pager diff
 	@echo 'About to tag/release $(TAG)'
 	@echo -n 'Does the above diff look right (Y/N)? :'

@@ -24,6 +24,7 @@ from . utils import check_status
 from . models import Response
 from . exceptions import InvalidAPIKey
 from . exceptions import TooManyRequests
+from . __version__ import __version__
 from requests.compat import urlparse
 
 
@@ -92,6 +93,10 @@ class RedirectSession(Session):
                     )
 
 
+def _get_user_agent():
+    return 'planet-python-client/%s' % __version__
+
+
 def _headers(request):
     headers = {}
     if request.data:
@@ -131,6 +136,7 @@ class RequestsDispatcher(object):
     def __init__(self, workers=4):
         # general session for sync api calls
         self.session = RedirectSession()
+        self.session.headers.update({'User-Agent': _get_user_agent()})
         # ensure all calls to the session are throttled
         self.session.request = _Throttler().wrap(self.session.request)
         # the asyncpool is reserved for long-running async tasks
