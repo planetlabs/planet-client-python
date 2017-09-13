@@ -94,7 +94,7 @@ class RedirectSession(Session):
 
 
 def _get_user_agent():
-    return 'planet-python-client/%s' % __version__
+    return 'planet-client-python/%s' % __version__
 
 
 def _headers(request):
