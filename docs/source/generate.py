@@ -59,7 +59,8 @@ def param_block(e, cmd):
         desc = p.help
         if p.default:
             desc = desc + '\nDEFAULT: `%s`' % p.default
-        list_row(e, (p.name, desc, link))
+        flag = p.name.replace('_', '-')
+        list_row(e, (flag, desc, link))
 
 
 def generate_cli_reference(e):
@@ -90,7 +91,8 @@ def generate_cli_reference(e):
 
     e.e(h('General Options'))
     for p in scripts.main.params:
-        e.e('``--%s``\n   %s\n\n' % (p.name, p.help))
+        flag = p.name.replace('_', '-')
+        e.e('``--%s``\n   %s\n\n' % (flag, p.help))
 
     generate_command_section(e, 'General Commands', general)
     generate_command_section(e, 'Data API', groups[0].commands.values())
