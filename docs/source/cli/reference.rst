@@ -10,40 +10,30 @@ Option Types Formatting
 -----------------------
 
 
-.. _cli-metavar-ASSET-TYPE:
+.. _cli-metavar-FIELD-COMP-VALUE:
 
 
-ASSET-TYPE
-..........
+FIELD COMP VALUE...
+...................
 
 
-Specify Asset-Type(s) of interest. Case-insenstive,
-supports glob-matching, e.g. ``visual*`` specifies ``visual`` and
-``visual_xml``.
+A comparison query format where FIELD is a
+property of the item-type and COMP is one of lt, lte, gt, gte and VALUE is
+the number or date to compare against.
+
+Note: ISO-8601 variants are supported. For example, ``2017`` is short for
+``2017-01-01T00:00:00+00:00``.
 
 
-.. _cli-metavar-ITEM-TYPE:
+.. _cli-metavar-FIELD-VALUES:
 
 
-ITEM-TYPE
-.........
+FIELD VALUES...
+...............
 
 
-Specify Item-Type(s) of interest. Case-insensitive,
-supports glob-matching, e.g. ``psscene*`` means ``PSScene3Band`` and
-``PSScene4Band``. The ``all`` value specifies every Item-Type.
-
-
-.. _cli-metavar-FILTER:
-
-
-FILTER
-......
-
-
-Specify a Data API search filter provided as JSON.
-``@-`` specifies stdin and ``@filename`` specifies reading from a file
-named 'filename'. Otherwise, the value is assumed to be JSON.
+Specifies an 'in' query where FIELD is a property
+of the item-type and VALUES is space or comma separated text or numbers.
 
 
 .. _cli-metavar-GEOM:
@@ -59,30 +49,40 @@ reading from a file named 'filename'. Otherwise, the value is assumed to
 be GeoJSON.
 
 
-.. _cli-metavar-FIELD-VALUES:
+.. _cli-metavar-FILTER:
 
 
-FIELD VALUES...
-...............
+FILTER
+......
 
 
-Specifies an 'in' query where FIELD is a property
-of the item-type and VALUES is space or comma separated text or numbers.
+Specify a Data API search filter provided as JSON.
+``@-`` specifies stdin and ``@filename`` specifies reading from a file
+named 'filename'. Otherwise, the value is assumed to be JSON.
 
 
-.. _cli-metavar-FIELD-COMP-VALUE:
+.. _cli-metavar-ITEM-TYPE:
 
 
-FIELD COMP VALUE...
-...................
+ITEM-TYPE
+.........
 
 
-A comparison query format where FIELD is a
-property of the item-type and COMP is one of lt, lte, gt, gte and VALUE is
-the number or date to compare against.
+Specify Item-Type(s) of interest. Case-insensitive,
+supports glob-matching, e.g. ``psscene*`` means ``PSScene3Band`` and
+``PSScene4Band``. The ``all`` value specifies every Item-Type.
 
-Note: ISO-8601 variants are supported. For example, ``2017`` is short for
-``2017-01-01T00:00:00+00:00``.
+
+.. _cli-metavar-ASSET-TYPE:
+
+
+ASSET-TYPE
+..........
+
+
+Specify Asset-Type(s) of interest. Case-insenstive,
+supports glob-matching, e.g. ``visual*`` specifies ``visual`` and
+``visual_xml``.
 
 
 General Options
