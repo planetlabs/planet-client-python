@@ -1,3 +1,10 @@
+1.1.0 (2017-09-15)
+-------------------------------------
+- update docs to use cloud_cover as field_name
+- move version and update user agent with client name and version
+- fix cli reference doc generation, flags have dash
+- Support new assets as they become available in the API without changes needed to the client.
+
 1.0.1 (2017-08-22)
 -------------------------------------
 - update the doc strings with defaults
