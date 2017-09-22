@@ -18,6 +18,7 @@ from .exceptions import (ServerError, RequestCancelled, TooManyRequests)
 from .client import (ClientV1)
 from .utils import write_to_file
 from . import filters
+from .__version__ import __version__  # NOQA
 
 __all__ = [
     ClientV1, APIException, BadQuery, InvalidAPIKey,
