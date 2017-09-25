@@ -204,6 +204,8 @@ class _BaseOutput(object):
             'asset': asset['type'],
             'location': path or asset['location']
         }
+        # cancel() allows report log to persist for both ANSI & regular output
+        self.cancel()
         click.echo(json.dumps(msg))
 
     def __init__(self, thread, dl):
@@ -272,9 +274,6 @@ class AnsiOutput(_BaseOutput):
         with self._lock:
             self._stats.update(stats)
             self._do_output()
-
-    def _report_complete(self, item, asset, path=None):
-        pass
 
     def _do_output(self):
         # renders a terminal like:
