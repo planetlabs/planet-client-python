@@ -198,6 +198,14 @@ class _BaseOutput(object):
 
     refresh_rate = 1
 
+    def _report_complete(self, item, asset, path=None):
+        msg = {
+            'item': item['id'],
+            'asset': asset['type'],
+            'location': path or asset['location']
+        }
+        click.echo(json.dumps(msg))
+
     def __init__(self, thread, dl):
         self._thread = thread
         self._timer = None
@@ -227,14 +235,6 @@ class _BaseOutput(object):
 
 
 class Output(_BaseOutput):
-
-    def _report_complete(self, item, asset, path=None):
-        msg = {
-            'item': item['id'],
-            'asset': asset['type'],
-            'location': path or asset['location']
-        }
-        click.echo(json.dumps(msg))
 
     def _output(self, stats):
         logging.info('%s', stats)
