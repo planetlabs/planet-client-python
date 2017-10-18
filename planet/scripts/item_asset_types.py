@@ -18,7 +18,7 @@ DEFAULT_ASSET_TYPES = [
     "analytic_b2", "analytic_b3", "analytic_b4", "analytic_b5", "analytic_b6",
     "analytic_b7", "analytic_b8", "analytic_b8a", "analytic_b9",
     "analytic_bqa", "analytic_dn", "analytic_dn_xml", "analytic_ms",
-    "analytic_xml", "atmcorrected", "basic_analytic", "basic_analytic_b1",
+    "analytic_xml", "analytic_sr", "basic_analytic", "basic_analytic_b1",
     "basic_analytic_b1_nitf", "basic_analytic_b2", "basic_analytic_b2_nitf",
     "basic_analytic_b3", "basic_analytic_b3_nitf", "basic_analytic_b4",
     "basic_analytic_b4_nitf", "basic_analytic_b5", "basic_analytic_b5_nitf",
