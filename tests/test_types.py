@@ -33,7 +33,8 @@ def test_item_type():
     check('all', get_item_types())
     check('psscene', ['PSScene3Band', 'PSScene4Band'])
     check('Sentinel2L1C', ['Sentinel2L1C'])
-    check('psscene,sent', ['PSScene3Band', 'PSScene4Band', 'Sentinel2L1C'])
+    check('psscene,sent', ['PSScene3Band', 'PSScene4Band',
+                           'Sentinel1', 'Sentinel2L1C'])
 
     with pytest.raises(Exception) as e:
         ItemType().convert('x', None, None)
