@@ -55,15 +55,46 @@ def test_filter(runner):
     def filt(*opts):
         return runner.invoke(main, ['data', 'filter'] + list(opts))
     assert_success(filt(), {
-        "type": "AndFilter",
-        "config": []
+        'type': 'AndFilter',
+        'config': []
     })
     assert_success(filt('--string-in', 'eff', 'a b c'), {
-        "type": "AndFilter",
-        "config": [
+        'type': 'AndFilter',
+        'config': [
             {'config': ['a', 'b', 'c'], 'field_name': 'eff',
              'type': 'StringInFilter'}
         ]
+    })
+    filter_spec = {
+        'type': 'StringInFilter',
+        'config': ['a'],
+        'field_name': 'eff'
+    }
+    # if no other options, filter-json is used as is
+    assert_success(filt('--filter-json', json.dumps(filter_spec)), filter_spec)
+    # verify we extract the filter property of a search
+    assert_success(filt('--filter-json', json.dumps({
+        "filter": filter_spec
+    })), filter_spec)
+    # filters are combined - the --string-in option results in a single AND
+    # filter and this is combined with the provided filter_spec in a top-level
+    # AND filter
+    assert_success(filt('--filter-json', json.dumps(filter_spec),
+                        '--string-in', 'eff', 'b'), {
+        'config': [
+            {
+                'type': 'AndFilter',
+                'config': [
+                    {
+                        'type': 'StringInFilter',
+                        'config': ['b'],
+                        'field_name': 'eff'
+                    }
+                ]
+            },
+            filter_spec
+        ],
+        'type': 'AndFilter'
     })
     # @todo more cases that are easier to write/maintain
 
