@@ -19,7 +19,7 @@ from .utils import write_to_file
 from planet.api.exceptions import RequestCancelled
 try:
     import Queue as queue
-except:
+except ImportError:
     # renamed in 3
     import queue
 
