@@ -37,7 +37,7 @@ def test_atomic_open(tmpdir):
         with atomic_open(outfile, 'w') as fp:
             fp.write('bazzy')
             raise Exception('drat')
-    except:
+    except Exception:
         assert_content_is('bar')
     else:
         assert False

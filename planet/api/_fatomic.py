@@ -52,7 +52,8 @@ def atomic_open(filename, mode, *args, **kwargs):
                                     dir=os.path.dirname(filename),
                                     suffix='.tmp',
                                     delete=False)
-    _discard = [False]
+    # track: explicitly discarded, normal/abnormal completion
+    _discard = [None]
     try:
         if mode[0] == 'a':
             try:
@@ -63,17 +64,18 @@ def atomic_open(filename, mode, *args, **kwargs):
                     pass
 
         def discard(self, _discard=_discard):
+            # explicit discard
             _discard[0] = True
         f.discard = types.MethodType(discard, f)
         yield f
-    # ischneider addition to fatomic - catch/raise any exception thrown in with
+        # normal completion
+        if not _discard[0]:
+            _discard[0] = False
     # block and force discarding
-    except:
-        _discard = [True]
-        raise
     finally:
         f.close()
-        if _discard[0]:
+        # if we didn't complete or were aborted, delete
+        if _discard[0] is None or _discard[0]:
             os.unlink(f.name)
         else:
             _replace_file(f.name, filename)

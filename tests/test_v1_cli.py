@@ -39,7 +39,7 @@ def assert_success(result, expected_output, exit_code=0):
             pass
     try:
         assert json.loads(result.output) == expected_output
-    except:
+    except ValueError:
         assert result.output == expected_output
 
 

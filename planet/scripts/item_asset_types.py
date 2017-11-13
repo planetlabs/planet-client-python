@@ -11,7 +11,7 @@ _asset_types = None
 # In case the API fails to respond or takes too long.
 DEFAULT_ITEM_TYPES = [
     "PSScene4Band", "PSScene3Band", "REScene", "SkySatScene",
-    "REOrthoTile", "Sentinel2L1C", "PSOrthoTile", "Landsat8L1G"]
+    "REOrthoTile", "Sentinel2L1C", "PSOrthoTile", "Landsat8L1G", "Sentinel1"]
 
 DEFAULT_ASSET_TYPES = [
     "analytic", "analytic_b1", "analytic_b10", "analytic_b11", "analytic_b12",
@@ -43,20 +43,16 @@ def _get_json_or_raise(url, timeout=0.7):
 def get_item_types():
     global _item_types
     if _item_types is None:
-        try:
-            data = _get_json_or_raise(ITEM_TYPE_URL)
-            _item_types = [it['id'] for it in data['item_types']]
-        except:
-            _item_types = DEFAULT_ITEM_TYPES
+        _item_types = DEFAULT_ITEM_TYPES
+        data = _get_json_or_raise(ITEM_TYPE_URL)
+        _item_types = [it['id'] for it in data['item_types']]
     return _item_types
 
 
 def get_asset_types():
     global _asset_types
     if _asset_types is None:
-        try:
-            data = _get_json_or_raise(ASSET_TYPE_URL)
-            _asset_types = [a['id'] for a in data['asset_types']]
-        except:
-            _asset_types = DEFAULT_ASSET_TYPES
+        _asset_types = DEFAULT_ASSET_TYPES
+        data = _get_json_or_raise(ASSET_TYPE_URL)
+        _asset_types = [a['id'] for a in data['asset_types']]
     return _asset_types
