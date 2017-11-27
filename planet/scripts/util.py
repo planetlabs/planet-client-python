@@ -79,20 +79,23 @@ def check_writable(dirpath):
 
 
 def filter_from_opts(**kw):
-    '''Build a AND filter from the provided filter_in OR kwargs defaulting to an
-    empty 'and' filter (@todo: API workaround).
+    '''Build a AND filter from the provided kwargs defaulting to an
+    empty 'and' filter (@todo: API workaround) if nothing is provided.
+
+    If the 'filter_json' argument is provided, this will be assumed to contain
+    a filter specification and will be anded with other filters. If the
+    'filter_json' is a search, the search filter value will be used.
+
     All kw values should be tuple or list
     '''
     filter_in = kw.pop('filter_json', None)
     active = and_filter_from_opts(kw)
-    no_filters = len(active['config']) == 0
-    if no_filters and not filter_in:
-        return filters.and_filter()
-    if not no_filters and filter_in:
-        raise click.ClickException(
-            'Specify filter options or provide using --filter-json, not both')
     if filter_in:
-        active = filter_in
+        filter_in = filter_in.get('filter', filter_in)
+        if len(active['config']) > 0:
+            active = filters.and_filter(active, filter_in)
+        else:
+            active = filter_in
     return active
 
 
