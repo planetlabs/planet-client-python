@@ -6,7 +6,7 @@ cache:
   directories:
     - $HOME/.cache/pip
 before_install:
-  - pip install --upgrade pytest
+  - pip install setuptools pip --upgrade
 install:
   - pip install -e .[dev]
 script:
