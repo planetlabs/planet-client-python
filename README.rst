@@ -11,9 +11,14 @@ Python client library and CLI for Planet's public API.
 Installation
 ------------
 
-Via pip::
+Via pip:
 
-    pip install planet
+.. code-block:: console
+
+    $ pip install planet
+
+The `--user <https://pip.pypa.io/en/stable/user_guide/#user-installs>`__
+flag is highly recommended for those new to `pip <https://pip.pypa.io>`__.
 
 A PEX executable (Windows not supported) and source releases are
 `here <https://github.com/planetlabs/planet-client-python/releases/latest>`__.
