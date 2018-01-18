@@ -138,6 +138,6 @@ def quota():
     except Exception as e:
         #print(e)
         print("Initialize Planet Client First and try again")
-        subprocess.call("planet init",shell=False)
-        subprocess.call("planet quota", shell=False)
+        subprocess.call(["planet", "init"],shell=False)
+        subprocess.call(["planet", "quota"], shell=False)
         
