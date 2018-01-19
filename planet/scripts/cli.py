@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import click
 import logging
 import sys
-import subprocess
 import os
 import json
 import requests
@@ -108,36 +108,49 @@ def init(email, password):
     write_planet_json({'key': response['api_key']})
     click.echo('initialized')
 
+
 @cli.command('quota')
-def quota():
+@click.option('--key', default=None, prompt=False, hide_input=True, help=(
+    'Enter your API Key'))
+def quota(key):
     '''Print allocation and remaining quota in Sqkm.'''
     try:
-        with open (os.path.join(os.path.expanduser('~'), '.planet.json')) as f:
-            data=json.load(f)
-        main=requests.get('https://api.planet.com/auth/v1/experimental/public/my/subscriptions', auth=HTTPBasicAuth(data["key"], ''))
-        if main.status_code==200:
-            content=main.json()
-            n=(str(main.json()).count("quota_sqkm"))
-            i=0
-            while i<n:
-                item_id=(content[i])
-                print(" ")
-                print("Allocation Name: "+str(item_id['organization']['name']))
-                print("Allocation active from: "+str(item_id['active_from']).split("T")[0])
-                print("Quota Enabled: "+str(item_id['quota_enabled']))
-                print("Total Quota in SqKm: "+str(item_id['quota_sqkm']))
-                print("Total Quota used: "+str(item_id['quota_used']))
+        with open(os.path.join(os.path.expanduser('~'), '.planet.json')) as dkey:
+            data = json.load(dkey)
+        main = requests.get(
+            'https://api.planet.com/auth/v1/experimental/public/my/subscriptions',
+            auth=HTTPBasicAuth(
+                data["key"], ''))
+        if main.status_code == 200:
+            content = main.json()
+            for item_id in content:
+                click.echo(" ")
+                click.echo(
+                    "Allocation Name: " + str(
+                        item_id['organization']['name']))
+                click.echo(
+                    "Allocation active from: " + str(
+                        item_id['active_from']).split("T")[0])
+                click.echo(
+                    "Quota Enabled: " + str(
+                        item_id['quota_enabled']))
+                click.echo(
+                    "Total Quota in SqKm: " + str(
+                        item_id['quota_sqkm']))
+                click.echo(
+                    "Total Quota used: " + str(
+                        item_id['quota_used']))
                 if (item_id['quota_sqkm'])is not None:
-                    print("Remaining Quota in SqKm: "+str(float(item_id['quota_sqkm'])-float(item_id['quota_used'])))
+                    click.echo(
+                        "Remaining Quota in SqKm: " + str(
+                            float(item_id['quota_sqkm']) - float(
+                                item_id['quota_used'])))
                 else:
-                    print("No Quota Allocated")
+                    click.echo("No Quota Allocated")
                 print("")
-                i=i+1
         else:
-            print("Failed with exception code: "+str(main.status_code))      
-    except Exception as e:
-        #print(e)
-        print("Initialize Planet Client First and try again")
-        subprocess.call(["planet", "init"],shell=False)
-        subprocess.call(["planet", "quota"], shell=False)
-        
+            click.echo("Failed with exception code: " + str(
+                main.status_code))
+    except IOError:
+        click.echo(
+            "Initialize Planet Client First or pass the API key and try again")
