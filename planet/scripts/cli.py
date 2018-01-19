@@ -115,10 +115,11 @@ def init(email, password):
 def quota(key):
     '''Print allocation and remaining quota in Sqkm.'''
     try:
-        with open(os.path.join(os.path.expanduser('~'), '.planet.json')) as dkey:
-            data = json.load(dkey)
+        dkey = open(os.path.join(os.path.expanduser('~'), '.planet.json'))
+        data = json.load(dkey)
         main = requests.get(
-            'https://api.planet.com/auth/v1/experimental/public/my/subscriptions',
+            'https://api.planet.com/auth/v1/' +
+            'experimental/public/my/subscriptions',
             auth=HTTPBasicAuth(
                 data["key"], ''))
         if main.status_code == 200:
