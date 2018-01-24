@@ -156,4 +156,4 @@ def quota():
                 main.status_code))
 
     except IOError:
-        print('Initialize client or provide API Key')
+        click.echo('Initialize client or provide API Key')
