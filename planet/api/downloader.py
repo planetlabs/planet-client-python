@@ -11,27 +11,44 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import itertools
 import logging
 import os
 import threading
 import time
-from .utils import write_to_file
-from planet.api.exceptions import RequestCancelled
+
 try:
     import Queue as queue
 except ImportError:
     # renamed in 3
     import queue
 
+from .exceptions import RequestCancelled
+from .utils import write_to_file
 
-def _by_status(assets, types, status):
-    return [assets[t] for t in types if
-            t in assets and assets[t]['status'] == status]
+MAX_CAPACITY = 100
+
+def _by_status(assets, statuses):
+    return [
+        asset
+        for asset in assets.values()
+        if asset['status'] in statuses
+    ]
 
 
-def _all_status(assets, types, status):
-    return all([assets[t]['status'] == status for t in types if t in assets])
+def _all_status(assets, statuses):
+    return all([
+        asset['status'] in statuses
+        for asset in assets.values()
+    ])
 
+def _get_assets_of_type(client, item, asset_types=None):
+
+    return {
+        asset_type: asset
+        for asset_type, asset in client.get_assets(item).get().items()
+        if asset_types is None or asset_type in asset_types
+    }
 
 _logger = logging.getLogger(__name__)
 _debug = _logger.debug
@@ -74,6 +91,7 @@ class _Stage(object):
         self._cancelled = False
         self._size = size
         self._tasks = []
+
         # track the current task
         self._doing = None
         self._results = queue.Queue()
@@ -184,39 +202,45 @@ class _Stage(object):
 
 
 class _AStage(_Stage):
-    def __init__(self, source, client, asset_types):
-        _Stage.__init__(self, source, 100, max_dps=5)
-        self._client = client
-        self._asset_types = asset_types
 
-    def _do(self, item):
-        assets = self._client.get_assets(item).get()
-        if not any([t in assets for t in self._asset_types]):
+    def __init__(self, source, client):
+        _Stage.__init__(self, source, MAX_CAPACITY, max_dps=5)
+        self._client = client
+
+    def _do(self, item_asset_types):
+
+        item, asset_types = item_asset_types
+
+        # filter assets to just what's wanted
+        assets = _get_assets_of_type(self._client, item, asset_types)
+
+        if not assets:
             _info('no desired assets in item, skipping')
             return
-        inactive = _by_status(assets, self._asset_types, 'inactive')
+
+        inactive = _by_status(assets, ['inactive'])
         if inactive:
             # still need activation, try the first inactive
+            print('Activating: {} {}'.format(item['id'], inactive[0]['type']))
             self._client.activate(inactive[0])
-            self._tasks.append(item)
+            self._tasks.append(item_asset_types)
             return
 
-        if _all_status(assets, self._asset_types, 'activating') or \
-           _all_status(assets, self._asset_types, 'active'):
+        if _all_status(assets, ['activating', 'active']):
             self._results.put((item, assets))
         else:
             # hmmm
-            status = [assets[t]['status'] for t in self._asset_types]
+            status = [assets[t]['status'] for t in asset_types]
             raise Exception('unexpected state %s' % status)
 
 
 class _PStage(_Stage):
+
     _min_poll_interval = 5
 
-    def __init__(self, source, client, asset_types):
-        _Stage.__init__(self, source, 100, max_dps=2)
+    def __init__(self, source, client):
+        _Stage.__init__(self, source, MAX_CAPACITY, max_dps=2)
         self._client = client
-        self._asset_types = asset_types
 
     def _task(self, t):
         item, assets = t
@@ -226,23 +250,40 @@ class _PStage(_Stage):
     def _do(self, task):
         item, assets, start, last = task
         now = time.time()
+        polled = False
+
         # don't poll until min interval elapsed
         if now - last > self._min_poll_interval:
-            assets = self._client.get_assets(item).get()
+            assets = _get_assets_of_type(
+                self._client,
+                item,
+                assets.keys()
+            )
             last = now
-        if _all_status(assets, self._asset_types, 'active'):
-            _debug('activation took %d', time.time() - start)
+            polled = True
+
+        if _all_status(assets, ['active']):
+            print('Activated: {} {} ({:f})'.format(
+                item['id'],
+                list(assets.keys()),
+                time.time() - start)
+            )
             self._results.put((item, assets))
         else:
+            if polled:
+                print('Polling for activation: {} {}'.format(
+                    item['id'],
+                    list(assets.keys())
+                ))
             self._tasks.append((item, assets, start, last))
 
 
 class _DStage(_Stage):
-    def __init__(self, source, client, asset_types, dest):
+
+    def __init__(self, source, client, dest):
         # @todo max pool should reflect client workers
         _Stage.__init__(self, source, 4, max_dps=2)
         self._client = client
-        self._asset_types = asset_types
         self._dest = dest
         self._write_lock = threading.Lock()
         self._written = 0
@@ -250,8 +291,8 @@ class _DStage(_Stage):
 
     def _task(self, t):
         item, assets = t
-        for at in self._asset_types:
-            self._tasks.append((item, assets[at]))
+        for asset in assets.values():
+            self._tasks.append((item, asset))
 
     def cancel(self):
         while not self._results.empty():
@@ -279,11 +320,16 @@ class _DStage(_Stage):
 
     def _do(self, task):
         item, asset = task
+        print('Downloading: {} {}'.format(item['id'], asset['type']))
         writer = write_to_file(
-            self._dest, self._write_tracker(item, asset), overwrite=False)
+            self._dest,
+            self._write_tracker(item, asset),
+            overwrite=False
+        )
         self._downloads += 1
-        self._results.put((item, asset,
-                           self._client.download(asset, writer)))
+        self._results.put(
+            (item, asset, self._client.download(asset, writer))
+        )
 
 
 class Downloader(object):
@@ -313,21 +359,25 @@ class Downloader(object):
         '''
         raise NotImplemented()
 
-    def activate(self, items, asset_types):
+    def activate(self, **kwargs):
         '''Request activation of specified asset_types for the sequence of
         items.
 
         :param items: a sequence of Item representations.
         :param asset_types list: list of asset-type (str)
+        :param item_asset_types list: list of item, asset-type tuples
+                                      (item, (asset-type,))
         '''
         raise NotImplemented()
 
-    def download(self, items, asset_types, dest):
+    def download(self, dest, **kwargs):
         '''Request activation and download of specified asset_types for the
         sequence of items.
 
         :param items: a sequence of Item representations.
         :param asset_types list: list of asset-type (str)
+        :param item_asset_types list: list of item, asset-type tuples
+                                      (item, (asset-type,))
         :param dest str: Download destination directory, must exist.
         '''
         raise NotImplemented()
@@ -352,22 +402,42 @@ class _Downloader(Downloader):
         self._completed = 0
         self._awaiting = None
 
-    def activate(self, items, asset_types):
-        return self._run(items, asset_types)
+    def activate(self, **kwargs):
 
-    def download(self, items, asset_types, dest):
-        return self._run(items, asset_types, dest)
+        item_asset_types = (
+            kwargs['item_asset_types']
+            if 'item_asset_types' in kwargs
+            else itertools.product(
+                kwargs['items'],
+                kwargs['asset_types']
+            )
+        )
 
-    def _init(self, items, asset_types, dest):
+        return self._run(item_asset_types)
+
+    def download(self, dest, **kwargs):
+
+        item_asset_types = kwargs.get(
+            'item_asset_types',
+            itertools.product(
+                kwargs.get('items', []),
+                kwargs.get('asset_types', [])
+            )
+        )
+
+        return self._run(item_asset_types, dest)
+
+    def _init(self, item_asset_types, dest):
+
         client = self._client
-        astage = _AStage(items, client, asset_types)
-        pstage = _PStage(astage, client, asset_types)
+        astage = _AStage(item_asset_types, client)
+        pstage = _PStage(astage, client)
         self._stages = [
             astage,
             pstage
         ]
         if dest:
-            dstage = _DStage(pstage, client, asset_types, dest)
+            dstage = _DStage(pstage, client, dest)
             self._stages.append(dstage)
             self._dest = dest
 
@@ -375,11 +445,12 @@ class _Downloader(Downloader):
         self._apply_opts(vars())
         self._completed = 0
 
-    def _run(self, items, asset_types, dest=None):
+    def _run(self, item_asset_types, dest=None):
+
         if self._stages:
             raise Exception('already running')
 
-        self._init(items, asset_types, dest)
+        self._init(item_asset_types, dest)
 
         [s.start() for s in self._stages]
 
@@ -394,8 +465,8 @@ class _Downloader(Downloader):
                 # @todo hacky lack of internal structure in results
                 if len(n) == 2:
                     item, assets = n
-                    for a in asset_types:
-                        self.on_complete(item, assets[a])
+                    for asset in assets.values():
+                        self.on_complete(item, asset)
                 # otherwise it is a download
                 else:
                     item, asset, self._awaiting = n
