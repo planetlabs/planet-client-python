@@ -221,7 +221,7 @@ class _AStage(_Stage):
         inactive = _by_status(assets, ['inactive'])
         if inactive:
             # still need activation, try the first inactive
-            print('Activating: {} {}'.format(item['id'], inactive[0]['type']))
+            self._i('Activating: {} {}'.format(item['id'], inactive[0]['type']))
             self._client.activate(inactive[0])
             self._tasks.append(item_asset_types)
             return
@@ -263,7 +263,7 @@ class _PStage(_Stage):
             polled = True
 
         if _all_status(assets, ['active']):
-            print('Activated: {} {} ({:f})'.format(
+            self._i('Activated: {} {} ({:f})'.format(
                 item['id'],
                 list(assets.keys()),
                 time.time() - start)
@@ -271,7 +271,7 @@ class _PStage(_Stage):
             self._results.put((item, assets))
         else:
             if polled:
-                print('Polling for activation: {} {}'.format(
+                self._d('Polling for activation: {} {}'.format(
                     item['id'],
                     list(assets.keys())
                 ))
@@ -320,7 +320,7 @@ class _DStage(_Stage):
 
     def _do(self, task):
         item, asset = task
-        print('Downloading: {} {}'.format(item['id'], asset['type']))
+        self._i('Downloading: {} {}'.format(item['id'], asset['type']))
         writer = write_to_file(
             self._dest,
             self._write_tracker(item, asset),
