@@ -30,6 +30,7 @@ from .opts import (
 )
 from .types import (
     AssetTypePerm,
+    BoundingBox,
     metavar_docs
 )
 from .util import (
@@ -218,3 +219,97 @@ def download(asset_type, dest, limit, sort, search_id, dry_run, activate_only,
     # invoke the function within an interrupt handler that will shut everything
     # down properly
     handle_interrupt(dl.shutdown, func, *args)
+
+
+@cli.group('mosaics')
+def mosaics():
+    '''Commands for interacting with the Mosaics API'''
+    pass
+
+
+@mosaics.command('list')
+@pretty
+def list_mosaics(pretty):
+    '''List information for all available mosaics'''
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.get_mosaics), pretty)
+
+
+@mosaics.command('search')
+@click.argument('name')
+@click.option('--rbox', type=BoundingBox(), help=(
+    'Region to download as a comma-delimited string:'
+    ' lon_min,lat_min,lon_max,lat_max'
+))
+@limit_option(None)
+@pretty
+def search_mosaics(name, rbox, limit, pretty):
+    cl = clientv1()
+    mosaic, = cl.get_mosaic_by_name(name).items_iter(1)
+    response = call_and_wrap(cl.get_quads, mosaic, rbox)
+    echo_json_response(response, pretty, limit)
+
+
+@mosaics.command('info')
+@click.argument('name')
+@pretty
+def mosaic_info(name, pretty):
+    '''Get information for a specific mosaic'''
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.get_mosaic_by_name, name), pretty)
+
+
+@mosaics.command('quad-info')
+@click.argument('name')
+@click.argument('quad')
+@pretty
+def quad_info(name, quad, pretty):
+    '''Get information for a specific mosaic quad'''
+    cl = clientv1()
+    mosaic, = cl.get_mosaic_by_name(name).items_iter(1)
+    echo_json_response(call_and_wrap(cl.get_quad_by_id, mosaic, quad), pretty)
+
+
+@mosaics.command('contribution')
+@click.argument('name')
+@click.argument('quad')
+@pretty
+def quad_contributions(name, quad, pretty):
+    '''Get contributing scenes for a specific mosaic quad'''
+    cl = clientv1()
+    mosaic, = cl.get_mosaic_by_name(name).items_iter(1)
+    quad = cl.get_quad_by_id(mosaic, quad).get()
+    response = call_and_wrap(cl.get_quad_contributions, quad)
+    echo_json_response(response, pretty)
+
+
+@mosaics.command('download')
+@click.argument('name')
+@click.option('--rbox', type=BoundingBox(), help=(
+    'Region to download as a comma-delimited string:'
+    ' lon_min,lat_min,lon_max,lat_max'
+))
+@click.option('--quiet', is_flag=True, help=(
+    'Disable ANSI control output'
+))
+@click.option('--dest', default='.', help=(
+    'Location to download files to'), type=click.Path(
+     exists=True, resolve_path=True, writable=True, file_okay=False
+))
+@limit_option(None)
+def download_quads(name, rbox, quiet, dest, limit):
+    '''Download quads from a mosaic'''
+    cl = clientv1()
+
+    dl = downloader.create(cl, mosaic=True)
+    output = downloader_output(dl, disable_ansi=quiet)
+    output.start()
+    try:
+        mosaic, = cl.get_mosaic_by_name(name).items_iter(1)
+        items = cl.get_quads(mosaic, rbox).items_iter(limit)
+    except Exception as ex:
+        output.cancel()
+        click_exception(ex)
+    # invoke the function within an interrupt handler that will shut everything
+    # down properly
+    handle_interrupt(dl.shutdown, dl.download, items, [], dest)

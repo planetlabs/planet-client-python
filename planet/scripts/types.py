@@ -274,3 +274,14 @@ class SortSpec(CompositeParamType):
             raise click.BadParameter(
                 'order only supports: %s' % ' '.join(orders))
         return ' '.join(val)
+
+
+class BoundingBox(click.ParamType):
+    name = 'rbox'
+
+    def convert(self, val, param, ctx):
+        try:
+            xmin, ymin, xmax, ymax = map(float, val.split(','))
+        except (TypeError, ValueError):
+            raise click.BadParameter('Invalid bounding box')
+        return (xmin, ymin, xmax, ymax)

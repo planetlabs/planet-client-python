@@ -270,3 +270,76 @@ class ClientV1(_Base):
         '''
         url = 'data/v1/item-types/%s/items/%s/assets' % (item_type, id)
         return self._get(url).get_body()
+
+    def get_mosaics(self):
+        '''Get information for all mosaics accessible by the current user.
+
+        :returns: :py:Class:`planet.api.models.Mosaics`
+        '''
+        url = self._url('basemaps/v1/mosaics')
+        return self._get(url, models.Mosaics).get_body()
+
+    def get_mosaic_by_name(self, name):
+        '''Get the API representation of a mosaic by name.
+
+        :param name str: The name of the mosaic
+        :returns: :py:Class:`planet.api.models.Mosaics`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        params = {'name__is': name}
+        url = self._url('basemaps/v1/mosaics')
+        return self._get(url, models.Mosaics, params=params).get_body()
+
+    def get_quads(self, mosaic, bbox=None):
+        '''Search for quads from a mosaic that are inside the specified
+        bounding box.  Will yield all quads if no bounding box is specified.
+
+        :param mosaic dict: A mosaic representation from the API
+        :param bbox tuple: A lon_min, lat_min, lon_max, lat_max area to search
+        :returns: :py:Class:`planet.api.models.MosaicQuads`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        if bbox is None:
+            # Some bboxes can slightly exceed backend min/max latitude bounds
+            xmin, ymin, xmax, ymax = mosaic['bbox']
+            bbox = (max(-180, xmin), max(-85, ymin),
+                    min(180, xmax), min(85, ymax))
+        url = mosaic['_links']['quads']
+        url = url.format(lx=bbox[0], ly=bbox[1], ux=bbox[2], uy=bbox[3])
+        return self._get(url, models.MosaicQuads).get_body()
+
+    def get_quad_by_id(self, mosaic, quad_id):
+        '''Get a quad response for a specific mosaic and quad.
+
+        :param mosaic dict: A mosaic representation from the API
+        :param quad_id str: A quad id (typically <xcoord>-<ycoord>)
+        :returns: :py:Class:`planet.api.models.JSON`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        url = '{}/quads/{}'.format(mosaic['_links']['_self'], quad_id)
+        return self._get(url).get_body()
+
+    def get_quad_contributions(self, quad):
+        '''Get information about which scenes contributed to a quad.
+
+        :param quad dict: A quad representation from the API
+        :returns: :py:Class:`planet.api.models.JSON`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        url = quad['_links']['items']
+        return self._get(url).get_body()
+
+    def download_quad(self, quad, callback=None):
+        '''Download the specified mosaic quad. If provided, the callback will
+        be invoked asynchronously.  Otherwise it is up to the caller to handle
+        the response Body.
+
+        :param asset dict: A mosaic quad representation from the API
+        :param callback: An optional function to aysnchronsously handle the
+                         download. See :py:func:`planet.api.write_to_file`
+        :returns: :py:Class:`planet.api.models.Response` containing a
+                  :py:Class:`planet.api.models.Body` of the asset.
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        download_url = quad['_links']['download']
+        return self._get(download_url, models.Body, callback=callback)

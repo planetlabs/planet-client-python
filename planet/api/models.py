@@ -267,3 +267,11 @@ class Items(Features):
 
 class Searches(Paged):
     ITEM_KEY = 'searches'
+
+
+class Mosaics(Paged):
+    ITEM_KEY = 'mosaics'
+
+
+class MosaicQuads(Paged):
+    ITEM_KEY = 'items'
