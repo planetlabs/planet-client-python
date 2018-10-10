@@ -316,8 +316,8 @@ class ClientV1(_Base):
         :returns: :py:Class:`planet.api.models.JSON`
         :raises planet.api.exceptions.APIException: On API error.
         '''
-        url = '{}/quads/{}'.format(mosaic['_links']['_self'], quad_id)
-        return self._get(url).get_body()
+        path = 'basemaps/v1/mosaics/{}/quads/{}'.format(mosaic['id'], quad_id)
+        return self._get(self._url(path)).get_body()
 
     def get_quad_contributions(self, quad):
         '''Get information about which scenes contributed to a quad.
