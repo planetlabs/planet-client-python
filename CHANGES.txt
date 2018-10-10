@@ -1,3 +1,16 @@
+1.2.0 (2018-10-10)
+-------------------------------------
+- Added support for mosaics
+- Unpinned setuptools
+- Upgraded setuptools and pip
+- Built universal wheels.
+- Implemented filter combining in the CLI
+- Fixed flake8 violations, mostly trivial
+- Added sentinel1 item type
+- Added SR & skysat asset types to defaults
+- Added tox config for testing against multiple Python versions
+- Regenerated docs
+
 1.1.0 (2017-09-15)
 -------------------------------------
 - update docs to use cloud_cover as field_name
