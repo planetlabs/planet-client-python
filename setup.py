@@ -70,6 +70,7 @@ setup(name='planet',
       url='https://github.com/planetlabs/planet-client-python',
       license='Apache 2.0',
       packages=find_packages(exclude=['examples', 'tests']),
+      data_files=[('', ['LICENSE'])],
       include_package_data=True,
       zip_safe=False,
       install_requires=[
