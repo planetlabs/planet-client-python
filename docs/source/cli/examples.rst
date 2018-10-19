@@ -114,7 +114,7 @@ Note: the `@-` value for `--geom` specifies reading from stdin
 Extracting Metadata Fields
 ..........................
 
-Using `jq <http://stedolan.github.io/jq/>`_, useful information can be parsed from data returned by the Planet API.
+Using jq_, useful information can be parsed from data returned by the Planet API.
 
 .. code-block:: bash
 
