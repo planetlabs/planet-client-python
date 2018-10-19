@@ -238,12 +238,13 @@ def list_mosaics(pretty):
 @mosaics.command('search')
 @click.argument('name')
 @click.option('--rbox', type=BoundingBox(), help=(
-    'Region to download as a comma-delimited string:'
+    'Region to query as a comma-delimited string:'
     ' lon_min,lat_min,lon_max,lat_max'
 ))
 @limit_option(None)
 @pretty
 def search_mosaics(name, rbox, limit, pretty):
+    '''Get quad IDs and information for a mosaic'''
     cl = clientv1()
     mosaic, = cl.get_mosaic_by_name(name).items_iter(1)
     response = call_and_wrap(cl.get_quads, mosaic, rbox)
@@ -275,7 +276,7 @@ def quad_info(name, quad, pretty):
 @click.argument('quad')
 @pretty
 def quad_contributions(name, quad, pretty):
-    '''Get contributing scenes for a specific mosaic quad'''
+    '''Get contributing scenes for a mosaic quad'''
     cl = clientv1()
     mosaic, = cl.get_mosaic_by_name(name).items_iter(1)
     quad = cl.get_quad_by_id(mosaic, quad).get()
