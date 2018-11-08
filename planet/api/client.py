@@ -72,10 +72,11 @@ class _Base(object):
         :param str credentials: password
         :returns: JSON object (Python dict)
         '''
-        result = self.dispatcher.session.post(self._url('v0/auth/login'), {
-            'email': identity,
-            'password': credentials
-        })
+        result = self.dispatcher.session.post(self._url('v0/auth/login'),
+                                              json={
+                                                  'email': identity,
+                                                  'password': credentials
+                                              })
         status = result.status_code
         if status == 400:
             raise APIException('invalid parameters, login process has changed')
