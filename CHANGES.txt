@@ -1,3 +1,7 @@
+1.2.1 (2018-11-08)
+-------------------------------------
+- set login headers as content-type:application/json during planet init
+
 1.2.0 (2018-10-10)
 -------------------------------------
 - Added support for mosaics
