@@ -45,6 +45,53 @@ Note: this might take some time and directory must exist::
 
     planet data download --item-type PSScene3Band --limit 3 --dest images-download-directory
 
+Mosaic Examples
+---------------
+
+List information for all mosaics you have access to::
+
+    planet mosaics list
+
+Note that you may want to parse the JSON that's output into a more human
+readable format.  The cli does not directly provide options for this, but is
+meant to be easily interoperable with other tools, e.g. `jq
+<https://stedolan.github.io/jq/>`_.  For example, we could output just the name
+and date range of each mosaic with::
+
+    planet mosaics list | jq -r '.mosaics[] | [.name, .first_acquired, .last_acquired] | @tsv' 
+
+Get basic information for a specific mosaic::
+
+    planet mosaics info global_monthly_2018_09_mosaic
+
+List the first 10 quads for a mosaic (Omitting the ``--limit`` option will
+list all quads. Keep in mind that there may be millions for a global mosaic.)::
+
+    planet mosaics search global_monthly_2018_09_mosaic --limit=10
+
+Find all quads inside a particular area of interest::
+    
+    planet mosaics search global_monthly_2018_09_mosaic --rbox=-95.5,29.6,-95.3,29.8
+
+Note that the format of ``--rbox`` is "xmin,ymin,xmax,ymax", so longitude comes
+before latitude.
+
+Get basic information (footprint, etc) for a particular mosaic quad::
+
+    planet mosaics quad-info global_monthly_2018_09_mosaic 480-1200
+
+Determine which scenes contributed to a particular mosaic quad::
+
+    planet mosaics contribution global_monthly_2018_09_mosaic 480-1200
+
+Download all quads for a mosaic (this is impractical for large mosaics, which
+are hundreds of Terabytes in size)::
+
+    planet mosaics download <mosaic_name>
+
+Download all quads inside of a rectangular box for a mosaic::
+
+    planet mosaics download global_monthly_2018_09_mosaic --rbox=-95.5,29.6,-95.3,29.8
 
 Integration With Other Tools
 ----------------------------
@@ -67,7 +114,7 @@ Note: the `@-` value for `--geom` specifies reading from stdin
 Extracting Metadata Fields
 ..........................
 
-Using `jq <http://stedolan.github.io/jq/>`_, useful information can be parsed from data returned by the Planet API.
+Using jq_, useful information can be parsed from data returned by the Planet API.
 
 .. code-block:: bash
 
