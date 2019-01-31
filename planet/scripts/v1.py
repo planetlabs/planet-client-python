@@ -237,17 +237,19 @@ def list_mosaics(pretty):
 
 @mosaics.command('search')
 @click.argument('name')
-@click.option('--rbox', type=BoundingBox(), help=(
+@click.option('--bbox', type=BoundingBox(), help=(
     'Region to query as a comma-delimited string:'
     ' lon_min,lat_min,lon_max,lat_max'
 ))
+@click.option('--rbox', type=BoundingBox(), help='Alias for --bbox')
 @limit_option(None)
 @pretty
-def search_mosaics(name, rbox, limit, pretty):
+def search_mosaics(name, bbox, rbox, limit, pretty):
     '''Get quad IDs and information for a mosaic'''
+    bbox = bbox or rbox
     cl = clientv1()
     mosaic, = cl.get_mosaic_by_name(name).items_iter(1)
-    response = call_and_wrap(cl.get_quads, mosaic, rbox)
+    response = call_and_wrap(cl.get_quads, mosaic, bbox)
     echo_json_response(response, pretty, limit)
 
 
@@ -286,10 +288,11 @@ def quad_contributions(name, quad, pretty):
 
 @mosaics.command('download')
 @click.argument('name')
-@click.option('--rbox', type=BoundingBox(), help=(
+@click.option('--bbox', type=BoundingBox(), help=(
     'Region to download as a comma-delimited string:'
     ' lon_min,lat_min,lon_max,lat_max'
 ))
+@click.option('--rbox', type=BoundingBox(), help='Alias for --bbox')
 @click.option('--quiet', is_flag=True, help=(
     'Disable ANSI control output'
 ))
@@ -298,8 +301,9 @@ def quad_contributions(name, quad, pretty):
      exists=True, resolve_path=True, writable=True, file_okay=False
 ))
 @limit_option(None)
-def download_quads(name, rbox, quiet, dest, limit):
+def download_quads(name, bbox, rbox, quiet, dest, limit):
     '''Download quads from a mosaic'''
+    bbox = bbox or rbox
     cl = clientv1()
 
     dl = downloader.create(cl, mosaic=True)
@@ -307,7 +311,7 @@ def download_quads(name, rbox, quiet, dest, limit):
     output.start()
     try:
         mosaic, = cl.get_mosaic_by_name(name).items_iter(1)
-        items = cl.get_quads(mosaic, rbox).items_iter(limit)
+        items = cl.get_quads(mosaic, bbox).items_iter(limit)
     except Exception as ex:
         output.cancel()
         click_exception(ex)
