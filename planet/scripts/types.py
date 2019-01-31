@@ -277,7 +277,7 @@ class SortSpec(CompositeParamType):
 
 
 class BoundingBox(click.ParamType):
-    name = 'rbox'
+    name = 'bbox'
 
     def convert(self, val, param, ctx):
         try:

@@ -71,9 +71,9 @@ list all quads. Keep in mind that there may be millions for a global mosaic.)::
 
 Find all quads inside a particular area of interest::
     
-    planet mosaics search global_monthly_2018_09_mosaic --rbox=-95.5,29.6,-95.3,29.8
+    planet mosaics search global_monthly_2018_09_mosaic --bbox=-95.5,29.6,-95.3,29.8
 
-Note that the format of ``--rbox`` is "xmin,ymin,xmax,ymax", so longitude comes
+Note that the format of ``--bbox`` is "xmin,ymin,xmax,ymax", so longitude comes
 before latitude.
 
 Get basic information (footprint, etc) for a particular mosaic quad::
@@ -91,7 +91,7 @@ are hundreds of Terabytes in size)::
 
 Download all quads inside of a rectangular box for a mosaic::
 
-    planet mosaics download global_monthly_2018_09_mosaic --rbox=-95.5,29.6,-95.3,29.8
+    planet mosaics download global_monthly_2018_09_mosaic --bbox=-95.5,29.6,-95.3,29.8
 
 Integration With Other Tools
 ----------------------------
