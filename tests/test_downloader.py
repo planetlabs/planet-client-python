@@ -33,7 +33,7 @@ class Body(object):
         callback(finish=self)
         self._got_write = True
 
-    def await(self):
+    def wait(self):
         pass
 
     def cancel(self):
@@ -51,7 +51,7 @@ class Download(object):
         # don't write to the body synchronously
         threading.Timer(WRITE_DELAY, respond).start()
 
-    def await(self):
+    def wait(self):
         return self._future.result()
 
 

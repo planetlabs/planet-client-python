@@ -350,7 +350,7 @@ class _Downloader(Downloader):
         self._opts = opts
         self._stages = []
         self._completed = 0
-        self._awaiting = None
+        self._waiting = None
 
     def activate(self, items, asset_types):
         return self._run(items, asset_types)
@@ -398,10 +398,10 @@ class _Downloader(Downloader):
                         self.on_complete(item, assets[a])
                 # otherwise it is a download
                 else:
-                    item, asset, self._awaiting = n
+                    item, asset, self._waiting = n
                     try:
-                        body = self._awaiting.await()
-                        self._awaiting = None
+                        body = self._waiting.wait()
+                        self._waiting = None
                         dl = os.path.join(self._dest, body.name)
                         self.on_complete(item, asset, dl)
                     except RequestCancelled:
@@ -455,7 +455,7 @@ class _Downloader(Downloader):
     def shutdown(self):
         for s in self._stages:
             s.cancel()
-        self._awaiting and self._awaiting.cancel()
+        self._waiting and self._waiting.cancel()
         self._stages = []
         self._client.shutdown()
 
