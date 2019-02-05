@@ -52,18 +52,18 @@ class Response(object):
         check_status(response)
         self._body = self._create_body(response)
         self._handler(self._body)
-        if self._await:
-            self._await(self._body)
+        if self._wait:
+            self._wait(self._body)
 
-    def get_body_async(self, handler, await=None):
+    def get_body_async(self, handler, wait=None):
         if self._future is None:
             self._handler = handler
-            self._await = await
+            self._wait = wait
             self._future = self._dispatcher._dispatch_async(
                 self.request, self._async_callback
             )
 
-    def await(self):
+    def wait(self):
         '''Await completion of this request.
 
         :returns Body: A Body object containing the response.
