@@ -14,6 +14,7 @@
 from mock import Mock
 import pytest
 from datetime import datetime
+import re
 from planet.api import utils
 from planet.api import exceptions
 from _common import read_fixture
@@ -110,3 +111,44 @@ def test_write_to_file(tmpdir):
     utils.write_to_file(str(tmpdir), callback=callback, overwrite=False)(body)
     assert body.write.call_count == 1
     assert callback.call_args[1]['skip'] == body
+
+
+@pytest.mark.parametrize('headers,expected', [
+    ({
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256',
+        'content-disposition': 'attachment; filename="open_california.tif"'
+    }, 'open_california.tif'),
+    ({
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256'
+    }, None),
+    ({}, None)
+])
+def test_get_filename_from_headers(headers, expected):
+    assert utils.get_filename_from_headers(headers) == expected
+
+
+@pytest.mark.parametrize('url,expected', [
+    ('https://planet.com/', None),
+    ('https://planet.com/path/to/', None),
+    ('https://planet.com/path/to/example.tif', 'example.tif'),
+    ('https://planet.com/path/to/example.tif?foo=f6f1&bar=baz', 'example.tif'),
+    ('https://planet.com/path/to/example.tif?foo=f6f1#quux', 'example.tif'),
+])
+def test_get_filename_from_url(url, expected):
+    assert utils.get_filename_from_url(url) == expected
+
+
+@pytest.mark.parametrize('content_type,check', [
+    (None, lambda x: re.match(r'^planet-[a-z0-9]{8}$', x, re.I) is not None),
+    ('image/tiff', lambda x: x.endswith('.tif')),
+])
+def test_get_random_filename(content_type, check):
+    assert check(utils.get_random_filename(content_type))
