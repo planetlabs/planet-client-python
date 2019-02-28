@@ -22,7 +22,7 @@ import random
 import re
 import string
 import threading
-import urlparse
+from requests.compat import urlparse
 from ._fatomic import atomic_open
 
 _ISO_FMT = '%Y-%m-%dT%H:%M:%S.%f+00:00'
@@ -202,7 +202,7 @@ def get_filename_from_url(url):
     :returns: a filename (i.e. ``basename``)
     :rtype: str or None
     """
-    path = urlparse.urlparse(url).path
+    path = urlparse(url).path
     name = path[path.rfind('/')+1:]
     return name or None
 
