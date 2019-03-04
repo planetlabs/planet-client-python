@@ -1,13 +1,24 @@
+1.2.2 (2019-03-04)
+-------------------------------------
+- Use requests' urlparse for Py2 & Py3 compatibility
+- Prevent empty filenames when attempting to download assets without a Content-Disposition header
+- Add more Python 3.7 support by removing keywords
+- Rename --rbox to --bbox and leave --bbox as an alias for backwards compatibility
+- De-duplicate explicit jq hyperlink (avoids sphinx warning)
+- Add examples of mosaic functionality
+- Update CLI command help info for mosaic functionality
+- Add LICENSE explicitly to setup.py so that pex can find it
+
 1.2.1 (2018-11-08)
 -------------------------------------
-- set login headers as content-type:application/json during planet init
+- Set login headers as content-type:application/json during planet init
 
 1.2.0 (2018-10-10)
 -------------------------------------
 - Added support for mosaics
 - Unpinned setuptools
 - Upgraded setuptools and pip
-- Built universal wheels.
+- Built universal wheels
 - Implemented filter combining in the CLI
 - Fixed flake8 violations, mostly trivial
 - Added sentinel1 item type
@@ -20,7 +31,7 @@
 - update docs to use cloud_cover as field_name
 - move version and update user agent with client name and version
 - fix cli reference doc generation, flags have dash
-- Support new assets as they become available in the API without changes needed to the client.
+- Support new assets as they become available in the API without changes needed to the client
 
 1.0.1 (2017-08-22)
 -------------------------------------
@@ -35,8 +46,8 @@
 
 0.0.6 (2016-02-17)
 ------------------
-- Support for 'aoi_id' (saved geometry) queries in 'search' command.
-- More robust handling of potential download failures.
+- Support for 'aoi_id' (saved geometry) queries in 'search' command
+- More robust handling of potential download failures
 
 0.0.5 (2015-12-01)
 ------------------
