@@ -291,7 +291,7 @@ def probably_wkt(text):
         'POINT', 'LINESTRING', 'POLYGON', 'MULTIPOINT',
         'MULTILINESTRING', 'MULTIPOLYGON', 'GEOMETRYCOLLECTION',
     ])
-    matched = re.match('(\w+)\s*\([^)]+\)', text.strip())
+    matched = re.match(r'(\w+)\s*\([^)]+\)', text.strip())
     if matched:
         valid = matched.group(1).upper() in valid_types
     return valid

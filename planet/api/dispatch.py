@@ -84,7 +84,7 @@ class RedirectSession(Session):
             redir = prepared_request.url
             if not _is_subdomain_of_tld(orig, redir):
                 prepared_request.headers.pop('Authorization')
-                key = re.match('api-key (\S+)', existing_auth)
+                key = re.match(r'api-key (\S+)', existing_auth)
                 if key:
                     prepared_request.prepare_url(
                         prepared_request.url, {

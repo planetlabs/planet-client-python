@@ -140,7 +140,7 @@ class Body(object):
             total += size
             callback(wrote=size, total=total)
         # seems some responses don't have a content-length header
-        if self.size is 0:
+        if self.size == 0:
             self.size = total
         callback(finish=self)
 
