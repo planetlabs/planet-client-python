@@ -46,8 +46,8 @@ def test_atomic_open(tmpdir):
 
     # manual discarding
     with atomic_open(outfile, 'w') as fp:
-            fp.write('bazzy')
-            fp.discard()
+        fp.write('bazzy')
+        fp.discard()
     assert_content_is('bar')
     # no tmp files remain
     assert ['foo'] == lsdir()

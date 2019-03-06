@@ -146,7 +146,7 @@ class ClientV1(_Base):
         '''Execute a quick search with the specified request.
 
         :param request: see :ref:`api-search-request`
-        :param \**kw: See Options below
+        :param **kw: See Options below
         :returns: :py:class:`planet.api.models.Items`
         :raises planet.api.exceptions.APIException: On API error.
 

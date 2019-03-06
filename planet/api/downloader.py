@@ -296,7 +296,7 @@ class Downloader(object):
 
     def shutdown(self):
         '''Halt execution.'''
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def stats(self):
         '''Retrieve internal state of the Downloader.
@@ -310,7 +310,7 @@ class Downloader(object):
         - complete: `int` number of completed downloads
         - pending: `int` number of items awaiting download
         '''
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def activate(self, items, asset_types):
         '''Request activation of specified asset_types for the sequence of
@@ -319,7 +319,7 @@ class Downloader(object):
         :param items: a sequence of Item representations.
         :param asset_types list: list of asset-type (str)
         '''
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def download(self, items, asset_types, dest):
         '''Request activation and download of specified asset_types for the
@@ -329,7 +329,7 @@ class Downloader(object):
         :param asset_types list: list of asset-type (str)
         :param dest str: Download destination directory, must exist.
         '''
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def on_complete(self, item, asset, path=None):
         '''Notification of processing an item's asset, invoked on completion of
