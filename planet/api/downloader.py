@@ -29,8 +29,8 @@ def _by_status(assets, types, status):
             t in assets and assets[t]['status'] == status]
 
 
-def _all_status(assets, types, status):
-    return all([assets[t]['status'] == status for t in types if t in assets])
+def _all_status(assets, types, statuses):
+    return all([assets[t]['status'] in statuses for t in types if t in assets])
 
 
 _logger = logging.getLogger(__name__)
@@ -201,8 +201,7 @@ class _AStage(_Stage):
             self._tasks.append(item)
             return
 
-        if _all_status(assets, self._asset_types, 'activating') or \
-           _all_status(assets, self._asset_types, 'active'):
+        if _all_status(assets, self._asset_types, ['activating', 'active']):
             self._results.put((item, assets))
         else:
             # hmmm
@@ -230,7 +229,7 @@ class _PStage(_Stage):
         if now - last > self._min_poll_interval:
             assets = self._client.get_assets(item).get()
             last = now
-        if _all_status(assets, self._asset_types, 'active'):
+        if _all_status(assets, self._asset_types, ['active']):
             _debug('activation took %d', time.time() - start)
             self._results.put((item, assets))
         else:
