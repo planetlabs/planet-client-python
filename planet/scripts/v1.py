@@ -351,6 +351,7 @@ def download_quads(name, bbox, rbox, quiet, dest, limit):
     handle_interrupt(dl.shutdown, dl.download, items, [], dest)
 
 
+<<<<<<< HEAD
 @cli.group('analytics')
 def analytics():
     '''Commands for interacting with the Analytics Feed API'''
@@ -678,3 +679,7 @@ def get_associated_resource(subscription_id, feature_id, resource_type, pretty,
             dest,
             resource.name
         ))
+@cli.group('orders')
+def orders():
+    '''Commands for interacting with the OrdersV2 API'''
+    pass
