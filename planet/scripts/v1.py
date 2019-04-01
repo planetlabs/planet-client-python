@@ -318,3 +318,55 @@ def download_quads(name, bbox, rbox, quiet, dest, limit):
     # invoke the function within an interrupt handler that will shut everything
     # down properly
     handle_interrupt(dl.shutdown, dl.download, items, [], dest)
+
+
+@cli.group('analytics')
+def analytics():
+    '''Commands for interacting with the Analytics Feed API'''
+    pass
+
+
+@analytics.command('check_connection')
+@pretty
+def health(pretty):
+    '''
+    Check that we can connect to the API
+    :param pretty:
+    :return:
+    '''
+    cl = clientv1()
+    response = cl.check_analytics_connection()
+    echo_json_response(response, pretty)
+
+
+@analytics.group('subscriptions')
+def subscriptions():
+    '''Commands for interacting with the Analytics Feed API for subscriptions'''
+    pass
+
+
+@subscriptions.command('list')
+@pretty
+@limit_option
+def list_subscriptions(pretty, limit):
+    cl = clientv1()
+    # TODO Something with auth?
+    response = cl.list_analytic_subsriptions()
+    echo_json_response(response, pretty)
+
+
+@analytics.group('features')
+def features():
+    '''Commands for interacting with the Analytics Feed API for features'''
+    pass
+
+
+@features.command('list')
+@click.argument('subscription_id')
+@pretty
+@limit_option
+def list_subscriptions(subscription_id, pretty, limit):
+    cl = clientv1()
+    # TODO Something with auth?
+    response = cl.list_analytic_subscription_features(subscription_id, limit)
+    echo_json_response(response, pretty)

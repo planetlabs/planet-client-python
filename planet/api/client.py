@@ -344,3 +344,37 @@ class ClientV1(_Base):
         '''
         download_url = quad['_links']['download']
         return self._get(download_url, models.Body, callback=callback)
+
+    def check_analytics_connection(self):
+        '''
+        Proof of concept that we can use the Analytics API from here. Probably should be deleted before the final version.
+        :return:
+        '''
+        return self._get(self._url('analytics/health')).get_body()
+
+    def list_analytic_subsriptions(self):
+        '''
+        Get subscriptions that the authenticated user has access to
+        :return:
+        '''
+        raise NotImplementedError()
+
+    def list_analytic_subscription_features(self, subscription_id):
+        '''
+        List features for an analytic subscription.
+        :param subscription_id:
+        :return:
+        '''
+        # TODO add filter args
+        raise NotImplementedError()
+
+    def get_associated_resource_for_analytic_feature(self, subscription_id, feature_id, resource_type):
+        '''
+        Get resource assocated with some feature in an analytic subscription.
+        :param subscription_id:
+        :param feature_id:
+        :param resource_type:
+        :return:
+        '''
+        # TODO can this be chained with item downloader?
+        raise NotImplementedError()
