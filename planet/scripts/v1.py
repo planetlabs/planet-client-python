@@ -17,7 +17,8 @@ from itertools import chain
 import json
 from .cli import (
     cli,
-    clientv1
+    clientv1,
+    analytics_client_v1
 )
 from .opts import (
     asset_type_option,
@@ -31,7 +32,8 @@ from .opts import (
 from .types import (
     AssetTypePerm,
     BoundingBox,
-    metavar_docs
+    metavar_docs,
+    DateInterval
 )
 from .util import (
     call_and_wrap,
@@ -47,6 +49,7 @@ from planet.api.utils import (
     handle_interrupt
 )
 from planet.api import downloader
+from planet.api.utils import write_to_file
 
 
 filter_opts_epilog = '\nFilter Formats:\n\n' + \
@@ -334,7 +337,8 @@ def health(pretty):
     :param pretty:
     :return:
     '''
-    cl = clientv1()
+    cl = analytics_client_v1()
+    click.echo('Using base URL: {}'.format(cl.base_url))
     response = cl.check_analytics_connection()
     echo_json_response(response, pretty)
 
@@ -346,13 +350,27 @@ def subscriptions():
 
 
 @subscriptions.command('list')
+@click.option('--feed-id', type=str)
+@limit_option(250)  # Analytics API default
+@click.option('--before', type=str, help=
+              'When paginating, provide the identifier for last subscription on previous page.'
+              )
 @pretty
-@limit_option
-def list_subscriptions(pretty, limit):
-    cl = clientv1()
-    # TODO Something with auth?
-    response = cl.list_analytic_subsriptions()
+def list_subscriptions(pretty, limit, feed_id, before):
+    '''List all subscriptions user has access to.'''
+    cl = analytics_client_v1()
+    response = cl.list_analytic_subsriptions(feed_id, limit, before)
     echo_json_response(response, pretty)
+
+
+@subscriptions.command('describe')
+@click.argument('subscription_id')
+@pretty
+def get_subscription_info(subscription_id, pretty):
+    '''Get metadata for specific subscription.'''
+    cl = analytics_client_v1()
+    sub_info = cl.get_subscription_info(subscription_id)
+    echo_json_response(sub_info, pretty)
 
 
 @analytics.group('features')
@@ -363,10 +381,50 @@ def features():
 
 @features.command('list')
 @click.argument('subscription_id')
+@limit_option(250)  # Analytics API default
+@click.option('--bbox', type=BoundingBox(), help=(
+    'Region to query as a comma-delimited string:'
+    ' lon_min,lat_min,lon_max,lat_max'
+))
+@click.option('--rbox', type=BoundingBox(), help='Alias for --bbox')
+@click.option('--time-range', type=DateInterval(), help=(
+        'Time interval. Can be open or closed interval, start times are inclusive and end times are exclusive:'
+        '2019-01-01T00:00:00.00Z/2019-02-01T00:00:00.00Z (Closed interval for January 2019),'
+        '2019-01-01T00:00:00.00Z/.. (Open interval for all items since the start of January 2019),'
+        '2019-01-01T00:00:00.00Z (instant)'
+))
+@click.option('--before', type=str, help='Get features published before the item with the provided ID.')
+@click.option('--after', type=str, help='Get features published after the item with the provided ID.')
 @pretty
-@limit_option
-def list_subscriptions(subscription_id, pretty, limit):
-    cl = clientv1()
-    # TODO Something with auth?
-    response = cl.list_analytic_subscription_features(subscription_id, limit)
-    echo_json_response(response, pretty)
+def list_features(subscription_id, pretty, limit, rbox, bbox, time_range, before, after):
+    '''Request feature list for a particular subscription.'''
+    cl = analytics_client_v1()
+    bbox = bbox or rbox
+    features = cl.list_analytic_subscription_features(subscription_id, limit, bbox, time_range, before, after)
+    echo_json_response(features, pretty)
+
+
+@features.command('get')
+@click.argument('resource_type', type=click.Choice(['source-image-info', 'target-quad', 'source-quad']))
+@click.argument('subscription_id')
+@click.argument('feature_id')
+@click.option('--dest', default='.', help=(
+    'Location to download files to'), type=click.Path(
+     exists=True, resolve_path=True, writable=True, file_okay=False
+))
+@pretty
+def get_associated_resource(subscription_id, feature_id, resource_type, pretty, dest):
+    '''Request resources associated with a particular subscription/feature combination.'''
+    cl = analytics_client_v1()
+    if resource_type in ['target-quad', 'source-quad']:
+        click.echo('Requesting {} for {}/{} selected destination directory is: {}'.format(resource_type, subscription_id, feature_id, dest))
+
+    resource = cl.get_associated_resource_for_analytic_feature(subscription_id, feature_id, resource_type)
+
+    if resource_type == 'source-image-info':
+        echo_json_response(resource, pretty)
+
+    if resource_type in ['target-quad', 'source-quad']:
+        writer = write_to_file(dest, None)
+        writer(resource)
+        click.echo('{} written, available at: {}/{}'.format(resource_type, dest, resource.name))

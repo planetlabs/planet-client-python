@@ -285,3 +285,16 @@ class BoundingBox(click.ParamType):
         except (TypeError, ValueError):
             raise click.BadParameter('Invalid bounding box')
         return (xmin, ymin, xmax, ymax)
+
+
+class DateInterval(click.ParamType):
+    name = 'date interval'
+
+    def convert(self, val, param, ctx):
+        dates = val.split('/')
+        if len(dates) > 2:
+            raise click.BadParameter('Too many dates')
+
+        for date in dates:
+            if date != '..' and strp_lenient(date) is None:
+                raise click.BadParameter('Invalid date: {}'.format(date))

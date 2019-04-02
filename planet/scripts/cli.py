@@ -28,6 +28,17 @@ def clientv1():
     return api.ClientV1(**client_params)
 
 
+def analytics_client_v1():
+    # Non-default analytics base URL doesn't have the analytics postfix
+    client = api.ClientV1(**client_params)
+    if not client.base_url.endswith('/'):
+        client.base_url = client.base_url + '/'
+    if client.base_url == 'https://api.planet.com/':
+        client.base_url = 'https://api.planet.com/analytics/'
+
+    return client
+
+
 def configure_logging(verbosity):
     '''configure logging via verbosity level of between 0 and 2 corresponding
     to log levels warning, info and debug respectfully.'''
