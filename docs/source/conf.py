@@ -54,7 +54,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Planet API Client'
-copyright = u'2017 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107'
+copyright = u'2017-2019 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107'
 author = u'Planet'
 
 # The version info for the project you're documenting, acts as replacement for
