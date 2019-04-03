@@ -347,20 +347,28 @@ class ClientV1(_Base):
 
     def check_analytics_connection(self):
         '''
-        Proof of concept that we can use the Analytics API from here. Probably should be deleted before the final version.
+        Validate that we can use the Analytics API. Useful to test connectivity to test environments.
         :returns: :py:Class:`planet.api.models.JSON`
         '''
         return self._get(self._url('health')).get_body()
+
+    def wfs_conformance(self):
+        '''
+        Details about WFS3 conformance
+        :returns: :py:Class:`planet.api.models.JSON`
+        '''
+        return self._get(self._url('conformance')).get_body()
 
     def list_analytic_subsriptions(self, feed_id, limit, before):
         '''
         Get subscriptions that the authenticated user has access to
         :param limit int: Limit number of subscriptions returned. API default is 250 if not provided.
         :param before str: When paginating, provide the identifier for last subscription on previous page.
+        :param feed_id str: Return subscriptions associated with a particular feed only.
         :raises planet.api.exceptions.APIException: On API error.
         :returns: :py:Class:`planet.api.models.JSON`
         '''
-        params = {'limit': limit, 'feed_id': feed_id, 'before': before}
+        params = {'limit': limit, 'feedID': feed_id, 'before': before}
         return self._get(self._url('subscriptions'), params=params).get_body()
 
     def get_subscription_info(self, subscription_id):
@@ -372,7 +380,47 @@ class ClientV1(_Base):
         '''
         return self._get(self._url('subscriptions/{}'.format(subscription_id))).get_body()
 
-    def list_analytic_subscription_features(self, subscription_id, limit, bbox, time_range, before, after):
+    def list_analytic_feeds(self, limit, before, stats):
+        '''
+        Get collections that the authenticated user has access to
+        :param limit int: Limit number of subscriptions returned. API default is 250 if not provided.
+        :param before str: When paginating, provide the identifier for last subscription on previous page.
+        :raises planet.api.exceptions.APIException: On API error.
+        :returns: :py:Class:`planet.api.models.JSON`
+        '''
+        params = {'limit': limit, 'before': before, 'stats': stats}
+        return self._get(self._url('feeds'), params=params).get_body()
+
+    def get_feed_info(self, feed_id):
+        '''
+        Get the information describing a specific collection.
+        :param subscription_id:
+        :raises planet.api.exceptions.APIException: On API error.
+        :returns: :py:Class:`planet.api.models.JSON`
+        '''
+        return self._get(self._url('feeds/{}'.format(feed_id))).get_body()
+
+    def list_analytic_collections(self, limit, before):
+        '''
+        Get collections that the authenticated user has access to
+        :param limit int: Limit number of subscriptions returned. API default is 250 if not provided.
+        :param before str: When paginating, provide the identifier for last subscription on previous page.
+        :raises planet.api.exceptions.APIException: On API error.
+        :returns: :py:Class:`planet.api.models.JSON`
+        '''
+        params = {'limit': limit, 'before': before}
+        return self._get(self._url('collections'), params=params).get_body()
+
+    def get_collection_info(self, subscription_id):
+        '''
+        Get the information describing a specific collection.
+        :param subscription_id:
+        :raises planet.api.exceptions.APIException: On API error.
+        :returns: :py:Class:`planet.api.models.JSON`
+        '''
+        return self._get(self._url('collections/{}'.format(subscription_id))).get_body()
+
+    def list_collection_features(self, subscription_id, limit, bbox, time_range, before, after):
         '''
         List features for an analytic subscription.
         :param subscription_id:
@@ -384,7 +432,9 @@ class ClientV1(_Base):
         :raises planet.api.exceptions.APIException: On API error.
         :returns: :py:Class:`planet.api.models.JSON`
         '''
-        params = {'limit': limit, 'bbox': bbox, 'time': time_range, 'before': before, 'after': after}
+        params = {'limit': limit, 'time': time_range, 'before': before, 'after': after}
+        if bbox:
+            params['bbox'] = ','.join([str(b) for b in bbox])
         return self._get(self._url('collections/{}/items'.format(subscription_id)), params=params).get_body()
 
     def get_associated_resource_for_analytic_feature(self, subscription_id, feature_id, resource_type):

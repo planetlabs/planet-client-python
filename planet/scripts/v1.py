@@ -48,7 +48,7 @@ from .util import (
 from planet.api.utils import (
     handle_interrupt
 )
-from planet.api import downloader
+from planet.api import downloader, filters
 from planet.api.utils import write_to_file
 
 
@@ -329,7 +329,7 @@ def analytics():
     pass
 
 
-@analytics.command('check_connection')
+@analytics.command('check-connection')
 @pretty
 def health(pretty):
     '''
@@ -341,6 +341,49 @@ def health(pretty):
     click.echo('Using base URL: {}'.format(cl.base_url))
     response = cl.check_analytics_connection()
     echo_json_response(response, pretty)
+
+
+@analytics.command('wfs-conformance')
+@pretty
+def conformance(pretty):
+    '''
+    Details about WFS3 conformance.
+    :param pretty:
+    :return:
+    '''
+    cl = analytics_client_v1()
+    response = cl.wfs_conformance()
+    echo_json_response(response, pretty)
+
+
+@analytics.group('feeds')
+def feeds():
+    '''Commands for interacting with the Analytics Feed API for collections'''
+    pass
+
+
+@feeds.command('list')
+@limit_option(250)  # Analytics API default
+@click.option('--before', type=str, help=
+              'When paginating, provide the identifier for last collection on previous page.'
+              )
+@click.option('--stats', is_flag=True, default=False)
+@pretty
+def list_feeds(pretty, limit, before, stats):
+    '''List all subscriptions user has access to.'''
+    cl = analytics_client_v1()
+    response = cl.list_analytic_feeds(limit, before, stats)
+    echo_json_response(response, pretty)
+
+
+@feeds.command('describe')
+@click.argument('feed_id')
+@pretty
+def get_feed_info(feed_id, pretty):
+    '''Get metadata for specific feed.'''
+    cl = analytics_client_v1()
+    sub_info = cl.get_feed_info(feed_id)
+    echo_json_response(sub_info, pretty)
 
 
 @analytics.group('subscriptions')
@@ -373,7 +416,53 @@ def get_subscription_info(subscription_id, pretty):
     echo_json_response(sub_info, pretty)
 
 
-@analytics.group('features')
+@analytics.group('collections')
+def collections():
+    '''Commands for interacting with the Analytics Feed API for collections'''
+    pass
+
+
+@collections.command('list')
+@limit_option(250)  # Analytics API default
+@click.option('--before', type=str, help=
+              'When paginating, provide the identifier for last collection on previous page.'
+              )
+@pretty
+def list_collections(pretty, limit, before):
+    '''List all collections user has access to.'''
+    cl = analytics_client_v1()
+    response = cl.list_analytic_collections(limit, before)
+    echo_json_response(response, pretty)
+
+
+@collections.command('describe')
+@click.argument('subscription_id')
+@pretty
+def get_collection_info(subscription_id, pretty):
+    '''Get metadata for specific collection.'''
+    cl = analytics_client_v1()
+    sub_info = cl.get_collection_info(subscription_id)
+    echo_json_response(sub_info, pretty)
+
+
+@collections.command('resource-types')
+@click.argument('subscription_id')
+@pretty
+def get_resource_types(subscription_id, pretty):
+    '''Get available resource types.'''
+    cl = analytics_client_v1()
+    # Assumes that all features in a collection have the same list of associated resource types
+    features = cl.list_collection_features(subscription_id, 1, None, None, None, None)
+    feature_list = features.get()['features']
+    if not feature_list:
+        click.ClickException('No features found, cannot determine resource types.').show()
+        click.Abort()
+    types = {item['rel'] for item in features.get()['features'][0]['links']}
+    types.remove('self')
+    click.echo('Found resource types: {}'.format(list(types)))
+
+
+@collections.group('features')
 def features():
     '''Commands for interacting with the Analytics Feed API for features'''
     pass
@@ -400,7 +489,7 @@ def list_features(subscription_id, pretty, limit, rbox, bbox, time_range, before
     '''Request feature list for a particular subscription.'''
     cl = analytics_client_v1()
     bbox = bbox or rbox
-    features = cl.list_analytic_subscription_features(subscription_id, limit, bbox, time_range, before, after)
+    features = cl.list_collection_features(subscription_id, limit, bbox, time_range, before, after)
     echo_json_response(features, pretty)
 
 
