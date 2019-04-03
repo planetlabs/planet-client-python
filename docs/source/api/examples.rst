@@ -50,6 +50,6 @@ A common case is searching for items in an AOI.
     results = client.quick_search(request)
 
     # items_iter returns an iterator over API response pages
-    for item in results.items_iter():
+    for item in results.items_iter(10):
       # each item is a GeoJSON feature
       sys.stdout.write('%s\n' % item['id'])
