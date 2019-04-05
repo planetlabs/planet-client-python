@@ -272,13 +272,30 @@ class ClientV1(_Base):
         url = 'data/v1/item-types/%s/items/%s/assets' % (item_type, id)
         return self._get(url).get_body()
 
-    def get_mosaics(self):
+    def get_mosaic_series(self, series_id):
+        '''Get information pertaining to a mosaics series
+        :returns: :py:Class:`planet.api.models.JSON`
+        '''
+        url = self._url('basemaps/v1/series/{}'.format(series_id))
+        return self._get(url, models.JSON).get_body()
+
+    def get_mosaics_for_series(self, series_id):
+        '''Get list of mosaics available for a series
+        :returns: :py:Class:`planet.api.models.Mosaics`
+        '''
+        url = self._url('basemaps/v1/series/{}/mosaics'.format(series_id))
+        return self._get(url, models.Mosaics).get_body()
+
+    def get_mosaics(self, name_contains=None):
         '''Get information for all mosaics accessible by the current user.
 
         :returns: :py:Class:`planet.api.models.Mosaics`
         '''
+        params = {}
+        if name_contains:
+            params['name__contains'] = name_contains
         url = self._url('basemaps/v1/mosaics')
-        return self._get(url, models.Mosaics).get_body()
+        return self._get(url, models.Mosaics, params=params).get_body()
 
     def get_mosaic_by_name(self, name):
         '''Get the API representation of a mosaic by name.

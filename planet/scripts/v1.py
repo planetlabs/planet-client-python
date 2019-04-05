@@ -230,12 +230,36 @@ def mosaics():
     pass
 
 
-@mosaics.command('list')
+@mosaics.group('series')
+def series():
+    '''Commands for interacting with Mosaic Series through the Mosaics API'''
+    pass
+
+
+@series.command('describe')
+@click.argument('series_id')
 @pretty
-def list_mosaics(pretty):
+def describe(series_id, pretty):
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.get_mosaic_series, series_id), pretty)
+
+
+@series.command('list-mosaics')
+@click.argument('series_id')
+@pretty
+def list_mosaics_for_series(series_id, pretty):
+    client = clientv1()
+    series = client.get_mosaics_for_series(series_id)
+    echo_json_response(series, pretty)
+
+
+@mosaics.command('list')
+@click.option('--prefix', default=None)
+@pretty
+def list_mosaics(pretty, prefix):
     '''List information for all available mosaics'''
     cl = clientv1()
-    echo_json_response(call_and_wrap(cl.get_mosaics), pretty)
+    echo_json_response(call_and_wrap(cl.get_mosaics, prefix), pretty)
 
 
 @mosaics.command('search')
@@ -376,14 +400,38 @@ def list_feeds(pretty, limit, before, stats):
     echo_json_response(response, pretty)
 
 
+@feeds.command('list-mosaics')
+@click.argument('feed_id')
+def get_mosaic_list_for_feed(feed_id):
+    '''List mosaics linked to feed'''
+    analytics_client = analytics_client_v1()
+    feed_info = analytics_client.get_feed_info(feed_id).get()
+
+    for type_ in ['target', 'source']:
+        feed_image_conf = feed_info.get(type_)
+
+        if feed_image_conf['type'] != 'mosaic':
+            click.ClickException('The {} for this feed is not a mosaic type, cannot list mosaics.'.format(type_))
+            continue
+
+        mosaic_series = feed_image_conf['config']['series_id']
+
+        client = clientv1()
+        mosaics = client.get_mosaics_for_series(mosaic_series)
+
+        click.echo('{} mosaics:'.format(type_))
+        for mosaic in mosaics.get()['mosaics']:
+            click.echo('\t{}'.format(mosaic['name']))
+
+
 @feeds.command('describe')
 @click.argument('feed_id')
 @pretty
 def get_feed_info(feed_id, pretty):
     '''Get metadata for specific feed.'''
     cl = analytics_client_v1()
-    sub_info = cl.get_feed_info(feed_id)
-    echo_json_response(sub_info, pretty)
+    feed_info = cl.get_feed_info(feed_id)
+    echo_json_response(feed_info, pretty)
 
 
 @analytics.group('subscriptions')
@@ -404,6 +452,31 @@ def list_subscriptions(pretty, limit, feed_id, before):
     cl = analytics_client_v1()
     response = cl.list_analytic_subsriptions(feed_id, limit, before)
     echo_json_response(response, pretty)
+
+
+@subscriptions.command('list-mosaics')
+@click.argument('subscription_id')
+def get_mosaic_list_for_feed(subscription_id):
+    '''List mosaics linked to feed'''
+    analytics_client = analytics_client_v1()
+    sub_info = analytics_client.get_subscription_info(subscription_id).get()
+    feed_info = analytics_client.get_feed_info(sub_info['feedID']).get()
+
+    for type_ in ['target', 'source']:
+        feed_image_conf = feed_info.get(type_)
+
+        if feed_image_conf['type'] != 'mosaic':
+            click.ClickException('The {} for this feed is not a mosaic type, cannot list mosaics.'.format(type_))
+            continue
+
+        mosaic_series = feed_image_conf['config']['series_id']
+
+        client = clientv1()
+        mosaics = client.get_mosaics_for_series(mosaic_series)
+
+        click.echo('{} mosaics:'.format(type_))
+        for mosaic in mosaics.get()['mosaics']:
+            click.echo('\t{}'.format(mosaic['name']))
 
 
 @subscriptions.command('describe')
@@ -433,6 +506,31 @@ def list_collections(pretty, limit, before):
     cl = analytics_client_v1()
     response = cl.list_analytic_collections(limit, before)
     echo_json_response(response, pretty)
+
+
+@collections.command('list-mosaics')
+@click.argument('subscription_id')
+def get_mosaic_list_for_feed(subscription_id):
+    '''List mosaics linked to feed'''
+    analytics_client = analytics_client_v1()
+    sub_info = analytics_client.get_subscription_info(subscription_id).get()
+    feed_info = analytics_client.get_feed_info(sub_info['feedID']).get()
+
+    for type_ in ['target', 'source']:
+        feed_image_conf = feed_info.get(type_)
+
+        if feed_image_conf['type'] != 'mosaic':
+            click.ClickException('The {} for this feed is not a mosaic type, cannot list mosaics.'.format(type_))
+            continue
+
+        mosaic_series = feed_image_conf['config']['series_id']
+
+        client = clientv1()
+        mosaics = client.get_mosaics_for_series(mosaic_series)
+
+        click.echo('{} mosaics:'.format(type_))
+        for mosaic in mosaics.get()['mosaics']:
+            click.echo('\t{}'.format(mosaic['name']))
 
 
 @collections.command('describe')
