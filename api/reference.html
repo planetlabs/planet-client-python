@@ -1,26 +1,17 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Reference &#8212; Planet API Client 1.1.0 documentation</title>
+    <meta charset="utf-8" />
+    <title>Reference &#8212; Planet API Client 1.2.2 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '1.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Examples" href="examples.html" />
@@ -31,8 +22,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   <div class="document">
     
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -54,12 +44,12 @@
 
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
 <ul class="current">
@@ -85,6 +75,8 @@
       </div>
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="module-planet.api">
@@ -95,7 +87,7 @@
 <p>The Client class is the supported way to access the API.</p>
 <p>Unless specific functionality is needed, the correct way to instantiate a Client is with zero arguments.</p>
 <p>The Client will resolve the API_KEY from the operating system environment using the <cite>PL_API_KEY</cite> value.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">client</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">ClientV1</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">ClientV1</span><span class="p">()</span>
 </pre></div>
 </div>
 <dl class="class">
@@ -106,45 +98,43 @@ ClientV1 should be in existence for an application. The Client is thread
 safe and takes care to avoid API throttling and also retry any throttled
 requests. Most functions take JSON-like dict representations of API
 request bodies. Return values are usually a subclass of
-<a class="reference internal" href="#planet.api.models.Body" title="planet.api.models.Body"><code class="xref py py-class docutils literal"><span class="pre">planet.api.models.Body</span></code></a>. Any exceptional http responses are
-handled by translation to one of the <a class="reference internal" href="#module-planet.api.exceptions" title="planet.api.exceptions"><code class="xref py py-mod docutils literal"><span class="pre">planet.api.exceptions</span></code></a>
+<a class="reference internal" href="#planet.api.models.Body" title="planet.api.models.Body"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Body</span></code></a>. Any exceptional http responses are
+handled by translation to one of the <a class="reference internal" href="#module-planet.api.exceptions" title="planet.api.exceptions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">planet.api.exceptions</span></code></a>
 classes.</p>
 <dl class="method">
 <dt id="planet.api.ClientV1.activate">
 <code class="descname">activate</code><span class="sig-paren">(</span><em>asset</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.activate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request activation of the specified asset representation.</p>
-<p>Asset representations are obtained from <a class="reference internal" href="#planet.api.ClientV1.get_assets" title="planet.api.ClientV1.get_assets"><code class="xref py py-meth docutils literal"><span class="pre">get_assets()</span></code></a>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dict</strong> (<em>request</em>) – An asset representation from the API.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#planet.api.models.Body" title="planet.api.models.Body"><code class="xref py py-class docutils literal"><span class="pre">planet.api.models.Body</span></code></a> with no response content</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</td>
-</tr>
-</tbody>
-</table>
+<p>Asset representations are obtained from <a class="reference internal" href="#planet.api.ClientV1.get_assets" title="planet.api.ClientV1.get_assets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_assets()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dict</strong> (<em>request</em>) – An asset representation from the API.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.Body" title="planet.api.models.Body"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Body</span></code></a> with no response content</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="planet.api.ClientV1.create_search">
 <code class="descname">create_search</code><span class="sig-paren">(</span><em>request</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.create_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new saved search from the specified request.
-The request must contain a <code class="docutils literal"><span class="pre">name</span></code> property.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>request</strong> – see <a class="reference internal" href="#api-search-request"><span class="std std-ref">Client Search Requests</span></a></td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal"><span class="pre">planet.api.models.JSON</span></code></a></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</td>
-</tr>
-</tbody>
-</table>
+The request must contain a <code class="docutils literal notranslate"><span class="pre">name</span></code> property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>request</strong> – see <a class="reference internal" href="#api-search-request"><span class="std std-ref">Client Search Requests</span></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.JSON</span></code></a></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -153,26 +143,46 @@ The request must contain a <code class="docutils literal"><span class="pre">name
 <dd><p>Download the specified asset. If provided, the callback will be
 invoked asynchronously. Otherwise it is up to the caller to handle the
 response Body.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>dict</strong> (<em>asset</em>) – An asset representation from the API</li>
-<li><strong>callback</strong> – An optional function to aysnchronsously handle the
-download. See <a class="reference internal" href="#planet.api.write_to_file" title="planet.api.write_to_file"><code class="xref py py-func docutils literal"><span class="pre">planet.api.write_to_file()</span></code></a></li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dict</strong> (<em>asset</em>) – An asset representation from the API</p></li>
+<li><p><strong>callback</strong> – An optional function to aysnchronsously handle the
+download. See <a class="reference internal" href="#planet.api.write_to_file" title="planet.api.write_to_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">planet.api.write_to_file()</span></code></a></p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><a class="reference internal" href="#planet.api.models.Response" title="planet.api.models.Response"><code class="xref py py-class docutils literal"><span class="pre">planet.api.models.Response</span></code></a> containing a
-<a class="reference internal" href="#planet.api.models.Body" title="planet.api.models.Body"><code class="xref py py-class docutils literal"><span class="pre">planet.api.models.Body</span></code></a> of the asset.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.Response" title="planet.api.models.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Response</span></code></a> containing a
+<a class="reference internal" href="#planet.api.models.Body" title="planet.api.models.Body"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Body</span></code></a> of the asset.</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.ClientV1.download_quad">
+<code class="descname">download_quad</code><span class="sig-paren">(</span><em>quad</em>, <em>callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.download_quad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download the specified mosaic quad. If provided, the callback will
+be invoked asynchronously.  Otherwise it is up to the caller to handle
+the response Body.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dict</strong> (<em>asset</em>) – A mosaic quad representation from the API</p></li>
+<li><p><strong>callback</strong> – An optional function to aysnchronsously handle the
+download. See <a class="reference internal" href="#planet.api.write_to_file" title="planet.api.write_to_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">planet.api.write_to_file()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.Response" title="planet.api.models.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Response</span></code></a> containing a
+<a class="reference internal" href="#planet.api.models.Body" title="planet.api.models.Body"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Body</span></code></a> of the asset.</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -180,119 +190,189 @@ download. See <a class="reference internal" href="#planet.api.write_to_file" tit
 <code class="descname">get_assets</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_assets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the assets for the provided item representations.</p>
 <p>Item representations are obtained from search requests.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dict</strong> (<em>request</em>) – An item representation from the API.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal"><span class="pre">planet.api.models.JSON</span></code></a></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dict</strong> (<em>request</em>) – An item representation from the API.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.JSON</span></code></a></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="planet.api.ClientV1.get_assets_by_id">
 <code class="descname">get_assets_by_id</code><span class="sig-paren">(</span><em>item_type</em>, <em>id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_assets_by_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an item’s asset response for the given item_type and id</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>str</strong> (<em>id</em>) – A valid item-type</li>
-<li><strong>str</strong> – The id of the item</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>str</strong> (<em>id</em>) – A valid item-type</p></li>
+<li><p><strong>str</strong> – The id of the item</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal"><span class="pre">planet.api.models.JSON</span></code></a></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.JSON</span></code></a></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="planet.api.ClientV1.get_item">
 <code class="descname">get_item</code><span class="sig-paren">(</span><em>item_type</em>, <em>id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_item" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the an item response for the given item_type and id</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>str</strong> (<em>id</em>) – A valid item-type</li>
-<li><strong>str</strong> – The id of the item</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>str</strong> (<em>id</em>) – A valid item-type</p></li>
+<li><p><strong>str</strong> – The id of the item</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal"><span class="pre">planet.api.models.JSON</span></code></a></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.JSON</span></code></a></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.ClientV1.get_mosaic_by_name">
+<code class="descname">get_mosaic_by_name</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_mosaic_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the API representation of a mosaic by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>str</strong> (<em>name</em>) – The name of the mosaic</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Mosaics</span></code></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.ClientV1.get_mosaics">
+<code class="descname">get_mosaics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_mosaics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get information for all mosaics accessible by the current user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Mosaics</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.ClientV1.get_quad_by_id">
+<code class="descname">get_quad_by_id</code><span class="sig-paren">(</span><em>mosaic</em>, <em>quad_id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_quad_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a quad response for a specific mosaic and quad.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dict</strong> (<em>mosaic</em>) – A mosaic representation from the API</p></li>
+<li><p><strong>str</strong> (<em>quad_id</em>) – A quad id (typically &lt;xcoord&gt;-&lt;ycoord&gt;)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.JSON</span></code></a></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.ClientV1.get_quad_contributions">
+<code class="descname">get_quad_contributions</code><span class="sig-paren">(</span><em>quad</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_quad_contributions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get information about which scenes contributed to a quad.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dict</strong> (<em>quad</em>) – A quad representation from the API</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.JSON</span></code></a></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.ClientV1.get_quads">
+<code class="descname">get_quads</code><span class="sig-paren">(</span><em>mosaic</em>, <em>bbox=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_quads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search for quads from a mosaic that are inside the specified
+bounding box.  Will yield all quads if no bounding box is specified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dict</strong> (<em>mosaic</em>) – A mosaic representation from the API</p></li>
+<li><p><strong>tuple</strong> (<em>bbox</em>) – A lon_min, lat_min, lon_max, lat_max area to search</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.MosaicQuads</span></code></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="planet.api.ClientV1.get_searches">
 <code class="descname">get_searches</code><span class="sig-paren">(</span><em>quick=False</em>, <em>saved=True</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_searches" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get searches listing.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>bool</strong> (<em>quick</em>) – Include quick searches (default False)</li>
-<li><strong>saved</strong> (<em>quick</em>) – Include saved searches (default True)</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bool</strong> (<em>quick</em>) – Include quick searches (default False)</p></li>
+<li><p><strong>saved</strong> (<em>quick</em>) – Include saved searches (default True)</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><a class="reference internal" href="#planet.api.models.Searches" title="planet.api.models.Searches"><code class="xref py py-class docutils literal"><span class="pre">planet.api.models.Searches</span></code></a></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.Searches" title="planet.api.models.Searches"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Searches</span></code></a></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="planet.api.ClientV1.quick_search">
 <code class="descname">quick_search</code><span class="sig-paren">(</span><em>request</em>, <em>**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.quick_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute a quick search with the specified request.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>request</strong> – see <a class="reference internal" href="#api-search-request"><span class="std std-ref">Client Search Requests</span></a></li>
-<li><strong>**kw</strong> – See Options below</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>request</strong> – see <a class="reference internal" href="#api-search-request"><span class="std std-ref">Client Search Requests</span></a></p></li>
+<li><p><strong>**kw</strong> – <p>See Options below</p>
+</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><a class="reference internal" href="#planet.api.models.Items" title="planet.api.models.Items"><code class="xref py py-class docutils literal"><span class="pre">planet.api.models.Items</span></code></a></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Options:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.Items" title="planet.api.models.Items"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Items</span></code></a></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+<dt class="field-even">Options</dt>
+<dd class="field-even"><p></p></dd>
+</dl>
 <ul class="simple">
-<li>page_size (int): Size of response pages</li>
-<li>sort (string): Sorting order in the form <cite>field (asc|desc)</cite></li>
+<li><p>page_size (int): Size of response pages</p></li>
+<li><p>sort (string): Sorting order in the form <cite>field (asc|desc)</cite></p></li>
 </ul>
 </dd></dl>
 
@@ -300,23 +380,22 @@ download. See <a class="reference internal" href="#planet.api.write_to_file" tit
 <dt id="planet.api.ClientV1.saved_search">
 <code class="descname">saved_search</code><span class="sig-paren">(</span><em>sid</em>, <em>**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.saved_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute a saved search by search id.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>string</strong> (<em>sid</em>) – The id of the search</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#planet.api.models.Items" title="planet.api.models.Items"><code class="xref py py-class docutils literal"><span class="pre">planet.api.models.Items</span></code></a></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Options:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>string</strong> (<em>sid</em>) – The id of the search</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.Items" title="planet.api.models.Items"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Items</span></code></a></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+<dt class="field-even">Options</dt>
+<dd class="field-even"><p></p></dd>
+</dl>
 <ul class="simple">
-<li>page_size (int): Size of response pages</li>
-<li>sort (string): Sorting order in the form <cite>field (asc|desc)</cite></li>
+<li><p>page_size (int): Size of response pages</p></li>
+<li><p>sort (string): Sorting order in the form <cite>field (asc|desc)</cite></p></li>
 </ul>
 </dd></dl>
 
@@ -324,19 +403,18 @@ download. See <a class="reference internal" href="#planet.api.write_to_file" tit
 <dt id="planet.api.ClientV1.stats">
 <code class="descname">stats</code><span class="sig-paren">(</span><em>request</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.stats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get stats for the provided request.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dict</strong> (<em>request</em>) – A search request that also contains the ‘interval’
-property.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal"><span class="pre">planet.api.models.JSON</span></code></a></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dict</strong> (<em>request</em>) – A search request that also contains the ‘interval’
+property.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.JSON</span></code></a></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -345,7 +423,7 @@ property.</td>
 <div class="section" id="client-search-requests">
 <span id="api-search-request"></span><h2>Client Search Requests<a class="headerlink" href="#client-search-requests" title="Permalink to this headline">¶</a></h2>
 <p>The general search request form is a Python dict, for example.</p>
-<div class="highlight-javascript"><div class="highlight"><pre><span class="p">{</span>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="s2">&quot;item_types&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;PSScene3Band&#39;</span><span class="p">],</span>
   <span class="s2">&quot;filter&quot;</span><span class="o">:</span> <span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="o">:</span> <span class="s2">&quot;AndFilter&quot;</span><span class="p">,</span>
@@ -360,13 +438,13 @@ property.</td>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal"><span class="pre">stats</span></code> function requires an additional <code class="docutils literal"><span class="pre">interval</span></code> property in the
+<p>The <code class="docutils literal notranslate"><span class="pre">stats</span></code> function requires an additional <code class="docutils literal notranslate"><span class="pre">interval</span></code> property in the
 request body.</p>
-<p>When creating a saved search, the <code class="docutils literal"><span class="pre">name</span></code> property in the request body will
+<p>When creating a saved search, the <code class="docutils literal notranslate"><span class="pre">name</span></code> property in the request body will
 be used to give the new search a name.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Request and Filter logic is not validated on the client.</p>
+<p class="admonition-title">Note</p>
+<p>Request and Filter logic is not validated on the client.</p>
 </div>
 </div>
 <div class="section" id="filters">
@@ -377,15 +455,15 @@ and requests.</p>
 <dt id="planet.api.filters.and_filter">
 <code class="descclassname">planet.api.filters.</code><code class="descname">and_filter</code><span class="sig-paren">(</span><em>*predicates</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.and_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build an <cite>and</cite> filter from the provided predicate filters.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span> <span class="o">=</span> <span class="n">and_filter</span><span class="p">(</span>
-<span class="gp">... </span>  <span class="n">range_filter</span><span class="p">(</span><span class="s1">&#39;clouds&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
-<span class="gp">... </span>  <span class="n">range_filter</span><span class="p">(</span><span class="s1">&#39;clouds&#39;</span><span class="p">,</span> <span class="n">lt</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span> <span class="o">=</span> <span class="n">and_filter</span><span class="p">(</span>
+<span class="gp">... </span>  <span class="n">range_filter</span><span class="p">(</span><span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+<span class="gp">... </span>  <span class="n">range_filter</span><span class="p">(</span><span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="n">lt</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
 <span class="go">&#39;AndFilter&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gt&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;clouds&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;RangeFilter&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gt&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;RangeFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;lt&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">},</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;clouds&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;RangeFilter&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;lt&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">},</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;RangeFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -397,20 +475,16 @@ and requests.</p>
 <dd><p>Build a data-api search request body for the specified item_types.
 If ‘filter_like’ is a request, item_types will be merged and, if name or
 interval is provided, will replace any existing values.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filter_like</strong> (<em>dict</em>) – a filter or request with a filter</li>
-<li><strong>item_types</strong> (<em>sequence</em><em>(</em><em>str</em><em>)</em>) – item-types to specify in the request</li>
-<li><strong>name</strong> (<em>str</em>) – optional name</li>
-<li><strong>interval</strong> (<em>str</em>) – optional interval [year, month, week, day]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filter_like</strong> (<em>dict</em>) – a filter or request with a filter</p></li>
+<li><p><strong>item_types</strong> (<em>sequence</em><em>(</em><em>str</em><em>)</em>) – item-types to specify in the request</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – optional name</p></li>
+<li><p><strong>interval</strong> (<em>str</em>) – optional interval [year, month, week, day]</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -419,15 +493,12 @@ interval is provided, will replace any existing values.</p>
 <dd><p>Build a DateRangeFilter.</p>
 <p>Predicate arguments accept a value str that in ISO-8601 format or a value
 that has a <cite>isoformat</cite> callable that returns an ISO-8601 str.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">ValueError if predicate value does not parse</td>
-</tr>
-</tbody>
-</table>
-<div class="highlight-default"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;acquired&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="s1">&#39;2017&#39;</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gt&#39;</span><span class="p">:</span> <span class="s1">&#39;2017-01-01T00:00:00Z&#39;</span><span class="p">},</span>     <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;acquired&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;DateRangeFilter&#39;</span><span class="p">}</span>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p>ValueError if predicate value does not parse</p>
+</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;acquired&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="s1">&#39;2017&#39;</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gt&#39;</span><span class="p">:</span> <span class="s1">&#39;2017-01-01T00:00:00Z&#39;</span><span class="p">},</span>     <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;acquired&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;DateRangeFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -437,18 +508,14 @@ that has a <cite>isoformat</cite> callable that returns an ISO-8601 str.</p>
 <dt id="planet.api.filters.geom_filter">
 <code class="descclassname">planet.api.filters.</code><code class="descname">geom_filter</code><span class="sig-paren">(</span><em>geom</em>, <em>field_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.geom_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a GeometryFilter from the provided geosjon geom dict.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>geom</strong> (<em>geojson</em>) – the geojson geom dict</li>
-<li><strong>field_name</strong> (<em>str</em>) – optional field name, default is ‘geometry’</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>geom</strong> (<em>geojson</em>) – the geojson geom dict</p></li>
+<li><p><strong>field_name</strong> (<em>str</em>) – optional field name, default is ‘geometry’</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -461,7 +528,7 @@ that has a <cite>isoformat</cite> callable that returns an ISO-8601 str.</p>
 <dt id="planet.api.filters.num_filter">
 <code class="descclassname">planet.api.filters.</code><code class="descname">num_filter</code><span class="sig-paren">(</span><em>field_name</em>, <em>*vals</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.num_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a NumberInFilter.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">num_filter</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;NumberInFilter&#39;</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">num_filter</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;NumberInFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -471,17 +538,17 @@ that has a <cite>isoformat</cite> callable that returns an ISO-8601 str.</p>
 <dt id="planet.api.filters.or_filter">
 <code class="descclassname">planet.api.filters.</code><code class="descname">or_filter</code><span class="sig-paren">(</span><em>*predicates</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.or_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build an <cite>or</cite> filter from the provided predicate filters.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">datetime</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">datetime</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">n</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2017</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span> <span class="o">=</span> <span class="n">or_filter</span><span class="p">(</span>
 <span class="gp">... </span>  <span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;acquired&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="n">n</span><span class="p">),</span>
-<span class="gp">... </span>  <span class="n">range_filter</span><span class="p">(</span><span class="s1">&#39;clouds&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+<span class="gp">... </span>  <span class="n">range_filter</span><span class="p">(</span><span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
 <span class="go">&#39;OrFilter&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gt&#39;</span><span class="p">:</span> <span class="s1">&#39;2017-02-14T00:00:00Z&#39;</span><span class="p">},</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;acquired&#39;</span><span class="p">,</span>     <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;DateRangeFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gt&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;clouds&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;RangeFilter&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gt&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;RangeFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -491,7 +558,7 @@ that has a <cite>isoformat</cite> callable that returns an ISO-8601 str.</p>
 <dt id="planet.api.filters.permission_filter">
 <code class="descclassname">planet.api.filters.</code><code class="descname">permission_filter</code><span class="sig-paren">(</span><em>*perms</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.permission_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a PermissionFilter with the specified permissions.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">permission_filter</span><span class="p">(</span><span class="s1">&#39;assets:download&#39;</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;PermissionFilter&#39;</span><span class="p">,</span> <span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;assets:download&#39;</span><span class="p">,)}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">permission_filter</span><span class="p">(</span><span class="s1">&#39;assets:download&#39;</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;PermissionFilter&#39;</span><span class="p">,</span> <span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;assets:download&#39;</span><span class="p">,)}</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -501,7 +568,7 @@ that has a <cite>isoformat</cite> callable that returns an ISO-8601 str.</p>
 <dt id="planet.api.filters.range_filter">
 <code class="descclassname">planet.api.filters.</code><code class="descname">range_filter</code><span class="sig-paren">(</span><em>field_name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.range_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a RangeFilter.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">range_filter</span><span class="p">(</span><span class="s1">&#39;clouds&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gt&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;clouds&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;RangeFilter&#39;</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">range_filter</span><span class="p">(</span><span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gt&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;RangeFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -511,7 +578,7 @@ that has a <cite>isoformat</cite> callable that returns an ISO-8601 str.</p>
 <dt id="planet.api.filters.string_filter">
 <code class="descclassname">planet.api.filters.</code><code class="descname">string_filter</code><span class="sig-paren">(</span><em>field_name</em>, <em>*vals</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.string_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a StringInFilter.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">string_filter</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">,</span> <span class="s1">&#39;id3&#39;</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">,</span> <span class="s1">&#39;id3&#39;</span><span class="p">),</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span>     <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;StringInFilter&#39;</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">string_filter</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">,</span> <span class="s1">&#39;id3&#39;</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">,</span> <span class="s1">&#39;id3&#39;</span><span class="p">),</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span>     <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;StringInFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -520,10 +587,10 @@ that has a <cite>isoformat</cite> callable that returns an ISO-8601 str.</p>
 </div>
 <div class="section" id="module-planet.api.models">
 <span id="client-return-values"></span><h2>Client Return Values<a class="headerlink" href="#module-planet.api.models" title="Permalink to this headline">¶</a></h2>
-<p>Most <cite>Client</cite> methods return a <a class="reference internal" href="#planet.api.models.Body" title="planet.api.models.Body"><code class="xref py py-class docutils literal"><span class="pre">Body</span></code></a> subclass that provides access to the HTTP response body in addition to the HTTP request and response details.</p>
+<p>Most <cite>Client</cite> methods return a <a class="reference internal" href="#planet.api.models.Body" title="planet.api.models.Body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Body</span></code></a> subclass that provides access to the HTTP response body in addition to the HTTP request and response details.</p>
 <p>For many responses, it is sufficient to use the <cite>get</cite> method to obtain the HTTP response as JSON.</p>
-<p>For paginated responses, the <a class="reference internal" href="#planet.api.models.Paged" title="planet.api.models.Paged"><code class="xref py py-class docutils literal"><span class="pre">Paged</span></code></a> provides convenience functions to explicitly page through results as well as an iterator to the underlying items in each response.</p>
-<p>Download functions return a <a class="reference internal" href="#planet.api.models.Response" title="planet.api.models.Response"><code class="xref py py-class docutils literal"><span class="pre">Response</span></code></a> object that handles some aspects of asynchronous execution. Namely, streaming chunks to a handler to prevent memory issues and awaiting completion of the task.</p>
+<p>For paginated responses, the <a class="reference internal" href="#planet.api.models.Paged" title="planet.api.models.Paged"><code class="xref py py-class docutils literal notranslate"><span class="pre">Paged</span></code></a> provides convenience functions to explicitly page through results as well as an iterator to the underlying items in each response.</p>
+<p>Download functions return a <a class="reference internal" href="#planet.api.models.Response" title="planet.api.models.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a> object that handles some aspects of asynchronous execution. Namely, streaming chunks to a handler to prevent memory issues and awaiting completion of the task.</p>
 <p>The basic <cite>Body</cite> methods include:</p>
 <dl class="class">
 <dt id="planet.api.models.Body">
@@ -555,23 +622,19 @@ content-disposition header value from the response.</p>
 providing progress to the optional callback. The callback will be
 invoked 3 different ways:</p>
 <ul class="simple">
-<li>First as <code class="docutils literal"><span class="pre">callback(start=self)</span></code></li>
-<li>For each chunk of data written as
-<code class="docutils literal"><span class="pre">callback(wrote=chunk_size_in_bytes,</span> <span class="pre">total=all_byte_cnt)</span></code></li>
-<li>Upon completion as <code class="docutils literal"><span class="pre">callback(finish=self)</span></code></li>
+<li><p>First as <code class="docutils literal notranslate"><span class="pre">callback(start=self)</span></code></p></li>
+<li><p>For each chunk of data written as
+<code class="docutils literal notranslate"><span class="pre">callback(wrote=chunk_size_in_bytes,</span> <span class="pre">total=all_byte_cnt)</span></code></p></li>
+<li><p>Upon completion as <code class="docutils literal notranslate"><span class="pre">callback(finish=self)</span></code></p></li>
 </ul>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>file</strong> – file name or file-like object</li>
-<li><strong>callback</strong> – optional progress callback</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file</strong> – file name or file-like object</p></li>
+<li><p><strong>callback</strong> – optional progress callback</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -581,20 +644,6 @@ invoked 3 different ways:</p>
 <dt id="planet.api.models.Response">
 <em class="property">class </em><code class="descclassname">planet.api.models.</code><code class="descname">Response</code><a class="headerlink" href="#planet.api.models.Response" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
-<dt id="planet.api.models.Response.await">
-<code class="descname">await</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Response.await" title="Permalink to this definition">¶</a></dt>
-<dd><p>Await completion of this request.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns Body:</th><td class="field-body">A Body object containing the response.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
 <dt id="planet.api.models.Response.cancel">
 <code class="descname">cancel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Response.cancel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Cancel any request.</p>
@@ -604,14 +653,22 @@ invoked 3 different ways:</p>
 <dt id="planet.api.models.Response.get_body">
 <code class="descname">get_body</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Response.get_body" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the response Body</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns Body:</th><td class="field-body">A Body object containing the response.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns Body</dt>
+<dd class="field-odd"><p>A Body object containing the response.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.models.Response.wait">
+<code class="descname">wait</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Response.wait" title="Permalink to this definition">¶</a></dt>
+<dd><p>Await completion of this request.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns Body</dt>
+<dd class="field-odd"><p>A Body object containing the response.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -630,11 +687,11 @@ invoked 3 different ways:</p>
 </dd></dl>
 
 <p>Paginated responses provide a paging iterator as well as an iterator of each pages contents.</p>
-<p>The <a class="reference internal" href="#planet.api.models.Paged.items_iter" title="planet.api.models.Paged.items_iter"><code class="xref py py-meth docutils literal"><span class="pre">Paged.items_iter()</span></code></a> method provides iteration over the contents of each page response.</p>
-<p>For examples, an <a class="reference internal" href="#planet.api.models.Items" title="planet.api.models.Items"><code class="xref py py-class docutils literal"><span class="pre">Items</span></code></a> response page contains a FeatureCollection of zero or more Item objects.
+<p>The <a class="reference internal" href="#planet.api.models.Paged.items_iter" title="planet.api.models.Paged.items_iter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Paged.items_iter()</span></code></a> method provides iteration over the contents of each page response.</p>
+<p>For examples, an <a class="reference internal" href="#planet.api.models.Items" title="planet.api.models.Items"><code class="xref py py-class docutils literal notranslate"><span class="pre">Items</span></code></a> response page contains a FeatureCollection of zero or more Item objects.
 Each Item is a record represented as a GeoJSON feature with properties describing it’s metadata.
-When using the <cite>iterator</cite> from the <a class="reference internal" href="#planet.api.models.Paged.items_iter" title="planet.api.models.Paged.items_iter"><code class="xref py py-meth docutils literal"><span class="pre">Paged.items_iter()</span></code></a> method, only Item Feature objects will be returned.</p>
-<p>To handle assembling the items from each page into a collection again and streaming them as JSON, use the <a class="reference internal" href="#planet.api.models.Paged.json_encode" title="planet.api.models.Paged.json_encode"><code class="xref py py-meth docutils literal"><span class="pre">Paged.json_encode()</span></code></a> method.</p>
+When using the <cite>iterator</cite> from the <a class="reference internal" href="#planet.api.models.Paged.items_iter" title="planet.api.models.Paged.items_iter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Paged.items_iter()</span></code></a> method, only Item Feature objects will be returned.</p>
+<p>To handle assembling the items from each page into a collection again and streaming them as JSON, use the <a class="reference internal" href="#planet.api.models.Paged.json_encode" title="planet.api.models.Paged.json_encode"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Paged.json_encode()</span></code></a> method.</p>
 <dl class="class">
 <dt id="planet.api.models.Paged">
 <em class="property">class </em><code class="descclassname">planet.api.models.</code><code class="descname">Paged</code><a class="headerlink" href="#planet.api.models.Paged" title="Permalink to this definition">¶</a></dt>
@@ -643,32 +700,28 @@ When using the <cite>iterator</cite> from the <a class="reference internal" href
 <code class="descname">items_iter</code><span class="sig-paren">(</span><em>limit</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Paged.items_iter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an iterator of the ‘items’ in each page. Instead of a feature
 collection from each page, the iterator yields the features.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>limit</strong> (<em>int</em>) – The number of ‘items’ to limit to.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">iter of items in page</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>limit</strong> (<em>int</em>) – The number of ‘items’ to limit to.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>iter of items in page</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="planet.api.models.Paged.iter">
 <code class="descname">iter</code><span class="sig-paren">(</span><em>pages=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Paged.iter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an iterator of pages.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pages</strong> (<em>int</em>) – optional limit to number of pages</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">iter of this and subsequent pages</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pages</strong> (<em>int</em>) – optional limit to number of pages</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>iter of this and subsequent pages</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -677,20 +730,16 @@ collection from each page, the iterator yields the features.</p>
 <dd><p>Encode the results of this paged response as JSON writing to the
 provided file-like <cite>out</cite> object. This function will iteratively read
 as many pages as present, streaming the contents out as JSON.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>out</strong> (<em>file-like</em>) – an object with a <cite>write</cite> function</li>
-<li><strong>limit</strong> (<em>int</em>) – optional maximum number of items to write</li>
-<li><strong>sort_keys</strong> (<em>bool</em>) – if True, output keys sorted, default is False</li>
-<li><strong>indent</strong> (<em>bool</em>) – if True, indent output, default is False</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>out</strong> (<em>file-like</em>) – an object with a <cite>write</cite> function</p></li>
+<li><p><strong>limit</strong> (<em>int</em>) – optional maximum number of items to write</p></li>
+<li><p><strong>sort_keys</strong> (<em>bool</em>) – if True, output keys sorted, default is False</p></li>
+<li><p><strong>indent</strong> (<em>bool</em>) – if True, indent output, default is False</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -715,25 +764,21 @@ as many pages as present, streaming the contents out as JSON.</p>
 <code class="descclassname">planet.api.</code><code class="descname">write_to_file</code><span class="sig-paren">(</span><em>directory=None</em>, <em>callback=None</em>, <em>overwrite=True</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.write_to_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a callback handler for asynchronous Body handling.</p>
 <p>If provided, the callback will be invoked as described in
-<a class="reference internal" href="#planet.api.models.Body.write" title="planet.api.models.Body.write"><code class="xref py py-meth docutils literal"><span class="pre">planet.api.models.Body.write()</span></code></a>. In addition, if the download
+<a class="reference internal" href="#planet.api.models.Body.write" title="planet.api.models.Body.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">planet.api.models.Body.write()</span></code></a>. In addition, if the download
 is skipped because the destination exists, the callback will be invoked
-with <code class="docutils literal"><span class="pre">callback(skip=body)</span></code>.</p>
+with <code class="docutils literal notranslate"><span class="pre">callback(skip=body)</span></code>.</p>
 <p>The name of the file written to will be determined from the Body.name
 property.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>str</strong> (<em>directory</em>) – The optional directory to write to.</li>
-<li><strong>func</strong> (<em>callback</em>) – An optional callback to receive notification of
-write progress.</li>
-<li><strong>bool</strong> (<em>overwrite</em>) – Overwrite any existing files. Defaults to True.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>str</strong> (<em>directory</em>) – The optional directory to write to.</p></li>
+<li><p><strong>func</strong> (<em>callback</em>) – An optional callback to receive notification of
+write progress.</p></li>
+<li><p><strong>bool</strong> (<em>overwrite</em>) – Overwrite any existing files. Defaults to True.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -746,8 +791,16 @@ items and assets.</p>
 <p>Create a downloader using:</p>
 <dl class="function">
 <dt id="planet.api.downloader.create">
-<code class="descclassname">planet.api.downloader.</code><code class="descname">create</code><span class="sig-paren">(</span><em>client</em>, <em>**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.create" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">planet.api.downloader.</code><code class="descname">create</code><span class="sig-paren">(</span><em>client</em>, <em>mosaic=False</em>, <em>**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a Downloader with the provided client.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bool</strong> (<em>mosaic</em>) – If True, the Downloader will fetch mosaic quads.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.downloader.Downloader" title="planet.api.downloader.Downloader"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.downloader.Downloader</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="class">
@@ -764,18 +817,14 @@ the <cite>stats</cite> function allows for polling of internal state.</p>
 <code class="descname">activate</code><span class="sig-paren">(</span><em>items</em>, <em>asset_types</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.Downloader.activate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request activation of specified asset_types for the sequence of
 items.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>items</strong> – a sequence of Item representations.</li>
-<li><strong>list</strong> (<em>asset_types</em>) – list of asset-type (str)</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>items</strong> – a sequence of Item representations.</p></li>
+<li><p><strong>list</strong> (<em>asset_types</em>) – list of asset-type (str)</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -783,19 +832,15 @@ items.</p>
 <code class="descname">download</code><span class="sig-paren">(</span><em>items</em>, <em>asset_types</em>, <em>dest</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.Downloader.download" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request activation and download of specified asset_types for the
 sequence of items.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>items</strong> – a sequence of Item representations.</li>
-<li><strong>list</strong> (<em>asset_types</em>) – list of asset-type (str)</li>
-<li><strong>str</strong> (<em>dest</em>) – Download destination directory, must exist.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>items</strong> – a sequence of Item representations.</p></li>
+<li><p><strong>list</strong> (<em>asset_types</em>) – list of asset-type (str)</p></li>
+<li><p><strong>str</strong> (<em>dest</em>) – Download destination directory, must exist.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -803,20 +848,16 @@ sequence of items.</p>
 <code class="descname">on_complete</code><span class="sig-paren">(</span><em>item</em>, <em>asset</em>, <em>path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.Downloader.on_complete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Notification of processing an item’s asset, invoked on completion of
 <cite>activate</cite> or <cite>download</cite>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>item</strong> – The API representation of the item</li>
-<li><strong>asset</strong> – The API representation of the asset</li>
-<li><strong>path</strong> – If downloaded, the location of the downloaded asset,
-otherwise None</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item</strong> – The API representation of the item</p></li>
+<li><p><strong>asset</strong> – The API representation of the asset</p></li>
+<li><p><strong>path</strong> – If downloaded, the location of the downloaded asset,
+otherwise None</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -831,12 +872,12 @@ otherwise None</li>
 <dd><p>Retrieve internal state of the Downloader.</p>
 <p>Returns a dict of state:</p>
 <ul class="simple">
-<li>paging: <cite>bool</cite> indicating that search results are being processed</li>
-<li>activating: <cite>int</cite> number of items in the inactive or activating state</li>
-<li>downloading: <cite>int</cite> number of items actively downloading</li>
-<li>downloaded: <cite>string</cite> representation of MB transferred</li>
-<li>complete: <cite>int</cite> number of completed downloads</li>
-<li>pending: <cite>int</cite> number of items awaiting download</li>
+<li><p>paging: <cite>bool</cite> indicating that search results are being processed</p></li>
+<li><p>activating: <cite>int</cite> number of items in the inactive or activating state</p></li>
+<li><p>downloading: <cite>int</cite> number of items actively downloading</p></li>
+<li><p>downloaded: <cite>string</cite> representation of MB transferred</p></li>
+<li><p>complete: <cite>int</cite> number of completed downloads</p></li>
+<li><p>pending: <cite>int</cite> number of items awaiting download</p></li>
 </ul>
 </dd></dl>
 
@@ -912,16 +953,17 @@ the potential to raise one of the following exceptions:</p>
 
 
           </div>
+          
         </div>
       </div>
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2017 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
+      &copy;2017-2019 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/api/reference.rst.txt"

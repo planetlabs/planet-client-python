@@ -1,26 +1,17 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>CLI Reference &#8212; Planet API Client 1.1.0 documentation</title>
+    <meta charset="utf-8" />
+    <title>CLI Reference &#8212; Planet API Client 1.2.2 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '1.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Examples" href="examples.html" />
@@ -31,8 +22,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   <div class="document">
     
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -54,12 +44,12 @@
 
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
 <ul class="current">
@@ -83,6 +73,8 @@
       </div>
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="cli-reference">
@@ -93,28 +85,16 @@
 </div>
 <div class="section" id="option-types-formatting">
 <h2>Option Types Formatting<a class="headerlink" href="#option-types-formatting" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="asset-type">
-<span id="cli-metavar-asset-type"></span><h3>ASSET-TYPE<a class="headerlink" href="#asset-type" title="Permalink to this headline">¶</a></h3>
-<p>Specify Asset-Type(s) of interest. Case-insenstive,
-supports glob-matching, e.g. <code class="docutils literal"><span class="pre">visual*</span></code> specifies <code class="docutils literal"><span class="pre">visual</span></code> and
-<code class="docutils literal"><span class="pre">visual_xml</span></code>.</p>
-</div>
-<div class="section" id="item-type">
-<span id="cli-metavar-item-type"></span><h3>ITEM-TYPE<a class="headerlink" href="#item-type" title="Permalink to this headline">¶</a></h3>
-<p>Specify Item-Type(s) of interest. Case-insensitive,
-supports glob-matching, e.g. <code class="docutils literal"><span class="pre">psscene*</span></code> means <code class="docutils literal"><span class="pre">PSScene3Band</span></code> and
-<code class="docutils literal"><span class="pre">PSScene4Band</span></code>. The <code class="docutils literal"><span class="pre">all</span></code> value specifies every Item-Type.</p>
-</div>
 <div class="section" id="filter">
 <span id="cli-metavar-filter"></span><h3>FILTER<a class="headerlink" href="#filter" title="Permalink to this headline">¶</a></h3>
 <p>Specify a Data API search filter provided as JSON.
-<code class="docutils literal"><span class="pre">&#64;-</span></code> specifies stdin and <code class="docutils literal"><span class="pre">&#64;filename</span></code> specifies reading from a file
+<code class="docutils literal notranslate"><span class="pre">&#64;-</span></code> specifies stdin and <code class="docutils literal notranslate"><span class="pre">&#64;filename</span></code> specifies reading from a file
 named ‘filename’. Otherwise, the value is assumed to be JSON.</p>
 </div>
 <div class="section" id="geom">
 <span id="cli-metavar-geom"></span><h3>GEOM<a class="headerlink" href="#geom" title="Permalink to this headline">¶</a></h3>
 <p>Specify a geometry in GeoJSON format either as an inline value,
-stdin, or a file. <code class="docutils literal"><span class="pre">&#64;-</span></code> specifies stdin and <code class="docutils literal"><span class="pre">&#64;filename</span></code> specifies
+stdin, or a file. <code class="docutils literal notranslate"><span class="pre">&#64;-</span></code> specifies stdin and <code class="docutils literal notranslate"><span class="pre">&#64;filename</span></code> specifies
 reading from a file named ‘filename’. Otherwise, the value is assumed to
 be GeoJSON.</p>
 </div>
@@ -128,29 +108,41 @@ of the item-type and VALUES is space or comma separated text or numbers.</p>
 <p>A comparison query format where FIELD is a
 property of the item-type and COMP is one of lt, lte, gt, gte and VALUE is
 the number or date to compare against.</p>
-<p>Note: ISO-8601 variants are supported. For example, <code class="docutils literal"><span class="pre">2017</span></code> is short for
-<code class="docutils literal"><span class="pre">2017-01-01T00:00:00+00:00</span></code>.</p>
+<p>Note: ISO-8601 variants are supported. For example, <code class="docutils literal notranslate"><span class="pre">2017</span></code> is short for
+<code class="docutils literal notranslate"><span class="pre">2017-01-01T00:00:00+00:00</span></code>.</p>
+</div>
+<div class="section" id="asset-type">
+<span id="cli-metavar-asset-type"></span><h3>ASSET-TYPE<a class="headerlink" href="#asset-type" title="Permalink to this headline">¶</a></h3>
+<p>Specify Asset-Type(s) of interest. Case-insenstive,
+supports glob-matching, e.g. <code class="docutils literal notranslate"><span class="pre">visual*</span></code> specifies <code class="docutils literal notranslate"><span class="pre">visual</span></code> and
+<code class="docutils literal notranslate"><span class="pre">visual_xml</span></code>.</p>
+</div>
+<div class="section" id="item-type">
+<span id="cli-metavar-item-type"></span><h3>ITEM-TYPE<a class="headerlink" href="#item-type" title="Permalink to this headline">¶</a></h3>
+<p>Specify Item-Type(s) of interest. Case-insensitive,
+supports glob-matching, e.g. <code class="docutils literal notranslate"><span class="pre">psscene*</span></code> means <code class="docutils literal notranslate"><span class="pre">PSScene3Band</span></code> and
+<code class="docutils literal notranslate"><span class="pre">PSScene4Band</span></code>. The <code class="docutils literal notranslate"><span class="pre">all</span></code> value specifies every Item-Type.</p>
 </div>
 </div>
 <div class="section" id="general-options">
 <h2>General Options<a class="headerlink" href="#general-options" title="Permalink to this headline">¶</a></h2>
-<dl class="docutils">
-<dt><code class="docutils literal"><span class="pre">--workers</span></code></dt>
-<dd>The number of concurrent downloads when requesting multiple scenes. - Default 4</dd>
-<dt><code class="docutils literal"><span class="pre">--verbose</span></code></dt>
-<dd>Specify verbosity</dd>
-<dt><code class="docutils literal"><span class="pre">--api_key</span></code></dt>
-<dd>Valid API key - or via ENV variable PL_API_KEY</dd>
-<dt><code class="docutils literal"><span class="pre">--base_url</span></code></dt>
-<dd>Change the base Planet API URL or ENV PL_API_BASE_URL - Default <a class="reference external" href="https://api.planet.com/">https://api.planet.com/</a></dd>
-<dt><code class="docutils literal"><span class="pre">--version</span></code></dt>
-<dd>Show the version and exit.</dd>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">--workers</span></code></dt><dd><p>The number of concurrent downloads when requesting multiple scenes. - Default 4</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--verbose</span></code></dt><dd><p>Specify verbosity</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--api-key</span></code></dt><dd><p>Valid API key - or via ENV variable PL_API_KEY</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--base-url</span></code></dt><dd><p>Change the base Planet API URL or ENV PL_API_BASE_URL - Default <a class="reference external" href="https://api.planet.com/">https://api.planet.com/</a></p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--version</span></code></dt><dd><p>Show the version and exit.</p>
+</dd>
 </dl>
 </div>
 <div class="section" id="general-commands">
 <h2>General Commands<a class="headerlink" href="#general-commands" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="#cli-command-help"><span class="std std-ref">help</span></a> Get command help</p>
-<p><a class="reference internal" href="#cli-command-init"><span class="std std-ref">init</span></a> Login using email/password</p>
+<p><a class="reference internal" href="#cli-command-help"><span class="std std-ref">help</span></a> None</p>
+<p><a class="reference internal" href="#cli-command-init"><span class="std std-ref">init</span></a> None</p>
 <div class="section" id="help">
 <span id="cli-command-help"></span><span id="index-0"></span><h3>help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h3>
 <p>Get command help</p>
@@ -160,27 +152,27 @@ the number or date to compare against.</p>
 <span id="cli-command-init"></span><span id="index-1"></span><h3>init<a class="headerlink" href="#init" title="Permalink to this headline">¶</a></h3>
 <p>Login using email/password</p>
 <p>Usage: init [OPTIONS]</p>
-<table border="1" class="colwidths-given docutils" id="id2">
+<table class="colwidths-given docutils align-center" id="id2">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
 <colgroup>
-<col width="10%" />
-<col width="80%" />
-<col width="10%" />
+<col style="width: 10%" />
+<col style="width: 80%" />
+<col style="width: 10%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Name</th>
-<th class="head">Description</th>
-<th class="head">Format</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Format</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>email</td>
-<td>The email address associated with your Planet credentials.</td>
-<td>TEXT</td>
+<tbody>
+<tr class="row-even"><td><p>email</p></td>
+<td><p>The email address associated with your Planet credentials.</p></td>
+<td><p>TEXT</p></td>
 </tr>
-<tr class="row-odd"><td>password</td>
-<td>Account password. Will not be saved.</td>
-<td>TEXT</td>
+<tr class="row-odd"><td><p>password</p></td>
+<td><p>Account password. Will not be saved.</p></td>
+<td><p>TEXT</p></td>
 </tr>
 </tbody>
 </table>
@@ -188,76 +180,76 @@ the number or date to compare against.</p>
 </div>
 <div class="section" id="data-api">
 <h2>Data API<a class="headerlink" href="#data-api" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="#cli-command-create-search"><span class="std std-ref">create-search</span></a> Create a saved search</p>
-<p><a class="reference internal" href="#cli-command-download"><span class="std std-ref">download</span></a> Activate and download</p>
-<p><a class="reference internal" href="#cli-command-filter"><span class="std std-ref">filter</span></a> Output a AND filter as JSON to stdout.</p>
-<p><a class="reference internal" href="#cli-command-saved-search"><span class="std std-ref">saved-search</span></a> Execute a saved search</p>
-<p><a class="reference internal" href="#cli-command-search"><span class="std std-ref">search</span></a> Execute a quick search.</p>
-<p><a class="reference internal" href="#cli-command-searches"><span class="std std-ref">searches</span></a> List searches</p>
-<p><a class="reference internal" href="#cli-command-stats"><span class="std std-ref">stats</span></a> Get search stats</p>
+<p><a class="reference internal" href="#cli-command-create-search"><span class="std std-ref">create-search</span></a> None</p>
+<p><a class="reference internal" href="#cli-command-download"><span class="std std-ref">download</span></a> None</p>
+<p><a class="reference internal" href="#cli-command-filter"><span class="std std-ref">filter</span></a> None</p>
+<p><a class="reference internal" href="#cli-command-saved-search"><span class="std std-ref">saved-search</span></a> None</p>
+<p><a class="reference internal" href="#cli-command-search"><span class="std std-ref">search</span></a> None</p>
+<p><a class="reference internal" href="#cli-command-searches"><span class="std std-ref">searches</span></a> None</p>
+<p><a class="reference internal" href="#cli-command-stats"><span class="std std-ref">stats</span></a> None</p>
 <div class="section" id="create-search">
 <span id="cli-command-create-search"></span><span id="index-2"></span><h3>create-search<a class="headerlink" href="#create-search" title="Permalink to this headline">¶</a></h3>
 <p>Create a saved search</p>
 <p>Usage: create-search [OPTIONS]</p>
-<table border="1" class="colwidths-given docutils" id="id3">
+<table class="colwidths-given docutils align-center" id="id3">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
 <colgroup>
-<col width="10%" />
-<col width="80%" />
-<col width="10%" />
+<col style="width: 10%" />
+<col style="width: 80%" />
+<col style="width: 10%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Name</th>
-<th class="head">Description</th>
-<th class="head">Format</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Format</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>pretty</td>
-<td>Format JSON output</td>
-<td>BOOLEAN</td>
+<tbody>
+<tr class="row-even"><td><p>pretty</p></td>
+<td><p>Format JSON output</p></td>
+<td><p>BOOLEAN</p></td>
 </tr>
-<tr class="row-odd"><td>name</td>
-<td>&#160;</td>
-<td>TEXT</td>
+<tr class="row-odd"><td><p>name</p></td>
+<td></td>
+<td><p>TEXT</p></td>
 </tr>
-<tr class="row-even"><td>asset_type</td>
-<td>Specify asset type(s) permissions</td>
-<td><a class="reference internal" href="#cli-metavar-asset-type"><span class="std std-ref">ASSET-TYPE</span></a></td>
+<tr class="row-even"><td><p>asset-type</p></td>
+<td><p>Specify asset type(s) permissions</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-asset-type"><span class="std std-ref">ASSET-TYPE</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>sort</td>
-<td>Specify sort ordering as published/acquired asc/desc</td>
-<td>FIELD ORDER…</td>
+<tr class="row-odd"><td><p>sort</p></td>
+<td><p>Specify sort ordering as published/acquired asc/desc</p></td>
+<td><p>FIELD ORDER…</p></td>
 </tr>
-<tr class="row-even"><td>item_type</td>
-<td>Specify item type(s)</td>
-<td><a class="reference internal" href="#cli-metavar-item-type"><span class="std std-ref">ITEM-TYPE</span></a></td>
+<tr class="row-even"><td><p>item-type</p></td>
+<td><p>Specify item type(s)</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-item-type"><span class="std std-ref">ITEM-TYPE</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>filter_json</td>
-<td><p class="first">Use the specified filter</p>
-<p class="last">DEFAULT: <cite>&#64;-</cite></p>
+<tr class="row-odd"><td><p>filter-json</p></td>
+<td><p>Use the specified filter</p>
+<p>DEFAULT: <cite>&#64;-</cite></p>
 </td>
-<td><a class="reference internal" href="#cli-metavar-filter"><span class="std std-ref">FILTER</span></a></td>
+<td><p><a class="reference internal" href="#cli-metavar-filter"><span class="std std-ref">FILTER</span></a></p></td>
 </tr>
-<tr class="row-even"><td>geom</td>
-<td>Specify a geometry filter as geojson.</td>
-<td><a class="reference internal" href="#cli-metavar-geom"><span class="std std-ref">GEOM</span></a></td>
+<tr class="row-even"><td><p>geom</p></td>
+<td><p>Specify a geometry filter as geojson.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-geom"><span class="std std-ref">GEOM</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>string_in</td>
-<td>Filter field by string in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
+<tr class="row-odd"><td><p>string-in</p></td>
+<td><p>Filter field by string in.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></p></td>
 </tr>
-<tr class="row-even"><td>number_in</td>
-<td>Filter field by numeric in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
+<tr class="row-even"><td><p>number-in</p></td>
+<td><p>Filter field by numeric in.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>range</td>
-<td>Filter field by numeric range.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
+<tr class="row-odd"><td><p>range</p></td>
+<td><p>Filter field by numeric range.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></p></td>
 </tr>
-<tr class="row-even"><td>date</td>
-<td>Filter field by date.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
+<tr class="row-even"><td><p>date</p></td>
+<td><p>Filter field by date.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></p></td>
 </tr>
 </tbody>
 </table>
@@ -266,83 +258,83 @@ the number or date to compare against.</p>
 <span id="cli-command-download"></span><span id="index-3"></span><h3>download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h3>
 <p>Activate and download</p>
 <p>Usage: download [OPTIONS]</p>
-<table border="1" class="colwidths-given docutils" id="id4">
+<table class="colwidths-given docutils align-center" id="id4">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
 <colgroup>
-<col width="10%" />
-<col width="80%" />
-<col width="10%" />
+<col style="width: 10%" />
+<col style="width: 80%" />
+<col style="width: 10%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Name</th>
-<th class="head">Description</th>
-<th class="head">Format</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Format</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>limit</td>
-<td>Limit the number of items.</td>
-<td>NUMBER</td>
+<tbody>
+<tr class="row-even"><td><p>limit</p></td>
+<td><p>Limit the number of items.</p></td>
+<td><p>NUMBER</p></td>
 </tr>
-<tr class="row-odd"><td>dest</td>
-<td><p class="first">Location to download files to</p>
-<p class="last">DEFAULT: <cite>.</cite></p>
+<tr class="row-odd"><td><p>dest</p></td>
+<td><p>Location to download files to</p>
+<p>DEFAULT: <cite>.</cite></p>
 </td>
-<td>DIRECTORY</td>
+<td><p>DIRECTORY</p></td>
 </tr>
-<tr class="row-even"><td>quiet</td>
-<td>Disable ANSI control output</td>
-<td>BOOLEAN</td>
+<tr class="row-even"><td><p>quiet</p></td>
+<td><p>Disable ANSI control output</p></td>
+<td><p>BOOLEAN</p></td>
 </tr>
-<tr class="row-odd"><td>activate_only</td>
-<td>Only activate the items. Outputs URLS for downloading.</td>
-<td>BOOLEAN</td>
+<tr class="row-odd"><td><p>activate-only</p></td>
+<td><p>Only activate the items. Outputs URLS for downloading.</p></td>
+<td><p>BOOLEAN</p></td>
 </tr>
-<tr class="row-even"><td>dry_run</td>
-<td>Only report the number of items that would be downloaded.</td>
-<td>BOOLEAN</td>
+<tr class="row-even"><td><p>dry-run</p></td>
+<td><p>Only report the number of items that would be downloaded.</p></td>
+<td><p>BOOLEAN</p></td>
 </tr>
-<tr class="row-odd"><td>search_id</td>
-<td>Use the specified search</td>
-<td>TEXT</td>
+<tr class="row-odd"><td><p>search-id</p></td>
+<td><p>Use the specified search</p></td>
+<td><p>TEXT</p></td>
 </tr>
-<tr class="row-even"><td>date</td>
-<td>Filter field by date.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
+<tr class="row-even"><td><p>date</p></td>
+<td><p>Filter field by date.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>range</td>
-<td>Filter field by numeric range.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
+<tr class="row-odd"><td><p>range</p></td>
+<td><p>Filter field by numeric range.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></p></td>
 </tr>
-<tr class="row-even"><td>number_in</td>
-<td>Filter field by numeric in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
+<tr class="row-even"><td><p>number-in</p></td>
+<td><p>Filter field by numeric in.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>string_in</td>
-<td>Filter field by string in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
+<tr class="row-odd"><td><p>string-in</p></td>
+<td><p>Filter field by string in.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></p></td>
 </tr>
-<tr class="row-even"><td>geom</td>
-<td>Specify a geometry filter as geojson.</td>
-<td><a class="reference internal" href="#cli-metavar-geom"><span class="std std-ref">GEOM</span></a></td>
+<tr class="row-even"><td><p>geom</p></td>
+<td><p>Specify a geometry filter as geojson.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-geom"><span class="std std-ref">GEOM</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>filter_json</td>
-<td><p class="first">Use the specified filter</p>
-<p class="last">DEFAULT: <cite>&#64;-</cite></p>
+<tr class="row-odd"><td><p>filter-json</p></td>
+<td><p>Use the specified filter</p>
+<p>DEFAULT: <cite>&#64;-</cite></p>
 </td>
-<td><a class="reference internal" href="#cli-metavar-filter"><span class="std std-ref">FILTER</span></a></td>
+<td><p><a class="reference internal" href="#cli-metavar-filter"><span class="std std-ref">FILTER</span></a></p></td>
 </tr>
-<tr class="row-even"><td>item_type</td>
-<td>Specify item type(s)</td>
-<td><a class="reference internal" href="#cli-metavar-item-type"><span class="std std-ref">ITEM-TYPE</span></a></td>
+<tr class="row-even"><td><p>item-type</p></td>
+<td><p>Specify item type(s)</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-item-type"><span class="std std-ref">ITEM-TYPE</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>sort</td>
-<td>Specify sort ordering as published/acquired asc/desc</td>
-<td>FIELD ORDER…</td>
+<tr class="row-odd"><td><p>sort</p></td>
+<td><p>Specify sort ordering as published/acquired asc/desc</p></td>
+<td><p>FIELD ORDER…</p></td>
 </tr>
-<tr class="row-even"><td>asset_type</td>
-<td>Specify asset type(s)</td>
-<td><a class="reference internal" href="#cli-metavar-asset-type"><span class="std std-ref">ASSET-TYPE</span></a></td>
+<tr class="row-even"><td><p>asset-type</p></td>
+<td><p>Specify asset type(s)</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-asset-type"><span class="std std-ref">ASSET-TYPE</span></a></p></td>
 </tr>
 </tbody>
 </table>
@@ -354,45 +346,45 @@ the number or date to compare against.</p>
 <p>The output is suitable for use in other commands via the
 –filter-json option.</p>
 <p>Usage: filter [OPTIONS]</p>
-<table border="1" class="colwidths-given docutils" id="id5">
+<table class="colwidths-given docutils align-center" id="id5">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id5" title="Permalink to this table">¶</a></caption>
 <colgroup>
-<col width="10%" />
-<col width="80%" />
-<col width="10%" />
+<col style="width: 10%" />
+<col style="width: 80%" />
+<col style="width: 10%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Name</th>
-<th class="head">Description</th>
-<th class="head">Format</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Format</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>filter_json</td>
-<td><p class="first">Use the specified filter</p>
-<p class="last">DEFAULT: <cite>&#64;-</cite></p>
+<tbody>
+<tr class="row-even"><td><p>filter-json</p></td>
+<td><p>Use the specified filter</p>
+<p>DEFAULT: <cite>&#64;-</cite></p>
 </td>
-<td><a class="reference internal" href="#cli-metavar-filter"><span class="std std-ref">FILTER</span></a></td>
+<td><p><a class="reference internal" href="#cli-metavar-filter"><span class="std std-ref">FILTER</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>geom</td>
-<td>Specify a geometry filter as geojson.</td>
-<td><a class="reference internal" href="#cli-metavar-geom"><span class="std std-ref">GEOM</span></a></td>
+<tr class="row-odd"><td><p>geom</p></td>
+<td><p>Specify a geometry filter as geojson.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-geom"><span class="std std-ref">GEOM</span></a></p></td>
 </tr>
-<tr class="row-even"><td>string_in</td>
-<td>Filter field by string in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
+<tr class="row-even"><td><p>string-in</p></td>
+<td><p>Filter field by string in.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>number_in</td>
-<td>Filter field by numeric in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
+<tr class="row-odd"><td><p>number-in</p></td>
+<td><p>Filter field by numeric in.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></p></td>
 </tr>
-<tr class="row-even"><td>range</td>
-<td>Filter field by numeric range.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
+<tr class="row-even"><td><p>range</p></td>
+<td><p>Filter field by numeric range.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>date</td>
-<td>Filter field by date.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
+<tr class="row-odd"><td><p>date</p></td>
+<td><p>Filter field by date.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></p></td>
 </tr>
 </tbody>
 </table>
@@ -401,33 +393,33 @@ the number or date to compare against.</p>
 <span id="cli-command-saved-search"></span><span id="index-5"></span><h3>saved-search<a class="headerlink" href="#saved-search" title="Permalink to this headline">¶</a></h3>
 <p>Execute a saved search</p>
 <p>Usage: saved-search [OPTIONS] [SEARCH_ID]</p>
-<table border="1" class="colwidths-given docutils" id="id6">
+<table class="colwidths-given docutils align-center" id="id6">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id6" title="Permalink to this table">¶</a></caption>
 <colgroup>
-<col width="10%" />
-<col width="80%" />
-<col width="10%" />
+<col style="width: 10%" />
+<col style="width: 80%" />
+<col style="width: 10%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Name</th>
-<th class="head">Description</th>
-<th class="head">Format</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Format</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>sort</td>
-<td>Specify sort ordering as published/acquired asc/desc</td>
-<td>FIELD ORDER…</td>
+<tbody>
+<tr class="row-even"><td><p>sort</p></td>
+<td><p>Specify sort ordering as published/acquired asc/desc</p></td>
+<td><p>FIELD ORDER…</p></td>
 </tr>
-<tr class="row-odd"><td>pretty</td>
-<td>Format JSON output</td>
-<td>BOOLEAN</td>
+<tr class="row-odd"><td><p>pretty</p></td>
+<td><p>Format JSON output</p></td>
+<td><p>BOOLEAN</p></td>
 </tr>
-<tr class="row-even"><td>limit</td>
-<td><p class="first">Limit the number of items.</p>
-<p class="last">DEFAULT: <cite>100</cite></p>
+<tr class="row-even"><td><p>limit</p></td>
+<td><p>Limit the number of items.</p>
+<p>DEFAULT: <cite>100</cite></p>
 </td>
-<td>NUMBER</td>
+<td><p>NUMBER</p></td>
 </tr>
 </tbody>
 </table>
@@ -436,67 +428,67 @@ the number or date to compare against.</p>
 <span id="cli-command-search"></span><span id="index-6"></span><h3>search<a class="headerlink" href="#search" title="Permalink to this headline">¶</a></h3>
 <p>Execute a quick search.</p>
 <p>Usage: search [OPTIONS]</p>
-<table border="1" class="colwidths-given docutils" id="id7">
+<table class="colwidths-given docutils align-center" id="id7">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id7" title="Permalink to this table">¶</a></caption>
 <colgroup>
-<col width="10%" />
-<col width="80%" />
-<col width="10%" />
+<col style="width: 10%" />
+<col style="width: 80%" />
+<col style="width: 10%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Name</th>
-<th class="head">Description</th>
-<th class="head">Format</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Format</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>limit</td>
-<td><p class="first">Limit the number of items.</p>
-<p class="last">DEFAULT: <cite>100</cite></p>
+<tbody>
+<tr class="row-even"><td><p>limit</p></td>
+<td><p>Limit the number of items.</p>
+<p>DEFAULT: <cite>100</cite></p>
 </td>
-<td>NUMBER</td>
+<td><p>NUMBER</p></td>
 </tr>
-<tr class="row-odd"><td>pretty</td>
-<td>Format JSON output</td>
-<td>BOOLEAN</td>
+<tr class="row-odd"><td><p>pretty</p></td>
+<td><p>Format JSON output</p></td>
+<td><p>BOOLEAN</p></td>
 </tr>
-<tr class="row-even"><td>asset_type</td>
-<td>Specify asset type(s) permissions</td>
-<td><a class="reference internal" href="#cli-metavar-asset-type"><span class="std std-ref">ASSET-TYPE</span></a></td>
+<tr class="row-even"><td><p>asset-type</p></td>
+<td><p>Specify asset type(s) permissions</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-asset-type"><span class="std std-ref">ASSET-TYPE</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>sort</td>
-<td>Specify sort ordering as published/acquired asc/desc</td>
-<td>FIELD ORDER…</td>
+<tr class="row-odd"><td><p>sort</p></td>
+<td><p>Specify sort ordering as published/acquired asc/desc</p></td>
+<td><p>FIELD ORDER…</p></td>
 </tr>
-<tr class="row-even"><td>item_type</td>
-<td>Specify item type(s)</td>
-<td><a class="reference internal" href="#cli-metavar-item-type"><span class="std std-ref">ITEM-TYPE</span></a></td>
+<tr class="row-even"><td><p>item-type</p></td>
+<td><p>Specify item type(s)</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-item-type"><span class="std std-ref">ITEM-TYPE</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>filter_json</td>
-<td><p class="first">Use the specified filter</p>
-<p class="last">DEFAULT: <cite>&#64;-</cite></p>
+<tr class="row-odd"><td><p>filter-json</p></td>
+<td><p>Use the specified filter</p>
+<p>DEFAULT: <cite>&#64;-</cite></p>
 </td>
-<td><a class="reference internal" href="#cli-metavar-filter"><span class="std std-ref">FILTER</span></a></td>
+<td><p><a class="reference internal" href="#cli-metavar-filter"><span class="std std-ref">FILTER</span></a></p></td>
 </tr>
-<tr class="row-even"><td>geom</td>
-<td>Specify a geometry filter as geojson.</td>
-<td><a class="reference internal" href="#cli-metavar-geom"><span class="std std-ref">GEOM</span></a></td>
+<tr class="row-even"><td><p>geom</p></td>
+<td><p>Specify a geometry filter as geojson.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-geom"><span class="std std-ref">GEOM</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>string_in</td>
-<td>Filter field by string in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
+<tr class="row-odd"><td><p>string-in</p></td>
+<td><p>Filter field by string in.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></p></td>
 </tr>
-<tr class="row-even"><td>number_in</td>
-<td>Filter field by numeric in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
+<tr class="row-even"><td><p>number-in</p></td>
+<td><p>Filter field by numeric in.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>range</td>
-<td>Filter field by numeric range.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
+<tr class="row-odd"><td><p>range</p></td>
+<td><p>Filter field by numeric range.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></p></td>
 </tr>
-<tr class="row-even"><td>date</td>
-<td>Filter field by date.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
+<tr class="row-even"><td><p>date</p></td>
+<td><p>Filter field by date.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></p></td>
 </tr>
 </tbody>
 </table>
@@ -505,29 +497,29 @@ the number or date to compare against.</p>
 <span id="cli-command-searches"></span><span id="index-7"></span><h3>searches<a class="headerlink" href="#searches" title="Permalink to this headline">¶</a></h3>
 <p>List searches</p>
 <p>Usage: searches [OPTIONS]</p>
-<table border="1" class="colwidths-given docutils" id="id8">
+<table class="colwidths-given docutils align-center" id="id8">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id8" title="Permalink to this table">¶</a></caption>
 <colgroup>
-<col width="10%" />
-<col width="80%" />
-<col width="10%" />
+<col style="width: 10%" />
+<col style="width: 80%" />
+<col style="width: 10%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Name</th>
-<th class="head">Description</th>
-<th class="head">Format</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Format</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>quick</td>
-<td>Quick searches</td>
-<td>BOOLEAN</td>
+<tbody>
+<tr class="row-even"><td><p>quick</p></td>
+<td><p>Quick searches</p></td>
+<td><p>BOOLEAN</p></td>
 </tr>
-<tr class="row-odd"><td>saved</td>
-<td><p class="first">Saved searches (default)</p>
-<p class="last">DEFAULT: <cite>True</cite></p>
+<tr class="row-odd"><td><p>saved</p></td>
+<td><p>Saved searches (default)</p>
+<p>DEFAULT: <cite>True</cite></p>
 </td>
-<td>BOOLEAN</td>
+<td><p>BOOLEAN</p></td>
 </tr>
 </tbody>
 </table>
@@ -536,67 +528,67 @@ the number or date to compare against.</p>
 <span id="cli-command-stats"></span><span id="index-8"></span><h3>stats<a class="headerlink" href="#stats" title="Permalink to this headline">¶</a></h3>
 <p>Get search stats</p>
 <p>Usage: stats [OPTIONS]</p>
-<table border="1" class="colwidths-given docutils" id="id9">
+<table class="colwidths-given docutils align-center" id="id9">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id9" title="Permalink to this table">¶</a></caption>
 <colgroup>
-<col width="10%" />
-<col width="80%" />
-<col width="10%" />
+<col style="width: 10%" />
+<col style="width: 80%" />
+<col style="width: 10%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Name</th>
-<th class="head">Description</th>
-<th class="head">Format</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Format</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>interval</td>
-<td><p class="first">Specify the interval to aggregate by.</p>
-<p class="last">DEFAULT: <cite>month</cite></p>
+<tbody>
+<tr class="row-even"><td><p>interval</p></td>
+<td><p>Specify the interval to aggregate by.</p>
+<p>DEFAULT: <cite>month</cite></p>
 </td>
-<td>[hour|day|month|week|year]</td>
+<td><p>[hour|day|month|week|year]</p></td>
 </tr>
-<tr class="row-odd"><td>date</td>
-<td>Filter field by date.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
+<tr class="row-odd"><td><p>date</p></td>
+<td><p>Filter field by date.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></p></td>
 </tr>
-<tr class="row-even"><td>range</td>
-<td>Filter field by numeric range.</td>
-<td><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></td>
+<tr class="row-even"><td><p>range</p></td>
+<td><p>Filter field by numeric range.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-comp-value"><span class="std std-ref">FIELD COMP VALUE…</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>number_in</td>
-<td>Filter field by numeric in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
+<tr class="row-odd"><td><p>number-in</p></td>
+<td><p>Filter field by numeric in.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></p></td>
 </tr>
-<tr class="row-even"><td>string_in</td>
-<td>Filter field by string in.</td>
-<td><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></td>
+<tr class="row-even"><td><p>string-in</p></td>
+<td><p>Filter field by string in.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-field-values"><span class="std std-ref">FIELD VALUES…</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>geom</td>
-<td>Specify a geometry filter as geojson.</td>
-<td><a class="reference internal" href="#cli-metavar-geom"><span class="std std-ref">GEOM</span></a></td>
+<tr class="row-odd"><td><p>geom</p></td>
+<td><p>Specify a geometry filter as geojson.</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-geom"><span class="std std-ref">GEOM</span></a></p></td>
 </tr>
-<tr class="row-even"><td>filter_json</td>
-<td><p class="first">Use the specified filter</p>
-<p class="last">DEFAULT: <cite>&#64;-</cite></p>
+<tr class="row-even"><td><p>filter-json</p></td>
+<td><p>Use the specified filter</p>
+<p>DEFAULT: <cite>&#64;-</cite></p>
 </td>
-<td><a class="reference internal" href="#cli-metavar-filter"><span class="std std-ref">FILTER</span></a></td>
+<td><p><a class="reference internal" href="#cli-metavar-filter"><span class="std std-ref">FILTER</span></a></p></td>
 </tr>
-<tr class="row-odd"><td>item_type</td>
-<td>Specify item type(s)</td>
-<td><a class="reference internal" href="#cli-metavar-item-type"><span class="std std-ref">ITEM-TYPE</span></a></td>
+<tr class="row-odd"><td><p>item-type</p></td>
+<td><p>Specify item type(s)</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-item-type"><span class="std std-ref">ITEM-TYPE</span></a></p></td>
 </tr>
-<tr class="row-even"><td>sort</td>
-<td>Specify sort ordering as published/acquired asc/desc</td>
-<td>FIELD ORDER…</td>
+<tr class="row-even"><td><p>sort</p></td>
+<td><p>Specify sort ordering as published/acquired asc/desc</p></td>
+<td><p>FIELD ORDER…</p></td>
 </tr>
-<tr class="row-odd"><td>asset_type</td>
-<td>Specify asset type(s) permissions</td>
-<td><a class="reference internal" href="#cli-metavar-asset-type"><span class="std std-ref">ASSET-TYPE</span></a></td>
+<tr class="row-odd"><td><p>asset-type</p></td>
+<td><p>Specify asset type(s) permissions</p></td>
+<td><p><a class="reference internal" href="#cli-metavar-asset-type"><span class="std std-ref">ASSET-TYPE</span></a></p></td>
 </tr>
-<tr class="row-even"><td>pretty</td>
-<td>Format JSON output</td>
-<td>BOOLEAN</td>
+<tr class="row-even"><td><p>pretty</p></td>
+<td><p>Format JSON output</p></td>
+<td><p>BOOLEAN</p></td>
 </tr>
 </tbody>
 </table>
@@ -606,16 +598,17 @@ the number or date to compare against.</p>
 
 
           </div>
+          
         </div>
       </div>
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2017 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
+      &copy;2017-2019 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/cli/reference.rst.txt"

@@ -1,26 +1,17 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Examples &#8212; Planet API Client 1.1.0 documentation</title>
+    <meta charset="utf-8" />
+    <title>Examples &#8212; Planet API Client 1.2.2 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '1.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="API" href="../api/index.html" />
@@ -31,8 +22,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   <div class="document">
     
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -54,18 +44,19 @@
 
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Command Line</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference.html">CLI Reference</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mosaic-examples">Mosaic Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#integration-with-other-tools">Integration With Other Tools</a></li>
 </ul>
 </li>
@@ -79,70 +70,118 @@
       </div>
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
 <p>Get the latest 10 items from the API of any ItemType:</p>
-<div class="highlight-text"><div class="highlight"><pre>planet data search --limit 10
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --limit 10
 </pre></div>
 </div>
 <p>Get recently acquired PSScene3Band ItemType records:</p>
-<div class="highlight-text"><div class="highlight"><pre>planet data search --item-type PSScene3Band --date gt 2017-02-14
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type PSScene3Band --date gt 2017-02-14
 </pre></div>
 </div>
 <p>Item types can be specified case-insensitively, with prefix matching in the CLI:</p>
-<div class="highlight-text"><div class="highlight"><pre>planet data search --item-type psscene --date gt 2017-02-14
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type psscene --date gt 2017-02-14
 </pre></div>
 </div>
 <p>Search for a month. Note: criteria are applied as an AND filter:</p>
-<div class="highlight-text"><div class="highlight"><pre>planet data search --item-type PSScene3Band --date acquired gt 2017-02-14 --date acquired lt 2017-03-14
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type PSScene3Band --date acquired gt 2017-02-14 --date acquired lt 2017-03-14
 </pre></div>
 </div>
 <p>Use the geometry defined in <cite>aoi.json</cite> to constrain a search for both PSScene3Band and PSScene4Band:</p>
-<div class="highlight-text"><div class="highlight"><pre>planet data search --item-type PSScene3Band --item-type PSScene4Band --geom aoi.json
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type PSScene3Band --item-type PSScene4Band --geom aoi.json
 </pre></div>
 </div>
 <p>Output a search filter to a file:</p>
-<div class="highlight-text"><div class="highlight"><pre>planet data filter --range cloud_cover lt .1 --geom aoi.json &gt; my-search.json
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data filter --range cloud_cover lt .1 --geom aoi.json &gt; my-search.json
 </pre></div>
 </div>
 <p>Create a saved search from a filter in a file with some additional options (this will output the search id for later use):</p>
-<div class="highlight-text"><div class="highlight"><pre>planet data create-search --item-type PSScene3Band --string-in satellite_id 0c12 --name my-search --filter-json my-search.json
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data create-search --item-type PSScene3Band --string-in satellite_id 0c12 --name my-search --filter-json my-search.json
 </pre></div>
 </div>
 <p>Execute a saved search:</p>
-<div class="highlight-text"><div class="highlight"><pre>planet data saved-search 4782d4118fee4275860665129a1e23c1
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data saved-search 4782d4118fee4275860665129a1e23c1
 </pre></div>
 </div>
 <p>Get statistics using a filter from a file:</p>
-<div class="highlight-text"><div class="highlight"><pre>planet data stats --item-type Sentinel2L1C --filter-json my-search.json
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data stats --item-type Sentinel2L1C --filter-json my-search.json
 </pre></div>
 </div>
 <p>Activate and download the latest 3 PSScene3Band items to <cite>images-download-directory</cite>.</p>
 <p>Note: this might take some time and directory must exist:</p>
-<div class="highlight-text"><div class="highlight"><pre>planet data download --item-type PSScene3Band --limit 3 --dest images-download-directory
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data download --item-type PSScene3Band --limit 3 --dest images-download-directory
 </pre></div>
+</div>
+<div class="section" id="mosaic-examples">
+<h2>Mosaic Examples<a class="headerlink" href="#mosaic-examples" title="Permalink to this headline">¶</a></h2>
+<p>List information for all mosaics you have access to:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet mosaics list
+</pre></div>
+</div>
+<p>Note that you may want to parse the JSON that’s output into a more human
+readable format.  The cli does not directly provide options for this, but is
+meant to be easily interoperable with other tools, e.g. <a class="reference external" href="https://stedolan.github.io/jq/">jq</a>.  For example, we could output just the name
+and date range of each mosaic with:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet mosaics list | jq -r &#39;.mosaics[] | [.name, .first_acquired, .last_acquired] | @tsv&#39;
+</pre></div>
+</div>
+<p>Get basic information for a specific mosaic:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet mosaics info global_monthly_2018_09_mosaic
+</pre></div>
+</div>
+<p>List the first 10 quads for a mosaic (Omitting the <code class="docutils literal notranslate"><span class="pre">--limit</span></code> option will
+list all quads. Keep in mind that there may be millions for a global mosaic.):</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet mosaics search global_monthly_2018_09_mosaic --limit=10
+</pre></div>
+</div>
+<p>Find all quads inside a particular area of interest:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet mosaics search global_monthly_2018_09_mosaic --bbox=-95.5,29.6,-95.3,29.8
+</pre></div>
+</div>
+<p>Note that the format of <code class="docutils literal notranslate"><span class="pre">--bbox</span></code> is “xmin,ymin,xmax,ymax”, so longitude comes
+before latitude.</p>
+<p>Get basic information (footprint, etc) for a particular mosaic quad:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet mosaics quad-info global_monthly_2018_09_mosaic 480-1200
+</pre></div>
+</div>
+<p>Determine which scenes contributed to a particular mosaic quad:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet mosaics contribution global_monthly_2018_09_mosaic 480-1200
+</pre></div>
+</div>
+<p>Download all quads for a mosaic (this is impractical for large mosaics, which
+are hundreds of Terabytes in size):</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet mosaics download &lt;mosaic_name&gt;
+</pre></div>
+</div>
+<p>Download all quads inside of a rectangular box for a mosaic:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet mosaics download global_monthly_2018_09_mosaic --bbox=-95.5,29.6,-95.3,29.8
+</pre></div>
+</div>
 </div>
 <div class="section" id="integration-with-other-tools">
 <h2>Integration With Other Tools<a class="headerlink" href="#integration-with-other-tools" title="Permalink to this headline">¶</a></h2>
 <p>The output of search results is valid GeoJSON so these can be piped into a file or tool.</p>
 <p>Create a <cite>gist</cite> using the <a class="reference external" href="http://defunkt.io/gist/">gist</a> command:</p>
-<div class="highlight-text"><div class="highlight"><pre>planet data search --item-type psscene --limit 100 | gist -f latest-scenes.geojson
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type psscene --limit 100 | gist -f latest-scenes.geojson
 </pre></div>
 </div>
 <div class="section" id="searching-using-a-shapefile">
 <h3>Searching Using a Shapefile<a class="headerlink" href="#searching-using-a-shapefile" title="Permalink to this headline">¶</a></h3>
 <p>Searching an area of interest described by a Shapefile, can be accomplished by chaining commands with <a class="reference external" href="https://github.com/Toblerity/Fiona">Fiona</a>.:</p>
-<div class="highlight-text"><div class="highlight"><pre>$ fio dump santiago-de-chile.shp | planet data search --item-type psscene --geom @-
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ fio dump santiago-de-chile.shp | planet data search --item-type psscene --geom @-
 </pre></div>
 </div>
 <p>Note: the <cite>&#64;-</cite> value for <cite>–geom</cite> specifies reading from stdin</p>
 </div>
 <div class="section" id="extracting-metadata-fields">
 <h3>Extracting Metadata Fields<a class="headerlink" href="#extracting-metadata-fields" title="Permalink to this headline">¶</a></h3>
-<p>Using <a class="reference external" href="http://stedolan.github.io/jq/">jq</a>, useful information can be parsed from data returned by the Planet API.</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ planet data search --item-type psscene --limit <span class="m">100</span> <span class="p">|</span> jq -r <span class="s2">&quot;.features[].id&quot;</span>
+<p>Using <a class="reference external" href="https://stedolan.github.io/jq/">jq</a>, useful information can be parsed from data returned by the Planet API.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ planet data search --item-type psscene --limit <span class="m">100</span> <span class="p">|</span> jq -r <span class="s2">&quot;.features[].id&quot;</span>
 20150707_160055_090b
 20150707_160054_090b
 20150707_160053_090b
@@ -159,7 +198,7 @@
 <h3>Search Overlapping Imagery<a class="headerlink" href="#search-overlapping-imagery" title="Permalink to this headline">¶</a></h3>
 <p>Querying for Planet scenes that overlap another data source is easily accomplished by using <a class="reference external" href="https://github.com/mapbox/rasterio">Rasterio</a>.
 Given that this Landsat scene was taken on April 14, 2015, it might be useful to search for Planet scenes that were taken in a similar timeframe.</p>
-<div class="highlight-bash"><div class="highlight"><pre>$ rio bounds LC82210682015104LGN00_B1.TIF <span class="p">|</span> planet data search --item-type psscene --geom - --date acquired gt 2015-04-12 --date acquired lt 2015-04-14
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ rio bounds LC82210682015104LGN00_B1.TIF <span class="p">|</span> planet data search --item-type psscene --geom - --date acquired gt <span class="m">2015</span>-04-12 --date acquired lt <span class="m">2015</span>-04-14
 </pre></div>
 </div>
 </div>
@@ -168,16 +207,17 @@ Given that this Landsat scene was taken on April 14, 2015, it might be useful to
 
 
           </div>
+          
         </div>
       </div>
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2017 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 346 9TH STREET, SAN FRANCISCO 94103.
+      &copy;2017-2019 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/cli/examples.rst.txt"
