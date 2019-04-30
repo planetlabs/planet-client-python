@@ -148,7 +148,7 @@ def test_get_filename_from_url(url, expected):
 
 @pytest.mark.parametrize('content_type,check', [
     (None, lambda x: re.match(r'^planet-[a-z0-9]{8}$', x, re.I) is not None),
-    ('image/tiff', lambda x: x.endswith('.tif')),
+    ('image/tiff', lambda x: x.endswith(('.tif', '.tiff'))),
 ])
 def test_get_random_filename(content_type, check):
     assert check(utils.get_random_filename(content_type))

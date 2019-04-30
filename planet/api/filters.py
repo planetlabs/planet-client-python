@@ -100,8 +100,10 @@ def not_filter(*predicates):
 def date_range(field_name, **kwargs):
     '''Build a DateRangeFilter.
 
-    Predicate arguments accept a value str that in ISO-8601 format or a value
-    that has a `isoformat` callable that returns an ISO-8601 str.
+    Predicate arguments accept a str that is ISO-8601 format or a value
+    that has an `isoformat` callable that returns an ISO-8601 compliant str.
+
+    If no timezone is provided, UTC is assumed for RFC 3339 compatability.
 
     :raises: ValueError if predicate value does not parse
 
@@ -116,7 +118,12 @@ def date_range(field_name, **kwargs):
             dt = strp_lenient(str(v))
             if dt is None:
                 raise ValueError("unable to use provided time: " + str(v))
-        kwargs[k] = dt.isoformat() + 'Z'
+        iso_date = dt.isoformat()
+        if not dt.tzinfo:
+            # assume UTC for datetimes without an explicit timezone
+            # necessary for RFC 3339 vs ISO 8601 compatability
+            iso_date += 'Z'
+        kwargs[k] = iso_date
     return _filter('DateRangeFilter', config=kwargs, field_name=field_name)
 
 
