@@ -130,6 +130,9 @@ class ClientV1(_Base):
             params['_page_size'] = kw['page_size']
         if 'sort' in kw and kw['sort']:
             params['_sort'] = ''.join(kw['sort'])
+        if 'strict' in kw:
+            # This transforms a Python boolean into a JSON boolean
+            params['strict'] = json.dumps(kw['strict'])
         return params
 
     def create_search(self, request):
