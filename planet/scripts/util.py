@@ -152,8 +152,11 @@ def echo_json_response(response, pretty, limit=None, ndjson=False):
         elif not ndjson and hasattr(response, 'json_encode'):
             response.json_encode(click.get_text_stream('stdout'), limit=limit,
                                  indent=indent, sort_keys=sort_keys)
+
+        res = response.get_raw()
+        if len(res) == 0: # if the body is empty, just return the status
+            click.echo("status: {}".format(response.response.status_code))
         else:
-            res = response.get_raw()
             res = json.dumps(json.loads(res), indent=indent,
                              sort_keys=sort_keys)
             click.echo(res)
