@@ -323,3 +323,8 @@ class WFS3Features(AnalyticsPaged):
 
 class Orders(Paged):
     ITEM_KEY = 'orders'
+
+class Order(JSON):
+    # TODO what does a user want to see when they do `planet order <uuid>`?
+    # for now, just dump the entire response body
+    pass

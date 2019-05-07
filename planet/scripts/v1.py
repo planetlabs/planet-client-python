@@ -691,3 +691,11 @@ def list_orders(pretty):
     '''List all pending order requests'''
     cl = clientv1()
     echo_json_response(call_and_wrap(cl.get_orders), pretty)
+
+@orders.command('get')
+@click.argument('order_id', type=click.UUID)
+@pretty
+def get_order(order_id, pretty):
+    '''Get order request for a given order ID'''
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.get_individual_order, order_id), pretty)

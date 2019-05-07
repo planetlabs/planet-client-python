@@ -504,3 +504,13 @@ class ClientV1(_Base):
         '''
         url = self._url('compute/ops/orders/v2')
         return self._get(url, models.Orders).get_body()
+
+    def get_individual_order(self, order_id):
+        '''Get order request details by Order ID.
+
+        :param order_id str: The ID of the Order
+        :returns: :py:Class:`planet.api.models.Order`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        url = self._url('compute/ops/orders/v2/{}'.format(order_id))
+        return self._get(url, models.Order).get_body()
