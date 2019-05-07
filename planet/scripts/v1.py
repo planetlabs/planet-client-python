@@ -699,3 +699,11 @@ def get_order(order_id, pretty):
     '''Get order request for a given order ID'''
     cl = clientv1()
     echo_json_response(call_and_wrap(cl.get_individual_order, order_id), pretty)
+
+@orders.command('cancel')
+@click.argument('order_id', type=click.UUID)
+@pretty
+def cancel_order(order_id, pretty):
+    '''Cancel a running order by given order ID'''
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.cancel_order, order_id), pretty)

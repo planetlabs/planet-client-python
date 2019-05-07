@@ -514,3 +514,15 @@ class ClientV1(_Base):
         '''
         url = self._url('compute/ops/orders/v2/{}'.format(order_id))
         return self._get(url, models.Order).get_body()
+
+    def cancel_order(self, order_id):
+        '''Cancel a running order by Order ID.
+
+        :param order_id str: The ID of the Order to cancel
+        :returns: :py:Class:`planet.api.models.Order`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        url = self._url('compute/ops/orders/v2/{}'.format(order_id))
+        return self.dispatcher.response(models.Request(url, self.auth,
+                                                       body_type=models.Order,
+                                                       method='PUT')).get_body()
