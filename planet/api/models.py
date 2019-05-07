@@ -278,6 +278,7 @@ class MosaicQuads(Paged):
     ITEM_KEY = 'items'
 
 
+<<<<<<< HEAD
 class AnalyticsPaged(Paged):
     LINKS_KEY = 'links'
     NEXT_KEY = 'next'
@@ -318,3 +319,7 @@ class WFS3Features(AnalyticsPaged):
     # differences in the structure of the response envelope result in paging
     # slightly differently.
     ITEM_KEY = 'features'
+
+
+class Orders(Paged):
+    ITEM_KEY = 'orders'

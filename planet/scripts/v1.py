@@ -683,3 +683,11 @@ def get_associated_resource(subscription_id, feature_id, resource_type, pretty,
 def orders():
     '''Commands for interacting with the OrdersV2 API'''
     pass
+
+
+@orders.command('list')
+@pretty
+def list_orders(pretty):
+    '''List all pending order requests'''
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.get_orders), pretty)

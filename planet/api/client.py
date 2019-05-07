@@ -363,6 +363,7 @@ class ClientV1(_Base):
         download_url = quad['_links']['download']
         return self._get(download_url, models.Body, callback=callback)
 
+<<<<<<< HEAD
     def check_analytics_connection(self):
         '''
         Validate that we can use the Analytics API. Useful to test connectivity
@@ -495,3 +496,11 @@ class ClientV1(_Base):
                                                           resource_type))
         response = self._get(url).get_body()
         return response
+    
+    def get_orders(self):
+        '''Get information for all pending order requests for the current user.
+
+        :returns: :py:Class:`planet.api.models.Orders`
+        '''
+        url = self._url('compute/ops/orders/v2')
+        return self._get(url, models.Orders).get_body()
