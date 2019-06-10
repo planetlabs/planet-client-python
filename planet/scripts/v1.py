@@ -684,7 +684,6 @@ def orders():
     '''Commands for interacting with the OrdersV2 API'''
     pass
 
-
 @orders.command('list')
 @pretty
 def list_orders(pretty):
@@ -707,3 +706,19 @@ def cancel_order(order_id, pretty):
     '''Cancel a running order by given order ID'''
     cl = clientv1()
     echo_json_response(call_and_wrap(cl.cancel_order, order_id), pretty)
+
+
+@orders.command('download')
+@click.argument('order_id', type=click.UUID)
+@pretty
+def download_order(order_id, pretty):
+    '''Download an order by given order ID'''
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.download_order, order_id), pretty)
+
+@orders.command('create')
+@pretty
+def create_order(pretty):
+    '''Order scenes'''
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.create_order), pretty)
