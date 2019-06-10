@@ -1,5 +1,6 @@
 import requests
 from planet.api.dispatch import _get_user_agent
+from planet.api.auth import find_api_key
 
 ITEM_TYPE_URL = 'https://api.planet.com/data/v1/item-types/'
 ASSET_TYPE_URL = 'https://api.planet.com/data/v1/asset-types/'
@@ -36,7 +37,10 @@ DEFAULT_ASSET_TYPES = [
 
 
 def _get_json_or_raise(url, timeout=0.7):
-    headers = {'User-Agent': _get_user_agent()}
+    api_key = find_api_key()
+    headers = {'User-Agent': _get_user_agent(),
+               'Authorization': 'api-key %s' % api_key
+               }
     resp = requests.get(url, timeout=timeout, headers=headers)
     resp.raise_for_status()
     return resp.json()
