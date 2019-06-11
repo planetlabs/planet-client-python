@@ -1,3 +1,20 @@
+1.2.3 (2019-06-11)
+-------------------------------------
+- Authenticate item and asset type calls from CLI
+- Update tox config to remove obsolete Python 3 versions and allow pytest args
+- mimetypes.guess_extension() returns either .tif or .tiff - test accordingly
+- Let date_range filter handle dates given with and without timezones
+- Update copyright date
+- Update Planet address
+- Limit arg is required for items_iter()
+- Add pywin32 dep for windows platforms
+- Flake8 fixes
+- Fix improper handling of mixed states when activating multiple assets with Downloader.
+- Force TravisCI to upgrade pytest to avoid conflicts
+- Add new item types to CLI tool in order to match API's item-types endpoint.
+- Don't let final report get swallowed up with ANSI output
+- Output the same report for all downloads via CLI
+
 1.2.2 (2019-03-04)
 -------------------------------------
 - Use requests' urlparse for Py2 & Py3 compatibility
