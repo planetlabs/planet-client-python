@@ -11,36 +11,62 @@ _asset_types = None
 # Default values here are used as a fallback
 # In case the API fails to respond or takes too long.
 DEFAULT_ITEM_TYPES = [
-    "PSScene4Band", "PSScene3Band", "REScene", "REOrthoTile",
-    "Sentinel2L1C", "PSOrthoTile", "Landsat8L1G", "Sentinel1",
-    "MOD09GA", "MOD09GQ", "MYD09GA", "MYD09GQ",
-    "SkySatScene", "SkySatCollect"]
+    'Landsat8L1G',
+    'MOD09GA',
+    'MOD09GQ',
+    'MYD09GA',
+    'MYD09GQ',
+    'PSOrthoTile',
+    'PSScene3Band',
+    'PSScene4Band',
+    'REOrthoTile',
+    'REScene',
+    'Sentinel1',
+    'Sentinel2L1C',
+    'SkySatCollect',
+    'SkySatScene'
+]
 
 DEFAULT_ASSET_TYPES = [
-    "analytic", "analytic_b1", "analytic_b10", "analytic_b11", "analytic_b12",
-    "analytic_b2", "analytic_b3", "analytic_b4", "analytic_b5", "analytic_b6",
-    "analytic_b7", "analytic_b8", "analytic_b8a", "analytic_b9",
-    "analytic_bqa", "analytic_dn", "analytic_dn_xml", "analytic_ms",
-    "analytic_xml", "analytic_sr", "basic_analytic", "basic_analytic_b1",
-    "basic_analytic_b1_nitf", "basic_analytic_b2", "basic_analytic_b2_nitf",
-    "basic_analytic_b3", "basic_analytic_b3_nitf", "basic_analytic_b4",
-    "basic_analytic_b4_nitf", "basic_analytic_b5", "basic_analytic_b5_nitf",
-    "basic_analytic_dn", "basic_analytic_dn_nitf", "basic_analytic_dn_rpc",
-    "basic_analytic_dn_rpc_nitf", "basic_analytic_dn_xml",
-    "basic_analytic_dn_xml_nitf", "basic_analytic_nitf", "basic_analytic_rpc",
-    "basic_analytic_rpc_nitf", "basic_analytic_sci", "basic_analytic_xml",
-    "basic_analytic_xml_nitf", "basic_panchromatic_dn",
-    "basic_panchromatic_dn_rpc", "basic_udm", "browse", "metadata_aux",
-    "metadata_txt", "ortho_analytic_dn", "ortho_analytic_udm",
-    "ortho_panchromatic_dn", "ortho_panchromatic_udm", "ortho_pansharpened",
-    "ortho_pansharpened_udm", "ortho_visual", "udm", "visual", "visual_xml"]
+    'analytic', 'analytic_b1', 'analytic_b10', 'analytic_b11', 'analytic_b12',
+    'analytic_b2', 'analytic_b3', 'analytic_b4', 'analytic_b5', 'analytic_b6',
+    'analytic_b7', 'analytic_b8', 'analytic_b8a', 'analytic_b9',
+    'analytic_bqa', 'analytic_dn', 'analytic_dn_xml', 'analytic_gflags',
+    'analytic_granule_pnt', 'analytic_iobs_res', 'analytic_ms',
+    'analytic_num_observations', 'analytic_num_observations_1km',
+    'analytic_num_observations_500m', 'analytic_obscov',
+    'analytic_obscov_500m', 'analytic_orbit_pnt', 'analytic_q_scan',
+    'analytic_qc_250m', 'analytic_qc_500m', 'analytic_range',
+    'analytic_sensor_azimuth', 'analytic_sensor_zenith',
+    'analytic_solar_azimuth', 'analytic_solar_zenith', 'analytic_sr',
+    'analytic_state_1km', 'analytic_sur_refl_b01', 'analytic_sur_refl_b02',
+    'analytic_sur_refl_b03', 'analytic_sur_refl_b04', 'analytic_sur_refl_b05',
+    'analytic_sur_refl_b06', 'analytic_sur_refl_b07', 'analytic_xml',
+    'basic_analytic', 'basic_analytic_b1', 'basic_analytic_b1_nitf',
+    'basic_analytic_b2', 'basic_analytic_b2_nitf', 'basic_analytic_b3',
+    'basic_analytic_b3_nitf', 'basic_analytic_b4', 'basic_analytic_b4_nitf',
+    'basic_analytic_b5', 'basic_analytic_b5_nitf', 'basic_analytic_dn',
+    'basic_analytic_dn_nitf', 'basic_analytic_dn_rpc',
+    'basic_analytic_dn_rpc_nitf', 'basic_analytic_dn_xml',
+    'basic_analytic_dn_xml_nitf', 'basic_analytic_nitf', 'basic_analytic_rpc',
+    'basic_analytic_rpc_nitf', 'basic_analytic_sci', 'basic_analytic_udm2',
+    'basic_analytic_xml', 'basic_analytic_xml_nitf', 'basic_panchromatic',
+    'basic_panchromatic_dn', 'basic_panchromatic_dn_rpc',
+    'basic_panchromatic_rpc', 'basic_panchromatic_udm2', 'basic_udm',
+    'basic_udm2', 'browse', 'metadata_aux', 'metadata_txt', 'ortho_analytic',
+    'ortho_analytic_dn', 'ortho_analytic_hh', 'ortho_analytic_hv',
+    'ortho_analytic_udm', 'ortho_analytic_udm2', 'ortho_analytic_vh',
+    'ortho_analytic_vv', 'ortho_panchromatic', 'ortho_panchromatic_dn',
+    'ortho_panchromatic_udm', 'ortho_panchromatic_udm2', 'ortho_pansharpened',
+    'ortho_pansharpened_udm', 'ortho_pansharpened_udm2', 'ortho_visual', 'udm',
+    'udm2', 'visual', 'visual_xml'
+]
 
 
-def _get_json_or_raise(url, timeout=0.7):
+def _get_json_or_raise(url, timeout=11):
     api_key = find_api_key()
     headers = {'User-Agent': _get_user_agent(),
-               'Authorization': 'api-key %s' % api_key
-               }
+               'Authorization': 'api-key %s' % api_key}
     resp = requests.get(url, timeout=timeout, headers=headers)
     resp.raise_for_status()
     return resp.json()
