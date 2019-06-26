@@ -329,7 +329,7 @@ def handle_interrupt(cancel, f, *a, **kw):
     t.start()
     # poll (or we miss the interrupt) and await completion
     try:
-        while t.isAlive():
+        while t.is_alive():
             t.join(.1)
     except KeyboardInterrupt:
         cancel()

@@ -13,7 +13,9 @@
 # limitations under the License
 
 import json
-from planet.scripts.types import get_item_types
+import mock
+from planet.scripts.item_asset_types import DEFAULT_ASSET_TYPES
+from planet.scripts.item_asset_types import DEFAULT_ITEM_TYPES
 from planet.scripts.types import AssetType
 from planet.scripts.types import GeomFilter
 from planet.scripts.types import ItemType
@@ -27,10 +29,12 @@ def convert_asserter(t):
     return asserter
 
 
+@mock.patch('planet.scripts.types.get_item_types',
+            new=mock.Mock(return_value=DEFAULT_ITEM_TYPES))
 def test_item_type():
     check = convert_asserter(ItemType())
 
-    check('all', get_item_types())
+    check('all', DEFAULT_ITEM_TYPES)
     check('psscene', ['PSScene3Band', 'PSScene4Band'])
     check('Sentinel2L1C', ['Sentinel2L1C'])
     check('psscene,sent', ['PSScene3Band', 'PSScene4Band',
@@ -40,7 +44,8 @@ def test_item_type():
         ItemType().convert('x', None, None)
     assert 'invalid choice: x' in str(e.value)
 
-
+@mock.patch('planet.scripts.types.get_asset_types',
+            new=mock.Mock(return_value=DEFAULT_ASSET_TYPES))
 def test_asset_type():
     check = convert_asserter(AssetType())
     check('visual*', ['visual', 'visual_xml'])
