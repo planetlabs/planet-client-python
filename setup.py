@@ -47,6 +47,8 @@ dev_requires = [
     'pytest-cov',
     'sphinx',
     'wheel',
+    'mock',
+    'requests-mock',
 ]
 
 setup(name='planet',
