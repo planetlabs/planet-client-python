@@ -382,18 +382,14 @@ def feeds():
 
 
 @feeds.command('list')
-@limit_option(250)  # Analytics API default
-@click.option('--before', type=str, help=('When paginating, provide the '
-                                          'identifier for last collection on'
-                                          'previous page.')
-              )
+@limit_option(None)
 @click.option('--stats', is_flag=True, default=False)
 @pretty
-def list_feeds(pretty, limit, before, stats):
+def list_feeds(pretty, limit, stats):
     '''List all subscriptions user has access to.'''
     cl = analytics_client_v1()
-    response = cl.list_analytic_feeds(limit, before, stats)
-    echo_json_response(response, pretty)
+    response = cl.list_analytic_feeds(stats)
+    echo_json_response(response, pretty, limit)
 
 
 @feeds.command('list-mosaics')
@@ -441,17 +437,13 @@ def subscriptions():
 
 @subscriptions.command('list')
 @click.option('--feed-id', type=str)
-@limit_option(250)  # Analytics API default
-@click.option('--before', type=str, help=('When paginating, provide the '
-                                          'identifier for last subscription on'
-                                          'previous page.')
-              )
+@limit_option(None)
 @pretty
-def list_subscriptions(pretty, limit, feed_id, before):
+def list_subscriptions(pretty, limit, feed_id):
     '''List all subscriptions user has access to.'''
     cl = analytics_client_v1()
-    response = cl.list_analytic_subsriptions(feed_id, limit, before)
-    echo_json_response(response, pretty)
+    response = cl.list_analytic_subsriptions(feed_id)
+    echo_json_response(response, pretty, limit)
 
 
 @subscriptions.command('list-mosaics')
@@ -497,17 +489,13 @@ def collections():
 
 
 @collections.command('list')
-@limit_option(250)  # Analytics API default
-@click.option('--before', type=str, help=('When paginating, provide the '
-                                          'identifier for last collection on '
-                                          'previous page.')
-              )
+@limit_option(None)
 @pretty
-def list_collections(pretty, limit, before):
+def list_collections(pretty, limit):
     '''List all collections user has access to.'''
     cl = analytics_client_v1()
-    response = cl.list_analytic_collections(limit, before)
-    echo_json_response(response, pretty)
+    response = cl.list_analytic_collections()
+    echo_json_response(response, pretty, limit)
 
 
 @collections.command('list-mosaics')
@@ -578,7 +566,7 @@ def features():
 
 @features.command('list')
 @click.argument('subscription_id')
-@limit_option(250)  # Analytics API default
+@limit_option(None)
 @click.option('--bbox', type=BoundingBox(), help=(
         'Region to query as a comma-delimited string:'
         ' lon_min,lat_min,lon_max,lat_max'
@@ -592,19 +580,13 @@ def features():
         'items since the start of January 2019), 2019-01-01T00:00:00.00Z '
         '(instant)'
 ))
-@click.option('--before', type=str,
-              help='Get features published before specified item.')
-@click.option('--after', type=str,
-              help='Get features published after specified item.')
 @pretty
-def list_features(subscription_id, pretty, limit, rbox, bbox, time_range,
-                  before, after):
+def list_features(subscription_id, pretty, limit, rbox, bbox, time_range):
     '''Request feature list for a particular subscription.'''
     cl = analytics_client_v1()
     bbox = bbox or rbox
-    features = cl.list_collection_features(subscription_id, limit, bbox,
-                                           time_range, before, after)
-    echo_json_response(features, pretty)
+    features = cl.list_collection_features(subscription_id, bbox, time_range)
+    echo_json_response(features, pretty, limit)
 
 
 @features.command('get')
