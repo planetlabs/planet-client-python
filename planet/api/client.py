@@ -378,7 +378,7 @@ class ClientV1(_Base):
         '''
         return self._get(self._url('conformance')).get_body()
 
-    def list_analytic_subsriptions(self, feed_id):
+    def list_analytic_subscriptions(self, feed_id):
         '''
         Get subscriptions that the authenticated user has access to
         :param feed_id str: Return subscriptions associated with a particular

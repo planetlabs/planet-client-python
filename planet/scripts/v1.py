@@ -383,7 +383,8 @@ def feeds():
 
 @feeds.command('list')
 @limit_option(None)
-@click.option('--stats', is_flag=True, default=False)
+@click.option('--stats', is_flag=True, default=False,
+              help='Include feed stats')
 @pretty
 def list_feeds(pretty, limit, stats):
     '''List all subscriptions user has access to.'''
@@ -442,7 +443,7 @@ def subscriptions():
 def list_subscriptions(pretty, limit, feed_id):
     '''List all subscriptions user has access to.'''
     cl = analytics_client_v1()
-    response = cl.list_analytic_subsriptions(feed_id)
+    response = cl.list_analytic_subscriptions(feed_id)
     echo_json_response(response, pretty, limit)
 
 
@@ -543,9 +544,6 @@ def get_resource_types(subscription_id, pretty):
     # Assumes that all features in a collection have the same list of
     # associated resource types
     features = cl.list_collection_features(subscription_id,
-                                           1,
-                                           None,
-                                           None,
                                            None,
                                            None)
     feature_list = features.get()['features']
@@ -554,8 +552,13 @@ def get_resource_types(subscription_id, pretty):
             'No features found, cannot determine resource types.').show()
         click.Abort()
     types = {item['rel'] for item in features.get()['features'][0]['links']}
-    types.remove('self')
-    click.echo('Found resource types: {}'.format(list(types)))
+
+    # The client and API only support these three, but there may be more link
+    # types, ex. to things like tiles
+    supported_types = {'source-image-info', 'target-quad', 'source-quad'}
+
+    found_types = types.intersection(supported_types)
+    click.echo('Found resource types: {}'.format(list(found_types)))
 
 
 @collections.group('features')
