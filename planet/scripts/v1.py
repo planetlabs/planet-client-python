@@ -605,6 +605,9 @@ def list_features(subscription_id, pretty, limit, rbox, bbox, time_range):
 def get_associated_resource(subscription_id, feature_id, resource_type, pretty,
                             dest):
     '''Request resources for a particular subscription/feature combination.'''
+    # Note that this command will not work for a custom analytics URL, as the
+    # underlying API call is a redirect to the Data API and Mosaics API.
+    # See https://github.com/kennethreitz/requests/issues/2949 for more info.
     cl = analytics_client_v1()
     if resource_type in ['target-quad', 'source-quad']:
         msg_format = 'Requesting {} for {}/{}, destination directory is: {}'
