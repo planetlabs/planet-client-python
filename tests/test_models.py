@@ -14,10 +14,8 @@
 
 import io
 import json
-from planet.api.models import Features
-from planet.api.models import Paged
-from planet.api.models import Request
-from planet.api.models import Response
+import pytest
+from planet.api.models import Features, Paged, Request, Response, WFS3Features
 from mock import MagicMock
 # try:
 #     from StringIO import StringIO as Buffy
@@ -33,24 +31,37 @@ def mock_http_response(json, iter_content=None):
     return m
 
 
-def make_page(cnt, start, key, next):
+def make_page(cnt, start, key, next, af):
     '''fake paged content'''
-    return start + cnt, {
-        '_links': {
-            '_next': next
-        },
-        key: [{
-            'thingee': start + t
-        } for t in range(cnt)]
-    }
+    if af:
+        envelope = {
+            'links': [{
+                'href': next,
+                'rel': 'next',
+                'title': 'NEXT'
+            }],
+            key: [{
+                'thingee': start + t
+            } for t in range(cnt)]
+        }
+    else:
+        envelope = {
+            '_links': {
+                '_next': next
+            },
+            key: [{
+                'thingee': start + t
+            } for t in range(cnt)]
+        }
+    return start + cnt, envelope
 
 
-def make_pages(cnt, num, key):
+def make_pages(cnt, num, key, af):
     '''generator of 'cnt' pages containing 'num' content'''
     start = 0
     for p in range(num):
         next = 'page %d' % (p + 1,) if p + 1 < num else None
-        start, page = make_page(cnt, start, key, next)
+        start, page = make_page(cnt, start, key, next, af=af)
         yield page
 
 
@@ -58,12 +69,12 @@ class Thingees(Paged):
     ITEM_KEY = 'thingees'
 
 
-def thingees(cnt, num, key='thingees', body=Thingees):
+def thingees(cnt, num, key='thingees', body=Thingees, af=False):
     req = Request('url', 'auth')
     dispatcher = MagicMock(name='dispatcher', )
 
     # make 5 pages with 5 items on each page
-    pages = make_pages(5, 5, key=key)
+    pages = make_pages(5, 5, key=key, af=af)
     # initial the paged object with the first page
     paged = body(req, mock_http_response(json=next(pages)), dispatcher)
     # the remaining 4 get used here
@@ -123,3 +134,18 @@ def test_features():
     features_json = json.loads(buf.getvalue())
     assert features_json['type'] == 'FeatureCollection'
     assert len(features_json['features']) == 13
+
+
+@pytest.mark.parametrize('limit', [None, 13])
+def test_wf3_features(limit):
+    pages = 5
+    page_size = 6
+    num_items = pages * page_size
+    features = thingees(page_size, pages,
+                        body=WFS3Features,
+                        key='features',
+                        af=True)
+    buf = io.StringIO()
+    features.json_encode(buf, limit)
+    features_json = json.loads(buf.getvalue())
+    assert len(features_json['features']) == limit if limit else num_items

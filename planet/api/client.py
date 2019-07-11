@@ -23,6 +23,7 @@ from . import filters
 
 class _Base(object):
     '''High-level access to Planet's API.'''
+
     def __init__(self, api_key=None, base_url='https://api.planet.com/',
                  workers=4):
         '''
@@ -272,13 +273,30 @@ class ClientV1(_Base):
         url = 'data/v1/item-types/%s/items/%s/assets' % (item_type, id)
         return self._get(url).get_body()
 
-    def get_mosaics(self):
+    def get_mosaic_series(self, series_id):
+        '''Get information pertaining to a mosaics series
+        :returns: :py:Class:`planet.api.models.JSON`
+        '''
+        url = self._url('basemaps/v1/series/{}'.format(series_id))
+        return self._get(url, models.JSON).get_body()
+
+    def get_mosaics_for_series(self, series_id):
+        '''Get list of mosaics available for a series
+        :returns: :py:Class:`planet.api.models.Mosaics`
+        '''
+        url = self._url('basemaps/v1/series/{}/mosaics'.format(series_id))
+        return self._get(url, models.Mosaics).get_body()
+
+    def get_mosaics(self, name_contains=None):
         '''Get information for all mosaics accessible by the current user.
 
         :returns: :py:Class:`planet.api.models.Mosaics`
         '''
+        params = {}
+        if name_contains:
+            params['name__contains'] = name_contains
         url = self._url('basemaps/v1/mosaics')
-        return self._get(url, models.Mosaics).get_body()
+        return self._get(url, models.Mosaics, params=params).get_body()
 
     def get_mosaic_by_name(self, name):
         '''Get the API representation of a mosaic by name.
@@ -344,3 +362,126 @@ class ClientV1(_Base):
         '''
         download_url = quad['_links']['download']
         return self._get(download_url, models.Body, callback=callback)
+
+    def check_analytics_connection(self):
+        '''
+        Validate that we can use the Analytics API. Useful to test connectivity
+        to test environments.
+        :returns: :py:Class:`planet.api.models.JSON`
+        '''
+        return self._get(self._url('health')).get_body()
+
+    def wfs_conformance(self):
+        '''
+        Details about WFS3 conformance
+        :returns: :py:Class:`planet.api.models.JSON`
+        '''
+        return self._get(self._url('conformance')).get_body()
+
+    def list_analytic_subscriptions(self, feed_id):
+        '''
+        Get subscriptions that the authenticated user has access to
+        :param feed_id str: Return subscriptions associated with a particular
+        feed only.
+        :raises planet.api.exceptions.APIException: On API error.
+        :returns: :py:Class:`planet.api.models.Subscriptions`
+        '''
+        params = {'feedID': feed_id}
+        url = self._url('subscriptions')
+        return self._get(url, models.Subscriptions, params=params).get_body()
+
+    def get_subscription_info(self, subscription_id):
+        '''
+        Get the information describing a specific subscription.
+        :param subscription_id:
+        :raises planet.api.exceptions.APIException: On API error.
+        :returns: :py:Class:`planet.api.models.JSON`
+        '''
+        url = self._url('subscriptions/{}'.format(subscription_id))
+        return self._get(url, models.JSON).get_body()
+
+    def list_analytic_feeds(self, stats):
+        '''
+        Get collections that the authenticated user has access to
+        :raises planet.api.exceptions.APIException: On API error.
+        :returns: :py:Class:`planet.api.models.Feeds`
+        '''
+        params = {'stats': stats}
+        url = self._url('feeds')
+        return self._get(url, models.Feeds, params=params).get_body()
+
+    def get_feed_info(self, feed_id):
+        '''
+        Get the information describing a specific collection.
+        :param subscription_id:
+        :raises planet.api.exceptions.APIException: On API error.
+        :returns: :py:Class:`planet.api.models.JSON`
+        '''
+        url = self._url('feeds/{}'.format(feed_id))
+        return self._get(url, models.JSON).get_body()
+
+    def list_analytic_collections(self):
+        '''
+        Get collections that the authenticated user has access to
+        :raises planet.api.exceptions.APIException: On API error.
+        :returns: :py:Class:`planet.api.models.WFS3Collections`
+        '''
+        params = {}
+        url = self._url('collections')
+        return self._get(url, models.WFS3Collections,
+                         params=params).get_body()
+
+    def get_collection_info(self, subscription_id):
+        '''
+        Get the information describing a specific collection.
+        :param subscription_id:
+        :raises planet.api.exceptions.APIException: On API error.
+        :returns: :py:Class:`planet.api.models.JSON`
+        '''
+        url = 'collections/{}'.format(subscription_id)
+        return self._get(self._url(url), models.JSON).get_body()
+
+    def list_collection_features(self,
+                                 subscription_id,
+                                 bbox,
+                                 time_range,
+                                 ):
+        '''
+        List features for an analytic subscription.
+        :param subscription_id:
+        :param time_range str: ISO format datetime interval.
+        :param bbox tuple: A lon_min, lat_min, lon_max, lat_max area to search
+        :raises planet.api.exceptions.APIException: On API error.
+        :returns: :py:Class:`planet.api.models.WFS3Features`
+        '''
+        params = {
+            'time': time_range,
+        }
+        if bbox:
+            params['bbox'] = ','.join([str(b) for b in bbox])
+        url = self._url('collections/{}/items'.format(subscription_id))
+        return self._get(url, models.WFS3Features, params=params).get_body()
+
+    def get_associated_resource_for_analytic_feature(self,
+                                                     subscription_id,
+                                                     feature_id,
+                                                     resource_type):
+        '''
+        Get resource associated with some feature in an analytic subscription.
+        Response might be JSON or a TIF, depending on requested resource.
+        :param subscription_id str: ID of subscription
+        :param feature_id str: ID of feature
+        :param resource_type str: Type of resource to request.
+        :raises planet.api.exceptions.APIException: On API error or resource
+        type unavailable.
+        :returns: :py:Class:`planet.api.models.JSON` for resource type
+        `source-image-info`,  but can also return
+        :py:Class:`planet.api.models.Response` containing a
+        :py:Class:`planet.api.models.Body` of the resource.
+        '''
+        url = self._url(
+            'collections/{}/items/{}/resources/{}'.format(subscription_id,
+                                                          feature_id,
+                                                          resource_type))
+        response = self._get(url).get_body()
+        return response

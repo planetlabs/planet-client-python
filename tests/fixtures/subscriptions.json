@@ -1,0 +1,59 @@
+{
+  "data": [
+    {
+      "created": "2019-06-25T00:27:06.365Z",
+      "description": "Subscription Description",
+      "endTime": "2019-07-15T00:00:00.000Z",
+      "feedID": "5125e592-64c2-48db-a354-dd0128fd4fd2",
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              -105.10620117187499,
+              40.513277131087484
+            ],
+            [
+              -105.10620117187499,
+              40.58997103470645
+            ],
+            [
+              -104.96475219726562,
+              40.58997103470645
+            ],
+            [
+              -104.96475219726562,
+              40.513277131087484
+            ],
+            [
+              -105.10620117187499,
+              40.513277131087484
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      },
+      "id": "subscription_identifier",
+      "links": [
+        {
+          "href": "https://api.planet.com/analytics/subscriptions/subscription_identifier",
+          "rel": "self"
+        },
+        {
+          "href": "https://api.planet.com/analytics/collections/subscription_identifier/items",
+          "rel": "results"
+        },
+        {
+          "href": "https://api.planet.com/analytics/feeds/feed_identifier",
+          "rel": "feed"
+        },
+        {
+          "href": "https://api.planet.com/analytics/subscriptions",
+          "rel": "subscriptions"
+        }
+      ],
+      "startTime": "2019-03-01T00:00:00.000Z",
+      "title": "Subscription Title",
+      "updated": "2019-07-09T00:34:22.096Z"
+    }
+  ]
+}

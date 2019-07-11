@@ -184,9 +184,9 @@ class Paged(JSON):
 
     def next(self):
         links = self.get()[self.LINKS_KEY]
-        next = links.get(self.NEXT_KEY, None)
-        if next:
-            request = Request(next, self._request.auth, body_type=type(self))
+        next_ = links.get(self.NEXT_KEY, None)
+        if next_:
+            request = Request(next_, self._request.auth, body_type=type(self))
             return self._dispatcher.response(request).get_body()
 
     def _pages(self):
@@ -249,6 +249,7 @@ class Paged(JSON):
         }
 
 
+# GeoJSON feature
 class Features(Paged):
 
     def _json_stream(self, limit):
@@ -275,3 +276,45 @@ class Mosaics(Paged):
 
 class MosaicQuads(Paged):
     ITEM_KEY = 'items'
+
+
+class AnalyticsPaged(Paged):
+    LINKS_KEY = 'links'
+    NEXT_KEY = 'next'
+    ITEM_KEY = 'data'
+
+    def next(self):
+        links = self.get()[self.LINKS_KEY]
+        next_ = None
+        for link in links:
+            if link['rel'] == self.NEXT_KEY:
+                next_ = link['href']
+        if next_:
+            request = Request(next_, self._request.auth, body_type=type(self))
+            return self._dispatcher.response(request).get_body()
+
+
+# The analytics API returns two conceptual types of objects: WFS3-compliant
+# objects and everything else. There may be some overlap (ex. subscriptions and
+# collections).
+class Feeds(AnalyticsPaged):
+    pass
+
+
+class Subscriptions(AnalyticsPaged):
+    pass
+
+
+class WFS3Paged(AnalyticsPaged):
+    pass
+
+
+class WFS3Collections(AnalyticsPaged):
+    ITEM_KEY = 'collections'
+
+
+class WFS3Features(AnalyticsPaged):
+    # Explicitly disambiguate between WFS3 and GeoJSON features because the
+    # differences in the structure of the response envelope result in paging
+    # slightly differently.
+    ITEM_KEY = 'features'

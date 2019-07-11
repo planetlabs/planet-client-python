@@ -1,0 +1,63 @@
+{
+  "features": [
+    {
+      "created": "2019-06-21T06:17:17.503Z",
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              -5.36217571105314,
+              36.089533763333
+            ],
+            [
+              -5.36213229651505,
+              36.0880835477
+            ],
+            [
+              -5.36370663936721,
+              36.0880524885812
+            ],
+            [
+              -5.36375008277508,
+              36.0895027025726
+            ],
+            [
+              -5.36217571105314,
+              36.089533763333
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      },
+      "id": "feature-id",
+      "links": [
+        {
+          "href": "https://api.planet.com/analytics/collections/collection-id/items/feature-id",
+          "rel": "self"
+        },
+        {
+          "href": "https://api.planet.com/analytics/collections/collection-id/items/feature-id/resources/source-image-info",
+          "rel": "source-image-info"
+        },
+        {
+          "href": "https://tiles.planet.com/data/v1/PSScene3Band/scene-id/{z}/{x}/{y}.png?api_key=key",
+          "rel": "source-tiles"
+        }
+      ],
+      "properties": {
+        "observed": "2019-06-15T10:37:54.572192Z",
+        "score": 0.9949000477790833,
+        "source_asset_type": "visual",
+        "source_cloud_cover": 0,
+        "source_item": "scene-id",
+        "source_item_id": "scene-id",
+        "source_item_type": "PSScene3Band",
+        "xmax_px": 7961,
+        "xmin_px": 7913,
+        "ymax_px": 1869,
+        "ymin_px": 1815
+      },
+      "type": "Feature"
+    }
+  ]
+}

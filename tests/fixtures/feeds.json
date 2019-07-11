@@ -1,0 +1,41 @@
+{
+  "data": [
+    {
+      "created": "2019-06-25T00:23:31.033Z",
+      "description": "Hello World\n",
+      "id": "feed_identifier",
+      "interval": 60,
+      "links": [
+        {
+          "href": "https://api.planet.com/analytics/feeds/feed_identifier",
+          "rel": "self"
+        },
+        {
+          "href": "https://api.planet.com/analytics/feeds",
+          "rel": "feeds"
+        }
+      ],
+      "process": {
+        "actions": [
+        ],
+        "annotations": {
+          "service": "sif"
+        },
+        "args": {},
+        "namespace": "{{ .Namespace }}"
+      },
+      "source": {
+        "config": {
+          "series_id": "mosaic_series_id"
+        },
+        "type": "mosaic"
+      },
+      "status": "active",
+      "target": {
+        "type": "collection"
+      },
+      "title": "Feed Title",
+      "updated": "2019-06-25T00:23:31.033Z"
+    }
+  ]
+}

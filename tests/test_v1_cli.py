@@ -9,6 +9,7 @@ from planet.scripts import main
 from planet.api import ClientV1
 from planet.api import models
 import pytest
+from _common import read_fixture
 
 # have to clear in case key is picked up via env
 if api.auth.ENV_KEY in os.environ:
@@ -24,6 +25,13 @@ def runner():
 def client():
     client = MagicMock(name='client', spec=ClientV1)
     with patch('planet.scripts.v1.clientv1', lambda: client):
+        yield client
+
+
+@pytest.fixture(scope="module")
+def analytics_client():
+    client = MagicMock(name='analytics_client', spec=ClientV1)
+    with patch('planet.scripts.v1.analytics_client_v1', lambda: client):
         yield client
 
 
@@ -260,3 +268,94 @@ def test_geom_filter(runner, client):
     args, kw = client.create_search.call_args
     req = args[0]
     assert req['filter']['config'][0]['type'] == 'GeometryFilter'
+
+
+# For analytics entrypoints, only testing those entrypoints that have any logic
+# beyond just "make client function call"
+
+def test_get_mosaics_list_for_feed(runner, analytics_client, client):
+    feeds_blob = json.loads(read_fixture('feeds.json'))
+    mosaics_blob = json.loads(read_fixture('list-mosaics.json'))
+
+    configure_response(analytics_client.get_feed_info,
+                       json.dumps(feeds_blob['data'][0]))
+    configure_response(client.get_mosaics_for_series,
+                       json.dumps(mosaics_blob))
+
+    expected = 'source mosaics:\n\tcolor_balance_mosaic\n'
+    assert_success(
+        runner.invoke(main, [
+            'analytics', 'feeds', 'list-mosaics', 'feed-id'
+        ]),
+        expected
+    )
+
+
+def test_get_mosaics_list_for_subscription(runner, analytics_client, client):
+    sub_blob = json.loads(read_fixture('subscriptions.json'))
+    feeds_blob = json.loads(read_fixture('feeds.json'))
+    mosaics_blob = json.loads(read_fixture('list-mosaics.json'))
+
+    configure_response(analytics_client.get_subscription_info,
+                       json.dumps(sub_blob['data'][0]))
+    configure_response(analytics_client.get_feed_info,
+                       json.dumps(feeds_blob['data'][0]))
+    configure_response(client.get_mosaics_for_series,
+                       json.dumps(mosaics_blob))
+
+    expected = 'source mosaics:\n\tcolor_balance_mosaic\n'
+    assert_success(
+        runner.invoke(main, [
+            'analytics', 'subscriptions', 'list-mosaics', 'sub-id'
+        ]),
+        expected
+    )
+
+
+def test_get_mosaics_list_for_collection(runner, analytics_client, client):
+    sub_blob = json.loads(read_fixture('subscriptions.json'))
+    feeds_blob = json.loads(read_fixture('feeds.json'))
+    mosaics_blob = read_fixture('list-mosaics.json')
+
+    configure_response(analytics_client.get_subscription_info,
+                       json.dumps(sub_blob['data'][0]))
+    configure_response(analytics_client.get_feed_info,
+                       json.dumps(feeds_blob['data'][0]))
+    configure_response(client.get_mosaics_for_series,
+                       mosaics_blob)
+
+    expected = 'source mosaics:\n\tcolor_balance_mosaic\n'
+    assert_success(
+        runner.invoke(main, [
+            'analytics', 'collections', 'list-mosaics', 'collection-id'
+        ]),
+        expected
+    )
+
+
+def test_get_collection_resource_types(runner, analytics_client):
+    feature_blob = read_fixture('af_features.json')
+    configure_response(analytics_client.list_collection_features,
+                       feature_blob)
+
+    expected_output = "Found resource types: ['source-image-info']\n"
+    assert_success(
+        runner.invoke(main, [
+            'analytics', 'collections', 'resource-types', 'collection-id'
+        ]),
+        expected_output
+    )
+
+
+def test_get_associated_resource(runner, analytics_client):
+    configure_response(
+        analytics_client.get_associated_resource_for_analytic_feature,
+        '{"chowda":true}',
+    )
+    assert_success(
+        runner.invoke(main, [
+            'analytics', 'collections', 'features', 'get', 'source-image-info',
+            'sub-id', 'feature-id'
+        ]),
+        '{"chowda":true}\n'
+    )
