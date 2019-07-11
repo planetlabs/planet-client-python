@@ -75,7 +75,8 @@ def configure_logging(verbosity):
 @click.option('-u', '--base-url', envvar='PL_API_BASE_URL',
               help='Change the base Planet API URL or ENV PL_API_BASE_URL'
                    ' - Default https://api.planet.com/')
-@click.option('-u', '--analytics-base-url', envvar='PL_ANALYTICS_API_BASE_URL',
+@click.option('-au', '--analytics-base-url',
+              envvar='PL_ANALYTICS_API_BASE_URL',
               help=('Change the base Planet API URL or ENV '
                     'PL_ANALYTICS_API_BASE_URL'
                     ' - Default https://api.planet.com/analytics'))
