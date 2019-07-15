@@ -2,6 +2,17 @@
 -------------------------------------
 - Added support for Analytic Feeds
 
+- Fixing incorrect shorthand CLI arg
+- Add comment to explain why the get resource entrypoint won't work in AF next.
+- bump version
+- unit tests for analytics commands
+- Adding auto-pagination for analytics commands
+- Misc fixup for flake8 and test dependencies
+- Add additional mosaics entrypoints to list mosaics for a series, as well mosaics for AF resources
+- Separate out analytics configuration to allow for using analytics alongside mosaics, even in AF next
+- Flesh out analytics CLI entrypoints and client funcs
+- Stub out analytics entrypoints
+
 1.2.4 (2019-06-27)
 -------------------------------------
 - Add new UDM2 and related asset types
