@@ -109,6 +109,11 @@ General Options
 
 
 
+``--analytics-base-url``
+   Change the base Planet API URL or ENV PL_ANALYTICS_API_BASE_URL - Default https://api.planet.com/analytics
+
+
+
 ``--version``
    Show the version and exit.
 

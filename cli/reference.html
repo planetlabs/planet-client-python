@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>CLI Reference &#8212; Planet API Client 1.2.2 documentation</title>
+    <title>CLI Reference &#8212; Planet API Client 1.3.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -43,10 +43,10 @@
 
 
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -135,6 +135,8 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">--base-url</span></code></dt><dd><p>Change the base Planet API URL or ENV PL_API_BASE_URL - Default <a class="reference external" href="https://api.planet.com/">https://api.planet.com/</a></p>
 </dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--analytics-base-url</span></code></dt><dd><p>Change the base Planet API URL or ENV PL_ANALYTICS_API_BASE_URL - Default <a class="reference external" href="https://api.planet.com/analytics">https://api.planet.com/analytics</a></p>
+</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">--version</span></code></dt><dd><p>Show the version and exit.</p>
 </dd>
 </dl>
@@ -152,7 +154,7 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 <span id="cli-command-init"></span><span id="index-1"></span><h3>init<a class="headerlink" href="#init" title="Permalink to this headline">¶</a></h3>
 <p>Login using email/password</p>
 <p>Usage: init [OPTIONS]</p>
-<table class="colwidths-given docutils align-center" id="id2">
+<table class="colwidths-given docutils align-default" id="id2">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 10%" />
@@ -191,7 +193,7 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 <span id="cli-command-create-search"></span><span id="index-2"></span><h3>create-search<a class="headerlink" href="#create-search" title="Permalink to this headline">¶</a></h3>
 <p>Create a saved search</p>
 <p>Usage: create-search [OPTIONS]</p>
-<table class="colwidths-given docutils align-center" id="id3">
+<table class="colwidths-given docutils align-default" id="id3">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 10%" />
@@ -258,7 +260,7 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 <span id="cli-command-download"></span><span id="index-3"></span><h3>download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h3>
 <p>Activate and download</p>
 <p>Usage: download [OPTIONS]</p>
-<table class="colwidths-given docutils align-center" id="id4">
+<table class="colwidths-given docutils align-default" id="id4">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 10%" />
@@ -346,7 +348,7 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 <p>The output is suitable for use in other commands via the
 –filter-json option.</p>
 <p>Usage: filter [OPTIONS]</p>
-<table class="colwidths-given docutils align-center" id="id5">
+<table class="colwidths-given docutils align-default" id="id5">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id5" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 10%" />
@@ -393,7 +395,7 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 <span id="cli-command-saved-search"></span><span id="index-5"></span><h3>saved-search<a class="headerlink" href="#saved-search" title="Permalink to this headline">¶</a></h3>
 <p>Execute a saved search</p>
 <p>Usage: saved-search [OPTIONS] [SEARCH_ID]</p>
-<table class="colwidths-given docutils align-center" id="id6">
+<table class="colwidths-given docutils align-default" id="id6">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id6" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 10%" />
@@ -428,7 +430,7 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 <span id="cli-command-search"></span><span id="index-6"></span><h3>search<a class="headerlink" href="#search" title="Permalink to this headline">¶</a></h3>
 <p>Execute a quick search.</p>
 <p>Usage: search [OPTIONS]</p>
-<table class="colwidths-given docutils align-center" id="id7">
+<table class="colwidths-given docutils align-default" id="id7">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id7" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 10%" />
@@ -497,7 +499,7 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 <span id="cli-command-searches"></span><span id="index-7"></span><h3>searches<a class="headerlink" href="#searches" title="Permalink to this headline">¶</a></h3>
 <p>List searches</p>
 <p>Usage: searches [OPTIONS]</p>
-<table class="colwidths-given docutils align-center" id="id8">
+<table class="colwidths-given docutils align-default" id="id8">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id8" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 10%" />
@@ -528,7 +530,7 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 <span id="cli-command-stats"></span><span id="index-8"></span><h3>stats<a class="headerlink" href="#stats" title="Permalink to this headline">¶</a></h3>
 <p>Get search stats</p>
 <p>Usage: stats [OPTIONS]</p>
-<table class="colwidths-given docutils align-center" id="id9">
+<table class="colwidths-given docutils align-default" id="id9">
 <caption><span class="caption-text">Options</span><a class="headerlink" href="#id9" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 10%" />
@@ -607,7 +609,7 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
       &copy;2017-2019 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
