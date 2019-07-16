@@ -93,6 +93,80 @@ Download all quads inside of a rectangular box for a mosaic::
 
     planet mosaics download global_monthly_2018_09_mosaic --bbox=-95.5,29.6,-95.3,29.8
 
+Get information about a mosaic series::
+
+    planet mosaics series describe <series_id>
+
+Get list of mosaics in a mosaic series::
+
+    planet mosaics series list-mosaics <series_id>
+
+Analytics Examples
+------------------
+These examples assume that the reader is already familiar with the `Analytics User Guide`_.
+
+.. _`Analytics User Guide`: https://docs.google.com/document/d/1-ZgGIFKb9IxxVMjTb603lRd6pwEygcri5rKxcsEjk8E/
+
+List information for all feeds, subscriptions, or collections you have access to::
+
+    planet analytics feeds list
+    planet analytics subscriptions list
+    planet analytics collections list
+
+Note that you may want to parse the JSON that's output into a more human
+readable format.  The cli does not directly provide options for this, but is
+meant to be easily interoperable with other tools, e.g. `jq
+<https://stedolan.github.io/jq/>`_.  For example, for feeds we may be interested in the ID,
+description, and the target and source mosaics (if applicable)::
+
+    planet analytics feeds list | jq -r '.data[] | [.id, .description, .created, .source.config.series_id, .target.config.series_id]'
+
+For a subscription, the ID, description, source feed ID, and the created date are useful::
+
+    planet analytics subscriptions list | jq -r '.data[] | [.id, .feedID, .created]'
+
+Get the first 10 subscriptions for a feed::
+
+    planet analytics subscriptions list --feed-id <feed-id> --limit 10
+
+Get information about a particular feed, subscription, or collection::
+
+    planet analytics feeds describe <feed_id>
+    planet analytics subscriptions describe <subscription_id>
+    planet analytics collections describe <collection_id or subscription_id>
+
+List all mosaics associated with a feed, subscription, or collection (if the feed is mosaics-based only)::
+
+    planet analytics feeds list-mosaics <feed_id>
+    planet analytics subscriptions list-mosaics <subscription_id>
+    planet analytics collections list-mosaics <collection_id or subscription_id>
+
+Get all features (GeoJSON results) for a collection::
+
+    planet analytics collections features list <collection_id or subscription_id>
+
+Get the first 500 features (GeoJSON results) for a collection within a certain time range::
+
+    planet analytics collections features list <collection_id or subscription_id> --time-range 2019-01-01T00:00:00.00Z/2019-02-01T00:00:00.00Z --limit 500
+
+Get all features (GeoJSON results) for a collection within a certain area::
+
+    planet analytics collections features list <collection_id or subscription_id> --bbox 122.3,47.6,122.4,47.7
+
+It is also possible to get resources associated with a particular GeoJSON feature in a collection.
+The resource that may be requested depends on the specific feed; not all resources will be available
+for all feeds or any collections associated with those feeds.
+
+* `source-quad`: Download the mosaic quad used to derive a feature, only available for collections associated with feeds that operate on mosaics
+* `target-quad`: Download the mosaic quad that contains the raster output of a feed, only available for collections associated with feeds that output raster data
+* `source-image-info`: Get the metadata for the source Planet product (ex. PSScene3Band) used to derive a feature, only available for non-mosaic feeds
+
+Requesting a resource for a feature in a collection::
+
+    planet analytics collections features get source-quad <collection_id or subscription_id> <feature_id>
+    planet analytics collections features get target-quad <collection_id or subscription_id> <feature_id>
+    planet analytics collections features get source-image-info <collection_id or subscription_id> <feature_id>
+
 Integration With Other Tools
 ----------------------------
 
