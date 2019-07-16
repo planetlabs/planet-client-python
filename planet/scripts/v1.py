@@ -122,10 +122,12 @@ def saved_search(search_id, sort, pretty, limit):
 @click.option('--quick', is_flag=True, help='Quick searches')
 @click.option('--saved', default=True, is_flag=True,
               help='Saved searches (default)')
-def get_searches(quick, saved):
+@limit_option(10)
+def get_searches(quick, saved, limit):
     '''List searches'''
     cl = clientv1()
-    echo_json_response(call_and_wrap(cl.get_searches, quick, saved), True)
+    response = call_and_wrap(cl.get_searches, quick, saved)
+    echo_json_response(response, True, limit=limit)
 
 
 @pretty
