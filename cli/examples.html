@@ -57,6 +57,7 @@
 <li class="toctree-l2"><a class="reference internal" href="reference.html">CLI Reference</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#mosaic-examples">Mosaic Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#analytics-examples">Analytics Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#integration-with-other-tools">Integration With Other Tools</a></li>
 </ul>
 </li>
@@ -160,6 +161,77 @@ are hundreds of Terabytes in size):</p>
 </div>
 <p>Download all quads inside of a rectangular box for a mosaic:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet mosaics download global_monthly_2018_09_mosaic --bbox=-95.5,29.6,-95.3,29.8
+</pre></div>
+</div>
+<p>Get information about a mosaic series:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet mosaics series describe &lt;series_id&gt;
+</pre></div>
+</div>
+<p>Get list of mosaics in a mosaic series:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet mosaics series list-mosaics &lt;series_id&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="analytics-examples">
+<h2>Analytics Examples<a class="headerlink" href="#analytics-examples" title="Permalink to this headline">¶</a></h2>
+<p>These examples assume that the reader is already familiar with the <a class="reference external" href="https://docs.google.com/document/d/1-ZgGIFKb9IxxVMjTb603lRd6pwEygcri5rKxcsEjk8E/">Analytics User Guide</a>.</p>
+<p>List information for all feeds, subscriptions, or collections you have access to:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics feeds list
+planet analytics subscriptions list
+planet analytics collections list
+</pre></div>
+</div>
+<p>Note that you may want to parse the JSON that’s output into a more human
+readable format.  The cli does not directly provide options for this, but is
+meant to be easily interoperable with other tools, e.g. <a class="reference external" href="https://stedolan.github.io/jq/">jq</a>.  For example, for feeds we may be interested in the ID,
+description, and the target and source mosaics (if applicable):</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics feeds list | jq -r &#39;.data[] | [.id, .description, .created, .source.config.series_id, .target.config.series_id]&#39;
+</pre></div>
+</div>
+<p>For a subscription, the ID, description, source feed ID, and the created date are useful:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics subscriptions list | jq -r &#39;.data[] | [.id, .feedID, .created]&#39;
+</pre></div>
+</div>
+<p>Get the first 10 subscriptions for a feed:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics subscriptions list --feed-id &lt;feed-id&gt; --limit 10
+</pre></div>
+</div>
+<p>Get information about a particular feed, subscription, or collection:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics feeds describe &lt;feed_id&gt;
+planet analytics subscriptions describe &lt;subscription_id&gt;
+planet analytics collections describe &lt;collection_id or subscription_id&gt;
+</pre></div>
+</div>
+<p>List all mosaics associated with a feed, subscription, or collection (if the feed is mosaics-based only):</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics feeds list-mosaics &lt;feed_id&gt;
+planet analytics subscriptions list-mosaics &lt;subscription_id&gt;
+planet analytics collections list-mosaics &lt;collection_id or subscription_id&gt;
+</pre></div>
+</div>
+<p>Get all features (GeoJSON results) for a collection:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics collections features list &lt;collection_id or subscription_id&gt;
+</pre></div>
+</div>
+<p>Get the first 500 features (GeoJSON results) for a collection within a certain time range:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics collections features list &lt;collection_id or subscription_id&gt; --time-range 2019-01-01T00:00:00.00Z/2019-02-01T00:00:00.00Z --limit 500
+</pre></div>
+</div>
+<p>Get all features (GeoJSON results) for a collection within a certain area:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics collections features list &lt;collection_id or subscription_id&gt; --bbox 122.3,47.6,122.4,47.7
+</pre></div>
+</div>
+<p>It is also possible to get resources associated with a particular GeoJSON feature in a collection.
+The resource that may be requested depends on the specific feed; not all resources will be available
+for all feeds or any collections associated with those feeds.</p>
+<ul class="simple">
+<li><p><cite>source-quad</cite>: Download the mosaic quad used to derive a feature, only available for collections associated with feeds that operate on mosaics</p></li>
+<li><p><cite>target-quad</cite>: Download the mosaic quad that contains the raster output of a feed, only available for collections associated with feeds that output raster data</p></li>
+<li><p><cite>source-image-info</cite>: Get the metadata for the source Planet product (ex. PSScene3Band) used to derive a feature, only available for non-mosaic feeds</p></li>
+</ul>
+<p>Requesting a resource for a feature in a collection:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics collections features get source-quad &lt;collection_id or subscription_id&gt; &lt;feature_id&gt;
+planet analytics collections features get target-quad &lt;collection_id or subscription_id&gt; &lt;feature_id&gt;
+planet analytics collections features get source-image-info &lt;collection_id or subscription_id&gt; &lt;feature_id&gt;
 </pre></div>
 </div>
 </div>

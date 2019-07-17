@@ -593,6 +593,12 @@ Usage: searches [OPTIONS]
        DEFAULT: `True`
      - BOOLEAN
 
+   * - limit
+     - Limit the number of items.
+
+       DEFAULT: `10`
+     - NUMBER
+
 .. index:: stats
 
 .. _cli-command-stats:
