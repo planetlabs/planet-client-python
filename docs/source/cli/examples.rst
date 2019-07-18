@@ -105,6 +105,7 @@ Analytics Examples
 ------------------
 These examples assume that the reader is already familiar with the `Analytics User Guide`_.
 
+.. This User Guide will be moved to the Dev Center in the near future.
 .. _`Analytics User Guide`: https://docs.google.com/document/d/1-ZgGIFKb9IxxVMjTb603lRd6pwEygcri5rKxcsEjk8E/
 
 List information for all feeds, subscriptions, or collections you have access to::
@@ -121,7 +122,7 @@ description, and the target and source mosaics (if applicable)::
 
     planet analytics feeds list | jq -r '.data[] | [.id, .description, .created, .source.config.series_id, .target.config.series_id]'
 
-For a subscription, the ID, description, source feed ID, and the created date are useful::
+The ID, description, source feed ID, and the created date are useful for a subscription::
 
     planet analytics subscriptions list | jq -r '.data[] | [.id, .feedID, .created]'
 
@@ -154,8 +155,8 @@ Get all features (GeoJSON results) for a collection within a certain area::
     planet analytics collections features list <collection_id or subscription_id> --bbox 122.3,47.6,122.4,47.7
 
 It is also possible to get resources associated with a particular GeoJSON feature in a collection.
-The resource that may be requested depends on the specific feed; not all resources will be available
-for all feeds or any collections associated with those feeds.
+Just as different feeds are based upon different imagery types and produce different types of
+output, each feed’s resources are varied:
 
 * `source-quad`: Download the mosaic quad used to derive a feature, only available for collections associated with feeds that operate on mosaics
 * `target-quad`: Download the mosaic quad that contains the raster output of a feed, only available for collections associated with feeds that output raster data
