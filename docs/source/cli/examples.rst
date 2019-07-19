@@ -142,17 +142,35 @@ List all mosaics associated with a feed, subscription, or collection (if the fee
     planet analytics subscriptions list-mosaics <subscription_id>
     planet analytics collections list-mosaics <collection_id or subscription_id>
 
-Get all features (GeoJSON results) for a collection::
+Features (GeoJSON results) for a collection can be requested in one of two ways. The `list` option
+will only return slices of results (defaults to 100 at a time), whereas `list-all` will stream
+features until all features have been retrieved. Both options accept the same additional filters.
 
     planet analytics collections features list <collection_id or subscription_id>
+    planet analytics collections features list-all <collection_id or subscription_id>
 
-Get the first 500 features (GeoJSON results) for a collection within a certain time range::
+To page through results when using `list`::
 
-    planet analytics collections features list <collection_id or subscription_id> --time-range 2019-01-01T00:00:00.00Z/2019-02-01T00:00:00.00Z --limit 500
+    planet analytics collections features list <collection_id or subscription_id>
+    planet analytics collections features list <collection_id or subscription_id> --before <feature_id_of_last_feature_in_previous_page>
 
-Get all features (GeoJSON results) for a collection within a certain area::
+Get the 10 most recent features (GeoJSON results) for a collection::
+
+    planet analytics collections features list <collection_id or subscription_id> --limit 10
+
+Stream all features (GeoJSON results) since last seen feature::
+
+    planet analytics collections features list-all <collection_id or subscription_id> --after <feature_id>
+
+Get features (GeoJSON results) for a collection within a certain time range::
+
+    planet analytics collections features list <collection_id or subscription_id> --time-range 2019-01-01T00:00:00.00Z/2019-02-01T00:00:00.00Z
+    planet analytics collections features list-all <collection_id or subscription_id> --time-range 2019-01-01T00:00:00.00Z/2019-02-01T00:00:00.00Z
+
+Get features (GeoJSON results) for a collection within a certain area::
 
     planet analytics collections features list <collection_id or subscription_id> --bbox 122.3,47.6,122.4,47.7
+    planet analytics collections features list-all <collection_id or subscription_id> --bbox 122.3,47.6,122.4,47.7
 
 It is also possible to get resources associated with a particular GeoJSON feature in a collection.
 Just as different feeds are based upon different imagery types and produce different types of

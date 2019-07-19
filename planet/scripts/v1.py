@@ -571,7 +571,6 @@ def features():
 
 @features.command('list')
 @click.argument('subscription_id')
-@limit_option(None)
 @click.option('--bbox', type=BoundingBox(), help=(
         'Region to query as a comma-delimited string:'
         ' lon_min,lat_min,lon_max,lat_max'
@@ -585,13 +584,54 @@ def features():
         'items since the start of January 2019), 2019-01-01T00:00:00.00Z '
         '(instant)'
 ))
+@click.option('--before', type=str, help=(
+    'Get results published before the item with the provided ID.'
+))
+@click.option('--after', type=str, help=(
+    'Get results published after the item with the provided ID.'
+))
+@limit_option(100)
 @pretty
-def list_features(subscription_id, pretty, limit, rbox, bbox, time_range):
-    '''Request feature list for a particular subscription.'''
+def list_features(subscription_id, pretty, limit, rbox, bbox, time_range,
+                  before, after):
+    '''Request feature list for a particular subscription, 100 at a time.'''
     cl = analytics_client_v1()
     bbox = bbox or rbox
-    features = cl.list_collection_features(subscription_id, bbox, time_range)
+    features = cl.list_collection_features(subscription_id, bbox, time_range,
+                                           before, after)
     echo_json_response(features, pretty, limit)
+
+
+@features.command('list-all')
+@click.argument('subscription_id')
+@click.option('--bbox', type=BoundingBox(), help=(
+        'Region to query as a comma-delimited string:'
+        ' lon_min,lat_min,lon_max,lat_max'
+))
+@click.option('--rbox', type=BoundingBox(), help='Alias for --bbox')
+@click.option('--time-range', type=DateInterval(), help=(
+        'Time interval. Can be open or closed interval, start times are '
+        'inclusive and end times are exclusive: '
+        '2019-01-01T00:00:00.00Z/2019-02-01T00:00:00.00Z (Closed interval for '
+        'January 2019), 2019-01-01T00:00:00.00Z/.. (Open interval for all '
+        'items since the start of January 2019), 2019-01-01T00:00:00.00Z '
+        '(instant)'
+))
+@click.option('--before', type=str, help=(
+    'Get results published before the item with the provided ID.'
+))
+@click.option('--after', type=str, help=(
+    'Get results published after the item with the provided ID.'
+))
+@pretty
+def list_features_all(subscription_id, pretty, rbox, bbox, time_range, before,
+                      after):
+    '''Return every available feature for a particular subscription'''
+    cl = analytics_client_v1()
+    bbox = bbox or rbox
+    features = cl.list_collection_features(subscription_id, bbox, time_range,
+                                           before, after)
+    echo_json_response(features, pretty)
 
 
 @features.command('get')
