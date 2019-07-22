@@ -443,22 +443,32 @@ class ClientV1(_Base):
 
     def list_collection_features(self,
                                  subscription_id,
-                                 bbox,
-                                 time_range,
+                                 bbox=None,
+                                 time_range=None,
+                                 before=None,
+                                 after=None,
                                  ):
         '''
         List features for an analytic subscription.
         :param subscription_id:
         :param time_range str: ISO format datetime interval.
         :param bbox tuple: A lon_min, lat_min, lon_max, lat_max area to search
+        :param before str: return features published before item with given ID
+        :param after str: return features published after item with given ID
         :raises planet.api.exceptions.APIException: On API error.
         :returns: :py:Class:`planet.api.models.WFS3Features`
         '''
-        params = {
-            'time': time_range,
-        }
+        params = {}
+
         if bbox:
             params['bbox'] = ','.join([str(b) for b in bbox])
+        if time_range:
+            params['time'] = time_range
+        if before:
+            params['before'] = before
+        if after:
+            params['after'] = after
+
         url = self._url('collections/{}/items'.format(subscription_id))
         return self._get(url, models.WFS3Features, params=params).get_body()
 

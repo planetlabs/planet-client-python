@@ -1,17 +1,18 @@
+1.3.1 (2019-07-19)
+-------------------------------------
+- Added default limit of 100 to `analytics collections features list`
+- Added separate `analytics collections features list-all` that will keep retrieving results with no limit
+- Added before, after options to both `analytics collections features list` and `analytics collections features list-all`
+
 1.3.0 (2019-07-10)
 -------------------------------------
 - Added support for Analytic Feeds
-
 - Fixing incorrect shorthand CLI arg
 - Add comment to explain why the get resource entrypoint won't work in AF next.
-- bump version
 - unit tests for analytics commands
 - Adding auto-pagination for analytics commands
-- Misc fixup for flake8 and test dependencies
 - Add additional mosaics entrypoints to list mosaics for a series, as well mosaics for AF resources
 - Separate out analytics configuration to allow for using analytics alongside mosaics, even in AF next
-- Flesh out analytics CLI entrypoints and client funcs
-- Stub out analytics entrypoints
 
 1.2.4 (2019-06-27)
 -------------------------------------
