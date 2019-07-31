@@ -39,8 +39,9 @@ num_type = type('number', (click.types.IntParamType,), {'name': 'number'})()
 
 
 def limit_option(default):
-    return click.option('--limit', default=default, required=False, type=num_type,
-                        help="Limit the number of items. Default: {}".format(default))
+    limit_msg = "Limit the number of items. Default: {}".format(default)
+    return click.option('--limit', default=default, required=False,
+                        type=num_type, help=limit_msg)
 
 
 geom_filter = click.option('--geom', type=GeomFilter(), help=(
