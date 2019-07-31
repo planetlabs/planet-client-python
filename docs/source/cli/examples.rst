@@ -3,6 +3,9 @@
 Examples
 ========
 
+Data Examples
+-------------
+
 Get the latest 10 items from the API of any ItemType::
 
     planet data search --limit 10
