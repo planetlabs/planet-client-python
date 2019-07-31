@@ -56,6 +56,9 @@ filter_opts_epilog = '\nFilter Formats:\n\n' + \
                                               .replace('``', '\''))
                                 for k, v in metavar_docs.items()])
 
+DEFAULT_SEARCH_LIMIT = 100
+MAX_PAGE_SIZE = 250
+
 
 @cli.group('data')
 def data():
@@ -77,7 +80,7 @@ def filter_dump(**kw):
 
 
 @data.command('search', epilog=filter_opts_epilog)
-@limit_option(100)
+@limit_option(DEFAULT_SEARCH_LIMIT)
 @pretty
 @asset_type_perms
 @search_request_opts
@@ -85,7 +88,7 @@ def quick_search(limit, pretty, sort, **kw):
     '''Execute a quick search.'''
     req = search_req_from_opts(**kw)
     cl = clientv1()
-    page_size = min(limit, 250)
+    page_size = min(limit, MAX_PAGE_SIZE)
     echo_json_response(call_and_wrap(
         cl.quick_search, req, page_size=page_size, sort=sort
     ), pretty, limit)
@@ -107,12 +110,12 @@ def create_search(pretty, **kw):
 @click.argument('search_id', default='@-', required=False)
 @sort_order
 @pretty
-@limit_option(100)
+@limit_option(DEFAULT_SEARCH_LIMIT)
 def saved_search(search_id, sort, pretty, limit):
     '''Execute a saved search'''
     sid = read(search_id)
     cl = clientv1()
-    page_size = min(limit, 250)
+    page_size = min(limit, MAX_PAGE_SIZE)
     echo_json_response(call_and_wrap(
         cl.saved_search, sid, page_size=page_size, sort=sort
     ), limit=limit, pretty=pretty)
@@ -174,7 +177,7 @@ def download(asset_type, dest, limit, sort, search_id, dry_run, activate_only,
              quiet, **kw):
     '''Activate and download'''
     cl = clientv1()
-    page_size = min(limit or 250, 250)
+    page_size = min(limit or MAX_PAGE_SIZE, MAX_PAGE_SIZE)
     asset_type = list(chain.from_iterable(asset_type))
     # even though we're using functionality from click.Path, this was needed
     # to detect inability to write on Windows in a read-only vagrant mount...
