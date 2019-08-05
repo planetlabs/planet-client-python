@@ -1,5 +1,9 @@
 1.3.1 (2019-07-19)
 -------------------------------------
+- report the default value for item limit
+- replace hardcoded values with global variables
+- add header for data examples in Examples page
+- adding before, after options, separating `features list` from `features 
 - Added default limit of 100 to `analytics collections features list`
 - Added separate `analytics collections features list-all` that will keep retrieving results with no limit
 - Added before, after options to both `analytics collections features list` and `analytics collections features list-all`
