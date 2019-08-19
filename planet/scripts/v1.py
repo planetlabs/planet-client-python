@@ -682,7 +682,7 @@ def get_associated_resource(subscription_id, feature_id, resource_type, pretty,
 
 @cli.group('orders')
 def orders():
-    '''Commands for interacting with the OrdersV2 API'''
+    '''Commands for interacting with the Orders API'''
     pass
 
 @orders.command('list')
