@@ -353,7 +353,7 @@ def download_quads(name, bbox, rbox, quiet, dest, limit):
 
 @cli.group('analytics')
 def analytics():
-    '''Commands for interacting with the Analytics Feed API'''
+    '''Commands for interacting with the Analytics API'''
     pass
 
 
@@ -382,7 +382,7 @@ def conformance(pretty):
 
 @analytics.group('feeds')
 def feeds():
-    '''Commands for interacting with the Analytics Feed API for collections'''
+    '''Commands for interacting with the Analytics API for collections'''
     pass
 
 
@@ -436,7 +436,7 @@ def get_feed_info(feed_id, pretty):
 @analytics.group('subscriptions')
 def subscriptions():
     '''
-    Commands for interacting with the Analytics Feed API for subscriptions
+    Commands for interacting with the Analytics API for subscriptions
     '''
     pass
 
@@ -490,7 +490,7 @@ def get_subscription_info(subscription_id, pretty):
 
 @analytics.group('collections')
 def collections():
-    '''Commands for interacting with the Analytics Feed API for collections'''
+    '''Commands for interacting with the Analytics API for collections'''
     pass
 
 
@@ -568,7 +568,7 @@ def get_resource_types(subscription_id, pretty):
 
 @collections.group('features')
 def features():
-    '''Commands for interacting with the Analytics Feed API for features'''
+    '''Commands for interacting with the Analytics API for features'''
     pass
 
 
