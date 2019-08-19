@@ -278,7 +278,6 @@ class MosaicQuads(Paged):
     ITEM_KEY = 'items'
 
 
-<<<<<<< HEAD
 class AnalyticsPaged(Paged):
     LINKS_KEY = 'links'
     NEXT_KEY = 'next'
