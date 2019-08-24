@@ -22,6 +22,8 @@ from .cli import (
 )
 from .opts import (
     asset_type_option,
+    item_type_option,
+    bundle_option,
     asset_type_perms,
     filter_opts,
     limit_option,
@@ -717,9 +719,11 @@ def download_order(order_id, pretty):
     cl = clientv1()
     echo_json_response(call_and_wrap(cl.download_order, order_id), pretty)
 
+@item_type_option
+@bundle_option
+@click.option('--name', required=True)
 @orders.command('create')
-@pretty
-def create_order(pretty):
-    '''Order scenes'''
+def create_order(pretty, **kwargs):
+    '''Create an order'''
     cl = clientv1()
     echo_json_response(call_and_wrap(cl.create_order), pretty)
