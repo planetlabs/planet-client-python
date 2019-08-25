@@ -689,9 +689,10 @@ def orders():
     pass
 
 @orders.command('list')
+# @click.option('--status', help="'all', 'in-progress', 'completed'")
 @pretty
 def list_orders(pretty):
-    '''List all pending order requests'''
+    '''List all pending order requests; optionally filter by status'''
     cl = clientv1()
     echo_json_response(call_and_wrap(cl.get_orders), pretty)
 
@@ -702,6 +703,7 @@ def get_order(order_id, pretty):
     '''Get order request for a given order ID'''
     cl = clientv1()
     echo_json_response(call_and_wrap(cl.get_individual_order, order_id), pretty)
+
 
 @orders.command('cancel')
 @click.argument('order_id', type=click.UUID)
@@ -715,8 +717,6 @@ def cancel_order(order_id, pretty):
 @pretty
 @click.option('--name', required=True)
 @click.option('--id', required=True, help="One or more item IDs in a comma-separated list")
-@click.option('--search-id', is_eager=True, callback=_order_saved_search,
-              type=str, help='Use a saved search')
 @click.option('--email', default=False, is_flag=True,
               help='Send email notification when Order is complete')
 @click.option('--zip', type=click.Choice(['order', 'bundle']),
