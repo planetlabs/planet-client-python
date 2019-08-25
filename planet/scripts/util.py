@@ -109,6 +109,54 @@ def search_req_from_opts(**kw):
         filt, item_types, name=name, interval=interval)
 
 
+def create_order_request(**kwargs):
+    # TODO do we want to accept multiple item-types/bundles via CLI?
+    itemtype = kwargs.get('item_type')[0][0]
+    bundle = kwargs.get('bundle')[0]
+    ids = kwargs.get('id').split(',')
+    email = kwargs.get('email')
+    archive = kwargs.get('zip')
+    config = kwargs.get('cloudconfig')
+    tools = kwargs.get('tools')
+
+    request = {'name': kwargs.get('name'),
+               'products': [{'item_ids': ids,
+                             'item_type': itemtype,
+                             'product_bundle': bundle}
+                            ],
+               'tools':[
+               ],
+               'delivery': {
+               },
+               'notifications': {
+                   'email': email
+               },
+               }
+
+    if archive is not None:
+        request["delivery"]["archive_filename"] = "{{name}}_{{order_id}}.zip"
+        request["delivery"]["archive_type"] = "zip"
+
+        # TODO verify this is correct req format for order vs bundle zip
+        if archive == "bundle":
+            request["delivery"]["single_archive"] = True
+
+    if config:
+        with open(config, 'r') as f:
+            conf = json.load(f)
+            request["delivery"].update(conf) 
+
+    # TODO determine reasonable interfaces for SOME tools via CLI;
+    # e.g., clip via provided geojson AOI
+    # for now we can punt by pointing users to doc examples for copy-pasting
+    if tools:
+        with open(tools, 'r') as f:
+            toolchain = json.load(f)
+            request["tools"].extend(toolchain) 
+
+    return request
+
+
 def call_and_wrap(func, *args, **kw):
     '''call the provided function and wrap any API exception with a click
     exception. this means no stack trace is visible to the user but instead

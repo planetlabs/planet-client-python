@@ -121,7 +121,6 @@ class _LenientChoice(click.Choice):
 class Bundle(_LenientChoice):
     name = 'bundle'
     allow_all = True
-    allow_prefix = True
 
     def __init__(self):
         _LenientChoice.__init__(self, DEFAULT_BUNDLES)

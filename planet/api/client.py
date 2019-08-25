@@ -526,37 +526,39 @@ class ClientV1(_Base):
                                                        body_type=models.Order,
                                                        method='PUT')).get_body()
 
+    def create_order(self, request):
+        '''Create an order.
+
+        :param asset: 
+        :returns: :py:Class:`planet.api.models.Response` containing a
+                  :py:Class:`planet.api.models.Body` of the asset.
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        url = self._url('compute/ops/orders/v2')
+        body = json.dumps(request)
+        return self.dispatcher.response(models.Request(url, self.auth,
+                                                       body_type=models.Order,
+                                                       data=body,
+                                                       method='POST')).get_body()
+
 ### TO DO ### 
 
-    def download_order(self, quad, callback=None):
-        '''Download the specified mosaic quad. If provided, the callback will
-        be invoked asynchronously.  Otherwise it is up to the caller to handle
-        the response Body.
+    def download_order(self, order_id):
+        '''Download all items in an order.
 
-        :param asset dict: A mosaic quad representation from the API
-        :param callback: An optional function to aysnchronsously handle the
-                         download. See :py:func:`planet.api.write_to_file`
+        :param order_id: ID of order to download
         :returns: :py:Class:`planet.api.models.Response` containing a
                   :py:Class:`planet.api.models.Body` of the asset.
         :raises planet.api.exceptions.APIException: On API error.
         '''
-        download_url = quad['_links']['download']
-        return self._get(download_url, models.Body, callback=callback)
 
+        url = self._url('compute/ops/orders/v2/{}'.format(order_id))
 
-    def create_order(self, callback=None):
-        '''Download the specified mosaic quad. If provided, the callback will
-        be invoked asynchronously.  Otherwise it is up to the caller to handle
-        the response Body.
+        # fetch order so we can extract it's 'location' URL(s)
+        order = self._get(url, models.Order).get_body()
+        results = order.get().get("_links").get("results")
+        links = [link.get('location') for link in results]
 
-        :param asset dict: A mosaic quad representation from the API
-        :param callback: An optional function to aysnchronsously handle the
-                         download. See :py:func:`planet.api.write_to_file`
-        :returns: :py:Class:`planet.api.models.Response` containing a
-                  :py:Class:`planet.api.models.Body` of the asset.
-        :raises planet.api.exceptions.APIException: On API error.
-        '''
-        download_url = quad['_links']['download']
-        return self._get(download_url, models.Body, callback=callback)
+        # TODO dispatch links for downloading, then return correct results
 
-
+        return order

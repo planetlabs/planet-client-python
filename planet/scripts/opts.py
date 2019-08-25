@@ -84,7 +84,7 @@ item_type_option = click.option(
 )
 
 bundle_option = click.option(
-    '--bundle', multiple=True, required=True, type=Bundle(), help=(
+    '--bundle', multiple=False, required=True, type=Bundle(), help=(
        'Specify bundle(s)'
     )
 )
