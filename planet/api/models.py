@@ -324,6 +324,30 @@ class Orders(Paged):
     ITEM_KEY = 'orders'
 
 class Order(JSON):
-    # TODO what does a user want to see when they do `planet order <uuid>`?
-    # for now, just dump the entire response body
-    pass
+    LINKS_KEY = '_links'
+    RESULTS_KEY = 'results'
+    LOCATION_KEY = 'location'
+
+    def get_results(self):
+        links = self.get()[self.LINKS_KEY]
+        results = links.get(self.RESULTS_KEY, None)
+        return results
+
+    def get_locations(self):
+        results = self.get_results()
+        locations = [r[self.LOCATION_KEY] for r in results]
+        return locations
+
+    def items_iter(self, limit):
+        '''Get an iterator of the 'items' in each order. 
+        The iterator yields the individual items in the order.
+
+        :param int limit: The number of 'items' to limit to.
+        :return: iter of items in page
+        '''
+
+        locations = iter(self.get_locations())
+
+        # if limit is not None:
+        #     locations = itertools.islice(locations, limit)
+        return locations 
