@@ -544,9 +544,7 @@ class ClientV1(_Base):
                                                        data=body,
                                                        method='POST')).get_body()
 
-### TO DO ### 
-
-    def download_order(self, order_id):
+    def download_order(self, order_id, callback=None):
         '''Download all items in an order.
 
         :param order_id: ID of order to download
@@ -557,11 +555,17 @@ class ClientV1(_Base):
 
         url = self._url('compute/ops/orders/v2/{}'.format(order_id))
 
-        # fetch order so we can extract it's 'location' URL(s)
         order = self._get(url, models.Order).get_body()
-        results = order.get().get("_links").get("results")
-        links = [link.get('location') for link in results]
+        locations = order.get_locations()
+        return self._get(locations, models.JSON, callback=callback)
 
-        # TODO dispatch links for downloading, then return correct results
+    def download_location(self, location, callback=None):
+        '''Download an item in an order.
 
-        return order
+        :param location: location URL of item
+        :returns: :py:Class:`planet.api.models.Response` containing a
+                  :py:Class:`planet.api.models.Body` of the asset.
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+
+        return self._get(location, models.JSON, callback=callback)

@@ -504,7 +504,52 @@ class _MosaicDownloader(_Downloader):
         return stats
 
 
-def create(client, mosaic=False, **kw):
+class _OrderDownloadStage(_DStage):
+    def _task(self, t):
+        return t
+
+    def _do(self, task):
+        func = self._write_tracker(task, None)
+        writer = write_to_file(self._dest, func, overwrite=False)
+        self._downloads += 1
+        self._results.put((task, 
+                           self._client.download_location(task, writer)))
+
+
+class _OrderDownloader(_Downloader):
+    def activate(self, items, asset_types):
+        pass
+
+    def _init(self, items, asset_types, dest):
+        client = self._client
+        dstage = _OrderDownloadStage(items, client, asset_types, dest)
+        self._dest = dest
+        self._stages.append(dstage)
+        self._apply_opts(vars())
+        self._completed = 0
+
+    def stats(self):
+        stats = {
+            'paging': False,
+            'activating': 0,
+            'pending': 0,
+            'complete': 0,
+            'downloading': 0,
+            'downloaded': '0.0MB',
+        }
+        if not self._stages:
+            return stats
+
+        dstage = self._stages[0]
+        mb_written = '%.2fMB' % (dstage._written / float(1024**2))
+        stats['downloading'] = dstage._downloads - self._completed
+        stats['downloaded'] = mb_written
+        stats['pending'] = dstage.work()
+        stats['complete'] = self._completed
+        return stats
+
+
+def create(client, mosaic=False, order=False, **kw):
     '''Create a Downloader with the provided client.
 
     :param mosaic bool: If True, the Downloader will fetch mosaic quads.
@@ -512,5 +557,7 @@ def create(client, mosaic=False, **kw):
     '''
     if mosaic:
         return _MosaicDownloader(client, **kw)
+    elif order:
+        return _OrderDownloader(client, **kw)
     else:
         return _Downloader(client, **kw)

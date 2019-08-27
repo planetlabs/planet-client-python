@@ -714,13 +714,12 @@ def cancel_order(order_id, pretty):
     echo_json_response(call_and_wrap(cl.cancel_order, order_id), pretty)
 
 
-@pretty
 @click.option('--name', required=True)
-@click.option('--id', required=True, help="One or more item IDs in a comma-separated list")
+@click.option('--id', required=True, help='One or more comma-separated item IDs')
 @click.option('--email', default=False, is_flag=True,
               help='Send email notification when Order is complete')
 @click.option('--zip', type=click.Choice(['order', 'bundle']),
-              help='Receive output of toolchain as a .zip archive. Archive can be either per bundle or per order')
+              help='Receive output of toolchain as a .zip archive.')
 @click.option('--cloudconfig', help=('Path to cloud delivery config'), 
               type=click.Path(exists=True, resolve_path=True, readable=True,
                               allow_dash=False, dir_okay=False, file_okay=True))
@@ -730,6 +729,7 @@ def cancel_order(order_id, pretty):
 @item_type_option
 @bundle_option
 @orders.command('create')
+@pretty
 def create_order(pretty, **kwargs):
     '''Create an order'''
     cl = clientv1()
@@ -737,19 +737,23 @@ def create_order(pretty, **kwargs):
     echo_json_response(call_and_wrap(cl.create_order, request), pretty)
 
 
-## TODO ## 
 @orders.command('download')
 @click.argument('order_id', type=click.UUID)
+@click.option('--quiet', is_flag=True, help=(
+        'Disable ANSI control output'
+))
+@click.option('--dest', default='.', help=(
+        'Location to download files to'), type=click.Path(
+    exists=True, resolve_path=True, writable=True, file_okay=False
+))
 @pretty
-def download_order(order_id, pretty):
+def download_order(order_id, dest, quiet, pretty):
     '''Download an order by given order ID'''
-    cl = clientv1()
-    response = call_and_wrap(cl.download_order, order_id)
-    echo_json_response(response, pretty)
+    cl = clientv1() 
+    dl = downloader.create(cl, order=True)
 
-    # dl = downloader.create(cl, order=True)
-    # output = downloader_output(dl, disable_ansi=quiet)
-    # output.start()
+    output = downloader_output(dl, disable_ansi=quiet)
+    output.start()
 
-    # try:
-    #     order, _ = cl.
+    items = cl.get_individual_order(order_id).items_iter(limit=None) 
+    handle_interrupt(dl.shutdown, dl.download, items, [], dest)
