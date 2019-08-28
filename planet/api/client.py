@@ -502,7 +502,7 @@ class ClientV1(_Base):
         :returns: :py:Class:`planet.api.models.Orders`
         '''
 
-        # TODO filter ‘completed orders’, ‘in progress orders’, ‘all orders’?
+        # TODO filter 'completed orders', 'in progress orders', 'all orders'?
         url = self._url('compute/ops/orders/v2')
         orders=(self._get(url, models.Orders).get_body())
         return orders
