@@ -93,8 +93,8 @@ def or_filter(*predicates):
     return _filter('OrFilter', predicates)
 
 
-def not_filter(*predicates):
-    return _filter('NotFilter', predicates)
+def not_filter(predicate):
+    return _filter('NotFilter', predicate)
 
 
 def date_range(field_name, **kwargs):
