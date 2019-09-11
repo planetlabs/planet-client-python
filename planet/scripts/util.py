@@ -110,8 +110,12 @@ def search_req_from_opts(**kw):
 
 
 def create_order_request(**kwargs):
-    # TODO do we want to accept multiple item-types/bundles via CLI?
-    itemtype = kwargs.get('item_type')[0][0]
+    for opt in ('item_type', 'bundle'):
+        inputvalue = kwargs.get(opt)
+        if len(inputvalue) > 1:
+            raise click.ClickException('only one value for {} is allowed.'.format(opt))
+
+    item_type = kwargs.get('item_type')[0]
     bundle = kwargs.get('bundle')[0]
     ids = kwargs.get('id').split(',')
     email = kwargs.get('email')
@@ -121,7 +125,7 @@ def create_order_request(**kwargs):
 
     request = {'name': kwargs.get('name'),
                'products': [{'item_ids': ids,
-                             'item_type': itemtype,
+                             'item_type': item_type,
                              'product_bundle': bundle}
                             ],
                'tools':[

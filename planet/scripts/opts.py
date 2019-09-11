@@ -78,7 +78,7 @@ string_in_filter = click.option(
 )
 
 item_type_option = click.option(
-    '--item-type', multiple=True, required=True, type=ItemType(), help=(
+    '--item-type', multiple=False, required=True, type=ItemType(), help=(
        'Specify item type(s)'
     )
 )
