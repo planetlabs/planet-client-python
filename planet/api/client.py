@@ -495,9 +495,9 @@ class ClientV1(_Base):
                                                           resource_type))
         response = self._get(url).get_body()
         return response
-    
+
     def get_orders(self):
-        '''Get information for all pending and completed order requests for 
+        '''Get information for all pending and completed order requests for
         the current user.
 
         :returns: :py:Class:`planet.api.models.Orders`
@@ -505,7 +505,7 @@ class ClientV1(_Base):
 
         # TODO filter 'completed orders', 'in progress orders', 'all orders'?
         url = self._url('compute/ops/orders/v2')
-        orders=(self._get(url, models.Orders).get_body())
+        orders = (self._get(url, models.Orders).get_body())
         return orders
 
     def get_individual_order(self, order_id):
@@ -528,7 +528,8 @@ class ClientV1(_Base):
         url = self._url('compute/ops/orders/v2/{}'.format(order_id))
         return self.dispatcher.response(models.Request(url, self.auth,
                                                        body_type=models.Order,
-                                                       method='PUT')).get_body()
+                                                       method='PUT')
+                                        ).get_body()
 
     def create_order(self, request):
         '''Create an order.

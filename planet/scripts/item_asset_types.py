@@ -75,6 +75,7 @@ DEFAULT_BUNDLES = [u'all', u'all_udm2', u'analytic', u'analytic_sr',
                    u'pansharpened', u'pansharpened_udm2', u'uncalibrated_dn',
                    u'uncalibrated_dn_udm2', u'visual']
 
+
 def _get_json_or_raise(url, timeout=11):
     api_key = find_api_key()
     headers = {'User-Agent': _get_user_agent(),

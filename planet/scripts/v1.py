@@ -688,6 +688,7 @@ def orders():
     '''Commands for interacting with the Orders API'''
     pass
 
+
 @orders.command('list')
 # @click.option('--status', help="'all', 'in-progress', 'completed'")
 @pretty
@@ -696,13 +697,15 @@ def list_orders(pretty):
     cl = clientv1()
     echo_json_response(call_and_wrap(cl.get_orders), pretty)
 
+
 @orders.command('get')
 @click.argument('order_id', type=click.UUID)
 @pretty
 def get_order(order_id, pretty):
     '''Get order request for a given order ID'''
     cl = clientv1()
-    echo_json_response(call_and_wrap(cl.get_individual_order, order_id), pretty)
+    echo_json_response(call_and_wrap(cl.get_individual_order, order_id), 
+                       pretty)
 
 
 @orders.command('cancel')
@@ -715,17 +718,20 @@ def cancel_order(order_id, pretty):
 
 
 @click.option('--name', required=True)
-@click.option('--id', required=True, help='One or more comma-separated item IDs')
+@click.option('--id', required=True, 
+              help='One or more comma-separated item IDs')
 @click.option('--email', default=False, is_flag=True,
               help='Send email notification when Order is complete')
 @click.option('--zip', type=click.Choice(['order', 'bundle']),
               help='Receive output of toolchain as a .zip archive.')
-@click.option('--cloudconfig', help=('Path to cloud delivery config'), 
+@click.option('--cloudconfig', help=('Path to cloud delivery config'),
               type=click.Path(exists=True, resolve_path=True, readable=True,
-                              allow_dash=False, dir_okay=False, file_okay=True))
-@click.option('--tools', help=('Path to toolchain json'), 
+                              allow_dash=False, dir_okay=False,
+                              file_okay=True))
+@click.option('--tools', help=('Path to toolchain json'),
               type=click.Path(exists=True, resolve_path=True, readable=True,
-                              allow_dash=False, dir_okay=False, file_okay=True))
+                              allow_dash=False, dir_okay=False,
+                              file_okay=True))
 @item_type_option
 @bundle_option
 @orders.command('create')
@@ -743,13 +749,13 @@ def create_order(pretty, **kwargs):
         'Disable ANSI control output'
 ))
 @click.option('--dest', default='.', help=(
-        'Location to download files to'), type=click.Path(
-    exists=True, resolve_path=True, writable=True, file_okay=False
-))
+    'Location to download files to'), type=click.Path(
+        exists=True, resolve_path=True, writable=True, file_okay=False
+    ))
 @pretty
 def download_order(order_id, dest, quiet, pretty):
     '''Download an order by given order ID'''
-    cl = clientv1() 
+    cl = clientv1()
     dl = downloader.create(cl, order=True)
 
     output = downloader_output(dl, disable_ansi=quiet)

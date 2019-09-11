@@ -512,7 +512,7 @@ class _OrderDownloadStage(_DStage):
         func = self._write_tracker(task, None)
         writer = write_to_file(self._dest, func, overwrite=False)
         self._downloads += 1
-        self._results.put((task, 
+        self._results.put((task,
                            self._client.download_location(task, writer)))
 
 

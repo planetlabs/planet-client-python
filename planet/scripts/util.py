@@ -113,7 +113,8 @@ def create_order_request(**kwargs):
     for opt in ('item_type', 'bundle'):
         inputvalue = kwargs.get(opt)
         if len(inputvalue) > 1:
-            raise click.ClickException('only one value for {} is allowed.'.format(opt))
+            raise click.ClickException(
+                'only one value for {} is allowed.'.format(opt))
 
     item_type = kwargs.get('item_type')[0]
     bundle = kwargs.get('bundle')[0]
@@ -128,7 +129,7 @@ def create_order_request(**kwargs):
                              'item_type': item_type,
                              'product_bundle': bundle}
                             ],
-               'tools':[
+               'tools': [
                ],
                'delivery': {
                },
@@ -206,7 +207,7 @@ def echo_json_response(response, pretty, limit=None, ndjson=False):
                                  indent=indent, sort_keys=sort_keys)
 
         res = response.get_raw()
-        if len(res) == 0: # if the body is empty, just return the status
+        if len(res) == 0:  # if the body is empty, just return the status
             click.echo("status: {}".format(response.response.status_code))
         else:
             res = json.dumps(json.loads(res), indent=indent,
