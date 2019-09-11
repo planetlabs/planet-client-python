@@ -497,7 +497,8 @@ class ClientV1(_Base):
         return response
     
     def get_orders(self):
-        '''Get information for all pending order requests for the current user.
+        '''Get information for all pending and completed order requests for 
+        the current user.
 
         :returns: :py:Class:`planet.api.models.Orders`
         '''

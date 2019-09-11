@@ -220,7 +220,9 @@ Creating an Order
 
 The minimal command to create a simple order looks something like::
 
-    planet orders create --name "my order" --id 20151119_025740_0c74,20151119_025741_0c74 --bundle visual --item-type psscene3band
+    planet orders create --name "my order" \
+      --id 20151119_025740_0c74,20151119_025741_0c74 \
+      --bundle visual --item-type psscene3band
 
 If no toolchain or delivery details are specified, a basic order with download
 delivery will be placed for the requested bundle including the item id(s) specified.
@@ -228,7 +230,9 @@ delivery will be placed for the requested bundle including the item id(s) specif
 Additionally, optional toolchain & delivery details can be provided on the
 command line, e.g.:::
 
-    planet orders create --name "my order" --id 20151119_025740_0c74,20151119_025741_0c74 --bundle visual --item-type psscene3band --zip order --email
+    planet orders create --name "my order" \
+      --id 20151119_025740_0c74,20151119_025741_0c74 \
+      --bundle visual --item-type psscene3band --zip order --email
 
 This places the same order as above, and will also provide a .zip archive
 download link for the full order, as well as email notification.
