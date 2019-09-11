@@ -149,7 +149,7 @@ def create_order_request(**kwargs):
     if config:
         with open(config, 'r') as f:
             conf = json.load(f)
-            request["delivery"].update(conf) 
+            request["delivery"].update(conf)
 
     # TODO determine reasonable interfaces for SOME tools via CLI;
     # e.g., clip via provided geojson AOI
@@ -157,7 +157,7 @@ def create_order_request(**kwargs):
     if tools:
         with open(tools, 'r') as f:
             toolchain = json.load(f)
-            request["tools"].extend(toolchain) 
+            request["tools"].extend(toolchain)
 
     return request
 

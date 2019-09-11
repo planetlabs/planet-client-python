@@ -534,7 +534,7 @@ class ClientV1(_Base):
     def create_order(self, request):
         '''Create an order.
 
-        :param asset: 
+        :param asset:
         :returns: :py:Class:`planet.api.models.Response` containing a
                   :py:Class:`planet.api.models.Body` of the asset.
         :raises planet.api.exceptions.APIException: On API error.
@@ -544,7 +544,8 @@ class ClientV1(_Base):
         return self.dispatcher.response(models.Request(url, self.auth,
                                                        body_type=models.Order,
                                                        data=body,
-                                                       method='POST')).get_body()
+                                                       method='POST')
+                                        ).get_body()
 
     def download_order(self, order_id, callback=None):
         '''Download all items in an order.
