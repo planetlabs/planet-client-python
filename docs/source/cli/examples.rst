@@ -242,7 +242,10 @@ on your order prior to download. To read more about tools & toolchains, visit
 `the docs <https://developers.planet.com/docs/orders/tools-toolchains/>`_ .      
 
 To add tool operations to your order, use the `--tools` option to specify a
-json-formatted file containing a list of the desired tools an their settings.
+json-formatted file containing an array (list) of the desired tools an their
+settings.
+
+.. note:: The json-formatted file must be formatted as an array (enclosed in square brackets), even if only specifying a single tool
 
 For example, to apply the 3 tools `TOAR -> Reproject -> Tile` in sequence to an
 order, you would create a `.json` file similar to the following::
