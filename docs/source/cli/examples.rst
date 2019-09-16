@@ -189,6 +189,109 @@ Requesting a resource for a feature in a collection::
     planet analytics collections features get target-quad <collection_id or subscription_id> <feature_id>
     planet analytics collections features get source-image-info <collection_id or subscription_id> <feature_id>
 
+Orders Examples
+-----------------
+
+List all recent orders for the authenticated user::
+    
+    planet orders list
+
+Get the status of a single order by Order ID::
+
+    planet orders get <order ID>
+
+Note that you may want to parse the JSON that's output into a more human
+readable format.  The cli does not directly provide options for this, but is
+meant to be easily interoperable with other tools, e.g. `jq
+<https://stedolan.github.io/jq/>`_.  
+
+To cancel a running order by given order ID::
+
+    planet orders cancel <order ID>
+
+To download an order to your local machine::    
+
+    planet orders download <order ID> 
+
+Optionally, a `--dest <path to destination>` flag may be specified too.    
+
+Creating an Order
+..................
+
+The minimal command to create a simple order looks something like::
+
+    planet orders create --name "my order" \
+      --id 20151119_025740_0c74,20151119_025741_0c74 \
+      --bundle visual --item-type psscene3band
+
+If no toolchain or delivery details are specified, a basic order with download
+delivery will be placed for the requested bundle including the item id(s) specified.
+
+Additionally, optional toolchain & delivery details can be provided on the
+command line, e.g.:::
+
+    planet orders create --name "my order" \
+      --id 20151119_025740_0c74,20151119_025741_0c74 \
+      --bundle visual --item-type psscene3band --zip order --email
+
+This places the same order as above, and will also provide a .zip archive
+download link for the full order, as well as email notification.
+
+The Orders API allows you to specify a toolchain of operations to be performed
+on your order prior to download. To read more about tools & toolchains, visit
+`the docs <https://developers.planet.com/docs/orders/tools-toolchains/>`_ .      
+
+To add tool operations to your order, use the `--tools` option to specify a
+json-formatted file containing an array (list) of the desired tools an their
+settings.
+
+.. note:: The json-formatted file must be formatted as an array (enclosed in square brackets), even if only specifying a single tool
+
+For example, to apply the 3 tools `TOAR -> Reproject -> Tile` in sequence to an
+order, you would create a `.json` file similar to the following::
+
+    [
+        {
+          "toar": {
+            "scale_factor": 10000
+          }
+        },
+        {
+          "reproject": {
+            "projection": "WGS84",
+            "kernel": "cubic"
+          }
+        },
+        {
+          "tile": {
+            "tile_size": 1232,
+            "origin_x": -180,
+            "origin_y": -90,
+            "pixel_size": 0.000027056277056,
+            "name_template": "C1232_30_30_{tilex:04d}_{tiley:04d}"
+          }
+        }
+      ]
+
+
+Similarly, you can also specify cloud delivery options on an order create
+command with the `--cloudconfig <path to json file>` option. In this case, the
+json file should contain the required credentials for your desired cloud
+storage destination, for example::
+
+    {  
+          "amazon_s3":{  
+             "bucket":"foo-bucket",
+             "aws_region":"us-east-2",
+             "aws_access_key_id":"",
+             "aws_secret_access_key":"",
+             "path_prefix":""
+          }
+
+You can find complete documentation of Orders API cloud storage delivery and
+required credentials `in the docs here
+<https://developers.planet.com/docs/orders/ordering-delivery/#delivery-to-cloud-storage_1>`_.
+
 Integration With Other Tools
 ----------------------------
 

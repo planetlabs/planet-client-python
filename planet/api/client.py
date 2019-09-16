@@ -495,3 +495,80 @@ class ClientV1(_Base):
                                                           resource_type))
         response = self._get(url).get_body()
         return response
+
+    def get_orders(self):
+        '''Get information for all pending and completed order requests for
+        the current user.
+
+        :returns: :py:Class:`planet.api.models.Orders`
+        '''
+
+        # TODO filter 'completed orders', 'in progress orders', 'all orders'?
+        url = self._url('compute/ops/orders/v2')
+        orders = (self._get(url, models.Orders).get_body())
+        return orders
+
+    def get_individual_order(self, order_id):
+        '''Get order request details by Order ID.
+
+        :param order_id str: The ID of the Order
+        :returns: :py:Class:`planet.api.models.Order`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        url = self._url('compute/ops/orders/v2/{}'.format(order_id))
+        return self._get(url, models.Order).get_body()
+
+    def cancel_order(self, order_id):
+        '''Cancel a running order by Order ID.
+
+        :param order_id str: The ID of the Order to cancel
+        :returns: :py:Class:`planet.api.models.Order`
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        url = self._url('compute/ops/orders/v2/{}'.format(order_id))
+        return self.dispatcher.response(models.Request(url, self.auth,
+                                                       body_type=models.Order,
+                                                       method='PUT')
+                                        ).get_body()
+
+    def create_order(self, request):
+        '''Create an order.
+
+        :param asset:
+        :returns: :py:Class:`planet.api.models.Response` containing a
+                  :py:Class:`planet.api.models.Body` of the asset.
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        url = self._url('compute/ops/orders/v2')
+        body = json.dumps(request)
+        return self.dispatcher.response(models.Request(url, self.auth,
+                                                       body_type=models.Order,
+                                                       data=body,
+                                                       method='POST')
+                                        ).get_body()
+
+    def download_order(self, order_id, callback=None):
+        '''Download all items in an order.
+
+        :param order_id: ID of order to download
+        :returns: :py:Class:`planet.api.models.Response` containing a
+                  :py:Class:`planet.api.models.Body` of the asset.
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+
+        url = self._url('compute/ops/orders/v2/{}'.format(order_id))
+
+        order = self._get(url, models.Order).get_body()
+        locations = order.get_locations()
+        return self._get(locations, models.JSON, callback=callback)
+
+    def download_location(self, location, callback=None):
+        '''Download an item in an order.
+
+        :param location: location URL of item
+        :returns: :py:Class:`planet.api.models.Response` containing a
+                  :py:Class:`planet.api.models.Body` of the asset.
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+
+        return self._get(location, models.JSON, callback=callback)

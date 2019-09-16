@@ -24,7 +24,8 @@ from .types import (
     NumberIn,
     Range,
     SortSpec,
-    StringIn
+    StringIn,
+    Bundle
 )
 
 
@@ -77,8 +78,14 @@ string_in_filter = click.option(
 )
 
 item_type_option = click.option(
-    '--item-type', multiple=True, required=True, type=ItemType(), help=(
+    '--item-type', multiple=False, required=True, type=ItemType(), help=(
        'Specify item type(s)'
+    )
+)
+
+bundle_option = click.option(
+    '--bundle', multiple=False, required=True, type=Bundle(), help=(
+       'Specify bundle(s)'
     )
 )
 

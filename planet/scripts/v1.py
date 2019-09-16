@@ -22,6 +22,8 @@ from .cli import (
 )
 from .opts import (
     asset_type_option,
+    item_type_option,
+    bundle_option,
     asset_type_perms,
     filter_opts,
     limit_option,
@@ -44,6 +46,7 @@ from .util import (
     echo_json_response,
     read,
     search_req_from_opts,
+    create_order_request
 )
 from planet.api.utils import (
     handle_interrupt
@@ -353,7 +356,7 @@ def download_quads(name, bbox, rbox, quiet, dest, limit):
 
 @cli.group('analytics')
 def analytics():
-    '''Commands for interacting with the Analytics Feed API'''
+    '''Commands for interacting with the Analytics API'''
     pass
 
 
@@ -382,7 +385,7 @@ def conformance(pretty):
 
 @analytics.group('feeds')
 def feeds():
-    '''Commands for interacting with the Analytics Feed API for collections'''
+    '''Commands for interacting with the Analytics API for collections'''
     pass
 
 
@@ -436,7 +439,7 @@ def get_feed_info(feed_id, pretty):
 @analytics.group('subscriptions')
 def subscriptions():
     '''
-    Commands for interacting with the Analytics Feed API for subscriptions
+    Commands for interacting with the Analytics API for subscriptions
     '''
     pass
 
@@ -490,7 +493,7 @@ def get_subscription_info(subscription_id, pretty):
 
 @analytics.group('collections')
 def collections():
-    '''Commands for interacting with the Analytics Feed API for collections'''
+    '''Commands for interacting with the Analytics API for collections'''
     pass
 
 
@@ -568,7 +571,7 @@ def get_resource_types(subscription_id, pretty):
 
 @collections.group('features')
 def features():
-    '''Commands for interacting with the Analytics Feed API for features'''
+    '''Commands for interacting with the Analytics API for features'''
     pass
 
 
@@ -678,3 +681,85 @@ def get_associated_resource(subscription_id, feature_id, resource_type, pretty,
             dest,
             resource.name
         ))
+
+
+@cli.group('orders')
+def orders():
+    '''Commands for interacting with the Orders API'''
+    pass
+
+
+@orders.command('list')
+# @click.option('--status', help="'all', 'in-progress', 'completed'")
+@pretty
+def list_orders(pretty):
+    '''List all pending order requests; optionally filter by status'''
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.get_orders), pretty)
+
+
+@orders.command('get')
+@click.argument('order_id', type=click.UUID)
+@pretty
+def get_order(order_id, pretty):
+    '''Get order request for a given order ID'''
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.get_individual_order, order_id),
+                       pretty)
+
+
+@orders.command('cancel')
+@click.argument('order_id', type=click.UUID)
+@pretty
+def cancel_order(order_id, pretty):
+    '''Cancel a running order by given order ID'''
+    cl = clientv1()
+    echo_json_response(call_and_wrap(cl.cancel_order, order_id), pretty)
+
+
+@click.option('--name', required=True)
+@click.option('--id', required=True,
+              help='One or more comma-separated item IDs')
+@click.option('--email', default=False, is_flag=True,
+              help='Send email notification when Order is complete')
+@click.option('--zip', type=click.Choice(['order', 'bundle']),
+              help='Receive output of toolchain as a .zip archive.')
+@click.option('--cloudconfig', help=('Path to cloud delivery config'),
+              type=click.Path(exists=True, resolve_path=True, readable=True,
+                              allow_dash=False, dir_okay=False,
+                              file_okay=True))
+@click.option('--tools', help=('Path to toolchain json'),
+              type=click.Path(exists=True, resolve_path=True, readable=True,
+                              allow_dash=False, dir_okay=False,
+                              file_okay=True))
+@item_type_option
+@bundle_option
+@orders.command('create')
+@pretty
+def create_order(pretty, **kwargs):
+    '''Create an order'''
+    cl = clientv1()
+    request = create_order_request(**kwargs)
+    echo_json_response(call_and_wrap(cl.create_order, request), pretty)
+
+
+@orders.command('download')
+@click.argument('order_id', type=click.UUID)
+@click.option('--quiet', is_flag=True, help=(
+        'Disable ANSI control output'
+))
+@click.option('--dest', default='.', help=(
+    'Location to download files to'), type=click.Path(
+        exists=True, resolve_path=True, writable=True, file_okay=False
+    ))
+@pretty
+def download_order(order_id, dest, quiet, pretty):
+    '''Download an order by given order ID'''
+    cl = clientv1()
+    dl = downloader.create(cl, order=True)
+
+    output = downloader_output(dl, disable_ansi=quiet)
+    output.start()
+
+    items = cl.get_individual_order(order_id).items_iter(limit=None)
+    handle_interrupt(dl.shutdown, dl.download, items, [], dest)

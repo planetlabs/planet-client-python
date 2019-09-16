@@ -109,6 +109,59 @@ def search_req_from_opts(**kw):
         filt, item_types, name=name, interval=interval)
 
 
+def create_order_request(**kwargs):
+    for opt in ('item_type', 'bundle'):
+        inputvalue = kwargs.get(opt)
+        if len(inputvalue) > 1:
+            raise click.ClickException(
+                'only one value for {} is allowed.'.format(opt))
+
+    item_type = kwargs.get('item_type')[0]
+    bundle = kwargs.get('bundle')[0]
+    ids = kwargs.get('id').split(',')
+    email = kwargs.get('email')
+    archive = kwargs.get('zip')
+    config = kwargs.get('cloudconfig')
+    tools = kwargs.get('tools')
+
+    request = {'name': kwargs.get('name'),
+               'products': [{'item_ids': ids,
+                             'item_type': item_type,
+                             'product_bundle': bundle}
+                            ],
+               'tools': [
+               ],
+               'delivery': {
+               },
+               'notifications': {
+                   'email': email
+               },
+               }
+
+    if archive is not None:
+        request["delivery"]["archive_filename"] = "{{name}}_{{order_id}}.zip"
+        request["delivery"]["archive_type"] = "zip"
+
+        # TODO verify this is correct req format for order vs bundle zip
+        if archive == "bundle":
+            request["delivery"]["single_archive"] = True
+
+    if config:
+        with open(config, 'r') as f:
+            conf = json.load(f)
+            request["delivery"].update(conf)
+
+    # TODO determine reasonable interfaces for SOME tools via CLI;
+    # e.g., clip via provided geojson AOI
+    # for now we can punt by pointing users to doc examples for copy-pasting
+    if tools:
+        with open(tools, 'r') as f:
+            toolchain = json.load(f)
+            request["tools"].extend(toolchain)
+
+    return request
+
+
 def call_and_wrap(func, *args, **kw):
     '''call the provided function and wrap any API exception with a click
     exception. this means no stack trace is visible to the user but instead
@@ -152,8 +205,11 @@ def echo_json_response(response, pretty, limit=None, ndjson=False):
         elif not ndjson and hasattr(response, 'json_encode'):
             response.json_encode(click.get_text_stream('stdout'), limit=limit,
                                  indent=indent, sort_keys=sort_keys)
+
+        res = response.get_raw()
+        if len(res) == 0:  # if the body is empty, just return the status
+            click.echo("status: {}".format(response.response.status_code))
         else:
-            res = response.get_raw()
             res = json.dumps(json.loads(res), indent=indent,
                              sort_keys=sort_keys)
             click.echo(res)

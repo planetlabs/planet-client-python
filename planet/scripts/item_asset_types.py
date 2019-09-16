@@ -7,6 +7,7 @@ ASSET_TYPE_URL = 'https://api.planet.com/data/v1/asset-types/'
 
 _item_types = None
 _asset_types = None
+_bundles = None
 
 # Default values here are used as a fallback
 # In case the API fails to respond or takes too long.
@@ -63,6 +64,18 @@ DEFAULT_ASSET_TYPES = [
     'udm2', 'visual', 'visual_xml'
 ]
 
+DEFAULT_BUNDLES = [u'all', u'all_udm2', u'analytic', u'analytic_sr',
+                   u'analytic_sr_udm2', u'analytic_udm2', u'basic_analytic',
+                   u'basic_analytic_nitf', u'basic_analytic_nitf_udm2',
+                   u'basic_analytic_udm2', u'basic_panchromatic',
+                   u'basic_panchromatic_dn', u'basic_uncalibrated_dn',
+                   u'basic_uncalibrated_dn_nitf',
+                   u'basic_uncalibrated_dn_nitf_udm2',
+                   u'basic_uncalibrated_dn_udm2', u'panchromatic',
+                   u'panchromatic_dn', u'panchromatic_dn_udm2',
+                   u'pansharpened', u'pansharpened_udm2', u'uncalibrated_dn',
+                   u'uncalibrated_dn_udm2', u'visual']
+
 
 def _get_json_or_raise(url, timeout=11):
     api_key = find_api_key()
@@ -89,3 +102,11 @@ def get_asset_types():
         data = _get_json_or_raise(ASSET_TYPE_URL)
         _asset_types = [a['id'] for a in data['asset_types']]
     return _asset_types
+
+
+def get_bundles():
+    global _bundles
+    if _bundles is None:
+        _bundles = DEFAULT_BUNDLES
+        # TODO if/when bundles defs are served by API we can grab them here
+    return _bundles

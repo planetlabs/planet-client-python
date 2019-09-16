@@ -25,7 +25,7 @@ from planet.api import filters
 from planet.api.utils import geometry_from_json
 from planet.api.utils import strp_lenient
 from planet.scripts.item_asset_types import get_item_types, get_asset_types, \
-    DEFAULT_ITEM_TYPES, DEFAULT_ASSET_TYPES
+    get_bundles, DEFAULT_ITEM_TYPES, DEFAULT_ASSET_TYPES, DEFAULT_BUNDLES
 
 
 metavar_docs = {
@@ -116,6 +116,17 @@ class _LenientChoice(click.Choice):
         Subclasses should override.
         '''
         return self.choices
+
+
+class Bundle(_LenientChoice):
+    name = 'bundle'
+    allow_all = True
+
+    def __init__(self):
+        _LenientChoice.__init__(self, DEFAULT_BUNDLES)
+
+    def get_remote_choices(self):
+        return get_bundles()
 
 
 class ItemType(_LenientChoice):
