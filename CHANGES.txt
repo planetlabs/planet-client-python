@@ -1,3 +1,7 @@
+1.4.0 (2019-09-16)
+
+- Add CLI support for Planet Orders API
+
 1.3.2 (2019-08-27)
 
 - add new skysat asset types
