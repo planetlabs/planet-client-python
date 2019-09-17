@@ -22,7 +22,6 @@ from .cli import (
 )
 from .opts import (
     asset_type_option,
-    item_type_option,
     bundle_option,
     asset_type_perms,
     filter_opts,
@@ -35,7 +34,8 @@ from .types import (
     AssetTypePerm,
     BoundingBox,
     metavar_docs,
-    DateInterval
+    DateInterval,
+    ItemType
 )
 from .util import (
     call_and_wrap,
@@ -732,8 +732,12 @@ def cancel_order(order_id, pretty):
               type=click.Path(exists=True, resolve_path=True, readable=True,
                               allow_dash=False, dir_okay=False,
                               file_okay=True))
-@item_type_option
 @bundle_option
+@click.option(
+    '--item-type', multiple=False, required=True, type=ItemType(), help=(
+        'Specify an item type'
+    )
+)
 @orders.command('create')
 @pretty
 def create_order(pretty, **kwargs):
