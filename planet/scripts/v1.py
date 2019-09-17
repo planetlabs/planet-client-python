@@ -90,7 +90,6 @@ def filter_dump(**kw):
 def quick_search(limit, pretty, sort, **kw):
     '''Execute a quick search.'''
     req = search_req_from_opts(**kw)
-    print(req)
     cl = clientv1()
     page_size = min(limit, MAX_PAGE_SIZE)
     echo_json_response(call_and_wrap(
