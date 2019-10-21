@@ -34,6 +34,8 @@ class _Base(object):
         api_key = api_key or auth.find_api_key()
         self.auth = api_key and auth.APIKey(api_key)
         self.base_url = base_url
+        if not self.base_url.endswith('/'):
+            self.base_url += '/'
         self.dispatcher = RequestsDispatcher(workers)
 
     def shutdown(self):
