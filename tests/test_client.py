@@ -199,14 +199,14 @@ def test_stats(client):
 
 
 def test_list_analytic_feeds(client):
-    url = client.base_url + 'feeds'
+    url = client.base_url + 'analytics/feeds'
     assert_simple_request(url,
                           client.list_analytic_feeds,
                           (False,))
 
 
 def test_get_feed_info(client):
-    url = client.base_url + 'feeds/feed-id'
+    url = client.base_url + 'analytics/feeds/feed-id'
     assert_simple_request(url,
                           client.get_feed_info,
                           ('feed-id',))
@@ -214,35 +214,35 @@ def test_get_feed_info(client):
 
 @pytest.mark.parametrize('feed_id', [None, 'feed-id'])
 def test_list_analytic_subscriptions(client, feed_id):
-    url = client.base_url + 'subscriptions'
+    url = client.base_url + 'analytics/subscriptions'
     assert_simple_request(url,
                           client.list_analytic_subscriptions,
                           (feed_id,))
 
 
 def test_get_subscription_info(client):
-    url = client.base_url + 'subscriptions/sub-id'
+    url = client.base_url + 'analytics/subscriptions/sub-id'
     assert_simple_request(url,
                           client.get_subscription_info,
                           ('sub-id',))
 
 
 def test_list_collections(client):
-    url = client.base_url + 'collections'
+    url = client.base_url + 'analytics/collections'
     assert_simple_request(url,
                           client.list_analytic_collections,
                           ())
 
 
 def test_get_collection_info(client):
-    url = client.base_url + 'collections/sub-id'
+    url = client.base_url + 'analytics/collections/sub-id'
     assert_simple_request(url,
                           client.get_collection_info,
                           ('sub-id',))
 
 
 def test_list_features(client):
-    url = client.base_url + 'collections/sub-id/items'
+    url = client.base_url + 'analytics/collections/sub-id/items'
     assert_simple_request(url,
                           client.list_collection_features,
                           ('sub-id', None, None))
@@ -253,8 +253,8 @@ def test_get_associated_resource(client):
     sid = 'sub-id'
     fid = 'feature-id'
     rid = 'source-image-info'
-    url = client.base_url + 'collections/{}/items/{}/resources/{}'.format(
-        sid, fid, rid
+    url = '{}analytics/collections/{}/items/{}/resources/{}'.format(
+        client.base_url, sid, fid, rid
     )
     assert_simple_request(url,
                           client.get_associated_resource_for_analytic_feature,

@@ -18,7 +18,6 @@ import json
 from .cli import (
     cli,
     clientv1,
-    analytics_client_v1
 )
 from .opts import (
     asset_type_option,
@@ -364,7 +363,7 @@ def analytics():
 @pretty
 def health(pretty):
     '''Check that we can connect to the API'''
-    cl = analytics_client_v1()
+    cl = clientv1()
     click.echo('Using base URL: {}'.format(cl.base_url))
     response = cl.check_analytics_connection()
     echo_json_response(response, pretty)
@@ -378,7 +377,7 @@ def conformance(pretty):
     :param pretty:
     :return:
     '''
-    cl = analytics_client_v1()
+    cl = clientv1()
     response = cl.wfs_conformance()
     echo_json_response(response, pretty)
 
@@ -396,7 +395,7 @@ def feeds():
 @pretty
 def list_feeds(pretty, limit, stats):
     '''List all subscriptions user has access to.'''
-    cl = analytics_client_v1()
+    cl = clientv1()
     response = cl.list_analytic_feeds(stats)
     echo_json_response(response, pretty, limit)
 
@@ -405,8 +404,8 @@ def list_feeds(pretty, limit, stats):
 @click.argument('feed_id')
 def get_mosaic_list_for_feed(feed_id):
     '''List mosaics linked to feed'''
-    analytics_client = analytics_client_v1()
-    feed_info = analytics_client.get_feed_info(feed_id).get()
+    cl = clientv1()
+    feed_info = cl.get_feed_info(feed_id).get()
 
     for type_ in ['target', 'source']:
         feed_image_conf = feed_info.get(type_)
@@ -418,8 +417,7 @@ def get_mosaic_list_for_feed(feed_id):
 
         mosaic_series = feed_image_conf['config']['series_id']
 
-        client = clientv1()
-        mosaics = client.get_mosaics_for_series(mosaic_series)
+        mosaics = cl.get_mosaics_for_series(mosaic_series)
 
         click.echo('{} mosaics:'.format(type_))
         for mosaic in mosaics.get()['mosaics']:
@@ -431,7 +429,7 @@ def get_mosaic_list_for_feed(feed_id):
 @pretty
 def get_feed_info(feed_id, pretty):
     '''Get metadata for specific feed.'''
-    cl = analytics_client_v1()
+    cl = clientv1()
     feed_info = cl.get_feed_info(feed_id)
     echo_json_response(feed_info, pretty)
 
@@ -450,7 +448,7 @@ def subscriptions():
 @pretty
 def list_subscriptions(pretty, limit, feed_id):
     '''List all subscriptions user has access to.'''
-    cl = analytics_client_v1()
+    cl = clientv1()
     response = cl.list_analytic_subscriptions(feed_id)
     echo_json_response(response, pretty, limit)
 
@@ -459,9 +457,9 @@ def list_subscriptions(pretty, limit, feed_id):
 @click.argument('subscription_id')
 def get_mosaic_list_for_subscription(subscription_id):
     '''List mosaics linked to feed'''
-    analytics_client = analytics_client_v1()
-    sub_info = analytics_client.get_subscription_info(subscription_id).get()
-    feed_info = analytics_client.get_feed_info(sub_info['feedID']).get()
+    cl = clientv1()
+    sub_info = cl.get_subscription_info(subscription_id).get()
+    feed_info = cl.get_feed_info(sub_info['feedID']).get()
 
     for type_ in ['target', 'source']:
         feed_image_conf = feed_info.get(type_)
@@ -473,8 +471,7 @@ def get_mosaic_list_for_subscription(subscription_id):
 
         mosaic_series = feed_image_conf['config']['series_id']
 
-        client = clientv1()
-        mosaics = client.get_mosaics_for_series(mosaic_series)
+        mosaics = cl.get_mosaics_for_series(mosaic_series)
 
         click.echo('{} mosaics:'.format(type_))
         for mosaic in mosaics.get()['mosaics']:
@@ -486,7 +483,7 @@ def get_mosaic_list_for_subscription(subscription_id):
 @pretty
 def get_subscription_info(subscription_id, pretty):
     '''Get metadata for specific subscription.'''
-    cl = analytics_client_v1()
+    cl = clientv1()
     sub_info = cl.get_subscription_info(subscription_id)
     echo_json_response(sub_info, pretty)
 
@@ -502,7 +499,7 @@ def collections():
 @pretty
 def list_collections(pretty, limit):
     '''List all collections user has access to.'''
-    cl = analytics_client_v1()
+    cl = clientv1()
     response = cl.list_analytic_collections()
     echo_json_response(response, pretty, limit)
 
@@ -511,9 +508,9 @@ def list_collections(pretty, limit):
 @click.argument('subscription_id')
 def get_mosaic_list_for_collection(subscription_id):
     '''List mosaics linked to feed'''
-    analytics_client = analytics_client_v1()
-    sub_info = analytics_client.get_subscription_info(subscription_id).get()
-    feed_info = analytics_client.get_feed_info(sub_info['feedID']).get()
+    cl = clientv1()
+    sub_info = cl.get_subscription_info(subscription_id).get()
+    feed_info = cl.get_feed_info(sub_info['feedID']).get()
 
     for type_ in ['target', 'source']:
         feed_image_conf = feed_info.get(type_)
@@ -525,8 +522,7 @@ def get_mosaic_list_for_collection(subscription_id):
 
         mosaic_series = feed_image_conf['config']['series_id']
 
-        client = clientv1()
-        mosaics = client.get_mosaics_for_series(mosaic_series)
+        mosaics = cl.get_mosaics_for_series(mosaic_series)
 
         click.echo('{} mosaics:'.format(type_))
         for mosaic in mosaics.get()['mosaics']:
@@ -538,7 +534,7 @@ def get_mosaic_list_for_collection(subscription_id):
 @pretty
 def get_collection_info(subscription_id, pretty):
     '''Get metadata for specific collection.'''
-    cl = analytics_client_v1()
+    cl = clientv1()
     sub_info = cl.get_collection_info(subscription_id)
     echo_json_response(sub_info, pretty)
 
@@ -548,7 +544,7 @@ def get_collection_info(subscription_id, pretty):
 @pretty
 def get_resource_types(subscription_id, pretty):
     '''Get available resource types.'''
-    cl = analytics_client_v1()
+    cl = clientv1()
     # Assumes that all features in a collection have the same list of
     # associated resource types
     features = cl.list_collection_features(subscription_id,
@@ -601,7 +597,7 @@ def features():
 def list_features(subscription_id, pretty, limit, rbox, bbox, time_range,
                   before, after):
     '''Request feature list for a particular subscription, 100 at a time.'''
-    cl = analytics_client_v1()
+    cl = clientv1()
     bbox = bbox or rbox
     features = cl.list_collection_features(subscription_id, bbox, time_range,
                                            before, after)
@@ -633,7 +629,7 @@ def list_features(subscription_id, pretty, limit, rbox, bbox, time_range,
 def list_features_all(subscription_id, pretty, rbox, bbox, time_range, before,
                       after):
     '''Return every available feature for a particular subscription'''
-    cl = analytics_client_v1()
+    cl = clientv1()
     bbox = bbox or rbox
     features = cl.list_collection_features(subscription_id, bbox, time_range,
                                            before, after)
@@ -653,10 +649,7 @@ def list_features_all(subscription_id, pretty, rbox, bbox, time_range, before,
 def get_associated_resource(subscription_id, feature_id, resource_type, pretty,
                             dest):
     '''Request resources for a particular subscription/feature combination.'''
-    # Note that this command will not work for a custom analytics URL, as the
-    # underlying API call is a redirect to the Data API and Mosaics API.
-    # See https://github.com/kennethreitz/requests/issues/2949 for more info.
-    cl = analytics_client_v1()
+    cl = clientv1()
     if resource_type in ['target-quad', 'source-quad']:
         msg_format = 'Requesting {} for {}/{}, destination directory is: {}'
         click.echo(msg_format.format(

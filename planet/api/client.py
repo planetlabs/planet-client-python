@@ -369,14 +369,14 @@ class ClientV1(_Base):
         to test environments.
         :returns: :py:Class:`planet.api.models.JSON`
         '''
-        return self._get(self._url('health')).get_body()
+        return self._get(self._url('analytics/health')).get_body()
 
     def wfs_conformance(self):
         '''
         Details about WFS3 conformance
         :returns: :py:Class:`planet.api.models.JSON`
         '''
-        return self._get(self._url('conformance')).get_body()
+        return self._get(self._url('analytics/conformance')).get_body()
 
     def list_analytic_subscriptions(self, feed_id):
         '''
@@ -387,7 +387,7 @@ class ClientV1(_Base):
         :returns: :py:Class:`planet.api.models.Subscriptions`
         '''
         params = {'feedID': feed_id}
-        url = self._url('subscriptions')
+        url = self._url('analytics/subscriptions')
         return self._get(url, models.Subscriptions, params=params).get_body()
 
     def get_subscription_info(self, subscription_id):
@@ -397,7 +397,7 @@ class ClientV1(_Base):
         :raises planet.api.exceptions.APIException: On API error.
         :returns: :py:Class:`planet.api.models.JSON`
         '''
-        url = self._url('subscriptions/{}'.format(subscription_id))
+        url = self._url('analytics/subscriptions/{}'.format(subscription_id))
         return self._get(url, models.JSON).get_body()
 
     def list_analytic_feeds(self, stats):
@@ -407,7 +407,7 @@ class ClientV1(_Base):
         :returns: :py:Class:`planet.api.models.Feeds`
         '''
         params = {'stats': stats}
-        url = self._url('feeds')
+        url = self._url('analytics/feeds')
         return self._get(url, models.Feeds, params=params).get_body()
 
     def get_feed_info(self, feed_id):
@@ -417,7 +417,7 @@ class ClientV1(_Base):
         :raises planet.api.exceptions.APIException: On API error.
         :returns: :py:Class:`planet.api.models.JSON`
         '''
-        url = self._url('feeds/{}'.format(feed_id))
+        url = self._url('analytics/feeds/{}'.format(feed_id))
         return self._get(url, models.JSON).get_body()
 
     def list_analytic_collections(self):
@@ -427,7 +427,7 @@ class ClientV1(_Base):
         :returns: :py:Class:`planet.api.models.WFS3Collections`
         '''
         params = {}
-        url = self._url('collections')
+        url = self._url('analytics/collections')
         return self._get(url, models.WFS3Collections,
                          params=params).get_body()
 
@@ -438,7 +438,7 @@ class ClientV1(_Base):
         :raises planet.api.exceptions.APIException: On API error.
         :returns: :py:Class:`planet.api.models.JSON`
         '''
-        url = 'collections/{}'.format(subscription_id)
+        url = 'analytics/collections/{}'.format(subscription_id)
         return self._get(self._url(url), models.JSON).get_body()
 
     def list_collection_features(self,
@@ -469,7 +469,8 @@ class ClientV1(_Base):
         if after:
             params['after'] = after
 
-        url = self._url('collections/{}/items'.format(subscription_id))
+        url = self._url('analytics/collections/{}/items'.format(
+            subscription_id))
         return self._get(url, models.WFS3Features, params=params).get_body()
 
     def get_associated_resource_for_analytic_feature(self,
@@ -490,9 +491,8 @@ class ClientV1(_Base):
         :py:Class:`planet.api.models.Body` of the resource.
         '''
         url = self._url(
-            'collections/{}/items/{}/resources/{}'.format(subscription_id,
-                                                          feature_id,
-                                                          resource_type))
+            'analytics/collections/{}/items/{}/resources/{}'.format(
+                subscription_id, feature_id, resource_type))
         response = self._get(url).get_body()
         return response
 
