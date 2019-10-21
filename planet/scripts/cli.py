@@ -25,20 +25,7 @@ client_params = {}
 
 
 def clientv1():
-    client_params.pop('analytics_base_url', None)
     return api.ClientV1(**client_params)
-
-
-def analytics_client_v1():
-    # Non-default analytics base URL doesn't have the analytics postfix
-    params = dict(**client_params)
-    if client_params.get('analytics_base_url') is not None:
-        params['base_url'] = params.pop('analytics_base_url')
-    else:
-        params['base_url'] = 'https://api.planet.com/analytics/'
-
-    client = api.ClientV1(**params)
-    return client
 
 
 def configure_logging(verbosity):
@@ -75,13 +62,8 @@ def configure_logging(verbosity):
 @click.option('-u', '--base-url', envvar='PL_API_BASE_URL',
               help='Change the base Planet API URL or ENV PL_API_BASE_URL'
                    ' - Default https://api.planet.com/')
-@click.option('-au', '--analytics-base-url',
-              envvar='PL_ANALYTICS_API_BASE_URL',
-              help=('Change the base Planet API URL or ENV '
-                    'PL_ANALYTICS_API_BASE_URL'
-                    ' - Default https://api.planet.com/analytics'))
 @click.version_option(version=__version__, message='%(version)s')
-def cli(context, verbose, api_key, base_url, analytics_base_url, workers):
+def cli(context, verbose, api_key, base_url, workers):
     '''Planet API Client'''
 
     configure_logging(verbose)
@@ -91,8 +73,6 @@ def cli(context, verbose, api_key, base_url, analytics_base_url, workers):
     client_params['workers'] = workers
     if base_url:
         client_params['base_url'] = base_url
-    if analytics_base_url:
-        client_params['analytics_base_url'] = analytics_base_url
 
 
 @cli.command('help')

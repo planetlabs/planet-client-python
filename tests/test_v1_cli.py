@@ -28,13 +28,6 @@ def client():
         yield client
 
 
-@pytest.fixture(scope="module")
-def analytics_client():
-    client = MagicMock(name='analytics_client', spec=ClientV1)
-    with patch('planet.scripts.v1.analytics_client_v1', lambda: client):
-        yield client
-
-
 def assert_success(result, expected_output, exit_code=0):
     if result.exception:
         print(result.output)
@@ -273,11 +266,11 @@ def test_geom_filter(runner, client):
 # For analytics entrypoints, only testing those entrypoints that have any logic
 # beyond just "make client function call"
 
-def test_get_mosaics_list_for_feed(runner, analytics_client, client):
+def test_get_mosaics_list_for_feed(runner, client):
     feeds_blob = json.loads(read_fixture('feeds.json'))
     mosaics_blob = json.loads(read_fixture('list-mosaics.json'))
 
-    configure_response(analytics_client.get_feed_info,
+    configure_response(client.get_feed_info,
                        json.dumps(feeds_blob['data'][0]))
     configure_response(client.get_mosaics_for_series,
                        json.dumps(mosaics_blob))
@@ -291,14 +284,14 @@ def test_get_mosaics_list_for_feed(runner, analytics_client, client):
     )
 
 
-def test_get_mosaics_list_for_subscription(runner, analytics_client, client):
+def test_get_mosaics_list_for_subscription(runner, client):
     sub_blob = json.loads(read_fixture('subscriptions.json'))
     feeds_blob = json.loads(read_fixture('feeds.json'))
     mosaics_blob = json.loads(read_fixture('list-mosaics.json'))
 
-    configure_response(analytics_client.get_subscription_info,
+    configure_response(client.get_subscription_info,
                        json.dumps(sub_blob['data'][0]))
-    configure_response(analytics_client.get_feed_info,
+    configure_response(client.get_feed_info,
                        json.dumps(feeds_blob['data'][0]))
     configure_response(client.get_mosaics_for_series,
                        json.dumps(mosaics_blob))
@@ -312,14 +305,14 @@ def test_get_mosaics_list_for_subscription(runner, analytics_client, client):
     )
 
 
-def test_get_mosaics_list_for_collection(runner, analytics_client, client):
+def test_get_mosaics_list_for_collection(runner, client):
     sub_blob = json.loads(read_fixture('subscriptions.json'))
     feeds_blob = json.loads(read_fixture('feeds.json'))
     mosaics_blob = read_fixture('list-mosaics.json')
 
-    configure_response(analytics_client.get_subscription_info,
+    configure_response(client.get_subscription_info,
                        json.dumps(sub_blob['data'][0]))
-    configure_response(analytics_client.get_feed_info,
+    configure_response(client.get_feed_info,
                        json.dumps(feeds_blob['data'][0]))
     configure_response(client.get_mosaics_for_series,
                        mosaics_blob)
@@ -333,9 +326,9 @@ def test_get_mosaics_list_for_collection(runner, analytics_client, client):
     )
 
 
-def test_get_collection_resource_types(runner, analytics_client):
+def test_get_collection_resource_types(runner, client):
     feature_blob = read_fixture('af_features.json')
-    configure_response(analytics_client.list_collection_features,
+    configure_response(client.list_collection_features,
                        feature_blob)
 
     expected_output = "Found resource types: ['source-image-info']\n"
@@ -347,9 +340,9 @@ def test_get_collection_resource_types(runner, analytics_client):
     )
 
 
-def test_get_associated_resource(runner, analytics_client):
+def test_get_associated_resource(runner, client):
     configure_response(
-        analytics_client.get_associated_resource_for_analytic_feature,
+        client.get_associated_resource_for_analytic_feature,
         '{"chowda":true}',
     )
     assert_success(
