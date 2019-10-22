@@ -5,8 +5,8 @@ Ideally, this would be more tightly integrated with Sphinx (as an extension),
 but this 'works' for now.
 '''
 import click
-from planet import scripts
-from planet.scripts.types import metavar_docs
+from planet import cli
+from planet.cli.types import metavar_docs
 from os import path
 import re
 
@@ -23,7 +23,7 @@ def cmd_ref(cmd):
 
 
 def help_block(e, cmd):
-    ctx = scripts.click.Context(cmd)
+    ctx = cli.click.Context(cmd)
     e.e('.. code-block:: none')
     e.write('    ' + ctx.get_help().replace('\n', '\n    '))
     e.e('')
@@ -68,9 +68,9 @@ def generate_cli_reference(e):
     e.e(h('CLI Reference', '='))
     e.e('.. include:: _reference_forward.rst')
 
-    general = [cmd for cmd in scripts.main.commands.values()
+    general = [cmd for cmd in cli.main.commands.values()
                if not hasattr(cmd, 'commands')]
-    groups = [cmd for cmd in scripts.main.commands.values()
+    groups = [cmd for cmd in cli.main.commands.values()
               if hasattr(cmd, 'commands')]
 
     e.e(h('Option Types Formatting'))
@@ -90,7 +90,7 @@ def generate_cli_reference(e):
                 seen.add(metavar)
 
     e.e(h('General Options'))
-    for p in scripts.main.params:
+    for p in cli.main.params:
         flag = p.name.replace('_', '-')
         e.e('``--%s``\n   %s\n\n' % (flag, p.help))
 

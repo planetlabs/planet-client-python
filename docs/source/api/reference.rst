@@ -16,9 +16,9 @@ The Client will resolve the API_KEY from the operating system environment using 
 
 .. code-block:: python
 
-   client = api.ClientV1()
+   client = api.Client()
 
-.. autoclass:: ClientV1()
+.. autoclass:: Client()
    :members:
 
 

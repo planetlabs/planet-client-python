@@ -67,7 +67,7 @@ MAX_PAGE_SIZE = 250
 client_params = {}
 
 
-def clientv1():
+def client():
     return api.Client(**client_params)
 
 
@@ -143,7 +143,7 @@ def help(context, command):
 ))
 def init(email, password):
     '''Login using email/password'''
-    response = call_and_wrap(clientv1().login, email, password)
+    response = call_and_wrap(client().login, email, password)
     write_planet_json({'key': response['api_key']})
     click.echo('initialized')
 
@@ -175,7 +175,7 @@ def filter_dump(**kw):
 def quick_search(limit, pretty, sort, **kw):
     '''Execute a quick search.'''
     req = search_req_from_opts(**kw)
-    cl = clientv1()
+    cl = client()
     page_size = min(limit, MAX_PAGE_SIZE)
     echo_json_response(call_and_wrap(
         cl.quick_search, req, page_size=page_size, sort=sort
@@ -190,7 +190,7 @@ def quick_search(limit, pretty, sort, **kw):
 def create_search(pretty, **kw):
     '''Create a saved search'''
     req = search_req_from_opts(**kw)
-    cl = clientv1()
+    cl = client()
     echo_json_response(call_and_wrap(cl.create_search, req), pretty)
 
 
@@ -202,7 +202,7 @@ def create_search(pretty, **kw):
 def saved_search(search_id, sort, pretty, limit):
     '''Execute a saved search'''
     sid = read(search_id)
-    cl = clientv1()
+    cl = client()
     page_size = min(limit, MAX_PAGE_SIZE)
     echo_json_response(call_and_wrap(
         cl.saved_search, sid, page_size=page_size, sort=sort
@@ -216,7 +216,7 @@ def saved_search(search_id, sort, pretty, limit):
 @limit_option(10)
 def get_searches(quick, saved, limit):
     '''List searches'''
-    cl = clientv1()
+    cl = client()
     response = call_and_wrap(cl.get_searches, quick, saved)
     echo_json_response(response, True, limit=limit)
 
@@ -231,7 +231,7 @@ def get_searches(quick, saved, limit):
 def stats(pretty, **kw):
     '''Get search stats'''
     req = search_req_from_opts(**kw)
-    cl = clientv1()
+    cl = client()
     echo_json_response(call_and_wrap(cl.stats, req), pretty)
 
 
@@ -264,7 +264,7 @@ def _disable_item_type(ctx, param, value):
 def download(asset_type, dest, limit, sort, search_id, dry_run, activate_only,
              quiet, **kw):
     '''Activate and download'''
-    cl = clientv1()
+    cl = client()
     page_size = min(limit or MAX_PAGE_SIZE, MAX_PAGE_SIZE)
     asset_type = list(chain.from_iterable(asset_type))
     # even though we're using functionality from click.Path, this was needed
@@ -332,7 +332,7 @@ def series():
 @click.argument('series_id')
 @pretty
 def describe(series_id, pretty):
-    cl = clientv1()
+    cl = client()
     echo_json_response(call_and_wrap(cl.get_mosaic_series, series_id), pretty)
 
 
@@ -340,8 +340,8 @@ def describe(series_id, pretty):
 @click.argument('series_id')
 @pretty
 def list_mosaics_for_series(series_id, pretty):
-    client = clientv1()
-    series = client.get_mosaics_for_series(series_id)
+    cl = client()
+    series = cl.get_mosaics_for_series(series_id)
     echo_json_response(series, pretty)
 
 
@@ -350,7 +350,7 @@ def list_mosaics_for_series(series_id, pretty):
 @pretty
 def list_mosaics(pretty, prefix):
     '''List information for all available mosaics'''
-    cl = clientv1()
+    cl = client()
     echo_json_response(call_and_wrap(cl.get_mosaics, prefix), pretty)
 
 
@@ -366,7 +366,7 @@ def list_mosaics(pretty, prefix):
 def search_mosaics(name, bbox, rbox, limit, pretty):
     '''Get quad IDs and information for a mosaic'''
     bbox = bbox or rbox
-    cl = clientv1()
+    cl = client()
     mosaic, = cl.get_mosaic_by_name(name).iterate(1)
     response = call_and_wrap(cl.get_quads, mosaic, bbox)
     echo_json_response(response, pretty, limit)
@@ -377,7 +377,7 @@ def search_mosaics(name, bbox, rbox, limit, pretty):
 @pretty
 def mosaic_info(name, pretty):
     '''Get information for a specific mosaic'''
-    cl = clientv1()
+    cl = client()
     echo_json_response(call_and_wrap(cl.get_mosaic_by_name, name), pretty)
 
 
@@ -387,7 +387,7 @@ def mosaic_info(name, pretty):
 @pretty
 def quad_info(name, quad, pretty):
     '''Get information for a specific mosaic quad'''
-    cl = clientv1()
+    cl = client()
     mosaic, = cl.get_mosaic_by_name(name).iterate(1)
     echo_json_response(call_and_wrap(cl.get_quad_by_id, mosaic, quad), pretty)
 
@@ -398,7 +398,7 @@ def quad_info(name, quad, pretty):
 @pretty
 def quad_contributions(name, quad, pretty):
     '''Get contributing scenes for a mosaic quad'''
-    cl = clientv1()
+    cl = client()
     mosaic, = cl.get_mosaic_by_name(name).iterate(1)
     quad = cl.get_quad_by_id(mosaic, quad).get()
     response = call_and_wrap(cl.get_quad_contributions, quad)
@@ -423,7 +423,7 @@ def quad_contributions(name, quad, pretty):
 def download_quads(name, bbox, rbox, quiet, dest, limit):
     '''Download quads from a mosaic'''
     bbox = bbox or rbox
-    cl = clientv1()
+    cl = client()
 
     dl = downloader.create(cl, mosaic=True)
     output = downloader_output(dl, disable_ansi=quiet)
@@ -449,7 +449,7 @@ def analytics():
 @pretty
 def health(pretty):
     '''Check that we can connect to the API'''
-    cl = clientv1()
+    cl = client()
     click.echo('Using base URL: {}'.format(cl.base_url))
     response = cl.check_analytics_connection()
     echo_json_response(response, pretty)
@@ -463,7 +463,7 @@ def conformance(pretty):
     :param pretty:
     :return:
     '''
-    cl = clientv1()
+    cl = client()
     response = cl.wfs_conformance()
     echo_json_response(response, pretty)
 
@@ -481,7 +481,7 @@ def feeds():
 @pretty
 def list_feeds(pretty, limit, stats):
     '''List all subscriptions user has access to.'''
-    cl = clientv1()
+    cl = client()
     response = cl.list_analytic_feeds(stats)
     echo_json_response(response, pretty, limit)
 
@@ -490,7 +490,7 @@ def list_feeds(pretty, limit, stats):
 @click.argument('feed_id')
 def get_mosaic_list_for_feed(feed_id):
     '''List mosaics linked to feed'''
-    cl = clientv1()
+    cl = client()
     feed_info = cl.get_feed_info(feed_id).get()
 
     for type_ in ['target', 'source']:
@@ -515,7 +515,7 @@ def get_mosaic_list_for_feed(feed_id):
 @pretty
 def get_feed_info(feed_id, pretty):
     '''Get metadata for specific feed.'''
-    cl = clientv1()
+    cl = client()
     feed_info = cl.get_feed_info(feed_id)
     echo_json_response(feed_info, pretty)
 
@@ -534,7 +534,7 @@ def subscriptions():
 @pretty
 def list_subscriptions(pretty, limit, feed_id):
     '''List all subscriptions user has access to.'''
-    cl = clientv1()
+    cl = client()
     response = cl.list_analytic_subscriptions(feed_id)
     echo_json_response(response, pretty, limit)
 
@@ -543,7 +543,7 @@ def list_subscriptions(pretty, limit, feed_id):
 @click.argument('subscription_id')
 def get_mosaic_list_for_subscription(subscription_id):
     '''List mosaics linked to feed'''
-    cl = clientv1()
+    cl = client()
     sub_info = cl.get_subscription_info(subscription_id).get()
     feed_info = cl.get_feed_info(sub_info['feedID']).get()
 
@@ -569,7 +569,7 @@ def get_mosaic_list_for_subscription(subscription_id):
 @pretty
 def get_subscription_info(subscription_id, pretty):
     '''Get metadata for specific subscription.'''
-    cl = clientv1()
+    cl = client()
     sub_info = cl.get_subscription_info(subscription_id)
     echo_json_response(sub_info, pretty)
 
@@ -585,7 +585,7 @@ def collections():
 @pretty
 def list_collections(pretty, limit):
     '''List all collections user has access to.'''
-    cl = clientv1()
+    cl = client()
     response = cl.list_analytic_collections()
     echo_json_response(response, pretty, limit)
 
@@ -594,7 +594,7 @@ def list_collections(pretty, limit):
 @click.argument('subscription_id')
 def get_mosaic_list_for_collection(subscription_id):
     '''List mosaics linked to feed'''
-    cl = clientv1()
+    cl = client()
     sub_info = cl.get_subscription_info(subscription_id).get()
     feed_info = cl.get_feed_info(sub_info['feedID']).get()
 
@@ -620,7 +620,7 @@ def get_mosaic_list_for_collection(subscription_id):
 @pretty
 def get_collection_info(subscription_id, pretty):
     '''Get metadata for specific collection.'''
-    cl = clientv1()
+    cl = client()
     sub_info = cl.get_collection_info(subscription_id)
     echo_json_response(sub_info, pretty)
 
@@ -630,7 +630,7 @@ def get_collection_info(subscription_id, pretty):
 @pretty
 def get_resource_types(subscription_id, pretty):
     '''Get available resource types.'''
-    cl = clientv1()
+    cl = client()
     # Assumes that all features in a collection have the same list of
     # associated resource types
     features = cl.list_collection_features(subscription_id,
@@ -683,7 +683,7 @@ def features():
 def list_features(subscription_id, pretty, limit, rbox, bbox, time_range,
                   before, after):
     '''Request feature list for a particular subscription, 100 at a time.'''
-    cl = clientv1()
+    cl = client()
     bbox = bbox or rbox
     features = cl.list_collection_features(subscription_id, bbox, time_range,
                                            before, after)
@@ -715,7 +715,7 @@ def list_features(subscription_id, pretty, limit, rbox, bbox, time_range,
 def list_features_all(subscription_id, pretty, rbox, bbox, time_range, before,
                       after):
     '''Return every available feature for a particular subscription'''
-    cl = clientv1()
+    cl = client()
     bbox = bbox or rbox
     features = cl.list_collection_features(subscription_id, bbox, time_range,
                                            before, after)
@@ -735,7 +735,7 @@ def list_features_all(subscription_id, pretty, rbox, bbox, time_range, before,
 def get_associated_resource(subscription_id, feature_id, resource_type, pretty,
                             dest):
     '''Request resources for a particular subscription/feature combination.'''
-    cl = clientv1()
+    cl = client()
     if resource_type in ['target-quad', 'source-quad']:
         msg_format = 'Requesting {} for {}/{}, destination directory is: {}'
         click.echo(msg_format.format(
@@ -773,7 +773,7 @@ def orders():
 @pretty
 def list_orders(pretty):
     '''List all pending order requests; optionally filter by status'''
-    cl = clientv1()
+    cl = client()
     echo_json_response(call_and_wrap(cl.get_orders), pretty)
 
 
@@ -782,7 +782,7 @@ def list_orders(pretty):
 @pretty
 def get_order(order_id, pretty):
     '''Get order request for a given order ID'''
-    cl = clientv1()
+    cl = client()
     echo_json_response(call_and_wrap(cl.get_individual_order, order_id),
                        pretty)
 
@@ -792,7 +792,7 @@ def get_order(order_id, pretty):
 @pretty
 def cancel_order(order_id, pretty):
     '''Cancel a running order by given order ID'''
-    cl = clientv1()
+    cl = client()
     echo_json_response(call_and_wrap(cl.cancel_order, order_id), pretty)
 
 
@@ -821,7 +821,7 @@ def cancel_order(order_id, pretty):
 @pretty
 def create_order(pretty, **kwargs):
     '''Create an order'''
-    cl = clientv1()
+    cl = client()
     request = create_order_request(**kwargs)
     echo_json_response(call_and_wrap(cl.create_order, request), pretty)
 
@@ -838,7 +838,7 @@ def create_order(pretty, **kwargs):
 @pretty
 def download_order(order_id, dest, quiet, pretty):
     '''Download an order by given order ID'''
-    cl = clientv1()
+    cl = client()
     dl = downloader.create(cl, order=True)
 
     output = downloader_output(dl, disable_ansi=quiet)

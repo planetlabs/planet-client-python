@@ -24,7 +24,7 @@ def runner():
 @pytest.fixture(scope="module")
 def client():
     client = MagicMock(name='client', spec=Client)
-    with patch('planet.cli.cli.clientv1', lambda: client):
+    with patch('planet.cli.cli.client', lambda: client):
         yield client
 
 

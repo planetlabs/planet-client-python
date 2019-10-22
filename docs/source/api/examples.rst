@@ -17,7 +17,7 @@ Without any arguments, the Client will look for an API_KEY using the operating s
 
 .. code-block:: python
 
-    client = api.ClientV1()
+    client = api.Client()
 
 Searching for Items
 -------------------
