@@ -323,7 +323,7 @@ class Feeds(AnalyticsPaged):
 
 
 class Subscriptions(AnalyticsPaged):
-    pass
+    GEOMETRY = 'geometry'
 
 
 class WFS3Paged(AnalyticsPaged):
