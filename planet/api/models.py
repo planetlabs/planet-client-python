@@ -181,7 +181,13 @@ class JSON(Body):
         '''Get the response as a JSON dict'''
         return self.response.json()
 
-    def as_dataframe(self, limit=None, epsg='4326'):
+    def as_dataframe(self, limit=None):
+        '''
+        Get the response as a pandas DataFrame. Some subclasses may return a
+        geopandas GeoDataFrame instead if a GEOMETRY is specified.
+        :param int limit: The number of 'items' to limit to.
+        :returns: :py:Class:`pandas.DataFrame`
+        '''
         data = getattr(self, self.ITER_FUNC)(limit)
         if isinstance(data, dict):
             # Assume single entry where each key should be a column
@@ -193,7 +199,7 @@ class JSON(Body):
         if self.GEOMETRY:
             df[self.GEOMETRY] = df[self.GEOMETRY].map(shapely.geometry.shape)
             df = gpd.GeoDataFrame(
-                df, geometry=self.GEOMETRY, crs=from_epsg(epsg)
+                df, geometry=self.GEOMETRY, crs=from_epsg(4326)
             )
         return df
 

@@ -15,12 +15,42 @@
 import io
 import json
 import pytest
+import pandas as pd
+import geopandas as gpd
 from planet.api.models import Features, Paged, Request, Response, WFS3Features
 from mock import MagicMock
 # try:
 #     from StringIO import StringIO as Buffy
 # except ImportError:
 #     from io import BytesIO as Buffy
+
+SAMPLE_GEOM = {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -122.35816955566406,
+              47.590188755786635
+            ],
+            [
+              -122.31628417968749,
+              47.590188755786635
+            ],
+            [
+              -122.31628417968749,
+              47.61796699180627
+            ],
+            [
+              -122.35816955566406,
+              47.61796699180627
+            ],
+            [
+              -122.35816955566406,
+              47.590188755786635
+            ]
+          ]
+        ]
+      }
 
 
 def mock_http_response(json, iter_content=None):
@@ -41,7 +71,8 @@ def make_page(cnt, start, key, next, af):
                 'title': 'NEXT'
             }],
             key: [{
-                'thingee': start + t
+                'thingee': start + t,
+                'geometry': SAMPLE_GEOM
             } for t in range(cnt)]
         }
     else:
@@ -50,7 +81,8 @@ def make_page(cnt, start, key, next, af):
                 '_next': next
             },
             key: [{
-                'thingee': start + t
+                'thingee': start + t,
+                'geometry': SAMPLE_GEOM
             } for t in range(cnt)]
         }
     return start + cnt, envelope
@@ -67,6 +99,11 @@ def make_pages(cnt, num, key, af):
 
 class Thingees(Paged):
     ITEM_KEY = 'thingees'
+
+
+class GeometryThingees(Paged):
+    ITEM_KEY = 'thingees'
+    GEOMETRY = 'geometry'
 
 
 def thingees(cnt, num, key='thingees', body=Thingees, af=False):
@@ -124,7 +161,11 @@ def test_json_encode():
     paged = thingees(5, 5)
     buf = io.StringIO()
     paged.json_encode(buf, 1)
-    assert '{"thingees": [{"thingee": 0}]}' == buf.getvalue()
+    thing = json.loads(buf.getvalue())
+    assert list(thing.keys()) == ['thingees']
+    assert len(thing['thingees']) == 1
+    assert set(thing['thingees'][0].keys()) == {'thingee', 'geometry'}
+    assert thing['thingees'][0]['thingee'] == 0
 
 
 def test_features():
@@ -149,3 +190,15 @@ def test_wf3_features(limit):
     features.json_encode(buf, limit)
     features_json = json.loads(buf.getvalue())
     assert len(features_json['features']) == limit if limit else num_items
+
+
+def test_as_dataframe():
+    paged = thingees(5, 5, body=Thingees)
+    geometry_paged = thingees(5, 5, body=GeometryThingees)
+    df = paged.as_dataframe()
+    gdf = geometry_paged.as_dataframe()
+    assert isinstance(df, pd.DataFrame)
+    assert isinstance(gdf, gpd.GeoDataFrame)
+    assert all(df.columns == gdf.columns)
+    assert df.shape == gdf.shape
+    assert gdf.geometry.name == GeometryThingees.GEOMETRY
