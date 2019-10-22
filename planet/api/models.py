@@ -344,7 +344,7 @@ class Order(JSON):
 
     def get_results(self):
         links = self.get()[self.LINKS_KEY]
-        results = links.get(self.RESULTS_KEY, None)s
+        results = links.get(self.RESULTS_KEY, None)
         return results
 
     def get_locations(self):
