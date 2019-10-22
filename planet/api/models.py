@@ -19,6 +19,8 @@ from .utils import check_status
 from .utils import GeneratorAdapter
 from datetime import datetime
 import pandas as pd
+import geopandas as gpd
+import shapely
 import itertools
 import json
 
@@ -172,8 +174,9 @@ class Body(object):
 class JSON(Body):
     '''A Body that contains JSON'''
     ITER_FUNC = 'get'
+    GEOMETRY = None
 
-    def get(self):
+    def get(self, *args):
         '''Get the response as a JSON dict'''
         return self.response.json()
 
@@ -185,6 +188,10 @@ class JSON(Body):
         else:
             # Assume list or iterable where each item is a separate record
             df = pd.DataFrame.from_dict(data)
+
+        if self.GEOMETRY:
+            df[self.GEOMETRY] = df[self.GEOMETRY].map(shapely.geometry.shape)
+            df = gpd.GeoDataFrame(df, geometry=self.GEOMETRY)
         return df
 
 
@@ -332,6 +339,7 @@ class WFS3Features(AnalyticsPaged):
     # differences in the structure of the response envelope result in paging
     # slightly differently.
     ITEM_KEY = 'features'
+    GEOMETRY = 'geometry'
 
 
 class Orders(Paged):

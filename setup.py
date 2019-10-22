@@ -80,7 +80,9 @@ setup(name='planet',
           'requests',
           'requests_futures',
           'pywin32 >= 1.0;platform_system=="Windows"',
-          'pandas'
+          'pandas',
+          'geopandas',
+          'shapely'
       ],
       extras_require={
           'test': test_requires,
