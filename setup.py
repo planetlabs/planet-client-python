@@ -79,7 +79,8 @@ setup(name='planet',
           'click',
           'requests',
           'requests_futures',
-          'pywin32 >= 1.0;platform_system=="Windows"'
+          'pywin32 >= 1.0;platform_system=="Windows"',
+          'pandas'
       ],
       extras_require={
           'test': test_requires,

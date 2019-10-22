@@ -18,6 +18,7 @@ from .utils import get_filename
 from .utils import check_status
 from .utils import GeneratorAdapter
 from datetime import datetime
+import pandas as pd
 import itertools
 import json
 
@@ -170,10 +171,19 @@ class Body(object):
 
 class JSON(Body):
     '''A Body that contains JSON'''
+    ITER_FUNC = 'get'
 
     def get(self):
         '''Get the response as a JSON dict'''
         return self.response.json()
+
+    def as_dataframe(self, limit=None):
+        data = getattr(self, self.ITER_FUNC)(limit)
+        if isinstance(data, list):
+            df = pd.DataFrame.from_dict(data)
+        else:
+            df = pd.DataFrame.from_dict([data])
+        return df
 
 
 class Paged(JSON):
@@ -181,6 +191,8 @@ class Paged(JSON):
     ITEM_KEY = 'features'
     LINKS_KEY = '_links'
     NEXT_KEY = '_next'
+
+    ITER_FUNC = 'items_iter'
 
     def next(self):
         links = self.get()[self.LINKS_KEY]
