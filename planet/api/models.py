@@ -352,7 +352,7 @@ class Order(JSON):
         locations = [r[self.LOCATION_KEY] for r in results]
         return locations
 
-    def items_iter(self, limit):
+    def iterate(self, limit):
         '''Get an iterator of the 'items' in each order.
         The iterator yields the individual items in the order.
 
