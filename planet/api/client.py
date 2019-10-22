@@ -400,7 +400,7 @@ class ClientV1(_Base):
         :returns: :py:Class:`planet.api.models.JSON`
         '''
         url = self._url('analytics/subscriptions/{}'.format(subscription_id))
-        return self._get(url, models.JSON).get_body()
+        return self._get(url, models.Subscription).get_body()
 
     def list_analytic_feeds(self, stats):
         '''

@@ -192,7 +192,9 @@ class JSON(Body):
 
         if self.GEOMETRY:
             df[self.GEOMETRY] = df[self.GEOMETRY].map(shapely.geometry.shape)
-            df = gpd.GeoDataFrame(df, geometry=self.GEOMETRY, crs=from_epsg(epsg))
+            df = gpd.GeoDataFrame(
+                df, geometry=self.GEOMETRY, crs=from_epsg(epsg)
+            )
         return df
 
 
@@ -321,6 +323,10 @@ class AnalyticsPaged(Paged):
 # collections).
 class Feeds(AnalyticsPaged):
     pass
+
+
+class Subscription(JSON):
+    GEOMETRY = 'geometry'
 
 
 class Subscriptions(AnalyticsPaged):
