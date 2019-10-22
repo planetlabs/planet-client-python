@@ -20,6 +20,7 @@ from .utils import GeneratorAdapter
 from datetime import datetime
 import itertools
 import json
+import pandas as pd
 
 chunk_size = 32 * 1024
 
@@ -175,6 +176,12 @@ class JSON(Body):
         '''Get the response as a JSON dict'''
         return self.response.json()
 
+    def as_dataframe(self):
+        data = self.get()
+        if isinstance(data, list):
+            return pd.DataFrame.from_dict(data)
+        return pd.DataFrame.from_dict([data])
+
 
 class Paged(JSON):
 
@@ -247,6 +254,12 @@ class Paged(JSON):
         return {
             self.ITEM_KEY: items
         }
+
+    def as_dataframe(self, limit=None):
+        data = self.iterate(limit)
+        if isinstance(data, list):
+            return pd.DataFrame.from_dict(data)
+        return pd.DataFrame.from_dict([data])
 
 
 # GeoJSON feature
@@ -331,7 +344,7 @@ class Order(JSON):
 
     def get_results(self):
         links = self.get()[self.LINKS_KEY]
-        results = links.get(self.RESULTS_KEY, None)
+        results = links.get(self.RESULTS_KEY, None)s
         return results
 
     def get_locations(self):

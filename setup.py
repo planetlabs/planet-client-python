@@ -20,7 +20,7 @@ from setuptools import setup, find_packages
 try:
     with codecs_open('README.rst', encoding='utf-8') as f:
         long_description = f.read()
-except:
+except Exception:
     # @todo for now, fall back to this - pex fails to resolve the README
     long_description = ''
 
@@ -79,7 +79,8 @@ setup(name='planet',
           'click',
           'requests',
           'requests_futures',
-          'pywin32 >= 1.0;platform_system=="Windows"'
+          'pywin32 >= 1.0;platform_system=="Windows"',
+          'pandas'
       ],
       extras_require={
           'test': test_requires,
