@@ -23,6 +23,7 @@ import geopandas as gpd
 import shapely
 import itertools
 import json
+from fiona.crs import from_epsg
 
 chunk_size = 32 * 1024
 
@@ -180,7 +181,7 @@ class JSON(Body):
         '''Get the response as a JSON dict'''
         return self.response.json()
 
-    def as_dataframe(self, limit=None):
+    def as_dataframe(self, limit=None, epsg='4326'):
         data = getattr(self, self.ITER_FUNC)(limit)
         if isinstance(data, dict):
             # Assume single entry where each key should be a column
@@ -191,7 +192,7 @@ class JSON(Body):
 
         if self.GEOMETRY:
             df[self.GEOMETRY] = df[self.GEOMETRY].map(shapely.geometry.shape)
-            df = gpd.GeoDataFrame(df, geometry=self.GEOMETRY)
+            df = gpd.GeoDataFrame(df, geometry=self.GEOMETRY, crs=from_epsg(epsg))
         return df
 
 

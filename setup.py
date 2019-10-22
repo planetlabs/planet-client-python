@@ -82,7 +82,8 @@ setup(name='planet',
           'pywin32 >= 1.0;platform_system=="Windows"',
           'pandas',
           'geopandas',
-          'shapely'
+          'shapely',
+          'fiona'
       ],
       extras_require={
           'test': test_requires,
