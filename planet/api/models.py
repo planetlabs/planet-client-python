@@ -179,10 +179,12 @@ class JSON(Body):
 
     def as_dataframe(self, limit=None):
         data = getattr(self, self.ITER_FUNC)(limit)
-        if isinstance(data, list):
-            df = pd.DataFrame.from_dict(data)
-        else:
+        if isinstance(data, dict):
+            # Assume single entry where each key should be a column
             df = pd.DataFrame.from_dict([data])
+        else:
+            # Assume list or iterable where each item is a separate record
+            df = pd.DataFrame.from_dict(data)
         return df
 
 
