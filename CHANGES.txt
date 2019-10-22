@@ -50,7 +50,7 @@
 - Let date_range filter handle dates given with and without timezones
 - Update copyright date
 - Update Planet address
-- Limit arg is required for items_iter()
+- Limit arg is required for iterate()
 - Add pywin32 dep for windows platforms
 - Flake8 fixes
 - Fix improper handling of mixed states when activating multiple assets with Downloader.

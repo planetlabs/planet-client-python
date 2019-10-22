@@ -113,9 +113,9 @@ def _patch_stats_request(request):
     return request
 
 
-class ClientV1(_Base):
-    '''ClientV1 provides basic low-level access to Planet's API. Only one
-    ClientV1 should be in existence for an application. The Client is thread
+class Client(_Base):
+    '''Client provides basic low-level access to Planet's API. Only one
+    Client should be in existence for an application. The Client is thread
     safe and takes care to avoid API throttling and also retry any throttled
     requests. Most functions take JSON-like dict representations of API
     request bodies. Return values are usually a subclass of

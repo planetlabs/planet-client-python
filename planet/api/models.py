@@ -221,7 +221,7 @@ class Paged(JSON):
         for chunk in enc.iterencode(stream):
             out.write(u'%s' % chunk)
 
-    def items_iter(self, limit):
+    def iterate(self, limit):
         '''Get an iterator of the 'items' in each page. Instead of a feature
         collection from each page, the iterator yields the features.
 
@@ -241,7 +241,7 @@ class Paged(JSON):
         items = self.get()[self.ITEM_KEY]
         # if there are no results, the GeneratorAdapter doesn't play well
         if len(items):
-            items = GeneratorAdapter(self.items_iter(limit))
+            items = GeneratorAdapter(self.iterate(limit))
         else:
             items = []
         return {

@@ -15,13 +15,13 @@
 from .exceptions import (APIException, BadQuery, InvalidAPIKey)
 from .exceptions import (NoPermission, MissingResource, OverQuota)
 from .exceptions import (ServerError, RequestCancelled, TooManyRequests)
-from .client import (ClientV1)
+from .client import (Client)
 from .utils import write_to_file
 from . import filters
 from .__version__ import __version__  # NOQA
 
 __all__ = [
-    ClientV1, APIException, BadQuery, InvalidAPIKey,
+    Client, APIException, BadQuery, InvalidAPIKey,
     NoPermission, MissingResource, OverQuota, ServerError, RequestCancelled,
     TooManyRequests,
     write_to_file,

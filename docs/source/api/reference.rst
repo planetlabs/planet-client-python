@@ -96,11 +96,11 @@ Most responses are more specific than a body. The JSON body provides the content
 
 Paginated responses provide a paging iterator as well as an iterator of each pages contents.
 
-The :py:meth:`Paged.items_iter` method provides iteration over the contents of each page response.
+The :py:meth:`Paged.iterate` method provides iteration over the contents of each page response.
 
 For examples, an :py:class:`Items` response page contains a FeatureCollection of zero or more Item objects.
 Each Item is a record represented as a GeoJSON feature with properties describing it's metadata.
-When using the `iterator` from the :py:meth:`Paged.items_iter` method, only Item Feature objects will be returned.
+When using the `iterator` from the :py:meth:`Paged.iterate` method, only Item Feature objects will be returned.
 
 To handle assembling the items from each page into a collection again and streaming them as JSON, use the :py:meth:`Paged.json_encode` method.
 
@@ -109,11 +109,11 @@ To handle assembling the items from each page into a collection again and stream
 
 .. py:class:: Items()
 
-   Items is a Body that contains a FeatureCollection so when using `items_iter`, it will yield `Feature` GeoJSON objects.
+   Items is a Body that contains a FeatureCollection so when using `iterate`, it will yield `Feature` GeoJSON objects.
 
 .. py:class:: Searches()
 
-   Searches is a Body that contains an array of searches, so when using `items_iter`, it will yield `Search` JSON objects.
+   Searches is a Body that contains an array of searches, so when using `iterate`, it will yield `Search` JSON objects.
 
 
 Utilities

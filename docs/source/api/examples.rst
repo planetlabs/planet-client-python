@@ -49,7 +49,7 @@ A common case is searching for items in an AOI.
     # this will cause an exception if there are any API related errors
     results = client.quick_search(request)
 
-    # items_iter returns an iterator over API response pages
-    for item in results.items_iter(10):
+    # iterate returns an iterator over API response pages
+    for item in results.iterate(10):
       # each item is a GeoJSON feature
       sys.stdout.write('%s\n' % item['id'])

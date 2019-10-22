@@ -35,9 +35,9 @@ from mock import MagicMock
 
 from planet import api
 from planet.api.__version__ import __version__
-from planet.scripts import util
-from planet.scripts import main
-from planet.scripts import cli
+from planet.cli import util
+from planet.cli import main
+from planet.cli import cli
 
 
 # have to clear in case key is picked up via env
@@ -45,7 +45,7 @@ if api.auth.ENV_KEY in os.environ:
     os.environ.pop(api.auth.ENV_KEY)
 
 
-client = MagicMock(name='client', spec=api.ClientV1)
+client = MagicMock(name='client', spec=api.Client)
 
 
 def run_cli(*args, **kw):

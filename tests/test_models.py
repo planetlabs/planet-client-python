@@ -104,7 +104,7 @@ def test_paged_items_iter():
     paged = thingees(5, 5)
     expected = 25
     cnt = 0
-    for i in paged.items_iter(None):
+    for i in paged.iterate(None):
         if cnt > expected:
             assert False
         assert i['thingee'] == cnt

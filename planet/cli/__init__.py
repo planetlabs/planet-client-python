@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from planet.scripts import cli
-from planet.scripts import v1
-
-assert v1  # appease lint
+from planet.cli import cli
 
 main = cli.cli

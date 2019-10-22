@@ -34,7 +34,7 @@ api.utils._planet_json_file = lambda: '.whyyounameafilelikethis123'
 
 @pytest.fixture()
 def client():
-    return api.ClientV1('foobar')
+    return api.Client('foobar')
 
 
 def test_assert_client_execution_success(client):
@@ -47,7 +47,7 @@ def test_assert_client_execution_success(client):
 
 def test_missing_api_key():
     '''verify exception raised on missing API key'''
-    client = api.ClientV1(api_key=None)
+    client = api.Client(api_key=None)
     try:
         client._get('whatevs').get_body()
     except api.exceptions.InvalidAPIKey as ex:

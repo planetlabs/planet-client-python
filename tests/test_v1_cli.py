@@ -5,8 +5,8 @@ import traceback
 from mock import MagicMock
 from mock import patch
 from planet import api
-from planet.scripts import main
-from planet.api import ClientV1
+from planet.cli import main
+from planet.api import Client
 from planet.api import models
 import pytest
 from _common import read_fixture
@@ -23,8 +23,8 @@ def runner():
 
 @pytest.fixture(scope="module")
 def client():
-    client = MagicMock(name='client', spec=ClientV1)
-    with patch('planet.scripts.v1.clientv1', lambda: client):
+    client = MagicMock(name='client', spec=Client)
+    with patch('planet.cli.cli.clientv1', lambda: client):
         yield client
 
 
@@ -192,13 +192,13 @@ def test_download_dry_run(runner, client, monkeypatch):
 
 def test_download_quick(runner, client, monkeypatch):
     resp = MagicMock('response')
-    resp.items_iter = lambda x: None
+    resp.iterate = lambda x: None
     client.quick_search.return_value = resp
     dl = MagicMock(name='downloader')
-    monkeypatch.setattr('planet.scripts.v1.downloader', dl)
-    monkeypatch.setattr('planet.scripts.v1.downloader_output',
+    monkeypatch.setattr('planet.cli.cli.downloader', dl)
+    monkeypatch.setattr('planet.cli.cli.downloader_output',
                         lambda *a, **kw: MagicMock())
-    monkeypatch.setattr('planet.scripts.v1.handle_interrupt',
+    monkeypatch.setattr('planet.cli.cli.handle_interrupt',
                         lambda *a, **kw: None)
     assert_success(
         runner.invoke(main, [
@@ -215,13 +215,13 @@ def test_download_quick(runner, client, monkeypatch):
 
 def test_download_search_id(runner, client, monkeypatch):
     resp = MagicMock('response')
-    resp.items_iter = lambda x: None
+    resp.iterate = lambda x: None
     client.saved_search.return_value = resp
     dl = MagicMock(name='downloader')
-    monkeypatch.setattr('planet.scripts.v1.downloader', dl)
-    monkeypatch.setattr('planet.scripts.v1.downloader_output',
+    monkeypatch.setattr('planet.cli.cli.downloader', dl)
+    monkeypatch.setattr('planet.cli.cli.downloader_output',
                         lambda *a, **kw: MagicMock())
-    monkeypatch.setattr('planet.scripts.v1.handle_interrupt',
+    monkeypatch.setattr('planet.cli.cli.handle_interrupt',
                         lambda *a, **kw: None)
     assert_success(
         runner.invoke(main, [

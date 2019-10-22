@@ -13,12 +13,15 @@
 # limitations under the License.
 
 import click
+import logging
+import sys
 from itertools import chain
 import json
-from .cli import (
-    cli,
-    clientv1,
-)
+
+from planet import api
+from planet.api.__version__ import __version__
+from planet.api.utils import write_planet_json
+
 from .opts import (
     asset_type_option,
     bundle_option,
@@ -60,6 +63,89 @@ filter_opts_epilog = '\nFilter Formats:\n\n' + \
 
 DEFAULT_SEARCH_LIMIT = 100
 MAX_PAGE_SIZE = 250
+
+client_params = {}
+
+
+def clientv1():
+    return api.Client(**client_params)
+
+
+def configure_logging(verbosity):
+    '''configure logging via verbosity level of between 0 and 2 corresponding
+    to log levels warning, info and debug respectfully.'''
+    log_level = max(logging.DEBUG, logging.WARNING - logging.DEBUG*verbosity)
+    logging.basicConfig(
+        stream=sys.stderr, level=log_level,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+    urllib3_logger = logging.getLogger(
+        'requests.packages.urllib3')
+    urllib3_logger.setLevel(log_level)
+
+    # if debug level set then its nice to see the headers of the request
+    if log_level == logging.DEBUG:
+        try:
+            import http.client as http_client
+        except ImportError:
+            # Python 2
+            import httplib as http_client
+        http_client.HTTPConnection.debuglevel = 1
+
+
+@click.group()
+@click.pass_context
+@click.option('-w', '--workers', default=4,
+              help=('The number of concurrent downloads when requesting '
+                    'multiple scenes. - Default 4'))
+@click.option('-v', '--verbose', count=True, help='Specify verbosity')
+@click.option('-k', '--api-key',
+              help='Valid API key - or via ENV variable %s' % api.auth.ENV_KEY)
+@click.option('-u', '--base-url', envvar='PL_API_BASE_URL',
+              help='Change the base Planet API URL or ENV PL_API_BASE_URL'
+                   ' - Default https://api.planet.com/')
+@click.version_option(version=__version__, message='%(version)s')
+def cli(context, verbose, api_key, base_url, workers):
+    '''Planet API Client'''
+
+    configure_logging(verbose)
+
+    client_params.clear()
+    client_params['api_key'] = api_key
+    client_params['workers'] = workers
+    if base_url:
+        client_params['base_url'] = base_url
+
+
+@cli.command('help')
+@click.argument("command", default="")
+@click.pass_context
+def help(context, command):
+    '''Get command help'''
+    if command:
+        cmd = cli.commands.get(command, None)
+        if cmd:
+            context.info_name = command
+            click.echo(cmd.get_help(context))
+        else:
+            raise click.ClickException('no command: %s' % command)
+    else:
+        click.echo(cli.get_help(context))
+
+
+@cli.command('init')
+@click.option('--email', default=None, prompt=True, help=(
+    'The email address associated with your Planet credentials.'
+))
+@click.option('--password', default=None, prompt=True, hide_input=True, help=(
+    'Account password. Will not be saved.'
+))
+def init(email, password):
+    '''Login using email/password'''
+    response = call_and_wrap(clientv1().login, email, password)
+    write_planet_json({'key': response['api_key']})
+    click.echo('initialized')
 
 
 @cli.group('data')
@@ -222,7 +308,7 @@ def download(asset_type, dest, limit, sort, search_id, dry_run, activate_only,
         output.cancel()
         click_exception(ex)
     func = dl.activate if activate_only else dl.download
-    args = [items.items_iter(limit), asset_type]
+    args = [items.iterate(limit), asset_type]
     if not activate_only:
         args.append(dest)
     # invoke the function within an interrupt handler that will shut everything
@@ -281,7 +367,7 @@ def search_mosaics(name, bbox, rbox, limit, pretty):
     '''Get quad IDs and information for a mosaic'''
     bbox = bbox or rbox
     cl = clientv1()
-    mosaic, = cl.get_mosaic_by_name(name).items_iter(1)
+    mosaic, = cl.get_mosaic_by_name(name).iterate(1)
     response = call_and_wrap(cl.get_quads, mosaic, bbox)
     echo_json_response(response, pretty, limit)
 
@@ -302,7 +388,7 @@ def mosaic_info(name, pretty):
 def quad_info(name, quad, pretty):
     '''Get information for a specific mosaic quad'''
     cl = clientv1()
-    mosaic, = cl.get_mosaic_by_name(name).items_iter(1)
+    mosaic, = cl.get_mosaic_by_name(name).iterate(1)
     echo_json_response(call_and_wrap(cl.get_quad_by_id, mosaic, quad), pretty)
 
 
@@ -313,7 +399,7 @@ def quad_info(name, quad, pretty):
 def quad_contributions(name, quad, pretty):
     '''Get contributing scenes for a mosaic quad'''
     cl = clientv1()
-    mosaic, = cl.get_mosaic_by_name(name).items_iter(1)
+    mosaic, = cl.get_mosaic_by_name(name).iterate(1)
     quad = cl.get_quad_by_id(mosaic, quad).get()
     response = call_and_wrap(cl.get_quad_contributions, quad)
     echo_json_response(response, pretty)
@@ -343,8 +429,8 @@ def download_quads(name, bbox, rbox, quiet, dest, limit):
     output = downloader_output(dl, disable_ansi=quiet)
     output.start()
     try:
-        mosaic, = cl.get_mosaic_by_name(name).items_iter(1)
-        items = cl.get_quads(mosaic, bbox).items_iter(limit)
+        mosaic, = cl.get_mosaic_by_name(name).iterate(1)
+        items = cl.get_quads(mosaic, bbox).iterate(limit)
     except Exception as ex:
         output.cancel()
         click_exception(ex)
@@ -758,5 +844,5 @@ def download_order(order_id, dest, quiet, pretty):
     output = downloader_output(dl, disable_ansi=quiet)
     output.start()
 
-    items = cl.get_individual_order(order_id).items_iter(limit=None)
+    items = cl.get_individual_order(order_id).iterate(limit=None)
     handle_interrupt(dl.shutdown, dl.download, items, [], dest)

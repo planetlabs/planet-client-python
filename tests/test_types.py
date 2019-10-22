@@ -14,12 +14,12 @@
 
 import json
 import mock
-from planet.scripts.item_asset_types import DEFAULT_ASSET_TYPES
-from planet.scripts.item_asset_types import DEFAULT_ITEM_TYPES
-from planet.scripts.types import AssetType
-from planet.scripts.types import GeomFilter
-from planet.scripts.types import ItemType
-from planet.scripts.types import Range
+from planet.api.item_asset_types import DEFAULT_ASSET_TYPES
+from planet.api.item_asset_types import DEFAULT_ITEM_TYPES
+from planet.cli.types import AssetType
+from planet.cli.types import GeomFilter
+from planet.cli.types import ItemType
+from planet.cli.types import Range
 import pytest
 
 
@@ -29,7 +29,7 @@ def convert_asserter(t):
     return asserter
 
 
-@mock.patch('planet.scripts.types.get_item_types',
+@mock.patch('planet.cli.types.get_item_types',
             new=mock.Mock(return_value=DEFAULT_ITEM_TYPES))
 def test_item_type():
     check = convert_asserter(ItemType())
@@ -44,7 +44,7 @@ def test_item_type():
         ItemType().convert('x', None, None)
     assert 'invalid choice: x' in str(e.value)
 
-@mock.patch('planet.scripts.types.get_asset_types',
+@mock.patch('planet.cli.types.get_asset_types',
             new=mock.Mock(return_value=DEFAULT_ASSET_TYPES))
 def test_asset_type():
     check = convert_asserter(AssetType())

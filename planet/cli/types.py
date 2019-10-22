@@ -24,7 +24,7 @@ from .util import _split
 from planet.api import filters
 from planet.api.utils import geometry_from_json
 from planet.api.utils import strp_lenient
-from planet.scripts.item_asset_types import get_item_types, get_asset_types, \
+from planet.api.item_asset_types import get_item_types, get_asset_types, \
     get_bundles, DEFAULT_ITEM_TYPES, DEFAULT_ASSET_TYPES, DEFAULT_BUNDLES
 
 

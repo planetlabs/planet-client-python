@@ -38,7 +38,7 @@ aoi = {
 
 # will pick up api_key via environment variable PL_API_KEY
 # but can be specified using `api_key` named argument
-client = api.ClientV1()
+client = api.Client()
 
 # build a query using the AOI and
 # a cloud_cover filter that excludes 'cloud free' scenes
@@ -57,8 +57,8 @@ result = client.quick_search(request)
 
 stdout.write('id,cloud_cover,date\n')
 
-# items_iter returns a limited iterator of all results. behind the scenes,
+# iterate returns a limited iterator of all results. behind the scenes,
 # the client is paging responses from the API
-for item in result.items_iter(limit=None):
+for item in result.iterate(limit=None):
     props = item['properties']
     stdout.write('{0},{cloud_cover},{acquired}\n'.format(item['id'], **props))

@@ -198,8 +198,8 @@ def echo_json_response(response, pretty, limit=None, ndjson=False):
         sort_keys = True
         nl = True
     try:
-        if ndjson and hasattr(response, 'items_iter'):
-            items = response.items_iter(limit)
+        if ndjson and hasattr(response, 'iterate'):
+            items = response.iterate(limit)
             for item in items:
                 click.echo(json.dumps(item))
         elif not ndjson and hasattr(response, 'json_encode'):
