@@ -1,4 +1,4 @@
-# Copyright 2017 Planet Labs, Inc.
+# Copyright 2017-2019 Planet Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -62,8 +62,15 @@ def configure_logging(verbosity):
 @click.option('-u', '--base-url', envvar='PL_API_BASE_URL',
               help='Change the base Planet API URL or ENV PL_API_BASE_URL'
                    ' - Default https://api.planet.com/')
+@click.option('-t', '--ssl-trustedcerts',
+              envvar='PL_SSL_TRUSTEDCERTS',
+              type=click.Path(exists=True),
+              help='Path to a PEM file to use for verifying the server'
+                   ' certificates, overriding the default trust store.'
+                   ' The environment variable PL_SSL_TRUSTEDCERTS may also be'
+                   ' used to set this value.')
 @click.version_option(version=__version__, message='%(version)s')
-def cli(context, verbose, api_key, base_url, workers):
+def cli(context, verbose, api_key, base_url, workers, ssl_trustedcerts):
     '''Planet API Client'''
 
     configure_logging(verbose)
@@ -73,6 +80,8 @@ def cli(context, verbose, api_key, base_url, workers):
     client_params['workers'] = workers
     if base_url:
         client_params['base_url'] = base_url
+    if ssl_trustedcerts:
+        client_params['ssl_trustedcerts'] = ssl_trustedcerts
 
 
 @cli.command('help')

@@ -1,4 +1,4 @@
-# Copyright 2015 Planet Labs, Inc.
+# Copyright 2015-2019 Planet Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,7 +27,8 @@ from . exceptions import TooManyRequests
 from . __version__ import __version__
 from requests.compat import urlparse
 
-
+# Cleanup? I don't think we use this for anything.
+# (Or, maybe have a mode to entirely disable cert checks.)
 USE_STRICT_SSL = not (os.getenv('DISABLE_STRICT_SSL', '').lower() == 'true')
 
 log = logging.getLogger(__name__)
@@ -133,9 +134,11 @@ def _do_request(sess, req, **kwargs):
 
 class RequestsDispatcher(object):
 
-    def __init__(self, workers=4):
+    def __init__(self, workers=4, ssl_truststore=None):
         # general session for sync api calls
         self.session = RedirectSession()
+        if ssl_truststore:
+            self.session.verify = ssl_truststore
         self.session.headers.update({'User-Agent': _get_user_agent()})
         # ensure all calls to the session are throttled
         self.session.request = _Throttler().wrap(self.session.request)
