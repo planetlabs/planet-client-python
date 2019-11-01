@@ -38,26 +38,6 @@ def _split(value):
     return re.split(r'\s+|,', value)
 
 
-# monkey patch warnings module to hide InsecurePlatformWarning - the warning
-# notes 'may cause certain SSL connections to fail' so it doesn't seem to
-# introduce any vulnerabilities
-# we capture the warning if present and present this if any SSLError is caught
-# just in case this configuration is an issue
-_insecure_warning = []
-showwarning = warnings.showwarning
-
-
-def hack(message, category, filename, lineno):
-    if category is urllib3exc.InsecurePlatformWarning:
-        if len(_insecure_warning) == 0:
-            _insecure_warning.append(message)
-        return
-    showwarning(message, category, filename, lineno)
-
-
-warnings.showwarning = hack
-
-
 def and_filter_from_opts(opts):
     '''build an AND filter from the provided opts dict as passed to a command
     from the filter_options decorator. Assumes all dict values are lists of
