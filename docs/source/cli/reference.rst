@@ -10,30 +10,16 @@ Option Types Formatting
 -----------------------
 
 
-.. _cli-metavar-FIELD-COMP-VALUE:
+.. _cli-metavar-FILTER:
 
 
-FIELD COMP VALUE...
-...................
+FILTER
+......
 
 
-A comparison query format where FIELD is a
-property of the item-type and COMP is one of lt, lte, gt, gte and VALUE is
-the number or date to compare against.
-
-Note: ISO-8601 variants are supported. For example, ``2017`` is short for
-``2017-01-01T00:00:00+00:00``.
-
-
-.. _cli-metavar-FIELD-VALUES:
-
-
-FIELD VALUES...
-...............
-
-
-Specifies an 'in' query where FIELD is a property
-of the item-type and VALUES is space or comma separated text or numbers.
+Specify a Data API search filter provided as JSON.
+``@-`` specifies stdin and ``@filename`` specifies reading from a file
+named 'filename'. Otherwise, the value is assumed to be JSON.
 
 
 .. _cli-metavar-GEOM:
@@ -49,28 +35,30 @@ reading from a file named 'filename'. Otherwise, the value is assumed to
 be GeoJSON.
 
 
-.. _cli-metavar-FILTER:
+.. _cli-metavar-FIELD-VALUES:
 
 
-FILTER
-......
+FIELD VALUES...
+...............
 
 
-Specify a Data API search filter provided as JSON.
-``@-`` specifies stdin and ``@filename`` specifies reading from a file
-named 'filename'. Otherwise, the value is assumed to be JSON.
+Specifies an 'in' query where FIELD is a property
+of the item-type and VALUES is space or comma separated text or numbers.
 
 
-.. _cli-metavar-ITEM-TYPE:
+.. _cli-metavar-FIELD-COMP-VALUE:
 
 
-ITEM-TYPE
-.........
+FIELD COMP VALUE...
+...................
 
 
-Specify Item-Type(s) of interest. Case-insensitive,
-supports glob-matching, e.g. ``psscene*`` means ``PSScene3Band`` and
-``PSScene4Band``. The ``all`` value specifies every Item-Type.
+A comparison query format where FIELD is a
+property of the item-type and COMP is one of lt, lte, gt, gte and VALUE is
+the number or date to compare against.
+
+Note: ISO-8601 variants are supported. For example, ``2017`` is short for
+``2017-01-01T00:00:00+00:00``.
 
 
 .. _cli-metavar-ASSET-TYPE:
@@ -83,6 +71,18 @@ ASSET-TYPE
 Specify Asset-Type(s) of interest. Case-insenstive,
 supports glob-matching, e.g. ``visual*`` specifies ``visual`` and
 ``visual_xml``.
+
+
+.. _cli-metavar-ITEM-TYPE:
+
+
+ITEM-TYPE
+.........
+
+
+Specify Item-Type(s) of interest. Case-insensitive,
+supports glob-matching, e.g. ``psscene*`` means ``PSScene3Band`` and
+``PSScene4Band``. The ``all`` value specifies every Item-Type.
 
 
 General Options
@@ -109,6 +109,16 @@ General Options
 
 
 
+``--ssl-trustedcerts``
+   Path to a PEM file to use for verifying the server's certificates, overriding the default trust store. The environment variable PL_SSL_TRUSTEDCERTS may also be used to set this value. This is useful for environments with a SSL terminating proxy.
+
+
+
+``--ssl-insecure``
+   Do not perform any checks of the server's certificates (not recommended).
+
+
+
 ``--version``
    Show the version and exit.
 
@@ -118,11 +128,11 @@ General Commands
 ----------------
 
 
-:ref:`cli-command-help` Get command help
+:ref:`cli-command-help` None
 
 
 
-:ref:`cli-command-init` Login using email/password
+:ref:`cli-command-init` None
 
 
 
@@ -175,31 +185,31 @@ Data API
 --------
 
 
-:ref:`cli-command-create-search` Create a saved search
+:ref:`cli-command-create-search` None
 
 
 
-:ref:`cli-command-download` Activate and download
+:ref:`cli-command-download` None
 
 
 
-:ref:`cli-command-filter` Output a AND filter as JSON to stdout.
+:ref:`cli-command-filter` None
 
 
 
-:ref:`cli-command-saved-search` Execute a saved search
+:ref:`cli-command-saved-search` None
 
 
 
-:ref:`cli-command-search` Execute a quick search.
+:ref:`cli-command-search` None
 
 
 
-:ref:`cli-command-searches` List searches
+:ref:`cli-command-searches` None
 
 
 
-:ref:`cli-command-stats` Get search stats
+:ref:`cli-command-stats` None
 
 
 
@@ -304,7 +314,7 @@ Usage: download [OPTIONS]
      - Format
 
    * - limit
-     - Limit the number of items.
+     - Limit the number of items. Default: None
 
      - NUMBER
 
@@ -471,7 +481,7 @@ Usage: saved-search [OPTIONS] [SEARCH_ID]
      - BOOLEAN
 
    * - limit
-     - Limit the number of items.
+     - Limit the number of items. Default: 100
 
        DEFAULT: `100`
      - NUMBER
@@ -499,7 +509,7 @@ Usage: search [OPTIONS]
      - Format
 
    * - limit
-     - Limit the number of items.
+     - Limit the number of items. Default: 100
 
        DEFAULT: `100`
      - NUMBER
@@ -587,6 +597,12 @@ Usage: searches [OPTIONS]
 
        DEFAULT: `True`
      - BOOLEAN
+
+   * - limit
+     - Limit the number of items. Default: 10
+
+       DEFAULT: `10`
+     - NUMBER
 
 .. index:: stats
 
