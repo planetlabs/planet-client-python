@@ -17,7 +17,6 @@ import re
 import threading
 import time
 from requests_futures.sessions import FuturesSession
-from requests import Request
 from requests import Session
 from . utils import check_status
 from . models import Response
@@ -157,4 +156,3 @@ class RequestsDispatcher(object):
 
     def _dispatch(self, request, callback=None):
         return _do_request(self.session, request)
-

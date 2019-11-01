@@ -69,7 +69,8 @@ def configure_logging(verbosity):
                    ' certificates, overriding the default trust store.'
                    ' The environment variable PL_SSL_TRUSTEDCERTS may also be'
                    ' used to set this value.'
-                   ' This is useful for environments with a SSL terminating proxy.')
+                   ' This is useful for environments with a SSL'
+                   ' terminating proxy.')
 # Old interface used DISABLE_STRICT_SSL, but I think that's been broken for a while.
 @click.option('-T', '--ssl-insecure',
               is_flag=True,
