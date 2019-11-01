@@ -69,7 +69,8 @@ def configure_logging(verbosity):
                    ' certificates, overriding the default trust store.'
                    ' The environment variable PL_SSL_TRUSTEDCERTS may also be'
                    ' used to set this value.'
-                   ' This is useful for environments with a SSL terminating proxy.')
+                   ' This is useful for environments with a SSL'
+                   ' terminating proxy.')
 @click.version_option(version=__version__, message='%(version)s')
 def cli(context, verbose, api_key, base_url, workers, ssl_trustedcerts):
     '''Planet API Client'''
