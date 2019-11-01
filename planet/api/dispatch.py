@@ -158,15 +158,3 @@ class RequestsDispatcher(object):
     def _dispatch(self, request, callback=None):
         return _do_request(self.session, request)
 
-    # @todo delete me w/ v0 removal
-    def dispatch_request(self, method, url, auth=None, params=None, data=None):
-        headers = {}
-        content_type = 'application/json'
-        if auth:
-            headers.update({
-                'Authorization': 'api-key %s' % auth.value,
-                'Content-Type': content_type
-            })
-        req = Request(method, url, params=params, data=data, headers=headers)
-        _log_request(req)
-        return self.session.send(req.prepare())
