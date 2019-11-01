@@ -27,8 +27,7 @@ from . exceptions import TooManyRequests
 from . __version__ import __version__
 from requests.compat import urlparse
 
-# Cleanup? I don't think we use this for anything.
-# (Or, maybe have a mode to entirely disable cert checks.)
+# I don't think this is working as intended (even before my changes)
 USE_STRICT_SSL = not (os.getenv('DISABLE_STRICT_SSL', '').lower() == 'true')
 
 log = logging.getLogger(__name__)
