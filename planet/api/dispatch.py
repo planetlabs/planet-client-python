@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-import os
 import re
 import threading
 import time
@@ -26,9 +25,6 @@ from . exceptions import InvalidAPIKey
 from . exceptions import TooManyRequests
 from . __version__ import __version__
 from requests.compat import urlparse
-
-# I don't think this is working as intended (even before my changes)
-USE_STRICT_SSL = not (os.getenv('DISABLE_STRICT_SSL', '').lower() == 'true')
 
 log = logging.getLogger(__name__)
 
@@ -117,7 +113,7 @@ def _do_request(sess, req, **kwargs):
             t = time.time()
             resp = sess.request(
                 req.method, req.url, data=req.data, headers=_headers(req),
-                params=req.params, verify=USE_STRICT_SSL, **kwargs
+                params=req.params, **kwargs
             )
             # futures session returns futures so only check actual responses
             # for futures these will be checked in the wrapper model
@@ -133,11 +129,17 @@ def _do_request(sess, req, **kwargs):
 
 class RequestsDispatcher(object):
 
-    def __init__(self, workers=4, ssl_truststore=None):
+    def __init__(self, workers=4, ssl_truststore=None, ssl_secure=True):
         # general session for sync api calls
         self.session = RedirectSession()
-        if ssl_truststore:
+
+        if not ssl_secure:
+            self.session.verify = False
+        elif ssl_truststore:
             self.session.verify = ssl_truststore
+        # else:
+        #     self.session.verify = True # Default behavior for session
+
         self.session.headers.update({'User-Agent': _get_user_agent()})
         # ensure all calls to the session are throttled
         self.session.request = _Throttler().wrap(self.session.request)
@@ -167,4 +169,4 @@ class RequestsDispatcher(object):
             })
         req = Request(method, url, params=params, data=data, headers=headers)
         _log_request(req)
-        return self.session.send(req.prepare(), verify=USE_STRICT_SSL)
+        return self.session.send(req.prepare())

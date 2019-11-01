@@ -70,8 +70,13 @@ def configure_logging(verbosity):
                    ' The environment variable PL_SSL_TRUSTEDCERTS may also be'
                    ' used to set this value.'
                    ' This is useful for environments with a SSL terminating proxy.')
+# Old interface used DISABLE_STRICT_SSL, but I think that's been broken for a while.
+@click.option('-T', '--ssl-insecure',
+              is_flag=True,
+              envvar='PL_SSL_INSECURE',
+              help='Do not perform any checks of the server\'s certificates (not recommended).')
 @click.version_option(version=__version__, message='%(version)s')
-def cli(context, verbose, api_key, base_url, workers, ssl_trustedcerts):
+def cli(context, verbose, api_key, base_url, workers, ssl_trustedcerts, ssl_insecure):
     '''Planet API Client'''
 
     configure_logging(verbose)
@@ -81,8 +86,8 @@ def cli(context, verbose, api_key, base_url, workers, ssl_trustedcerts):
     client_params['workers'] = workers
     if base_url:
         client_params['base_url'] = base_url
-    if ssl_trustedcerts:
-        client_params['ssl_trustedcerts'] = ssl_trustedcerts
+    client_params['ssl_secure'] = not ssl_insecure
+    client_params['ssl_trustedcerts'] = ssl_trustedcerts
 
 
 @cli.command('help')

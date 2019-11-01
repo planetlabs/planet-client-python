@@ -25,7 +25,7 @@ class _Base(object):
     '''High-level access to Planet's API.'''
 
     def __init__(self, api_key=None, base_url='https://api.planet.com/',
-                 workers=4, ssl_trustedcerts=None):
+                 workers=4, ssl_trustedcerts=None, ssl_secure=True):
         '''
         :param str api_key: API key to use. Defaults to environment variable.
         :param str base_url: The base URL to use. Not required.
@@ -36,7 +36,7 @@ class _Base(object):
         self.base_url = base_url
         if not self.base_url.endswith('/'):
             self.base_url += '/'
-        self.dispatcher = RequestsDispatcher(workers, ssl_trustedcerts)
+        self.dispatcher = RequestsDispatcher(workers, ssl_trustedcerts, ssl_secure)
 
     def shutdown(self):
         self.dispatcher._asyncpool.executor.shutdown(wait=False)
