@@ -65,10 +65,11 @@ def configure_logging(verbosity):
 @click.option('-t', '--ssl-trustedcerts',
               envvar='PL_SSL_TRUSTEDCERTS',
               type=click.Path(exists=True),
-              help='Path to a PEM file to use for verifying the server'
+              help='Path to a PEM file to use for verifying the server\'s'
                    ' certificates, overriding the default trust store.'
                    ' The environment variable PL_SSL_TRUSTEDCERTS may also be'
-                   ' used to set this value.')
+                   ' used to set this value.'
+                   ' This is useful for environments with a SSL terminating proxy.')
 @click.version_option(version=__version__, message='%(version)s')
 def cli(context, verbose, api_key, base_url, workers, ssl_trustedcerts):
     '''Planet API Client'''
