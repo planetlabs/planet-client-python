@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-import os
 import re
 import threading
 import time
@@ -26,9 +25,6 @@ from . exceptions import InvalidAPIKey
 from . exceptions import TooManyRequests
 from . __version__ import __version__
 from requests.compat import urlparse
-
-# I don't think this is working as intended (even before my changes)
-USE_STRICT_SSL = not (os.getenv('DISABLE_STRICT_SSL', '').lower() == 'true')
 
 log = logging.getLogger(__name__)
 
@@ -117,7 +113,7 @@ def _do_request(sess, req, **kwargs):
             t = time.time()
             resp = sess.request(
                 req.method, req.url, data=req.data, headers=_headers(req),
-                params=req.params, verify=USE_STRICT_SSL, **kwargs
+                params=req.params, **kwargs
             )
             # futures session returns futures so only check actual responses
             # for futures these will be checked in the wrapper model
@@ -167,4 +163,4 @@ class RequestsDispatcher(object):
             })
         req = Request(method, url, params=params, data=data, headers=headers)
         _log_request(req)
-        return self.session.send(req.prepare(), verify=USE_STRICT_SSL)
+        return self.session.send(req.prepare())
