@@ -36,7 +36,8 @@ class _Base(object):
         self.base_url = base_url
         if not self.base_url.endswith('/'):
             self.base_url += '/'
-        self.dispatcher = RequestsDispatcher(workers, ssl_trustedcerts, ssl_secure)
+        self.dispatcher = RequestsDispatcher(workers, ssl_trustedcerts,
+                                             ssl_secure)
 
     def shutdown(self):
         self.dispatcher._asyncpool.executor.shutdown(wait=False)

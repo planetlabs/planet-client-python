@@ -71,13 +71,16 @@ def configure_logging(verbosity):
                    ' used to set this value.'
                    ' This is useful for environments with a SSL'
                    ' terminating proxy.')
-# Old interface used DISABLE_STRICT_SSL, but I think that's been broken for a while.
+# Old interface used DISABLE_STRICT_SSL, but I think that's
+# been broken for a while.
 @click.option('-T', '--ssl-insecure',
               is_flag=True,
               envvar='PL_SSL_INSECURE',
-              help='Do not perform any checks of the server\'s certificates (not recommended).')
+              help='Do not perform any checks of the server\'s'
+                   ' certificates (not recommended).')
 @click.version_option(version=__version__, message='%(version)s')
-def cli(context, verbose, api_key, base_url, workers, ssl_trustedcerts, ssl_insecure):
+def cli(context, verbose, api_key, base_url, workers,
+        ssl_trustedcerts, ssl_insecure):
     '''Planet API Client'''
 
     configure_logging(verbose)
