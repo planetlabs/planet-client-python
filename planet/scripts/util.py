@@ -23,11 +23,9 @@ import tempfile
 import textwrap
 import threading
 import time
-import warnings
 
 import click
 from click import termui
-from requests.packages.urllib3 import exceptions as urllib3exc
 
 from planet import api
 from planet.api import filters
@@ -152,11 +150,6 @@ def call_and_wrap(func, *args, **kw):
         return func(*args, **kw)
     except api.exceptions.APIException as ex:
         click_exception(ex)
-    except urllib3exc.SSLError:
-        # see monkey patch above re InsecurePlatformWarning
-        if _insecure_warning:
-            click.echo(click.style(str(_insecure_warning[0]), fg='red'))
-        raise
 
 
 def click_exception(ex):
