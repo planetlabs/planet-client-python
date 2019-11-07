@@ -23,11 +23,9 @@ import tempfile
 import textwrap
 import threading
 import time
-import warnings
 
 import click
 from click import termui
-from requests.packages.urllib3 import exceptions as urllib3exc
 
 from planet import api
 from planet.api import filters
@@ -36,26 +34,6 @@ from planet.api import filters
 def _split(value):
     '''return input split on any whitespace or comma'''
     return re.split(r'\s+|,', value)
-
-
-# monkey patch warnings module to hide InsecurePlatformWarning - the warning
-# notes 'may cause certain SSL connections to fail' so it doesn't seem to
-# introduce any vulnerabilities
-# we capture the warning if present and present this if any SSLError is caught
-# just in case this configuration is an issue
-_insecure_warning = []
-showwarning = warnings.showwarning
-
-
-def hack(message, category, filename, lineno):
-    if category is urllib3exc.InsecurePlatformWarning:
-        if len(_insecure_warning) == 0:
-            _insecure_warning.append(message)
-        return
-    showwarning(message, category, filename, lineno)
-
-
-warnings.showwarning = hack
 
 
 def and_filter_from_opts(opts):
@@ -172,11 +150,6 @@ def call_and_wrap(func, *args, **kw):
         return func(*args, **kw)
     except api.exceptions.APIException as ex:
         click_exception(ex)
-    except urllib3exc.SSLError:
-        # see monkey patch above re InsecurePlatformWarning
-        if _insecure_warning:
-            click.echo(click.style(str(_insecure_warning[0]), fg='red'))
-        raise
 
 
 def click_exception(ex):
