@@ -1,5 +1,8 @@
-1.4.3 (2019-10-21)
+1.4.3 (2019-11-14)
 
+- Updating copyright date for modified files
+- Removing monkey patch
+- Make sure base_url has a trailing /
 - Simplified configuration of analytics client to be consistent
 
 1.4.2 (2019-10-04)
