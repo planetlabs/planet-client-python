@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Reference &#8212; Planet API Client 1.3.0 documentation</title>
+    <title>Reference &#8212; Planet API Client 1.4.3 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -120,11 +120,46 @@ classes.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="planet.api.ClientV1.cancel_order">
+<code class="sig-name descname">cancel_order</code><span class="sig-paren">(</span><em class="sig-param">order_id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.cancel_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cancel a running order by Order ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>str</strong> (<em>order_id</em>) – The ID of the Order to cancel</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Order</span></code></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="planet.api.ClientV1.check_analytics_connection">
 <code class="sig-name descname">check_analytics_connection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.check_analytics_connection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Validate that we can use the Analytics API. Useful to test connectivity
 to test environments.
 :returns: <a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.JSON</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.ClientV1.create_order">
+<code class="sig-name descname">create_order</code><span class="sig-paren">(</span><em class="sig-param">request</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.create_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>asset</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.Response" title="planet.api.models.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Response</span></code></a> containing a
+<a class="reference internal" href="#planet.api.models.Body" title="planet.api.models.Body"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Body</span></code></a> of the asset.</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -158,6 +193,42 @@ response Body.</p>
 <li><p><strong>callback</strong> – An optional function to aysnchronsously handle the
 download. See <a class="reference internal" href="#planet.api.write_to_file" title="planet.api.write_to_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">planet.api.write_to_file()</span></code></a></p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.Response" title="planet.api.models.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Response</span></code></a> containing a
+<a class="reference internal" href="#planet.api.models.Body" title="planet.api.models.Body"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Body</span></code></a> of the asset.</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.ClientV1.download_location">
+<code class="sig-name descname">download_location</code><span class="sig-paren">(</span><em class="sig-param">location</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.download_location" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download an item in an order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>location</strong> – location URL of item</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#planet.api.models.Response" title="planet.api.models.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Response</span></code></a> containing a
+<a class="reference internal" href="#planet.api.models.Body" title="planet.api.models.Body"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Body</span></code></a> of the asset.</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.ClientV1.download_order">
+<code class="sig-name descname">download_order</code><span class="sig-paren">(</span><em class="sig-param">order_id</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.download_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download all items in an order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>order_id</strong> – ID of order to download</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><a class="reference internal" href="#planet.api.models.Response" title="planet.api.models.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Response</span></code></a> containing a
@@ -266,6 +337,23 @@ type unavailable.
 </dd></dl>
 
 <dl class="method">
+<dt id="planet.api.ClientV1.get_individual_order">
+<code class="sig-name descname">get_individual_order</code><span class="sig-paren">(</span><em class="sig-param">order_id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_individual_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get order request details by Order ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>str</strong> (<em>order_id</em>) – The ID of the Order</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Order</span></code></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#planet.api.exceptions.APIException" title="planet.api.exceptions.APIException"><strong>planet.api.exceptions.APIException</strong></a> – On API error.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="planet.api.ClientV1.get_item">
 <code class="sig-name descname">get_item</code><span class="sig-paren">(</span><em class="sig-param">item_type</em>, <em class="sig-param">id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_item" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the an item response for the given item_type and id</p>
@@ -325,6 +413,18 @@ type unavailable.
 <code class="sig-name descname">get_mosaics_for_series</code><span class="sig-paren">(</span><em class="sig-param">series_id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_mosaics_for_series" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get list of mosaics available for a series
 :returns: <code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Mosaics</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="planet.api.ClientV1.get_orders">
+<code class="sig-name descname">get_orders</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_orders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get information for all pending and completed order requests for
+the current user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Orders</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -442,11 +542,13 @@ feed only.
 
 <dl class="method">
 <dt id="planet.api.ClientV1.list_collection_features">
-<code class="sig-name descname">list_collection_features</code><span class="sig-paren">(</span><em class="sig-param">subscription_id</em>, <em class="sig-param">bbox</em>, <em class="sig-param">time_range</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.list_collection_features" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">list_collection_features</code><span class="sig-paren">(</span><em class="sig-param">subscription_id</em>, <em class="sig-param">bbox=None</em>, <em class="sig-param">time_range=None</em>, <em class="sig-param">before=None</em>, <em class="sig-param">after=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.list_collection_features" title="Permalink to this definition">¶</a></dt>
 <dd><p>List features for an analytic subscription.
 :param subscription_id:
 :param time_range str: ISO format datetime interval.
 :param bbox tuple: A lon_min, lat_min, lon_max, lat_max area to search
+:param before str: return features published before item with given ID
+:param after str: return features published after item with given ID
 :raises planet.api.exceptions.APIException: On API error.
 :returns: <code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.WFS3Features</span></code></p>
 </dd></dl>
@@ -901,7 +1003,7 @@ items and assets.</p>
 <p>Create a downloader using:</p>
 <dl class="function">
 <dt id="planet.api.downloader.create">
-<code class="sig-prename descclassname">planet.api.downloader.</code><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param">client</em>, <em class="sig-param">mosaic=False</em>, <em class="sig-param">**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.create" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">planet.api.downloader.</code><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param">client</em>, <em class="sig-param">mosaic=False</em>, <em class="sig-param">order=False</em>, <em class="sig-param">**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a Downloader with the provided client.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1072,7 +1174,7 @@ the potential to raise one of the following exceptions:</p>
       &copy;2017-2019 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

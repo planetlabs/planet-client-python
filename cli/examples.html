@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Examples &#8212; Planet API Client 1.3.0 documentation</title>
+    <title>Examples &#8212; Planet API Client 1.4.3 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -56,8 +56,10 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Command Line</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference.html">CLI Reference</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#data-examples">Data Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mosaic-examples">Mosaic Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#analytics-examples">Analytics Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#orders-examples">Orders Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#integration-with-other-tools">Integration With Other Tools</a></li>
 </ul>
 </li>
@@ -77,6 +79,8 @@
             
   <div class="section" id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="data-examples">
+<h2>Data Examples<a class="headerlink" href="#data-examples" title="Permalink to this headline">¶</a></h2>
 <p>Get the latest 10 items from the API of any ItemType:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --limit 10
 </pre></div>
@@ -117,6 +121,7 @@
 <p>Note: this might take some time and directory must exist:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data download --item-type PSScene3Band --limit 3 --dest images-download-directory
 </pre></div>
+</div>
 </div>
 <div class="section" id="mosaic-examples">
 <h2>Mosaic Examples<a class="headerlink" href="#mosaic-examples" title="Permalink to this headline">¶</a></h2>
@@ -188,7 +193,7 @@ description, and the target and source mosaics (if applicable):</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics feeds list | jq -r &#39;.data[] | [.id, .description, .created, .source.config.series_id, .target.config.series_id]&#39;
 </pre></div>
 </div>
-<p>For a subscription, the ID, description, source feed ID, and the created date are useful:</p>
+<p>The ID, description, source feed ID, and the created date are useful for a subscription:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics subscriptions list | jq -r &#39;.data[] | [.id, .feedID, .created]&#39;
 </pre></div>
 </div>
@@ -208,21 +213,39 @@ planet analytics subscriptions list-mosaics &lt;subscription_id&gt;
 planet analytics collections list-mosaics &lt;collection_id or subscription_id&gt;
 </pre></div>
 </div>
-<p>Get all features (GeoJSON results) for a collection:</p>
+<p>Features (GeoJSON results) for a collection can be requested in one of two ways. The <cite>list</cite> option
+will only return slices of results (defaults to 100 at a time), whereas <cite>list-all</cite> will stream
+features until all features have been retrieved. Both options accept the same additional filters.</p>
+<blockquote>
+<div><p>planet analytics collections features list &lt;collection_id or subscription_id&gt;
+planet analytics collections features list-all &lt;collection_id or subscription_id&gt;</p>
+</div></blockquote>
+<p>To page through results when using <cite>list</cite>:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics collections features list &lt;collection_id or subscription_id&gt;
+planet analytics collections features list &lt;collection_id or subscription_id&gt; --before &lt;feature_id_of_last_feature_in_previous_page&gt;
 </pre></div>
 </div>
-<p>Get the first 500 features (GeoJSON results) for a collection within a certain time range:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics collections features list &lt;collection_id or subscription_id&gt; --time-range 2019-01-01T00:00:00.00Z/2019-02-01T00:00:00.00Z --limit 500
+<p>Get the 10 most recent features (GeoJSON results) for a collection:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics collections features list &lt;collection_id or subscription_id&gt; --limit 10
 </pre></div>
 </div>
-<p>Get all features (GeoJSON results) for a collection within a certain area:</p>
+<p>Stream all features (GeoJSON results) since last seen feature:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics collections features list-all &lt;collection_id or subscription_id&gt; --after &lt;feature_id&gt;
+</pre></div>
+</div>
+<p>Get features (GeoJSON results) for a collection within a certain time range:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics collections features list &lt;collection_id or subscription_id&gt; --time-range 2019-01-01T00:00:00.00Z/2019-02-01T00:00:00.00Z
+planet analytics collections features list-all &lt;collection_id or subscription_id&gt; --time-range 2019-01-01T00:00:00.00Z/2019-02-01T00:00:00.00Z
+</pre></div>
+</div>
+<p>Get features (GeoJSON results) for a collection within a certain area:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics collections features list &lt;collection_id or subscription_id&gt; --bbox 122.3,47.6,122.4,47.7
+planet analytics collections features list-all &lt;collection_id or subscription_id&gt; --bbox 122.3,47.6,122.4,47.7
 </pre></div>
 </div>
 <p>It is also possible to get resources associated with a particular GeoJSON feature in a collection.
-The resource that may be requested depends on the specific feed; not all resources will be available
-for all feeds or any collections associated with those feeds.</p>
+Just as different feeds are based upon different imagery types and produce different types of
+output, each feed’s resources are varied:</p>
 <ul class="simple">
 <li><p><cite>source-quad</cite>: Download the mosaic quad used to derive a feature, only available for collections associated with feeds that operate on mosaics</p></li>
 <li><p><cite>target-quad</cite>: Download the mosaic quad that contains the raster output of a feed, only available for collections associated with feeds that output raster data</p></li>
@@ -233,6 +256,101 @@ for all feeds or any collections associated with those feeds.</p>
 planet analytics collections features get target-quad &lt;collection_id or subscription_id&gt; &lt;feature_id&gt;
 planet analytics collections features get source-image-info &lt;collection_id or subscription_id&gt; &lt;feature_id&gt;
 </pre></div>
+</div>
+</div>
+<div class="section" id="orders-examples">
+<h2>Orders Examples<a class="headerlink" href="#orders-examples" title="Permalink to this headline">¶</a></h2>
+<p>List all recent orders for the authenticated user:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders list
+</pre></div>
+</div>
+<p>Get the status of a single order by Order ID:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders get &lt;order ID&gt;
+</pre></div>
+</div>
+<p>Note that you may want to parse the JSON that’s output into a more human
+readable format.  The cli does not directly provide options for this, but is
+meant to be easily interoperable with other tools, e.g. <a class="reference external" href="https://stedolan.github.io/jq/">jq</a>.</p>
+<p>To cancel a running order by given order ID:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders cancel &lt;order ID&gt;
+</pre></div>
+</div>
+<p>To download an order to your local machine:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders download &lt;order ID&gt;
+</pre></div>
+</div>
+<p>Optionally, a <cite>–dest &lt;path to destination&gt;</cite> flag may be specified too.</p>
+<div class="section" id="creating-an-order">
+<h3>Creating an Order<a class="headerlink" href="#creating-an-order" title="Permalink to this headline">¶</a></h3>
+<p>The minimal command to create a simple order looks something like:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders create --name &quot;my order&quot; \
+  --id 20151119_025740_0c74,20151119_025741_0c74 \
+  --bundle visual --item-type psscene3band
+</pre></div>
+</div>
+<p>If no toolchain or delivery details are specified, a basic order with download
+delivery will be placed for the requested bundle including the item id(s) specified.</p>
+<p>Additionally, optional toolchain &amp; delivery details can be provided on the
+command line, e.g.::</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders create --name &quot;my order&quot; \
+  --id 20151119_025740_0c74,20151119_025741_0c74 \
+  --bundle visual --item-type psscene3band --zip order --email
+</pre></div>
+</div>
+<p>This places the same order as above, and will also provide a .zip archive
+download link for the full order, as well as email notification.</p>
+<p>The Orders API allows you to specify a toolchain of operations to be performed
+on your order prior to download. To read more about tools &amp; toolchains, visit
+<a class="reference external" href="https://developers.planet.com/docs/orders/tools-toolchains/">the docs</a> .</p>
+<p>To add tool operations to your order, use the <cite>–tools</cite> option to specify a
+json-formatted file containing an array (list) of the desired tools an their
+settings.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The json-formatted file must be formatted as an array (enclosed in square brackets), even if only specifying a single tool</p>
+</div>
+<p>For example, to apply the 3 tools <cite>TOAR -&gt; Reproject -&gt; Tile</cite> in sequence to an
+order, you would create a <cite>.json</cite> file similar to the following:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[
+    {
+      &quot;toar&quot;: {
+        &quot;scale_factor&quot;: 10000
+      }
+    },
+    {
+      &quot;reproject&quot;: {
+        &quot;projection&quot;: &quot;WGS84&quot;,
+        &quot;kernel&quot;: &quot;cubic&quot;
+      }
+    },
+    {
+      &quot;tile&quot;: {
+        &quot;tile_size&quot;: 1232,
+        &quot;origin_x&quot;: -180,
+        &quot;origin_y&quot;: -90,
+        &quot;pixel_size&quot;: 0.000027056277056,
+        &quot;name_template&quot;: &quot;C1232_30_30_{tilex:04d}_{tiley:04d}&quot;
+      }
+    }
+  ]
+</pre></div>
+</div>
+<p>Similarly, you can also specify cloud delivery options on an order create
+command with the <cite>–cloudconfig &lt;path to json file&gt;</cite> option. In this case, the
+json file should contain the required credentials for your desired cloud
+storage destination, for example:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
+      &quot;amazon_s3&quot;:{
+         &quot;bucket&quot;:&quot;foo-bucket&quot;,
+         &quot;aws_region&quot;:&quot;us-east-2&quot;,
+         &quot;aws_access_key_id&quot;:&quot;&quot;,
+         &quot;aws_secret_access_key&quot;:&quot;&quot;,
+         &quot;path_prefix&quot;:&quot;&quot;
+      }
+</pre></div>
+</div>
+<p>You can find complete documentation of Orders API cloud storage delivery and
+required credentials <a class="reference external" href="https://developers.planet.com/docs/orders/ordering-delivery/#delivery-to-cloud-storage_1">in the docs here</a>.</p>
 </div>
 </div>
 <div class="section" id="integration-with-other-tools">
@@ -288,7 +406,7 @@ Given that this Landsat scene was taken on April 14, 2015, it might be useful to
       &copy;2017-2019 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

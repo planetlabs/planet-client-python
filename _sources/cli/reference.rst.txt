@@ -109,11 +109,6 @@ General Options
 
 
 
-``--analytics-base-url``
-   Change the base Planet API URL or ENV PL_ANALYTICS_API_BASE_URL - Default https://api.planet.com/analytics
-
-
-
 ``--version``
    Show the version and exit.
 
@@ -309,7 +304,7 @@ Usage: download [OPTIONS]
      - Format
 
    * - limit
-     - Limit the number of items.
+     - Limit the number of items. Default: None
 
      - NUMBER
 
@@ -476,7 +471,7 @@ Usage: saved-search [OPTIONS] [SEARCH_ID]
      - BOOLEAN
 
    * - limit
-     - Limit the number of items.
+     - Limit the number of items. Default: 100
 
        DEFAULT: `100`
      - NUMBER
@@ -504,7 +499,7 @@ Usage: search [OPTIONS]
      - Format
 
    * - limit
-     - Limit the number of items.
+     - Limit the number of items. Default: 100
 
        DEFAULT: `100`
      - NUMBER
@@ -594,7 +589,7 @@ Usage: searches [OPTIONS]
      - BOOLEAN
 
    * - limit
-     - Limit the number of items.
+     - Limit the number of items. Default: 10
 
        DEFAULT: `10`
      - NUMBER
