@@ -171,13 +171,10 @@ def echo_json_response(response, pretty, limit=None, ndjson=False):
         sort_keys = True
         nl = True
     try:
-        if hasattr(response, 'items_iter'):
+        if ndjson and hasattr(response, 'items_iter'):
             items = response.items_iter(limit)
-            if ndjson:
-                for item in items:
-                    click.echo(json.dumps(item))
-            else:
-                click.echo(json.dumps(list(items)))
+            for item in items:
+                click.echo(json.dumps(item))
         elif not ndjson and hasattr(response, 'json_encode'):
             response.json_encode(click.get_text_stream('stdout'), limit=limit,
                                  indent=indent, sort_keys=sort_keys)
