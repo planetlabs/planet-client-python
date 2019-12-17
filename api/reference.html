@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Reference &#8212; Planet API Client 1.4.3 documentation</title>
+    <title>Reference &#8212; Planet API Client 1.4.4 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -666,7 +666,7 @@ and requests.</p>
 <dt id="planet.api.filters.and_filter">
 <code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">and_filter</code><span class="sig-paren">(</span><em class="sig-param">*predicates</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.and_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build an <cite>and</cite> filter from the provided predicate filters.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span> <span class="o">=</span> <span class="n">and_filter</span><span class="p">(</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span> <span class="o">=</span> <span class="n">and_filter</span><span class="p">(</span>
 <span class="gp">... </span>  <span class="n">range_filter</span><span class="p">(</span><span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
 <span class="gp">... </span>  <span class="n">range_filter</span><span class="p">(</span><span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="n">lt</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
 <span class="gp">... </span><span class="p">)</span>
@@ -710,7 +710,7 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 <dd class="field-odd"><p>ValueError if predicate value does not parse</p>
 </dd>
 </dl>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;acquired&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="s1">&#39;2017&#39;</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gt&#39;</span><span class="p">:</span> <span class="s1">&#39;2017-01-01T00:00:00Z&#39;</span><span class="p">},</span>     <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;acquired&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;DateRangeFilter&#39;</span><span class="p">}</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;acquired&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="s1">&#39;2017&#39;</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gt&#39;</span><span class="p">:</span> <span class="s1">&#39;2017-01-01T00:00:00Z&#39;</span><span class="p">},</span>     <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;acquired&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;DateRangeFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -740,7 +740,7 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 <dt id="planet.api.filters.num_filter">
 <code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">num_filter</code><span class="sig-paren">(</span><em class="sig-param">field_name</em>, <em class="sig-param">*vals</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.num_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a NumberInFilter.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">num_filter</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;NumberInFilter&#39;</span><span class="p">}</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">num_filter</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;NumberInFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -750,7 +750,7 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 <dt id="planet.api.filters.or_filter">
 <code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">or_filter</code><span class="sig-paren">(</span><em class="sig-param">*predicates</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.or_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build an <cite>or</cite> filter from the provided predicate filters.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">datetime</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">datetime</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">n</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2017</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span> <span class="o">=</span> <span class="n">or_filter</span><span class="p">(</span>
 <span class="gp">... </span>  <span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;acquired&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="n">n</span><span class="p">),</span>
@@ -770,7 +770,7 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 <dt id="planet.api.filters.permission_filter">
 <code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">permission_filter</code><span class="sig-paren">(</span><em class="sig-param">*perms</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.permission_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a PermissionFilter with the specified permissions.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">permission_filter</span><span class="p">(</span><span class="s1">&#39;assets:download&#39;</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;PermissionFilter&#39;</span><span class="p">,</span> <span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;assets:download&#39;</span><span class="p">,)}</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">permission_filter</span><span class="p">(</span><span class="s1">&#39;assets:download&#39;</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;PermissionFilter&#39;</span><span class="p">,</span> <span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;assets:download&#39;</span><span class="p">,)}</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -780,7 +780,7 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 <dt id="planet.api.filters.range_filter">
 <code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">range_filter</code><span class="sig-paren">(</span><em class="sig-param">field_name</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.range_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a RangeFilter.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">range_filter</span><span class="p">(</span><span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gt&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;RangeFilter&#39;</span><span class="p">}</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">range_filter</span><span class="p">(</span><span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gt&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;RangeFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -790,7 +790,7 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 <dt id="planet.api.filters.string_filter">
 <code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">string_filter</code><span class="sig-paren">(</span><em class="sig-param">field_name</em>, <em class="sig-param">*vals</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.string_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a StringInFilter.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">string_filter</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">,</span> <span class="s1">&#39;id3&#39;</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">,</span> <span class="s1">&#39;id3&#39;</span><span class="p">),</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span>     <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;StringInFilter&#39;</span><span class="p">}</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">string_filter</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">,</span> <span class="s1">&#39;id3&#39;</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">,</span> <span class="s1">&#39;id3&#39;</span><span class="p">),</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span>     <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;StringInFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -1174,7 +1174,7 @@ the potential to raise one of the following exceptions:</p>
       &copy;2017-2019 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
