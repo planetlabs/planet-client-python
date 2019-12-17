@@ -1,3 +1,9 @@
+1.4.4 (2019-12-17)
+
+- Pin requests-futures version to avoid error message.
+- Fix broke jq parsing for regular data search
+- Under certain conditions the response body can get printed more than once
+
 1.4.3 (2019-11-14)
 
 - Updating copyright date for modified files
