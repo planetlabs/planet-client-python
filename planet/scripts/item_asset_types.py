@@ -25,7 +25,8 @@ DEFAULT_ITEM_TYPES = [
     'Sentinel1',
     'Sentinel2L1C',
     'SkySatCollect',
-    'SkySatScene'
+    'SkySatScene',
+    'SkySatVideo'
 ]
 
 DEFAULT_ASSET_TYPES = [
@@ -61,7 +62,8 @@ DEFAULT_ASSET_TYPES = [
     'ortho_analytic_vv', 'ortho_panchromatic', 'ortho_panchromatic_dn',
     'ortho_panchromatic_udm', 'ortho_panchromatic_udm2', 'ortho_pansharpened',
     'ortho_pansharpened_udm', 'ortho_pansharpened_udm2', 'ortho_visual', 'udm',
-    'udm2', 'visual', 'visual_xml'
+    'udm2', 'video_file', 'video_frames', 'video_metadata', 'visual',
+    'visual_xml'
 ]
 
 DEFAULT_BUNDLES = [u'all', u'all_udm2', u'analytic', u'analytic_sr',
@@ -73,8 +75,8 @@ DEFAULT_BUNDLES = [u'all', u'all_udm2', u'analytic', u'analytic_sr',
                    u'basic_uncalibrated_dn_nitf_udm2',
                    u'basic_uncalibrated_dn_udm2', u'panchromatic',
                    u'panchromatic_dn', u'panchromatic_dn_udm2',
-                   u'pansharpened', u'pansharpened_udm2', u'uncalibrated_dn',
-                   u'uncalibrated_dn_udm2', u'visual']
+                   u'pansharpened', u'pansharpened_udm2', u'skysatvideo',
+                   u'uncalibrated_dn', u'uncalibrated_dn_udm2', u'visual']
 
 
 def _get_json_or_raise(url, timeout=11):
