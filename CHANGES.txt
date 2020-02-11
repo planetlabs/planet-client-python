@@ -1,3 +1,8 @@
+1.4.5 (2020-02-11)
+
+ - Add support for new skysat video item and asset types
+ - Add `strict` keyword argument to searches
+
 1.4.4 (2019-12-17)
 
 - Pin requests-futures version to avoid error message.
