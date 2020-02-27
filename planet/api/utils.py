@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from __future__ import print_function
-from datetime import datetime
+from datetime import datetime, timedelta
 from . import exceptions
 import json
 import mimetypes
@@ -22,6 +22,10 @@ import random
 import re
 import string
 import threading
+import numpy
+from dateutil.relativedelta import relativedelta
+import matplotlib.pyplot as plt
+from matplotlib.patches import Polygon
 from requests.compat import urlparse
 from ._fatomic import atomic_open
 
@@ -335,3 +339,86 @@ def handle_interrupt(cancel, f, *a, **kw):
         cancel()
         raise
     return res and res.pop()
+
+def create_years_array(start_date, end_date, datetime_list):
+    arrays_list = []
+    qsdate = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+    qedate = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+    years_list = list(range(qsdate.year, qedate.year + 1))
+    for year in years_list:
+        year_group = []
+        start_date = datetime(year, 1, 1)
+        end_date = datetime(year, 12, 31)
+        d = start_date
+        dates_dict = {}
+        dates_dict[start_date.strftime("%m/%d/%Y")] = 0
+        while d < end_date:
+            d += timedelta(days=1)
+            dates_dict[d.strftime("%m/%d/%Y")] = 0
+        for date_string in datetime_list:
+            simple_date = datetime.strptime(date_string.rsplit('T', 1)[0], "%Y-%m-%d")
+            datestr = simple_date.strftime("%m/%d/%Y")
+            if datestr in dates_dict:
+                dates_dict[datestr] += 1
+            else:
+                pass
+        daily_image_count = numpy.fromiter(dates_dict.values(), dtype=int)
+        year_group.append(year)
+        year_group.append(daily_image_count)
+        year_group.append(daily_image_count.max())
+        year_group.append(daily_image_count.min())
+        # print(year_group)
+        arrays_list.append(year_group)
+    return arrays_list
+
+def calmap(ax, year, data, max_value, item_type=''):
+    weekstart = "sun"
+    origin = "upper"
+    ax.tick_params('x', length=0, labelsize="medium", which='major')
+    ax.tick_params('y', length=0, labelsize="x-small", which='major')
+    # Month borders
+    xticks, labels = [], []
+    start = datetime(year, 1, 1).weekday()
+    _data = numpy.zeros(7 * 53) * numpy.nan
+    _data[start:start + len(data)] = data
+    data = _data.reshape(53, 7).T
+    for month in range(1, 13):
+        first = datetime(year, month, 1)
+        last = first + relativedelta(months=1, days=-1)
+        if origin == "lower":
+            y0 = first.weekday()
+            y1 = last.weekday()
+            x0 = (int(first.strftime("%j")) + start - 1) // 7
+            x1 = (int(last.strftime("%j")) + start - 1) // 7
+            P = [(x0, y0), (x0, 7), (x1, 7), (x1, y1 + 1),
+                 (x1 + 1, y1 + 1), (x1 + 1, 0), (x0 + 1, 0), (x0 + 1, y0)]
+        else:
+            y0 = 6 - first.weekday()
+            y1 = 6 - last.weekday()
+            x0 = (int(first.strftime("%j")) + start - 1) // 7
+            x1 = (int(last.strftime("%j")) + start - 1) // 7
+            P = [(x0, y0 + 1), (x0, 0), (x1, 0), (x1, y1),
+                 (x1 + 1, y1), (x1 + 1, 7), (x0 + 1, 7), (x0 + 1, y0 + 1)]
+
+        xticks.append(x0 + (x1 - x0 + 1) / 2)
+        labels.append(first.strftime("%b"))
+        poly = Polygon(P, edgecolor="black", facecolor="None",
+                       linewidth=1, zorder=20, clip_on=False)
+        ax.add_artist(poly)
+
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(labels)
+    ax.set_yticks(0.5 + numpy.arange(7))
+
+    labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    if origin == "upper": labels = labels[::-1]
+    ax.set_yticklabels(labels)
+    ax.set_title("{}: ".format(year) + item_type, size="large", weight="bold")
+
+    # Showing data
+    cmap = plt.cm.get_cmap('summer_r')
+    cmap.set_under(color='gray')
+
+    calmap_plot = ax.imshow(data, extent=[0, 53, 0, 7], zorder=10, vmin=.01, vmax=max_value, cmap=cmap,
+                            origin=origin)
+    plt.colorbar(calmap_plot, ax=ax, use_gridspec=True)
