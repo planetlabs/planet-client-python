@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import click
+from click.testing import CliRunner
+
 from itertools import chain
 import json
 from .cli import (
@@ -34,7 +36,9 @@ from .types import (
     BoundingBox,
     metavar_docs,
     DateInterval,
-    ItemType
+    ItemType,
+    RequiredUnless,
+    ClipAOI,
 )
 from .util import (
     call_and_wrap,
@@ -45,7 +49,8 @@ from .util import (
     echo_json_response,
     read,
     search_req_from_opts,
-    create_order_request
+    create_order_request,
+    ids_from_search_response,
 )
 from planet.api.utils import (
     handle_interrupt
@@ -162,16 +167,16 @@ def _disable_item_type(ctx, param, value):
 @click.option('--search-id', is_eager=True, callback=_disable_item_type,
               type=str, help='Use the specified search')
 @click.option('--dry-run', is_flag=True, help=(
-        'Only report the number of items that would be downloaded.'
+    'Only report the number of items that would be downloaded.'
 ))
 @click.option('--activate-only', is_flag=True, help=(
-        'Only activate the items. Outputs URLS for downloading.'
+    'Only activate the items. Outputs URLS for downloading.'
 ))
 @click.option('--quiet', is_flag=True, help=(
-        'Disable ANSI control output'
+    'Disable ANSI control output'
 ))
 @click.option('--dest', default='.', help=(
-        'Location to download files to'), type=click.Path(
+    'Location to download files to'), type=click.Path(
     exists=True, resolve_path=True, writable=True, file_okay=False))
 @limit_option(None)
 @data.command('download', epilog=filter_opts_epilog)
@@ -271,8 +276,8 @@ def list_mosaics(pretty, prefix):
 @mosaics.command('search')
 @click.argument('name')
 @click.option('--bbox', type=BoundingBox(), help=(
-        'Region to query as a comma-delimited string:'
-        ' lon_min,lat_min,lon_max,lat_max'
+    'Region to query as a comma-delimited string:'
+    ' lon_min,lat_min,lon_max,lat_max'
 ))
 @click.option('--rbox', type=BoundingBox(), help='Alias for --bbox')
 @limit_option(None)
@@ -322,15 +327,15 @@ def quad_contributions(name, quad, pretty):
 @mosaics.command('download')
 @click.argument('name')
 @click.option('--bbox', type=BoundingBox(), help=(
-        'Region to download as a comma-delimited string:'
-        ' lon_min,lat_min,lon_max,lat_max'
+    'Region to download as a comma-delimited string:'
+    ' lon_min,lat_min,lon_max,lat_max'
 ))
 @click.option('--rbox', type=BoundingBox(), help='Alias for --bbox')
 @click.option('--quiet', is_flag=True, help=(
-        'Disable ANSI control output'
+    'Disable ANSI control output'
 ))
 @click.option('--dest', default='.', help=(
-        'Location to download files to'), type=click.Path(
+    'Location to download files to'), type=click.Path(
     exists=True, resolve_path=True, writable=True, file_okay=False
 ))
 @limit_option(None)
@@ -574,17 +579,17 @@ def features():
 @features.command('list')
 @click.argument('subscription_id')
 @click.option('--bbox', type=BoundingBox(), help=(
-        'Region to query as a comma-delimited string:'
-        ' lon_min,lat_min,lon_max,lat_max'
+    'Region to query as a comma-delimited string:'
+    ' lon_min,lat_min,lon_max,lat_max'
 ))
 @click.option('--rbox', type=BoundingBox(), help='Alias for --bbox')
 @click.option('--time-range', type=DateInterval(), help=(
-        'Time interval. Can be open or closed interval, start times are '
-        'inclusive and end times are exclusive: '
-        '2019-01-01T00:00:00.00Z/2019-02-01T00:00:00.00Z (Closed interval for '
-        'January 2019), 2019-01-01T00:00:00.00Z/.. (Open interval for all '
-        'items since the start of January 2019), 2019-01-01T00:00:00.00Z '
-        '(instant)'
+    'Time interval. Can be open or closed interval, start times are '
+    'inclusive and end times are exclusive: '
+    '2019-01-01T00:00:00.00Z/2019-02-01T00:00:00.00Z (Closed interval for '
+    'January 2019), 2019-01-01T00:00:00.00Z/.. (Open interval for all '
+    'items since the start of January 2019), 2019-01-01T00:00:00.00Z '
+    '(instant)'
 ))
 @click.option('--before', type=str, help=(
     'Get results published before the item with the provided ID.'
@@ -607,17 +612,17 @@ def list_features(subscription_id, pretty, limit, rbox, bbox, time_range,
 @features.command('list-all')
 @click.argument('subscription_id')
 @click.option('--bbox', type=BoundingBox(), help=(
-        'Region to query as a comma-delimited string:'
-        ' lon_min,lat_min,lon_max,lat_max'
+    'Region to query as a comma-delimited string:'
+    ' lon_min,lat_min,lon_max,lat_max'
 ))
 @click.option('--rbox', type=BoundingBox(), help='Alias for --bbox')
 @click.option('--time-range', type=DateInterval(), help=(
-        'Time interval. Can be open or closed interval, start times are '
-        'inclusive and end times are exclusive: '
-        '2019-01-01T00:00:00.00Z/2019-02-01T00:00:00.00Z (Closed interval for '
-        'January 2019), 2019-01-01T00:00:00.00Z/.. (Open interval for all '
-        'items since the start of January 2019), 2019-01-01T00:00:00.00Z '
-        '(instant)'
+    'Time interval. Can be open or closed interval, start times are '
+    'inclusive and end times are exclusive: '
+    '2019-01-01T00:00:00.00Z/2019-02-01T00:00:00.00Z (Closed interval for '
+    'January 2019), 2019-01-01T00:00:00.00Z/.. (Open interval for all '
+    'items since the start of January 2019), 2019-01-01T00:00:00.00Z '
+    '(instant)'
 ))
 @click.option('--before', type=str, help=(
     'Get results published before the item with the provided ID.'
@@ -642,7 +647,7 @@ def list_features_all(subscription_id, pretty, rbox, bbox, time_range, before,
 @click.argument('subscription_id')
 @click.argument('feature_id')
 @click.option('--dest', default='.', help=(
-        'Location to download files to'), type=click.Path(
+    'Location to download files to'), type=click.Path(
     exists=True, resolve_path=True, writable=True, file_okay=False
 ))
 @pretty
@@ -711,8 +716,14 @@ def cancel_order(order_id, pretty):
 
 
 @click.option('--name', required=True)
-@click.option('--id', required=True,
-              help='One or more comma-separated item IDs')
+@click.option('--id', help='One or more comma-separated item IDs',
+              cls=RequiredUnless, this_opt_exists='ids_from_search')
+# Note: This is passed as a string, because --item-type is a required field for
+# both 'data search' and 'orders create'.
+@click.option('--ids_from_search',
+              help='Embedded data search')
+@click.option('--clip', type=ClipAOI(),
+              help='Provide a GeoJSON AOI Geometry for clipping')
 @click.option('--email', default=False, is_flag=True,
               help='Send email notification when Order is complete')
 @click.option('--zip', type=click.Choice(['order', 'bundle']),
@@ -735,6 +746,16 @@ def cancel_order(order_id, pretty):
 @pretty
 def create_order(pretty, **kwargs):
     '''Create an order'''
+    ids_from_search = kwargs.get('ids_from_search')
+    if ids_from_search is not None:
+        runner = CliRunner()
+        resp = runner.invoke(quick_search, ids_from_search).output
+        try:
+            id_list = ids_from_search_response(resp)
+        except ValueError:
+            raise click.ClickException('ids_from_search, {}'.format(resp))
+        kwargs['id'] = id_list
+        del kwargs['ids_from_search']
     cl = clientv1()
     request = create_order_request(**kwargs)
     echo_json_response(call_and_wrap(cl.create_order, request), pretty)
@@ -743,12 +764,12 @@ def create_order(pretty, **kwargs):
 @orders.command('download')
 @click.argument('order_id', type=click.UUID)
 @click.option('--quiet', is_flag=True, help=(
-        'Disable ANSI control output'
+    'Disable ANSI control output'
 ))
 @click.option('--dest', default='.', help=(
     'Location to download files to'), type=click.Path(
         exists=True, resolve_path=True, writable=True, file_okay=False
-    ))
+))
 @pretty
 def download_order(order_id, dest, quiet, pretty):
     '''Download an order by given order ID'''

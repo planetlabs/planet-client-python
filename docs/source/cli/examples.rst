@@ -61,7 +61,7 @@ meant to be easily interoperable with other tools, e.g. `jq
 <https://stedolan.github.io/jq/>`_.  For example, we could output just the name
 and date range of each mosaic with::
 
-    planet mosaics list | jq -r '.mosaics[] | [.name, .first_acquired, .last_acquired] | @tsv' 
+    planet mosaics list | jq -r '.mosaics[] | [.name, .first_acquired, .last_acquired] | @tsv'
 
 Get basic information for a specific mosaic::
 
@@ -73,7 +73,7 @@ list all quads. Keep in mind that there may be millions for a global mosaic.)::
     planet mosaics search global_monthly_2018_09_mosaic --limit=10
 
 Find all quads inside a particular area of interest::
-    
+
     planet mosaics search global_monthly_2018_09_mosaic --bbox=-95.5,29.6,-95.3,29.8
 
 Note that the format of ``--bbox`` is "xmin,ymin,xmax,ymax", so longitude comes
@@ -193,7 +193,7 @@ Orders Examples
 -----------------
 
 List all recent orders for the authenticated user::
-    
+
     planet orders list
 
 Get the status of a single order by Order ID::
@@ -203,17 +203,17 @@ Get the status of a single order by Order ID::
 Note that you may want to parse the JSON that's output into a more human
 readable format.  The cli does not directly provide options for this, but is
 meant to be easily interoperable with other tools, e.g. `jq
-<https://stedolan.github.io/jq/>`_.  
+<https://stedolan.github.io/jq/>`_.
 
 To cancel a running order by given order ID::
 
     planet orders cancel <order ID>
 
-To download an order to your local machine::    
+To download an order to your local machine::
 
-    planet orders download <order ID> 
+    planet orders download <order ID>
 
-Optionally, a `--dest <path to destination>` flag may be specified too.    
+Optionally, a `--dest <path to destination>` flag may be specified too.
 
 Creating an Order
 ..................
@@ -227,19 +227,148 @@ The minimal command to create a simple order looks something like::
 If no toolchain or delivery details are specified, a basic order with download
 delivery will be placed for the requested bundle including the item id(s) specified.
 
-Additionally, optional toolchain & delivery details can be provided on the
-command line, e.g.:::
+In the place of `--id`, you can insert a Data search string. This will populate
+the list of IDs from a search. For example::
+
+    planet orders create --name "my order" \
+        --ids_from_search $'--item-type PSScene3Band --date acquired gt 2017-02-14 --date acquired lt 2017-03-14 --limit 6 --geom \'{
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {},
+          "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  -116.40701293945311,
+                  43.061363052307875
+                ],
+                [
+                  -116.4451217651367,
+                  43.05032512283074
+                ],
+                [
+                  -116.4320755004883,
+                  43.017450433440814
+                ],
+                [
+                  -116.37508392333984,
+                  43.01092359150748
+                ],
+                [
+                  -116.3393783569336,
+                  43.03677585761058
+                ],
+                [
+                  -116.35894775390624,
+                  43.06186472916744
+                ],
+                [
+                  -116.40701293945311,
+                  43.061363052307875
+                ]
+              ]
+            ]
+          }
+        }
+      ]
+    }\'' \
+    --bundle visual \
+    --item-type psscene3band \
+    --zip bundle --email \
+    --clip '{
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -116.40701293945311,
+              43.061363052307875
+            ],
+            [
+              -116.4451217651367,
+              43.05032512283074
+            ],
+            [
+              -116.4320755004883,
+              43.017450433440814
+            ],
+            [
+              -116.37508392333984,
+              43.01092359150748
+            ],
+            [
+              -116.3393783569336,
+              43.03677585761058
+            ],
+            [
+              -116.35894775390624,
+              43.06186472916744
+            ],
+            [
+              -116.40701293945311,
+              43.061363052307875
+            ]
+          ]
+        ]
+      }'
+
+Note that `--ids_from_search` is passed as a string value.
+
+Additionally, optional toolchain & delivery details can be provided on the command line, e.g.::
 
     planet orders create --name "my order" \
       --id 20151119_025740_0c74,20151119_025741_0c74 \
       --bundle visual --item-type psscene3band --zip order --email
 
 This places the same order as above, and will also provide a .zip archive
-download link for the full order, as well as email notification.
+download link for the full order, as well as email notification. If you change
+`--zip order` to `--zip bundle`, the individual bundles will be zipped rather
+than the full order.
+
+You can also clip the items in an order by providing a GeoJSON AOI Geometry
+with the `--clip` parameter::
+
+    planet orders create --name "my order" ... \
+      --clip '{
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -163.828125,
+                -44.59046718130883
+              ],
+              [
+                181.7578125,
+                -44.59046718130883
+              ],
+              [
+                181.7578125,
+                78.42019327591201
+              ],
+              [
+                -163.828125,
+                78.42019327591201
+              ],
+              [
+                -163.828125,
+                -44.59046718130883
+              ]
+            ]
+          ]
+        }'
+
+Alternatively, you can specify a file that contains your GeoJSON AOI using the
+`@` notation, e.g. `--clip @path/to/aoi.json`.
+
+It should be noted that if the clip AOI you specify does not intersect with the
+items in `--id` or `--ids_from_search` you may end up with a zero result order.
+If some of the items intersect, you will receive those items.
 
 The Orders API allows you to specify a toolchain of operations to be performed
 on your order prior to download. To read more about tools & toolchains, visit
-`the docs <https://developers.planet.com/docs/orders/tools-toolchains/>`_ .      
+`the docs <https://developers.planet.com/docs/orders/tools-toolchains/>`_ .
 
 To add tool operations to your order, use the `--tools` option to specify a
 json-formatted file containing an array (list) of the desired tools an their
@@ -271,7 +400,7 @@ order, you would create a `.json` file similar to the following::
             "name_template": "C1232_30_30_{tilex:04d}_{tiley:04d}"
           }
         }
-      ]
+    ]
 
 
 Similarly, you can also specify cloud delivery options on an order create
@@ -279,8 +408,8 @@ command with the `--cloudconfig <path to json file>` option. In this case, the
 json file should contain the required credentials for your desired cloud
 storage destination, for example::
 
-    {  
-          "amazon_s3":{  
+    {
+          "amazon_s3":{
              "bucket":"foo-bucket",
              "aws_region":"us-east-2",
              "aws_access_key_id":"",

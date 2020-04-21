@@ -100,6 +100,7 @@ def create_order_request(**kwargs):
     email = kwargs.get('email')
     archive = kwargs.get('zip')
     config = kwargs.get('cloudconfig')
+    clip = kwargs.get('clip')
     tools = kwargs.get('tools')
 
     request = {'name': kwargs.get('name'),
@@ -108,20 +109,21 @@ def create_order_request(**kwargs):
                              'product_bundle': bundle}
                             ],
                'tools': [
-               ],
-               'delivery': {
-               },
-               'notifications': {
+    ],
+        'delivery': {
+    },
+        'notifications': {
                    'email': email
-               },
-               }
+    },
+    }
 
     if archive is not None:
         request["delivery"]["archive_filename"] = "{{name}}_{{order_id}}.zip"
         request["delivery"]["archive_type"] = "zip"
 
-        # TODO verify this is correct req format for order vs bundle zip
-        if archive == "bundle":
+        # If single_archive is not set, each bundle will be zipped, as opposed
+        # to the entire order.
+        if archive == "order":
             request["delivery"]["single_archive"] = True
 
     if config:
@@ -129,9 +131,13 @@ def create_order_request(**kwargs):
             conf = json.load(f)
             request["delivery"].update(conf)
 
-    # TODO determine reasonable interfaces for SOME tools via CLI;
-    # e.g., clip via provided geojson AOI
-    # for now we can punt by pointing users to doc examples for copy-pasting
+    # NOTE clip is the only tool that currently can be specified via CLI param.
+    # A full tool chain can be specified via JSON file, so that will overwrite
+    # clip if both are present. TODO add other common tools as params.
+    if clip and not tools:
+        toolchain = [{'clip': {'aoi': json.loads(clip)}}]
+        request['tools'].extend(toolchain)
+
     if tools:
         with open(tools, 'r') as f:
             toolchain = json.load(f)
@@ -346,3 +352,11 @@ def downloader_output(dl, disable_ansi=False):
     if termui.WIN and not disable_ansi:
         logging.getLogger('').setLevel(logging.INFO)
     return Output(thread, dl)
+
+
+def ids_from_search_response(resp):
+    ret = []
+    r = json.loads(resp)
+    for feature in r['features']:
+        ret.append(feature['id'])
+    return ','.join(ret)
