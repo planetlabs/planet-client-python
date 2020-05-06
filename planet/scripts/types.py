@@ -309,3 +309,28 @@ class DateInterval(click.ParamType):
         for date in dates:
             if date != '..' and strp_lenient(date) is None:
                 raise click.BadParameter('Invalid date: {}'.format(date))
+
+
+class ClipAOI(click.ParamType):
+    name = 'clip'
+
+    def convert(self, val, param, ctx):
+        val = read(val)
+        if not val:
+            return []
+        try:
+            json.loads(val)
+        except ValueError:
+            raise click.BadParameter('invalid GeoJSON')
+        return val
+
+
+class RequiredUnless(click.Option):
+    def __init__(self, *args, **kwargs):
+        self.this_opt_exists = kwargs.pop('this_opt_exists')
+        super(RequiredUnless, self).__init__(*args, **kwargs)
+
+    def handle_parse_result(self, ctx, opts, args):
+        if self.name not in opts and self.this_opt_exists not in opts:
+            raise click.UsageError('{} is required.'.format(self.name))
+        return super(RequiredUnless, self).handle_parse_result(ctx, opts, args)
