@@ -20,12 +20,13 @@ from .exceptions import (InvalidIdentity, APIException)
 from . import models
 from . import filters
 
+BASE_URL = 'https://api.planet.com/'
+
 
 class _Base(object):
     '''High-level access to Planet's API.'''
 
-    def __init__(self, api_key=None, base_url='https://api.planet.com/',
-                 workers=4):
+    def __init__(self, api_key=None, base_url=BASE_URL, workers=4):
         '''
         :param str api_key: API key to use. Defaults to environment variable.
         :param str base_url: The base URL to use. Not required.
