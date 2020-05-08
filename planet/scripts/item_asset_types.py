@@ -30,10 +30,11 @@ DEFAULT_ITEM_TYPES = [
 ]
 
 DEFAULT_ASSET_TYPES = [
-    'analytic', 'analytic_b1', 'analytic_b10', 'analytic_b11', 'analytic_b12',
-    'analytic_b2', 'analytic_b3', 'analytic_b4', 'analytic_b5', 'analytic_b6',
-    'analytic_b7', 'analytic_b8', 'analytic_b8a', 'analytic_b9',
-    'analytic_bqa', 'analytic_dn', 'analytic_dn_xml', 'analytic_gflags',
+    'analytic', 'analytic_5b', 'analytic_5b_xml', 'analytic_b1',
+    'analytic_b10', 'analytic_b11', 'analytic_b12', 'analytic_b2',
+    'analytic_b3', 'analytic_b4', 'analytic_b5', 'analytic_b6', 'analytic_b7',
+    'analytic_b8', 'analytic_b8a', 'analytic_b9', 'analytic_bqa',
+    'analytic_dn', 'analytic_dn_xml', 'analytic_gflags',
     'analytic_granule_pnt', 'analytic_iobs_res', 'analytic_ms',
     'analytic_num_observations', 'analytic_num_observations_1km',
     'analytic_num_observations_500m', 'analytic_obscov',
