@@ -46,10 +46,10 @@ def assert_success(result, expected_output, exit_code=0):
 
 def assert_failure(result, error):
     assert result.exit_code != 0
-    if error not in result.output:
-        print(result.output)
-        raise Exception(traceback.format_tb(result.exc_info[2]))
-    assert error in result.output
+    # replace all double quotes with single quotes before comparison
+    error = error.replace('"', "'")
+    output = result.output.replace('"', "'")
+    assert error in output
 
 
 def test_filter(runner):
