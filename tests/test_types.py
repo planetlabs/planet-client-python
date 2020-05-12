@@ -44,6 +44,7 @@ def test_item_type():
         ItemType().convert('x', None, None)
     assert 'invalid choice: x' in str(e.value)
 
+
 @mock.patch('planet.scripts.types.get_asset_types',
             new=mock.Mock(return_value=DEFAULT_ASSET_TYPES))
 def test_asset_type():
