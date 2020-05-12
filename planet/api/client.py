@@ -565,7 +565,9 @@ class ClientV1(_Base):
 
         order = self._get(url, models.Order).get_body()
         locations = order.get_locations()
-        return self._get(locations, models.JSON, callback=callback)
+
+        return [self.download_location(location, callback=callback)
+                for location in locations]
 
     def download_location(self, location, callback=None):
         '''Download an item in an order.
