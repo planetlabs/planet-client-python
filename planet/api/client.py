@@ -152,7 +152,7 @@ class ClientV1(_Base):
         '''Execute a quick search with the specified request.
 
         :param request: see :ref:`api-search-request`
-        :param **kw: See Options below
+        :param `**kw`: See Options below
         :returns: :py:class:`planet.api.models.Items`
         :raises planet.api.exceptions.APIException: On API error.
 
@@ -160,7 +160,6 @@ class ClientV1(_Base):
 
         * page_size (int): Size of response pages
         * sort (string): Sorting order in the form `field (asc|desc)`
-
         '''
         body = json.dumps(request)
         params = self._params(kw)
