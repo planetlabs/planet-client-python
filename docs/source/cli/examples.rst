@@ -330,7 +330,9 @@ than the full order.
 You can also clip the items in an order by providing a GeoJSON AOI Geometry
 with the `--clip` parameter::
 
-    planet orders create --name "my order" ... \
+    planet orders create --name "my order" \
+      --id 20151119_025740_0c74,20151119_025741_0c74 \
+      --bundle visual --item-type psscene3band
       --clip '{
           "type": "Polygon",
           "coordinates": [
