@@ -1,3 +1,11 @@
+1.4.6 (2020-05-18)
+
+- New: you can now pass a search string to the Orders CLI via `--ids_from_search`
+- New: the Orders CLI now has a shortcut `--clip` for clipping operations
+- Fix: you can now download Order locations one by one
+- Multiple test fixes: Python 2.7 tests, flake8, & make html-docs warning
+- Add support for new 5-band asset types
+
 1.4.5 (2020-02-11)
 
  - Add support for new skysat video item and asset types
