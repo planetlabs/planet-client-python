@@ -165,6 +165,13 @@ def click_exception(ex):
     raise click.ClickException(msg)
 
 
+def pretty_cl_response(body: list or dict):
+    indent = 2
+    sort_keys = True
+    output = json.dumps(body, indent=indent, sort_keys=sort_keys)
+    click.echo(output)
+    click.echo()
+
 def echo_json_response(response, pretty, limit=None, ndjson=False):
     '''Wrapper to echo JSON with optional 'pretty' printing. If pretty is not
     provided explicity and stdout is a terminal (and not redirected or piped),

@@ -14,6 +14,7 @@
 
 import click
 from click.testing import CliRunner
+from ..api.experimental.basemaps_client import BasemapsClientV1
 
 from itertools import chain
 import json
@@ -29,7 +30,7 @@ from .opts import (
     limit_option,
     pretty,
     search_request_opts,
-    sort_order
+    sort_order,
 )
 from .types import (
     AssetTypePerm,
@@ -39,6 +40,7 @@ from .types import (
     ItemType,
     RequiredUnless,
     ClipAOI,
+    GeomFilter
 )
 from .util import (
     call_and_wrap,
@@ -51,6 +53,7 @@ from .util import (
     search_req_from_opts,
     create_order_request,
     ids_from_search_response,
+    pretty_cl_response,
 )
 from planet.api.utils import (
     handle_interrupt
@@ -245,6 +248,23 @@ def mosaics():
 def series():
     '''Commands for interacting with Mosaic Series through the Mosaics API'''
     pass
+
+
+@series.command('time-series')
+@click.option('--aoi', required=True, type=GeomFilter())
+@click.option('--before', type=str, help=(
+    'Get quads published before the item with the provided ID.'
+))
+@click.option('--after', type=str, help=(
+    'Get quads published after the item with the provided ID.'
+))
+@limit_option(40)
+@pretty
+def time_series(aoi, before, after, limit, pretty):
+    '''Get a stack of quads over a specified date range for a specified aoi'''
+    cl = BasemapsClientV1()
+    resp = cl.get_time_series(aoi, after, before)
+    pretty_cl_response(resp)
 
 
 @series.command('describe')

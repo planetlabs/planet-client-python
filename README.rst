@@ -38,6 +38,43 @@ Development
 To develop with or use the library in your own projects, see the `wiki <https://github.com/planetlabs/planet-client-python/wiki>`__.
 
 
+Virtual Environment Quick Start (Mac)
+-------------------------------------
+As a quick start to develop, install virtualenvwrapper.
+
+.. code-block::
+
+    $ pip install virtualenvwrapper
+
+Then check where the package was installed by running
+
+.. code-block::
+
+    which virtualenvwrapper.sh
+
+And copying what's returned, which could look like this
+
+.. code-block::
+
+    /Library/Frameworks/Python.framework/Versions/3.8/bin/virtualenvwrapper.sh
+
+Next, add the following lines to your bash profile.
+
+.. code-block::
+
+    export WORKON_HOME=$HOME/.virtualenvs
+    export PROJECT_HOME=$HOME/Devel
+    source /Library/Frameworks/Python.framework/Versions/3.8/bin/virtualenvwrapper.sh
+
+Finally, source your bash profile and run the following lines in cl to create the virtual environment
+
+.. code-block::
+
+    cd path/to/planet-client-python
+    mkvirtualenv planet-client-python
+    workon planet-client-python
+    pip install -e .
+
 API Key
 -------
 

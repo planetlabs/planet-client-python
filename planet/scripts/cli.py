@@ -17,6 +17,7 @@ import logging
 import sys
 
 from planet import api
+from planet.api.experimental.basemaps_client import BasemapsClientV1
 from planet.api.__version__ import __version__
 from planet.api.utils import write_planet_json
 from .util import call_and_wrap
@@ -26,6 +27,10 @@ client_params = {}
 
 def clientv1():
     return api.ClientV1(**client_params)
+
+
+def basemaps_clientv1():
+    return api.experimental.BasemapsClientV1(**client_params)
 
 
 def configure_logging(verbosity):
