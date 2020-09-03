@@ -231,6 +231,51 @@ def test_download_search_id(runner, client, monkeypatch):
     assert client.saved_search.call_args[0][0] == 'x22'
 
 
+def test_download_order(runner, client, monkeypatch):
+    '''Check if the cli calls for download of the entire order.
+
+    TODO:
+    The intention of this test was to identify an issue where
+    the cli download of an order didn't always download all files.
+
+    However, this has devolved into mostly a test of the downloader.
+
+    This is because if we mock out the downloader, then we can't check
+    how download.download was called because it is called in a thread
+    in handle_interrupt (or at least that's what I think, all I'm seeing
+    is that it sees download.download being called 0 times).
+
+    Further, this test isn't getting to the heart of the problem. It always
+    succeeds while actual cli download is still not reliable.
+
+    Possible solutions are: figure out how to use mocking with threading and
+    change this to a test of the downloader.download function in the
+    appropriate test module'''
+
+    resp = MagicMock('response')
+    mock_items = ['a', 'b', 'c', 'd']
+    resp.items_iter = lambda *a, **kw: iter(mock_items)
+    client.get_individual_order.return_value = resp
+
+    # the actual value doesn't matter but it needs to look valid
+    # so the cli doesn't throw an exception
+    oid = "6a5390a5-e45b-4e30-b30e-991a2ab707ac"
+    assert_success(
+        runner.invoke(main, [
+            'orders', 'download', oid
+        ]), '')
+
+    # # it would be amazing to test that dl.download gets called
+    # # with the right arguments but it gets called within a thread
+    # # so the mock object doesn't see it getting called
+    # dl = MagicMock(name='downloader')
+    # assert dl.download.call_count > 0
+
+    # check that the cli (aka downloader) ran the download method
+    # for each item
+    assert client.download_location.call_count == len(mock_items)
+
+
 def test_create_search(runner, client):
     fake_response = '{"chowda":true}'
     configure_response(client.create_search, fake_response)

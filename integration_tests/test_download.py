@@ -31,6 +31,9 @@ import time
 import requests
 from requests.auth import HTTPBasicAuth
 
+from planet.scripts import v1
+
+
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 # API Key stored as an env variable
@@ -92,14 +95,7 @@ def poll_for_success(order_url, auth, num_loops=50):
         raise Exception('order did not succeed')
 
 
-def test_download_order_cli(order_id):
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        cmd = ['planet', 'orders', 'download', '--dest', tmpdirname, order_id]
-        _run_command_line(cmd)
-
-        files = os.listdir(tmpdirname)
-        logging.info(files)
-
+def test_download_order(order_id):
     # can also use the manifest to look for these
     expected_files = [
         '20200505_193841_ssc4d1_0018_analytic_reproject.tif',
@@ -107,8 +103,53 @@ def test_download_order_cli(order_id):
         '20200505_193841_ssc4d1_0018_metadata.json'
     ]
 
-    for f in expected_files:
-        assert f in files, '{} not found'.format(f)
+    messages = []
+    for i in range(5):
+        try:
+            files = download_order_cli(order_id)
+            for f in expected_files:
+                assert f in files, '{} not found'.format(f)
+        except AssertionError as err:
+            messages.append('Test {} failed: {}'.format(i, err))
+
+    if len(messages):
+        for m in messages:
+            logging.info(m)
+    else:
+        logging.info('Success!')
+
+
+def download_order_cli(order_id):
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        cmd = ['planet', '-v', 'orders', 'download', '--dest', tmpdirname, order_id]
+        _run_command_line(cmd)
+
+        files = os.listdir(tmpdirname)
+        # logging.debug(files)
+    return files
+
+
+# # from planet.cli import clientv1
+# from .cli import clientv1
+# from planet.util import downloader_output
+# from planet.api import downloader
+# from planet.api.utils import handle_interrupt
+# def download_order_v1(order_id):
+#     with tempfile.TemporaryDirectory() as tmpdirname:
+#         logging.warning(order_id)
+#
+#         cl = clientv1()
+#         dl = downloader.create(cl, order=True)
+#
+#         output = downloader_output(dl, disable_ansi=True)
+#         output.start()
+#
+#         items = cl.get_individual_order(order_id).items_iter(limit=None)
+#         handle_interrupt(dl.shutdown, dl.download, items, [], tmpdirname)
+#
+#         files = os.listdir(tmpdirname)
+#         logging.info(files)
+#     return files
 
 
 def _run_command_line(cmds, stdout=None, stderr=None):
@@ -134,7 +175,7 @@ if __name__ == '__main__':
 
     auth = HTTPBasicAuth(PLANET_API_KEY, '')
 
-    if 'oid' in args:
+    if args.oid:
         order_id = args.oid
     else:
         logging.debug('submitting order')
@@ -143,15 +184,4 @@ if __name__ == '__main__':
     order_url = ORDERS_URL + '/' + order_id
     poll_for_success(order_url, auth)
 
-    messages = []
-    for i in range(5):
-        try:
-            test_download_order_cli(order_id)
-        except AssertionError as err:
-            messages.append('Test {} failed: {}'.format(i, err))
-
-    if len(messages):
-        for m in messages:
-            logging.info(m)
-    else:
-        logging.info('Success!')
+    test_download_order(order_id)
