@@ -322,6 +322,7 @@ class WFS3Features(AnalyticsPaged):
 
 class Orders(Paged):
     ITEM_KEY = 'orders'
+    NEXT_KEY = 'next'
 
 
 class Order(JSON):
