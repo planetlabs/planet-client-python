@@ -1,17 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>Examples &#8212; Planet API Client 1.4.4 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Examples &#8212; Planet API Client 1.4.6 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="API" href="../api/index.html" />
@@ -51,7 +52,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
+<script>$('#searchbox').show(0);</script><h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Command Line</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="reference.html">CLI Reference</a></li>
@@ -86,11 +87,11 @@
 </pre></div>
 </div>
 <p>Get recently acquired PSScene3Band ItemType records:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type PSScene3Band --date gt 2017-02-14
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type PSScene3Band --date acquired gt 2017-02-14
 </pre></div>
 </div>
 <p>Item types can be specified case-insensitively, with prefix matching in the CLI:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type psscene --date gt 2017-02-14
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type psscene --date acquired gt 2017-02-14
 </pre></div>
 </div>
 <p>Search for a month. Note: criteria are applied as an AND filter:</p>
@@ -290,15 +291,143 @@ meant to be easily interoperable with other tools, e.g. <a class="reference exte
 </div>
 <p>If no toolchain or delivery details are specified, a basic order with download
 delivery will be placed for the requested bundle including the item id(s) specified.</p>
-<p>Additionally, optional toolchain &amp; delivery details can be provided on the
-command line, e.g.::</p>
+<p>In the place of <cite>–id</cite>, you can insert a Data search string. This will populate
+the list of IDs from a search. For example:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders create --name &quot;my order&quot; \
+    --ids_from_search $&#39;--item-type PSScene3Band --date acquired gt 2017-02-14 --date acquired lt 2017-03-14 --limit 6 --geom \&#39;{
+  &quot;type&quot;: &quot;FeatureCollection&quot;,
+  &quot;features&quot;: [
+    {
+      &quot;type&quot;: &quot;Feature&quot;,
+      &quot;properties&quot;: {},
+      &quot;geometry&quot;: {
+        &quot;type&quot;: &quot;Polygon&quot;,
+        &quot;coordinates&quot;: [
+          [
+            [
+              -116.40701293945311,
+              43.061363052307875
+            ],
+            [
+              -116.4451217651367,
+              43.05032512283074
+            ],
+            [
+              -116.4320755004883,
+              43.017450433440814
+            ],
+            [
+              -116.37508392333984,
+              43.01092359150748
+            ],
+            [
+              -116.3393783569336,
+              43.03677585761058
+            ],
+            [
+              -116.35894775390624,
+              43.06186472916744
+            ],
+            [
+              -116.40701293945311,
+              43.061363052307875
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}\&#39;&#39; \
+--bundle visual \
+--item-type psscene3band \
+--zip bundle --email \
+--clip &#39;{
+    &quot;type&quot;: &quot;Polygon&quot;,
+    &quot;coordinates&quot;: [
+      [
+        [
+          -116.40701293945311,
+          43.061363052307875
+        ],
+        [
+          -116.4451217651367,
+          43.05032512283074
+        ],
+        [
+          -116.4320755004883,
+          43.017450433440814
+        ],
+        [
+          -116.37508392333984,
+          43.01092359150748
+        ],
+        [
+          -116.3393783569336,
+          43.03677585761058
+        ],
+        [
+          -116.35894775390624,
+          43.06186472916744
+        ],
+        [
+          -116.40701293945311,
+          43.061363052307875
+        ]
+      ]
+    ]
+  }&#39;
+</pre></div>
+</div>
+<p>Note that <cite>–ids_from_search</cite> is passed as a string value.</p>
+<p>Additionally, optional toolchain &amp; delivery details can be provided on the command line, e.g.:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders create --name &quot;my order&quot; \
   --id 20151119_025740_0c74,20151119_025741_0c74 \
   --bundle visual --item-type psscene3band --zip order --email
 </pre></div>
 </div>
 <p>This places the same order as above, and will also provide a .zip archive
-download link for the full order, as well as email notification.</p>
+download link for the full order, as well as email notification. If you change
+<cite>–zip order</cite> to <cite>–zip bundle</cite>, the individual bundles will be zipped rather
+than the full order.</p>
+<p>You can also clip the items in an order by providing a GeoJSON AOI Geometry
+with the <cite>–clip</cite> parameter:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders create --name &quot;my order&quot; \
+  --id 20151119_025740_0c74,20151119_025741_0c74 \
+  --bundle visual --item-type psscene3band
+  --clip &#39;{
+      &quot;type&quot;: &quot;Polygon&quot;,
+      &quot;coordinates&quot;: [
+        [
+          [
+            -163.828125,
+            -44.59046718130883
+          ],
+          [
+            181.7578125,
+            -44.59046718130883
+          ],
+          [
+            181.7578125,
+            78.42019327591201
+          ],
+          [
+            -163.828125,
+            78.42019327591201
+          ],
+          [
+            -163.828125,
+            -44.59046718130883
+          ]
+        ]
+      ]
+    }&#39;
+</pre></div>
+</div>
+<p>Alternatively, you can specify a file that contains your GeoJSON AOI using the
+<cite>&#64;</cite> notation, e.g. <cite>–clip &#64;path/to/aoi.json</cite>.</p>
+<p>It should be noted that if the clip AOI you specify does not intersect with the
+items in <cite>–id</cite> or <cite>–ids_from_search</cite> you may end up with a zero result order.
+If some of the items intersect, you will receive those items.</p>
 <p>The Orders API allows you to specify a toolchain of operations to be performed
 on your order prior to download. To read more about tools &amp; toolchains, visit
 <a class="reference external" href="https://developers.planet.com/docs/orders/tools-toolchains/">the docs</a> .</p>
@@ -332,7 +461,7 @@ order, you would create a <cite>.json</cite> file similar to the following:</p>
         &quot;name_template&quot;: &quot;C1232_30_30_{tilex:04d}_{tiley:04d}&quot;
       }
     }
-  ]
+]
 </pre></div>
 </div>
 <p>Similarly, you can also specify cloud delivery options on an order create
@@ -406,7 +535,7 @@ Given that this Landsat scene was taken on April 14, 2015, it might be useful to
       &copy;2017-2019 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

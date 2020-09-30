@@ -1,17 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>Reference &#8212; Planet API Client 1.4.4 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reference &#8212; Planet API Client 1.4.6 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Examples" href="examples.html" />
@@ -51,7 +52,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
+<script>$('#searchbox').show(0);</script><h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../cli/index.html">Command Line</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">API</a><ul class="current">
@@ -90,7 +91,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">ClientV1</span><span class="p">()</span>
 </pre></div>
 </div>
-<dl class="class">
+<dl class="py class">
 <dt id="planet.api.ClientV1">
 <em class="property">class </em><code class="sig-prename descclassname">planet.api.</code><code class="sig-name descname">ClientV1</code><a class="headerlink" href="#planet.api.ClientV1" title="Permalink to this definition">¶</a></dt>
 <dd><p>ClientV1 provides basic low-level access to Planet’s API. Only one
@@ -101,9 +102,9 @@ request bodies. Return values are usually a subclass of
 <a class="reference internal" href="#planet.api.models.Body" title="planet.api.models.Body"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Body</span></code></a>. Any exceptional http responses are
 handled by translation to one of the <a class="reference internal" href="#module-planet.api.exceptions" title="planet.api.exceptions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">planet.api.exceptions</span></code></a>
 classes.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.activate">
-<code class="sig-name descname">activate</code><span class="sig-paren">(</span><em class="sig-param">asset</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.activate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">activate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">asset</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.activate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request activation of the specified asset representation.</p>
 <p>Asset representations are obtained from <a class="reference internal" href="#planet.api.ClientV1.get_assets" title="planet.api.ClientV1.get_assets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_assets()</span></code></a>.</p>
 <dl class="field-list simple">
@@ -119,9 +120,9 @@ classes.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.cancel_order">
-<code class="sig-name descname">cancel_order</code><span class="sig-paren">(</span><em class="sig-param">order_id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.cancel_order" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">cancel_order</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">order_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.cancel_order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Cancel a running order by Order ID.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -136,7 +137,7 @@ classes.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.check_analytics_connection">
 <code class="sig-name descname">check_analytics_connection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.check_analytics_connection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Validate that we can use the Analytics API. Useful to test connectivity
@@ -144,9 +145,9 @@ to test environments.
 :returns: <a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.JSON</span></code></a></p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.create_order">
-<code class="sig-name descname">create_order</code><span class="sig-paren">(</span><em class="sig-param">request</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.create_order" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">create_order</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">request</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.create_order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create an order.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -162,9 +163,9 @@ to test environments.
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.create_search">
-<code class="sig-name descname">create_search</code><span class="sig-paren">(</span><em class="sig-param">request</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.create_search" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">create_search</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">request</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.create_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new saved search from the specified request.
 The request must contain a <code class="docutils literal notranslate"><span class="pre">name</span></code> property.</p>
 <dl class="field-list simple">
@@ -180,9 +181,9 @@ The request must contain a <code class="docutils literal notranslate"><span clas
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.download">
-<code class="sig-name descname">download</code><span class="sig-paren">(</span><em class="sig-param">asset</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.download" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">download</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">asset</span></em>, <em class="sig-param"><span class="n">callback</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.download" title="Permalink to this definition">¶</a></dt>
 <dd><p>Download the specified asset. If provided, the callback will be
 invoked asynchronously. Otherwise it is up to the caller to handle the
 response Body.</p>
@@ -204,9 +205,9 @@ download. See <a class="reference internal" href="#planet.api.write_to_file" tit
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.download_location">
-<code class="sig-name descname">download_location</code><span class="sig-paren">(</span><em class="sig-param">location</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.download_location" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">download_location</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">location</span></em>, <em class="sig-param"><span class="n">callback</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.download_location" title="Permalink to this definition">¶</a></dt>
 <dd><p>Download an item in an order.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -222,9 +223,9 @@ download. See <a class="reference internal" href="#planet.api.write_to_file" tit
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.download_order">
-<code class="sig-name descname">download_order</code><span class="sig-paren">(</span><em class="sig-param">order_id</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.download_order" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">download_order</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">order_id</span></em>, <em class="sig-param"><span class="n">callback</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.download_order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Download all items in an order.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -240,9 +241,9 @@ download. See <a class="reference internal" href="#planet.api.write_to_file" tit
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.download_quad">
-<code class="sig-name descname">download_quad</code><span class="sig-paren">(</span><em class="sig-param">quad</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.download_quad" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">download_quad</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">quad</span></em>, <em class="sig-param"><span class="n">callback</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.download_quad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Download the specified mosaic quad. If provided, the callback will
 be invoked asynchronously.  Otherwise it is up to the caller to handle
 the response Body.</p>
@@ -264,9 +265,9 @@ download. See <a class="reference internal" href="#planet.api.write_to_file" tit
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_assets">
-<code class="sig-name descname">get_assets</code><span class="sig-paren">(</span><em class="sig-param">item</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_assets" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_assets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">item</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_assets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the assets for the provided item representations.</p>
 <p>Item representations are obtained from search requests.</p>
 <dl class="field-list simple">
@@ -282,9 +283,9 @@ download. See <a class="reference internal" href="#planet.api.write_to_file" tit
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_assets_by_id">
-<code class="sig-name descname">get_assets_by_id</code><span class="sig-paren">(</span><em class="sig-param">item_type</em>, <em class="sig-param">id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_assets_by_id" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_assets_by_id</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">item_type</span></em>, <em class="sig-param"><span class="n">id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_assets_by_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an item’s asset response for the given item_type and id</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -302,9 +303,9 @@ download. See <a class="reference internal" href="#planet.api.write_to_file" tit
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_associated_resource_for_analytic_feature">
-<code class="sig-name descname">get_associated_resource_for_analytic_feature</code><span class="sig-paren">(</span><em class="sig-param">subscription_id</em>, <em class="sig-param">feature_id</em>, <em class="sig-param">resource_type</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_associated_resource_for_analytic_feature" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_associated_resource_for_analytic_feature</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subscription_id</span></em>, <em class="sig-param"><span class="n">feature_id</span></em>, <em class="sig-param"><span class="n">resource_type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_associated_resource_for_analytic_feature" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get resource associated with some feature in an analytic subscription.
 Response might be JSON or a TIF, depending on requested resource.
 :param subscription_id str: ID of subscription
@@ -318,27 +319,27 @@ type unavailable.
 <a class="reference internal" href="#planet.api.models.Body" title="planet.api.models.Body"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Body</span></code></a> of the resource.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_collection_info">
-<code class="sig-name descname">get_collection_info</code><span class="sig-paren">(</span><em class="sig-param">subscription_id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_collection_info" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_collection_info</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subscription_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_collection_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the information describing a specific collection.
 :param subscription_id:
 :raises planet.api.exceptions.APIException: On API error.
 :returns: <a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.JSON</span></code></a></p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_feed_info">
-<code class="sig-name descname">get_feed_info</code><span class="sig-paren">(</span><em class="sig-param">feed_id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_feed_info" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_feed_info</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">feed_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_feed_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the information describing a specific collection.
 :param subscription_id:
 :raises planet.api.exceptions.APIException: On API error.
 :returns: <a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.JSON</span></code></a></p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_individual_order">
-<code class="sig-name descname">get_individual_order</code><span class="sig-paren">(</span><em class="sig-param">order_id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_individual_order" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_individual_order</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">order_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_individual_order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get order request details by Order ID.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -353,9 +354,9 @@ type unavailable.
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_item">
-<code class="sig-name descname">get_item</code><span class="sig-paren">(</span><em class="sig-param">item_type</em>, <em class="sig-param">id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_item" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_item</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">item_type</span></em>, <em class="sig-param"><span class="n">id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_item" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the an item response for the given item_type and id</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -373,9 +374,9 @@ type unavailable.
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_mosaic_by_name">
-<code class="sig-name descname">get_mosaic_by_name</code><span class="sig-paren">(</span><em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_mosaic_by_name" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_mosaic_by_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_mosaic_by_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the API representation of a mosaic by name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -390,16 +391,16 @@ type unavailable.
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_mosaic_series">
-<code class="sig-name descname">get_mosaic_series</code><span class="sig-paren">(</span><em class="sig-param">series_id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_mosaic_series" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_mosaic_series</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">series_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_mosaic_series" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get information pertaining to a mosaics series
 :returns: <a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.JSON</span></code></a></p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_mosaics">
-<code class="sig-name descname">get_mosaics</code><span class="sig-paren">(</span><em class="sig-param">name_contains=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_mosaics" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_mosaics</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name_contains</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_mosaics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get information for all mosaics accessible by the current user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -408,14 +409,14 @@ type unavailable.
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_mosaics_for_series">
-<code class="sig-name descname">get_mosaics_for_series</code><span class="sig-paren">(</span><em class="sig-param">series_id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_mosaics_for_series" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_mosaics_for_series</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">series_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_mosaics_for_series" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get list of mosaics available for a series
 :returns: <code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Mosaics</span></code></p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_orders">
 <code class="sig-name descname">get_orders</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_orders" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get information for all pending and completed order requests for
@@ -427,9 +428,9 @@ the current user.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_quad_by_id">
-<code class="sig-name descname">get_quad_by_id</code><span class="sig-paren">(</span><em class="sig-param">mosaic</em>, <em class="sig-param">quad_id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_quad_by_id" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_quad_by_id</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mosaic</span></em>, <em class="sig-param"><span class="n">quad_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_quad_by_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a quad response for a specific mosaic and quad.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -447,9 +448,9 @@ the current user.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_quad_contributions">
-<code class="sig-name descname">get_quad_contributions</code><span class="sig-paren">(</span><em class="sig-param">quad</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_quad_contributions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_quad_contributions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">quad</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_quad_contributions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get information about which scenes contributed to a quad.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -464,9 +465,9 @@ the current user.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_quads">
-<code class="sig-name descname">get_quads</code><span class="sig-paren">(</span><em class="sig-param">mosaic</em>, <em class="sig-param">bbox=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_quads" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_quads</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mosaic</span></em>, <em class="sig-param"><span class="n">bbox</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_quads" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search for quads from a mosaic that are inside the specified
 bounding box.  Will yield all quads if no bounding box is specified.</p>
 <dl class="field-list simple">
@@ -485,9 +486,9 @@ bounding box.  Will yield all quads if no bounding box is specified.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_searches">
-<code class="sig-name descname">get_searches</code><span class="sig-paren">(</span><em class="sig-param">quick=False</em>, <em class="sig-param">saved=True</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_searches" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_searches</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">quick</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">saved</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_searches" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get searches listing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -505,16 +506,16 @@ bounding box.  Will yield all quads if no bounding box is specified.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.get_subscription_info">
-<code class="sig-name descname">get_subscription_info</code><span class="sig-paren">(</span><em class="sig-param">subscription_id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_subscription_info" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_subscription_info</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subscription_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.get_subscription_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the information describing a specific subscription.
 :param subscription_id:
 :raises planet.api.exceptions.APIException: On API error.
 :returns: <a class="reference internal" href="#planet.api.models.JSON" title="planet.api.models.JSON"><code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.JSON</span></code></a></p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.list_analytic_collections">
 <code class="sig-name descname">list_analytic_collections</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.list_analytic_collections" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get collections that the authenticated user has access to
@@ -522,17 +523,17 @@ bounding box.  Will yield all quads if no bounding box is specified.</p>
 :returns: <code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.WFS3Collections</span></code></p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.list_analytic_feeds">
-<code class="sig-name descname">list_analytic_feeds</code><span class="sig-paren">(</span><em class="sig-param">stats</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.list_analytic_feeds" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">list_analytic_feeds</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stats</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.list_analytic_feeds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get collections that the authenticated user has access to
 :raises planet.api.exceptions.APIException: On API error.
 :returns: <code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Feeds</span></code></p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.list_analytic_subscriptions">
-<code class="sig-name descname">list_analytic_subscriptions</code><span class="sig-paren">(</span><em class="sig-param">feed_id</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.list_analytic_subscriptions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">list_analytic_subscriptions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">feed_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.list_analytic_subscriptions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get subscriptions that the authenticated user has access to
 :param feed_id str: Return subscriptions associated with a particular
 feed only.
@@ -540,9 +541,9 @@ feed only.
 :returns: <code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.Subscriptions</span></code></p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.list_collection_features">
-<code class="sig-name descname">list_collection_features</code><span class="sig-paren">(</span><em class="sig-param">subscription_id</em>, <em class="sig-param">bbox=None</em>, <em class="sig-param">time_range=None</em>, <em class="sig-param">before=None</em>, <em class="sig-param">after=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.list_collection_features" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">list_collection_features</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subscription_id</span></em>, <em class="sig-param"><span class="n">bbox</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">time_range</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">before</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">after</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.list_collection_features" title="Permalink to this definition">¶</a></dt>
 <dd><p>List features for an analytic subscription.
 :param subscription_id:
 :param time_range str: ISO format datetime interval.
@@ -553,16 +554,15 @@ feed only.
 :returns: <code class="xref py py-class docutils literal notranslate"><span class="pre">planet.api.models.WFS3Features</span></code></p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.quick_search">
-<code class="sig-name descname">quick_search</code><span class="sig-paren">(</span><em class="sig-param">request</em>, <em class="sig-param">**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.quick_search" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">quick_search</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">request</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kw</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.quick_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute a quick search with the specified request.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>request</strong> – see <a class="reference internal" href="#api-search-request"><span class="std std-ref">Client Search Requests</span></a></p></li>
-<li><p><strong>**kw</strong> – <p>See Options below</p>
-</p></li>
+<li><p><strong>**kw</strong> – See Options below</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -580,9 +580,9 @@ feed only.
 </ul>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.saved_search">
-<code class="sig-name descname">saved_search</code><span class="sig-paren">(</span><em class="sig-param">sid</em>, <em class="sig-param">**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.saved_search" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">saved_search</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kw</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.saved_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute a saved search by search id.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -603,9 +603,9 @@ feed only.
 </ul>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.stats">
-<code class="sig-name descname">stats</code><span class="sig-paren">(</span><em class="sig-param">request</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.stats" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">stats</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">request</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.stats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get stats for the provided request.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -621,7 +621,7 @@ property.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.ClientV1.wfs_conformance">
 <code class="sig-name descname">wfs_conformance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.ClientV1.wfs_conformance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Details about WFS3 conformance
@@ -662,9 +662,9 @@ be used to give the new search a name.</p>
 <h2>Filters<a class="headerlink" href="#filters" title="Permalink to this headline">¶</a></h2>
 <p>The filters module provides a small convenience layer for building filters
 and requests.</p>
-<span class="target" id="module-planet.api.filters"></span><dl class="function">
+<span class="target" id="module-planet.api.filters"></span><dl class="py function">
 <dt id="planet.api.filters.and_filter">
-<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">and_filter</code><span class="sig-paren">(</span><em class="sig-param">*predicates</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.and_filter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">and_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">predicates</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.and_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build an <cite>and</cite> filter from the provided predicate filters.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span> <span class="o">=</span> <span class="n">and_filter</span><span class="p">(</span>
 <span class="gp">... </span>  <span class="n">range_filter</span><span class="p">(</span><span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
@@ -680,9 +680,9 @@ and requests.</p>
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="planet.api.filters.build_search_request">
-<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">build_search_request</code><span class="sig-paren">(</span><em class="sig-param">filter_like</em>, <em class="sig-param">item_types</em>, <em class="sig-param">name=None</em>, <em class="sig-param">interval=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.build_search_request" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">build_search_request</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filter_like</span></em>, <em class="sig-param"><span class="n">item_types</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">interval</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.build_search_request" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a data-api search request body for the specified item_types.
 If ‘filter_like’ is a request, item_types will be merged and, if name or
 interval is provided, will replace any existing values.</p>
@@ -698,9 +698,9 @@ interval is provided, will replace any existing values.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="planet.api.filters.date_range">
-<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">date_range</code><span class="sig-paren">(</span><em class="sig-param">field_name</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.date_range" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">date_range</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">field_name</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.date_range" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a DateRangeFilter.</p>
 <p>Predicate arguments accept a str that is ISO-8601 format or a value
 that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant str.</p>
@@ -716,9 +716,9 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="planet.api.filters.geom_filter">
-<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">geom_filter</code><span class="sig-paren">(</span><em class="sig-param">geom</em>, <em class="sig-param">field_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.geom_filter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">geom_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">geom</span></em>, <em class="sig-param"><span class="n">field_name</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.geom_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a GeometryFilter from the provided geosjon geom dict.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -730,15 +730,15 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="planet.api.filters.is_filter_like">
-<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">is_filter_like</code><span class="sig-paren">(</span><em class="sig-param">filter_like</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.is_filter_like" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">is_filter_like</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filter_like</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.is_filter_like" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if the provided dict looks like a search request or filter.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="planet.api.filters.num_filter">
-<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">num_filter</code><span class="sig-paren">(</span><em class="sig-param">field_name</em>, <em class="sig-param">*vals</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.num_filter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">num_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">field_name</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">vals</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.num_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a NumberInFilter.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">num_filter</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;NumberInFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
@@ -746,9 +746,9 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="planet.api.filters.or_filter">
-<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">or_filter</code><span class="sig-paren">(</span><em class="sig-param">*predicates</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.or_filter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">or_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">predicates</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.or_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build an <cite>or</cite> filter from the provided predicate filters.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">datetime</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">n</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2017</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
@@ -766,9 +766,9 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="planet.api.filters.permission_filter">
-<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">permission_filter</code><span class="sig-paren">(</span><em class="sig-param">*perms</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.permission_filter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">permission_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">perms</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.permission_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a PermissionFilter with the specified permissions.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">permission_filter</span><span class="p">(</span><span class="s1">&#39;assets:download&#39;</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;PermissionFilter&#39;</span><span class="p">,</span> <span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;assets:download&#39;</span><span class="p">,)}</span>
 <span class="go">True</span>
@@ -776,9 +776,9 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="planet.api.filters.range_filter">
-<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">range_filter</code><span class="sig-paren">(</span><em class="sig-param">field_name</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.range_filter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">range_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">field_name</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.range_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a RangeFilter.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">range_filter</span><span class="p">(</span><span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gt&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;cloud_cover&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;RangeFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
@@ -786,9 +786,9 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="planet.api.filters.string_filter">
-<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">string_filter</code><span class="sig-paren">(</span><em class="sig-param">field_name</em>, <em class="sig-param">*vals</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.string_filter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">planet.api.filters.</code><code class="sig-name descname">string_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">field_name</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">vals</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.filters.string_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a StringInFilter.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">string_filter</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">,</span> <span class="s1">&#39;id3&#39;</span><span class="p">)</span> <span class="o">==</span>     <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">,</span> <span class="s1">&#39;id3&#39;</span><span class="p">),</span> <span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span>     <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;StringInFilter&#39;</span><span class="p">}</span>
 <span class="go">True</span>
@@ -804,32 +804,32 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 <p>For paginated responses, the <a class="reference internal" href="#planet.api.models.Paged" title="planet.api.models.Paged"><code class="xref py py-class docutils literal notranslate"><span class="pre">Paged</span></code></a> provides convenience functions to explicitly page through results as well as an iterator to the underlying items in each response.</p>
 <p>Download functions return a <a class="reference internal" href="#planet.api.models.Response" title="planet.api.models.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a> object that handles some aspects of asynchronous execution. Namely, streaming chunks to a handler to prevent memory issues and awaiting completion of the task.</p>
 <p>The basic <cite>Body</cite> methods include:</p>
-<dl class="class">
+<dl class="py class">
 <dt id="planet.api.models.Body">
 <em class="property">class </em><code class="sig-prename descclassname">planet.api.models.</code><code class="sig-name descname">Body</code><a class="headerlink" href="#planet.api.models.Body" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Body is a representation of a resource from the API.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.models.Body.get_raw">
 <code class="sig-name descname">get_raw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Body.get_raw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the decoded text content from the response</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.models.Body.last_modified">
 <code class="sig-name descname">last_modified</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Body.last_modified" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read the last-modified header as a datetime, if present.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.models.Body.name">
 <em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#planet.api.models.Body.name" title="Permalink to this definition">¶</a></dt>
 <dd><p>The name of this resource. The default is to use the
 content-disposition header value from the response.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.models.Body.write">
-<code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param">file=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Body.write" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">callback</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Body.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the contents of the body to the optionally provided file and
 providing progress to the optional callback. The callback will be
 invoked 3 different ways:</p>
@@ -852,16 +852,16 @@ invoked 3 different ways:</p>
 </dd></dl>
 
 <p>The <cite>Response</cite> class returned by download functions has two methods:</p>
-<dl class="class">
+<dl class="py class">
 <dt id="planet.api.models.Response">
 <em class="property">class </em><code class="sig-prename descclassname">planet.api.models.</code><code class="sig-name descname">Response</code><a class="headerlink" href="#planet.api.models.Response" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><dl class="py method">
 <dt id="planet.api.models.Response.cancel">
 <code class="sig-name descname">cancel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Response.cancel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Cancel any request.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.models.Response.get_body">
 <code class="sig-name descname">get_body</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Response.get_body" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the response Body</p>
@@ -872,7 +872,7 @@ invoked 3 different ways:</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.models.Response.wait">
 <code class="sig-name descname">wait</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Response.wait" title="Permalink to this definition">¶</a></dt>
 <dd><p>Await completion of this request.</p>
@@ -886,11 +886,11 @@ invoked 3 different ways:</p>
 </dd></dl>
 
 <p>Most responses are more specific than a body. The JSON body provides the contents as JSON.</p>
-<dl class="class">
+<dl class="py class">
 <dt id="planet.api.models.JSON">
 <em class="property">class </em><code class="sig-prename descclassname">planet.api.models.</code><code class="sig-name descname">JSON</code><a class="headerlink" href="#planet.api.models.JSON" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Body that contains JSON</p>
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.models.JSON.get">
 <code class="sig-name descname">get</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.JSON.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the response as a JSON dict</p>
@@ -904,12 +904,12 @@ invoked 3 different ways:</p>
 Each Item is a record represented as a GeoJSON feature with properties describing it’s metadata.
 When using the <cite>iterator</cite> from the <a class="reference internal" href="#planet.api.models.Paged.items_iter" title="planet.api.models.Paged.items_iter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Paged.items_iter()</span></code></a> method, only Item Feature objects will be returned.</p>
 <p>To handle assembling the items from each page into a collection again and streaming them as JSON, use the <a class="reference internal" href="#planet.api.models.Paged.json_encode" title="planet.api.models.Paged.json_encode"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Paged.json_encode()</span></code></a> method.</p>
-<dl class="class">
+<dl class="py class">
 <dt id="planet.api.models.Paged">
 <em class="property">class </em><code class="sig-prename descclassname">planet.api.models.</code><code class="sig-name descname">Paged</code><a class="headerlink" href="#planet.api.models.Paged" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><dl class="py method">
 <dt id="planet.api.models.Paged.items_iter">
-<code class="sig-name descname">items_iter</code><span class="sig-paren">(</span><em class="sig-param">limit</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Paged.items_iter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">items_iter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">limit</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Paged.items_iter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an iterator of the ‘items’ in each page. Instead of a feature
 collection from each page, the iterator yields the features.</p>
 <dl class="field-list simple">
@@ -922,9 +922,9 @@ collection from each page, the iterator yields the features.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.models.Paged.iter">
-<code class="sig-name descname">iter</code><span class="sig-paren">(</span><em class="sig-param">pages=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Paged.iter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">iter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pages</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Paged.iter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an iterator of pages.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -936,9 +936,9 @@ collection from each page, the iterator yields the features.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.models.Paged.json_encode">
-<code class="sig-name descname">json_encode</code><span class="sig-paren">(</span><em class="sig-param">out</em>, <em class="sig-param">limit=None</em>, <em class="sig-param">sort_keys=False</em>, <em class="sig-param">indent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Paged.json_encode" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">json_encode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">out</span></em>, <em class="sig-param"><span class="n">limit</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sort_keys</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">indent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Paged.json_encode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Encode the results of this paged response as JSON writing to the
 provided file-like <cite>out</cite> object. This function will iteratively read
 as many pages as present, streaming the contents out as JSON.</p>
@@ -956,13 +956,13 @@ as many pages as present, streaming the contents out as JSON.</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="planet.api.models.Items">
 <em class="property">class </em><code class="sig-prename descclassname">planet.api.models.</code><code class="sig-name descname">Items</code><a class="headerlink" href="#planet.api.models.Items" title="Permalink to this definition">¶</a></dt>
 <dd><p>Items is a Body that contains a FeatureCollection so when using <cite>items_iter</cite>, it will yield <cite>Feature</cite> GeoJSON objects.</p>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="planet.api.models.Searches">
 <em class="property">class </em><code class="sig-prename descclassname">planet.api.models.</code><code class="sig-name descname">Searches</code><a class="headerlink" href="#planet.api.models.Searches" title="Permalink to this definition">¶</a></dt>
 <dd><p>Searches is a Body that contains an array of searches, so when using <cite>items_iter</cite>, it will yield <cite>Search</cite> JSON objects.</p>
@@ -971,9 +971,9 @@ as many pages as present, streaming the contents out as JSON.</p>
 </div>
 <div class="section" id="utilities">
 <h2>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="planet.api.write_to_file">
-<code class="sig-prename descclassname">planet.api.</code><code class="sig-name descname">write_to_file</code><span class="sig-paren">(</span><em class="sig-param">directory=None</em>, <em class="sig-param">callback=None</em>, <em class="sig-param">overwrite=True</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.write_to_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">planet.api.</code><code class="sig-name descname">write_to_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">directory</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">callback</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.write_to_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a callback handler for asynchronous Body handling.</p>
 <p>If provided, the callback will be invoked as described in
 <a class="reference internal" href="#planet.api.models.Body.write" title="planet.api.models.Body.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">planet.api.models.Body.write()</span></code></a>. In addition, if the download
@@ -1001,9 +1001,9 @@ the Client provides the lower-level functionality for this, the <cite>Downloader
 class provides convenience for managing this process for a large number of
 items and assets.</p>
 <p>Create a downloader using:</p>
-<dl class="function">
+<dl class="py function">
 <dt id="planet.api.downloader.create">
-<code class="sig-prename descclassname">planet.api.downloader.</code><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param">client</em>, <em class="sig-param">mosaic=False</em>, <em class="sig-param">order=False</em>, <em class="sig-param">**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.create" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">planet.api.downloader.</code><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">client</span></em>, <em class="sig-param"><span class="n">mosaic</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">order</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kw</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a Downloader with the provided client.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1015,7 +1015,7 @@ items and assets.</p>
 </dl>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="planet.api.downloader.Downloader">
 <em class="property">class </em><code class="sig-prename descclassname">planet.api.downloader.</code><code class="sig-name descname">Downloader</code><a class="headerlink" href="#planet.api.downloader.Downloader" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Downloader manages activation and download of Item Assets from the
@@ -1024,9 +1024,9 @@ Data API. A Downloader should only be processing one request to either
 will return on completion. Completion of activation or download events
 can be tracked by changing the <cite>on_complete</cite> method of the Downloader while
 the <cite>stats</cite> function allows for polling of internal state.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.downloader.Downloader.activate">
-<code class="sig-name descname">activate</code><span class="sig-paren">(</span><em class="sig-param">items</em>, <em class="sig-param">asset_types</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.Downloader.activate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">activate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">items</span></em>, <em class="sig-param"><span class="n">asset_types</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.Downloader.activate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request activation of specified asset_types for the sequence of
 items.</p>
 <dl class="field-list simple">
@@ -1039,9 +1039,9 @@ items.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.downloader.Downloader.download">
-<code class="sig-name descname">download</code><span class="sig-paren">(</span><em class="sig-param">items</em>, <em class="sig-param">asset_types</em>, <em class="sig-param">dest</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.Downloader.download" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">download</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">items</span></em>, <em class="sig-param"><span class="n">asset_types</span></em>, <em class="sig-param"><span class="n">dest</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.Downloader.download" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request activation and download of specified asset_types for the
 sequence of items.</p>
 <dl class="field-list simple">
@@ -1055,9 +1055,9 @@ sequence of items.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.downloader.Downloader.on_complete">
-<code class="sig-name descname">on_complete</code><span class="sig-paren">(</span><em class="sig-param">item</em>, <em class="sig-param">asset</em>, <em class="sig-param">path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.Downloader.on_complete" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">on_complete</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">item</span></em>, <em class="sig-param"><span class="n">asset</span></em>, <em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.Downloader.on_complete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Notification of processing an item’s asset, invoked on completion of
 <cite>activate</cite> or <cite>download</cite>.</p>
 <dl class="field-list simple">
@@ -1072,13 +1072,13 @@ otherwise None</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.downloader.Downloader.shutdown">
 <code class="sig-name descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.Downloader.shutdown" title="Permalink to this definition">¶</a></dt>
 <dd><p>Halt execution.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="planet.api.downloader.Downloader.stats">
 <code class="sig-name descname">stats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.downloader.Downloader.stats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve internal state of the Downloader.</p>
@@ -1100,61 +1100,61 @@ otherwise None</p></li>
 <h2>Client Exceptions<a class="headerlink" href="#client-exceptions" title="Permalink to this headline">¶</a></h2>
 <p>In addition to other exceptions, expected or otherwise, each HTTP operation has
 the potential to raise one of the following exceptions:</p>
-<span class="target" id="module-planet.api.exceptions"></span><dl class="exception">
+<span class="target" id="module-planet.api.exceptions"></span><dl class="py exception">
 <dt id="planet.api.exceptions.APIException">
 <em class="property">exception </em><code class="sig-prename descclassname">planet.api.exceptions.</code><code class="sig-name descname">APIException</code><a class="headerlink" href="#planet.api.exceptions.APIException" title="Permalink to this definition">¶</a></dt>
 <dd><p>General unexpected response</p>
 </dd></dl>
 
-<dl class="exception">
+<dl class="py exception">
 <dt id="planet.api.exceptions.BadQuery">
 <em class="property">exception </em><code class="sig-prename descclassname">planet.api.exceptions.</code><code class="sig-name descname">BadQuery</code><a class="headerlink" href="#planet.api.exceptions.BadQuery" title="Permalink to this definition">¶</a></dt>
 <dd><p>Invalid inputs, HTTP 400</p>
 </dd></dl>
 
-<dl class="exception">
+<dl class="py exception">
 <dt id="planet.api.exceptions.InvalidAPIKey">
 <em class="property">exception </em><code class="sig-prename descclassname">planet.api.exceptions.</code><code class="sig-name descname">InvalidAPIKey</code><a class="headerlink" href="#planet.api.exceptions.InvalidAPIKey" title="Permalink to this definition">¶</a></dt>
 <dd><p>Invalid key, HTTP 401</p>
 </dd></dl>
 
-<dl class="exception">
+<dl class="py exception">
 <dt id="planet.api.exceptions.InvalidIdentity">
 <em class="property">exception </em><code class="sig-prename descclassname">planet.api.exceptions.</code><code class="sig-name descname">InvalidIdentity</code><a class="headerlink" href="#planet.api.exceptions.InvalidIdentity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Raised when logging in with invalid credentials</p>
 </dd></dl>
 
-<dl class="exception">
+<dl class="py exception">
 <dt id="planet.api.exceptions.MissingResource">
 <em class="property">exception </em><code class="sig-prename descclassname">planet.api.exceptions.</code><code class="sig-name descname">MissingResource</code><a class="headerlink" href="#planet.api.exceptions.MissingResource" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request for non existing resource, HTTP 404</p>
 </dd></dl>
 
-<dl class="exception">
+<dl class="py exception">
 <dt id="planet.api.exceptions.NoPermission">
 <em class="property">exception </em><code class="sig-prename descclassname">planet.api.exceptions.</code><code class="sig-name descname">NoPermission</code><a class="headerlink" href="#planet.api.exceptions.NoPermission" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insufficient permissions, HTTP 403</p>
 </dd></dl>
 
-<dl class="exception">
+<dl class="py exception">
 <dt id="planet.api.exceptions.OverQuota">
 <em class="property">exception </em><code class="sig-prename descclassname">planet.api.exceptions.</code><code class="sig-name descname">OverQuota</code><a class="headerlink" href="#planet.api.exceptions.OverQuota" title="Permalink to this definition">¶</a></dt>
 <dd><p>Quota exceeded, HTTP 429</p>
 </dd></dl>
 
-<dl class="exception">
+<dl class="py exception">
 <dt id="planet.api.exceptions.RequestCancelled">
 <em class="property">exception </em><code class="sig-prename descclassname">planet.api.exceptions.</code><code class="sig-name descname">RequestCancelled</code><a class="headerlink" href="#planet.api.exceptions.RequestCancelled" title="Permalink to this definition">¶</a></dt>
 <dd><p>Internal exception when a request is cancelled</p>
 </dd></dl>
 
-<dl class="exception">
+<dl class="py exception">
 <dt id="planet.api.exceptions.ServerError">
 <em class="property">exception </em><code class="sig-prename descclassname">planet.api.exceptions.</code><code class="sig-name descname">ServerError</code><a class="headerlink" href="#planet.api.exceptions.ServerError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unexpected internal server error, HTTP 500</p>
 </dd></dl>
 
-<dl class="exception">
+<dl class="py exception">
 <dt id="planet.api.exceptions.TooManyRequests">
 <em class="property">exception </em><code class="sig-prename descclassname">planet.api.exceptions.</code><code class="sig-name descname">TooManyRequests</code><a class="headerlink" href="#planet.api.exceptions.TooManyRequests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Too many requests, HTTP 429</p>
@@ -1174,7 +1174,7 @@ the potential to raise one of the following exceptions:</p>
       &copy;2017-2019 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
