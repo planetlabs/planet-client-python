@@ -67,7 +67,6 @@ def cli(context, verbose, api_key, base_url, workers):
     '''Planet API Client'''
 
     configure_logging(verbose)
-
     client_params.clear()
     client_params['api_key'] = api_key
     client_params['workers'] = workers

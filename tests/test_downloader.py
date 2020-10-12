@@ -5,6 +5,7 @@ import sys
 from concurrent.futures import Future
 import threading
 import time
+import pytest
 
 SPEED_UP = 1000.
 WRITE_DELAY = 3 / SPEED_UP
@@ -127,6 +128,106 @@ def test_pipeline():
         'downloaded': '0.20MB', 'activating': 0, 'pending': 0
     }
     assert 200 == len(completed)
+
+
+from planet.scripts import main
+from click.testing import CliRunner
+import os
+from BaseHTTPServer import BaseHTTPRequestHandler
+import SocketServer
+import random
+from multiprocessing import Process
+import signal
+import json
+
+
+@pytest.fixture()
+def plapi(tmpdir):
+
+    _URI_TO_RESPONSE = {
+        '/compute/ops/orders/v2/b0cb3448-0a74-11eb-92a1-a3d779bb08e0': {
+            "_links": {
+                "_self": "string",
+                "results": [
+                    {
+                        "location": "/foo"
+                    }
+                ]
+            },
+            "id": "b0cb3448-0a74-11eb-92a1-a3d779bb08e0",
+            "name": "string",
+            "subscription_id": 0,
+            "tools": [{}],
+            "products": [{}],
+            "created_on": "2019-08-24T14:15:22Z",
+            "last_modified": "2019-08-24T14:15:22Z",
+            "state": "queued",
+            "last_message": "string",
+            "error_hints": [
+                "string"
+            ],
+            "delivery": {
+                "single_archive": True,
+                "archive_type": "string",
+                "archive_filename": "string",
+                "layout": {},
+                "amazon_s3": {},
+                "azure_blob_storage": {},
+                "google_cloud_storage": {},
+                "google_earth_engine": {}
+            },
+            "notifications": {
+                "webhook": {},
+                "email": True
+            },
+            "order_type": "full"
+        },
+        
+    }
+    class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
+
+        def do_GET(self):
+            if self.path not in _URI_TO_RESPONSE:
+                self.send_response(404)
+                self.end_headers()
+                return
+
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(json.dumps(_URI_TO_RESPONSE[self.path]).encode('utf-8'))
+
+    SocketServer.TCPServer.allow_reuse_address = True
+    port = random.randint(10000, 20000)
+    handler = SimpleHTTPRequestHandler
+    httpd = SocketServer.TCPServer(("", port), handler)
+    path = os.path.join(str(tmpdir))
+
+    def cwd_and_serve():
+        os.chdir(path)
+        httpd.serve_forever()
+
+    p = Process(target=cwd_and_serve)
+    p.daemon = True
+    p.start()
+    yield 'http://localhost:{}'.format(port)
+
+    os.kill(p.pid, signal.SIGTERM)
+
+
+def test_all_files_downloaded(tmpdir, monkeypatch, plapi):
+
+    monkeypatch.setenv('PL_API_BASE_URL', plapi)
+    monkeypatch.setenv('PL_API_KEY', '1234')
+    runner = CliRunner()
+
+    fd = os.open('/dev/null', os.O_RDONLY)
+    fd = os.fdopen(fd)
+
+    order_id = 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'
+    args = ['-v', 'orders', 'download', '--dest', str(tmpdir), order_id]
+    result = runner.invoke(main, args, catch_exceptions=False, input=fd)
+    print result.output
+    assert result.exit_code == 0, result.output
 
 
 if __name__ == '__main__':
