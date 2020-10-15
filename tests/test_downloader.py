@@ -203,9 +203,7 @@ def plapi(tmpdir):
     httpd = socketserver.TCPServer(("", port), handler)
     path = os.path.join(str(tmpdir))
 
-
-
-    p = Process(target=_cwd_and_serve)
+    p = Process(target=_cwd_and_serve(httpd, path))
     p.daemon = True
     p.start()
     yield 'http://localhost:{}'.format(port)
@@ -213,8 +211,7 @@ def plapi(tmpdir):
     os.kill(p.pid, signal.SIGTERM)
 
 
-def _cwd_and_serve():
-    # print('hello')
+def _cwd_and_serve(httpd, path):
     os.chdir(path)
     httpd.serve_forever()
 
