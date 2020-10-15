@@ -133,8 +133,8 @@ def test_pipeline():
 from planet.scripts import main
 from click.testing import CliRunner
 import os
-from BaseHTTPServer import BaseHTTPRequestHandler
-import SocketServer
+from http.server import BaseHTTPRequestHandler
+import socketserver 
 import random
 from multiprocessing import Process
 import signal
@@ -182,8 +182,9 @@ def plapi(tmpdir):
             },
             "order_type": "full"
         },
-        
+
     }
+
     class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         def do_GET(self):
@@ -196,23 +197,26 @@ def plapi(tmpdir):
             self.end_headers()
             self.wfile.write(json.dumps(_URI_TO_RESPONSE[self.path]).encode('utf-8'))
 
-    SocketServer.TCPServer.allow_reuse_address = True
+    socketserver.TCPServer.allow_reuse_address = True
     port = random.randint(10000, 20000)
     handler = SimpleHTTPRequestHandler
-    httpd = SocketServer.TCPServer(("", port), handler)
+    httpd = socketserver.TCPServer(("", port), handler)
     path = os.path.join(str(tmpdir))
 
-    def cwd_and_serve():
-        os.chdir(path)
-        httpd.serve_forever()
 
-    p = Process(target=cwd_and_serve)
+
+    p = Process(target=_cwd_and_serve)
     p.daemon = True
     p.start()
     yield 'http://localhost:{}'.format(port)
 
     os.kill(p.pid, signal.SIGTERM)
 
+
+def _cwd_and_serve():
+    # print('hello')
+    os.chdir(path)
+    httpd.serve_forever()
 
 def test_all_files_downloaded(tmpdir, monkeypatch, plapi):
 
@@ -226,7 +230,7 @@ def test_all_files_downloaded(tmpdir, monkeypatch, plapi):
     order_id = 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'
     args = ['-v', 'orders', 'download', '--dest', str(tmpdir), order_id]
     result = runner.invoke(main, args, catch_exceptions=False, input=fd)
-    print result.output
+    print(result.output)
     assert result.exit_code == 0, result.output
 
 
