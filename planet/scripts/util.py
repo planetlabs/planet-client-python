@@ -98,7 +98,6 @@ def create_order_request(**kwargs):
     bundle = kwargs.get('bundle')[0]
     ids = kwargs.get('id').split(',')
     email = kwargs.get('email')
-    archive = kwargs.get('zip')
     config = kwargs.get('cloudconfig')
     clip = kwargs.get('clip')
     tools = kwargs.get('tools')
@@ -117,14 +116,9 @@ def create_order_request(**kwargs):
     },
     }
 
-    if archive is not None:
-        request["delivery"]["archive_filename"] = "{{name}}_{{order_id}}.zip"
-        request["delivery"]["archive_type"] = "zip"
-
-        # If single_archive is not set, each bundle will be zipped, as opposed
-        # to the entire order.
-        if archive == "order":
-            request["delivery"]["single_archive"] = True
+    request["delivery"]["archive_filename"] = "{{name}}_{{order_id}}.zip"
+    request["delivery"]["archive_type"] = "zip"
+    request["delivery"]["single_archive"] = True
 
     if config:
         with open(config, 'r') as f:

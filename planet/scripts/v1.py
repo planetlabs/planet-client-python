@@ -726,8 +726,6 @@ def cancel_order(order_id, pretty):
               help='Provide a GeoJSON AOI Geometry for clipping')
 @click.option('--email', default=False, is_flag=True,
               help='Send email notification when Order is complete')
-@click.option('--zip', type=click.Choice(['order', 'bundle']),
-              help='Receive output of toolchain as a .zip archive.')
 @click.option('--cloudconfig', help=('Path to cloud delivery config'),
               type=click.Path(exists=True, resolve_path=True, readable=True,
                               allow_dash=False, dir_okay=False,
