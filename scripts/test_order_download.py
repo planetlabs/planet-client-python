@@ -126,14 +126,14 @@ def test_download_order(order_id, num_runs):
 
     messages = []
     for i in range(num_runs):
-        try:
-            logging.debug('TEST {}'.format(i))
-            files = download_order_cli(order_id)
-            assert len(expected_files) == len(files), '{} != {}'.format(len(expected_files), len(files))
+        logging.debug('TEST {}'.format(i))
+        files = download_order_cli(order_id)
+        if not len(files) == len(expected_files):
+            messages.append('TEST {}'.format(i))
+            messages.append('{} != {}'.format(len(files), len(expected_files)))
             for f in expected_files:
-                assert f in files, '{} not found'.format(f)
-        except AssertionError as err:
-            messages.append('Test {} failed: {}'.format(i, err))
+                if f not in files:
+                    messages.append('{} not found'.format(f))
 
     if len(messages):
         for m in messages:
