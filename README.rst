@@ -11,7 +11,10 @@ Python client library and CLI for Planet's public API.
 Installation
 ------------
 
-Via pip:
+### Prerequisites
+* Python version 3.6+
+
+### Install package
 
 .. code-block:: console
 
