@@ -11,95 +11,79 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Manage data for requests and responses."""
+
+import datetime
+import logging
 
 from ._fatomic import atomic_open
-from .exceptions import RequestCancelled
-from .utils import get_filename
-from .utils import check_status
-from .utils import GeneratorAdapter
-from datetime import datetime
-import itertools
-import json
-
-chunk_size = 32 * 1024
+from .exceptions import InvalidAPIKey, RequestCancelled
+from . import utils
 
 
-class Response(object):
+CHUNK_SIZE = 32 * 1024
 
-    def __init__(self, request, dispatcher):
-        self.request = request
-        self._dispatcher = dispatcher
-        self._body = None
-        self._future = None
-        self._cancel = False
-
-    def _create_body(self, response):
-        return self.request.body_type(self.request, response, self._dispatcher)
-
-    def get_body(self):
-        '''Get the response Body
-
-        :returns Body: A Body object containing the response.
-        '''
-        if self._body is None:
-            resp = self._dispatcher._dispatch(self.request)
-            self._body = self._create_body(resp)
-        return self._body
-
-    def _async_callback(self, session, response):
-        if self._cancel:
-            raise RequestCancelled()
-        check_status(response)
-        self._body = self._create_body(response)
-        self._handler(self._body)
-        if self._wait:
-            self._wait(self._body)
-
-    def get_body_async(self, handler, wait=None):
-        if self._future is None:
-            self._handler = handler
-            self._wait = wait
-            self._future = self._dispatcher._dispatch_async(
-                self.request, self._async_callback
-            )
-
-    def wait(self):
-        '''Await completion of this request.
-
-        :returns Body: A Body object containing the response.
-        '''
-        if self._future:
-            self._future.result()
-        return self._body
-
-    def cancel(self):
-        '''Cancel any request.'''
-        if self._body:
-            self._body._cancel = True
-        else:
-            self._cancel = True
+LOGGER = logging.getLogger(__name__)
 
 
 class Request(object):
-
-    def __init__(self, url, auth, params=None, body_type=Response, data=None,
+    def __init__(self, url, auth, params=None, body_type=None, data=None,
                  method='GET'):
         self.url = url
         self.auth = auth
         self.params = params
+
+        body_type = body_type or Order
+        LOGGER.debug('Request body type: {}'.format(body_type))
+        assert issubclass(body_type, Body)
         self.body_type = body_type
+
         self.data = data
         self.method = method
+
+    @property
+    def headers(self):
+        headers = {}
+        if self.data:
+            headers['Content-Type'] = 'application/json'
+
+        # TODO: change this to try/except
+        if self.auth:
+            headers.update({
+                'Authorization': 'api-key %s' % self.auth.value
+            })
+        else:
+            raise InvalidAPIKey('No API key provided')
+        return headers
+
+
+class Response(object):
+    def __init__(self, request, http_response):
+        self.request = request
+        self.http_response = http_response
+        self._body = None
+
+    @property
+    def body(self):
+        '''The response Body
+
+        :returns Body: A Body object containing the response.
+        '''
+        if self._body is None:
+            self._body = self._create_body()
+        return self._body
+
+    def _create_body(self):
+        return self.request.body_type(self.request, self.http_response)
 
 
 class Body(object):
     '''A Body is a representation of a resource from the API.
     '''
 
-    def __init__(self, request, http_response, dispatcher):
+    def __init__(self, request, http_response):
         self._request = request
         self.response = http_response
-        self._dispatcher = dispatcher
         self.size = int(self.response.headers.get('content-length', 0))
         self._cancel = False
 
@@ -107,13 +91,13 @@ class Body(object):
     def name(self):
         '''The name of this resource. The default is to use the
         content-disposition header value from the response.'''
-        return get_filename(self.response)
+        return utils.get_filename(self.response)
 
     def __len__(self):
         return self.size
 
     def __iter__(self):
-        return (c for c in self.response.iter_content(chunk_size=chunk_size))
+        return (c for c in self.response.iter_content(chunk_size=CHUNK_SIZE))
 
     def last_modified(self):
         '''Read the last-modified header as a datetime, if present.'''
@@ -176,180 +160,35 @@ class JSON(Body):
         return self.response.json()
 
 
-class Paged(JSON):
-
-    ITEM_KEY = 'features'
-    LINKS_KEY = '_links'
-    NEXT_KEY = '_next'
-
-    def next(self):
-        links = self.get()[self.LINKS_KEY]
-        next_ = links.get(self.NEXT_KEY, None)
-        if next_:
-            request = Request(next_, self._request.auth, body_type=type(self))
-            return self._dispatcher.response(request).get_body()
-
-    def _pages(self):
-        page = self
-        while page is not None:
-            yield page
-            page = page.next()
-
-    def iter(self, pages=None):
-        '''Get an iterator of pages.
-
-        :param int pages: optional limit to number of pages
-        :return: iter of this and subsequent pages
-        '''
-        i = self._pages()
-        if pages is not None:
-            i = itertools.islice(i, pages)
-        return i
-
-    def json_encode(self, out, limit=None, sort_keys=False, indent=None):
-        '''Encode the results of this paged response as JSON writing to the
-        provided file-like `out` object. This function will iteratively read
-        as many pages as present, streaming the contents out as JSON.
-
-        :param file-like out: an object with a `write` function
-        :param int limit: optional maximum number of items to write
-        :param bool sort_keys: if True, output keys sorted, default is False
-        :param bool indent: if True, indent output, default is False
-        '''
-        stream = self._json_stream(limit)
-        enc = json.JSONEncoder(indent=indent, sort_keys=sort_keys)
-        for chunk in enc.iterencode(stream):
-            out.write(u'%s' % chunk)
-
-    def items_iter(self, limit):
-        '''Get an iterator of the 'items' in each page. Instead of a feature
-        collection from each page, the iterator yields the features.
-
-        :param int limit: The number of 'items' to limit to.
-        :return: iter of items in page
-        '''
-
-        pages = (page.get() for page in self._pages())
-        items = itertools.chain.from_iterable(
-            (p[self.ITEM_KEY] for p in pages)
-        )
-        if limit is not None:
-            items = itertools.islice(items, limit)
-        return items
-
-    def _json_stream(self, limit):
-        items = self.get()[self.ITEM_KEY]
-        # if there are no results, the GeneratorAdapter doesn't play well
-        if len(items):
-            items = GeneratorAdapter(self.items_iter(limit))
-        else:
-            items = []
-        return {
-            self.ITEM_KEY: items
-        }
-
-
-# GeoJSON feature
-class Features(Paged):
-
-    def _json_stream(self, limit):
-        stream = super(Features, self)._json_stream(limit)
-        json_body = self.get()
-        # patch back in the count if present
-        if 'count' in json_body:
-            stream['count'] = json_body.get('count')
-        stream['type'] = 'FeatureCollection'
-        return stream
-
-
-class Items(Features):
-    pass
-
-
-class Searches(Paged):
-    ITEM_KEY = 'searches'
-
-
-class Mosaics(Paged):
-    ITEM_KEY = 'mosaics'
-
-
-class MosaicQuads(Paged):
-    ITEM_KEY = 'items'
-
-
-class AnalyticsPaged(Paged):
-    LINKS_KEY = 'links'
-    NEXT_KEY = 'next'
-    ITEM_KEY = 'data'
-
-    def next(self):
-        links = self.get()[self.LINKS_KEY]
-        next_ = None
-        for link in links:
-            if link['rel'] == self.NEXT_KEY:
-                next_ = link['href']
-        if next_:
-            request = Request(next_, self._request.auth, body_type=type(self))
-            return self._dispatcher.response(request).get_body()
-
-
-# The analytics API returns two conceptual types of objects: WFS3-compliant
-# objects and everything else. There may be some overlap (ex. subscriptions and
-# collections).
-class Feeds(AnalyticsPaged):
-    pass
-
-
-class Subscriptions(AnalyticsPaged):
-    pass
-
-
-class WFS3Paged(AnalyticsPaged):
-    pass
-
-
-class WFS3Collections(AnalyticsPaged):
-    ITEM_KEY = 'collections'
-
-
-class WFS3Features(AnalyticsPaged):
-    # Explicitly disambiguate between WFS3 and GeoJSON features because the
-    # differences in the structure of the response envelope result in paging
-    # slightly differently.
-    ITEM_KEY = 'features'
-
-
-class Orders(Paged):
-    ITEM_KEY = 'orders'
-    NEXT_KEY = 'next'
-
-
 class Order(JSON):
     LINKS_KEY = '_links'
     RESULTS_KEY = 'results'
     LOCATION_KEY = 'location'
 
-    def get_results(self):
+    @property
+    def results(self):
         links = self.get()[self.LINKS_KEY]
         results = links.get(self.RESULTS_KEY, None)
         return results
 
-    def get_locations(self):
-        results = self.get_results()
+    @property
+    def items(self):
+        results = self.results()
         locations = [r[self.LOCATION_KEY] for r in results]
         return locations
 
-    def items_iter(self, limit):
-        '''Get an iterator of the 'items' in each order.
+    @property
+    def items_iter(self):
+        '''An iterator of the 'items' in each order.
         The iterator yields the individual items in the order.
 
-        :param int limit: The number of 'items' to limit to.
-        :return: iter of items in page
+        :return: iter of items in order
         '''
-
-        locations = iter(self.get_locations())
-
-        # if limit is not None:
-        #     locations = itertools.islice(locations, limit)
+        # TODO: maybe this should be like items
+        # but a generator?
+        locations = iter(self.locations())
         return locations
+
+    @property
+    def state(self):
+        return self.get()['state']

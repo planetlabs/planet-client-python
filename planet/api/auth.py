@@ -12,10 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Handle authentication with Planet API and management of authentication data.
+"""
+
+import json
 import os
-from .utils import read_planet_json
+
+from ._fatomic import atomic_open
+
 
 ENV_KEY = 'PL_API_KEY'
+
+PLANET_AUTH_FILENAME = '.planet.json'
 
 
 class APIKey(object):
@@ -26,6 +34,25 @@ class APIKey(object):
 def find_api_key():
     api_key = os.getenv(ENV_KEY)
     if api_key is None:
-        contents = read_planet_json()
+        contents = read_planet_auth()
         api_key = contents.get('key', None)
     return api_key
+
+
+def read_planet_auth():
+    fname = _planet_auth_file()
+    contents = {}
+    if os.path.exists(fname):
+        with open(fname, 'r') as fp:
+            contents = json.loads(fp.read())
+    return contents
+
+
+def write_planet_auth(contents):
+    fname = _planet_auth_file()
+    with atomic_open(fname, 'w') as fp:
+        fp.write(json.dumps(contents))
+
+
+def _planet_auth_file():
+    return os.path.join(os.path.expanduser('~'), PLANET_AUTH_FILENAME)

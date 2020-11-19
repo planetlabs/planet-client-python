@@ -18,29 +18,8 @@ import contextlib
 import errno
 import os
 import shutil
-import sys
 import tempfile
 import types
-
-# If we're on 3.3+, just use os.replace; if we're on POSIX, rename
-# and replace do the same thing.
-try:
-    _replace_file = os.replace
-except AttributeError:
-    if sys.platform != 'win32':
-        _replace_file = os.rename
-    else:
-        # This requires PyWin32 if you're on Windows. If that's not
-        # accepted, you can write a ctypes solution, but then you'll
-        # have to handle unicode-vs.-bytes strings and creating an
-        # OSError from GetLastError and so on yourself, which I don't
-        # feel like doing. (I'll accept a pull request from anyone
-        # else who does...)
-        import win32api
-        import win32con
-
-        def _replace_file(src, dst):
-            win32api.MoveFileEx(src, dst, win32con.MOVEFILE_REPLACE_EXISTING)
 
 
 @contextlib.contextmanager
@@ -78,4 +57,4 @@ def atomic_open(filename, mode, *args, **kwargs):
         if _discard[0] is None or _discard[0]:
             os.unlink(f.name)
         else:
-            _replace_file(f.name, filename)
+            os.replace(f.name, filename)
