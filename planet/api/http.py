@@ -54,24 +54,7 @@ def _log_request(req):
 
 
 class PlanetSession(object):
-    # TODO: update this documentation
-    """A Planet API http session.
-
-    Provides request/response communication with the planet API.
-
-    Basic Usage::
-
-      >>> ps = PlanetSession()
-      >>> req = models.Request(url, auth)
-      >>> ps.request(req, retry_count=5)
-      <models.Response [200]>
-
-    Or as a context manager::
-
-      >>> with PlanetSession() as ps:
-      ...     ps.request(req, retry_count=5)
-      <models.Response [200]>
-    """
+    """Provides communication with the Planet server"""
 
     def __init__(self):
         # general session for sync api calls

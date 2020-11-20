@@ -32,7 +32,15 @@ ORDERS_API_URL = urljoin(BASE_URL, 'compute/ops/orders/v2/')
 
 
 class OrderClient(object):
-    '''High-level access to Planet's orders API.'''
+    """High-level access to Planet's orders API.
+
+    Basic Usage::
+      >>>
+      >> from planet.api.order_client import OrderClient
+      >> cl = OrderClient('api_key')
+      >> order = cl.get_order('order_id')
+      <models.Order>
+    """
 
     def __init__(self, api_key=None, base_url=ORDERS_API_URL):
         '''
