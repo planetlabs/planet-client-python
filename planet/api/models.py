@@ -17,8 +17,8 @@ import datetime
 import logging
 
 from ._fatomic import atomic_open
-from .exceptions import InvalidAPIKey, RequestCancelled
-from . import utils
+# from .exceptions import InvalidAPIKey, RequestCancelled
+from . import exceptions, utils
 
 
 CHUNK_SIZE = 32 * 1024
@@ -47,17 +47,18 @@ class Request(object):
         if self.data:
             headers['Content-Type'] = 'application/json'
 
-        # TODO: change this to try/except
         if self.auth:
             headers.update({
                 'Authorization': 'api-key %s' % self.auth.value
             })
         else:
-            raise InvalidAPIKey('No API key provided')
+            raise exceptions.InvalidAPIKey('No API key provided')
         return headers
 
 
 class Response(object):
+    '''Handles the Planet server's response to a HTTP request
+    '''
     def __init__(self, request, http_response):
         self.request = request
         self.http_response = http_response
@@ -75,6 +76,40 @@ class Response(object):
 
     def _create_body(self):
         return self.request.body_type(self.request, self.http_response)
+
+    @property
+    def status_code(self):
+        return self.http_response.status_code
+
+    def __repr__(self):
+        return '<models.Response [%s]>' % (self.status_code)
+
+    def raise_for_status(self):
+        '''Raises :class: `APIException` if one occured.'''
+        self._raise_for_status(self.status_code, self.http_response.text)
+
+    @staticmethod
+    def _raise_for_status(status, text):
+        if status < 300:
+            return
+
+        exception = {
+            400: exceptions.BadQuery,
+            401: exceptions.InvalidAPIKey,
+            403: exceptions.NoPermission,
+            404: exceptions.MissingResource,
+            429: exceptions.TooManyRequests,
+            500: exceptions.ServerError
+        }.get(status, None)
+
+        # differentiate between over quota and rate-limiting
+        if status == 429 and 'quota' in text.lower():
+            exception = exceptions.OverQuota
+
+        if exception:
+            raise exception(text)
+
+        raise exceptions.APIException('%s: %s' % (status, text))
 
 
 class Body(object):
@@ -118,7 +153,7 @@ class Body(object):
         callback(start=self)
         for chunk in self:
             if self._cancel:
-                raise RequestCancelled()
+                raise exceptions.RequestCancelled()
             fp.write(chunk)
             size = len(chunk)
             total += size

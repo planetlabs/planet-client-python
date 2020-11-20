@@ -16,18 +16,49 @@ from mock import Mock
 import pytest
 import requests_mock
 
-from planet.api import http, exceptions
+from planet.api import http, models
 
 
-def test__check_status():
+TEST_URL = 'mock://fantastic.com'
+
+
+@pytest.fixture
+def mock_request():
     r = Mock()
-    r.status_code = 429
-    r.text = ''
-    with pytest.raises(exceptions.TooManyRequests):
-        http._check_status(r)
-    r.text = 'exceeded QUOTA dude'
-    with pytest.raises(exceptions.OverQuota):
-        http._check_status(r)
+    r.url = TEST_URL
+    r.body_type = models.Body
+    r.method = 'GET'
+    r.headers = {}
+    r.params = None
+    r.data = None
+
+    yield r
+
+
+@pytest.fixture
+def throttle_adapter():
+    adapter = requests_mock.Adapter()
+    responses = [
+        {'json': {'msg': 'msg'}, 'status_code': 429},
+        {'json': {'msg': 'msg'}, 'status_code': 200}
+    ]
+    adapter.register_uri('GET', TEST_URL, responses)
+    yield adapter
+
+
+def test_planetsession_contextmanager():
+    with http.PlanetSession():
+        pass
+
+
+def test_planetsession_request_retry(mock_request, throttle_adapter):
+    with http.PlanetSession() as ps:
+        # needed to redirect calls to the adapter
+        ps._session.mount('mock://', throttle_adapter)
+
+        ps.retry_wait_time = 0  # lets not slow down tests for this
+        resp = ps.request(mock_request)
+        assert resp
 
 
 def test_redirectsession_rebuilt_auth_called():

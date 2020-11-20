@@ -14,6 +14,7 @@
 
 """Functionality to perform HTTP requests"""
 
+# import http.client as http_client
 import logging
 import os
 import re
@@ -35,15 +36,49 @@ USE_STRICT_SSL = not (os.getenv('DISABLE_STRICT_SSL', '').lower() == 'true')
 RETRY_WAIT_TIME = 1  # seconds
 
 
+# def setup_logging():
+#     log_level = LOGGER.getEffectiveLevel()
+#     urllib3_logger = logging.getLogger(
+#         'requests.packages.urllib3')
+#     urllib3_logger.setLevel(log_level)
+#
+#     # if debug level set then its nice to see the headers of the request
+#     if log_level == logging.DEBUG:
+#         http_client.HTTPConnection.set_debuglevel(1)
+#     else:
+#         http_client.HTTPConnection.set_debuglevel(0)
+#
+
 def _log_request(req):
     LOGGER.info('%s %s %s %s', req.method, req.url, req.params, req.data)
 
 
 class PlanetSession(object):
+    # TODO: update this documentation
+    """A Planet API http session.
+
+    Provides request/response communication with the planet API.
+
+    Basic Usage::
+
+      >>> ps = PlanetSession()
+      >>> req = models.Request(url, auth)
+      >>> ps.request(req, retry_count=5)
+      <models.Response [200]>
+
+    Or as a context manager::
+
+      >>> with PlanetSession() as ps:
+      ...     ps.request(req, retry_count=5)
+      <models.Response [200]>
+    """
+
     def __init__(self):
         # general session for sync api calls
         self._session = RedirectSession()
         self._session.headers.update({'User-Agent': self._get_user_agent()})
+        self._session.verify = USE_STRICT_SSL
+        self.retry_wait_time = RETRY_WAIT_TIME
 
     @staticmethod
     def _get_user_agent():
@@ -53,6 +88,9 @@ class PlanetSession(object):
         return self
 
     def __exit__(self, *args):
+        self.close()
+
+    def close(self):
         self._session.close()
 
     def request(self, request, retry_count=5):
@@ -73,7 +111,7 @@ class PlanetSession(object):
                     LOGGER.info('Too Many Requests: sleeping and retrying')
                     # TODO: consider exponential backoff
                     # https://developers.planet.com/docs/data/api-mechanics/
-                    time.sleep(RETRY_WAIT_TIME)
+                    time.sleep(self.retry_wait_time)
         raise Exception('too many throttles, giving up')
 
     def _do_request(self, request, **kwargs):
@@ -83,19 +121,18 @@ class PlanetSession(object):
         :returns: :py:Class:`planet.api.models.Response`
         '''
         # TODO: I don't know where kwargs are used, maybe nowhere?
+        LOGGER.debug('about to submit request')
         _log_request(request)
 
         t = time.time()
-        resp = self._session.request(
+        http_resp = self._session.request(
             request.method, request.url, data=request.data,
-            headers=request.headers, params=request.params,
-            verify=USE_STRICT_SSL)
+            headers=request.headers, params=request.params)
         LOGGER.debug('request took %.03f', time.time() - t)
 
-        if hasattr(resp, 'status_code'):
-            _check_status(resp)
-        
-        return models.Response(request, resp)
+        resp = models.Response(request, http_resp)
+        resp.raise_for_status()
+        return resp
 
 
 class RedirectSession(Session):
@@ -125,28 +162,3 @@ class RedirectSession(Session):
         orig_host = urlparse(url1).hostname
         re_host = urlparse(url2).hostname
         return orig_host.split('.')[-2:] == re_host.split('.')[-2:]
-
-
-def _check_status(response):
-    '''check the status of the response and if needed raise an APIException
-    '''
-    status = response.status_code
-    if status < 300:
-        return
-    exception = {
-        400: exceptions.BadQuery,
-        401: exceptions.InvalidAPIKey,
-        403: exceptions.NoPermission,
-        404: exceptions.MissingResource,
-        429: exceptions.TooManyRequests,
-        500: exceptions.ServerError
-    }.get(status, None)
-
-    # differentiate between over quota and rate-limiting
-    if status == 429 and 'quota' in response.text.lower():
-        exception = exceptions.OverQuota
-
-    if exception:
-        raise exception(response.text)
-
-    raise exceptions.APIException('%s: %s' % (status, response.text))

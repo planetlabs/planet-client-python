@@ -16,6 +16,7 @@
 """Functionality for interacting with the orders api"""
 
 import logging
+from urllib.parse import urljoin
 
 
 from .http import PlanetSession
@@ -25,7 +26,9 @@ from . import models
 
 LOGGER = logging.getLogger(__name__)
 
-ORDERS_API_URL = 'compute/ops/orders/v2/'
+BASE_URL = 'https://api.planet.com/'
+
+ORDERS_API_URL = urljoin(BASE_URL, 'compute/ops/orders/v2/')
 
 
 class OrderClient(object):
@@ -46,7 +49,7 @@ class OrderClient(object):
             self.base_url += '/'
 
     def _order_url(self, order_id):
-        return self.base_url + order_id
+        return urljoin(self.base_url, order_id)
 
     def _request(self, url, method, body_type):
         '''Prepare an order API request.
@@ -70,10 +73,22 @@ class OrderClient(object):
     #
     #     return response
 
-    def _get_order(self, order_id):
+    def list_orders(self):
+        '''Get all order requests.
+        '''
+        raise NotImplementedError
+
+    def create_order(self, order_request):
+        '''Create an order request.
+
+        :returns str: The ID of the order
+        '''
+        raise NotImplementedError
+
+    def get_order(self, order_id):
         '''Get order details by Order ID.
 
-        :param order_id str: The ID of the Order
+        :param order_id str: The ID of the order
         :returns: :py:Class:`planet.api.models.Order`
         :raises planet.api.exceptions.APIException: On API error.
         '''
@@ -85,10 +100,29 @@ class OrderClient(object):
 
         return order
 
-    def get_state(self, order_id):
-        order = self._get_order(order_id)
-        return order.state
+    def cancel_order(self, order_id):
+        '''Cancel a queued order.
 
+        :param order_id str: The ID of the order
+        '''
+        raise NotImplementedError
+
+    def cancel_orders(self, order_ids):
+        '''Cancel queued orders in bulk.
+        '''
+        raise NotImplementedError
+
+    def aggretated_order_stats(self):
+        '''Get aggregated counts of active orders.
+        '''
+        raise NotImplementedError
+
+    def download_order(self, order_id, wait=False):
+        '''Download ordered asset
+
+        :param order_id str: The ID of the order
+        '''
+        raise NotImplementedError
 
 # class BaseClient(object):
 #     def _url(self, path):
