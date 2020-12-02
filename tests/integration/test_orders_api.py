@@ -23,7 +23,7 @@ import socketserver
 
 import pytest
 
-from planet.api.order_client import OrderClient
+from planet.api.orders_client import OrdersClient
 
 LOGGER = logging.getLogger(__name__)
 
@@ -114,7 +114,7 @@ def _cwd_and_serve(httpd, path):
 
 
 def test_get_order(ordersapi):
-    cl = OrderClient(api_key=TEST_API_KEY, base_url=ordersapi)
+    cl = OrdersClient(api_key=TEST_API_KEY, base_url=ordersapi)
 
     state = cl.get_order(TEST_OID).state
     assert state == STATE_QUEUED
@@ -122,7 +122,7 @@ def test_get_order(ordersapi):
 
 @pytest.mark.skip(reason='not implemented')
 def test_download(tmpdir, ordersapi):
-    cl = OrderClient(api_key=TEST_API_KEY, base_url=ordersapi)
+    cl = OrdersClient(api_key=TEST_API_KEY, base_url=ordersapi)
 
     cl.download(TEST_OID, str(tmpdir))
 
@@ -134,7 +134,7 @@ def test_download(tmpdir, ordersapi):
 
 @pytest.mark.skip(reason='not implemented')
 def test_create(monkeypatch, ordersapi):
-    cl = OrderClient(api_key=TEST_API_KEY, base_url=ordersapi)
+    cl = OrdersClient(api_key=TEST_API_KEY, base_url=ordersapi)
 
     # TODO: read in an order creation json blob
     order_desc = None
@@ -146,7 +146,7 @@ def test_create(monkeypatch, ordersapi):
 
 @pytest.mark.skip(reason='not implemented')
 def test_poll(ordersapi):
-    cl = OrderClient(api_key=TEST_API_KEY, base_url=ordersapi)
+    cl = OrdersClient(api_key=TEST_API_KEY, base_url=ordersapi)
 
     cl.poll(TEST_OID)
 
