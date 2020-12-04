@@ -355,7 +355,8 @@ class OrderDetails(object):
 #         links = self.get()[self._get_links_key()]
 #         next_ = links.get(self._get_next_key(), None)
 #         if next_:
-#             request = Request(next_, self._request.auth, body_type=type(self))
+#             request = Request(next_, self._request.auth,
+#                               body_type=type(self))
 #             return self._dispatcher.response(request).get_body()
 #
 #     def _pages(self):
