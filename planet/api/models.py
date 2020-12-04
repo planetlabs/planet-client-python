@@ -13,14 +13,15 @@
 # limitations under the License.
 """Manage data for requests and responses."""
 
+import copy
 import datetime
 # import itertools
-# import json
+import json
 import logging
 
 from ._fatomic import atomic_open
 from . import exceptions, utils
-
+from .. import specs
 
 CHUNK_SIZE = 32 * 1024
 
@@ -213,6 +214,11 @@ class Body(object):
 class JSON(Body):
     '''A Body that contains JSON'''
 
+    @property
+    def data(self):
+        data = self.get()
+        return data
+
     def get(self):
         '''Get the response as a JSON dict'''
         return self.response.json()
@@ -225,31 +231,89 @@ class Order(JSON):
 
     @property
     def results(self):
-        links = self.get()[self.LINKS_KEY]
+        '''Results for each item in order.'''
+        links = self.data[self.LINKS_KEY]
         results = links.get(self.RESULTS_KEY, None)
         return results
 
     @property
-    def items(self):
-        results = self.results()
-        locations = [r[self.LOCATION_KEY] for r in results]
-        return locations
-
-    @property
     def items_iter(self):
-        '''An iterator of the 'items' in each order.
+        '''An iterator of the download locations for order results
         The iterator yields the individual items in the order.
 
-        :return: iter of items in order
+        :return: iter of result download locations in order
         '''
-        # TODO: maybe this should be like items
-        # but a generator?
-        locations = iter(self.items())
-        return locations
+        return (r[self.LOCATION_KEY] for r in self.results)
+
+    @property
+    def items(self):
+        '''Download locations for order results.
+
+        :return: list of result download locations in order
+        '''
+        return list(self.items_iter)
 
     @property
     def state(self):
-        return self.get()['state']
+        return self.data['state']
+
+    @property
+    def id(self):
+        return self.data['id']
+
+
+class OrderDetailsException(Exception):
+    pass
+
+
+class OrderDetails(object):
+    '''Validating and preparing an order description for submission'''
+    BUNDLE_KEY = 'product_bundle'
+
+    def __init__(self, details):
+        self._data = copy.deepcopy(details)
+        self._validate_details()
+
+    @property
+    def products(self):
+        return self._data['products']
+
+    @property
+    def data(self):
+        '''The order details as a string representing json.'''
+        return json.dumps(self._data)
+
+    def _validate_details(self):
+        '''Try valiently to get details to match schema.
+
+        Checks that details match the schema and, where possible, change
+        the details to fit the schema (e.g. change capitalization')
+        '''
+        products = self.products
+        for p in products:
+            self._validate_bundle(p)
+            self._validate_item_type(p)
+
+    def _validate_bundle(self, product):
+        supported = specs.get_product_bundles()
+        self._substitute_supported(product, self.BUNDLE_KEY, supported)
+
+    def _validate_item_type(self, product):
+        key = 'item_type'
+        bundle = product[self.BUNDLE_KEY]
+        supported = specs.get_item_types(bundle)
+        self._substitute_supported(product, key, supported)
+
+    @staticmethod
+    def _substitute_supported(product, key, supported):
+        try:
+            matched_type = specs.get_match(product[key], supported)
+            LOGGER.debug('{}: {}'.format(key, matched_type))
+            product[key] = matched_type
+        except(StopIteration):
+            msg = '{} - \'{}\' not in {}'.format(
+                key, product[key], supported)
+            raise OrderDetailsException(msg)
 
 
 # class Orders(Paged):

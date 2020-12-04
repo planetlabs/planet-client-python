@@ -15,25 +15,31 @@
 '''
 Test interactions with the API to get real responses for test mocking
 '''
+import json
+import logging
 import os
+import sys
 import time
 
-from planet.api import http, models
+from planet.api import http, models, orders_client
 
 ORDERS_URL = 'https://api.planet.com/compute/ops/orders/v2/'
 
 API_KEY = os.getenv('PL_API_KEY')
 
+LOGGER = logging.getLogger(__name__)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
 
 class Request(object):
-    def __init__(self, url, body_type, method, headers):
+    def __init__(self, url, body_type, method, headers, data=None):
         self.url = url
         self.body_type = body_type
         self.method = method
         self.headers = headers
 
         self.params = None
-        self.data = None
+        self.data = data
 
 
 def trigger_throttle():
@@ -63,9 +69,49 @@ def trigger_unauth():
         print(resp)
 
 
+TEST_ORDER = {
+      "name": "test_order",
+      "products": [
+        {
+          "item_ids": [
+            "3949357_1454705_2020-12-01_241c"
+          ],
+          "item_type": "PSOrthoTile",
+          "product_bundle": "analytic"
+        }
+      ]
+    }
+
+
+def create_order():
+    url = ORDERS_URL
+    body_type = models.Order
+    method = 'POST'
+    headers = {
+        'Authorization': 'api-key %s' % API_KEY,
+        'Content-Type': 'application/json'
+    }
+
+    data = json.dumps(TEST_ORDER)
+    req = Request(url, body_type, method, headers, data=data)
+
+    with http.PlanetSession() as sess:
+        resp = sess.request(req)
+        print(resp)
+        print(resp.body.get_raw())
+
+
+def create_order_client():
+    cl = orders_client.OrdersClient()
+    oid = cl.create_order(TEST_ORDER)
+    print(oid)
+
+
 def run():
     # trigger_unauth()
     # trigger_throttle()
+    # create_order()
+    create_order_client()
 
 
 if __name__ == '__main__':

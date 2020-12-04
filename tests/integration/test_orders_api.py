@@ -34,64 +34,80 @@ TEST_OID = 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'
 
 STATE_QUEUED = 'queued'
 
+ORDER_DESCRIPTION = {
+    "_links": {
+        "_self": "string",
+        "results": [
+            {
+                "location": "/foo"
+            }
+        ]
+    },
+    "id": TEST_OID,
+    "name": "string",
+    "subscription_id": 0,
+    "tools": [{}],
+    "products": [{}],
+    "created_on": "2019-08-24T14:15:22Z",
+    "last_modified": "2019-08-24T14:15:22Z",
+    "state": STATE_QUEUED,
+    "last_message": "string",
+    "error_hints": [
+        "string"
+    ],
+    "delivery": {
+        "single_archive": True,
+        "archive_type": "string",
+        "archive_filename": "string",
+        "layout": {},
+        "amazon_s3": {},
+        "azure_blob_storage": {},
+        "google_cloud_storage": {},
+        "google_earth_engine": {}
+    },
+    "notifications": {
+        "webhook": {},
+        "email": True
+    },
+    "order_type": "full"
+}
+
 
 @pytest.fixture()
 def ordersapi(tmpdir):
     '''Mocks up the orders api
 
     Responds to create, poll, and download'''
-    _URI_TO_RESPONSE = {
-        '/{}'.format(TEST_OID): {
-            "_links": {
-                "_self": "string",
-                "results": [
-                    {
-                        "location": "/foo"
-                    }
-                ]
-            },
-            "id": TEST_OID,
-            "name": "string",
-            "subscription_id": 0,
-            "tools": [{}],
-            "products": [{}],
-            "created_on": "2019-08-24T14:15:22Z",
-            "last_modified": "2019-08-24T14:15:22Z",
-            "state": STATE_QUEUED,
-            "last_message": "string",
-            "error_hints": [
-                "string"
-            ],
-            "delivery": {
-                "single_archive": True,
-                "archive_type": "string",
-                "archive_filename": "string",
-                "layout": {},
-                "amazon_s3": {},
-                "azure_blob_storage": {},
-                "google_cloud_storage": {},
-                "google_earth_engine": {}
-            },
-            "notifications": {
-                "webhook": {},
-                "email": True
-            },
-            "order_type": "full"
-        },
+    _URI_TO_GET_RESPONSE = {
+        '/{}'.format(TEST_OID): ORDER_DESCRIPTION
+    }
 
+    _URI_TO_POST_RESPONSE = {
+        '/': ORDER_DESCRIPTION
     }
 
     class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         def do_GET(self):
-            if self.path not in _URI_TO_RESPONSE:
+            if self.path not in _URI_TO_GET_RESPONSE:
                 self.send_response(404)
                 self.end_headers()
                 return
 
             self.send_response(200)
             self.end_headers()
-            resp = json.dumps(_URI_TO_RESPONSE[self.path]).encode('utf-8')
+            resp = json.dumps(_URI_TO_GET_RESPONSE[self.path]).encode('utf-8')
+            self.wfile.write(resp)
+
+        def do_POST(self):
+            if self.path not in _URI_TO_POST_RESPONSE:
+                self.send_response(404)
+                self.end_headers()
+                return
+
+            self.send_response(202)
+            self.end_headers()
+            resp = json.dumps(_URI_TO_POST_RESPONSE[self.path]).encode('utf-8')
             self.wfile.write(resp)
 
     socketserver.TCPServer.allow_reuse_address = True
@@ -132,16 +148,44 @@ def test_download(tmpdir, ordersapi):
     # TODO: check that all files are downloaded
 
 
-@pytest.mark.skip(reason='not implemented')
-def test_create(monkeypatch, ordersapi):
+@pytest.fixture()
+def order_details():
+    details = {
+      "name": "test_order",
+      "products": [
+        {
+          "item_ids": [
+            "test_item_id"
+          ],
+          "item_type": 'PSOrthoTile',
+          "product_bundle": 'ANALYTIC'
+        }
+      ],
+      "delivery": {
+        "single_archive": True,
+        "archive_type": "string",
+        "archive_filename": "string",
+        "layout": {
+          "format": "standard"
+        }},
+      "tools": [
+        {
+          "anchor_item": "string",
+          "method": "string",
+          "anchor_bundle": "string",
+          "strict": True
+        }
+      ]
+    }
+    return details
+
+
+def test_create_order(ordersapi, order_details):
     cl = OrdersClient(api_key=TEST_API_KEY, base_url=ordersapi)
 
-    # TODO: read in an order creation json blob
-    order_desc = None
-    oid = cl.create(order_desc)
+    oid = cl.create_order(order_details)
 
-    # TODO: assert order created successfully and we got oid
-    assert oid
+    assert oid == TEST_OID
 
 
 @pytest.mark.skip(reason='not implemented')

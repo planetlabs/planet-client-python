@@ -23,12 +23,10 @@ from .http import PlanetSession
 from . import auth
 from . import models
 
+BASE_URL = 'https://api.planet.com/'
+ORDERS_API_URL = urljoin(BASE_URL, 'compute/ops/orders/v2/')
 
 LOGGER = logging.getLogger(__name__)
-
-BASE_URL = 'https://api.planet.com/'
-
-ORDERS_API_URL = urljoin(BASE_URL, 'compute/ops/orders/v2/')
 
 
 class OrdersClient(object):
@@ -59,14 +57,14 @@ class OrdersClient(object):
     def _order_url(self, order_id):
         return urljoin(self.base_url, order_id)
 
-    def _request(self, url, method, body_type):
+    def _request(self, url, method, body_type, data=None):
         '''Prepare an order API request.
 
         :param url str: location to make request
         :returns: :py:Class:`planet.api.models.Request`
         '''
         return models.Request(url, self.auth, body_type=body_type,
-                              method=method)
+                              method=method, data=data)
 
     # def _get(self, url, body_type):
     #     '''Submit a get request and handle response.
@@ -83,15 +81,38 @@ class OrdersClient(object):
 
     def list_orders(self):
         '''Get all order requests.
+
+        :returns: :py:Class:`planet.api.models.Orders`
+        :raises planet.api.exceptions.APIException: On API error.
         '''
+        # url = self.base_url
+        #
+        # request = self._request(url, 'GET', models.Orders)
+        #
+        # with PlanetSession() as sess:
+        #     orders = sess.request(request).body
+        #
+        # return orders
         raise NotImplementedError
 
     def create_order(self, order_request):
         '''Create an order request.
 
+        :param dict order_request: order request details
         :returns str: The ID of the order
         '''
-        raise NotImplementedError
+        if not isinstance(order_request, models.OrderDetails):
+            order_request = models.OrderDetails(order_request)
+
+        url = self.base_url
+
+        LOGGER.debug(order_request.data)
+        request = self._request(url, 'POST', models.Order, order_request.data)
+
+        with PlanetSession() as sess:
+            order = sess.request(request).body
+
+        return order.id
 
     def get_order(self, order_id):
         '''Get order details by Order ID.
@@ -131,6 +152,7 @@ class OrdersClient(object):
         :param order_id str: The ID of the order
         '''
         raise NotImplementedError
+
 
 # class BaseClient(object):
 #     def _url(self, path):
