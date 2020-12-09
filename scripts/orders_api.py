@@ -21,7 +21,7 @@ import os
 import sys
 import time
 
-from planet.api import http, models, orders_client
+from planet.api import http, models, OrdersClient
 
 ORDERS_URL = 'https://api.planet.com/compute/ops/orders/v2/'
 
@@ -102,16 +102,28 @@ def create_order():
 
 
 def create_order_client():
-    cl = orders_client.OrdersClient()
+    cl = OrdersClient()
     oid = cl.create_order(TEST_ORDER)
     print(oid)
+    return oid
+
+
+def cancel_order_client(oid):
+    cl = OrdersClient()
+    cancelled = cl.cancel_order(oid)
+    print(cancelled.response.headers)
+    print(cancelled.response.content)
+    # print(cancelled)
+    # print(cancelled)
 
 
 def run():
     # trigger_unauth()
     # trigger_throttle()
     # create_order()
-    create_order_client()
+    oid = create_order_client()
+    print(oid)
+    cancel_order_client(oid)
 
 
 if __name__ == '__main__':

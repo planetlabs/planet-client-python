@@ -12,23 +12,17 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-from http.server import BaseHTTPRequestHandler
-import json
 import logging
-from multiprocessing import Process
-import os
-import random
-import signal
-import socketserver
 
 import pytest
+import requests_mock
 
-from planet.api.orders_client import OrdersClient
+from planet.api import OrdersClient
 
 LOGGER = logging.getLogger(__name__)
 
 TEST_API_KEY = '1234'
-
+TEST_URL = 'mock://test.com'
 # fake but real-looking oid
 TEST_OID = 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'
 
@@ -72,85 +66,7 @@ ORDER_DESCRIPTION = {
     "order_type": "full"
 }
 
-
-@pytest.fixture()
-def ordersapi(tmpdir):
-    '''Mocks up the orders api
-
-    Responds to create, poll, and download'''
-    _URI_TO_GET_RESPONSE = {
-        '/{}'.format(TEST_OID): ORDER_DESCRIPTION
-    }
-
-    _URI_TO_POST_RESPONSE = {
-        '/': ORDER_DESCRIPTION
-    }
-
-    class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-
-        def do_GET(self):
-            if self.path not in _URI_TO_GET_RESPONSE:
-                self.send_response(404)
-                self.end_headers()
-                return
-
-            self.send_response(200)
-            self.end_headers()
-            resp = json.dumps(_URI_TO_GET_RESPONSE[self.path]).encode('utf-8')
-            self.wfile.write(resp)
-
-        def do_POST(self):
-            if self.path not in _URI_TO_POST_RESPONSE:
-                self.send_response(404)
-                self.end_headers()
-                return
-
-            self.send_response(202)
-            self.end_headers()
-            resp = json.dumps(_URI_TO_POST_RESPONSE[self.path]).encode('utf-8')
-            self.wfile.write(resp)
-
-    socketserver.TCPServer.allow_reuse_address = True
-    port = random.randint(10000, 20000)
-    handler = SimpleHTTPRequestHandler
-    httpd = socketserver.TCPServer(("", port), handler)
-    path = os.path.join(str(tmpdir))
-
-    p = Process(target=_cwd_and_serve, args=(httpd, path))
-    p.daemon = True
-    p.start()
-    yield 'http://localhost:{}'.format(port)
-
-    os.kill(p.pid, signal.SIGTERM)
-
-
-def _cwd_and_serve(httpd, path):
-    os.chdir(path)
-    httpd.serve_forever()
-
-
-def test_get_order(ordersapi):
-    cl = OrdersClient(api_key=TEST_API_KEY, base_url=ordersapi)
-
-    state = cl.get_order(TEST_OID).state
-    assert state == STATE_QUEUED
-
-
-@pytest.mark.skip(reason='not implemented')
-def test_download(tmpdir, ordersapi):
-    cl = OrdersClient(api_key=TEST_API_KEY, base_url=ordersapi)
-
-    cl.download(TEST_OID, str(tmpdir))
-
-    # TODO: if state is not 'complete' what do we want to do? do we poll
-    # or raise an exception?
-
-    # TODO: check that all files are downloaded
-
-
-@pytest.fixture()
-def order_details():
-    details = {
+ORDER_DETAILS = {
       "name": "test_order",
       "products": [
         {
@@ -176,16 +92,52 @@ def order_details():
           "strict": True
         }
       ]
-    }
-    return details
+}
 
 
-def test_create_order(ordersapi, order_details):
+def test_get_order():
+    with requests_mock.Mocker() as m:
+        get_url = TEST_URL + '/' + TEST_OID
+        m.get(get_url, status_code=200, json=ORDER_DESCRIPTION)
+
+        cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
+
+        state = cl.get_order(TEST_OID).state
+        assert state == STATE_QUEUED
+
+
+def test_create_order():
+    with requests_mock.Mocker() as m:
+        create_url = TEST_URL
+        m.post(create_url, status_code=200, json=ORDER_DESCRIPTION)
+
+        cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
+        oid = cl.create_order(ORDER_DETAILS)
+        assert oid == TEST_OID
+
+
+def test_cancel_order():
+    # TODO: the api says cancel order returns the order details but as
+    # far as I can test thus far, it returns nothing. follow up on this
+    with requests_mock.Mocker() as m:
+        cancel_url = TEST_URL + '/' + TEST_OID
+        m.put(cancel_url, status_code=200, text='success')
+
+        cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
+        res = cl.cancel_order(TEST_OID)
+        assert res.get_raw() == 'success'
+
+
+@pytest.mark.skip(reason='not implemented')
+def test_download(tmpdir, ordersapi):
     cl = OrdersClient(api_key=TEST_API_KEY, base_url=ordersapi)
 
-    oid = cl.create_order(order_details)
+    cl.download(TEST_OID, str(tmpdir))
 
-    assert oid == TEST_OID
+    # TODO: if state is not 'complete' what do we want to do? do we poll
+    # or raise an exception?
+
+    # TODO: check that all files are downloaded
 
 
 @pytest.mark.skip(reason='not implemented')

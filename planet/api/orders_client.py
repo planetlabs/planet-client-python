@@ -29,6 +29,11 @@ ORDERS_API_URL = urljoin(BASE_URL, 'compute/ops/orders/v2/')
 LOGGER = logging.getLogger(__name__)
 
 
+class OrdersClientException(Exception):
+    """Exceptions thrown by Orders Client"""
+    pass
+
+
 class OrdersClient(object):
     """High-level access to Planet's orders API.
 
@@ -54,8 +59,14 @@ class OrdersClient(object):
         if not self.base_url.endswith('/'):
             self.base_url += '/'
 
+    def _check_order_id(self, oid):
+        if not oid or not isinstance(oid, str):
+            msg = 'Order id ({}) is invalid.'.format(oid)
+            raise OrdersClientException(msg)
+
     def _order_url(self, order_id):
-        return urljoin(self.base_url, order_id)
+        self._check_order_id
+        return self.base_url + order_id
 
     def _request(self, url, method, body_type, data=None):
         '''Prepare an order API request.
@@ -133,8 +144,18 @@ class OrdersClient(object):
         '''Cancel a queued order.
 
         :param order_id str: The ID of the order
+        :returns :py:Class:`planet.api.models.Order`: Cancelled order details.
+        :raises planet.api.exceptions.APIException: On API error.
         '''
-        raise NotImplementedError
+        LOGGER.debug('order id: {}'.format(order_id))
+        url = self._order_url(order_id)
+        LOGGER.debug('cancelling at {}'.format(url))
+        request = self._request(url, 'PUT', models.Order)
+
+        with PlanetSession() as sess:
+            order = sess.request(request).body
+
+        return order
 
     def cancel_orders(self, order_ids):
         '''Cancel queued orders in bulk.
