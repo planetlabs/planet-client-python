@@ -16,15 +16,12 @@
 """Functionality for interacting with the orders api"""
 
 import logging
-from urllib.parse import urljoin
-
 
 from .http import PlanetSession
 from . import auth
 from . import models
 
-
-PLANET_BASE_URL =  'https://api.planet.com/'
+PLANET_BASE_URL = 'https://api.planet.com/'
 BASE_URL = PLANET_BASE_URL + 'compute/ops/'
 STATS_PATH = 'stats/orders/v2/'
 ORDERS_PATH = 'orders/v2/'
