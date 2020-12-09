@@ -162,6 +162,10 @@ class OrdersClient(object):
 
     def aggregated_order_stats(self):
         '''Get aggregated counts of active orders.
+
+        :returns dict: aggregated order counts
+        :raises planet.api.exceptions.APIException: On API error.
+
         '''
         url = self._stats_url()
         res = self._get(url, models.JSON)
