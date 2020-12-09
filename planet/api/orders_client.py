@@ -14,7 +14,7 @@
 # import logging
 
 """Functionality for interacting with the orders api"""
-
+import json
 import logging
 
 from .http import PlanetSession
@@ -25,7 +25,7 @@ PLANET_BASE_URL = 'https://api.planet.com/'
 BASE_URL = PLANET_BASE_URL + 'compute/ops/'
 STATS_PATH = 'stats/orders/v2/'
 ORDERS_PATH = 'orders/v2/'
-
+BULK_PATH = 'bulk/orders/v2/'
 
 LOGGER = logging.getLogger(__name__)
 
@@ -74,6 +74,9 @@ class OrdersClient(object):
         self._check_order_id
         return self._orders_url() + order_id
 
+    def _bulk_url(self):
+        return self._base_url + BULK_PATH
+
     def _request(self, url, method, body_type, data=None):
         '''Prepare an order API request.
 
@@ -92,6 +95,7 @@ class OrdersClient(object):
         return self._do_request(request)
 
     def _post(self, url, body_type, data):
+        LOGGER.debug('post data: {}'.format(data))
         request = self._request(url, 'POST', body_type, data)
         return self._do_request(request)
 
@@ -154,8 +158,20 @@ class OrdersClient(object):
 
     def cancel_orders(self, order_ids):
         '''Cancel queued orders in bulk.
+
+        :param order_ids list of str: The IDs of the orders. If empty, all
+            orders in a pre-running state will be cancelled.
+        :returns dict: Results of the bulk cancel request.
+        :raises planet.api.exceptions.APIException: On API error.
         '''
-        raise NotImplementedError
+        url = self._bulk_url() + 'cancel'
+        cancel_body = {}
+        if order_ids:
+            cancel_body['order_ids'] = order_ids
+
+        # was sending the body as params without json.dumps()
+        res = self._post(url, models.JSON, json.dumps(cancel_body))
+        return res.data
 
     def aggregated_order_stats(self):
         '''Get aggregated counts of active orders.

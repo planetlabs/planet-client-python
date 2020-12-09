@@ -128,6 +128,61 @@ def test_cancel_order():
         assert res.get_raw() == 'success'
 
 
+def test_cancel_orders():
+    with requests_mock.Mocker() as m:
+        bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
+
+        test_ids = ["oid1", "oid2", "oid3"]
+        example_result = {
+            "result": {
+                "succeeded": {"count": 2},
+                "failed": {
+                    "count": 1,
+                    "failures": [
+                        {
+                            "order_id": "oid3",
+                            "message": "bummer"
+                        }
+                    ]
+                }
+            }
+        }
+        m.post(bulk_cancel_url, status_code=200, json=example_result)
+
+        cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
+        res = cl.cancel_orders(test_ids)
+        assert res == example_result
+
+        expected_body = {
+                "order_ids": test_ids
+        }
+        history = m.request_history
+        assert history[0].json() == expected_body
+
+
+def test_cancel_orders_all():
+    with requests_mock.Mocker() as m:
+        bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
+
+        example_result = {
+            "result": {
+                "succeeded": {"count": 2},
+                "failed": {
+                    "count": 0,
+                    "failures": []
+                }
+            }
+        }
+        m.post(bulk_cancel_url, status_code=200, json=example_result)
+
+        cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
+        res = cl.cancel_orders([])
+        assert res == example_result
+
+        history = m.request_history
+        assert history[0].json() == {}
+
+
 def test_aggegated_order_stats():
     with requests_mock.Mocker() as m:
         stats_url = TEST_URL + 'stats/orders/v2/'

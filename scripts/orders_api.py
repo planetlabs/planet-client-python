@@ -113,17 +113,28 @@ def cancel_order_client(oid):
     cancelled = cl.cancel_order(oid)
     print(cancelled.response.headers)
     print(cancelled.response.content)
-    # print(cancelled)
-    # print(cancelled)
+
+
+def cancel_orders_client(oid):
+    cl = OrdersClient()
+    cancelled = cl.cancel_orders([oid])
+    print(cancelled)
+
+
+def cancel_orders_client_all():
+    cl = OrdersClient()
+    cancelled = cl.cancel_orders([])
+    print(cancelled)
 
 
 def run():
     # trigger_unauth()
     # trigger_throttle()
     # create_order()
-    oid = create_order_client()
-    print(oid)
-    cancel_order_client(oid)
+    # create_order_client()
+    # oid = create_order_client(); cancel_order_client(oid)  # noqa: E702
+    # oid = create_order_client(); cancel_orders_client(oid)  # noqa: E702
+    create_order_client(); cancel_orders_client_all()  # noqa: E702
 
 
 if __name__ == '__main__':
