@@ -23,8 +23,12 @@ from .http import PlanetSession
 from . import auth
 from . import models
 
-BASE_URL = 'https://api.planet.com/'
-ORDERS_API_URL = urljoin(BASE_URL, 'compute/ops/orders/v2/')
+
+PLANET_BASE_URL =  'https://api.planet.com/'
+BASE_URL = PLANET_BASE_URL + 'compute/ops/'
+STATS_PATH = 'stats/orders/v2/'
+ORDERS_PATH = 'orders/v2/'
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -44,8 +48,7 @@ class OrdersClient(object):
       >> order = cl.get_order('order_id')
       <models.Order>
     """
-
-    def __init__(self, api_key=None, base_url=ORDERS_API_URL):
+    def __init__(self, api_key=None, base_url=BASE_URL):
         '''
         :param str api_key: (opt) API key to use.
             Defaults to environment variable or stored authentication data.
@@ -55,18 +58,24 @@ class OrdersClient(object):
         api_key = api_key or auth.find_api_key()
         self.auth = api_key and auth.APIKey(api_key)
 
-        self.base_url = base_url
-        if not self.base_url.endswith('/'):
-            self.base_url += '/'
+        self._base_url = base_url
+        if not self._base_url.endswith('/'):
+            self._base_url += '/'
 
     def _check_order_id(self, oid):
         if not oid or not isinstance(oid, str):
             msg = 'Order id ({}) is invalid.'.format(oid)
             raise OrdersClientException(msg)
 
+    def _orders_url(self):
+        return self._base_url + ORDERS_PATH
+
+    def _stats_url(self):
+        return self._base_url + STATS_PATH
+
     def _order_url(self, order_id):
         self._check_order_id
-        return self.base_url + order_id
+        return self._orders_url() + order_id
 
     def _request(self, url, method, body_type, data=None):
         '''Prepare an order API request.
@@ -119,7 +128,7 @@ class OrdersClient(object):
         if not isinstance(order_request, models.OrderDetails):
             order_request = models.OrderDetails(order_request)
 
-        url = self.base_url
+        url = self._orders_url()
 
         order = self._post(url, models.Order, order_request.data)
         return order.id
@@ -154,7 +163,9 @@ class OrdersClient(object):
     def aggregated_order_stats(self):
         '''Get aggregated counts of active orders.
         '''
-        raise NotImplementedError
+        url = self._stats_url()
+        res = self._get(url, models.JSON)
+        return res.data
 
     def download_order(self, order_id, wait=False):
         '''Download ordered asset

@@ -22,7 +22,7 @@ from planet.api import OrdersClient
 LOGGER = logging.getLogger(__name__)
 
 TEST_API_KEY = '1234'
-TEST_URL = 'mock://test.com'
+TEST_URL = 'mock://test.com/'
 # fake but real-looking oid
 TEST_OID = 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'
 
@@ -97,7 +97,7 @@ ORDER_DETAILS = {
 
 def test_get_order():
     with requests_mock.Mocker() as m:
-        get_url = TEST_URL + '/' + TEST_OID
+        get_url = TEST_URL + 'orders/v2/' + TEST_OID
         m.get(get_url, status_code=200, json=ORDER_DESCRIPTION)
 
         cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
@@ -108,7 +108,7 @@ def test_get_order():
 
 def test_create_order():
     with requests_mock.Mocker() as m:
-        create_url = TEST_URL
+        create_url = TEST_URL + 'orders/v2/'
         m.post(create_url, status_code=200, json=ORDER_DESCRIPTION)
 
         cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
@@ -120,12 +120,33 @@ def test_cancel_order():
     # TODO: the api says cancel order returns the order details but as
     # far as I can test thus far, it returns nothing. follow up on this
     with requests_mock.Mocker() as m:
-        cancel_url = TEST_URL + '/' + TEST_OID
+        cancel_url = TEST_URL + 'orders/v2/' + TEST_OID
         m.put(cancel_url, status_code=200, text='success')
 
         cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
         res = cl.cancel_order(TEST_OID)
         assert res.get_raw() == 'success'
+
+
+def test_aggegated_order_stats():
+    with requests_mock.Mocker() as m:
+        stats_url = TEST_URL + 'stats/orders/v2/'
+        LOGGER.debug('url: {}'.format(stats_url))
+        example_stats = {
+            "organization": {
+                "queued_orders": 0,
+                "running_orders": 6
+            },
+            "user": {
+                "queued_orders": 0,
+                "running_orders": 0
+            }
+        }
+        m.get(stats_url, status_code=200, json=example_stats)
+
+        cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
+        res = cl.aggregated_order_stats()
+        assert res == example_stats
 
 
 @pytest.mark.skip(reason='not implemented')
