@@ -77,18 +77,22 @@ class OrdersClient(object):
         return models.Request(url, self.auth, body_type=body_type,
                               method=method, data=data)
 
-    # def _get(self, url, body_type):
-    #     '''Submit a get request and handle response.
-    #
-    #     :param url str: location to make request
-    #     :returns: :py:Class:`planet.api.models.Response`
-    #     :raises planet.api.exceptions.APIException: On API error.
-    #     '''
-    #     with PlanetSession as sess:
-    #         request = self._request(url, 'GET')
-    #         response = sess.request(request)
-    #
-    #     return response
+    def _get(self, url, body_type):
+        request = self._request(url, 'GET', body_type)
+        return self._do_request(request)
+
+    def _put(self, url, body_type):
+        request = self._request(url, 'PUT', body_type)
+        return self._do_request(request)
+
+    def _post(self, url, body_type, data):
+        request = self._request(url, 'POST', body_type, data)
+        return self._do_request(request)
+
+    def _do_request(self, request):
+        with PlanetSession() as sess:
+            body = sess.request(request).body
+        return body
 
     def list_orders(self):
         '''Get all order requests.
@@ -117,12 +121,7 @@ class OrdersClient(object):
 
         url = self.base_url
 
-        LOGGER.debug(order_request.data)
-        request = self._request(url, 'POST', models.Order, order_request.data)
-
-        with PlanetSession() as sess:
-            order = sess.request(request).body
-
+        order = self._post(url, models.Order, order_request.data)
         return order.id
 
     def get_order(self, order_id):
@@ -133,11 +132,7 @@ class OrdersClient(object):
         :raises planet.api.exceptions.APIException: On API error.
         '''
         url = self._order_url(order_id)
-        request = self._request(url, 'GET', models.Order)
-
-        with PlanetSession() as sess:
-            order = sess.request(request).body
-
+        order = self._get(url, models.Order)
         return order
 
     def cancel_order(self, order_id):
@@ -147,14 +142,8 @@ class OrdersClient(object):
         :returns :py:Class:`planet.api.models.Order`: Cancelled order details.
         :raises planet.api.exceptions.APIException: On API error.
         '''
-        LOGGER.debug('order id: {}'.format(order_id))
         url = self._order_url(order_id)
-        LOGGER.debug('cancelling at {}'.format(url))
-        request = self._request(url, 'PUT', models.Order)
-
-        with PlanetSession() as sess:
-            order = sess.request(request).body
-
+        order = self._put(url, models.Order)
         return order
 
     def cancel_orders(self, order_ids):
@@ -162,7 +151,7 @@ class OrdersClient(object):
         '''
         raise NotImplementedError
 
-    def aggretated_order_stats(self):
+    def aggregated_order_stats(self):
         '''Get aggregated counts of active orders.
         '''
         raise NotImplementedError
