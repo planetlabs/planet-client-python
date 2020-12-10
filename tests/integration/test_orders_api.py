@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-
+import copy
 import logging
 
 import pytest
@@ -22,7 +22,11 @@ from planet.api import OrdersClient
 LOGGER = logging.getLogger(__name__)
 
 TEST_API_KEY = '1234'
-TEST_URL = 'mock://test.com/'
+
+# if use mock:// as the prefix, the params get lost
+# https://github.com/jamielennox/requests-mock/issues/142
+TEST_URL = 'http://MockNotRealURL/'
+
 # fake but real-looking oid
 TEST_OID = 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'
 
@@ -95,40 +99,123 @@ ORDER_DETAILS = {
 }
 
 
-def test_get_order():
+@pytest.fixture()
+def orders_client():
+    return OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
+
+
+def test_get_order(orders_client):
     with requests_mock.Mocker() as m:
         get_url = TEST_URL + 'orders/v2/' + TEST_OID
         m.get(get_url, status_code=200, json=ORDER_DESCRIPTION)
 
-        cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
-
-        state = cl.get_order(TEST_OID).state
+        state = orders_client.get_order(TEST_OID).state
         assert state == STATE_QUEUED
 
 
-def test_create_order():
+def test_list_orders(orders_client):
+    with requests_mock.Mocker() as m:
+        list_url = TEST_URL + 'orders/v2/'
+        next_page_url = list_url + '?page_marker=IAmATest'
+
+        order1 = copy.deepcopy(ORDER_DESCRIPTION)
+        order1['id'] = 'oid1'
+        order2 = copy.deepcopy(ORDER_DESCRIPTION)
+        order2['id'] = 'oid2'
+        order3 = copy.deepcopy(ORDER_DESCRIPTION)
+        order3['id'] = 'oid3'
+
+        page1_response = {
+            "_links": {
+                "_self": "string",
+                "next": next_page_url},
+            "orders": [order1, order2]
+        }
+        m.get(list_url, status_code=200, json=page1_response)
+
+        page2_response = {
+            "_links": {
+                "_self": next_page_url},
+            "orders": [order3]
+        }
+        m.get(next_page_url, status_code=200, json=page2_response)
+
+        orders = orders_client.list_orders()
+        oids = list(o.id for o in orders)
+        assert oids == ['oid1', 'oid2', 'oid3']
+
+
+def test_list_orders_state(orders_client):
+    with requests_mock.Mocker() as m:
+        list_url = TEST_URL + 'orders/v2/?state=failed'
+
+        order1 = copy.deepcopy(ORDER_DESCRIPTION)
+        order1['id'] = 'oid1'
+        order2 = copy.deepcopy(ORDER_DESCRIPTION)
+        order2['id'] = 'oid2'
+
+        page1_response = {
+            "_links": {
+                "_self": "string"
+            },
+            "orders": [order1, order2]
+        }
+        m.get(list_url, status_code=200, json=page1_response)
+
+        orders = orders_client.list_orders(state='failed')
+        oids = list(o.id for o in orders)
+        assert oids == ['oid1', 'oid2']
+
+
+def test_list_orders_limit(orders_client):
+    with requests_mock.Mocker() as m:
+        list_url = TEST_URL + 'orders/v2/'
+        next_page_url = list_url + '?page_marker=IAmATest'
+
+        order1 = copy.deepcopy(ORDER_DESCRIPTION)
+        order1['id'] = 'oid1'
+        order2 = copy.deepcopy(ORDER_DESCRIPTION)
+        order2['id'] = 'oid2'
+        order3 = copy.deepcopy(ORDER_DESCRIPTION)
+        order3['id'] = 'oid3'
+
+        # check that the client doesn't try to get the next page when the
+        # limit is already reached by providing link to next page but not
+        # registering a response. if the client tries to get the next
+        # page, an error will occur
+        page1_response = {
+            "_links": {
+                "_self": "string",
+                "next": next_page_url},
+            "orders": [order1, order2]
+        }
+        m.get(list_url, status_code=200, json=page1_response)
+
+        orders = orders_client.list_orders(limit=1)
+        oids = list(o.id for o in orders)
+        assert oids == ['oid1']
+
+
+def test_create_order(orders_client):
     with requests_mock.Mocker() as m:
         create_url = TEST_URL + 'orders/v2/'
         m.post(create_url, status_code=200, json=ORDER_DESCRIPTION)
 
-        cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
-        oid = cl.create_order(ORDER_DETAILS)
+        oid = orders_client.create_order(ORDER_DETAILS)
         assert oid == TEST_OID
 
 
-def test_cancel_order():
+def test_cancel_order(orders_client):
     # TODO: the api says cancel order returns the order details but as
     # far as I can test thus far, it returns nothing. follow up on this
     with requests_mock.Mocker() as m:
         cancel_url = TEST_URL + 'orders/v2/' + TEST_OID
-        m.put(cancel_url, status_code=200, text='success')
+        m.put(cancel_url, status_code=200, text='')
 
-        cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
-        res = cl.cancel_order(TEST_OID)
-        assert res.get_raw() == 'success'
+        orders_client.cancel_order(TEST_OID)
 
 
-def test_cancel_orders():
+def test_cancel_orders(orders_client):
     with requests_mock.Mocker() as m:
         bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
 
@@ -149,8 +236,7 @@ def test_cancel_orders():
         }
         m.post(bulk_cancel_url, status_code=200, json=example_result)
 
-        cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
-        res = cl.cancel_orders(test_ids)
+        res = orders_client.cancel_orders(test_ids)
         assert res == example_result
 
         expected_body = {
@@ -160,7 +246,7 @@ def test_cancel_orders():
         assert history[0].json() == expected_body
 
 
-def test_cancel_orders_all():
+def test_cancel_orders_all(orders_client):
     with requests_mock.Mocker() as m:
         bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
 
@@ -175,15 +261,14 @@ def test_cancel_orders_all():
         }
         m.post(bulk_cancel_url, status_code=200, json=example_result)
 
-        cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
-        res = cl.cancel_orders([])
+        res = orders_client.cancel_orders([])
         assert res == example_result
 
         history = m.request_history
         assert history[0].json() == {}
 
 
-def test_aggegated_order_stats():
+def test_aggegated_order_stats(orders_client):
     with requests_mock.Mocker() as m:
         stats_url = TEST_URL + 'stats/orders/v2/'
         LOGGER.debug('url: {}'.format(stats_url))
@@ -199,8 +284,7 @@ def test_aggegated_order_stats():
         }
         m.get(stats_url, status_code=200, json=example_stats)
 
-        cl = OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
-        res = cl.aggregated_order_stats()
+        res = orders_client.aggregated_order_stats()
         assert res == example_stats
 
 

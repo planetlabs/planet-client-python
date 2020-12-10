@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .orders_client import OrdersClient
+from .orders import OrdersClient
 from .__version__ import __version__  # NOQA
 
 __all__ = [
