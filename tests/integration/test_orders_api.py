@@ -13,11 +13,16 @@
 # the License.
 import copy
 import logging
+import os
+from pathlib import Path
 
 import pytest
 import requests_mock
 
 from planet.api import OrdersClient
+
+
+DATA_PATH = Path(os.path.dirname(__file__)).parents[0] / 'data'
 
 LOGGER = logging.getLogger(__name__)
 
@@ -288,16 +293,22 @@ def test_aggegated_order_stats(orders_client):
         assert res == example_stats
 
 
-@pytest.mark.skip(reason='not implemented')
-def test_download(tmpdir, ordersapi):
-    cl = OrdersClient(api_key=TEST_API_KEY, base_url=ordersapi)
+def test_download_asset(tmpdir, orders_client):
+    with requests_mock.Mocker() as m:
+        dl_url = TEST_URL + 'download/?token=IAmAToken'
 
-    cl.download(TEST_OID, str(tmpdir))
+        img_path = DATA_PATH / 'test_sm.tif'
+        with open(img_path, 'rb') as img:
+            m.get(dl_url, status_code=200,
+                  body=img,
+                  headers={
+                      'Content-Type': 'image/tiff',
+                      'Content-Length': '527'
+                  })
 
-    # TODO: if state is not 'complete' what do we want to do? do we poll
-    # or raise an exception?
-
-    # TODO: check that all files are downloaded
+            filename = orders_client.download_asset(
+                    dl_url, directory=str(tmpdir))
+            assert os.path.isfile(filename)
 
 
 @pytest.mark.skip(reason='not implemented')

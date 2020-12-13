@@ -18,6 +18,7 @@ import copy
 import json
 import itertools
 import logging
+import os
 
 from .http import PlanetSession
 from . import auth
@@ -150,16 +151,65 @@ class OrdersClient(object):
 
         :returns dict: aggregated order counts
         :raises planet.api.exceptions.APIException: On API error.
-
         '''
         url = self._stats_url()
         res = self._get(url, models.JSON)
         return res.data
 
-    def download_order(self, order_id, wait=False):
-        '''Download ordered asset
+    def download_asset(self, location, filename=None, directory=None,
+                       callback=None, overwrite=True):
+        '''Download ordered asset.
+
+        If provided, the callback will be invoked 3 different ways:
+
+        * First as ``callback(start=self)``
+        * For each chunk of data written as
+          ``callback(wrote=chunk_size_in_bytes, total=all_byte_cnt)``
+        * Upon completion as ``callback(finish=self)``
+
+        :param str location: download location url including download token.
+        :param str filename (opt): Name to assign to downloaded file. Defaults
+            to the name given in the response from the download location.
+        :param str directory (opt): Directory to write to. Defaults to current
+            directory.
+        :param callback func: An optional callback to receive notification of
+                          write progress.
+        :param overwrite bool: Overwrite any existing files. Defaults to True.
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        body = self._get(location, models.Body)
+
+        dl_path = os.path.join(directory or '.', filename or body.name)
+
+        write = self._writer(callback=callback, overwrite=overwrite)
+        write(body, dl_path)
+        return dl_path
+
+    @staticmethod
+    def _writer(callback=None, overwrite=True):
+        '''Create a callback handler for writing Body content.'''
+        def writer(body, file_path):
+            if overwrite or not os.path.exists(file_path):
+                body.write(file_path, callback)
+            else:
+                if callback:
+                    callback(skip=body)
+                body.response.close()
+        return writer
+
+    def download_order(self, order_id):
+        '''Download all assets in an order
+
+        :param order_id str: The ID of the order.
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        raise NotImplementedError
+
+    def wait_for_complete(self, order_id):
+        '''Poll for order status until order is complete.
 
         :param order_id str: The ID of the order
+        :raises planet.api.exceptions.APIException: On API error.
         '''
         raise NotImplementedError
 

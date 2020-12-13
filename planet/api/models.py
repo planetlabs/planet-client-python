@@ -100,10 +100,12 @@ class Response(object):
 
     def raise_for_status(self):
         '''Raises :class: `APIException` if one occured.'''
-        self._raise_for_status(self.status_code, self.http_response.text)
+        return self._raise_for_status(self.status_code, self.http_response)
 
     @staticmethod
-    def _raise_for_status(status, text):
+    def _raise_for_status(status, http_response):
+        LOGGER.debug('status code: {}'.format(status))
+
         if status < 300:
             return
 
@@ -117,13 +119,14 @@ class Response(object):
         }.get(status, None)
 
         # differentiate between over quota and rate-limiting
-        if status == 429 and 'quota' in text.lower():
+        res = http_response
+        if status == 429 and 'quota' in res.text.lower():
             exception = exceptions.OverQuota
 
         if exception:
-            raise exception(text)
+            raise exception(res.text)
 
-        raise exceptions.APIException('%s: %s' % (status, text))
+        raise exceptions.APIException('%s: %s' % (status, res.text))
 
 
 class Body(object):

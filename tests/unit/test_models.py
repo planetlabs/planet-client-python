@@ -32,22 +32,24 @@ def mocked_request():
     return models.Request('url', 'auth')
 
 
-def mock_http_response(json, iter_content=None):
+def mock_http_response(json=None, iter_content=None, text=None):
     m = MagicMock(name='http_response')
     m.headers = {}
-    m.json.return_value = json
+    m.json.return_value = json or {}
     m.iter_content = iter_content
+    m.text = text or ''
     return m
 
 
 def test_Request__raise_for_status():
-    models.Response._raise_for_status(201, '')
+    models.Response._raise_for_status(201, mock_http_response(text=''))
 
     with pytest.raises(exceptions.TooManyRequests):
-        models.Response._raise_for_status(429, '')
+        models.Response._raise_for_status(429, mock_http_response(text=''))
 
     with pytest.raises(exceptions.OverQuota):
-        models.Response._raise_for_status(429, 'exceeded QUOTA dude')
+        msg = 'exceeded QUOTA dude'
+        models.Response._raise_for_status(429,  mock_http_response(text=msg))
 
 
 def test_Body_write(tmpdir, mocked_request):
