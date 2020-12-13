@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 import copy
+import json
 import logging
 import os
 from pathlib import Path
@@ -22,112 +23,64 @@ import requests_mock
 from planet.api import OrdersClient
 
 
-DATA_PATH = Path(os.path.dirname(__file__)).parents[0] / 'data'
+DATA_DIR = Path(os.path.dirname(__file__)).parents[0] / 'data'
 
 LOGGER = logging.getLogger(__name__)
-
-TEST_API_KEY = '1234'
 
 # if use mock:// as the prefix, the params get lost
 # https://github.com/jamielennox/requests-mock/issues/142
 TEST_URL = 'http://MockNotRealURL/'
 
-# fake but real-looking oid
-TEST_OID = 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'
-
-STATE_QUEUED = 'queued'
-
-ORDER_DESCRIPTION = {
-    "_links": {
-        "_self": "string",
-        "results": [
-            {
-                "location": "/foo"
-            }
-        ]
-    },
-    "id": TEST_OID,
-    "name": "string",
-    "subscription_id": 0,
-    "tools": [{}],
-    "products": [{}],
-    "created_on": "2019-08-24T14:15:22Z",
-    "last_modified": "2019-08-24T14:15:22Z",
-    "state": STATE_QUEUED,
-    "last_message": "string",
-    "error_hints": [
-        "string"
-    ],
-    "delivery": {
-        "single_archive": True,
-        "archive_type": "string",
-        "archive_filename": "string",
-        "layout": {},
-        "amazon_s3": {},
-        "azure_blob_storage": {},
-        "google_cloud_storage": {},
-        "google_earth_engine": {}
-    },
-    "notifications": {
-        "webhook": {},
-        "email": True
-    },
-    "order_type": "full"
-}
-
-ORDER_DETAILS = {
-      "name": "test_order",
-      "products": [
-        {
-          "item_ids": [
-            "test_item_id"
-          ],
-          "item_type": 'PSOrthoTile',
-          "product_bundle": 'ANALYTIC'
-        }
-      ],
-      "delivery": {
-        "single_archive": True,
-        "archive_type": "string",
-        "archive_filename": "string",
-        "layout": {
-          "format": "standard"
-        }},
-      "tools": [
-        {
-          "anchor_item": "string",
-          "method": "string",
-          "anchor_bundle": "string",
-          "strict": True
-        }
-      ]
-}
-
 
 @pytest.fixture()
 def orders_client():
-    return OrdersClient(api_key=TEST_API_KEY, base_url=TEST_URL)
+    return OrdersClient(api_key='doesntmatter', base_url=TEST_URL)
 
 
-def test_get_order(orders_client):
+@pytest.fixture
+def order_description():
+    order_name = 'order_description_b0cb3448-0a74-11eb-92a1-a3d779bb08e0.json'
+    order_filename = DATA_DIR / order_name
+    return json.load(open(order_filename, 'r'))
+
+
+@pytest.fixture
+def order_details():
+    order_name = 'order_details_psorthotile_analytic.json'
+    order_filename = DATA_DIR / order_name
+    return json.load(open(order_filename, 'r'))
+
+
+@pytest.fixture
+def oid():
+    return 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'
+
+
+@pytest.fixture
+def open_test_img():
+    img_path = DATA_DIR / 'test_sm.tif'
+    with open(img_path, 'rb') as img:
+        yield img
+
+
+def test_get_order(orders_client, oid, order_description):
     with requests_mock.Mocker() as m:
-        get_url = TEST_URL + 'orders/v2/' + TEST_OID
-        m.get(get_url, status_code=200, json=ORDER_DESCRIPTION)
+        get_url = TEST_URL + 'orders/v2/' + oid
+        m.get(get_url, status_code=200, json=order_description)
+        state = orders_client.get_order(oid).state
+        assert state == 'queued'
 
-        state = orders_client.get_order(TEST_OID).state
-        assert state == STATE_QUEUED
 
-
-def test_list_orders(orders_client):
+def test_list_orders(orders_client, order_description):
     with requests_mock.Mocker() as m:
         list_url = TEST_URL + 'orders/v2/'
         next_page_url = list_url + '?page_marker=IAmATest'
 
-        order1 = copy.deepcopy(ORDER_DESCRIPTION)
+        order1 = copy.deepcopy(order_description)
         order1['id'] = 'oid1'
-        order2 = copy.deepcopy(ORDER_DESCRIPTION)
+        order2 = copy.deepcopy(order_description)
         order2['id'] = 'oid2'
-        order3 = copy.deepcopy(ORDER_DESCRIPTION)
+        order3 = copy.deepcopy(order_description)
         order3['id'] = 'oid3'
 
         page1_response = {
@@ -150,13 +103,13 @@ def test_list_orders(orders_client):
         assert oids == ['oid1', 'oid2', 'oid3']
 
 
-def test_list_orders_state(orders_client):
+def test_list_orders_state(orders_client, order_description):
     with requests_mock.Mocker() as m:
         list_url = TEST_URL + 'orders/v2/?state=failed'
 
-        order1 = copy.deepcopy(ORDER_DESCRIPTION)
+        order1 = copy.deepcopy(order_description)
         order1['id'] = 'oid1'
-        order2 = copy.deepcopy(ORDER_DESCRIPTION)
+        order2 = copy.deepcopy(order_description)
         order2['id'] = 'oid2'
 
         page1_response = {
@@ -172,16 +125,16 @@ def test_list_orders_state(orders_client):
         assert oids == ['oid1', 'oid2']
 
 
-def test_list_orders_limit(orders_client):
+def test_list_orders_limit(orders_client, order_description):
     with requests_mock.Mocker() as m:
         list_url = TEST_URL + 'orders/v2/'
         next_page_url = list_url + '?page_marker=IAmATest'
 
-        order1 = copy.deepcopy(ORDER_DESCRIPTION)
+        order1 = copy.deepcopy(order_description)
         order1['id'] = 'oid1'
-        order2 = copy.deepcopy(ORDER_DESCRIPTION)
+        order2 = copy.deepcopy(order_description)
         order2['id'] = 'oid2'
-        order3 = copy.deepcopy(ORDER_DESCRIPTION)
+        order3 = copy.deepcopy(order_description)
         order3['id'] = 'oid3'
 
         # check that the client doesn't try to get the next page when the
@@ -201,23 +154,23 @@ def test_list_orders_limit(orders_client):
         assert oids == ['oid1']
 
 
-def test_create_order(orders_client):
+def test_create_order(orders_client, oid, order_description, order_details):
     with requests_mock.Mocker() as m:
         create_url = TEST_URL + 'orders/v2/'
-        m.post(create_url, status_code=200, json=ORDER_DESCRIPTION)
+        m.post(create_url, status_code=200, json=order_description)
 
-        oid = orders_client.create_order(ORDER_DETAILS)
-        assert oid == TEST_OID
+        created_oid = orders_client.create_order(order_details)
+        assert created_oid == oid
 
 
-def test_cancel_order(orders_client):
+def test_cancel_order(orders_client, oid):
     # TODO: the api says cancel order returns the order details but as
     # far as I can test thus far, it returns nothing. follow up on this
     with requests_mock.Mocker() as m:
-        cancel_url = TEST_URL + 'orders/v2/' + TEST_OID
+        cancel_url = TEST_URL + 'orders/v2/' + oid
         m.put(cancel_url, status_code=200, text='')
 
-        orders_client.cancel_order(TEST_OID)
+        orders_client.cancel_order(oid)
 
 
 def test_cancel_orders(orders_client):
@@ -293,12 +246,11 @@ def test_aggegated_order_stats(orders_client):
         assert res == example_stats
 
 
-def test_download_asset(tmpdir, orders_client):
+def test_download_asset(tmpdir, orders_client, open_test_img):
     with requests_mock.Mocker() as m:
         dl_url = TEST_URL + 'download/?token=IAmAToken'
 
-        img_path = DATA_PATH / 'test_sm.tif'
-        with open(img_path, 'rb') as img:
+        with open_test_img as img:
             m.get(dl_url, status_code=200,
                   body=img,
                   headers={
@@ -313,9 +265,10 @@ def test_download_asset(tmpdir, orders_client):
 
 @pytest.mark.skip(reason='not implemented')
 def test_poll(ordersapi):
-    cl = OrdersClient(api_key=TEST_API_KEY, base_url=ordersapi)
+    pass
+    # cl = OrdersClient(api_key=TEST_API_KEY, base_url=ordersapi)
 
-    cl.poll(TEST_OID)
+    # cl.poll(TEST_OID)
 
     # TODO: assert that this exits out if state isn't queued or running or
     # some finished state, check that it waits until the state is no longer
