@@ -18,7 +18,6 @@ import os
 from pathlib import Path
 
 import pytest
-import requests_mock
 
 from planet.api import OrdersClient
 
@@ -63,204 +62,197 @@ def open_test_img():
         yield img
 
 
-def test_get_order(orders_client, oid, order_description):
-    with requests_mock.Mocker() as m:
-        get_url = TEST_URL + 'orders/v2/' + oid
-        m.get(get_url, status_code=200, json=order_description)
-        state = orders_client.get_order(oid).state
-        assert state == 'queued'
+def test_get_order(requests_mock, orders_client, oid, order_description):
+    get_url = TEST_URL + 'orders/v2/' + oid
+    requests_mock.get(get_url, status_code=200, json=order_description)
+    state = orders_client.get_order(oid).state
+    assert state == 'queued'
 
 
-def test_list_orders(orders_client, order_description):
-    with requests_mock.Mocker() as m:
-        list_url = TEST_URL + 'orders/v2/'
-        next_page_url = list_url + '?page_marker=IAmATest'
+def test_list_orders(requests_mock, orders_client, order_description):
+    list_url = TEST_URL + 'orders/v2/'
+    next_page_url = list_url + '?page_marker=IAmATest'
 
-        order1 = copy.deepcopy(order_description)
-        order1['id'] = 'oid1'
-        order2 = copy.deepcopy(order_description)
-        order2['id'] = 'oid2'
-        order3 = copy.deepcopy(order_description)
-        order3['id'] = 'oid3'
+    order1 = copy.deepcopy(order_description)
+    order1['id'] = 'oid1'
+    order2 = copy.deepcopy(order_description)
+    order2['id'] = 'oid2'
+    order3 = copy.deepcopy(order_description)
+    order3['id'] = 'oid3'
 
-        page1_response = {
-            "_links": {
-                "_self": "string",
-                "next": next_page_url},
-            "orders": [order1, order2]
-        }
-        m.get(list_url, status_code=200, json=page1_response)
+    page1_response = {
+        "_links": {
+            "_self": "string",
+            "next": next_page_url},
+        "orders": [order1, order2]
+    }
+    requests_mock.get(list_url, status_code=200, json=page1_response)
 
-        page2_response = {
-            "_links": {
-                "_self": next_page_url},
-            "orders": [order3]
-        }
-        m.get(next_page_url, status_code=200, json=page2_response)
+    page2_response = {
+        "_links": {
+            "_self": next_page_url},
+        "orders": [order3]
+    }
+    requests_mock.get(next_page_url, status_code=200, json=page2_response)
 
-        orders = orders_client.list_orders()
-        oids = list(o.id for o in orders)
-        assert oids == ['oid1', 'oid2', 'oid3']
-
-
-def test_list_orders_state(orders_client, order_description):
-    with requests_mock.Mocker() as m:
-        list_url = TEST_URL + 'orders/v2/?state=failed'
-
-        order1 = copy.deepcopy(order_description)
-        order1['id'] = 'oid1'
-        order2 = copy.deepcopy(order_description)
-        order2['id'] = 'oid2'
-
-        page1_response = {
-            "_links": {
-                "_self": "string"
-            },
-            "orders": [order1, order2]
-        }
-        m.get(list_url, status_code=200, json=page1_response)
-
-        orders = orders_client.list_orders(state='failed')
-        oids = list(o.id for o in orders)
-        assert oids == ['oid1', 'oid2']
+    orders = orders_client.list_orders()
+    oids = list(o.id for o in orders)
+    assert oids == ['oid1', 'oid2', 'oid3']
 
 
-def test_list_orders_limit(orders_client, order_description):
-    with requests_mock.Mocker() as m:
-        list_url = TEST_URL + 'orders/v2/'
-        next_page_url = list_url + '?page_marker=IAmATest'
+def test_list_orders_state(requests_mock, orders_client, order_description):
+    list_url = TEST_URL + 'orders/v2/?state=failed'
 
-        order1 = copy.deepcopy(order_description)
-        order1['id'] = 'oid1'
-        order2 = copy.deepcopy(order_description)
-        order2['id'] = 'oid2'
-        order3 = copy.deepcopy(order_description)
-        order3['id'] = 'oid3'
+    order1 = copy.deepcopy(order_description)
+    order1['id'] = 'oid1'
+    order2 = copy.deepcopy(order_description)
+    order2['id'] = 'oid2'
 
-        # check that the client doesn't try to get the next page when the
-        # limit is already reached by providing link to next page but not
-        # registering a response. if the client tries to get the next
-        # page, an error will occur
-        page1_response = {
-            "_links": {
-                "_self": "string",
-                "next": next_page_url},
-            "orders": [order1, order2]
-        }
-        m.get(list_url, status_code=200, json=page1_response)
+    page1_response = {
+        "_links": {
+            "_self": "string"
+        },
+        "orders": [order1, order2]
+    }
+    requests_mock.get(list_url, status_code=200, json=page1_response)
 
-        orders = orders_client.list_orders(limit=1)
-        oids = list(o.id for o in orders)
-        assert oids == ['oid1']
+    orders = orders_client.list_orders(state='failed')
+    oids = list(o.id for o in orders)
+    assert oids == ['oid1', 'oid2']
 
 
-def test_create_order(orders_client, oid, order_description, order_details):
-    with requests_mock.Mocker() as m:
-        create_url = TEST_URL + 'orders/v2/'
-        m.post(create_url, status_code=200, json=order_description)
+def test_list_orders_limit(requests_mock, orders_client, order_description):
+    list_url = TEST_URL + 'orders/v2/'
+    next_page_url = list_url + '?page_marker=IAmATest'
 
-        created_oid = orders_client.create_order(order_details)
-        assert created_oid == oid
+    order1 = copy.deepcopy(order_description)
+    order1['id'] = 'oid1'
+    order2 = copy.deepcopy(order_description)
+    order2['id'] = 'oid2'
+    order3 = copy.deepcopy(order_description)
+    order3['id'] = 'oid3'
+
+    # check that the client doesn't try to get the next page when the
+    # limit is already reached by providing link to next page but not
+    # registering a response. if the client tries to get the next
+    # page, an error will occur
+    page1_response = {
+        "_links": {
+            "_self": "string",
+            "next": next_page_url},
+        "orders": [order1, order2]
+    }
+    requests_mock.get(list_url, status_code=200, json=page1_response)
+
+    orders = orders_client.list_orders(limit=1)
+    oids = list(o.id for o in orders)
+    assert oids == ['oid1']
 
 
-def test_cancel_order(orders_client, oid):
+def test_create_order(requests_mock, orders_client, oid, order_description,
+                      order_details):
+    create_url = TEST_URL + 'orders/v2/'
+    requests_mock.post(create_url, status_code=200, json=order_description)
+
+    created_oid = orders_client.create_order(order_details)
+    assert created_oid == oid
+
+
+def test_cancel_order(requests_mock, orders_client, oid):
     # TODO: the api says cancel order returns the order details but as
     # far as I can test thus far, it returns nothing. follow up on this
-    with requests_mock.Mocker() as m:
-        cancel_url = TEST_URL + 'orders/v2/' + oid
-        m.put(cancel_url, status_code=200, text='')
+    cancel_url = TEST_URL + 'orders/v2/' + oid
+    requests_mock.put(cancel_url, status_code=200, text='')
 
-        orders_client.cancel_order(oid)
+    orders_client.cancel_order(oid)
 
 
-def test_cancel_orders(orders_client):
-    with requests_mock.Mocker() as m:
-        bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
+def test_cancel_orders(requests_mock, orders_client):
+    bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
 
-        test_ids = ["oid1", "oid2", "oid3"]
-        example_result = {
-            "result": {
-                "succeeded": {"count": 2},
-                "failed": {
-                    "count": 1,
-                    "failures": [
-                        {
-                            "order_id": "oid3",
-                            "message": "bummer"
-                        }
-                    ]
-                }
+    test_ids = ["oid1", "oid2", "oid3"]
+    example_result = {
+        "result": {
+            "succeeded": {"count": 2},
+            "failed": {
+                "count": 1,
+                "failures": [
+                    {
+                        "order_id": "oid3",
+                        "message": "bummer"
+                    }
+                ]
             }
         }
-        m.post(bulk_cancel_url, status_code=200, json=example_result)
+    }
+    requests_mock.post(bulk_cancel_url, status_code=200, json=example_result)
 
-        res = orders_client.cancel_orders(test_ids)
-        assert res == example_result
+    res = orders_client.cancel_orders(test_ids)
+    assert res == example_result
 
-        expected_body = {
-                "order_ids": test_ids
-        }
-        history = m.request_history
-        assert history[0].json() == expected_body
+    expected_body = {
+            "order_ids": test_ids
+    }
+    history = requests_mock.request_history
+    assert history[0].json() == expected_body
 
 
-def test_cancel_orders_all(orders_client):
-    with requests_mock.Mocker() as m:
-        bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
+def test_cancel_orders_all(requests_mock, orders_client):
+    bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
 
-        example_result = {
-            "result": {
-                "succeeded": {"count": 2},
-                "failed": {
-                    "count": 0,
-                    "failures": []
-                }
+    example_result = {
+        "result": {
+            "succeeded": {"count": 2},
+            "failed": {
+                "count": 0,
+                "failures": []
             }
         }
-        m.post(bulk_cancel_url, status_code=200, json=example_result)
+    }
+    requests_mock.post(bulk_cancel_url, status_code=200, json=example_result)
 
-        res = orders_client.cancel_orders([])
-        assert res == example_result
+    res = orders_client.cancel_orders([])
+    assert res == example_result
 
-        history = m.request_history
-        assert history[0].json() == {}
+    history = requests_mock.request_history
+    assert history[0].json() == {}
 
 
-def test_aggegated_order_stats(orders_client):
-    with requests_mock.Mocker() as m:
-        stats_url = TEST_URL + 'stats/orders/v2/'
-        LOGGER.debug('url: {}'.format(stats_url))
-        example_stats = {
-            "organization": {
-                "queued_orders": 0,
-                "running_orders": 6
-            },
-            "user": {
-                "queued_orders": 0,
-                "running_orders": 0
-            }
+def test_aggegated_order_stats(requests_mock, orders_client):
+    stats_url = TEST_URL + 'stats/orders/v2/'
+    LOGGER.debug('url: {}'.format(stats_url))
+    example_stats = {
+        "organization": {
+            "queued_orders": 0,
+            "running_orders": 6
+        },
+        "user": {
+            "queued_orders": 0,
+            "running_orders": 0
         }
-        m.get(stats_url, status_code=200, json=example_stats)
+    }
+    requests_mock.get(stats_url, status_code=200, json=example_stats)
 
-        res = orders_client.aggregated_order_stats()
-        assert res == example_stats
+    res = orders_client.aggregated_order_stats()
+    assert res == example_stats
 
 
-def test_download_asset(tmpdir, orders_client, open_test_img):
-    with requests_mock.Mocker() as m:
-        dl_url = TEST_URL + 'download/?token=IAmAToken'
+def test_download_asset(requests_mock, tmpdir, orders_client, open_test_img):
+    dl_url = TEST_URL + 'download/?token=IAmAToken'
 
-        with open_test_img as img:
-            m.get(dl_url, status_code=200,
-                  body=img,
-                  headers={
-                      'Content-Type': 'image/tiff',
-                      'Content-Length': '527'
-                  })
+    with open_test_img as img:
+        requests_mock.get(
+            dl_url,
+            status_code=200,
+            body=img,
+            headers={
+                'Content-Type': 'image/tiff',
+                'Content-Length': '527'
+            })
 
-            filename = orders_client.download_asset(
-                    dl_url, directory=str(tmpdir))
-            assert os.path.isfile(filename)
+        filename = orders_client.download_asset(
+                dl_url, directory=str(tmpdir))
+        assert os.path.isfile(filename)
 
 
 @pytest.mark.skip(reason='not implemented')
