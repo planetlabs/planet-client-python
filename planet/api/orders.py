@@ -160,14 +160,15 @@ class OrdersClient(object):
                        callback=None, overwrite=True):
         '''Download ordered asset.
 
-        If provided, the callback will be invoked 3 different ways:
+        If provided, the callback will be invoked 4 different ways:
 
         * First as ``callback(start=self)``
         * For each chunk of data written as
           ``callback(wrote=chunk_size_in_bytes, total=all_byte_cnt)``
         * Upon completion as ``callback(finish=self)``
+        * Upon skip as ``callback(skip=self)``
 
-        :param str location: download location url including download token.
+        :param str location: Download location url including download token.
         :param str filename (opt): Name to assign to downloaded file. Defaults
             to the name given in the response from the download location.
         :param str directory (opt): Directory to write to. Defaults to current
@@ -178,24 +179,9 @@ class OrdersClient(object):
         :raises planet.api.exceptions.APIException: On API error.
         '''
         body = self._get(location, models.Body)
-
         dl_path = os.path.join(directory or '.', filename or body.name)
-
-        write = self._writer(callback=callback, overwrite=overwrite)
-        write(body, dl_path)
+        body.write_to_file(dl_path, overwrite=overwrite, callback=callback)
         return dl_path
-
-    @staticmethod
-    def _writer(callback=None, overwrite=True):
-        '''Create a callback handler for writing Body content.'''
-        def writer(body, file_path):
-            if overwrite or not os.path.exists(file_path):
-                body.write(file_path, callback)
-            else:
-                if callback:
-                    callback(skip=body)
-                body.response.close()
-        return writer
 
     def download_order(self, order_id):
         '''Download all assets in an order

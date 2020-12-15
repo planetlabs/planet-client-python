@@ -55,13 +55,6 @@ def oid():
     return 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'
 
 
-@pytest.fixture
-def open_test_img():
-    img_path = DATA_DIR / 'test_sm.tif'
-    with open(img_path, 'rb') as img:
-        yield img
-
-
 def test_get_order(requests_mock, orders_client, oid, order_description):
     get_url = TEST_URL + 'orders/v2/' + oid
     requests_mock.get(get_url, status_code=200, json=order_description)

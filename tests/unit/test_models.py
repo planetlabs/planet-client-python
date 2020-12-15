@@ -13,7 +13,10 @@
 # limitations under the License.
 import io
 import logging
+import math
 from mock import MagicMock
+import os
+from pathlib import Path
 
 import pytest
 
@@ -56,13 +59,69 @@ def test_Body_write(tmpdir, mocked_request):
     chunks = ((str(i) * 16000).encode('utf-8') for i in range(10))
 
     body = models.Body(mocked_request, mock_http_response(
-        json=None,
         iter_content=lambda chunk_size: chunks
     ))
     buf = io.BytesIO()
     body.write(buf)
 
     assert len(buf.getvalue()) == 160000
+
+
+def test_Body_write_img(requests_mock, tmpdir, mocked_request, open_test_img):
+    data = open_test_img.read()
+    v = memoryview(data)
+
+    chunksize = 100
+    chunks = (v[i*chunksize:min((i+1)*chunksize, len(v))]
+              for i in range(math.ceil(len(v)/(chunksize))))
+
+    body = models.Body(mocked_request, mock_http_response(
+        iter_content=lambda chunk_size: chunks
+    ))
+
+    filename = Path(str(tmpdir)) / 'test.tif'
+    body.write(file=filename)
+
+    assert os.path.isfile(filename)
+    assert os.stat(filename).st_size == 527
+
+
+def test_Body_write_to_file_callback(mocked_request, tmpdir):
+    class Tracker(object):
+        def __init__(self):
+            self.calls = []
+
+        def get_callback(self):
+            def register_call(start=None, wrote=None, total=None, finish=None,
+                              skip=None):
+                if start is not None:
+                    self.calls.append('start')
+                if wrote is not None and total is not None:
+                    self.calls.append('wrote, total')
+                if finish is not None:
+                    self.calls.append('finish')
+                if skip is not None:
+                    self.calls.append('skip')
+            return register_call
+
+    chunks = ((str(i) * 16000).encode('utf-8') for i in range(2))
+
+    body = models.Body(mocked_request, mock_http_response(
+        iter_content=lambda chunk_size: chunks
+    ))
+
+    test = Tracker()
+    filename = Path(str(tmpdir)) / 'test.tif'
+    body.write_to_file(filename=filename, callback=test.get_callback())
+
+    assert test.calls == ['start', 'wrote, total', 'wrote, total', 'finish']
+
+    # should skip writing the file because a file with that filename already
+    # exists
+    test.calls = []
+    body.write_to_file(filename=filename, callback=test.get_callback(),
+                       overwrite=False)
+    assert test.calls == ['skip']
 
 
 # class TestPaged(models.Paged):

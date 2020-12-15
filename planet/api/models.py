@@ -15,6 +15,7 @@
 
 import datetime
 import logging
+import os
 
 from ._fatomic import atomic_open
 from . import exceptions, utils
@@ -209,6 +210,30 @@ class Body(object):
         else:
             with atomic_open(file, 'wb') as fp:
                 self._write(fp, callback)
+
+    def write_to_file(self, filename=None, overwrite=True, callback=None):
+        '''Write the contents of the body to the optionally provided filename.
+
+        providing progress to the optional callback. The callback will be
+        invoked 3 different ways:
+
+        * First as ``callback(start=self)``
+        * For each chunk of data written as
+          ``callback(wrote=chunk_size_in_bytes, total=all_byte_cnt)``
+        * Upon completion as ``callback(finish=self)`
+        * Upon skip as `callback(skip=self)`
+
+        :param str filename (opt): Filename to write to. Defaults to body
+            name.
+        :param bool overwrite (opt): Specify whether the file at filename
+            should be overwritten if it exists. Defaults to True.
+        :param function callback: optional progress callback
+        '''
+        if overwrite or not os.path.exists(filename):
+            self.write(filename, callback=callback)
+        else:
+            if callback:
+                callback(skip=self)
 
 
 class JSON(Body):
