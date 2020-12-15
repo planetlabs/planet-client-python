@@ -240,12 +240,62 @@ def test_download_asset(requests_mock, tmpdir, orders_client, open_test_img):
             body=img,
             headers={
                 'Content-Type': 'image/tiff',
-                'Content-Length': '527'
+                'Content-Length': '527',
+                'Content-Disposition': 'attachment; filename="img.tif"'
             })
 
         filename = orders_client.download_asset(
                 dl_url, directory=str(tmpdir))
+        assert Path(filename).name == 'img.tif'
         assert os.path.isfile(filename)
+
+    requests_mock.get(
+        dl_url,
+        status_code=200,
+        json={'key': 'value'},
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="metadata.json"'
+        })
+
+    filename = orders_client.download_asset(
+            dl_url, directory=str(tmpdir))
+    assert json.loads(open(filename).read()) == {'key': 'value'}
+
+
+def test_download_order(requests_mock, tmpdir, orders_client,
+                        order_description, oid):
+    dl_url1 = TEST_URL + 'download/1?token=IAmAToken'
+    dl_url2 = TEST_URL + 'download/2?token=IAmAnotherToken'
+    order_description['_links']['results'] = [
+        {'location': dl_url1},
+        {'location': dl_url2}
+    ]
+
+    get_url = TEST_URL + 'orders/v2/' + oid
+    requests_mock.get(get_url, status_code=200, json=order_description)
+
+    requests_mock.get(
+        dl_url1,
+        status_code=200,
+        json={'key': 'value'},
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="m1.json"'
+        })
+
+    requests_mock.get(
+        dl_url2,
+        status_code=200,
+        json={'key2': 'value2'},
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="m2.json"'
+        })
+
+    filenames = orders_client.download_order(oid, directory=str(tmpdir))
+    assert len(filenames) == 2
+    assert json.loads(open(filenames[0]).read()) == {'key': 'value'}
 
 
 @pytest.mark.skip(reason='not implemented')

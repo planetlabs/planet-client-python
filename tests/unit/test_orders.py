@@ -71,15 +71,10 @@ def test_Order_results(order_description):
     assert len(order.results) == 3
 
 
-def test_Order_items(order_description):
+def test_Order_locations(order_description):
     order = orders.Order(order_description)
-    expected_items = ['location1', 'location2', 'location3']
-    assert order.items == expected_items
-
-
-def test_Order_items_iter(order_description):
-    order = orders.Order(order_description)
-    assert next(order.items_iter) == 'location1'
+    expected_locations = ['location1', 'location2', 'location3']
+    assert order.locations == expected_locations
 
 
 @pytest.fixture

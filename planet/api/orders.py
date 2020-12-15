@@ -173,8 +173,8 @@ class OrdersClient(object):
             to the name given in the response from the download location.
         :param str directory (opt): Directory to write to. Defaults to current
             directory.
-        :param callback func: An optional callback to receive notification of
-                          write progress.
+        :param callback func (opt): Callback function to receive notification
+            of write progress.
         :param overwrite bool: Overwrite any existing files. Defaults to True.
         :raises planet.api.exceptions.APIException: On API error.
         '''
@@ -183,13 +183,38 @@ class OrdersClient(object):
         body.write_to_file(dl_path, overwrite=overwrite, callback=callback)
         return dl_path
 
-    def download_order(self, order_id):
-        '''Download all assets in an order
+    def download_order(self, order_id, directory=None, callback=None,
+                       overwrite=True):
+        '''Download all assets in an order.
 
-        :param order_id str: The ID of the order.
+        If provided, the callback will be invoked 4 different ways:
+
+        * First as ``callback(start=self)``
+        * For each chunk of data written as
+          ``callback(wrote=chunk_size_in_bytes, total=all_byte_cnt)``
+        * Upon completion as ``callback(finish=self)``
+        * Upon skip as ``callback(skip=self)``
+
+
+        :param str order_id: The ID of the order.
+        :param str directory (opt): Directory to write to. Defaults to current
+            directory.
+        :param callback func (opt): Callback function to receive notification
+            of write progress.
+        :param overwrite bool: Overwrite any existing files. Defaults to True.
         :raises planet.api.exceptions.APIException: On API error.
         '''
-        raise NotImplementedError
+        order = self.get_order(order_id)
+        locations = order.locations
+        LOGGER.info('downloading {} assets from order {}'.format(
+            len(locations), order_id))
+
+        filenames = [self.download_asset(location,
+                                         directory=directory,
+                                         callback=callback,
+                                         overwrite=overwrite)
+                     for location in locations]
+        return filenames
 
     def wait_for_complete(self, order_id):
         '''Poll for order status until order is complete.
@@ -318,21 +343,12 @@ class Order(object):
         return results
 
     @property
-    def items_iter(self):
-        '''An iterator of the download locations for order results
-        The iterator yields the individual items in the order.
-
-        :return: iter of result download locations in order
-        '''
-        return (r[self.LOCATION_KEY] for r in self.results)
-
-    @property
-    def items(self):
+    def locations(self):
         '''Download locations for order results.
 
         :return: list of result download locations in order
         '''
-        return list(self.items_iter)
+        return list(r[self.LOCATION_KEY] for r in self.results)
 
     @property
     def state(self):
