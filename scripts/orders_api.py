@@ -75,7 +75,8 @@ TEST_ORDER = {
       "products": [
         {
           "item_ids": [
-            "3949357_1454705_2020-12-01_241c"
+            "3949357_1454705_2020-12-01_241c",
+            "3949357_1454805_2020-12-01_241c"
           ],
           "item_type": "PSOrthoTile",
           "product_bundle": "analytic"
@@ -154,6 +155,20 @@ def download_asset():
     LOGGER.warning(filename)
 
 
+def download_order():
+    oid = create_order_client()
+
+    cl = OrdersClient()
+    cl.download_order(oid)
+
+
+def wait_for_complete():
+    oid = create_order_client()
+
+    cl = OrdersClient()
+    cl.wait_for_complete(oid)
+
+
 def run():
     # trigger_unauth()
     # trigger_throttle()
@@ -163,8 +178,10 @@ def run():
     # oid = create_order_client(); cancel_orders_client(oid)  # noqa: E702
     # create_order_client(); cancel_orders_client_all()  # noqa: E702
     # list_orders()
-    LOGGER.warning('API KEY: {}'.format(API_KEY))
-    download_asset()
+    # LOGGER.warning('API KEY: {}'.format(API_KEY))
+    # download_asset()
+    # download_order()
+    wait_for_complete()
 
 
 if __name__ == '__main__':

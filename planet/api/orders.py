@@ -19,6 +19,7 @@ import json
 import itertools
 import logging
 import os
+import time
 
 from .http import PlanetSession
 from . import auth
@@ -31,7 +32,8 @@ STATS_PATH = 'stats/orders/v2/'
 ORDERS_PATH = 'orders/v2/'
 BULK_PATH = 'bulk/orders/v2/'
 
-ORDERS_STATES = ['queued', 'running', 'success', 'failed']
+ORDERS_STATES_COMPLETE = ['success', 'partial', 'cancelled']
+ORDERS_STATES = ['queued', 'running', 'failed'] + ORDERS_STATES_COMPLETE
 
 LOGGER = logging.getLogger(__name__)
 
@@ -168,6 +170,16 @@ class OrdersClient(object):
         * Upon completion as ``callback(finish=self)``
         * Upon skip as ``callback(skip=self)``
 
+        simple reporter callback example:
+
+        def callback(start=None, wrote=None, total=None,
+                     finish=None, skip=None):
+            if start: print(start)
+            if wrote: print(wrote)
+            if total: print(total)
+            if finish: print(finish)
+            if skip: print(skip
+
         :param str location: Download location url including download token.
         :param str filename (opt): Name to assign to downloaded file. Defaults
             to the name given in the response from the download location.
@@ -176,6 +188,7 @@ class OrdersClient(object):
         :param callback func (opt): Callback function to receive notification
             of write progress.
         :param overwrite bool: Overwrite any existing files. Defaults to True.
+        :returns str: Path to downloaded file.
         :raises planet.api.exceptions.APIException: On API error.
         '''
         body = self._get(location, models.Body)
@@ -187,14 +200,9 @@ class OrdersClient(object):
                        overwrite=True):
         '''Download all assets in an order.
 
-        If provided, the callback will be invoked 4 different ways:
-
-        * First as ``callback(start=self)``
-        * For each chunk of data written as
-          ``callback(wrote=chunk_size_in_bytes, total=all_byte_cnt)``
-        * Upon completion as ``callback(finish=self)``
-        * Upon skip as ``callback(skip=self)``
-
+        Uses `download_asset` to download each asset in an order. The arguments
+        `directory`, `callback`, and `overwrite` are used as described in
+        `download_asset` #TODO: how to make this doc right?
 
         :param str order_id: The ID of the order.
         :param str directory (opt): Directory to write to. Defaults to current
@@ -202,6 +210,7 @@ class OrdersClient(object):
         :param callback func (opt): Callback function to receive notification
             of write progress.
         :param overwrite bool: Overwrite any existing files. Defaults to True.
+        :returns list of str: Paths to downloaded files.
         :raises planet.api.exceptions.APIException: On API error.
         '''
         order = self.get_order(order_id)
@@ -216,13 +225,40 @@ class OrdersClient(object):
                      for location in locations]
         return filenames
 
-    def wait_for_complete(self, order_id):
+    def wait_for_complete(self, order_id, wait=10, callback=None):
         '''Poll for order status until order is complete.
 
-        :param order_id str: The ID of the order
+        If provided, the callback will be invoked as:
+
+        * ``callback(state=state)``
+
+        simple reporter callback example:
+
+        def callback(state):
+            print(state)
+
+        :param str order_id: The ID of the order.
+        :param int wait: Time (in seconds) between polls.
+        :param callback func (opt): Callback function to receive notification
+            of poll progress.
+        :returns str: Completed state of the order
         :raises planet.api.exceptions.APIException: On API error.
         '''
-        raise NotImplementedError
+        completed = False
+        while not completed:
+            t = time.time()
+            order = self.get_order(order_id)
+            state = order.state
+            callback(state=state)
+            LOGGER.info('order state: {}'.format(state))
+
+            completed = state in ORDERS_STATES_COMPLETE
+
+            if not completed:
+                sleep_time = max(wait-(time.time()-t), 0)
+                LOGGER.info('sleeping {}s'.format(sleep_time))
+                time.sleep(sleep_time)
+        return state
 
     def _request(self, url, method, body_type, data=None, params=None):
         '''Prepare an order API request.

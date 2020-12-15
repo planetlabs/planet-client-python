@@ -296,17 +296,29 @@ def test_download_order(requests_mock, tmpdir, orders_client,
     filenames = orders_client.download_order(oid, directory=str(tmpdir))
     assert len(filenames) == 2
     assert json.loads(open(filenames[0]).read()) == {'key': 'value'}
+    assert json.loads(open(filenames[1]).read()) == {'key2': 'value2'}
 
 
-@pytest.mark.skip(reason='not implemented')
-def test_poll(ordersapi):
-    pass
-    # cl = OrdersClient(api_key=TEST_API_KEY, base_url=ordersapi)
+def test_wait_for_complete(requests_mock, oid, orders_client,
+                           order_description):
+    get_url = TEST_URL + 'orders/v2/' + oid
 
-    # cl.poll(TEST_OID)
+    order_description2 = copy.deepcopy(order_description)
+    order_description2['state'] = 'running'
+    order_description3 = copy.deepcopy(order_description)
+    order_description3['state'] = 'success'
 
-    # TODO: assert that this exits out if state isn't queued or running or
-    # some finished state, check that it waits until the state is no longer
-    # running and that it gracefully handles other states
-    # maybe break all those into separate tests
-    # need ordersapi to be able to return different responses so state changes
+    requests_mock.get(get_url, [
+        {'json': order_description, 'status_code': 200},
+        {'json': order_description2, 'status_code': 200},
+        {'json': order_description3, 'status_code': 200}])
+
+    states = []
+
+    def _callback(state):
+        states.append(state)
+
+    state = orders_client.wait_for_complete(oid, wait=0, callback=_callback)
+    assert state == 'success'
+    assert requests_mock.call_count == 3
+    assert states == ['queued', 'running', 'success']
