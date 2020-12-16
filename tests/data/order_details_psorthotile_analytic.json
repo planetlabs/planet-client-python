@@ -1,0 +1,27 @@
+{
+  "name": "psorthotile_analytic",
+  "products": [
+    {
+      "item_ids": [
+        "test_item_id"
+      ],
+      "item_type": "PSOrthoTile",
+      "product_bundle": "ANALYTIC"
+    }
+  ],
+  "delivery": {
+    "single_archive": true,
+    "archive_type": "string",
+    "archive_filename": "string",
+    "layout": {
+      "format": "standard"
+    }},
+  "tools": [
+    {
+      "anchor_item": "string",
+      "method": "string",
+      "anchor_bundle": "string",
+      "strict": true
+    }
+  ]
+}
