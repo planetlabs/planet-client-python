@@ -21,12 +21,11 @@ import os
 import time
 
 from .http import PlanetSession
-from . import auth
-from . import models
-from .. import specs
+from . import auth, models
+from .. import constants, specs
 
-PLANET_BASE_URL = 'https://api.planet.com/'
-BASE_URL = PLANET_BASE_URL + 'compute/ops/'
+
+BASE_URL = constants.PLANET_BASE_URL + 'compute/ops/'
 STATS_PATH = 'stats/orders/v2/'
 ORDERS_PATH = 'orders/v2/'
 BULK_PATH = 'bulk/orders/v2/'
