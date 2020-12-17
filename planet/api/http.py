@@ -53,7 +53,7 @@ def _log_request(req):
     LOGGER.info('%s %s %s %s', req.method, req.url, req.params, req.data)
 
 
-class PlanetSession(object):
+class PlanetSession():
     """Provides communication with the Planet server"""
 
     def __init__(self):

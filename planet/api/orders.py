@@ -42,7 +42,7 @@ class OrdersClientException(Exception):
     pass
 
 
-class OrdersClient(object):
+class OrdersClient():
     """High-level access to Planet's orders API.
 
     Basic Usage::
@@ -358,7 +358,7 @@ class OrdersClient(object):
         return orders
 
 
-class Orders(object):
+class Orders():
     # TODO: the delegation between Orders and OrdersClient could
     # likely be improved here
     @staticmethod
@@ -381,7 +381,7 @@ class Orders(object):
         return all_orders
 
 
-class Order(object):
+class Order():
     '''Managing description of an order returned from Orders API.
 
     :param data: Response json describing order
@@ -441,7 +441,7 @@ class OrderDetailsException(Exception):
     pass
 
 
-class OrderDetails(object):
+class OrderDetails():
     '''Validating and preparing an order description for submission.
 
     :param details: Specification of order to be created.

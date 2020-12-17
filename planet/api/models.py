@@ -26,7 +26,7 @@ CHUNK_SIZE = 32 * 1024
 LOGGER = logging.getLogger(__name__)
 
 
-class Request(object):
+class Request():
     '''Handles a HTTP request for the Planet server.
 
     :param url: URL of API endpoint
@@ -76,7 +76,7 @@ class Request(object):
         return headers
 
 
-class Response(object):
+class Response():
     '''Handles the Planet server's response to a HTTP request
 
     :param request: Request that was submitted to the server
@@ -146,7 +146,7 @@ class Response(object):
         raise exceptions.APIException('%s: %s' % (status, res.text))
 
 
-class Body(object):
+class Body():
     '''A Body is a representation of a resource from the API.
 
     :param request: Request that was submitted to the server

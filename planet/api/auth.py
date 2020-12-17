@@ -26,7 +26,7 @@ ENV_KEY = 'PL_API_KEY'
 PLANET_AUTH_FILENAME = '.planet.json'
 
 
-class APIKey(object):
+class APIKey():
     def __init__(self, value):
         self.value = value
 
