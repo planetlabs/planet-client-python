@@ -164,9 +164,7 @@ class OrdersClient():
         :raises planet.api.exceptions.APIException: On API error.
         '''
         url = self._order_url(order_id)
-        body = self._put(url, models.Body)
-        LOGGER.debug('cancel order response body: {}'.format(body.get_raw()))
-        assert body.get_raw() == ''
+        _ = self._put(url, models.Body)
 
     def cancel_orders(self, order_ids):
         '''Cancel queued orders in bulk.

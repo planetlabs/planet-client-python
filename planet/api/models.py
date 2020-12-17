@@ -26,6 +26,11 @@ CHUNK_SIZE = 32 * 1024
 LOGGER = logging.getLogger(__name__)
 
 
+class RequestException(Exception):
+    """Exceptions thrown by RequestException"""
+    pass
+
+
 class Request():
     '''Handles a HTTP request for the Planet server.
 
@@ -41,6 +46,8 @@ class Request():
     :type data: dict, list of tuples, bytes, or file-like object, optional
     :param method: HTTP request method, defaults to 'GET'
     :type method: str, optional
+    :raises RequestException: When provided `body_type` is not a subclass of
+        :py:class:`planet.api.models.Body`
     '''
     def __init__(self, url, auth, params=None, body_type=None, data=None,
                  method='GET'):
@@ -49,9 +56,9 @@ class Request():
         self.params = params
 
         body_type = body_type or Body
-        LOGGER.debug('Request body type: {}'.format(body_type))
-        assert issubclass(body_type, Body)
-        self.body_type = body_type
+        if not issubclass(body_type, Body):
+            msg = 'body_type ({}) must be a subclass of Body'
+            raise RequestException(msg)
 
         self.data = data
         self.method = method
