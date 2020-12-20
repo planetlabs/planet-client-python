@@ -90,7 +90,7 @@ class PlanetSession():
                 return resp
             except exceptions.TooManyRequests:
                 if i < max_retry:
-                    LOGGER.debug('Try {}'.format(i))
+                    LOGGER.debug(f'Try {i}')
                     LOGGER.info('Too Many Requests: sleeping and retrying')
                     # TODO: consider exponential backoff
                     # https://developers.planet.com/docs/data/api-mechanics/

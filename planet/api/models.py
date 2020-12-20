@@ -57,9 +57,9 @@ class Request():
 
         self.body_type = body_type or Body
         if not issubclass(self.body_type, Body):
-            msg = 'body_type ({}) must be a subclass of Body'.format(
-                    self.body_type)
-            raise RequestException(msg)
+            raise RequestException(
+                f'body_type ({self.body_type}) must be a subclass of Body'
+            )
 
         self.data = data
         self.method = method
@@ -129,7 +129,7 @@ class Response():
 
     @staticmethod
     def _raise_for_status(status, http_response):
-        LOGGER.debug('status code: {}'.format(status))
+        LOGGER.debug(f'status code: {status}')
 
         if status < 300:
             return

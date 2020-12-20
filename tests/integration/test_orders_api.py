@@ -213,7 +213,7 @@ def test_cancel_orders_all(requests_mock, orders_client):
 
 def test_aggegated_order_stats(requests_mock, orders_client):
     stats_url = TEST_URL + 'stats/orders/v2/'
-    LOGGER.debug('url: {}'.format(stats_url))
+    LOGGER.debug(f'url: {stats_url}')
     example_stats = {
         "organization": {
             "queued_orders": 0,

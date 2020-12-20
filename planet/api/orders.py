@@ -68,8 +68,7 @@ class OrdersClient():
     @staticmethod
     def _check_order_id(oid):
         if not oid or not isinstance(oid, str):
-            msg = 'Order id ({}) is invalid.'.format(oid)
-            raise OrdersClientException(msg)
+            raise OrdersClientException(f'Order id ({oid}) is invalid.')
 
     def _orders_url(self):
         return self._base_url + ORDERS_PATH
@@ -97,7 +96,7 @@ class OrdersClient():
         return self._do_request(request)
 
     def _post(self, url, body_type, data):
-        LOGGER.debug('post data: {}'.format(data))
+        LOGGER.debug(f'post data: {data}')
         request = self._request(url, 'POST', body_type, data)
         return self._do_request(request)
 
@@ -267,9 +266,9 @@ class OrdersClient():
         '''
         order = self.get_order(order_id)
         locations = order.locations
-        LOGGER.info('downloading {} assets from order {}'.format(
-            len(locations), order_id))
-
+        LOGGER.info(
+            f'downloading {len(locations)} assets from order {order_id}'
+        )
         filenames = [self.download_asset(location,
                                          directory=directory,
                                          callback=callback,
@@ -306,13 +305,13 @@ class OrdersClient():
             order = self.get_order(order_id)
             state = order.state
             callback(state=state)
-            LOGGER.info('order state: {}'.format(state))
+            LOGGER.info(f'order state: {state}')
 
             completed = state in ORDERS_STATES_COMPLETE
 
             if not completed:
                 sleep_time = max(wait-(time.time()-t), 0)
-                LOGGER.info('sleeping {}s'.format(sleep_time))
+                LOGGER.info(f'sleeping {sleep_time}s')
                 time.sleep(sleep_time)
         return state
 
@@ -344,9 +343,10 @@ class OrdersClient():
     @staticmethod
     def _check_state(state):
         if state not in ORDERS_STATES:
-            msg = 'Order state (\'{}\') should be one of: {}'.format(
-                    state, ORDERS_STATES)
-            raise OrdersClientException(msg)
+            raise OrdersClientException(
+                f'Order state (\'{state}\') should be one of: '
+                f'{ORDERS_STATES}'
+            )
 
     def _get_orders(self, url, params=None):
         get_next_fcn = Orders.next_link
@@ -362,7 +362,7 @@ class Orders():
     def next_link(body):
         try:
             next_link = body.data['_links']['next']
-            LOGGER.debug('next link: {}'.format(next_link))
+            LOGGER.debug(f'next link: {next_link}')
         except KeyError:
             next_link = False
         return next_link
@@ -486,9 +486,9 @@ class OrderDetails():
     def _substitute_supported(product, key, supported):
         try:
             matched_type = specs.get_match(product[key], supported)
-            LOGGER.debug('{}: {}'.format(key, matched_type))
+            LOGGER.debug(f'{key}: {matched_type}')
             product[key] = matched_type
         except(StopIteration):
-            msg = '{} - \'{}\' not in {}'.format(
-                key, product[key], supported)
-            raise OrderDetailsException(msg)
+            raise OrderDetailsException(
+                f'{key} - \'{product[key]}\' not in {supported}'
+            )
