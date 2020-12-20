@@ -55,9 +55,10 @@ class Request():
         self.auth = auth
         self.params = params
 
-        body_type = body_type or Body
-        if not issubclass(body_type, Body):
-            msg = 'body_type ({}) must be a subclass of Body'
+        self.body_type = body_type or Body
+        if not issubclass(self.body_type, Body):
+            msg = 'body_type ({}) must be a subclass of Body'.format(
+                    self.body_type)
             raise RequestException(msg)
 
         self.data = data
