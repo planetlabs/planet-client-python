@@ -1,4 +1,4 @@
-# Copyright 2017 Planet Labs, Inc.
+# Copyright 2020 Planet Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,10 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+'''Constants used across the code base'''
 
-from planet.scripts import cli
-from planet.scripts import v1
-
-assert v1  # appease lint
-
-main = cli.cli
+PLANET_BASE_URL = 'https://api.planet.com/'

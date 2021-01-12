@@ -11,3 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
+
+from planet import specs
+
+LOGGER = logging.getLogger(__name__)
+
+TEST_PRODUCT_BUNDLE = 'analytic'
+
+TEST_ITEM_TYPE = 'PSOrthoTile'
+
+
+def test_get_type_match():
+    spec_list = [
+        'Locket',
+        'drop',
+        'DEER']
+
+    test_entry = 'locket'
+    assert 'Locket' == specs.get_match(test_entry, spec_list)
+
+
+def test_get_product_bundles():
+    bundles = specs.get_product_bundles()
+    assert TEST_PRODUCT_BUNDLE in bundles
+
+
+def test_get_item_types():
+    item_types = specs.get_item_types(TEST_PRODUCT_BUNDLE)
+    assert TEST_ITEM_TYPE in item_types

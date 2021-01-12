@@ -1,0 +1,38 @@
+{
+    "_links": {
+        "_self": "string",
+        "results": [
+            {
+                "location": "/foo"
+            }
+        ]
+    },
+    "id": "b0cb3448-0a74-11eb-92a1-a3d779bb08e0",
+    "name": "string",
+    "subscription_id": 0,
+    "tools": [{}],
+    "products": [{}],
+    "created_on": "2019-08-24T14:15:22Z",
+    "last_modified": "2019-08-24T14:15:22Z",
+    "state": "queued",
+    "last_message": "string",
+    "error_hints": [
+        "string"
+    ],
+    "delivery": {
+        "single_archive": true,
+        "archive_type": "string",
+        "archive_filename": "string",
+        "layout": {},
+        "amazon_s3": {},
+        "azure_blob_storage": {},
+        "google_cloud_storage": {},
+        "google_earth_engine": {}
+    },
+    "notifications": {
+        "webhook": {},
+        "email": true
+    },
+    "order_type": "full"
+}
+

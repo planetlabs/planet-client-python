@@ -1,4 +1,4 @@
-# Copyright 2015 Planet Labs, Inc.
+# Copyright 2020 Planet Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,18 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
 import os
+from pathlib import Path
+
+import pytest
+
+_here = Path(os.path.abspath(os.path.dirname(__file__)))
+_test_data_path = _here / 'data'
 
 
-TEST_DIR = os.path.dirname(os.path.realpath(__file__))
-FIXTURE_DIR = os.path.join(TEST_DIR, 'fixtures')
-
-
-def read_fixture(name):
-    with open(os.path.join(FIXTURE_DIR, name), 'r') as src:
-        return src.read()
-
-
-def clone(j):
-    return json.loads(json.dumps(j))
+@pytest.fixture
+def open_test_img():
+    img_path = _test_data_path / 'test_sm.tif'
+    with open(img_path, 'rb') as img:
+        yield img
