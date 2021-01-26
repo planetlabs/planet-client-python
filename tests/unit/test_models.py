@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import io
+# import io
 import logging
 import math
 from mock import MagicMock
@@ -39,89 +39,94 @@ def mock_http_response(json=None, iter_content=None, text=None):
     m = MagicMock(name='http_response')
     m.headers = {}
     m.json.return_value = json or {}
-    m.iter_content = iter_content
+    m.aiter_content = iter_content
     m.text = text or ''
     return m
 
 
-def test_Request__raise_for_status():
-    models.Response._raise_for_status(201, mock_http_response(text=''))
-
-    with pytest.raises(exceptions.TooManyRequests):
-        models.Response._raise_for_status(429, mock_http_response(text=''))
-
-    with pytest.raises(exceptions.OverQuota):
-        msg = 'exceeded QUOTA dude'
-        models.Response._raise_for_status(429,  mock_http_response(text=msg))
-
-
-def test_Body_write(tmpdir, mocked_request):
-    chunks = ((str(i) * 16000).encode('utf-8') for i in range(10))
-
-    body = models.Body(mocked_request, mock_http_response(
-        iter_content=lambda chunk_size: chunks
-    ))
-    buf = io.BytesIO()
-    body.write(buf)
-
-    assert len(buf.getvalue()) == 160000
+# def test_Request__raise_for_status():
+#     models.Response._raise_for_status(201, mock_http_response(text=''))
+#
+#     with pytest.raises(exceptions.TooManyRequests):
+#         models.Response._raise_for_status(429, mock_http_response(text=''))
+#
+#     with pytest.raises(exceptions.OverQuota):
+#         msg = 'exceeded QUOTA dude'
+#         models.Response._raise_for_status(429,  mock_http_response(text=msg))
 
 
-def test_Body_write_img(requests_mock, tmpdir, mocked_request, open_test_img):
-    data = open_test_img.read()
-    v = memoryview(data)
+# def test_Body_write(tmpdir, mocked_request):
+#     chunks = ((str(i) * 16000).encode('utf-8') for i in range(10))
+#
+#     body = models.Body(mocked_request, mock_http_response(
+#         iter_content=lambda chunk_size: chunks
+#     ))
+#     buf = io.BytesIO()
+#     body.write(buf)
+#
+#     assert len(buf.getvalue()) == 160000
 
-    chunksize = 100
-    chunks = (v[i*chunksize:min((i+1)*chunksize, len(v))]
-              for i in range(math.ceil(len(v)/(chunksize))))
 
-    body = models.Body(mocked_request, mock_http_response(
-        iter_content=lambda chunk_size: chunks
-    ))
+@pytest.mark.asyncio
+async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
+    async def _aiter_bytes():
+        data = open_test_img.read()
+        v = memoryview(data)
+
+        chunksize = 100
+        LOGGER.warning('called')
+        for i in range(math.ceil(len(v)/(chunksize))):
+            yield v[i*chunksize:min((i+1)*chunksize, len(v))]
+
+    r = MagicMock(name='response')
+    hr = MagicMock(name='http_response')
+    hr.aiter_bytes = _aiter_bytes
+    r.http_response = hr
+    body = models.StreamingBody(r)
 
     filename = Path(str(tmpdir)) / 'test.tif'
-    body.write(file=filename)
+    await body.write(filename, progress=False)
 
     assert os.path.isfile(filename)
     assert os.stat(filename).st_size == 527
 
 
-def test_Body_write_to_file_callback(mocked_request, tmpdir):
-    class Tracker(object):
-        def __init__(self):
-            self.calls = []
-
-        def get_callback(self):
-            def register_call(start=None, wrote=None, total=None, finish=None,
-                              skip=None):
-                if start is not None:
-                    self.calls.append('start')
-                if wrote is not None and total is not None:
-                    self.calls.append('wrote, total')
-                if finish is not None:
-                    self.calls.append('finish')
-                if skip is not None:
-                    self.calls.append('skip')
-            return register_call
-
-    chunks = ((str(i) * 16000).encode('utf-8') for i in range(2))
-
-    body = models.Body(mocked_request, mock_http_response(
-        iter_content=lambda chunk_size: chunks
-    ))
-
-    test = Tracker()
-    filename = Path(str(tmpdir)) / 'test.tif'
-    body.write_to_file(filename=filename, callback=test.get_callback())
-
-    assert test.calls == ['start', 'wrote, total', 'wrote, total', 'finish']
-
-    # should skip writing the file because a file with that filename already
-    # exists
-    test.calls = []
-    body.write_to_file(filename=filename, callback=test.get_callback(),
-                       overwrite=False)
-    assert test.calls == ['skip']
+# def test_Body_write_to_file_callback(mocked_request, tmpdir):
+#     class Tracker(object):
+#         def __init__(self):
+#             self.calls = []
+#
+#         def get_callback(self):
+#             def register_call(start=None, wrote=None, total=None, finish=None,
+#                               skip=None):
+#                 if start is not None:
+#                     self.calls.append('start')
+#                 if wrote is not None and total is not None:
+#                     self.calls.append('wrote, total')
+#                 if finish is not None:
+#                     self.calls.append('finish')
+#                 if skip is not None:
+#                     self.calls.append('skip')
+#             return register_call
+#
+#     chunks = ((str(i) * 16000).encode('utf-8') for i in range(2))
+#
+#     body = models.Body(mocked_request, mock_http_response(
+#         iter_content=lambda chunk_size: chunks
+#     ))
+#
+#     test = Tracker()
+#     filename = Path(str(tmpdir)) / 'test.tif'
+#     body.write_to_file(filename=filename, callback=test.get_callback())
+#
+#     assert test.calls == ['start', 'wrote, total', 'wrote, total', 'finish']
+#
+#     # should skip writing the file because a file with that filename already
+#     # exists
+#     test.calls = []
+#     body.write_to_file(filename=filename, callback=test.get_callback(),
+#                        overwrite=False)
+#     assert test.calls == ['skip']
 
 
 # class TestPaged(models.Paged):

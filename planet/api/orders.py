@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """Functionality for interacting with the orders api"""
-
+import asyncio
 import copy
 import json
 import itertools
@@ -20,8 +20,7 @@ import logging
 import os
 import time
 
-from .http import PlanetSession
-from . import auth, models
+from . import models
 from .. import constants, specs
 
 
@@ -30,8 +29,9 @@ STATS_PATH = 'stats/orders/v2/'
 ORDERS_PATH = 'orders/v2/'
 BULK_PATH = 'bulk/orders/v2/'
 
-ORDERS_STATES_COMPLETE = ['success', 'partial', 'cancelled']
-ORDERS_STATES = ['queued', 'running', 'failed'] + ORDERS_STATES_COMPLETE
+ORDERS_STATES_COMPLETE = ['success', 'partial', 'cancelled', 'failed']
+ORDERS_STATES_IN_PROGRESS = ['queued', 'running']
+ORDERS_STATES = ORDERS_STATES_IN_PROGRESS + ORDERS_STATES_COMPLETE
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,13 +41,13 @@ class OrdersClientException(Exception):
     pass
 
 
-class OrdersClient():
-    """High-level access to Planet's orders API.
+class AOrdersClient():
+    """High-level asynchronous access to Planet's orders API.
 
     Basic Usage::
 
-      from planet.api.orders_client import OrdersClient
-      cl = OrdersClient('api_key')
+      from planet.api.orders_client import AOrdersClient
+      cl = AOrdersClient('api_key')
       order = cl.get_order('order_id')
 
     :param api_key: API key to use. Defaults to environment variable or
@@ -57,9 +57,8 @@ class OrdersClient():
         base url.
     :type base_url: int, optional
     """
-    def __init__(self, api_key=None, base_url=BASE_URL):
-        api_key = api_key or auth.find_api_key()
-        self.auth = api_key and auth.APIKey(api_key)
+    def __init__(self, session, base_url=BASE_URL):
+        self._session = session
 
         self._base_url = base_url
         if not self._base_url.endswith('/'):
@@ -83,62 +82,47 @@ class OrdersClient():
     def _bulk_url(self):
         return self._base_url + BULK_PATH
 
-    def _request(self, url, method, body_type, data=None, params=None):
-        return models.Request(url, self.auth, body_type=body_type,
-                              method=method, data=data, params=params)
+    def _request(self, url, method, data=None, params=None):
+        return models.Request(url, method=method, data=data, params=params)
 
-    def _get(self, url, body_type, params=None):
-        request = self._request(url, 'GET', body_type)
-        return self._do_request(request)
+    async def _do_request(self, request):
+        return await self._session.request(request)
 
-    def _put(self, url, body_type):
-        request = self._request(url, 'PUT', body_type)
-        return self._do_request(request)
+    # def _get_pages(self, url, get_next_fcn, params=None):
+    #     request = self._request(url, 'GET', models.JSON, params=params)
+    #
+    #     with PlanetSession() as sess:
+    #         LOGGER.debug('getting first page')
+    #         body = sess.request(request).body
+    #         yield body
+    #
+    #         next_url = get_next_fcn(body)
+    #         while(next_url):
+    #             LOGGER.debug('getting next page')
+    #             request.url = next_url
+    #             body = sess.request(request).body
+    #             yield body
+    #             next_url = get_next_fcn(body)
 
-    def _post(self, url, body_type, data):
-        LOGGER.debug(f'post data: {data}')
-        request = self._request(url, 'POST', body_type, data)
-        return self._do_request(request)
-
-    def _do_request(self, request):
-        with PlanetSession() as sess:
-            body = sess.request(request).body
-        return body
-
-    def _get_pages(self, url, get_next_fcn, params=None):
-        request = self._request(url, 'GET', models.JSON, params=params)
-
-        with PlanetSession() as sess:
-            LOGGER.debug('getting first page')
-            body = sess.request(request).body
-            yield body
-
-            next_url = get_next_fcn(body)
-            while(next_url):
-                LOGGER.debug('getting next page')
-                request.url = next_url
-                body = sess.request(request).body
-                yield body
-                next_url = get_next_fcn(body)
-
-    def create_order(self, order_request):
+    async def create_order(self, order_details):
         '''Create an order request.
 
         :param order_request: order request details
-        :type order_request: dict
+        :type order_request: dict or OrderDetails
         :return: The ID of the order
         :rtype: str
         '''
-        if not isinstance(order_request, OrderDetails):
-            order_request = OrderDetails(order_request)
+        if not isinstance(order_details, OrderDetails):
+            order_details = OrderDetails(order_details)
 
         url = self._orders_url()
+        req = self._request(url, method='POST', data=order_details.data)
+        resp = await self._do_request(req)
 
-        body = self._post(url, models.JSON, order_request.data)
-        order = Order(body.data)
+        order = Order(resp.json())
         return order.id
 
-    def get_order(self, order_id):
+    async def get_order(self, order_id):
         '''Get order details by Order ID.
 
         :param order_id: The ID of the order
@@ -147,10 +131,13 @@ class OrdersClient():
         :raises planet.api.exceptions.APIException: On API error.
         '''
         url = self._order_url(order_id)
-        body = self._get(url, models.JSON)
-        return Order(body.data)
+        req = self._request(url, method='GET')
+        resp = await self._do_request(req)
 
-    def cancel_order(self, order_id):
+        order = Order(resp.json())
+        return order
+
+    async def cancel_order(self, order_id):
         '''Cancel a queued order.
 
         According to the API docs, cancel order should return the cancelled
@@ -162,28 +149,29 @@ class OrdersClient():
         :raises planet.api.exceptions.APIException: On API error.
         '''
         url = self._order_url(order_id)
-        _ = self._put(url, models.Body)
+        req = self._request(url, method='PUT')
+        await self._do_request(req)
 
-    def cancel_orders(self, order_ids):
-        '''Cancel queued orders in bulk.
-
-        order_ids is required here even if it is an empty string. This is to
-        avoid accidentally canceeling all orders when only a subset was
-        desired.
-
-        :param list of str order_ids: The IDs of the orders. If empty, all
-            orders in a pre-running state will be cancelled.
-        :returns dict: Results of the bulk cancel request.
-        :raises planet.api.exceptions.APIException: On API error.
-        '''
-        url = self._bulk_url() + 'cancel'
-        cancel_body = {}
-        if order_ids:
-            cancel_body['order_ids'] = order_ids
-
-        # was sending the body as params without json.dumps()
-        body = self._post(url, models.JSON, json.dumps(cancel_body))
-        return body.data
+    # def cancel_orders(self, order_ids):
+    #     '''Cancel queued orders in bulk.
+    #
+    #     order_ids is required here even if it is an empty string. This is to
+    #     avoid accidentally canceeling all orders when only a subset was
+    #     desired.
+    #
+    #     :param list of str order_ids: The IDs of the orders. If empty, all
+    #         orders in a pre-running state will be cancelled.
+    #     :returns dict: Results of the bulk cancel request.
+    #     :raises planet.api.exceptions.APIException: On API error.
+    #     '''
+    #     url = self._bulk_url() + 'cancel'
+    #     cancel_body = {}
+    #     if order_ids:
+    #         cancel_body['order_ids'] = order_ids
+    #
+    #     # was sending the body as params without json.dumps()
+    #     body = self._post(url, models.JSON, json.dumps(cancel_body))
+    #     return body.data
 
     def aggregated_order_stats(self):
         '''Get aggregated counts of active orders.
@@ -195,27 +183,9 @@ class OrdersClient():
         res = self._get(url, models.JSON)
         return res.data
 
-    def download_asset(self, location, filename=None, directory=None,
-                       callback=None, overwrite=True):
+    async def download_asset(self, location, filename=None, directory=None,
+                             overwrite=True):
         '''Download ordered asset.
-
-        If provided, the callback will be invoked 4 different ways:
-
-        * First as ``callback(start=body)``
-        * For each chunk of data written as
-          ``callback(wrote=chunk_size_in_bytes, total=all_byte_cnt)``
-        * Upon completion as ``callback(finish=body)``
-        * Upon skip as ``callback(skip=body)``
-
-        simple reporter callback example::
-
-            def callback(start=None, wrote=None, total=None,
-                         finish=None, skip=None):
-                if start: print(start)
-                if wrote: print(wrote)
-                if total: print(total)
-                if finish: print(finish)
-                if skip: print(skip)
 
         :param location: Download location url including download token
         :type location: str
@@ -225,19 +195,18 @@ class OrdersClient():
         :param directory: Directory to write to. Defaults to current
             directory.
         :type directory: str, optional
-        :param callback: A function handle of the form
-            ``callback(start, wrote, total, finish, skip)`` that receives write
-            progress. Defaults to None
-        :type callback: function, optional
         :param overwrite: Overwrite any existing files. Defaults to True
         :type overwrite: bool
         :return: Path to downloaded file.
         :rtype: str
         :raises planet.api.exceptions.APIException: On API error.
         '''
-        body = self._get(location, models.Body)
-        dl_path = os.path.join(directory or '.', filename or body.name)
-        body.write_to_file(dl_path, overwrite=overwrite, callback=callback)
+        req = self._request(location, method='GET')
+
+        async with self._session.stream(req) as resp:
+            body = models.StreamingBody(resp)
+            dl_path = os.path.join(directory or '.', filename or body.name)
+            await body.write(dl_path, overwrite=overwrite)
         return dl_path
 
     def download_order(self, order_id, directory=None, callback=None,
@@ -276,43 +245,44 @@ class OrdersClient():
                      for location in locations]
         return filenames
 
-    def wait_for_complete(self, order_id, wait=10, callback=None):
-        '''Poll for order status until order is complete.
-
-        If provided, the callback will be invoked as:
-
-        * ``callback(state=state)``
-
-        simple reporter callback example::
-
-            def callback(state):
-                print(state)
+    async def poll(self, order_id, state=None, wait=10):
+        '''Poll for order status until order reaches desired state.
 
         :param order_id: The ID of the order
         :type order_id: str
+        :param state: State to poll until. If multiple, use list. Defaults to
+            any completed state.
+        :type state: str, list of str
         :param int wait: Time (in seconds) between polls
         :type wait: int
-        :param callback: A function handle of the form
-            ``callback(state)`` that receives poll progress. Defaults to None
-        :type callback: function, optional
         :return: Completed state of the order
         :rtype: str
         :raises planet.api.exceptions.APIException: On API error.
+        :raises OrdersClientException: If state is not supported.
+
         '''
         completed = False
+
+        if state:
+            if state not in ORDERS_STATES:
+                raise OrdersClientException(
+                    f'{state} should be one of'
+                    f'{ORDERS_STATES}')
+            states = [state]
+        else:
+            states = ORDERS_STATES_COMPLETE
+
         while not completed:
             t = time.time()
-            order = self.get_order(order_id)
+            order = await self.get_order(order_id)
             state = order.state
-            callback(state=state)
-            LOGGER.info(f'order state: {state}')
+            LOGGER.info(f'order {order_id} state: {state}')
 
-            completed = state in ORDERS_STATES_COMPLETE
-
+            completed = state in states
             if not completed:
                 sleep_time = max(wait-(time.time()-t), 0)
                 LOGGER.info(f'sleeping {sleep_time}s')
-                time.sleep(sleep_time)
+                await asyncio.sleep(sleep_time)
         return state
 
     def list_orders(self, state=None, limit=None):

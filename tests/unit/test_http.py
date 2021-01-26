@@ -11,94 +11,86 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-from mock import Mock
+import logging
+from unittest.mock import Mock
+
+import httpx
+import respx
 
 import pytest
-import requests_mock
 
-from planet.api import http, models
+from planet.api import exceptions, http
 
 
 TEST_URL = 'mock://fantastic.com'
+
+LOGGER = logging.getLogger(__name__)
 
 
 @pytest.fixture
 def mock_request():
     r = Mock()
-    r.url = TEST_URL
-    r.body_type = models.Body
-    r.method = 'GET'
-    r.headers = {}
-    r.params = None
-    r.data = None
-
+    r.http_request = httpx.Request(
+        'GET',
+        TEST_URL)
     yield r
 
 
-@pytest.fixture
-def throttle_adapter():
-    adapter = requests_mock.Adapter()
-    responses = [
-        {'json': {'msg': 'msg'}, 'status_code': 429},
-        {'json': {'msg': 'msg'}, 'status_code': 200}
-    ]
-    adapter.register_uri('GET', TEST_URL, responses)
-    yield adapter
-
-
-def test_planetsession_contextmanager():
-    with http.PlanetSession():
+@pytest.mark.asyncio
+async def test_aplanetsession_contextmanager():
+    async with http.APlanetSession():
         pass
 
 
-def test_planetsession_request_retry(mock_request, throttle_adapter):
-    with http.PlanetSession() as ps:
-        # needed to redirect calls to the adapter
-        ps._session.mount('mock://', throttle_adapter)
+@respx.mock
+@pytest.mark.asyncio
+async def test_aplanetsession_request(mock_request):
+    async with http.APlanetSession() as ps:
+        mock_resp = httpx.Response(200, text='bubba')
+        respx.get(TEST_URL).return_value = mock_resp
+
+        resp = await ps.request(mock_request)
+        assert resp.http_response.text == 'bubba'
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_aplanetsession_stream(mock_request):
+    async with http.APlanetSession() as ps:
+        mock_resp = httpx.Response(200, text='bubba')
+        respx.get(TEST_URL).return_value = mock_resp
+
+        async with ps.stream(mock_request) as resp:
+            txt = await resp.http_response.aread()
+            assert txt == b'bubba'
+
+
+@pytest.mark.asyncio
+async def test_aplanetsession__raise_for_status():
+    await http.APlanetSession._raise_for_status(Mock(status_code=201, text=''))
+
+    with pytest.raises(exceptions.TooManyRequests):
+        await http.APlanetSession._raise_for_status(Mock(
+            status_code=429, text=''
+        ))
+
+    with pytest.raises(exceptions.OverQuota):
+        await http.APlanetSession._raise_for_status(Mock(
+            status_code=429, text='exceeded QUOTA dude'
+        ))
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_aplanetsession_request_retry(mock_request):
+    async with http.APlanetSession() as ps:
+        route = respx.get(TEST_URL)
+        route.side_effect = [
+            httpx.Response(429),
+            httpx.Response(200)
+        ]
 
         ps.retry_wait_time = 0  # lets not slow down tests for this
-        resp = ps.request(mock_request)
+        resp = await ps.request(mock_request)
         assert resp
-
-
-def test_redirectsession_rebuilt_auth_called():
-    '''verify our hacking around with Session behavior works'''
-    session = http.RedirectSession()
-    with requests_mock.Mocker() as m:
-        m.get('http://redirect.com', status_code=302, headers={
-            'Location': 'http://newredirect.com'
-        })
-        m.get('http://newredirect.com', text='redirected!')
-
-        # base assertion, works as intended
-        resp = session.get('http://redirect.com')
-        assert resp.url == 'http://newredirect.com'
-        assert resp.text == 'redirected!'
-
-        # Authorization headers unpacked and URL is rewritten
-        resp = session.get('http://redirect.com', headers={
-            'Authorization': 'api-key foobar'
-        })
-        assert resp.url == 'http://newredirect.com/?api_key=foobar'
-        assert resp.text == 'redirected!'
-
-        # Authorization headers unpacked and URL is rewritten, params saved
-        m.get('http://redirect.com', status_code=302, headers={
-            'Location': 'http://newredirect.com?param=yep'
-        })
-        m.get('http://newredirect.com?param=yep', text='param!')
-        resp = session.get('http://redirect.com?param=yep', headers={
-            'Authorization': 'api-key foobar'
-        })
-        assert resp.url == 'http://newredirect.com/?param=yep&api_key=foobar'
-        assert resp.text == 'param!'
-
-
-def test_redirectsession_is_subdomain_of_tld():
-    fcn = http.RedirectSession._is_subdomain_of_tld
-    assert fcn('http://foo.bar', 'http://foo.bar')
-    assert fcn('http://one.foo.bar', 'http://foo.bar')
-    assert fcn('http://foo.bar', 'http://one.foo.bar')
-    assert not fcn('http://foo.bar', 'http://bar.foo')
-    assert not fcn('http://one.foo.bar', 'http://bar.foo')
-    assert not fcn('http://foo.bar', 'http://one.bar.foo')
+        assert route.call_count == 2
