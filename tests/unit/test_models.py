@@ -81,11 +81,13 @@ async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
     r = MagicMock(name='response')
     hr = MagicMock(name='http_response')
     hr.aiter_bytes = _aiter_bytes
+    hr.num_bytes_downloaded = 0
+    hr.response.headers['Content-Length'] = 527
     r.http_response = hr
     body = models.StreamingBody(r)
 
     filename = Path(str(tmpdir)) / 'test.tif'
-    await body.write(filename, progress=False)
+    await body.write(filename, progress_bar=False)
 
     assert os.path.isfile(filename)
     assert os.stat(filename).st_size == 527

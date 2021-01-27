@@ -184,7 +184,7 @@ class AOrdersClient():
         return res.data
 
     async def download_asset(self, location, filename=None, directory=None,
-                             overwrite=True):
+                             overwrite=True, progress_bar=False):
         '''Download ordered asset.
 
         :param location: Download location url including download token
@@ -209,39 +209,30 @@ class AOrdersClient():
             await body.write(dl_path, overwrite=overwrite)
         return dl_path
 
-    def download_order(self, order_id, directory=None, callback=None,
-                       overwrite=True):
+    async def download_order(self, order_id, directory=None, overwrite=True,
+                             progress_bar=False):
         '''Download all assets in an order.
-
-        Uses `download_asset` to downloads each asset in an order.
-        The arguments
-        `directory`, `callback`, and `overwrite` are used as described in
-        :py:meth:`download_asset`
 
         :param order_id: The ID of the order
         :type order_id: str
         :param directory: Directory to write to. Defaults to current
             directory.
         :type directory: str, optional
-        :param callback: A function handle of the form
-            ``callback(start, wrote, total, finish, skip)`` that receives write
-            progress. Invoked as described in Defaults to None
-        :type callback: function, optional
         :param overwrite: Overwrite any existing files. Defaults to True
         :type overwrite: bool, optional
         :return: Paths to downloaded files.
         :rtype: list of str
         :raises planet.api.exceptions.APIException: On API error.
         '''
-        order = self.get_order(order_id)
+        order = await self.get_order(order_id)
         locations = order.locations
         LOGGER.info(
             f'downloading {len(locations)} assets from order {order_id}'
         )
-        filenames = [self.download_asset(location,
-                                         directory=directory,
-                                         callback=callback,
-                                         overwrite=overwrite)
+        filenames = [await self.download_asset(location,
+                                               directory=directory,
+                                               overwrite=overwrite,
+                                               progress_bar=progress_bar)
                      for location in locations]
         return filenames
 
@@ -285,44 +276,44 @@ class AOrdersClient():
                 await asyncio.sleep(sleep_time)
         return state
 
-    def list_orders(self, state=None, limit=None):
-        '''Get all order requests.
-
-        :param state: Filter orders to given state. Defaults to None
-        :type state: str, optional
-        :param state: Limit orders to given limit. Defaults to None
-        :type state: int, optional
-        :return: User :py:Class:`planet.api.models.Order` objects that match
-            the query
-        :rtype: iterator
-        :raises planet.api.exceptions.APIException: On API error.
-        '''
-        url = self._orders_url()
-        if state:
-            self._check_state(state)
-            params = {"state": state}
-        else:
-            params = None
-
-        orders = self._get_orders(url, params)
-
-        if limit:
-            orders = itertools.islice(orders, limit)
-        return orders
-
-    @staticmethod
-    def _check_state(state):
-        if state not in ORDERS_STATES:
-            raise OrdersClientException(
-                f'Order state (\'{state}\') should be one of: '
-                f'{ORDERS_STATES}'
-            )
-
-    def _get_orders(self, url, params=None):
-        get_next_fcn = Orders.next_link
-        bodies = self._get_pages(url, get_next_fcn, params=params)
-        orders = Orders.items_iter(bodies)
-        return orders
+    # def list_orders(self, state=None, limit=None):
+    #     '''Get all order requests.
+    #
+    #     :param state: Filter orders to given state. Defaults to None
+    #     :type state: str, optional
+    #     :param state: Limit orders to given limit. Defaults to None
+    #     :type state: int, optional
+    #     :return: User :py:Class:`planet.api.models.Order` objects that match
+    #         the query
+    #     :rtype: iterator
+    #     :raises planet.api.exceptions.APIException: On API error.
+    #     '''
+    #     url = self._orders_url()
+    #     if state:
+    #         self._check_state(state)
+    #         params = {"state": state}
+    #     else:
+    #         params = None
+    #
+    #     orders = self._get_orders(url, params)
+    #
+    #     if limit:
+    #         orders = itertools.islice(orders, limit)
+    #     return orders
+    #
+    # @staticmethod
+    # def _check_state(state):
+    #     if state not in ORDERS_STATES:
+    #         raise OrdersClientException(
+    #             f'Order state (\'{state}\') should be one of: '
+    #             f'{ORDERS_STATES}'
+    #         )
+    #
+    # def _get_orders(self, url, params=None):
+    #     get_next_fcn = Orders.next_link
+    #     bodies = self._get_pages(url, get_next_fcn, params=params)
+    #     orders = Orders.items_iter(bodies)
+    #     return orders
 
 
 class Orders():

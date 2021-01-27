@@ -136,31 +136,44 @@ class StreamingBody():
         async for c in self.response.aiter_bytes():
             yield c
 
-    async def write(self, filename, overwrite=True, progress=True):
+    async def write(self, filename, overwrite=True, progress_bar=True):
+        class _LOG():
+            def __init__(self, total, unit, filename, disable):
+                self.total = total
+                self.unit = unit
+                self.disable = disable
+                self.previous = 0
+                self.filename = filename
+
+                if not self.disable:
+                    LOGGER.debug(f'writing to {self.filename}')
+
+            def update(self, new):
+                if new-self.previous > self.unit and not self.disable:
+                    # LOGGER.debug(f'{new-self.previous}')
+                    perc = int(100 * new / self.total)
+                    LOGGER.debug(f'{self.filename}: '
+                                 f'wrote {perc}% of {self.total}')
+                    self.previous = new
+
+        unit = 1024*1024
+
         mode = 'wb' if overwrite else 'xb'
         try:
             with open(filename, mode) as fp:
-                LOGGER.debug(f'writing to {filename}')
-                if progress:
-                    await self._write_with_progress(fp, filename)
-                else:
-                    await self._write(fp)
+                _log = _LOG(self.size, 16*unit, filename, disable=progress_bar)
+                with tqdm(total=self.size, unit_scale=True,
+                          unit_divisor=unit, unit='B',
+                          desc=filename, disable=not progress_bar) as progress:
+                    previous = self.num_bytes_downloaded
+                    async for chunk in self.aiter_bytes():
+                        fp.write(chunk)
+                        new = self.num_bytes_downloaded
+                        _log.update(new)
+                        progress.update(new-previous)
+                        previous = new
         except FileExistsError:
             LOGGER.info(f'File {filename} exists, not overwriting')
-
-    async def _write(self, fp):
-        async for chunk in self.aiter_bytes():
-            fp.write(chunk)
-
-    async def _write_with_progress(self, fp, filename):
-        with tqdm(total=self.size, unit_scale=True,
-                  unit_divisor=1024, unit='B', desc=filename) as progress:
-            previous = self.num_bytes_downloaded
-            async for chunk in self.aiter_bytes():
-                fp.write(chunk)
-                new = self.num_bytes_downloaded
-                progress.update(new-previous)
-                previous = new
 
 
 # from contextlib import asynccontextmanager
