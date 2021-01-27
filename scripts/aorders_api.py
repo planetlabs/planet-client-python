@@ -60,6 +60,11 @@ async def download_order(client, oid=None):
     await client.download_order(oid)
 
 
+async def cancel_orders(client):
+    resp = await client.cancel_orders()
+    print(resp)
+
+
 async def main():
     start = time.time()
     auth = (API_KEY, "")
@@ -70,8 +75,8 @@ async def main():
             # create_order(client),
             # create_order(client),
             # cancel_order(client),
-            download_order(client),
-            download_order(client),
+            # download_order(client),
+            cancel_orders(client),
             # get_order(client),
             # get_order(client, "4b9b88bf-1d62-45f4-8bf9-4cd2fa6abb61"),
             )

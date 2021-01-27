@@ -46,8 +46,8 @@ class Request():
     :raises RequestException: When provided `body_type` is not a subclass of
         :py:class:`planet.api.models.Body`
     '''
-    def __init__(self, url, params=None, data=None, method='GET'):
-        if data:
+    def __init__(self, url, params=None, data=None, json=None, method='GET'):
+        if data or json:
             headers = {'Content-Type': 'application/json'}
         else:
             headers = None
@@ -57,6 +57,7 @@ class Request():
             url,
             params=params,
             data=data,
+            json=json,
             headers=headers)
 
 

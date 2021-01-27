@@ -25,17 +25,9 @@ from planet.api import AOrdersClient, APlanetSession
 
 
 DATA_DIR = Path(os.path.dirname(__file__)).parents[0] / 'data'
-
-LOGGER = logging.getLogger(__name__)
-
-# if use mock:// as the prefix, the params get lost
-# https://github.com/jamielennox/requests-mock/issues/142
 TEST_URL = 'http://MockNotRealURL/'
 
-
-# @pytest.fixture()
-# def orders_client():
-#     return AOrdersClient(api_key='doesntmatter', base_url=TEST_URL)
+LOGGER = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -183,6 +175,68 @@ async def test_cancel_order(oid, order_description):
 
 @respx.mock
 @pytest.mark.asyncio
+async def test_cancel_orders_by_ids():
+    async with APlanetSession() as ps:
+        cl = AOrdersClient(ps, base_url=TEST_URL)
+
+        bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
+        test_ids = ["oid1", "oid2", "oid3"]
+        example_result = {
+            "result": {
+                "succeeded": {"count": 2},
+                "failed": {
+                    "count": 1,
+                    "failures": [
+                        {
+                            "order_id": "oid3",
+                            "message": "bummer"
+                        }
+                    ]
+                }
+            }
+        }
+        mock_resp = httpx.Response(200, json=example_result)
+        respx.post(bulk_cancel_url).return_value = mock_resp
+
+        res = await cl.cancel_orders(test_ids)
+        assert res == example_result
+
+        expected_body = {
+                "order_ids": test_ids
+        }
+        actual_body = json.loads(respx.calls.last.request.content)
+        assert actual_body == expected_body
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_cancel_orders_all():
+    async with APlanetSession() as ps:
+        cl = AOrdersClient(ps, base_url=TEST_URL)
+
+        bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
+
+        example_result = {
+            "result": {
+                "succeeded": {"count": 2},
+                "failed": {
+                    "count": 0,
+                    "failures": []
+                }
+            }
+        }
+        mock_resp = httpx.Response(200, json=example_result)
+        respx.post(bulk_cancel_url).return_value = mock_resp
+
+        res = await cl.cancel_orders()
+        assert res == example_result
+
+        actual_body = json.loads(respx.calls.last.request.content)
+        assert actual_body == {}
+
+
+@respx.mock
+@pytest.mark.asyncio
 async def test_poll(oid, order_description):
     async with APlanetSession() as ps:
         cl = AOrdersClient(ps, base_url=TEST_URL)
@@ -212,57 +266,6 @@ async def test_poll(oid, order_description):
         state = await cl.poll(oid, state='running', wait=0)
         assert state == 'running'
 
-#
-#
-# def test_cancel_orders(requests_mock, orders_client):
-#     bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
-#
-#     test_ids = ["oid1", "oid2", "oid3"]
-#     example_result = {
-#         "result": {
-#             "succeeded": {"count": 2},
-#             "failed": {
-#                 "count": 1,
-#                 "failures": [
-#                     {
-#                         "order_id": "oid3",
-#                         "message": "bummer"
-#                     }
-#                 ]
-#             }
-#         }
-#     }
-#     requests_mock.post(bulk_cancel_url, status_code=200, json=example_result)
-#
-#     res = orders_client.cancel_orders(test_ids)
-#     assert res == example_result
-#
-#     expected_body = {
-#             "order_ids": test_ids
-#     }
-#     history = requests_mock.request_history
-#     assert history[0].json() == expected_body
-#
-#
-# def test_cancel_orders_all(requests_mock, orders_client):
-#     bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
-#
-#     example_result = {
-#         "result": {
-#             "succeeded": {"count": 2},
-#             "failed": {
-#                 "count": 0,
-#                 "failures": []
-#             }
-#         }
-#     }
-#     requests_mock.post(bulk_cancel_url, status_code=200, json=example_result)
-#
-#     res = orders_client.cancel_orders([])
-#     assert res == example_result
-#
-#     history = requests_mock.request_history
-#     assert history[0].json() == {}
 #
 #
 # def test_aggegated_order_stats(requests_mock, orders_client):

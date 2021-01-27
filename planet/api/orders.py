@@ -82,8 +82,9 @@ class AOrdersClient():
     def _bulk_url(self):
         return self._base_url + BULK_PATH
 
-    def _request(self, url, method, data=None, params=None):
-        return models.Request(url, method=method, data=data, params=params)
+    def _request(self, url, method, data=None, params=None, json=None):
+        return models.Request(url, method=method, data=data, params=params,
+                              json=json)
 
     async def _do_request(self, request):
         return await self._session.request(request)
@@ -152,26 +153,22 @@ class AOrdersClient():
         req = self._request(url, method='PUT')
         await self._do_request(req)
 
-    # def cancel_orders(self, order_ids):
-    #     '''Cancel queued orders in bulk.
-    #
-    #     order_ids is required here even if it is an empty string. This is to
-    #     avoid accidentally canceeling all orders when only a subset was
-    #     desired.
-    #
-    #     :param list of str order_ids: The IDs of the orders. If empty, all
-    #         orders in a pre-running state will be cancelled.
-    #     :returns dict: Results of the bulk cancel request.
-    #     :raises planet.api.exceptions.APIException: On API error.
-    #     '''
-    #     url = self._bulk_url() + 'cancel'
-    #     cancel_body = {}
-    #     if order_ids:
-    #         cancel_body['order_ids'] = order_ids
-    #
-    #     # was sending the body as params without json.dumps()
-    #     body = self._post(url, models.JSON, json.dumps(cancel_body))
-    #     return body.data
+    async def cancel_orders(self, order_ids=None):
+        '''Cancel queued orders in bulk.
+
+        :param list of str order_ids: The IDs of the orders. If empty, all
+            orders in a pre-running state will be cancelled.
+        :returns dict: Results of the bulk cancel request.
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        url = self._bulk_url() + 'cancel'
+        cancel_body = {}
+        if order_ids:
+            cancel_body['order_ids'] = order_ids
+
+        req = self._request(url, method='POST', json=cancel_body)
+        resp = await self._do_request(req)
+        return resp.json()
 
     def aggregated_order_stats(self):
         '''Get aggregated counts of active orders.
