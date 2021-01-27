@@ -206,7 +206,9 @@ class AOrdersClient():
         async with self._session.stream(req) as resp:
             body = models.StreamingBody(resp)
             dl_path = os.path.join(directory or '.', filename or body.name)
-            await body.write(dl_path, overwrite=overwrite)
+            await body.write(dl_path,
+                             overwrite=overwrite,
+                             progress_bar=progress_bar)
         return dl_path
 
     async def download_order(self, order_id, directory=None, overwrite=True,

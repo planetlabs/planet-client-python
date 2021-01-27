@@ -15,16 +15,12 @@
 
 import datetime
 import logging
-import os
 
 import httpx
 from tqdm.asyncio import tqdm
 
-# from ._fatomic import atomic_open
-from . import exceptions, utils
+from . import utils
 
-
-CHUNK_SIZE = 32 * 1024
 
 LOGGER = logging.getLogger(__name__)
 
@@ -174,109 +170,3 @@ class StreamingBody():
                         previous = new
         except FileExistsError:
             LOGGER.info(f'File {filename} exists, not overwriting')
-
-
-# from contextlib import asynccontextmanager
-# class ProgressReporter():
-#     def __init__(self):
-#         pass
-#
-#     @asynccontextmanager
-#     async def log():
-#         yield self
-#
-#     @staticmethod
-#     @asynccontextmanager
-#     async def bar(total, filename):
-#         yield tqdm(total=total, unit_scale=True,
-#                    unit_divisor=1024, unit='B', desc=filename)
-
-
-    # def get_raw(self):
-    #     '''Get the decoded text content from the response'''
-    #     return self.response.content.decode('utf-8')
-    #
-    # def _write(self, fp, callback):
-    #     total = 0
-    #     if not callback:
-    #         def noop(*a, **kw):
-    #             pass
-    #         callback = noop
-    #     callback(start=self)
-    #     for chunk in self:
-    #         if self._cancel:
-    #             raise exceptions.RequestCancelled()
-    #         fp.write(chunk)
-    #         size = len(chunk)
-    #         total += size
-    #         callback(wrote=size, total=total)
-    #     # seems some responses don't have a content-length header
-    #     if self.size == 0:
-    #         self.size = total
-    #     callback(finish=self)
-    #
-    # def write(self, file=None, callback=None):
-    #     '''Write the contents of the body to the optionally provided file and
-    #     providing progress to the optional callback. The callback will be
-    #     invoked 3 different ways:
-    #
-    #     * First as ``callback(start=self)``
-    #     * For each chunk of data written as
-    #       ``callback(wrote=chunk_size_in_bytes, total=all_byte_cnt)``
-    #     * Upon completion as ``callback(finish=self)``
-    #
-    #     :param file: path or file-like object to write to, defaults to the
-    #         name of body
-    #     :type file: str or file-like object
-    #     :param callback: A function handle of the form
-    #         ``callback(start, wrote, total, finish, skip)`` that receives write
-    #         progress. Defaults to None
-    #     :type callback: function, optional
-    #     '''
-    #     if not file:
-    #         file = self.name
-    #     if not file:
-    #         raise ValueError('no file name provided or discovered in response')
-    #     if hasattr(file, 'write'):
-    #         self._write(file, callback)
-    #     else:
-    #         with atomic_open(file, 'wb') as fp:
-    #             self._write(fp, callback)
-    #
-    # def write_to_file(self, filename=None, overwrite=True, callback=None):
-    #     '''Write the contents of the body to the optionally provided filename.
-    #
-    #     providing progress to the optional callback. The callback will be
-    #     invoked 3 different ways:
-    #
-    #     * First as ``callback(start=self)``
-    #     * For each chunk of data written as
-    #       ``callback(wrote=chunk_size_in_bytes, total=all_byte_cnt)``
-    #     * Upon completion as ``callback(finish=self)`
-    #     * Upon skip as `callback(skip=self)`
-    #
-    #     :param filename: Filename to write to, defaults to body name
-    #     :type filename: str, optional
-    #     :param overwrite: Specify whether the file at filename
-    #         should be overwritten if it exists, defaults to True
-    #     :type overwrite: bool, optional
-    #     :param callback: A function handle of the form
-    #         ``callback(start, wrote, total, finish, skip)`` that receives write
-    #         progress. Defaults to None
-    #     :type callback: function, optional
-    #     '''
-    #     if overwrite or not os.path.exists(filename):
-    #         self.write(filename, callback=callback)
-    #     else:
-    #         if callback:
-    #             callback(skip=self)
-
-
-# class JSON(Body):
-#     '''A Body that contains JSON'''
-#
-#     @property
-#     def data(self):
-#         '''The response as a JSON dict'''
-#         data = self.response.json()
-#         return data
