@@ -60,6 +60,14 @@ class Request():
             json=json,
             headers=headers)
 
+    @property
+    def url(self):
+        return self.http_request.url
+
+    @url.setter
+    def url(self, url):
+        self.http_request.url = httpx.URL(url)
+
 
 class Response():
     '''Handles the Planet server's response to a HTTP request

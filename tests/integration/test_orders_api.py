@@ -49,84 +49,103 @@ def oid():
     return 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'
 
 
-# def test_list_orders(requests_mock, orders_client, order_description):
-#     list_url = TEST_URL + 'orders/v2/'
-#     next_page_url = list_url + '?page_marker=IAmATest'
-#
-#     order1 = copy.deepcopy(order_description)
-#     order1['id'] = 'oid1'
-#     order2 = copy.deepcopy(order_description)
-#     order2['id'] = 'oid2'
-#     order3 = copy.deepcopy(order_description)
-#     order3['id'] = 'oid3'
-#
-#     page1_response = {
-#         "_links": {
-#             "_self": "string",
-#             "next": next_page_url},
-#         "orders": [order1, order2]
-#     }
-#     requests_mock.get(list_url, status_code=200, json=page1_response)
-#
-#     page2_response = {
-#         "_links": {
-#             "_self": next_page_url},
-#         "orders": [order3]
-#     }
-#     requests_mock.get(next_page_url, status_code=200, json=page2_response)
-#
-#     orders = orders_client.list_orders()
-#     oids = list(o.id for o in orders)
-#     assert oids == ['oid1', 'oid2', 'oid3']
-#
-#
-# def test_list_orders_state(requests_mock, orders_client, order_description):
-#     list_url = TEST_URL + 'orders/v2/?state=failed'
-#
-#     order1 = copy.deepcopy(order_description)
-#     order1['id'] = 'oid1'
-#     order2 = copy.deepcopy(order_description)
-#     order2['id'] = 'oid2'
-#
-#     page1_response = {
-#         "_links": {
-#             "_self": "string"
-#         },
-#         "orders": [order1, order2]
-#     }
-#     requests_mock.get(list_url, status_code=200, json=page1_response)
-#
-#     orders = orders_client.list_orders(state='failed')
-#     oids = list(o.id for o in orders)
-#     assert oids == ['oid1', 'oid2']
-#
-#
-# def test_list_orders_limit(requests_mock, orders_client, order_description):
-#     list_url = TEST_URL + 'orders/v2/'
-#     next_page_url = list_url + '?page_marker=IAmATest'
-#
-#     order1 = copy.deepcopy(order_description)
-#     order1['id'] = 'oid1'
-#     order2 = copy.deepcopy(order_description)
-#     order2['id'] = 'oid2'
-#     order3 = copy.deepcopy(order_description)
-#     order3['id'] = 'oid3'
-#
-#     # check that the client doesn't try to get the next page when the
-#     # limit is already reached by providing link to next page but not
-#     # registering a response. if the client tries to get the next
-#     # page, an error will occur
-#     page1_response = {
-#         "_links": {
-#             "_self": "string",
-#             "next": next_page_url},
-#         "orders": [order1, order2]
-#     }
-#     requests_mock.get(list_url, status_code=200, json=page1_response)
-#
-#     orders = orders_client.list_orders(limit=1)
-#     oids = list(o.id for o in orders)
-#     assert oids == ['oid1']
+@respx.mock
+@pytest.mark.asyncio
+async def test_list_orders(order_description):
+    list_url = TEST_URL + 'orders/v2/'
+    next_page_url = list_url + 'blob/?page_marker=IAmATest'
+
+    order1 = copy.deepcopy(order_description)
+    order1['id'] = 'oid1'
+    order2 = copy.deepcopy(order_description)
+    order2['id'] = 'oid2'
+    order3 = copy.deepcopy(order_description)
+    order3['id'] = 'oid3'
+
+    page1_response = {
+        "_links": {
+            "_self": "string",
+            "next": next_page_url},
+        "orders": [order1, order2]
+    }
+    mock_resp1 = httpx.Response(200, json=page1_response)
+    respx.get(list_url).return_value = mock_resp1
+
+    page2_response = {
+        "_links": {
+            "_self": next_page_url},
+        "orders": [order3]
+    }
+    mock_resp2 = httpx.Response(200, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    async with APlanetSession() as ps:
+        cl = AOrdersClient(ps, base_url=TEST_URL)
+        orders = await cl.list_orders()
+
+    oids = list(o.id for o in orders)
+    assert oids == ['oid1', 'oid2', 'oid3']
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_list_orders_state(order_description):
+    list_url = TEST_URL + 'orders/v2/?state=failed'
+
+    order1 = copy.deepcopy(order_description)
+    order1['id'] = 'oid1'
+    order2 = copy.deepcopy(order_description)
+    order2['id'] = 'oid2'
+
+    page1_response = {
+        "_links": {
+            "_self": "string"
+        },
+        "orders": [order1, order2]
+    }
+    mock_resp = httpx.Response(200, json=page1_response)
+    respx.get(list_url).return_value = mock_resp
+
+    async with APlanetSession() as ps:
+        cl = AOrdersClient(ps, base_url=TEST_URL)
+        orders = await cl.list_orders(state='failed')
+
+    oids = list(o.id for o in orders)
+    assert oids == ['oid1', 'oid2']
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_list_orders_limit(order_description):
+    list_url = TEST_URL + 'orders/v2/'
+    next_page_url = list_url + '?page_marker=IAmATest'
+
+    order1 = copy.deepcopy(order_description)
+    order1['id'] = 'oid1'
+    order2 = copy.deepcopy(order_description)
+    order2['id'] = 'oid2'
+    order3 = copy.deepcopy(order_description)
+    order3['id'] = 'oid3'
+
+    # check that the client doesn't try to get the next page when the
+    # limit is already reached by providing link to next page but not
+    # registering a response. if the client tries to get the next
+    # page, an error will occur
+    page1_response = {
+        "_links": {
+            "_self": "string",
+            "next": next_page_url},
+        "orders": [order1, order2]
+    }
+    mock_resp = httpx.Response(200, json=page1_response)
+    respx.get(list_url).return_value = mock_resp
+
+    async with APlanetSession() as ps:
+        cl = AOrdersClient(ps, base_url=TEST_URL)
+        orders = await cl.list_orders(limit=1)
+    LOGGER.warning(orders)
+    oids = [o.id for o in orders]
+    assert oids == ['oid1']
 
 
 @respx.mock

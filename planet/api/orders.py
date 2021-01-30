@@ -15,10 +15,12 @@
 import asyncio
 import copy
 import json
-import itertools
+# import itertools
 import logging
 import os
 import time
+
+from aiostream import stream, operator
 
 from . import models
 from .. import constants, specs
@@ -88,22 +90,6 @@ class AOrdersClient():
 
     async def _do_request(self, request):
         return await self._session.request(request)
-
-    # def _get_pages(self, url, get_next_fcn, params=None):
-    #     request = self._request(url, 'GET', models.JSON, params=params)
-    #
-    #     with PlanetSession() as sess:
-    #         LOGGER.debug('getting first page')
-    #         body = sess.request(request).body
-    #         yield body
-    #
-    #         next_url = get_next_fcn(body)
-    #         while(next_url):
-    #             LOGGER.debug('getting next page')
-    #             request.url = next_url
-    #             body = sess.request(request).body
-    #             yield body
-    #             next_url = get_next_fcn(body)
 
     async def create_order(self, order_details):
         '''Create an order request.
@@ -275,69 +261,142 @@ class AOrdersClient():
                 await asyncio.sleep(sleep_time)
         return state
 
-    # def list_orders(self, state=None, limit=None):
-    #     '''Get all order requests.
-    #
-    #     :param state: Filter orders to given state. Defaults to None
-    #     :type state: str, optional
-    #     :param state: Limit orders to given limit. Defaults to None
-    #     :type state: int, optional
-    #     :return: User :py:Class:`planet.api.models.Order` objects that match
-    #         the query
-    #     :rtype: iterator
-    #     :raises planet.api.exceptions.APIException: On API error.
-    #     '''
-    #     url = self._orders_url()
-    #     if state:
-    #         self._check_state(state)
-    #         params = {"state": state}
-    #     else:
-    #         params = None
-    #
-    #     orders = self._get_orders(url, params)
-    #
-    #     if limit:
-    #         orders = itertools.islice(orders, limit)
-    #     return orders
-    #
-    # @staticmethod
-    # def _check_state(state):
-    #     if state not in ORDERS_STATES:
-    #         raise OrdersClientException(
-    #             f'Order state (\'{state}\') should be one of: '
-    #             f'{ORDERS_STATES}'
-    #         )
-    #
-    # def _get_orders(self, url, params=None):
-    #     get_next_fcn = Orders.next_link
-    #     bodies = self._get_pages(url, get_next_fcn, params=params)
-    #     orders = Orders.items_iter(bodies)
-    #     return orders
+    async def list_orders(self, state=None, limit=None):
+        '''Get all order requests.
 
+        :param state: Filter orders to given state. Defaults to None
+        :type state: str, optional
+        :param state: Limit orders to given limit. Defaults to None
+        :type state: int, optional
+        :return: User :py:Class:`planet.api.models.Order` objects that match
+            the query
+        :rtype: generator
+        :raises planet.api.exceptions.APIException: On API error.
+        '''
+        url = self._orders_url()
+        if state:
+            self._check_state(state)
+            params = {"state": state}
+        else:
+            params = None
 
-class Orders():
-    # TODO: the delegation between Orders and OrdersClient could
-    # likely be improved here
+        # return [o async for o in self._get_orders(url,
+        #                                           params=params,
+        #                                           limit=limit)]
+        return await self._get_orders_limit(url, params=params, limit=limit)
+
     @staticmethod
-    def next_link(body):
+    def _check_state(state):
+        if state not in ORDERS_STATES:
+            raise OrdersClientException(
+                f'Order state (\'{state}\') should be one of: '
+                f'{ORDERS_STATES}'
+            )
+
+    async def _get_orders_limit(self, url, params=None, limit=None):
+        xs = stream.iterate(self._get_orders(url, params=params))
+        if limit:
+            xs = xs[0:1:limit-1]
+        return await stream.list(xs)
+
+    async def _get_orders(self, url, params=None):
+        async for page in self._get_pages(url, params=params):
+            for order in OrdersPage.items(page):
+                yield Order(order)
+
+    async def _get_pages(self, url, params=None):
+        request = self._request(url, 'GET', params=params)
+
+        LOGGER.debug('getting first page')
+        resp = await self._do_request(request)
+        orders_page = OrdersPage(resp)
+        yield orders_page
+
+        next_url = orders_page.next_link()
+        while(next_url):
+            LOGGER.debug('getting next page')
+            request.url = next_url
+            resp = await self._do_request(request)
+            orders_page = OrdersPage(resp)
+            yield orders_page
+            next_url = orders_page.next_link()
+
+
+# class Paged():
+#     def __init__(self, pages, limit=None):
+#         self.pages = pages
+#         self.limit = limit
+#         self.count = 0
+#
+#     def _items(self):
+#
+#     async def __aiter__(self):
+#         return self
+#
+#     async def __anext__(self):
+#         return self.
+#         raise StopAsyncIteration
+#
+#
+#         item = self.aiter_items()
+#
+#
+# class Paged():
+#     def __init__(self, response, limit=0, get_fcn):
+#         self.data = response.json()
+#         self.count = 0
+#
+#     async def __aiter__(self):
+#         return self
+#
+#     async def __anext__(self):
+#         item = self.aiter_items()
+#
+#         for page in self._pages():
+#             for item in page.items():
+#                 if self.limit and self.count > self.limit:
+#                     raise StopAsyncIteration
+#
+#     def next(self):
+#         try:
+#             next_link = self.data[self.LINKS_KEY][self.NEXT_KEY]
+#             LOGGER.debug(f'next: {next_link}')
+#         except KeyError:
+#             next_link = False
+#         return next_link
+#
+#     def items(self):
+#         return self.data[self.ITEM_KEY]
+#
+#
+# class OrdersPaged(Paged):
+#     LINKS_KEY = '_links'
+#     NEXT_KEY = 'next'
+#     ITEM_KEY = 'orders'
+
+
+class Page():
+    def __init__(self, response):
+        self.data = response.json()
+
+    def next_link(self):
         try:
-            next_link = body.data['_links']['next']
-            LOGGER.debug(f'next link: {next_link}')
+            next_link = self.data[self.LINKS_KEY][self.NEXT_KEY]
+            LOGGER.debug(f'next: {next_link}')
         except KeyError:
             next_link = False
         return next_link
 
-    @staticmethod
-    def items_iter(bodies):
-        def _get_orders(body):
-            orders = body.data['orders']
-            return (Order(o) for o in orders)
-
-        all_orders = itertools.chain.from_iterable(
-            (_get_orders(body) for body in bodies))
-        return all_orders
+    def items(self):
+        return self.data[self.ITEM_KEY]
 
 
+class OrdersPage(Page):
+    LINKS_KEY = '_links'
+    NEXT_KEY = 'next'
+    ITEM_KEY = 'orders'
+
+#
 class Order():
     '''Managing description of an order returned from Orders API.
 

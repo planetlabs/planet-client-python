@@ -30,8 +30,6 @@ TEST_ORDER = {
 async def create_order(client):
     oid = await client.create_order(TEST_ORDER)
     LOGGER.info(oid)
-    await client.poll(oid)
-    await get_order(client)
     return oid
 
 
@@ -65,18 +63,25 @@ async def cancel_orders(client):
     print(resp)
 
 
+async def create_and_download(client):
+    oid = await client.create_order(TEST_ORDER)
+    await client.poll(oid)
+    await client.download_order(oid)
+
+
 async def main():
     start = time.time()
     auth = (API_KEY, "")
     async with APlanetSession(auth=auth) as ps:
         client = AOrdersClient(ps)
         await asyncio.gather(
-            # create_order(client),
-            # create_order(client),
+            create_and_download(client),
+            create_and_download(client),
+            create_and_download(client),
             # create_order(client),
             # cancel_order(client),
             # download_order(client),
-            cancel_orders(client),
+            # cancel_orders(client),
             # get_order(client),
             # get_order(client, "4b9b88bf-1d62-45f4-8bf9-4cd2fa6abb61"),
             )
