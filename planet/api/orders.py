@@ -20,7 +20,7 @@ import logging
 import os
 import time
 
-from aiostream import stream, operator
+# from aiostream import stream
 
 from . import models
 from .. import constants, specs
@@ -280,10 +280,13 @@ class AOrdersClient():
         else:
             params = None
 
-        # return [o async for o in self._get_orders(url,
-        #                                           params=params,
-        #                                           limit=limit)]
-        return await self._get_orders_limit(url, params=params, limit=limit)
+        return await self._get_orders(url, params=params, limit=limit)
+
+    async def _get_orders(self, url, params=None, limit=None):
+        request = self._request(url, 'GET', params=params)
+
+        orders_paged = OrdersPaged(request, self._do_request, limit=limit)
+        return [o async for o in orders_paged]
 
     @staticmethod
     def _check_state(state):
@@ -293,110 +296,7 @@ class AOrdersClient():
                 f'{ORDERS_STATES}'
             )
 
-    async def _get_orders_limit(self, url, params=None, limit=None):
-        xs = stream.iterate(self._get_orders(url, params=params))
-        if limit:
-            xs = xs[0:1:limit-1]
-        return await stream.list(xs)
 
-    async def _get_orders(self, url, params=None):
-        async for page in self._get_pages(url, params=params):
-            for order in OrdersPage.items(page):
-                yield Order(order)
-
-    async def _get_pages(self, url, params=None):
-        request = self._request(url, 'GET', params=params)
-
-        LOGGER.debug('getting first page')
-        resp = await self._do_request(request)
-        orders_page = OrdersPage(resp)
-        yield orders_page
-
-        next_url = orders_page.next_link()
-        while(next_url):
-            LOGGER.debug('getting next page')
-            request.url = next_url
-            resp = await self._do_request(request)
-            orders_page = OrdersPage(resp)
-            yield orders_page
-            next_url = orders_page.next_link()
-
-
-# class Paged():
-#     def __init__(self, pages, limit=None):
-#         self.pages = pages
-#         self.limit = limit
-#         self.count = 0
-#
-#     def _items(self):
-#
-#     async def __aiter__(self):
-#         return self
-#
-#     async def __anext__(self):
-#         return self.
-#         raise StopAsyncIteration
-#
-#
-#         item = self.aiter_items()
-#
-#
-# class Paged():
-#     def __init__(self, response, limit=0, get_fcn):
-#         self.data = response.json()
-#         self.count = 0
-#
-#     async def __aiter__(self):
-#         return self
-#
-#     async def __anext__(self):
-#         item = self.aiter_items()
-#
-#         for page in self._pages():
-#             for item in page.items():
-#                 if self.limit and self.count > self.limit:
-#                     raise StopAsyncIteration
-#
-#     def next(self):
-#         try:
-#             next_link = self.data[self.LINKS_KEY][self.NEXT_KEY]
-#             LOGGER.debug(f'next: {next_link}')
-#         except KeyError:
-#             next_link = False
-#         return next_link
-#
-#     def items(self):
-#         return self.data[self.ITEM_KEY]
-#
-#
-# class OrdersPaged(Paged):
-#     LINKS_KEY = '_links'
-#     NEXT_KEY = 'next'
-#     ITEM_KEY = 'orders'
-
-
-class Page():
-    def __init__(self, response):
-        self.data = response.json()
-
-    def next_link(self):
-        try:
-            next_link = self.data[self.LINKS_KEY][self.NEXT_KEY]
-            LOGGER.debug(f'next: {next_link}')
-        except KeyError:
-            next_link = False
-        return next_link
-
-    def items(self):
-        return self.data[self.ITEM_KEY]
-
-
-class OrdersPage(Page):
-    LINKS_KEY = '_links'
-    NEXT_KEY = 'next'
-    ITEM_KEY = 'orders'
-
-#
 class Order():
     '''Managing description of an order returned from Orders API.
 
@@ -450,6 +350,96 @@ class Order():
         :rtype: str
         '''
         return self.data['id']
+
+
+class Paged():
+    LINKS_KEY = None
+    NEXT_KEY = None
+    ITEM_KEY = None
+
+    def __init__(self, request, do_request_fcn, limit=None):
+        self.request = request
+        self._do_request = do_request_fcn
+
+        self._pages = None
+        self._items = []
+
+        self.i = 0
+        self.limit = limit
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        # Does this seem complicated? Yes!
+        # This was implemented because traversing _get_pages()
+        # in an async generator was resulting in retrieving all the
+        # pages, when the goal is to stop retrieval when the limit
+        # is reached
+        if self.limit is not None and self.i >= self.limit:
+            raise StopAsyncIteration
+
+        try:
+            item = self._items.pop(0)
+            self.i += 1
+        except IndexError:
+            self._pages = self._pages or self._get_pages()
+            page = await self._pages.__anext__()
+            self._items = self._page_items(page)
+            try:
+                item = self._items.pop(0)
+                self.i += 1
+            except IndexError:
+                raise StopAsyncIteration
+
+        return item
+
+    # async def aiter_items(self, limit=None):
+    #     # why o why does this retrieve all the pages instead of stopping
+    #     # when count has reached its limit?
+    #     count = 0
+    #     async for page in self._get_pages():
+    #         for item in self._page_items(page):
+    #             count += 1
+    #             if not limit or count <= limit:
+    #                 yield item
+
+    async def _get_pages(self):
+        request = copy.deepcopy(self.request)
+        LOGGER.debug('getting first page')
+        resp = await self._do_request(request)
+        page = resp.json()
+        yield page
+
+        next_url = self._next_link(page)
+        while(next_url):
+            LOGGER.debug('getting next page')
+            request.url = next_url
+            resp = await self._do_request(request)
+            page = resp.json()
+            yield page
+            next_url = self._next_link(page)
+
+    def _next_link(self, page):
+        try:
+            next_link = page[self.LINKS_KEY][self.NEXT_KEY]
+            LOGGER.debug(f'next: {next_link}')
+        except KeyError:
+            LOGGER.debug('end of the pages')
+            next_link = False
+        return next_link
+
+    def _page_items(self, page):
+        return page[self.ITEM_KEY]
+
+
+class OrdersPaged(Paged):
+    LINKS_KEY = '_links'
+    NEXT_KEY = 'next'
+    ITEM_KEY = 'orders'
+
+    async def __anext__(self):
+        return Order(await super().__anext__())
 
 
 class OrderDetailsException(Exception):

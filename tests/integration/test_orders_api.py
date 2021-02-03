@@ -51,7 +51,7 @@ def oid():
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_list_orders(order_description):
+async def test_list_orders_basic(order_description):
     list_url = TEST_URL + 'orders/v2/'
     next_page_url = list_url + 'blob/?page_marker=IAmATest'
 
@@ -117,8 +117,13 @@ async def test_list_orders_state(order_description):
 @respx.mock
 @pytest.mark.asyncio
 async def test_list_orders_limit(order_description):
+    # check that the client doesn't try to get the next page when the
+    # limit is already reached by providing link to next page but not
+    # registering a response. if the client tries to get the next
+    # page, an error will occur
+
     list_url = TEST_URL + 'orders/v2/'
-    next_page_url = list_url + '?page_marker=IAmATest'
+    nono_page_url = list_url + '?page_marker=OhNoNo'
 
     order1 = copy.deepcopy(order_description)
     order1['id'] = 'oid1'
@@ -127,23 +132,31 @@ async def test_list_orders_limit(order_description):
     order3 = copy.deepcopy(order_description)
     order3['id'] = 'oid3'
 
-    # check that the client doesn't try to get the next page when the
-    # limit is already reached by providing link to next page but not
-    # registering a response. if the client tries to get the next
-    # page, an error will occur
     page1_response = {
         "_links": {
             "_self": "string",
-            "next": next_page_url},
+            "next": nono_page_url},
         "orders": [order1, order2]
     }
     mock_resp = httpx.Response(200, json=page1_response)
-    respx.get(list_url).return_value = mock_resp
+
+    page2_response = {
+        "_links": {
+            "_self": "string",
+        },
+        "orders": [order3]
+    }
+    mock_resp2 = httpx.Response(200, json=page2_response)
+
+    respx.route(method="GET", url__eq=list_url).mock(return_value=mock_resp)
+    nono_route = respx.route(method="GET", url__eq=nono_page_url).mock(
+        return_value=mock_resp2)
 
     async with APlanetSession() as ps:
         cl = AOrdersClient(ps, base_url=TEST_URL)
         orders = await cl.list_orders(limit=1)
-    LOGGER.warning(orders)
+
+    assert not nono_route.called
     oids = [o.id for o in orders]
     assert oids == ['oid1']
 
@@ -151,121 +164,120 @@ async def test_list_orders_limit(order_description):
 @respx.mock
 @pytest.mark.asyncio
 async def test_create_order(oid, order_description, order_details):
+    create_url = TEST_URL + 'orders/v2/'
+    mock_resp = httpx.Response(200, json=order_description)
+    respx.post(create_url).return_value = mock_resp
+
     async with APlanetSession() as ps:
         cl = AOrdersClient(ps, base_url=TEST_URL)
-
-        create_url = TEST_URL + 'orders/v2/'
-        mock_resp = httpx.Response(200, json=order_description)
-        respx.post(create_url).return_value = mock_resp
-
         created_oid = await cl.create_order(order_details)
-        assert created_oid == oid
+
+    assert created_oid == oid
 
 
 @respx.mock
 @pytest.mark.asyncio
 async def test_get_order(oid, order_description):
+    get_url = TEST_URL + 'orders/v2/' + oid
+    mock_resp = httpx.Response(200, json=order_description)
+    respx.get(get_url).return_value = mock_resp
+
     async with APlanetSession() as ps:
         cl = AOrdersClient(ps, base_url=TEST_URL)
-
-        get_url = TEST_URL + 'orders/v2/' + oid
-        mock_resp = httpx.Response(200, json=order_description)
-        respx.get(get_url).return_value = mock_resp
-
         order = await cl.get_order(oid)
-        assert order.state == 'queued'
+
+    assert order.state == 'queued'
 
 
 @respx.mock
 @pytest.mark.asyncio
 async def test_cancel_order(oid, order_description):
+    cancel_url = TEST_URL + 'orders/v2/' + oid
+    order_description['state'] = 'cancelled'
+    mock_resp = httpx.Response(200, json=order_description)
+    respx.put(cancel_url).return_value = mock_resp
+
     # TODO: the api says cancel order returns the order details but as
     # far as I can test thus far, it returns nothing. follow up on this
     async with APlanetSession() as ps:
         cl = AOrdersClient(ps, base_url=TEST_URL)
-
-        cancel_url = TEST_URL + 'orders/v2/' + oid
-        order_description['state'] = 'cancelled'
-        mock_resp = httpx.Response(200, json=order_description)
-        respx.put(cancel_url).return_value = mock_resp
-
         await cl.cancel_order(oid)
 
 
 @respx.mock
 @pytest.mark.asyncio
 async def test_cancel_orders_by_ids():
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
-
-        bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
-        test_ids = ["oid1", "oid2", "oid3"]
-        example_result = {
-            "result": {
-                "succeeded": {"count": 2},
-                "failed": {
-                    "count": 1,
-                    "failures": [
-                        {
-                            "order_id": "oid3",
-                            "message": "bummer"
-                        }
-                    ]
-                }
+    bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
+    test_ids = ["oid1", "oid2", "oid3"]
+    example_result = {
+        "result": {
+            "succeeded": {"count": 2},
+            "failed": {
+                "count": 1,
+                "failures": [
+                    {
+                        "order_id": "oid3",
+                        "message": "bummer"
+                    }
+                ]
             }
         }
-        mock_resp = httpx.Response(200, json=example_result)
-        respx.post(bulk_cancel_url).return_value = mock_resp
+    }
+    mock_resp = httpx.Response(200, json=example_result)
+    respx.post(bulk_cancel_url).return_value = mock_resp
 
+    async with APlanetSession() as ps:
+        cl = AOrdersClient(ps, base_url=TEST_URL)
         res = await cl.cancel_orders(test_ids)
-        assert res == example_result
 
-        expected_body = {
-                "order_ids": test_ids
-        }
-        actual_body = json.loads(respx.calls.last.request.content)
-        assert actual_body == expected_body
+    assert res == example_result
+
+    expected_body = {
+            "order_ids": test_ids
+    }
+    actual_body = json.loads(respx.calls.last.request.content)
+    assert actual_body == expected_body
 
 
 @respx.mock
 @pytest.mark.asyncio
 async def test_cancel_orders_all():
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
+    bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
 
-        bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
-
-        example_result = {
-            "result": {
-                "succeeded": {"count": 2},
-                "failed": {
-                    "count": 0,
-                    "failures": []
-                }
+    example_result = {
+        "result": {
+            "succeeded": {"count": 2},
+            "failed": {
+                "count": 0,
+                "failures": []
             }
         }
-        mock_resp = httpx.Response(200, json=example_result)
-        respx.post(bulk_cancel_url).return_value = mock_resp
+    }
+    mock_resp = httpx.Response(200, json=example_result)
+    respx.post(bulk_cancel_url).return_value = mock_resp
 
+    async with APlanetSession() as ps:
+        cl = AOrdersClient(ps, base_url=TEST_URL)
         res = await cl.cancel_orders()
-        assert res == example_result
 
-        actual_body = json.loads(respx.calls.last.request.content)
-        assert actual_body == {}
+    assert res == example_result
+
+    actual_body = json.loads(respx.calls.last.request.content)
+    assert actual_body == {}
 
 
 @respx.mock
 @pytest.mark.asyncio
 async def test_poll(oid, order_description):
+    get_url = TEST_URL + 'orders/v2/' + oid
+
+    order_description2 = copy.deepcopy(order_description)
+    order_description2['state'] = 'running'
+    order_description3 = copy.deepcopy(order_description)
+    order_description3['state'] = 'success'
+
     async with APlanetSession() as ps:
         cl = AOrdersClient(ps, base_url=TEST_URL)
-
-        get_url = TEST_URL + 'orders/v2/' + oid
-
-        order_description2 = copy.deepcopy(order_description)
-        order_description2['state'] = 'running'
-        order_description3 = copy.deepcopy(order_description)
-        order_description3['state'] = 'success'
 
         route = respx.get(get_url)
         route.side_effect = [

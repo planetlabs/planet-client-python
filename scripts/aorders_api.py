@@ -69,15 +69,22 @@ async def create_and_download(client):
     await client.download_order(oid)
 
 
+async def list_orders(client, limit=None):
+    orders = await client.list_orders(limit=limit)
+    print(f'asked for {limit}, got {len(orders)}')
+
+
 async def main():
     start = time.time()
     auth = (API_KEY, "")
     async with APlanetSession(auth=auth) as ps:
         client = AOrdersClient(ps)
         await asyncio.gather(
-            create_and_download(client),
-            create_and_download(client),
-            create_and_download(client),
+            list_orders(client),
+            list_orders(client, limit=5)
+            # create_and_download(client),
+            # create_and_download(client),
+            # create_and_download(client),
             # create_order(client),
             # cancel_order(client),
             # download_order(client),
