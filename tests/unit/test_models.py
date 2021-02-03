@@ -41,6 +41,40 @@ def mock_http_response(json=None, iter_content=None, text=None):
 
 
 @pytest.mark.asyncio
+async def test_Paged_iterator():
+    p1 = {'links': {'next': 'blah'},
+          'items': [1, 2]}
+    p2 = {'links': {},
+          'items': [3, 4]}
+
+    responses = [mock_http_response(json=p1), mock_http_response(json=p2)]
+    req = MagicMock()
+
+    async def do_get(req):
+        return responses.pop(0)
+
+    paged = models.Paged(req, do_get)
+    assert [1, 2, 3, 4] == [i async for i in paged]
+
+
+@pytest.mark.asyncio
+async def test_Paged_limit():
+    p1 = {'links': {'next': 'blah'},
+          'items': [1, 2]}
+    p2 = {'links': {},
+          'items': [3, 4]}
+
+    responses = [mock_http_response(json=p1), mock_http_response(json=p2)]
+    req = MagicMock()
+
+    async def do_get(req):
+        return responses.pop(0)
+
+    paged = models.Paged(req, do_get, limit=3)
+    assert [1, 2, 3] == [i async for i in paged]
+
+
+@pytest.mark.asyncio
 async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
     async def _aiter_bytes():
         data = open_test_img.read()
