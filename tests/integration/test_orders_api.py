@@ -272,25 +272,30 @@ async def test_poll(oid, order_description):
         state = await cl.poll(oid, state='running', wait=0)
         assert state == 'running'
 
-#
-#
-# def test_aggegated_order_stats(requests_mock, orders_client):
-#     stats_url = TEST_URL + 'stats/orders/v2/'
-#     LOGGER.debug(f'url: {stats_url}')
-#     example_stats = {
-#         "organization": {
-#             "queued_orders": 0,
-#             "running_orders": 6
-#         },
-#         "user": {
-#             "queued_orders": 0,
-#             "running_orders": 0
-#         }
-#     }
-#     requests_mock.get(stats_url, status_code=200, json=example_stats)
-#
-#     res = orders_client.aggregated_order_stats()
-#     assert res == example_stats
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_aggegated_order_stats():
+    stats_url = TEST_URL + 'stats/orders/v2/'
+    LOGGER.debug(f'url: {stats_url}')
+    example_stats = {
+        "organization": {
+            "queued_orders": 0,
+            "running_orders": 6
+        },
+        "user": {
+            "queued_orders": 0,
+            "running_orders": 0
+        }
+    }
+    mock_resp = httpx.Response(200, json=example_stats)
+    respx.get(stats_url).return_value = mock_resp
+
+    async with APlanetSession() as ps:
+        cl = AOrdersClient(ps, base_url=TEST_URL)
+        res = await cl.aggregated_order_stats()
+
+    assert res == example_stats
 #
 #
 # def test_download_asset(requests_mock, tmpdir, orders_client, open_test_img):
