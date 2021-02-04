@@ -14,8 +14,6 @@
 import copy
 import json
 import logging
-import os
-from pathlib import Path
 
 import httpx
 import pytest
@@ -24,29 +22,9 @@ import respx
 from planet.api import AOrdersClient, APlanetSession
 
 
-DATA_DIR = Path(os.path.dirname(__file__)).parents[0] / 'data'
 TEST_URL = 'http://MockNotRealURL/'
 
 LOGGER = logging.getLogger(__name__)
-
-
-@pytest.fixture
-def order_description():
-    order_name = 'order_description_b0cb3448-0a74-11eb-92a1-a3d779bb08e0.json'
-    order_filename = DATA_DIR / order_name
-    return json.load(open(order_filename, 'r'))
-
-
-@pytest.fixture
-def order_details():
-    order_name = 'order_details_psorthotile_analytic.json'
-    order_filename = DATA_DIR / order_name
-    return json.load(open(order_filename, 'r'))
-
-
-@pytest.fixture
-def oid():
-    return 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'
 
 
 @respx.mock

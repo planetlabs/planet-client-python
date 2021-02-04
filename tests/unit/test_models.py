@@ -41,6 +41,31 @@ def mock_http_response(json=None, iter_content=None, text=None):
 
 
 @pytest.mark.asyncio
+async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
+    async def _aiter_bytes():
+        data = open_test_img.read()
+        v = memoryview(data)
+
+        chunksize = 100
+        for i in range(math.ceil(len(v)/(chunksize))):
+            yield v[i*chunksize:min((i+1)*chunksize, len(v))]
+
+    r = MagicMock(name='response')
+    hr = MagicMock(name='http_response')
+    hr.aiter_bytes = _aiter_bytes
+    hr.num_bytes_downloaded = 0
+    hr.response.headers['Content-Length'] = 527
+    r.http_response = hr
+    body = models.StreamingBody(r)
+
+    filename = Path(str(tmpdir)) / 'test.tif'
+    await body.write(filename, progress_bar=False)
+
+    assert os.path.isfile(filename)
+    assert os.stat(filename).st_size == 527
+
+
+@pytest.mark.asyncio
 async def test_Paged_iterator():
     p1 = {'links': {'next': 'blah'},
           'items': [1, 2]}
@@ -74,26 +99,12 @@ async def test_Paged_limit():
     assert [1, 2, 3] == [i async for i in paged]
 
 
-@pytest.mark.asyncio
-async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
-    async def _aiter_bytes():
-        data = open_test_img.read()
-        v = memoryview(data)
+def test_Order_results(order_description):
+    order = models.Order(order_description)
+    assert len(order.results) == 3
 
-        chunksize = 100
-        for i in range(math.ceil(len(v)/(chunksize))):
-            yield v[i*chunksize:min((i+1)*chunksize, len(v))]
 
-    r = MagicMock(name='response')
-    hr = MagicMock(name='http_response')
-    hr.aiter_bytes = _aiter_bytes
-    hr.num_bytes_downloaded = 0
-    hr.response.headers['Content-Length'] = 527
-    r.http_response = hr
-    body = models.StreamingBody(r)
-
-    filename = Path(str(tmpdir)) / 'test.tif'
-    await body.write(filename, progress_bar=False)
-
-    assert os.path.isfile(filename)
-    assert os.stat(filename).st_size == 527
+def test_Order_locations(order_description):
+    order = models.Order(order_description)
+    expected_locations = ['location1', 'location2', 'location3']
+    assert order.locations == expected_locations

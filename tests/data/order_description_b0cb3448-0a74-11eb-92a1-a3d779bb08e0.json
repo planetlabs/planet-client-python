@@ -3,7 +3,22 @@
         "_self": "string",
         "results": [
             {
-                "location": "/foo"
+                "delivery": "success",
+                "expires_at": "2020-12-04T22:25:30.262Z",
+                "location": "location1",
+                "name": "name1"
+            },
+            {
+                "delivery": "success",
+                "expires_at": "2020-12-04T22:25:30.264Z",
+                "location": "location2",
+                "name": "name2"
+            },
+            {
+                "delivery": "success",
+                "expires_at": "2020-12-04T22:25:30.267Z",
+                "location": "location3",
+                "name": "name3"
             }
         ]
     },

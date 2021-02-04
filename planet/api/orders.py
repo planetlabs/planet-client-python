@@ -15,12 +15,9 @@
 import asyncio
 import copy
 import json
-# import itertools
 import logging
 import os
 import time
-
-# from aiostream import stream
 
 from . import models
 from .. import constants, specs
@@ -106,7 +103,7 @@ class AOrdersClient():
         req = self._request(url, method='POST', data=order_details.data)
         resp = await self._do_request(req)
 
-        order = Order(resp.json())
+        order = models.Order(resp.json())
         return order.id
 
     async def get_order(self, order_id):
@@ -121,7 +118,7 @@ class AOrdersClient():
         req = self._request(url, method='GET')
         resp = await self._do_request(req)
 
-        order = Order(resp.json())
+        order = models.Order(resp.json())
         return order
 
     async def cancel_order(self, order_id):
@@ -156,15 +153,16 @@ class AOrdersClient():
         resp = await self._do_request(req)
         return resp.json()
 
-    def aggregated_order_stats(self):
+    async def aggregated_order_stats(self):
         '''Get aggregated counts of active orders.
 
         :returns dict: aggregated order counts
         :raises planet.api.exceptions.APIException: On API error.
         '''
         url = self._stats_url()
-        res = self._get(url, models.JSON)
-        return res.data
+        req = self._request(url, method='GET')
+        resp = await self._do_request(req)
+        return resp.json()
 
     async def download_asset(self, location, filename=None, directory=None,
                              overwrite=True, progress_bar=False):
@@ -285,7 +283,9 @@ class AOrdersClient():
     async def _get_orders(self, url, params=None, limit=None):
         request = self._request(url, 'GET', params=params)
 
-        orders_paged = OrdersPaged(request, self._do_request, limit=limit)
+        orders_paged = models.OrdersPaged(
+            request, self._do_request, limit=limit)
+
         return [o async for o in orders_paged]
 
     @staticmethod
@@ -295,70 +295,6 @@ class AOrdersClient():
                 f'Order state (\'{state}\') should be one of: '
                 f'{ORDERS_STATES}'
             )
-
-
-class Order():
-    '''Managing description of an order returned from Orders API.
-
-    :param data: Response json describing order
-    :type data: dict
-    '''
-    LINKS_KEY = '_links'
-    RESULTS_KEY = 'results'
-    LOCATION_KEY = 'location'
-
-    def __init__(self, data):
-        self.data = data
-
-    def __str__(self):
-        return "<Order> " + json.dumps(self.data)
-
-    @property
-    def results(self):
-        '''Results for each item in order.
-
-        :return: result for each item in order
-        :rtype: list of dict
-        '''
-        links = self.data[self.LINKS_KEY]
-        results = links.get(self.RESULTS_KEY, None)
-        return results
-
-    @property
-    def locations(self):
-        '''Download locations for order results.
-
-        :return: download locations in order
-        :rtype: list of str
-        '''
-        return list(r[self.LOCATION_KEY] for r in self.results)
-
-    @property
-    def state(self):
-        '''State of the order.
-
-        :return: state of order
-        :rtype: str
-        '''
-        return self.data['state']
-
-    @property
-    def id(self):
-        '''ID of the order.
-
-        :return: id of order
-        :rtype: str
-        '''
-        return self.data['id']
-
-
-class OrdersPaged(models.Paged):
-    LINKS_KEY = '_links'
-    NEXT_KEY = 'next'
-    ITEMS_KEY = 'orders'
-
-    async def __anext__(self):
-        return Order(await super().__anext__())
 
 
 class OrderDetailsException(Exception):
