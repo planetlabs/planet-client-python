@@ -305,7 +305,7 @@ class Order():
         return self.data['id']
 
 
-class OrdersPaged(Paged):
+class Orders(Paged):
     LINKS_KEY = '_links'
     NEXT_KEY = 'next'
     ITEMS_KEY = 'orders'

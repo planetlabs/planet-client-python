@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # import io
+import copy
 import logging
 import math
 from mock import MagicMock
@@ -65,38 +66,63 @@ async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
     assert os.stat(filename).st_size == 527
 
 
-@pytest.mark.asyncio
-async def test_Paged_iterator():
+@pytest.fixture
+def get_pages():
     p1 = {'links': {'next': 'blah'},
           'items': [1, 2]}
     p2 = {'links': {},
           'items': [3, 4]}
-
-    responses = [mock_http_response(json=p1), mock_http_response(json=p2)]
-    req = MagicMock()
+    responses = [
+        mock_http_response(json=p1),
+        mock_http_response(json=p2)
+    ]
 
     async def do_get(req):
         return responses.pop(0)
 
-    paged = models.Paged(req, do_get)
+    return do_get
+
+
+@pytest.mark.asyncio
+async def test_Paged_iterator(get_pages):
+    req = MagicMock()
+    paged = models.Paged(req, get_pages)
     assert [1, 2, 3, 4] == [i async for i in paged]
 
 
 @pytest.mark.asyncio
-async def test_Paged_limit():
-    p1 = {'links': {'next': 'blah'},
-          'items': [1, 2]}
-    p2 = {'links': {},
-          'items': [3, 4]}
-
-    responses = [mock_http_response(json=p1), mock_http_response(json=p2)]
+async def test_Paged_limit(get_pages):
     req = MagicMock()
+    paged = models.Paged(req, get_pages, limit=3)
+    assert [1, 2, 3] == [i async for i in paged]
+
+
+@pytest.fixture
+def get_orders_pages(orders_page):
+    page2 = copy.deepcopy(orders_page)
+    del page2['_links']['next']
+    responses = [
+        mock_http_response(json=orders_page),
+        mock_http_response(json=page2)
+    ]
 
     async def do_get(req):
         return responses.pop(0)
 
-    paged = models.Paged(req, do_get, limit=3)
-    assert [1, 2, 3] == [i async for i in paged]
+    return do_get
+
+
+@pytest.mark.asyncio
+async def test_Orders(get_orders_pages):
+    req = MagicMock()
+    orders = models.Orders(req, get_orders_pages)
+    expected_ids = [
+        'f05b1ed7-11f0-43da-960c-a624f7c355c8',
+        '8d4799c4-5291-40c0-a7f5-adb9a974455d',
+        'f05b1ed7-11f0-43da-960c-a624f7c355c8',
+        '8d4799c4-5291-40c0-a7f5-adb9a974455d'
+    ]
+    assert expected_ids == [o.id async for o in orders]
 
 
 def test_Order_results(order_description):

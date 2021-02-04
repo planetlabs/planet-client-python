@@ -19,7 +19,7 @@ import logging
 import os
 import time
 
-from . import models
+from .models import Order, Orders, Request, StreamingBody
 from .. import constants, specs
 
 
@@ -82,8 +82,7 @@ class AOrdersClient():
         return self._base_url + BULK_PATH
 
     def _request(self, url, method, data=None, params=None, json=None):
-        return models.Request(url, method=method, data=data, params=params,
-                              json=json)
+        return Request(url, method=method, data=data, params=params, json=json)
 
     async def _do_request(self, request):
         return await self._session.request(request)
@@ -103,7 +102,7 @@ class AOrdersClient():
         req = self._request(url, method='POST', data=order_details.data)
         resp = await self._do_request(req)
 
-        order = models.Order(resp.json())
+        order = Order(resp.json())
         return order.id
 
     async def get_order(self, order_id):
@@ -118,7 +117,7 @@ class AOrdersClient():
         req = self._request(url, method='GET')
         resp = await self._do_request(req)
 
-        order = models.Order(resp.json())
+        order = Order(resp.json())
         return order
 
     async def cancel_order(self, order_id):
@@ -185,7 +184,7 @@ class AOrdersClient():
         req = self._request(location, method='GET')
 
         async with self._session.stream(req) as resp:
-            body = models.StreamingBody(resp)
+            body = StreamingBody(resp)
             dl_path = os.path.join(directory or '.', filename or body.name)
             await body.write(dl_path,
                              overwrite=overwrite,
@@ -283,9 +282,7 @@ class AOrdersClient():
     async def _get_orders(self, url, params=None, limit=None):
         request = self._request(url, 'GET', params=params)
 
-        orders_paged = models.OrdersPaged(
-            request, self._do_request, limit=limit)
-
+        orders_paged = Orders(request, self._do_request, limit=limit)
         return [o async for o in orders_paged]
 
     @staticmethod

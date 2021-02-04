@@ -27,18 +27,23 @@ TEST_URL = 'http://MockNotRealURL/'
 LOGGER = logging.getLogger(__name__)
 
 
-@respx.mock
-@pytest.mark.asyncio
-async def test_list_orders_basic(order_description):
-    list_url = TEST_URL + 'orders/v2/'
-    next_page_url = list_url + 'blob/?page_marker=IAmATest'
-
-    order1 = copy.deepcopy(order_description)
+@pytest.fixture
+def order_descriptions(order_description):
+    order1 = order_description
     order1['id'] = 'oid1'
     order2 = copy.deepcopy(order_description)
     order2['id'] = 'oid2'
     order3 = copy.deepcopy(order_description)
     order3['id'] = 'oid3'
+    return [order1, order2, order3]
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_list_orders_basic(order_descriptions):
+    list_url = TEST_URL + 'orders/v2/'
+    next_page_url = list_url + 'blob/?page_marker=IAmATest'
+
+    order1, order2, order3 = order_descriptions
 
     page1_response = {
         "_links": {
@@ -67,13 +72,10 @@ async def test_list_orders_basic(order_description):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_list_orders_state(order_description):
+async def test_list_orders_state(order_descriptions):
     list_url = TEST_URL + 'orders/v2/?state=failed'
 
-    order1 = copy.deepcopy(order_description)
-    order1['id'] = 'oid1'
-    order2 = copy.deepcopy(order_description)
-    order2['id'] = 'oid2'
+    order1, order2, _ = order_descriptions
 
     page1_response = {
         "_links": {
@@ -94,7 +96,7 @@ async def test_list_orders_state(order_description):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_list_orders_limit(order_description):
+async def test_list_orders_limit(order_descriptions):
     # check that the client doesn't try to get the next page when the
     # limit is already reached by providing link to next page but not
     # registering a response. if the client tries to get the next
@@ -103,12 +105,7 @@ async def test_list_orders_limit(order_description):
     list_url = TEST_URL + 'orders/v2/'
     nono_page_url = list_url + '?page_marker=OhNoNo'
 
-    order1 = copy.deepcopy(order_description)
-    order1['id'] = 'oid1'
-    order2 = copy.deepcopy(order_description)
-    order2['id'] = 'oid2'
-    order3 = copy.deepcopy(order_description)
-    order3['id'] = 'oid3'
+    order1, order2, order3 = order_descriptions
 
     page1_response = {
         "_links": {

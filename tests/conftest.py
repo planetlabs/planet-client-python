@@ -28,18 +28,27 @@ def open_test_img():
         yield img
 
 
+def _get_file_json(filename):
+    file_path = _test_data_path / filename
+    return json.load(open(file_path, 'r'))
+
+
 @pytest.fixture
 def order_description():
-    order_name = 'order_description_b0cb3448-0a74-11eb-92a1-a3d779bb08e0.json'
-    order_filename = _test_data_path / order_name
-    return json.load(open(order_filename, 'r'))
+    filename = 'order_description_b0cb3448-0a74-11eb-92a1-a3d779bb08e0.json'
+    return _get_file_json(filename)
 
 
 @pytest.fixture
 def order_details():
-    order_name = 'order_details_psorthotile_analytic.json'
-    order_filename = _test_data_path / order_name
-    return json.load(open(order_filename, 'r'))
+    filename = 'order_details_psorthotile_analytic.json'
+    return _get_file_json(filename)
+
+
+@pytest.fixture
+def orders_page():
+    filename = 'orders_page.json'
+    return _get_file_json(filename)
 
 
 @pytest.fixture
