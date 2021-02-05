@@ -14,6 +14,10 @@
 import copy
 import json
 import logging
+import math
+import os
+from pathlib import Path
+
 
 import httpx
 import pytest
@@ -36,6 +40,7 @@ def order_descriptions(order_description):
     order3 = copy.deepcopy(order_description)
     order3['id'] = 'oid3'
     return [order1, order2, order3]
+
 
 @respx.mock
 @pytest.mark.asyncio
@@ -296,75 +301,100 @@ async def test_aggegated_order_stats():
         res = await cl.aggregated_order_stats()
 
     assert res == example_stats
-#
-#
-# def test_download_asset(requests_mock, tmpdir, orders_client, open_test_img):
-#     dl_url = TEST_URL + 'download/?token=IAmAToken'
-#
-#     with open_test_img as img:
-#         requests_mock.get(
-#             dl_url,
-#             status_code=200,
-#             body=img,
-#             headers={
-#                 'Content-Type': 'image/tiff',
-#                 'Content-Length': '527',
-#                 'Content-Disposition': 'attachment; filename="img.tif"'
-#             })
-#
-#         filename = orders_client.download_asset(
-#                 dl_url, directory=str(tmpdir))
-#         assert Path(filename).name == 'img.tif'
-#         assert os.path.isfile(filename)
-#
-#     requests_mock.get(
-#         dl_url,
-#         status_code=200,
-#         json={'key': 'value'},
-#         headers={
-#             'Content-Type': 'application/json',
-#             'Content-Disposition': 'attachment; filename="metadata.json"'
-#         })
-#
-#     filename = orders_client.download_asset(
-#             dl_url, directory=str(tmpdir))
-#     assert json.loads(open(filename).read()) == {'key': 'value'}
-#
-#
-# def test_download_order(requests_mock, tmpdir, orders_client,
-#                         order_description, oid):
-#     dl_url1 = TEST_URL + 'download/1?token=IAmAToken'
-#     dl_url2 = TEST_URL + 'download/2?token=IAmAnotherToken'
-#     order_description['_links']['results'] = [
-#         {'location': dl_url1},
-#         {'location': dl_url2}
-#     ]
-#
-#     get_url = TEST_URL + 'orders/v2/' + oid
-#     requests_mock.get(get_url, status_code=200, json=order_description)
-#
-#     requests_mock.get(
-#         dl_url1,
-#         status_code=200,
-#         json={'key': 'value'},
-#         headers={
-#             'Content-Type': 'application/json',
-#             'Content-Disposition': 'attachment; filename="m1.json"'
-#         })
-#
-#     requests_mock.get(
-#         dl_url2,
-#         status_code=200,
-#         json={'key2': 'value2'},
-#         headers={
-#             'Content-Type': 'application/json',
-#             'Content-Disposition': 'attachment; filename="m2.json"'
-#         })
-#
-#     filenames = orders_client.download_order(oid, directory=str(tmpdir))
-#     assert len(filenames) == 2
-#     assert json.loads(open(filenames[0]).read()) == {'key': 'value'}
-#     assert json.loads(open(filenames[1]).read()) == {'key2': 'value2'}
-#
-#
 
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_download_asset_md(tmpdir):
+    dl_url = TEST_URL + 'download/?token=IAmAToken'
+
+    md_json = {'key': 'value'}
+    md_headers = {
+        'Content-Type': 'application/json',
+        'Content-Disposition': 'attachment; filename="metadata.json"'
+    }
+    mock_resp = httpx.Response(200, json=md_json, headers=md_headers)
+    respx.get(dl_url).return_value = mock_resp
+
+    async with APlanetSession() as ps:
+        cl = AOrdersClient(ps, base_url=TEST_URL)
+        filename = await cl.download_asset(dl_url, directory=str(tmpdir))
+
+    assert json.loads(open(filename).read()) == {'key': 'value'}
+    assert Path(filename).name == 'metadata.json'
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.skip(reason="https://github.com/lundberg/respx/issues/130")
+async def test_download_asset_img(tmpdir, open_test_img):
+    dl_url = TEST_URL + 'download/?token=IAmAToken'
+
+    img_headers = {
+        'Content-Type': 'image/tiff',
+        'Content-Length': '527',
+        'Content-Disposition': 'attachment; filename="img.tif"'
+    }
+
+    async def _stream_img():
+        data = open_test_img.read()
+        v = memoryview(data)
+
+        chunksize = 100
+        for i in range(math.ceil(len(v)/(chunksize))):
+            yield v[i*chunksize:min((i+1)*chunksize, len(v))]
+
+    mock_resp = httpx.Response(200, stream=_stream_img(), headers=img_headers)
+    respx.get(dl_url).return_value = mock_resp
+
+    async with APlanetSession() as ps:
+        cl = AOrdersClient(ps, base_url=TEST_URL)
+        filename = await cl.download_asset(dl_url, directory=str(tmpdir))
+
+    assert Path(filename).name == 'img.tif'
+    assert os.path.isfile(filename)
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_download_order(tmpdir, order_description, oid):
+    dl_url1 = TEST_URL + 'download/1?token=IAmAToken'
+    dl_url2 = TEST_URL + 'download/2?token=IAmAnotherToken'
+    order_description['_links']['results'] = [
+        {'location': dl_url1},
+        {'location': dl_url2}
+    ]
+
+    get_url = TEST_URL + 'orders/v2/' + oid
+    mock_resp = httpx.Response(200, json=order_description)
+    respx.get(get_url).return_value = mock_resp
+
+    mock_resp1 = httpx.Response(
+        200,
+        json={'key': 'value'},
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="m1.json"'
+        })
+    respx.get(dl_url1).return_value = mock_resp1
+
+    mock_resp1 = httpx.Response(
+        200,
+        json={'key2': 'value2'},
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="m2.json"'
+        })
+    respx.get(dl_url2).return_value = mock_resp1
+
+    async with APlanetSession() as ps:
+        cl = AOrdersClient(ps, base_url=TEST_URL)
+        filenames = await cl.download_order(oid, directory=str(tmpdir))
+
+    assert len(filenames) == 2
+
+    assert json.loads(open(filenames[0]).read()) == {'key': 'value'}
+    assert Path(filenames[0]).name == 'm1.json'
+
+    assert json.loads(open(filenames[1]).read()) == {'key2': 'value2'}
+    assert Path(filenames[1]).name == 'm2.json'

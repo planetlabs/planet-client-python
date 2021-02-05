@@ -69,7 +69,7 @@ def get_filename(response):
     :rtype: str
     """
     name = (get_filename_from_headers(response.headers) or
-            get_filename_from_url(response.url) or
+            get_filename_from_url(str(response.url)) or
             get_random_filename(response.headers.get('content-type')))
     return name
 
