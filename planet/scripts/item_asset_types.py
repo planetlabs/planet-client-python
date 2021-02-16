@@ -104,7 +104,7 @@ def get_asset_types():
     if _asset_types is None:
         _asset_types = DEFAULT_ASSET_TYPES
         data = _get_json_or_raise(ASSET_TYPE_URL)
-        _asset_types = [a['id'] for a in data['asset_types']]
+        _asset_types = list(sorted([a['id'] for a in data['asset_types']]))
     return _asset_types
 
 
