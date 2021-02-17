@@ -28,7 +28,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 class APlanetSession():
-    """Asynchronous communication with the Planet server"""
+    '''Context manager for asynchronous communication with the Planet server.
+
+    Authentication for Planet servers is given as ('', '<api key>').
+
+    :param auth: Planet server authentication.
+    :type auth: httpx.Auth or tuple.
+    '''
 
     def __init__(self, auth=None):
         self._client = httpx.AsyncClient(auth=auth)
@@ -81,14 +87,25 @@ class APlanetSession():
     async def _request(self, request, stream=False):
         '''Submit a request
 
-        :param :py:Class:`planet.api.models.Request` req: request to submit
-        :returns: :py:Class:`planet.api.models.Response`
+        :param request: Request to submit
+        :type request: planet.api.models.Request
+        :param stream: Get the body as a stream. Defaults to False.
+        :type stream: boolean, optional
+        :returns: response
+        :rtype: planet.api.models.Response
         '''
         http_resp = await self._client.send(request.http_request,
                                             stream=stream)
         return models.Response(request, http_resp)
 
     def stream(self, request):
+        '''Submit a request and get the response as a stream context manager.
+
+        :param request: Request to submit
+        :type request: planet.api.models.Request
+        :returns: Context manager providing the body as a stream.
+        :rtype: APlanetStream
+        '''
         return APlanetStream(
             session=self,
             request=request
@@ -143,7 +160,13 @@ class APlanetSession():
 
 
 class APlanetStream():
-    """Asynchronous response stream from Planet server"""
+    '''Context manager for asynchronous response stream from Planet server.
+
+    :param session: Open session to Planet server
+    :type session: APlanetSession
+    :param request: Request to submit
+    :type request: planet.api.models.Request
+    '''
     def __init__(self, session, request):
         self.session = session
         self.request = request

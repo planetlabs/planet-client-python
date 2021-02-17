@@ -36,13 +36,13 @@ class Request():
 
     :param url: URL of API endpoint
     :type url: str
-    :param params: values to send in the query string, defaults to None
+    :param params: Values to send in the query string. Defaults to None.
     :type params: dict, list of tuples, or bytes, optional
-    :param body_type: Expected response body type, defaults to `Body`
-    :type body_type: type, optional
-    :param data: object to send in the body, defaults to None
+    :param data: Object to send in the body. Defaults to None.
     :type data: dict, list of tuples, bytes, or file-like object, optional
-    :param method: HTTP request method, defaults to 'GET'
+    :param json: JSON to send. Defaults to None.
+    :type json: dict, optional
+    :param method: HTTP request method. Defaults to 'GET'
     :type method: str, optional
     :raises RequestException: When provided `body_type` is not a subclass of
         :py:class:`planet.api.models.Body`
@@ -67,6 +67,11 @@ class Request():
 
     @url.setter
     def url(self, url):
+        '''Set the url.
+
+        :param url: URL of API endpoint
+        :type url: str
+        '''
         self.http_request.url = httpx.URL(url)
 
 
@@ -96,6 +101,11 @@ class Response():
 
     @property
     def json(self):
+        '''Response json.
+
+        :returns: json
+        :rtype: dict
+        '''
         return self.http_response.json
 
     async def aclose(self):
@@ -126,14 +136,28 @@ class StreamingBody():
 
     @property
     def size(self):
+        '''The size of the body.
+
+        :returns: size of the body
+        :rtype: int
+        '''
         return int(self.response.headers['Content-Length'])
 
     @property
     def num_bytes_downloaded(self):
+        '''The number of bytes downloaded.
+
+        :returns: number of bytes downloaded
+        :rtype: int
+        '''
         return self.response.num_bytes_downloaded
 
     def last_modified(self):
-        '''Read the last-modified header as a datetime, if present.'''
+        '''Read the last-modified header as a datetime, if present.
+
+        :returns: last-modified header
+        :rtype: datatime or None
+        '''
         lm = self.response.headers.get('last-modified', None)
         return datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S GMT') if lm \
             else None
@@ -143,6 +167,16 @@ class StreamingBody():
             yield c
 
     async def write(self, filename, overwrite=True, progress_bar=True):
+        '''Write the body to a file.
+
+        :param filename: Name to assign to downloaded file.
+        :type filename: str
+        :param overwrite: Overwrite any existing files. Defaults to True
+        :type overwrite: boolean, optional
+        :param progress_bar: Show progress bar during download. Defaults to
+            True.
+        :type progress_bar: boolean, optional
+        '''
         class _LOG():
             def __init__(self, total, unit, filename, disable):
                 self.total = total
@@ -183,6 +217,19 @@ class StreamingBody():
 
 
 class Paged():
+    '''Asynchronous iterator over results in a paged resource from the Planet
+    server.
+
+    Each returned result is a json dict.
+
+    :param request: Open session connected to server
+    :type request: planet.api.http.ASession
+    :param do_request_fcn: Function for submitting a request. Takes as input
+        a planet.api.models.Request and returns planet.api.models.Response.
+    :type do_request_fcn: function
+    :param limit: Limit orders to given limit. Defaults to None
+    :type limit: int, optional
+    '''
     LINKS_KEY = 'links'
     NEXT_KEY = 'next'
     ITEMS_KEY = 'items'
@@ -202,6 +249,11 @@ class Paged():
         return self
 
     async def __anext__(self):
+        '''Asynchronous next.
+
+        :returns: next item as json
+        :rtype: dict
+        '''
         # This was implemented because traversing _get_pages()
         # in an async generator was resulting in retrieving all the
         # pages, when the goal is to stop retrieval when the limit
@@ -306,6 +358,8 @@ class Order():
 
 
 class Orders(Paged):
+    '''Asynchronous iterator over Orders from a paged response describing
+    orders.'''
     LINKS_KEY = '_links'
     NEXT_KEY = 'next'
     ITEMS_KEY = 'orders'
