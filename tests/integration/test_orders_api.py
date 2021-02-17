@@ -326,7 +326,6 @@ async def test_download_asset_md(tmpdir):
 
 @respx.mock
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="https://github.com/lundberg/respx/issues/130")
 async def test_download_asset_img(tmpdir, open_test_img):
     dl_url = TEST_URL + 'download/?token=IAmAToken'
 
@@ -344,7 +343,11 @@ async def test_download_asset_img(tmpdir, open_test_img):
         for i in range(math.ceil(len(v)/(chunksize))):
             yield v[i*chunksize:min((i+1)*chunksize, len(v))]
 
-    mock_resp = httpx.Response(200, stream=_stream_img(), headers=img_headers)
+    # populate request parameter to avoid respx cloning, which throws
+    # an error caused by respx and not this code
+    # https://github.com/lundberg/respx/issues/130
+    mock_resp = httpx.Response(200, stream=_stream_img(), headers=img_headers,
+                               request='donotcloneme')
     respx.get(dl_url).return_value = mock_resp
 
     async with APlanetSession() as ps:
