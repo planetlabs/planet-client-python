@@ -1,3 +1,7 @@
+1.4.7 (2021-02-16)
+
+- Add basic_l1_all_frames asset type
+
 1.4.6 (2020-05-18)
 
 - New: you can now pass a search string to the Orders CLI via `--ids_from_search`
@@ -45,7 +49,7 @@
 - report the default value for item limit
 - replace hardcoded values with global variables
 - add header for data examples in Examples page
-- adding before, after options, separating `features list` from `features 
+- adding before, after options, separating `features list` from `features
 - Added default limit of 100 to `analytics collections features list`
 - Added separate `analytics collections features list-all` that will keep retrieving results with no limit
 - Added before, after options to both `analytics collections features list` and `analytics collections features list-all`

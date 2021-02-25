@@ -54,8 +54,9 @@ DEFAULT_ASSET_TYPES = [
     'basic_analytic_dn_xml_nitf', 'basic_analytic_nitf', 'basic_analytic_rpc',
     'basic_analytic_rpc_nitf', 'basic_analytic_sci', 'basic_anlytic_udm',
     'basic_analytic_udm2', 'basic_analytic_xml', 'basic_analytic_xml_nitf',
-    'basic_l1a_panchromatic_dn', 'basic_l1a_panchromatic_dn_rpc',
-    'basic_panchromatic', 'basic_panchromatic_dn', 'basic_panchromatic_dn_rpc',
+    'basic_l1a_all_frames', 'basic_l1a_panchromatic_dn',
+    'basic_l1a_panchromatic_dn_rpc', 'basic_panchromatic',
+    'basic_panchromatic_dn', 'basic_panchromatic_dn_rpc',
     'basic_panchromatic_rpc', 'basic_panchromatic_udm2', 'basic_udm',
     'basic_udm2', 'browse', 'metadata_aux', 'metadata_txt', 'ortho_analytic',
     'ortho_analytic_dn', 'ortho_analytic_hh', 'ortho_analytic_hv',
@@ -103,7 +104,7 @@ def get_asset_types():
     if _asset_types is None:
         _asset_types = DEFAULT_ASSET_TYPES
         data = _get_json_or_raise(ASSET_TYPE_URL)
-        _asset_types = [a['id'] for a in data['asset_types']]
+        _asset_types = list(sorted([a['id'] for a in data['asset_types']]))
     return _asset_types
 
 
