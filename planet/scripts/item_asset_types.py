@@ -18,6 +18,7 @@ DEFAULT_ITEM_TYPES = [
     'MYD09GA',
     'MYD09GQ',
     'PSOrthoTile',
+    'PSScene',
     'PSScene3Band',
     'PSScene4Band',
     'REOrthoTile',
