@@ -11,17 +11,11 @@
   ],
   "delivery": {
     "single_archive": true,
-    "archive_type": "string",
-    "archive_filename": "string",
-    "layout": {
-      "format": "standard"
-    }},
+    "archive_type": "zip",
+    "archive_filename": "string"
+  },
   "tools": [
-    {
-      "anchor_item": "string",
-      "method": "string",
-      "anchor_bundle": "string",
-      "strict": true
-    }
+    {"file_format": "COG"},
+    {"toar": {"scale_factor": 10000}}
   ]
 }

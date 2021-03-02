@@ -20,8 +20,57 @@ from pathlib import Path
 
 DATA_DIR = 'data'
 PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2020_03_10.json'
+SUPPORTED_TOOLS = ['band_math', 'clip', 'composite', 'coregister',
+                   'file_format', 'reproject', 'tile', 'toar', 'harmonize']
+SUPPORTED_ORDER_TYPES = ['full', 'partial']
+SUPPORTED_ARCHIVE_TYPES = ['zip']
 
 LOGGER = logging.getLogger(__name__)
+
+
+class SpecificationException(Exception):
+    '''No match was found'''
+    pass
+
+
+def validate_bundle(bundle):
+    supported = get_product_bundles()
+    return _validate_field(bundle, supported, 'product_bundle')
+
+
+def validate_item_type(item_type, bundle):
+    bundle = validate_bundle(bundle)
+    supported = get_item_types(bundle)
+    return _validate_field(item_type, supported, 'item_type')
+
+
+def validate_order_type(order_type):
+    return _validate_field(order_type, SUPPORTED_ORDER_TYPES, 'order_type')
+
+
+def validate_archive_type(archive_type):
+    return _validate_field(
+        archive_type, SUPPORTED_ARCHIVE_TYPES, 'archive_type')
+
+
+def validate_tool(tool):
+    return _validate_field(tool, SUPPORTED_TOOLS, 'tool')
+
+
+def _validate_field(value, supported, field_name=None):
+    try:
+        value = get_match(value, supported)
+    except(NoMatchException):
+        msg = f'\'{value}\' not in {list(supported)}'
+        if field_name:
+            msg = f'{field_name} - ' + msg
+        raise SpecificationException(msg)
+    return value
+
+
+class NoMatchException(Exception):
+    '''No match was found'''
+    pass
 
 
 def get_match(test_entry, spec_entries):
@@ -30,8 +79,13 @@ def get_match(test_entry, spec_entries):
     This is helpful for working with the API spec, where the capitalization
     is hard to remember but must be exact otherwise the API throws an
     exception.'''
-    return next(t for t in spec_entries
-                if t.lower() == test_entry.lower())
+    try:
+        match = next(t for t in spec_entries
+                     if t.lower() == test_entry.lower())
+    except(StopIteration):
+        raise NoMatchException
+
+    return match
 
 
 def get_product_bundles():

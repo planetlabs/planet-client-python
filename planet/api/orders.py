@@ -13,14 +13,14 @@
 # the License.
 """Functionality for interacting with the orders api"""
 import asyncio
-import copy
 import json
 import logging
 import os
 import time
 
+from .. import constants
 from .models import Order, Orders, Request, StreamingBody
-from .. import constants, specs
+from .order_details import OrderDetails
 
 
 BASE_URL = constants.PLANET_BASE_URL + 'compute/ops/'
@@ -96,10 +96,12 @@ class AOrdersClient():
         :rtype: str
         '''
         if not isinstance(order_details, OrderDetails):
-            order_details = OrderDetails(order_details)
+            order_details = OrderDetails.from_dict(order_details)
+
+        data = json.dumps(order_details.to_dict())
 
         url = self._orders_url()
-        req = self._request(url, method='POST', data=order_details.data)
+        req = self._request(url, method='POST', data=data)
         resp = await self._do_request(req)
 
         order = Order(resp.json())
@@ -301,65 +303,4 @@ class AOrdersClient():
             raise OrdersClientException(
                 f'Order state (\'{state}\') should be one of: '
                 f'{ORDERS_STATES}'
-            )
-
-
-class OrderDetailsException(Exception):
-    """Exceptions thrown by OrderDetails"""
-    pass
-
-
-class OrderDetails():
-    '''Validating and preparing an order description for submission.
-
-    :param details: Specification of order to be created.
-    :type details: dict
-    :raises OrderDetailsException: When provided `item_type` or
-        `product_bundle` is not supported.
-    '''
-    BUNDLE_KEY = 'product_bundle'
-
-    def __init__(self, details):
-        self._data = copy.deepcopy(details)
-        self._validate_details()
-
-    @property
-    def data(self):
-        '''The order details as a string representing json.
-
-        :return: order details json
-        :rtype: str
-        '''
-        return json.dumps(self._data)
-
-    def _validate_details(self):
-        '''Try valiently to get details to match schema.
-
-        Checks that details match the schema and, where possible, changes
-        the capitalization to fit the schema. Also gives helpful hints
-        on valid supported bundles and item types.'''
-        products = self._data['products']
-        for p in products:
-            self._validate_bundle(p)
-            self._validate_item_type(p)
-
-    def _validate_bundle(self, product):
-        supported = specs.get_product_bundles()
-        self._substitute_supported(product, self.BUNDLE_KEY, supported)
-
-    def _validate_item_type(self, product):
-        key = 'item_type'
-        bundle = product[self.BUNDLE_KEY]
-        supported = specs.get_item_types(bundle)
-        self._substitute_supported(product, key, supported)
-
-    @staticmethod
-    def _substitute_supported(product, key, supported):
-        try:
-            matched_type = specs.get_match(product[key], supported)
-            LOGGER.debug(f'{key}: {matched_type}')
-            product[key] = matched_type
-        except(StopIteration):
-            raise OrderDetailsException(
-                f'{key} - \'{product[key]}\' not in {supported}'
             )
