@@ -14,7 +14,7 @@ The client provides access to the following Planet APIs:
 
 ### Prerequisites
 
-* Python version 3.6+
+* Python version 3.7+
 
 ### Install package
 
