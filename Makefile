@@ -1,12 +1,5 @@
 GH_PAGES_SOURCES = planet docs Makefile
 
-check:
-	py.test --doctest-modules planet tests
-	flake8 planet tests
-
-coverage:
-	py.test --doctest-modules --cov planet --cov-report=html:htmlcov tests planet/api
-
 pex:
 	# disable-cache seemed required or the older version would be used
 	pex . -o dist/planet -e planet.scripts:main --disable-cache

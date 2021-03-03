@@ -11,20 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from pathlib import Path
 
-from codecs import open as codecs_open
 from setuptools import setup, find_packages
-
-
-# Get the long description from the relevant file
-# TODO: consider moving to markdown from rst at this point
-try:
-    with codecs_open('README.rst', encoding='utf-8') as f:
-        long_description = f.read()
-except:
-    # @todo for now, fall back to this - pex fails to resolve the README
-    long_description = ''
-
 
 with open('planet/api/__version__.py') as f:
     for line in f:
@@ -53,7 +42,7 @@ dev_requires = [
 setup(name='planet',
       version=version,
       description=u"Planet API Client",
-      long_description=long_description,
+      long_description=Path("README.md").read_text("utf-8"),
       classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: Console',
