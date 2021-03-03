@@ -16,12 +16,13 @@ import copy
 import datetime
 import json
 import logging
+import mimetypes
+import random
+import re
+import string
 
 import httpx
 from tqdm.asyncio import tqdm
-
-from . import utils
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -120,6 +121,7 @@ class StreamingBody():
         '''
     def __init__(self, response):
         self.response = response.http_response
+        self.url = response.request.url
 
     @property
     def name(self):
@@ -132,7 +134,11 @@ class StreamingBody():
         :returns: name of this resource
         :rtype: str
         '''
-        return utils.get_filename(self.response)
+        name = (_get_filename_from_headers(self.response.headers) or
+                _get_filename_from_url(self.url) or
+                _get_random_filename(
+                    self.response.headers.get('content-type')))
+        return name
 
     @property
     def size(self):
@@ -214,6 +220,42 @@ class StreamingBody():
                         previous = new
         except FileExistsError:
             LOGGER.info(f'File {filename} exists, not overwriting')
+
+
+def _get_filename_from_headers(headers):
+    """Get a filename from the Content-Disposition header, if available.
+
+    :param headers dict: a ``dict`` of response headers
+    :returns: a filename (i.e. ``basename``)
+    :rtype: str or None
+    """
+    cd = headers.get('content-disposition', '')
+    match = re.search('filename="?([^"]+)"?', cd)
+    return match.group(1) if match else None
+
+
+def _get_filename_from_url(url):
+    """Get a filename from a URL.
+
+    :returns: a filename (i.e. ``basename``)
+    :rtype: str or None
+    """
+    path = url.path
+    name = path[path.rfind('/')+1:]
+    return name or None
+
+
+def _get_random_filename(content_type=None):
+    """Get a pseudo-random, Planet-looking filename.
+
+    :returns: a filename (i.e. ``basename``)
+    :rtype: str
+    """
+    extension = mimetypes.guess_extension(content_type or '') or ''
+    characters = string.ascii_letters + '0123456789'
+    letters = ''.join(random.sample(characters, 8))
+    name = 'planet-{}{}'.format(letters, extension)
+    return name
 
 
 class Paged():

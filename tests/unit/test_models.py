@@ -18,7 +18,9 @@ import math
 from mock import MagicMock
 import os
 from pathlib import Path
+import re
 
+from httpx import URL
 import pytest
 
 from planet.api import models
@@ -41,6 +43,98 @@ def mock_http_response(json=None, iter_content=None, text=None):
     return m
 
 
+def test_StreamingBody_name():
+    r = MagicMock(name='response')
+    r.request.url = URL('https://planet.com/path/to/example.tif?foo=f6f1')
+    hr = MagicMock(name='http_response')
+    hr.headers = {
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256',
+        'content-disposition': 'attachment; filename="open_california.tif"'
+    }
+    r.http_response = hr
+    body = models.StreamingBody(r)
+
+    assert body.name == 'open_california.tif'
+
+    r = MagicMock(name='response')
+    r.request.url = URL('https://planet.com/path/to/example.tif?foo=f6f1')
+    hr = MagicMock(name='http_response')
+    hr.headers = {
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256',
+    }
+    r.http_response = hr
+    body = models.StreamingBody(r)
+
+    assert body.name == 'example.tif'
+
+    r = MagicMock(name='response')
+    r.request.url = URL('https://planet.com/path/to/noname/')
+    hr = MagicMock(name='http_response')
+    hr.headers = {
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256',
+    }
+    r.http_response = hr
+    body = models.StreamingBody(r)
+
+    assert body.name.startswith('planet-')
+    assert body.name.endswith('.tiff')
+
+
+@pytest.mark.parametrize('headers,expected', [
+    ({
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256',
+        'content-disposition': 'attachment; filename="open_california.tif"'
+    }, 'open_california.tif'),
+    ({
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256'
+    }, None),
+    ({}, None)
+])
+def test__get_filename_from_headers(headers, expected):
+    assert models._get_filename_from_headers(headers) == expected
+
+
+@pytest.mark.parametrize('url,expected', [
+    (URL('https://planet.com/'), None),
+    (URL('https://planet.com/path/to/'), None),
+    (URL('https://planet.com/path/to/example.tif'), 'example.tif'),
+    (URL('https://planet.com/path/to/example.tif?foo=f6f1&bar=baz'),
+     'example.tif'),
+    (URL('https://planet.com/path/to/example.tif?foo=f6f1#quux'),
+     'example.tif'),
+])
+def test__get_filename_from_url(url, expected):
+    assert models._get_filename_from_url(url) == expected
+
+
+@pytest.mark.parametrize('content_type,check', [
+    (None, lambda x: re.match(r'^planet-[a-z0-9]{8}$', x, re.I) is not None),
+    ('image/tiff', lambda x: x.endswith(('.tif', '.tiff'))),
+])
+def test__get_random_filename(content_type, check):
+    assert check(models._get_random_filename(content_type))
+
+
 @pytest.mark.asyncio
 async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
     async def _aiter_bytes():
@@ -55,7 +149,7 @@ async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
     hr = MagicMock(name='http_response')
     hr.aiter_bytes = _aiter_bytes
     hr.num_bytes_downloaded = 0
-    hr.response.headers['Content-Length'] = 527
+    hr.headers['Content-Length'] = 527
     r.http_response = hr
     body = models.StreamingBody(r)
 
