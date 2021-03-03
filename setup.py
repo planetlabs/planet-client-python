@@ -24,20 +24,28 @@ with open('planet/api/__version__.py') as f:
             continue
 
 
+install_requires = [
+    'httpx>=0.16',
+    'tqdm>=4.56',
+    'pywin32 >= 1.0;platform_system=="Windows"'
+]
+
 test_requires = [
     'pytest',
     'pytest-asyncio',
-    'respx'
+    'pytest-cov',
+    'respx==0.16.3'
 ]
 
-dev_requires = [
+lint_requires = [
     'flake8',
-    'setuptools',
-    'pex',
-    'pytest-cov',
-    'sphinx',
-    'wheel',
+    # 'setuptools',
+    # 'pex',
+    # 'pytest-cov',
+    # 'sphinx',
+    # 'wheel',
 ]
+
 
 setup(name='planet',
       version=version,
@@ -71,7 +79,7 @@ setup(name='planet',
       ],
       extras_require={
           'test': test_requires,
-          'dev': test_requires + dev_requires,
+          'dev': test_requires + lint_requires,
       },
       entry_points="""
       [console_scripts]
