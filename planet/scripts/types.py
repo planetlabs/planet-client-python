@@ -49,8 +49,9 @@ metavar_docs = {
     named 'filename'. Otherwise, the value is assumed to be JSON.
     ''',
     'ITEM-TYPE': '''Specify Item-Type(s) of interest. Case-insensitive,
-    supports glob-matching, e.g. ``psscene*`` means ``PSScene3Band`` and
-    ``PSScene4Band``. The ``all`` value specifies every Item-Type.
+    supports glob-matching, e.g. ``psscene*`` means ``PSScene``,
+    ``PSScene3Band``, and ``PSScene4Band``. The ``all`` value specifies
+    every Item-Type.
     ''',
     'ASSET-TYPE': '''Specify Asset-Type(s) of interest. Case-insenstive,
     supports glob-matching, e.g. ``visual*`` specifies ``visual`` and
@@ -132,7 +133,7 @@ class Bundle(_LenientChoice):
 class ItemType(_LenientChoice):
     name = 'item-type'
     allow_all = True
-    allow_prefix = True
+    allow_prefix = False
 
     def __init__(self):
         _LenientChoice.__init__(self, DEFAULT_ITEM_TYPES)

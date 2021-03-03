@@ -35,10 +35,11 @@ def test_item_type():
     check = convert_asserter(ItemType())
 
     check('all', DEFAULT_ITEM_TYPES)
-    check('psscene', ['PSScene3Band', 'PSScene4Band'])
+    check('psscene*', ['PSScene', 'PSScene3Band', 'PSScene4Band'])
     check('Sentinel2L1C', ['Sentinel2L1C'])
-    check('psscene,sent', ['PSScene3Band', 'PSScene4Band',
-                           'Sentinel1', 'Sentinel2L1C'])
+    check('psscene*,sent*', [
+        'PSScene', 'PSScene3Band', 'PSScene4Band', 'Sentinel1', 'Sentinel2L1C'
+    ])
 
     with pytest.raises(Exception) as e:
         ItemType().convert('x', None, None)

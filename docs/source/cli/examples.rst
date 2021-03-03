@@ -14,9 +14,9 @@ Get recently acquired PSScene3Band ItemType records::
 
     planet data search --item-type PSScene3Band --date acquired gt 2017-02-14
 
-Item types can be specified case-insensitively, with prefix matching in the CLI::
+Item types can be specified case-insensitively, with glob matching in the CLI::
 
-    planet data search --item-type psscene --date acquired gt 2017-02-14
+    planet data search --item-type psscene* --date acquired gt 2017-02-14
 
 Search for a month. Note: criteria are applied as an AND filter::
 

@@ -30,8 +30,8 @@ ITEM-TYPE
 
 
 Specify Item-Type(s) of interest. Case-insensitive,
-supports glob-matching, e.g. ``psscene*`` means ``PSScene3Band`` and
-``PSScene4Band``. The ``all`` value specifies every Item-Type.
+supports glob-matching, e.g. ``psscene*`` means ``PSScene``, ``PSScene3Band``, and
+ ``PSScene4Band``. The ``all`` value specifies every Item-Type.
 
 
 .. _cli-metavar-FILTER:
@@ -231,7 +231,7 @@ Usage: create-search [OPTIONS]
      - BOOLEAN
 
    * - name
-     - 
+     -
 
      - TEXT
 
