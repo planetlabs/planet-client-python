@@ -230,7 +230,7 @@ class AOrdersClient():
                      for location in locations]
         return filenames
 
-    async def poll(self, order_id, state=None, wait=10):
+    async def poll(self, order_id, state=None, wait=10, verbose=False):
         '''Poll for order status until order reaches desired state.
 
         :param order_id: The ID of the order
@@ -238,8 +238,10 @@ class AOrdersClient():
         :param state: State to poll until. If multiple, use list. Defaults to
             any completed state.
         :type state: str, list of str
-        :param int wait: Time (in seconds) between polls
+        :param wait: Time (in seconds) between polls
         :type wait: int
+        :param verbose: Print current state at each poll. Defaults to False
+        :type verbose: bool
         :return: Completed state of the order
         :rtype: str
         :raises planet.api.exceptions.APIException: On API error.
@@ -261,7 +263,10 @@ class AOrdersClient():
             t = time.time()
             order = await self.get_order(order_id)
             state = order.state
-            LOGGER.info(f'order {order_id} state: {state}')
+            msg = f'order {order_id} state: {state}'
+            LOGGER.info(msg)
+            if verbose:
+                print(msg)
 
             completed = state in states
             if not completed:
