@@ -11,8 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pytest
 import re
+
+from httpx import URL
+import pytest
+
 from planet.api import utils
 
 
@@ -39,11 +42,13 @@ def test_get_filename_from_headers(headers, expected):
 
 
 @pytest.mark.parametrize('url,expected', [
-    ('https://planet.com/', None),
-    ('https://planet.com/path/to/', None),
-    ('https://planet.com/path/to/example.tif', 'example.tif'),
-    ('https://planet.com/path/to/example.tif?foo=f6f1&bar=baz', 'example.tif'),
-    ('https://planet.com/path/to/example.tif?foo=f6f1#quux', 'example.tif'),
+    (URL('https://planet.com/'), None),
+    (URL('https://planet.com/path/to/'), None),
+    (URL('https://planet.com/path/to/example.tif'), 'example.tif'),
+    (URL('https://planet.com/path/to/example.tif?foo=f6f1&bar=baz'),
+     'example.tif'),
+    (URL('https://planet.com/path/to/example.tif?foo=f6f1#quux'),
+     'example.tif'),
 ])
 def test_get_filename_from_url(url, expected):
     assert utils.get_filename_from_url(url) == expected
