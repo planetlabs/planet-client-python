@@ -15,7 +15,7 @@
 import copy
 import logging
 import math
-from mock import MagicMock
+from unittest.mock import MagicMock
 import os
 from pathlib import Path
 import re
