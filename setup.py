@@ -39,11 +39,6 @@ test_requires = [
 
 lint_requires = [
     'flake8',
-    # 'setuptools',
-    # 'pex',
-    # 'pytest-cov',
-    # 'sphinx',
-    # 'wheel',
 ]
 
 
