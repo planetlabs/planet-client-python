@@ -89,7 +89,8 @@ def test_StreamingBody_name():
     body = models.StreamingBody(r)
 
     assert body.name.startswith('planet-')
-    assert body.name.endswith('.tiff')
+    assert (body.name.endswith('.tiff') or
+            body.name.endswith('.tif'))
 
 
 @pytest.mark.parametrize('headers,expected', [
