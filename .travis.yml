@@ -6,9 +6,7 @@ python:
 cache:
   directories:
     - $HOME/.cache/pip
-before_install:
-  - pip install setuptools pip pytest --upgrade
 install:
-  - pip install -e .[dev]
+  - pip install pip nox --upgrade
 script:
-  - make check html-docs
+  - nox  
