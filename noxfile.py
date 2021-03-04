@@ -20,7 +20,7 @@ def test(session):
 
 
 @nox.session
-def check(session):
+def lint(session):
     session.install("-e", ".[dev]")
 
     session.run("flake8", *source_files)
