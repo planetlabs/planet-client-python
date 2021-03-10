@@ -58,17 +58,17 @@ from planet.api.order_details import OrderDetails, Product
 API_KEY = os.getenv('PL_API_KEY')
 
 image_ids = ['3949357_1454705_2020-12-01_241c']
-order_detail = OrderDetails(
+order_details = OrderDetails(
     'test_order',
     [Product(image_ids, 'analytic', 'psorthotile')]
 )
 
-async def create_order(order_detail):
+async def create_order(order_details):
     async with APlanetSession(auth=(API_KEY, '')) as ps:
         client = AOrdersClient(ps)
-        return await client.create_order(order_detail)
+        return await client.create_order(order_details)
 
-oid = asyncio.run(create_order())
+oid = asyncio.run(create_order(order_details))
 print(oid)
 ```
 
@@ -77,9 +77,10 @@ and call from your synchronous code.
 
 ```python
 def sync_create_order(order_details):
-    return asyncio.run(create_order())
+    return asyncio.run(create_order(order_details))
 
-print(sync_create_order(order_details))
+oid = sync_create_order(order_details)
+print(oid)
 ```
 
 Why async? Because things get *really cool* when you want to work with multiple
