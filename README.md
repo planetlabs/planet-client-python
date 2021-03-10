@@ -40,14 +40,18 @@ issues #244 and #248).
 
 Additionally, authentication information can be provided to the CLI by
 storing the api key in the environmental variable `PL_API_KEY` or by specifying
-the api key with the flag `-k` or `--api-key`.
+the api key with the flag `-k` or `--api-key` (TODO: link to cli documentation
+here).
 
 ## Quick Start
 
-### Python Library
+### Python Library Usage
 
-The python library is asynchronous, which greatly speeds up many interactions
-with the planet API. 
+The client modules within the Python library are asynchronous, which greatly
+speeds up many interactions with Planet's APIs. Support for asynchronous
+development is native to Python 3.6+ via the
+[`asyncio` module](https://docs.python.org/3/library/asyncio.html) and is
+fairly easy to implement.
 
 ```python
 import asyncio
@@ -162,7 +166,7 @@ asyncio.run(main())
 [Example output](example_output.md)
 
 
-## CLI Usage
+## CLI Usage (Not yet Implemented)
 
 **Hint:** autocompletion can be enabled in some shells using:
 ```console

@@ -30,7 +30,7 @@ LOGGER = logging.getLogger(__name__)
 class APlanetSession():
     '''Context manager for asynchronous communication with the Planet server.
 
-    Authentication for Planet servers is given as ('', '<api key>').
+    Authentication for Planet servers is given as ('<api key>', '').
 
     :param auth: Planet server authentication.
     :type auth: httpx.Auth or tuple.
