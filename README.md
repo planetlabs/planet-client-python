@@ -70,18 +70,18 @@ Not into async? No problem. Just wrap the library and async operations together
 and call from your synchronous code.
 
 ```python
-def sync_create_order():
+def sync_create_order(order_details):
     return asyncio.run(create_order())
 
-print(sync_create_order)
+print(sync_create_order(order_details))
 ```
 
 Why async? Because things get *really cool* when you want to work with multiple
 orders. Here's an example of submitting two orders, waiting for them to
 complete, and downloading them. The orders each clip a set of images to a
 specific area of interest (AOI), so they cannot be combined into one order.
-(hint: [Planet Explorer](https://www.planet.com/explorer/)) was used to define
-the AOIs and get the image ids.
+(hint: [Planet Explorer](https://www.planet.com/explorer/) was used to define
+the AOIs and get the image ids.)
  
 
 ```python
@@ -155,7 +155,7 @@ asyncio.run(main())
 [Example output](example_output.md)
 
 
-## Command-Line Interface (CLI)
+## CLI Usage
 
 **Hint:** autocompletion can be enabled in some shells using:
 ```console
