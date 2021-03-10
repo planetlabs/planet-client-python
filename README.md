@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/planetlabs/planet-client-python.svg?branch=master)](https://travis-ci.org/planetlabs/planet-client-python)
 
-Python client library and Command-Line Interface (CLI) for Planet's public APIs.
+Python client library and Command-Line Interface (CLI) for Planet's APIs.
 
 The client provides access to the following Planet APIs:
 * [analytics](https://developers.planet.com/docs/analytics/)
@@ -28,13 +28,19 @@ flag is highly recommended for those new to [pip](https://pip.pypa.io).
 A PEX executable (Windows not supported) and source releases are
 [here](https://github.com/planetlabs/planet-client-python/releases/latest).
 
-## API Key
+## Authentication
 
-The planet API requires an account for use. [Signup here](https://www.planet.com/explorer/?signup).
+Planet's APIs require an account for use.
+[Sign up here](https://www.planet.com/explorer/?signup).
 
-This can be provided via the environment variable `PL_API_KEY` or the flag `-k` or `--api-key`.
+Authentication information can be obtained and stored locally with the CLI
+`planet init` command. Both the Python library and CLI will default to using
+the stored authentication information, if available (not yet implemented, see
+issues #244 and #248).
 
-Using `planet init` your account credentials (login/password) can be used to obtain the api key.
+Additionally, authentication information can be provided to the CLI by
+storing the api key in the environmental variable `PL_API_KEY` or by specifying
+the api key with the flag `-k` or `--api-key`.
 
 ## Quick Start
 
