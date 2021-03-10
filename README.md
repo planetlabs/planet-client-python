@@ -87,6 +87,20 @@ oid = sync_create_order(order_details)
 print(oid)
 ```
 
+When using `asyncio.run` to develop synchronous code with the async library,
+keep in mind this excerpt from the
+[asyncio.run](https://docs.python.org/3/library/asyncio-task.html#asyncio.run)
+documentation:
+
+"*This function always creates a new event loop and closes it at the end. It
+should be used as a main entry point for asyncio programs, and should ideally
+only be called once.*"
+
+Do you have a use case where native synchronous support is essential? If so,
+please contribute to
+[Determine need for synchronous support](https://github.com/planetlabs/planet-client-python/issues/251)
+
+
 Why async? Because things get *really cool* when you want to work with multiple
 orders. Here's an example of submitting two orders, waiting for them to
 complete, and downloading them. The orders each clip a set of images to a
