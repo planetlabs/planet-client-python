@@ -56,20 +56,20 @@ fairly easy to implement.
 ```python
 import asyncio
 import os
-from planet.api import APlanetSession, AOrdersClient
-from planet.api.order_details import OrderDetails, Product
+
+import planet
 
 API_KEY = os.getenv('PL_API_KEY')
 
 image_ids = ['3949357_1454705_2020-12-01_241c']
-order_details = OrderDetails(
+order_details = planet.OrderDetails(
     'test_order',
-    [Product(image_ids, 'analytic', 'psorthotile')]
+    [planet.Product(image_ids, 'analytic', 'psorthotile')]
 )
 
 async def create_order(order_details):
-    async with APlanetSession(auth=(API_KEY, '')) as ps:
-        client = AOrdersClient(ps)
+    async with planet.APlanetSession(auth=(API_KEY, '')) as ps:
+        client = planet.AOrdersClient(ps)
         return await client.create_order(order_details)
 
 oid = asyncio.run(create_order(order_details))
@@ -112,8 +112,8 @@ the AOIs and get the image ids.)
 ```python
 import asyncio
 import os
-from planet.api import APlanetSession, AOrdersClient
-from planet.api.order_details import OrderDetails, Product, Tool
+
+import planet
 
 API_KEY = os.getenv('PL_API_KEY')
 
@@ -131,10 +131,10 @@ iowa_images = [
     '20200925_161029_69_2223',
     '20200925_161027_48_2223'
 ]
-iowa_order = OrderDetails(
+iowa_order = planet.OrderDetails(
     'iowa_order',
-    [Product(iowa_images, 'analytic', 'PSScene4Band')],
-    tools=[Tool('clip', {'aoi': iowa_aoi})]
+    [planet.Product(iowa_images, 'analytic', 'PSScene4Band')],
+    tools=[planet.Tool('clip', {'aoi': iowa_aoi})]
 )
 
 oregon_aoi = {
@@ -151,10 +151,10 @@ oregon_images = [
     '20200909_182525_1014',
     '20200909_182524_1014'
 ]
-oregon_order = OrderDetails(
+oregon_order = planet.OrderDetails(
     'oregon_order',
-    [Product(oregon_images, 'analytic', 'PSScene4Band')],
-    tools=[Tool('clip', {'aoi': oregon_aoi})]
+    [planet.Product(oregon_images, 'analytic', 'PSScene4Band')],
+    tools=[planet.Tool('clip', {'aoi': oregon_aoi})]
 )
 
 
@@ -168,8 +168,8 @@ async def create_and_download(order_detail, client):
 
 
 async def main():
-    async with APlanetSession(auth=(API_KEY, '')) as ps:
-        client = AOrdersClient(ps)
+    async with planet.APlanetSession(auth=(API_KEY, '')) as ps:
+        client = planet.AOrdersClient(ps)
         await asyncio.gather(
             create_and_download(iowa_order, client),
             create_and_download(oregon_order, client)
