@@ -27,7 +27,7 @@ RETRY_WAIT_TIME = 1  # seconds
 LOGGER = logging.getLogger(__name__)
 
 
-class APlanetSession():
+class Session():
     '''Context manager for asynchronous communication with the Planet server.
 
     Authentication for Planet servers is given as ('<api key>', '').

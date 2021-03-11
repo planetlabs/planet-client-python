@@ -38,14 +38,14 @@ def mock_request():
 
 @pytest.mark.asyncio
 async def test_aplanetsession_contextmanager():
-    async with http.APlanetSession():
+    async with http.Session():
         pass
 
 
 @respx.mock
 @pytest.mark.asyncio
 async def test_aplanetsession_request(mock_request):
-    async with http.APlanetSession() as ps:
+    async with http.Session() as ps:
         mock_resp = httpx.Response(200, text='bubba')
         respx.get(TEST_URL).return_value = mock_resp
 
@@ -56,7 +56,7 @@ async def test_aplanetsession_request(mock_request):
 @respx.mock
 @pytest.mark.asyncio
 async def test_aplanetsession_stream(mock_request):
-    async with http.APlanetSession() as ps:
+    async with http.Session() as ps:
         mock_resp = httpx.Response(200, text='bubba')
         respx.get(TEST_URL).return_value = mock_resp
 
@@ -67,15 +67,15 @@ async def test_aplanetsession_stream(mock_request):
 
 @pytest.mark.asyncio
 async def test_aplanetsession__raise_for_status():
-    await http.APlanetSession._raise_for_status(Mock(status_code=201, text=''))
+    await http.Session._raise_for_status(Mock(status_code=201, text=''))
 
     with pytest.raises(exceptions.TooManyRequests):
-        await http.APlanetSession._raise_for_status(Mock(
+        await http.Session._raise_for_status(Mock(
             status_code=429, text=''
         ))
 
     with pytest.raises(exceptions.OverQuota):
-        await http.APlanetSession._raise_for_status(Mock(
+        await http.Session._raise_for_status(Mock(
             status_code=429, text='exceeded QUOTA dude'
         ))
 
@@ -83,7 +83,7 @@ async def test_aplanetsession__raise_for_status():
 @respx.mock
 @pytest.mark.asyncio
 async def test_aplanetsession_request_retry(mock_request):
-    async with http.APlanetSession() as ps:
+    async with http.Session() as ps:
         route = respx.get(TEST_URL)
         route.side_effect = [
             httpx.Response(429),

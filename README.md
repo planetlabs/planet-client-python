@@ -68,8 +68,8 @@ order_details = planet.OrderDetails(
 )
 
 async def create_order(order_details):
-    async with planet.APlanetSession(auth=(API_KEY, '')) as ps:
-        client = planet.AOrdersClient(ps)
+    async with planet.Session(auth=(API_KEY, '')) as ps:
+        client = planet.OrdersClient(ps)
         return await client.create_order(order_details)
 
 oid = asyncio.run(create_order(order_details))
@@ -168,8 +168,8 @@ async def create_and_download(order_detail, client):
 
 
 async def main():
-    async with planet.APlanetSession(auth=(API_KEY, '')) as ps:
-        client = planet.AOrdersClient(ps)
+    async with planet.Session(auth=(API_KEY, '')) as ps:
+        client = planet.OrdersClient(ps)
         await asyncio.gather(
             create_and_download(iowa_order, client),
             create_and_download(oregon_order, client)

@@ -23,12 +23,19 @@ import httpx
 import pytest
 import respx
 
-from planet.api import AOrdersClient, APlanetSession
+from planet import OrdersClient, Session
 
 
 TEST_URL = 'http://MockNotRealURL/'
 
 LOGGER = logging.getLogger(__name__)
+
+
+@pytest.fixture
+@pytest.mark.asyncio
+async def session():
+    async with Session() as ps:
+        yield ps
 
 
 @pytest.fixture
@@ -44,7 +51,7 @@ def order_descriptions(order_description):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_list_orders_basic(order_descriptions):
+async def test_list_orders_basic(order_descriptions, session):
     list_url = TEST_URL + 'orders/v2/'
     next_page_url = list_url + 'blob/?page_marker=IAmATest'
 
@@ -67,9 +74,8 @@ async def test_list_orders_basic(order_descriptions):
     mock_resp2 = httpx.Response(200, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
-        orders = await cl.list_orders()
+    cl = OrdersClient(session, base_url=TEST_URL)
+    orders = await cl.list_orders()
 
     oids = list(o.id for o in orders)
     assert oids == ['oid1', 'oid2', 'oid3']
@@ -77,7 +83,7 @@ async def test_list_orders_basic(order_descriptions):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_list_orders_state(order_descriptions):
+async def test_list_orders_state(order_descriptions, session):
     list_url = TEST_URL + 'orders/v2/?state=failed'
 
     order1, order2, _ = order_descriptions
@@ -91,9 +97,8 @@ async def test_list_orders_state(order_descriptions):
     mock_resp = httpx.Response(200, json=page1_response)
     respx.get(list_url).return_value = mock_resp
 
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
-        orders = await cl.list_orders(state='failed')
+    cl = OrdersClient(session, base_url=TEST_URL)
+    orders = await cl.list_orders(state='failed')
 
     oids = list(o.id for o in orders)
     assert oids == ['oid1', 'oid2']
@@ -101,7 +106,7 @@ async def test_list_orders_state(order_descriptions):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_list_orders_limit(order_descriptions):
+async def test_list_orders_limit(order_descriptions, session):
     # check that the client doesn't try to get the next page when the
     # limit is already reached by providing link to next page but not
     # registering a response. if the client tries to get the next
@@ -132,9 +137,8 @@ async def test_list_orders_limit(order_descriptions):
     nono_route = respx.route(method="GET", url__eq=nono_page_url).mock(
         return_value=mock_resp2)
 
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
-        orders = await cl.list_orders(limit=1)
+    cl = OrdersClient(session, base_url=TEST_URL)
+    orders = await cl.list_orders(limit=1)
 
     assert not nono_route.called
     oids = [o.id for o in orders]
@@ -143,35 +147,33 @@ async def test_list_orders_limit(order_descriptions):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_create_order(oid, order_description, order_details):
+async def test_create_order(oid, order_description, order_details, session):
     create_url = TEST_URL + 'orders/v2/'
     mock_resp = httpx.Response(200, json=order_description)
     respx.post(create_url).return_value = mock_resp
 
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
-        created_oid = await cl.create_order(order_details)
+    cl = OrdersClient(session, base_url=TEST_URL)
+    created_oid = await cl.create_order(order_details)
 
     assert created_oid == oid
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_get_order(oid, order_description):
+async def test_get_order(oid, order_description, session):
     get_url = TEST_URL + 'orders/v2/' + oid
     mock_resp = httpx.Response(200, json=order_description)
     respx.get(get_url).return_value = mock_resp
 
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
-        order = await cl.get_order(oid)
+    cl = OrdersClient(session, base_url=TEST_URL)
+    order = await cl.get_order(oid)
 
     assert order.state == 'queued'
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_cancel_order(oid, order_description):
+async def test_cancel_order(oid, order_description, session):
     cancel_url = TEST_URL + 'orders/v2/' + oid
     order_description['state'] = 'cancelled'
     mock_resp = httpx.Response(200, json=order_description)
@@ -179,14 +181,13 @@ async def test_cancel_order(oid, order_description):
 
     # TODO: the api says cancel order returns the order details but as
     # far as I can test thus far, it returns nothing. follow up on this
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
-        await cl.cancel_order(oid)
+    cl = OrdersClient(session, base_url=TEST_URL)
+    await cl.cancel_order(oid)
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_cancel_orders_by_ids():
+async def test_cancel_orders_by_ids(session):
     bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
     test_ids = ["oid1", "oid2", "oid3"]
     example_result = {
@@ -206,9 +207,8 @@ async def test_cancel_orders_by_ids():
     mock_resp = httpx.Response(200, json=example_result)
     respx.post(bulk_cancel_url).return_value = mock_resp
 
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
-        res = await cl.cancel_orders(test_ids)
+    cl = OrdersClient(session, base_url=TEST_URL)
+    res = await cl.cancel_orders(test_ids)
 
     assert res == example_result
 
@@ -221,7 +221,7 @@ async def test_cancel_orders_by_ids():
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_cancel_orders_all():
+async def test_cancel_orders_all(session):
     bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
 
     example_result = {
@@ -236,9 +236,8 @@ async def test_cancel_orders_all():
     mock_resp = httpx.Response(200, json=example_result)
     respx.post(bulk_cancel_url).return_value = mock_resp
 
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
-        res = await cl.cancel_orders()
+    cl = OrdersClient(session, base_url=TEST_URL)
+    res = await cl.cancel_orders()
 
     assert res == example_result
 
@@ -248,7 +247,7 @@ async def test_cancel_orders_all():
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_poll(oid, order_description):
+async def test_poll(oid, order_description, session):
     get_url = TEST_URL + 'orders/v2/' + oid
 
     order_description2 = copy.deepcopy(order_description)
@@ -256,31 +255,30 @@ async def test_poll(oid, order_description):
     order_description3 = copy.deepcopy(order_description)
     order_description3['state'] = 'success'
 
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
+    cl = OrdersClient(session, base_url=TEST_URL)
 
-        route = respx.get(get_url)
-        route.side_effect = [
-            httpx.Response(200, json=order_description),
-            httpx.Response(200, json=order_description2),
-            httpx.Response(200, json=order_description3)
-        ]
-        state = await cl.poll(oid, wait=0)
-        assert state == 'success'
+    route = respx.get(get_url)
+    route.side_effect = [
+        httpx.Response(200, json=order_description),
+        httpx.Response(200, json=order_description2),
+        httpx.Response(200, json=order_description3)
+    ]
+    state = await cl.poll(oid, wait=0)
+    assert state == 'success'
 
-        route = respx.get(get_url)
-        route.side_effect = [
-            httpx.Response(200, json=order_description),
-            httpx.Response(200, json=order_description2),
-            httpx.Response(200, json=order_description3)
-        ]
-        state = await cl.poll(oid, state='running', wait=0)
-        assert state == 'running'
+    route = respx.get(get_url)
+    route.side_effect = [
+        httpx.Response(200, json=order_description),
+        httpx.Response(200, json=order_description2),
+        httpx.Response(200, json=order_description3)
+    ]
+    state = await cl.poll(oid, state='running', wait=0)
+    assert state == 'running'
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_aggegated_order_stats():
+async def test_aggegated_order_stats(session):
     stats_url = TEST_URL + 'stats/orders/v2/'
     LOGGER.debug(f'url: {stats_url}')
     example_stats = {
@@ -296,16 +294,15 @@ async def test_aggegated_order_stats():
     mock_resp = httpx.Response(200, json=example_stats)
     respx.get(stats_url).return_value = mock_resp
 
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
-        res = await cl.aggregated_order_stats()
+    cl = OrdersClient(session, base_url=TEST_URL)
+    res = await cl.aggregated_order_stats()
 
     assert res == example_stats
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_download_asset_md(tmpdir):
+async def test_download_asset_md(tmpdir, session):
     dl_url = TEST_URL + 'download/?token=IAmAToken'
 
     md_json = {'key': 'value'}
@@ -316,9 +313,8 @@ async def test_download_asset_md(tmpdir):
     mock_resp = httpx.Response(200, json=md_json, headers=md_headers)
     respx.get(dl_url).return_value = mock_resp
 
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
-        filename = await cl.download_asset(dl_url, directory=str(tmpdir))
+    cl = OrdersClient(session, base_url=TEST_URL)
+    filename = await cl.download_asset(dl_url, directory=str(tmpdir))
 
     assert json.loads(open(filename).read()) == {'key': 'value'}
     assert Path(filename).name == 'metadata.json'
@@ -326,7 +322,7 @@ async def test_download_asset_md(tmpdir):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_download_asset_img(tmpdir, open_test_img):
+async def test_download_asset_img(tmpdir, open_test_img, session):
     dl_url = TEST_URL + 'download/?token=IAmAToken'
 
     img_headers = {
@@ -350,9 +346,8 @@ async def test_download_asset_img(tmpdir, open_test_img):
                                request='donotcloneme')
     respx.get(dl_url).return_value = mock_resp
 
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
-        filename = await cl.download_asset(dl_url, directory=str(tmpdir))
+    cl = OrdersClient(session, base_url=TEST_URL)
+    filename = await cl.download_asset(dl_url, directory=str(tmpdir))
 
     assert Path(filename).name == 'img.tif'
     assert os.path.isfile(filename)
@@ -360,7 +355,7 @@ async def test_download_asset_img(tmpdir, open_test_img):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_download_order(tmpdir, order_description, oid):
+async def test_download_order(tmpdir, order_description, oid, session):
     dl_url1 = TEST_URL + 'download/1?token=IAmAToken'
     dl_url2 = TEST_URL + 'download/2?token=IAmAnotherToken'
     order_description['_links']['results'] = [
@@ -390,9 +385,8 @@ async def test_download_order(tmpdir, order_description, oid):
         })
     respx.get(dl_url2).return_value = mock_resp1
 
-    async with APlanetSession() as ps:
-        cl = AOrdersClient(ps, base_url=TEST_URL)
-        filenames = await cl.download_order(oid, directory=str(tmpdir))
+    cl = OrdersClient(session, base_url=TEST_URL)
+    filenames = await cl.download_order(oid, directory=str(tmpdir))
 
     assert len(filenames) == 2
 
