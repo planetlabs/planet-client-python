@@ -58,6 +58,12 @@ class Session():
 
     async def retry(self, func, *a, **kw):
         '''Run an asynchronous request function with retry.'''
+        # TODO: retry will be provided in httpx v1 [1] with usage [2]
+        # 1. https://github.com/encode/httpcore/pull/221
+        # 2. https://github.com/encode/httpx/blob/
+        # 89fb0cbc69ea07b123dd7b36dc1ed9151c5d398f/docs/async.md#explicit-transport-instances # noqa
+        # TODO: if throttling is necessary, check out [1] once v1
+        # 1. https://github.com/encode/httpx/issues/984
         retry_count = self.retry_count
         wait_time = self.retry_wait_time
 
