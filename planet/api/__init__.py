@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .http import APlanetSession
-from .orders import AOrdersClient
+from .http import Session
+from .orders import OrdersClient
 from .__version__ import __version__  # NOQA
 
 __all__ = [
-    APlanetSession,
-    AOrdersClient
+    Session,
+    OrdersClient
 ]

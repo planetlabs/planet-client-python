@@ -40,11 +40,11 @@ class OrdersClientException(Exception):
     pass
 
 
-class AOrdersClient():
+class OrdersClient():
     """High-level asynchronous access to Planet's orders API.
 
     :param session: Open session connected to server
-    :type session: planet.api.http.APlanetSession
+    :type session: planet.api.http.Session
     :param base_url: The base URL to use. Defaults to production orders API
         base url.
     :type base_url: int, optional
