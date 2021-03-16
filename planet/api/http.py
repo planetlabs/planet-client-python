@@ -110,9 +110,9 @@ class Session():
         :param request: Request to submit
         :type request: planet.api.models.Request
         :returns: Context manager providing the body as a stream.
-        :rtype: APlanetStream
+        :rtype: Stream
         '''
-        return APlanetStream(
+        return Stream(
             session=self,
             request=request
         )
@@ -165,11 +165,11 @@ class Session():
         raise exceptions.APIException(f'{status}: {msg}')
 
 
-class APlanetStream():
+class Stream():
     '''Context manager for asynchronous response stream from Planet server.
 
     :param session: Open session to Planet server
-    :type session: APlanetSession
+    :type session: Session
     :param request: Request to submit
     :type request: planet.api.models.Request
     '''
