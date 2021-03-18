@@ -14,6 +14,7 @@
 
 """Functionality to perform HTTP requests"""
 import asyncio
+from http import HTTPStatus
 import logging
 
 import httpx
@@ -142,16 +143,17 @@ class Session():
         # TODO: consider using http_response.reason_phrase
         status = response.status_code
 
-        if status < 300:
+        miminum_bad_request_code = HTTPStatus.MOVED_PERMANENTLY
+        if status < miminum_bad_request_code:
             return
 
         exception = {
-            400: exceptions.BadQuery,
-            401: exceptions.InvalidAPIKey,
-            403: exceptions.NoPermission,
-            404: exceptions.MissingResource,
-            429: exceptions.TooManyRequests,
-            500: exceptions.ServerError
+            HTTPStatus.BAD_REQUEST: exceptions.BadQuery,
+            HTTPStatus.UNAUTHORIZED: exceptions.InvalidAPIKey,
+            HTTPStatus.FORBIDDEN: exceptions.NoPermission,
+            HTTPStatus.NOT_FOUND: exceptions.MissingResource,
+            HTTPStatus.TOO_MANY_REQUESTS: exceptions.TooManyRequests,
+            HTTPStatus.INTERNAL_SERVER_ERROR: exceptions.ServerError
         }.get(status, None)
 
         try:

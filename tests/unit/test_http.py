@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 import logging
+from http import HTTPStatus
 from unittest.mock import Mock
 
 import httpx
@@ -46,7 +47,7 @@ async def test_session_contextmanager():
 @pytest.mark.asyncio
 async def test_session_request(mock_request):
     async with http.Session() as ps:
-        mock_resp = httpx.Response(200, text='bubba')
+        mock_resp = httpx.Response(HTTPStatus.OK, text='bubba')
         respx.get(TEST_URL).return_value = mock_resp
 
         resp = await ps.request(mock_request)
@@ -57,7 +58,7 @@ async def test_session_request(mock_request):
 @pytest.mark.asyncio
 async def test_session_stream(mock_request):
     async with http.Session() as ps:
-        mock_resp = httpx.Response(200, text='bubba')
+        mock_resp = httpx.Response(HTTPStatus.OK, text='bubba')
         respx.get(TEST_URL).return_value = mock_resp
 
         async with ps.stream(mock_request) as resp:
@@ -67,16 +68,23 @@ async def test_session_stream(mock_request):
 
 @pytest.mark.asyncio
 async def test_session__raise_for_status():
-    await http.Session._raise_for_status(Mock(status_code=201, text=''))
+    await http.Session._raise_for_status(Mock(
+        status_code=HTTPStatus.CREATED, text=''
+    ))
+
+    with pytest.raises(exceptions.BadQuery):
+        await http.Session._raise_for_status(Mock(
+            status_code=HTTPStatus.BAD_REQUEST, text=''
+        ))
 
     with pytest.raises(exceptions.TooManyRequests):
         await http.Session._raise_for_status(Mock(
-            status_code=429, text=''
+            status_code=HTTPStatus.TOO_MANY_REQUESTS, text=''
         ))
 
     with pytest.raises(exceptions.OverQuota):
         await http.Session._raise_for_status(Mock(
-            status_code=429, text='exceeded QUOTA dude'
+            status_code=HTTPStatus.TOO_MANY_REQUESTS, text='exceeded QUOTA'
         ))
 
 
@@ -86,8 +94,8 @@ async def test_session_request_retry(mock_request):
     async with http.Session() as ps:
         route = respx.get(TEST_URL)
         route.side_effect = [
-            httpx.Response(429),
-            httpx.Response(200)
+            httpx.Response(HTTPStatus.TOO_MANY_REQUESTS),
+            httpx.Response(HTTPStatus.OK)
         ]
 
         ps.retry_wait_time = 0  # lets not slow down tests for this
