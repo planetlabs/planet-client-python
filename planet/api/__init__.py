@@ -11,12 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from .http import Session
-from .orders import OrdersClient
-from .__version__ import __version__  # NOQA
-
-__all__ = [
-    Session,
-    OrdersClient
-]

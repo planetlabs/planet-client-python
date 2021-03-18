@@ -50,8 +50,10 @@ here).
 The client modules within the Python library are asynchronous, which greatly
 speeds up many interactions with Planet's APIs. Support for asynchronous
 development is native to Python 3.6+ via the
-[`asyncio` module](https://docs.python.org/3/library/asyncio.html) and is
-fairly easy to implement.
+[`asyncio` module](https://docs.python.org/3/library/asyncio.html). A great
+resource for getting started with asynchronous programming in Python is
+https://project-awesome.org/timofurrer/awesome-asyncio. The Writings and Talks
+sections are particularly helpful in getting oriented.
 
 ```python
 import asyncio

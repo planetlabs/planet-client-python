@@ -13,6 +13,7 @@
 # the License.
 import copy
 import json
+from http import HTTPStatus
 import logging
 import math
 import os
@@ -63,7 +64,7 @@ async def test_list_orders_basic(order_descriptions, session):
             "next": next_page_url},
         "orders": [order1, order2]
     }
-    mock_resp1 = httpx.Response(200, json=page1_response)
+    mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(list_url).return_value = mock_resp1
 
     page2_response = {
@@ -71,7 +72,7 @@ async def test_list_orders_basic(order_descriptions, session):
             "_self": next_page_url},
         "orders": [order3]
     }
-    mock_resp2 = httpx.Response(200, json=page2_response)
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
     cl = OrdersClient(session, base_url=TEST_URL)
@@ -94,7 +95,7 @@ async def test_list_orders_state(order_descriptions, session):
         },
         "orders": [order1, order2]
     }
-    mock_resp = httpx.Response(200, json=page1_response)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(list_url).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
@@ -123,7 +124,7 @@ async def test_list_orders_limit(order_descriptions, session):
             "next": nono_page_url},
         "orders": [order1, order2]
     }
-    mock_resp = httpx.Response(200, json=page1_response)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
 
     page2_response = {
         "_links": {
@@ -131,7 +132,7 @@ async def test_list_orders_limit(order_descriptions, session):
         },
         "orders": [order3]
     }
-    mock_resp2 = httpx.Response(200, json=page2_response)
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
 
     respx.route(method="GET", url__eq=list_url).mock(return_value=mock_resp)
     nono_route = respx.route(method="GET", url__eq=nono_page_url).mock(
@@ -149,7 +150,7 @@ async def test_list_orders_limit(order_descriptions, session):
 @pytest.mark.asyncio
 async def test_create_order(oid, order_description, order_details, session):
     create_url = TEST_URL + 'orders/v2/'
-    mock_resp = httpx.Response(200, json=order_description)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(create_url).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
@@ -162,7 +163,7 @@ async def test_create_order(oid, order_description, order_details, session):
 @pytest.mark.asyncio
 async def test_get_order(oid, order_description, session):
     get_url = TEST_URL + 'orders/v2/' + oid
-    mock_resp = httpx.Response(200, json=order_description)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.get(get_url).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
@@ -176,7 +177,7 @@ async def test_get_order(oid, order_description, session):
 async def test_cancel_order(oid, order_description, session):
     cancel_url = TEST_URL + 'orders/v2/' + oid
     order_description['state'] = 'cancelled'
-    mock_resp = httpx.Response(200, json=order_description)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.put(cancel_url).return_value = mock_resp
 
     # TODO: the api says cancel order returns the order details but as
@@ -204,7 +205,7 @@ async def test_cancel_orders_by_ids(session):
             }
         }
     }
-    mock_resp = httpx.Response(200, json=example_result)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=example_result)
     respx.post(bulk_cancel_url).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
@@ -233,7 +234,7 @@ async def test_cancel_orders_all(session):
             }
         }
     }
-    mock_resp = httpx.Response(200, json=example_result)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=example_result)
     respx.post(bulk_cancel_url).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
@@ -259,18 +260,18 @@ async def test_poll(oid, order_description, session):
 
     route = respx.get(get_url)
     route.side_effect = [
-        httpx.Response(200, json=order_description),
-        httpx.Response(200, json=order_description2),
-        httpx.Response(200, json=order_description3)
+        httpx.Response(HTTPStatus.OK, json=order_description),
+        httpx.Response(HTTPStatus.OK, json=order_description2),
+        httpx.Response(HTTPStatus.OK, json=order_description3)
     ]
     state = await cl.poll(oid, wait=0)
     assert state == 'success'
 
     route = respx.get(get_url)
     route.side_effect = [
-        httpx.Response(200, json=order_description),
-        httpx.Response(200, json=order_description2),
-        httpx.Response(200, json=order_description3)
+        httpx.Response(HTTPStatus.OK, json=order_description),
+        httpx.Response(HTTPStatus.OK, json=order_description2),
+        httpx.Response(HTTPStatus.OK, json=order_description3)
     ]
     state = await cl.poll(oid, state='running', wait=0)
     assert state == 'running'
@@ -291,7 +292,7 @@ async def test_aggegated_order_stats(session):
             "running_orders": 0
         }
     }
-    mock_resp = httpx.Response(200, json=example_stats)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=example_stats)
     respx.get(stats_url).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
@@ -310,7 +311,7 @@ async def test_download_asset_md(tmpdir, session):
         'Content-Type': 'application/json',
         'Content-Disposition': 'attachment; filename="metadata.json"'
     }
-    mock_resp = httpx.Response(200, json=md_json, headers=md_headers)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=md_json, headers=md_headers)
     respx.get(dl_url).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
@@ -342,7 +343,8 @@ async def test_download_asset_img(tmpdir, open_test_img, session):
     # populate request parameter to avoid respx cloning, which throws
     # an error caused by respx and not this code
     # https://github.com/lundberg/respx/issues/130
-    mock_resp = httpx.Response(200, stream=_stream_img(), headers=img_headers,
+    mock_resp = httpx.Response(HTTPStatus.OK, stream=_stream_img(),
+                               headers=img_headers,
                                request='donotcloneme')
     respx.get(dl_url).return_value = mock_resp
 
@@ -364,11 +366,11 @@ async def test_download_order(tmpdir, order_description, oid, session):
     ]
 
     get_url = TEST_URL + 'orders/v2/' + oid
-    mock_resp = httpx.Response(200, json=order_description)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.get(get_url).return_value = mock_resp
 
     mock_resp1 = httpx.Response(
-        200,
+        HTTPStatus.OK,
         json={'key': 'value'},
         headers={
             'Content-Type': 'application/json',
@@ -377,7 +379,7 @@ async def test_download_order(tmpdir, order_description, oid, session):
     respx.get(dl_url1).return_value = mock_resp1
 
     mock_resp1 = httpx.Response(
-        200,
+        HTTPStatus.OK,
         json={'key2': 'value2'},
         headers={
             'Content-Type': 'application/json',

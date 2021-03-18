@@ -14,6 +14,7 @@
 
 """Functionality to perform HTTP requests"""
 import asyncio
+from http import HTTPStatus
 import logging
 
 import httpx
@@ -25,6 +26,11 @@ RETRY_COUNT = 5
 RETRY_WAIT_TIME = 1  # seconds
 
 LOGGER = logging.getLogger(__name__)
+
+
+class SessionException(Exception):
+    '''exceptions thrown by Session'''
+    pass
 
 
 class Session():
@@ -78,7 +84,7 @@ class Session():
                     # TODO: consider exponential backoff
                     # https://developers.planet.com/docs/data/api-mechanics/
                     await asyncio.sleep(wait_time)
-        raise Exception('too many throttles, giving up')
+        raise SessionException('Too many throttles, giving up.')
 
     async def request(self, request, stream=False):
         '''Submit a request with retry.'''
@@ -110,9 +116,9 @@ class Session():
         :param request: Request to submit
         :type request: planet.api.models.Request
         :returns: Context manager providing the body as a stream.
-        :rtype: APlanetStream
+        :rtype: Stream
         '''
-        return APlanetStream(
+        return Stream(
             session=self,
             request=request
         )
@@ -137,16 +143,17 @@ class Session():
         # TODO: consider using http_response.reason_phrase
         status = response.status_code
 
-        if status < 300:
+        miminum_bad_request_code = HTTPStatus.MOVED_PERMANENTLY
+        if status < miminum_bad_request_code:
             return
 
         exception = {
-            400: exceptions.BadQuery,
-            401: exceptions.InvalidAPIKey,
-            403: exceptions.NoPermission,
-            404: exceptions.MissingResource,
-            429: exceptions.TooManyRequests,
-            500: exceptions.ServerError
+            HTTPStatus.BAD_REQUEST: exceptions.BadQuery,
+            HTTPStatus.UNAUTHORIZED: exceptions.InvalidAPIKey,
+            HTTPStatus.FORBIDDEN: exceptions.NoPermission,
+            HTTPStatus.NOT_FOUND: exceptions.MissingResource,
+            HTTPStatus.TOO_MANY_REQUESTS: exceptions.TooManyRequests,
+            HTTPStatus.INTERNAL_SERVER_ERROR: exceptions.ServerError
         }.get(status, None)
 
         try:
@@ -165,11 +172,11 @@ class Session():
         raise exceptions.APIException(f'{status}: {msg}')
 
 
-class APlanetStream():
+class Stream():
     '''Context manager for asynchronous response stream from Planet server.
 
     :param session: Open session to Planet server
-    :type session: APlanetSession
+    :type session: Session
     :param request: Request to submit
     :type request: planet.api.models.Request
     '''
