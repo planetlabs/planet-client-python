@@ -94,3 +94,15 @@ async def test_session_request_retry(mock_request):
         resp = await ps.request(mock_request)
         assert resp
         assert route.call_count == 2
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_session_retry(mock_request):
+    async with http.Session() as ps:
+        async def test_func():
+            raise exceptions.TooManyRequests
+
+        ps.retry_wait_time = 0
+        with pytest.raises(http.SessionException):
+            await ps.retry(test_func)

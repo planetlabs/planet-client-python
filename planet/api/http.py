@@ -27,6 +27,11 @@ RETRY_WAIT_TIME = 1  # seconds
 LOGGER = logging.getLogger(__name__)
 
 
+class SessionException(Exception):
+    '''exceptions thrown by Session'''
+    pass
+
+
 class Session():
     '''Context manager for asynchronous communication with the Planet server.
 
@@ -78,7 +83,7 @@ class Session():
                     # TODO: consider exponential backoff
                     # https://developers.planet.com/docs/data/api-mechanics/
                     await asyncio.sleep(wait_time)
-        raise Exception('too many throttles, giving up')
+        raise SessionException('Too many throttles, giving up.')
 
     async def request(self, request, stream=False):
         '''Submit a request with retry.'''
