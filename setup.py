@@ -17,6 +17,7 @@ from setuptools import setup, find_packages
 
 
 # Get the long description from the relevant file
+# TODO: consider moving to markdown from rst at this point
 try:
     with codecs_open('README.rst', encoding='utf-8') as f:
         long_description = f.read()
@@ -35,9 +36,9 @@ with open('planet/api/__version__.py') as f:
 
 
 test_requires = [
-    'mock',
     'pytest',
-    'requests-mock',
+    'pytest-asyncio',
+    'respx'
 ]
 
 dev_requires = [
@@ -47,8 +48,6 @@ dev_requires = [
     'pytest-cov',
     'sphinx',
     'wheel',
-    'mock',
-    'requests-mock',
 ]
 
 setup(name='planet',
@@ -67,18 +66,18 @@ setup(name='planet',
         'Topic :: Utilities'
       ],
       keywords='planet api client',
-      author=u"Ian Schneider",
-      author_email='ischneider@planet.com',
+      author='Jennifer Reiber Kyle',
+      author_email='jennifer.kyle@planet.com',
       url='https://github.com/planetlabs/planet-client-python',
       license='Apache 2.0',
       packages=find_packages(exclude=['examples', 'tests']),
       data_files=[('', ['LICENSE'])],
       include_package_data=True,
       zip_safe=False,
+      python_requires='>=3.7',
       install_requires=[
-          'click',
-          'requests',
-          'requests_futures == 0.9.7',
+          'httpx>=0.16',
+          'tqdm>=4.56',
           'pywin32 >= 1.0;platform_system=="Windows"'
       ],
       extras_require={
@@ -88,5 +87,5 @@ setup(name='planet',
       entry_points="""
       [console_scripts]
       planet=planet.scripts:main
-      """
+      """,
       )

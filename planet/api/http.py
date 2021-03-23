@@ -13,135 +13,183 @@
 # the License.
 
 """Functionality to perform HTTP requests"""
-
-# import http.client as http_client
+import asyncio
+from http import HTTPStatus
 import logging
-import os
-import re
-import time
 
-from requests import Session
-from requests.compat import urlparse
+import httpx
 
 from . import exceptions, models
 from . __version__ import __version__
 
+RETRY_COUNT = 5
+RETRY_WAIT_TIME = 1  # seconds
 
 LOGGER = logging.getLogger(__name__)
 
-DEFAULT_CHUNK_SIZE = 32 * 1024
 
-USE_STRICT_SSL = not (os.getenv('DISABLE_STRICT_SSL', '').lower() == 'true')
-
-RETRY_WAIT_TIME = 1  # seconds
-
-
-# def setup_logging():
-#     log_level = LOGGER.getEffectiveLevel()
-#     urllib3_logger = logging.getLogger(
-#         'requests.packages.urllib3')
-#     urllib3_logger.setLevel(log_level)
-#
-#     # if debug level set then its nice to see the headers of the request
-#     if log_level == logging.DEBUG:
-#         http_client.HTTPConnection.set_debuglevel(1)
-#     else:
-#         http_client.HTTPConnection.set_debuglevel(0)
-#
-
-def _log_request(req):
-    LOGGER.info('%s %s %s %s', req.method, req.url, req.params, req.data)
+class SessionException(Exception):
+    '''exceptions thrown by Session'''
+    pass
 
 
-class PlanetSession():
-    """Provides communication with the Planet server"""
+class Session():
+    '''Context manager for asynchronous communication with the Planet server.
 
-    def __init__(self):
-        # general session for sync api calls
-        self._session = RedirectSession()
-        self._session.headers.update({'User-Agent': self._get_user_agent()})
-        self._session.verify = USE_STRICT_SSL
+    Authentication for Planet servers is given as ('<api key>', '').
+
+    :param auth: Planet server authentication.
+    :type auth: httpx.Auth or tuple.
+    '''
+
+    def __init__(self, auth=None):
+        self._client = httpx.AsyncClient(auth=auth)
+        self._client.headers.update({'User-Agent': self._get_user_agent()})
+        self._client.event_hooks['request'] = [self._log_request]
+        self._client.event_hooks['response'] = [
+            self._log_response,
+            self._raise_for_status
+        ]
         self.retry_wait_time = RETRY_WAIT_TIME
+        self.retry_count = RETRY_COUNT
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *args):
+        await self.aclose()
+
+    async def aclose(self):
+        await self._client.aclose()
+
+    async def retry(self, func, *a, **kw):
+        '''Run an asynchronous request function with retry.'''
+        # TODO: retry will be provided in httpx v1 [1] with usage [2]
+        # 1. https://github.com/encode/httpcore/pull/221
+        # 2. https://github.com/encode/httpx/blob/
+        # 89fb0cbc69ea07b123dd7b36dc1ed9151c5d398f/docs/async.md#explicit-transport-instances # noqa
+        # TODO: if throttling is necessary, check out [1] once v1
+        # 1. https://github.com/encode/httpx/issues/984
+        retry_count = self.retry_count
+        wait_time = self.retry_wait_time
+
+        max_retry = retry_count + 1
+        for i in range(max_retry):
+            try:
+                return await func(*a, **kw)
+            except exceptions.TooManyRequests:
+                if i < max_retry:
+                    LOGGER.debug(f'Try {i}')
+                    LOGGER.info(f'Too Many Requests: sleeping {wait_time}s')
+                    # TODO: consider exponential backoff
+                    # https://developers.planet.com/docs/data/api-mechanics/
+                    await asyncio.sleep(wait_time)
+        raise SessionException('Too many throttles, giving up.')
+
+    async def request(self, request, stream=False):
+        '''Submit a request with retry.'''
+        # TODO: retry will be provided in httpx v1 [1] with usage [2]
+        # 1. https://github.com/encode/httpcore/pull/221
+        # 2. https://github.com/encode/httpx/blob/
+        # 89fb0cbc69ea07b123dd7b36dc1ed9151c5d398f/docs/async.md#explicit-transport-instances # noqa
+        # TODO: if throttling is necessary, check out [1] once v1
+        # 1. https://github.com/encode/httpx/issues/984
+        return await self.retry(self._request, request, stream=stream)
+
+    async def _request(self, request, stream=False):
+        '''Submit a request
+
+        :param request: Request to submit
+        :type request: planet.api.models.Request
+        :param stream: Get the body as a stream. Defaults to False.
+        :type stream: boolean, optional
+        :returns: response
+        :rtype: planet.api.models.Response
+        '''
+        http_resp = await self._client.send(request.http_request,
+                                            stream=stream)
+        return models.Response(request, http_resp)
+
+    def stream(self, request):
+        '''Submit a request and get the response as a stream context manager.
+
+        :param request: Request to submit
+        :type request: planet.api.models.Request
+        :returns: Context manager providing the body as a stream.
+        :rtype: Stream
+        '''
+        return Stream(
+            session=self,
+            request=request
+        )
 
     @staticmethod
     def _get_user_agent():
         return 'planet-client-python/' + __version__
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        self.close()
-
-    def close(self):
-        self._session.close()
-
-    def request(self, request, retry_count=5):
-        '''Submit a request with retry.
-
-        :param :py:Class:`planet.api.models.Request` req: request to submit
-        :param int retry_count: number of retries
-        :returns: :py:Class:`planet.api.models.Response`
-        '''
-        max_retry = retry_count + 1
-        for i in range(max_retry):
-            try:
-                resp = self._do_request(request)
-                return resp
-            except exceptions.TooManyRequests:
-                if i < max_retry:
-                    LOGGER.debug(f'Try {i}')
-                    LOGGER.info('Too Many Requests: sleeping and retrying')
-                    # TODO: consider exponential backoff
-                    # https://developers.planet.com/docs/data/api-mechanics/
-                    time.sleep(self.retry_wait_time)
-        raise Exception('too many throttles, giving up')
-
-    def _do_request(self, request, **kwargs):
-        '''Submit a request
-
-        :param :py:Class:`planet.api.models.Request` req: request to submit
-        :returns: :py:Class:`planet.api.models.Response`
-        '''
-        # TODO: I don't know where kwargs are used, maybe nowhere?
-        LOGGER.debug('about to submit request')
-        _log_request(request)
-
-        t = time.time()
-        http_resp = self._session.request(
-            request.method, request.url, data=request.data,
-            headers=request.headers, params=request.params)
-        LOGGER.debug('request took %.03f', time.time() - t)
-
-        resp = models.Response(request, http_resp)
-        resp.raise_for_status()
-        return resp
-
-
-class RedirectSession(Session):
-    '''This exists to override the existing behavior of requests that will
-    strip Authorization headers from any redirect requests that resolve to a
-    new domain. Instead, we'll keep headers if the redirect is a subdomain
-    and if not, extract the api-key from the header and add it to the url
-    as a parameter.
-    '''
-    def rebuild_auth(self, prepared_request, response):
-        existing_auth = prepared_request.headers.get('Authorization', None)
-        if existing_auth:
-            orig = response.request.url
-            redir = prepared_request.url
-            if not self._is_subdomain_of_tld(orig, redir):
-                prepared_request.headers.pop('Authorization')
-                key = re.match(r'api-key (\S+)', existing_auth)
-                if key:
-                    prepared_request.prepare_url(
-                        prepared_request.url, {
-                            'api_key': key.group(1)
-                        }
-                    )
+    @staticmethod
+    async def _log_request(request):
+        LOGGER.info(f'{request.method} {request.url} - Sent')
 
     @staticmethod
-    def _is_subdomain_of_tld(url1, url2):
-        orig_host = urlparse(url1).hostname
-        re_host = urlparse(url2).hostname
-        return orig_host.split('.')[-2:] == re_host.split('.')[-2:]
+    async def _log_response(response):
+        request = response.request
+        LOGGER.info(
+            f'{request.method} {request.url} - '
+            f'Status {response.status_code}')
+
+    @staticmethod
+    async def _raise_for_status(response):
+        # TODO: consider using http_response.reason_phrase
+        status = response.status_code
+
+        miminum_bad_request_code = HTTPStatus.MOVED_PERMANENTLY
+        if status < miminum_bad_request_code:
+            return
+
+        exception = {
+            HTTPStatus.BAD_REQUEST: exceptions.BadQuery,
+            HTTPStatus.UNAUTHORIZED: exceptions.InvalidAPIKey,
+            HTTPStatus.FORBIDDEN: exceptions.NoPermission,
+            HTTPStatus.NOT_FOUND: exceptions.MissingResource,
+            HTTPStatus.TOO_MANY_REQUESTS: exceptions.TooManyRequests,
+            HTTPStatus.INTERNAL_SERVER_ERROR: exceptions.ServerError
+        }.get(status, None)
+
+        try:
+            msg = response.text
+        except httpx.ResponseNotRead:
+            await response.aread()
+            msg = response.text
+
+        # differentiate between over quota and rate-limiting
+        if status == 429 and 'quota' in msg.lower():
+            exception = exceptions.OverQuota
+
+        if exception:
+            raise exception(msg)
+
+        raise exceptions.APIException(f'{status}: {msg}')
+
+
+class Stream():
+    '''Context manager for asynchronous response stream from Planet server.
+
+    :param session: Open session to Planet server
+    :type session: Session
+    :param request: Request to submit
+    :type request: planet.api.models.Request
+    '''
+    def __init__(self, session, request):
+        self.session = session
+        self.request = request
+
+    async def __aenter__(self):
+        self.response = await self.session.request(
+            request=self.request,
+            stream=True,
+        )
+        return self.response
+
+    async def __aexit__(self, exc_type=None, exc_value=None, traceback=None):
+        await self.response.aclose()

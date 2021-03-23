@@ -13,65 +13,50 @@
 # the License.
 import copy
 import json
+from http import HTTPStatus
 import logging
+import math
 import os
 from pathlib import Path
 
+
+import httpx
 import pytest
+import respx
 
-from planet.api import OrdersClient
+from planet import OrdersClient, Session
 
 
-DATA_DIR = Path(os.path.dirname(__file__)).parents[0] / 'data'
+TEST_URL = 'http://MockNotRealURL/'
 
 LOGGER = logging.getLogger(__name__)
 
-# if use mock:// as the prefix, the params get lost
-# https://github.com/jamielennox/requests-mock/issues/142
-TEST_URL = 'http://MockNotRealURL/'
 
-
-@pytest.fixture()
-def orders_client():
-    return OrdersClient(api_key='doesntmatter', base_url=TEST_URL)
+@pytest.fixture
+@pytest.mark.asyncio
+async def session():
+    async with Session() as ps:
+        yield ps
 
 
 @pytest.fixture
-def order_description():
-    order_name = 'order_description_b0cb3448-0a74-11eb-92a1-a3d779bb08e0.json'
-    order_filename = DATA_DIR / order_name
-    return json.load(open(order_filename, 'r'))
-
-
-@pytest.fixture
-def order_details():
-    order_name = 'order_details_psorthotile_analytic.json'
-    order_filename = DATA_DIR / order_name
-    return json.load(open(order_filename, 'r'))
-
-
-@pytest.fixture
-def oid():
-    return 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'
-
-
-def test_get_order(requests_mock, orders_client, oid, order_description):
-    get_url = TEST_URL + 'orders/v2/' + oid
-    requests_mock.get(get_url, status_code=200, json=order_description)
-    state = orders_client.get_order(oid).state
-    assert state == 'queued'
-
-
-def test_list_orders(requests_mock, orders_client, order_description):
-    list_url = TEST_URL + 'orders/v2/'
-    next_page_url = list_url + '?page_marker=IAmATest'
-
-    order1 = copy.deepcopy(order_description)
+def order_descriptions(order_description):
+    order1 = order_description
     order1['id'] = 'oid1'
     order2 = copy.deepcopy(order_description)
     order2['id'] = 'oid2'
     order3 = copy.deepcopy(order_description)
     order3['id'] = 'oid3'
+    return [order1, order2, order3]
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_list_orders_basic(order_descriptions, session):
+    list_url = TEST_URL + 'orders/v2/'
+    next_page_url = list_url + 'blob/?page_marker=IAmATest'
+
+    order1, order2, order3 = order_descriptions
 
     page1_response = {
         "_links": {
@@ -79,27 +64,30 @@ def test_list_orders(requests_mock, orders_client, order_description):
             "next": next_page_url},
         "orders": [order1, order2]
     }
-    requests_mock.get(list_url, status_code=200, json=page1_response)
+    mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.get(list_url).return_value = mock_resp1
 
     page2_response = {
         "_links": {
             "_self": next_page_url},
         "orders": [order3]
     }
-    requests_mock.get(next_page_url, status_code=200, json=page2_response)
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
 
-    orders = orders_client.list_orders()
+    cl = OrdersClient(session, base_url=TEST_URL)
+    orders = await cl.list_orders()
+
     oids = list(o.id for o in orders)
     assert oids == ['oid1', 'oid2', 'oid3']
 
 
-def test_list_orders_state(requests_mock, orders_client, order_description):
+@respx.mock
+@pytest.mark.asyncio
+async def test_list_orders_state(order_descriptions, session):
     list_url = TEST_URL + 'orders/v2/?state=failed'
 
-    order1 = copy.deepcopy(order_description)
-    order1['id'] = 'oid1'
-    order2 = copy.deepcopy(order_description)
-    order2['id'] = 'oid2'
+    order1, order2, _ = order_descriptions
 
     page1_response = {
         "_links": {
@@ -107,62 +95,101 @@ def test_list_orders_state(requests_mock, orders_client, order_description):
         },
         "orders": [order1, order2]
     }
-    requests_mock.get(list_url, status_code=200, json=page1_response)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.get(list_url).return_value = mock_resp
 
-    orders = orders_client.list_orders(state='failed')
+    cl = OrdersClient(session, base_url=TEST_URL)
+    orders = await cl.list_orders(state='failed')
+
     oids = list(o.id for o in orders)
     assert oids == ['oid1', 'oid2']
 
 
-def test_list_orders_limit(requests_mock, orders_client, order_description):
-    list_url = TEST_URL + 'orders/v2/'
-    next_page_url = list_url + '?page_marker=IAmATest'
-
-    order1 = copy.deepcopy(order_description)
-    order1['id'] = 'oid1'
-    order2 = copy.deepcopy(order_description)
-    order2['id'] = 'oid2'
-    order3 = copy.deepcopy(order_description)
-    order3['id'] = 'oid3'
-
+@respx.mock
+@pytest.mark.asyncio
+async def test_list_orders_limit(order_descriptions, session):
     # check that the client doesn't try to get the next page when the
     # limit is already reached by providing link to next page but not
     # registering a response. if the client tries to get the next
     # page, an error will occur
+
+    list_url = TEST_URL + 'orders/v2/'
+    nono_page_url = list_url + '?page_marker=OhNoNo'
+
+    order1, order2, order3 = order_descriptions
+
     page1_response = {
         "_links": {
             "_self": "string",
-            "next": next_page_url},
+            "next": nono_page_url},
         "orders": [order1, order2]
     }
-    requests_mock.get(list_url, status_code=200, json=page1_response)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
 
-    orders = orders_client.list_orders(limit=1)
-    oids = list(o.id for o in orders)
+    page2_response = {
+        "_links": {
+            "_self": "string",
+        },
+        "orders": [order3]
+    }
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+
+    respx.route(method="GET", url__eq=list_url).mock(return_value=mock_resp)
+    nono_route = respx.route(method="GET", url__eq=nono_page_url).mock(
+        return_value=mock_resp2)
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+    orders = await cl.list_orders(limit=1)
+
+    assert not nono_route.called
+    oids = [o.id for o in orders]
     assert oids == ['oid1']
 
 
-def test_create_order(requests_mock, orders_client, oid, order_description,
-                      order_details):
+@respx.mock
+@pytest.mark.asyncio
+async def test_create_order(oid, order_description, order_details, session):
     create_url = TEST_URL + 'orders/v2/'
-    requests_mock.post(create_url, status_code=200, json=order_description)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.post(create_url).return_value = mock_resp
 
-    created_oid = orders_client.create_order(order_details)
+    cl = OrdersClient(session, base_url=TEST_URL)
+    created_oid = await cl.create_order(order_details)
+
     assert created_oid == oid
 
 
-def test_cancel_order(requests_mock, orders_client, oid):
+@respx.mock
+@pytest.mark.asyncio
+async def test_get_order(oid, order_description, session):
+    get_url = TEST_URL + 'orders/v2/' + oid
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.get(get_url).return_value = mock_resp
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+    order = await cl.get_order(oid)
+
+    assert order.state == 'queued'
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_cancel_order(oid, order_description, session):
+    cancel_url = TEST_URL + 'orders/v2/' + oid
+    order_description['state'] = 'cancelled'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.put(cancel_url).return_value = mock_resp
+
     # TODO: the api says cancel order returns the order details but as
     # far as I can test thus far, it returns nothing. follow up on this
-    cancel_url = TEST_URL + 'orders/v2/' + oid
-    requests_mock.put(cancel_url, status_code=200, text='')
-
-    orders_client.cancel_order(oid)
+    cl = OrdersClient(session, base_url=TEST_URL)
+    await cl.cancel_order(oid)
 
 
-def test_cancel_orders(requests_mock, orders_client):
+@respx.mock
+@pytest.mark.asyncio
+async def test_cancel_orders_by_ids(session):
     bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
-
     test_ids = ["oid1", "oid2", "oid3"]
     example_result = {
         "result": {
@@ -178,19 +205,24 @@ def test_cancel_orders(requests_mock, orders_client):
             }
         }
     }
-    requests_mock.post(bulk_cancel_url, status_code=200, json=example_result)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=example_result)
+    respx.post(bulk_cancel_url).return_value = mock_resp
 
-    res = orders_client.cancel_orders(test_ids)
+    cl = OrdersClient(session, base_url=TEST_URL)
+    res = await cl.cancel_orders(test_ids)
+
     assert res == example_result
 
     expected_body = {
             "order_ids": test_ids
     }
-    history = requests_mock.request_history
-    assert history[0].json() == expected_body
+    actual_body = json.loads(respx.calls.last.request.content)
+    assert actual_body == expected_body
 
 
-def test_cancel_orders_all(requests_mock, orders_client):
+@respx.mock
+@pytest.mark.asyncio
+async def test_cancel_orders_all(session):
     bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
 
     example_result = {
@@ -202,16 +234,52 @@ def test_cancel_orders_all(requests_mock, orders_client):
             }
         }
     }
-    requests_mock.post(bulk_cancel_url, status_code=200, json=example_result)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=example_result)
+    respx.post(bulk_cancel_url).return_value = mock_resp
 
-    res = orders_client.cancel_orders([])
+    cl = OrdersClient(session, base_url=TEST_URL)
+    res = await cl.cancel_orders()
+
     assert res == example_result
 
-    history = requests_mock.request_history
-    assert history[0].json() == {}
+    actual_body = json.loads(respx.calls.last.request.content)
+    assert actual_body == {}
 
 
-def test_aggegated_order_stats(requests_mock, orders_client):
+@respx.mock
+@pytest.mark.asyncio
+async def test_poll(oid, order_description, session):
+    get_url = TEST_URL + 'orders/v2/' + oid
+
+    order_description2 = copy.deepcopy(order_description)
+    order_description2['state'] = 'running'
+    order_description3 = copy.deepcopy(order_description)
+    order_description3['state'] = 'success'
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+
+    route = respx.get(get_url)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.OK, json=order_description),
+        httpx.Response(HTTPStatus.OK, json=order_description2),
+        httpx.Response(HTTPStatus.OK, json=order_description3)
+    ]
+    state = await cl.poll(oid, wait=0)
+    assert state == 'success'
+
+    route = respx.get(get_url)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.OK, json=order_description),
+        httpx.Response(HTTPStatus.OK, json=order_description2),
+        httpx.Response(HTTPStatus.OK, json=order_description3)
+    ]
+    state = await cl.poll(oid, state='running', wait=0)
+    assert state == 'running'
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_aggegated_order_stats(session):
     stats_url = TEST_URL + 'stats/orders/v2/'
     LOGGER.debug(f'url: {stats_url}')
     example_stats = {
@@ -224,47 +292,72 @@ def test_aggegated_order_stats(requests_mock, orders_client):
             "running_orders": 0
         }
     }
-    requests_mock.get(stats_url, status_code=200, json=example_stats)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=example_stats)
+    respx.get(stats_url).return_value = mock_resp
 
-    res = orders_client.aggregated_order_stats()
+    cl = OrdersClient(session, base_url=TEST_URL)
+    res = await cl.aggregated_order_stats()
+
     assert res == example_stats
 
 
-def test_download_asset(requests_mock, tmpdir, orders_client, open_test_img):
+@respx.mock
+@pytest.mark.asyncio
+async def test_download_asset_md(tmpdir, session):
     dl_url = TEST_URL + 'download/?token=IAmAToken'
 
-    with open_test_img as img:
-        requests_mock.get(
-            dl_url,
-            status_code=200,
-            body=img,
-            headers={
-                'Content-Type': 'image/tiff',
-                'Content-Length': '527',
-                'Content-Disposition': 'attachment; filename="img.tif"'
-            })
+    md_json = {'key': 'value'}
+    md_headers = {
+        'Content-Type': 'application/json',
+        'Content-Disposition': 'attachment; filename="metadata.json"'
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=md_json, headers=md_headers)
+    respx.get(dl_url).return_value = mock_resp
 
-        filename = orders_client.download_asset(
-                dl_url, directory=str(tmpdir))
-        assert Path(filename).name == 'img.tif'
-        assert os.path.isfile(filename)
+    cl = OrdersClient(session, base_url=TEST_URL)
+    filename = await cl.download_asset(dl_url, directory=str(tmpdir))
 
-    requests_mock.get(
-        dl_url,
-        status_code=200,
-        json={'key': 'value'},
-        headers={
-            'Content-Type': 'application/json',
-            'Content-Disposition': 'attachment; filename="metadata.json"'
-        })
-
-    filename = orders_client.download_asset(
-            dl_url, directory=str(tmpdir))
     assert json.loads(open(filename).read()) == {'key': 'value'}
+    assert Path(filename).name == 'metadata.json'
 
 
-def test_download_order(requests_mock, tmpdir, orders_client,
-                        order_description, oid):
+@respx.mock
+@pytest.mark.asyncio
+async def test_download_asset_img(tmpdir, open_test_img, session):
+    dl_url = TEST_URL + 'download/?token=IAmAToken'
+
+    img_headers = {
+        'Content-Type': 'image/tiff',
+        'Content-Length': '527',
+        'Content-Disposition': 'attachment; filename="img.tif"'
+    }
+
+    async def _stream_img():
+        data = open_test_img.read()
+        v = memoryview(data)
+
+        chunksize = 100
+        for i in range(math.ceil(len(v)/(chunksize))):
+            yield v[i*chunksize:min((i+1)*chunksize, len(v))]
+
+    # populate request parameter to avoid respx cloning, which throws
+    # an error caused by respx and not this code
+    # https://github.com/lundberg/respx/issues/130
+    mock_resp = httpx.Response(HTTPStatus.OK, stream=_stream_img(),
+                               headers=img_headers,
+                               request='donotcloneme')
+    respx.get(dl_url).return_value = mock_resp
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+    filename = await cl.download_asset(dl_url, directory=str(tmpdir))
+
+    assert Path(filename).name == 'img.tif'
+    assert os.path.isfile(filename)
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_download_order(tmpdir, order_description, oid, session):
     dl_url1 = TEST_URL + 'download/1?token=IAmAToken'
     dl_url2 = TEST_URL + 'download/2?token=IAmAnotherToken'
     order_description['_links']['results'] = [
@@ -273,52 +366,34 @@ def test_download_order(requests_mock, tmpdir, orders_client,
     ]
 
     get_url = TEST_URL + 'orders/v2/' + oid
-    requests_mock.get(get_url, status_code=200, json=order_description)
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.get(get_url).return_value = mock_resp
 
-    requests_mock.get(
-        dl_url1,
-        status_code=200,
+    mock_resp1 = httpx.Response(
+        HTTPStatus.OK,
         json={'key': 'value'},
         headers={
             'Content-Type': 'application/json',
             'Content-Disposition': 'attachment; filename="m1.json"'
         })
+    respx.get(dl_url1).return_value = mock_resp1
 
-    requests_mock.get(
-        dl_url2,
-        status_code=200,
+    mock_resp1 = httpx.Response(
+        HTTPStatus.OK,
         json={'key2': 'value2'},
         headers={
             'Content-Type': 'application/json',
             'Content-Disposition': 'attachment; filename="m2.json"'
         })
+    respx.get(dl_url2).return_value = mock_resp1
 
-    filenames = orders_client.download_order(oid, directory=str(tmpdir))
+    cl = OrdersClient(session, base_url=TEST_URL)
+    filenames = await cl.download_order(oid, directory=str(tmpdir))
+
     assert len(filenames) == 2
+
     assert json.loads(open(filenames[0]).read()) == {'key': 'value'}
+    assert Path(filenames[0]).name == 'm1.json'
+
     assert json.loads(open(filenames[1]).read()) == {'key2': 'value2'}
-
-
-def test_wait_for_complete(requests_mock, oid, orders_client,
-                           order_description):
-    get_url = TEST_URL + 'orders/v2/' + oid
-
-    order_description2 = copy.deepcopy(order_description)
-    order_description2['state'] = 'running'
-    order_description3 = copy.deepcopy(order_description)
-    order_description3['state'] = 'success'
-
-    requests_mock.get(get_url, [
-        {'json': order_description, 'status_code': 200},
-        {'json': order_description2, 'status_code': 200},
-        {'json': order_description3, 'status_code': 200}])
-
-    states = []
-
-    def _callback(state):
-        states.append(state)
-
-    state = orders_client.wait_for_complete(oid, wait=0, callback=_callback)
-    assert state == 'success'
-    assert requests_mock.call_count == 3
-    assert states == ['queued', 'running', 'success']
+    assert Path(filenames[1]).name == 'm2.json'

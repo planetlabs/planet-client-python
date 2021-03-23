@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Manage data for requests and responses."""
-
+import copy
 import datetime
+import json
 import logging
-import os
+import mimetypes
+import random
+import re
+import string
 
-from ._fatomic import atomic_open
-from . import exceptions, utils
-
-
-CHUNK_SIZE = 32 * 1024
+import httpx
+from tqdm.asyncio import tqdm
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,52 +37,43 @@ class Request():
 
     :param url: URL of API endpoint
     :type url: str
-    :param auth: Planet API authentication
-    :type auth: :py:Class:'planet.auth.auth
-    :param params: values to send in the query string, defaults to None
+    :param params: Values to send in the query string. Defaults to None.
     :type params: dict, list of tuples, or bytes, optional
-    :param body_type: Expected response body type, defaults to `Body`
-    :type body_type: type, optional
-    :param data: object to send in the body, defaults to None
+    :param data: Object to send in the body. Defaults to None.
     :type data: dict, list of tuples, bytes, or file-like object, optional
-    :param method: HTTP request method, defaults to 'GET'
+    :param json: JSON to send. Defaults to None.
+    :type json: dict, optional
+    :param method: HTTP request method. Defaults to 'GET'
     :type method: str, optional
     :raises RequestException: When provided `body_type` is not a subclass of
         :py:class:`planet.api.models.Body`
     '''
-    def __init__(self, url, auth, params=None, body_type=None, data=None,
-                 method='GET'):
-        self.url = url
-        self.auth = auth
-        self.params = params
+    def __init__(self, url, params=None, data=None, json=None, method='GET'):
+        if data or json:
+            headers = {'Content-Type': 'application/json'}
+        else:
+            headers = None
 
-        self.body_type = body_type or Body
-        if not issubclass(self.body_type, Body):
-            raise RequestException(
-                f'body_type ({self.body_type}) must be a subclass of Body'
-            )
-
-        self.data = data
-        self.method = method
+        self.http_request = httpx.Request(
+            method,
+            url,
+            params=params,
+            data=data,
+            json=json,
+            headers=headers)
 
     @property
-    def headers(self):
-        '''Prepare headers for request.
+    def url(self):
+        return self.http_request.url
 
-        :returns: prepared headers
-        :rtype: dict
+    @url.setter
+    def url(self, url):
+        '''Set the url.
+
+        :param url: URL of API endpoint
+        :type url: str
         '''
-        headers = {}
-        if self.data:
-            headers['Content-Type'] = 'application/json'
-
-        if self.auth:
-            headers.update({
-                'Authorization': 'api-key %s' % self.auth.value
-            })
-        else:
-            raise exceptions.InvalidAPIKey('No API key provided')
-        return headers
+        self.http_request.url = httpx.URL(url)
 
 
 class Response():
@@ -95,21 +87,9 @@ class Response():
     def __init__(self, request, http_response):
         self.request = request
         self.http_response = http_response
-        self._body = None
 
-    @property
-    def body(self):
-        '''The response Body
-
-        :returns: A Body object containing the response
-        :rtype: :py:Class:`Body`
-        '''
-        if self._body is None:
-            self._body = self._create_body()
-        return self._body
-
-    def _create_body(self):
-        return self.request.body_type(self.request, self.http_response)
+    def __repr__(self):
+        return f'<models.Response [{self.status_code}]>'
 
     @property
     def status_code(self):
@@ -120,54 +100,28 @@ class Response():
         '''
         return self.http_response.status_code
 
-    def __repr__(self):
-        return '<models.Response [%s]>' % (self.status_code)
+    @property
+    def json(self):
+        '''Response json.
 
-    def raise_for_status(self):
-        '''Raises :class: `APIException` if one occured.'''
-        return self._raise_for_status(self.status_code, self.http_response)
-
-    @staticmethod
-    def _raise_for_status(status, http_response):
-        LOGGER.debug(f'status code: {status}')
-
-        if status < 300:
-            return
-
-        exception = {
-            400: exceptions.BadQuery,
-            401: exceptions.InvalidAPIKey,
-            403: exceptions.NoPermission,
-            404: exceptions.MissingResource,
-            429: exceptions.TooManyRequests,
-            500: exceptions.ServerError
-        }.get(status, None)
-
-        # differentiate between over quota and rate-limiting
-        res = http_response
-        if status == 429 and 'quota' in res.text.lower():
-            exception = exceptions.OverQuota
-
-        if exception:
-            raise exception(res.text)
-
-        raise exceptions.APIException('%s: %s' % (status, res.text))
-
-
-class Body():
-    '''A Body is a representation of a resource from the API.
-
-    :param request: Request that was submitted to the server
-    :type request: :py:Class:`planet.api.models.Request
-    :param http_response: Response that was received from the server
-    :type http_response: :py:Class:`requests.models.Response`
+        :returns: json
+        :rtype: dict
         '''
-    def __init__(self, request, http_response):
-        self._request = request
-        self.response = http_response
+        return self.http_response.json
 
-        self.size = int(self.response.headers.get('content-length', 0))
-        self._cancel = False
+    async def aclose(self):
+        await self.http_response.aclose()
+
+
+class StreamingBody():
+    '''A representation of a streaming resource from the API.
+
+    :param response: Response that was received from the server
+    :type response: :py:Class:`requests.models.Response`
+        '''
+    def __init__(self, response):
+        self.response = response.http_response
+        self.url = response.request.url
 
     @property
     def name(self):
@@ -180,105 +134,277 @@ class Body():
         :returns: name of this resource
         :rtype: str
         '''
-        return utils.get_filename(self.response)
+        name = (_get_filename_from_headers(self.response.headers) or
+                _get_filename_from_url(self.url) or
+                _get_random_filename(
+                    self.response.headers.get('content-type')))
+        return name
 
-    def __len__(self):
-        return self.size
+    @property
+    def size(self):
+        '''The size of the body.
 
-    def __iter__(self):
-        return (c for c in self.response.iter_content(chunk_size=CHUNK_SIZE))
+        :returns: size of the body
+        :rtype: int
+        '''
+        return int(self.response.headers['Content-Length'])
+
+    @property
+    def num_bytes_downloaded(self):
+        '''The number of bytes downloaded.
+
+        :returns: number of bytes downloaded
+        :rtype: int
+        '''
+        return self.response.num_bytes_downloaded
 
     def last_modified(self):
-        '''Read the last-modified header as a datetime, if present.'''
+        '''Read the last-modified header as a datetime, if present.
+
+        :returns: last-modified header
+        :rtype: datatime or None
+        '''
         lm = self.response.headers.get('last-modified', None)
         return datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S GMT') if lm \
             else None
 
-    def get_raw(self):
-        '''Get the decoded text content from the response'''
-        return self.response.content.decode('utf-8')
+    async def aiter_bytes(self):
+        async for c in self.response.aiter_bytes():
+            yield c
 
-    def _write(self, fp, callback):
-        total = 0
-        if not callback:
-            def noop(*a, **kw):
-                pass
-            callback = noop
-        callback(start=self)
-        for chunk in self:
-            if self._cancel:
-                raise exceptions.RequestCancelled()
-            fp.write(chunk)
-            size = len(chunk)
-            total += size
-            callback(wrote=size, total=total)
-        # seems some responses don't have a content-length header
-        if self.size == 0:
-            self.size = total
-        callback(finish=self)
+    async def write(self, filename, overwrite=True, progress_bar=True):
+        '''Write the body to a file.
 
-    def write(self, file=None, callback=None):
-        '''Write the contents of the body to the optionally provided file and
-        providing progress to the optional callback. The callback will be
-        invoked 3 different ways:
-
-        * First as ``callback(start=self)``
-        * For each chunk of data written as
-          ``callback(wrote=chunk_size_in_bytes, total=all_byte_cnt)``
-        * Upon completion as ``callback(finish=self)``
-
-        :param file: path or file-like object to write to, defaults to the
-            name of body
-        :type file: str or file-like object
-        :param callback: A function handle of the form
-            ``callback(start, wrote, total, finish, skip)`` that receives write
-            progress. Defaults to None
-        :type callback: function, optional
+        :param filename: Name to assign to downloaded file.
+        :type filename: str
+        :param overwrite: Overwrite any existing files. Defaults to True
+        :type overwrite: boolean, optional
+        :param progress_bar: Show progress bar during download. Defaults to
+            True.
+        :type progress_bar: boolean, optional
         '''
-        if not file:
-            file = self.name
-        if not file:
-            raise ValueError('no file name provided or discovered in response')
-        if hasattr(file, 'write'):
-            self._write(file, callback)
-        else:
-            with atomic_open(file, 'wb') as fp:
-                self._write(fp, callback)
+        class _LOG():
+            def __init__(self, total, unit, filename, disable):
+                self.total = total
+                self.unit = unit
+                self.disable = disable
+                self.previous = 0
+                self.filename = filename
 
-    def write_to_file(self, filename=None, overwrite=True, callback=None):
-        '''Write the contents of the body to the optionally provided filename.
+                if not self.disable:
+                    LOGGER.debug(f'writing to {self.filename}')
 
-        providing progress to the optional callback. The callback will be
-        invoked 3 different ways:
+            def update(self, new):
+                if new-self.previous > self.unit and not self.disable:
+                    # LOGGER.debug(f'{new-self.previous}')
+                    perc = int(100 * new / self.total)
+                    LOGGER.debug(f'{self.filename}: '
+                                 f'wrote {perc}% of {self.total}')
+                    self.previous = new
 
-        * First as ``callback(start=self)``
-        * For each chunk of data written as
-          ``callback(wrote=chunk_size_in_bytes, total=all_byte_cnt)``
-        * Upon completion as ``callback(finish=self)`
-        * Upon skip as `callback(skip=self)`
+        unit = 1024*1024
 
-        :param filename: Filename to write to, defaults to body name
-        :type filename: str, optional
-        :param overwrite: Specify whether the file at filename
-            should be overwritten if it exists, defaults to True
-        :type overwrite: bool, optional
-        :param callback: A function handle of the form
-            ``callback(start, wrote, total, finish, skip)`` that receives write
-            progress. Defaults to None
-        :type callback: function, optional
+        mode = 'wb' if overwrite else 'xb'
+        try:
+            with open(filename, mode) as fp:
+                _log = _LOG(self.size, 16*unit, filename, disable=progress_bar)
+                with tqdm(total=self.size, unit_scale=True,
+                          unit_divisor=unit, unit='B',
+                          desc=filename, disable=not progress_bar) as progress:
+                    previous = self.num_bytes_downloaded
+                    async for chunk in self.aiter_bytes():
+                        fp.write(chunk)
+                        new = self.num_bytes_downloaded
+                        _log.update(new)
+                        progress.update(new-previous)
+                        previous = new
+        except FileExistsError:
+            LOGGER.info(f'File {filename} exists, not overwriting')
+
+
+def _get_filename_from_headers(headers):
+    """Get a filename from the Content-Disposition header, if available.
+
+    :param headers dict: a ``dict`` of response headers
+    :returns: a filename (i.e. ``basename``)
+    :rtype: str or None
+    """
+    cd = headers.get('content-disposition', '')
+    match = re.search('filename="?([^"]+)"?', cd)
+    return match.group(1) if match else None
+
+
+def _get_filename_from_url(url):
+    """Get a filename from a URL.
+
+    :returns: a filename (i.e. ``basename``)
+    :rtype: str or None
+    """
+    path = url.path
+    name = path[path.rfind('/')+1:]
+    return name or None
+
+
+def _get_random_filename(content_type=None):
+    """Get a pseudo-random, Planet-looking filename.
+
+    :returns: a filename (i.e. ``basename``)
+    :rtype: str
+    """
+    extension = mimetypes.guess_extension(content_type or '') or ''
+    characters = string.ascii_letters + '0123456789'
+    letters = ''.join(random.sample(characters, 8))
+    name = 'planet-{}{}'.format(letters, extension)
+    return name
+
+
+class Paged():
+    '''Asynchronous iterator over results in a paged resource from the Planet
+    server.
+
+    Each returned result is a json dict.
+
+    :param request: Open session connected to server
+    :type request: planet.api.http.ASession
+    :param do_request_fcn: Function for submitting a request. Takes as input
+        a planet.api.models.Request and returns planet.api.models.Response.
+    :type do_request_fcn: function
+    :param limit: Limit orders to given limit. Defaults to None
+    :type limit: int, optional
+    '''
+    LINKS_KEY = 'links'
+    NEXT_KEY = 'next'
+    ITEMS_KEY = 'items'
+    TYPE = None
+
+    def __init__(self, request, do_request_fcn, limit=None):
+        self.request = request
+        self._do_request = do_request_fcn
+
+        self._pages = None
+        self._items = []
+
+        self.i = 0
+        self.limit = limit
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        '''Asynchronous next.
+
+        :returns: next item as json
+        :rtype: dict
         '''
-        if overwrite or not os.path.exists(filename):
-            self.write(filename, callback=callback)
-        else:
-            if callback:
-                callback(skip=self)
+        # This was implemented because traversing _get_pages()
+        # in an async generator was resulting in retrieving all the
+        # pages, when the goal is to stop retrieval when the limit
+        # is reached
+        if self.limit is not None and self.i >= self.limit:
+            raise StopAsyncIteration
+
+        try:
+            item = self._items.pop(0)
+            self.i += 1
+        except IndexError:
+            self._pages = self._pages or self._get_pages()
+            page = await self._pages.__anext__()
+            self._items = page[self.ITEMS_KEY]
+            try:
+                item = self._items.pop(0)
+                self.i += 1
+            except IndexError:
+                raise StopAsyncIteration
+
+        return item
+
+    async def _get_pages(self):
+        request = copy.deepcopy(self.request)
+        LOGGER.debug('getting first page')
+        resp = await self._do_request(request)
+        page = resp.json()
+        yield page
+
+        next_url = self._next_link(page)
+        while(next_url):
+            LOGGER.debug('getting next page')
+            request.url = next_url
+            resp = await self._do_request(request)
+            page = resp.json()
+            yield page
+            next_url = self._next_link(page)
+
+    def _next_link(self, page):
+        try:
+            next_link = page[self.LINKS_KEY][self.NEXT_KEY]
+            LOGGER.debug(f'next: {next_link}')
+        except KeyError:
+            LOGGER.debug('end of the pages')
+            next_link = False
+        return next_link
 
 
-class JSON(Body):
-    '''A Body that contains JSON'''
+class Order():
+    '''Managing description of an order returned from Orders API.
+
+    :param data: Response json describing order
+    :type data: dict
+    '''
+    LINKS_KEY = '_links'
+    RESULTS_KEY = 'results'
+    LOCATION_KEY = 'location'
+
+    def __init__(self, data):
+        self.data = data
+
+    def __str__(self):
+        return "<Order> " + json.dumps(self.data)
 
     @property
-    def data(self):
-        '''The response as a JSON dict'''
-        data = self.response.json()
-        return data
+    def results(self):
+        '''Results for each item in order.
+
+        :return: result for each item in order
+        :rtype: list of dict
+        '''
+        links = self.data[self.LINKS_KEY]
+        results = links.get(self.RESULTS_KEY, None)
+        return results
+
+    @property
+    def locations(self):
+        '''Download locations for order results.
+
+        :return: download locations in order
+        :rtype: list of str
+        '''
+        return list(r[self.LOCATION_KEY] for r in self.results)
+
+    @property
+    def state(self):
+        '''State of the order.
+
+        :return: state of order
+        :rtype: str
+        '''
+        return self.data['state']
+
+    @property
+    def id(self):
+        '''ID of the order.
+
+        :return: id of order
+        :rtype: str
+        '''
+        return self.data['id']
+
+
+class Orders(Paged):
+    '''Asynchronous iterator over Orders from a paged response describing
+    orders.'''
+    LINKS_KEY = '_links'
+    NEXT_KEY = 'next'
+    ITEMS_KEY = 'orders'
+
+    async def __anext__(self):
+        return Order(await super().__anext__())

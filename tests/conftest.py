@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import json
 import os
 from pathlib import Path
 
@@ -25,3 +26,31 @@ def open_test_img():
     img_path = _test_data_path / 'test_sm.tif'
     with open(img_path, 'rb') as img:
         yield img
+
+
+def _get_file_json(filename):
+    file_path = _test_data_path / filename
+    return json.load(open(file_path, 'r'))
+
+
+@pytest.fixture
+def order_description():
+    filename = 'order_description_b0cb3448-0a74-11eb-92a1-a3d779bb08e0.json'
+    return _get_file_json(filename)
+
+
+@pytest.fixture
+def order_details():
+    filename = 'order_details_psorthotile_analytic.json'
+    return _get_file_json(filename)
+
+
+@pytest.fixture
+def orders_page():
+    filename = 'orders_page.json'
+    return _get_file_json(filename)
+
+
+@pytest.fixture
+def oid():
+    return 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'

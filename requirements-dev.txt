@@ -1,3 +1,4 @@
-requests-mock==1.8.0
+pytest-asyncio==0.14.0
+respx==0.16.3
 sphinx-autobuild==2020.9.1
 tox==3.20.1

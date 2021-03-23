@@ -13,6 +13,8 @@
 # limitations under the License.
 import logging
 
+import pytest
+
 from planet import specs
 
 LOGGER = logging.getLogger(__name__)
@@ -30,6 +32,39 @@ def test_get_type_match():
 
     test_entry = 'locket'
     assert 'Locket' == specs.get_match(test_entry, spec_list)
+
+    with pytest.raises(specs.NoMatchException):
+        specs.get_match('a', ['b'])
+
+
+def test_validate_bundle():
+    assert 'analytic' == specs.validate_bundle('ANALYTIC')
+
+    with pytest.raises(specs.SpecificationException):
+        specs.validate_bundle('notsupported')
+
+
+def test_validate_item_type():
+    assert 'PSOrthoTile' == specs.validate_item_type('psorthotile', 'analytic')
+
+    with pytest.raises(specs.SpecificationException):
+        specs.validate_item_type('psorthotile', 'wha')
+
+        specs.validate_item_type('notsupported', 'analytic')
+
+
+def test_validate_order_type():
+    assert 'full' == specs.validate_order_type('FULL')
+
+    with pytest.raises(specs.SpecificationException):
+        specs.validate_order_type('notsupported')
+
+
+def test_validate_arhive_type():
+    assert 'zip' == specs.validate_archive_type('ZIP')
+
+    with pytest.raises(specs.SpecificationException):
+        specs.validate_archive_type('notsupported')
 
 
 def test_get_product_bundles():

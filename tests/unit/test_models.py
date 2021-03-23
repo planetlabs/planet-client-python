@@ -11,21 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import io
+# import io
+import copy
 import logging
 import math
-from mock import MagicMock
+from unittest.mock import MagicMock
 import os
 from pathlib import Path
+import re
 
+from httpx import URL
 import pytest
 
-from planet.api import exceptions, models
+from planet.api import models
 
-TEST_ITEM_KEY = 'testitem'
-TEST_LINKS_KEY = 'testlinks'
-TEST_NEXT_KEY = 'testnext'
-NUM_ITEMS = 5
 
 LOGGER = logging.getLogger(__name__)
 
@@ -39,163 +38,194 @@ def mock_http_response(json=None, iter_content=None, text=None):
     m = MagicMock(name='http_response')
     m.headers = {}
     m.json.return_value = json or {}
-    m.iter_content = iter_content
+    m.aiter_content = iter_content
     m.text = text or ''
     return m
 
 
-def test_Request__raise_for_status():
-    models.Response._raise_for_status(201, mock_http_response(text=''))
+def test_StreamingBody_name():
+    r = MagicMock(name='response')
+    r.request.url = URL('https://planet.com/path/to/example.tif?foo=f6f1')
+    hr = MagicMock(name='http_response')
+    hr.headers = {
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256',
+        'content-disposition': 'attachment; filename="open_california.tif"'
+    }
+    r.http_response = hr
+    body = models.StreamingBody(r)
 
-    with pytest.raises(exceptions.TooManyRequests):
-        models.Response._raise_for_status(429, mock_http_response(text=''))
+    assert body.name == 'open_california.tif'
 
-    with pytest.raises(exceptions.OverQuota):
-        msg = 'exceeded QUOTA dude'
-        models.Response._raise_for_status(429,  mock_http_response(text=msg))
+    r = MagicMock(name='response')
+    r.request.url = URL('https://planet.com/path/to/example.tif?foo=f6f1')
+    hr = MagicMock(name='http_response')
+    hr.headers = {
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256',
+    }
+    r.http_response = hr
+    body = models.StreamingBody(r)
+
+    assert body.name == 'example.tif'
+
+    r = MagicMock(name='response')
+    r.request.url = URL('https://planet.com/path/to/noname/')
+    hr = MagicMock(name='http_response')
+    hr.headers = {
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256',
+    }
+    r.http_response = hr
+    body = models.StreamingBody(r)
+
+    assert body.name.startswith('planet-')
+    assert (body.name.endswith('.tiff') or
+            body.name.endswith('.tif'))
 
 
-def test_Body_write(tmpdir, mocked_request):
-    chunks = ((str(i) * 16000).encode('utf-8') for i in range(10))
+@pytest.mark.parametrize('headers,expected', [
+    ({
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256',
+        'content-disposition': 'attachment; filename="open_california.tif"'
+    }, 'open_california.tif'),
+    ({
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256'
+    }, None),
+    ({}, None)
+])
+def test__get_filename_from_headers(headers, expected):
+    assert models._get_filename_from_headers(headers) == expected
 
-    body = models.Body(mocked_request, mock_http_response(
-        iter_content=lambda chunk_size: chunks
-    ))
-    buf = io.BytesIO()
-    body.write(buf)
 
-    assert len(buf.getvalue()) == 160000
+@pytest.mark.parametrize('url,expected', [
+    (URL('https://planet.com/'), None),
+    (URL('https://planet.com/path/to/'), None),
+    (URL('https://planet.com/path/to/example.tif'), 'example.tif'),
+    (URL('https://planet.com/path/to/example.tif?foo=f6f1&bar=baz'),
+     'example.tif'),
+    (URL('https://planet.com/path/to/example.tif?foo=f6f1#quux'),
+     'example.tif'),
+])
+def test__get_filename_from_url(url, expected):
+    assert models._get_filename_from_url(url) == expected
 
 
-def test_Body_write_img(requests_mock, tmpdir, mocked_request, open_test_img):
-    data = open_test_img.read()
-    v = memoryview(data)
+@pytest.mark.parametrize('content_type,check', [
+    (None, lambda x: re.match(r'^planet-[a-z0-9]{8}$', x, re.I) is not None),
+    ('image/tiff', lambda x: x.endswith(('.tif', '.tiff'))),
+])
+def test__get_random_filename(content_type, check):
+    assert check(models._get_random_filename(content_type))
 
-    chunksize = 100
-    chunks = (v[i*chunksize:min((i+1)*chunksize, len(v))]
-              for i in range(math.ceil(len(v)/(chunksize))))
 
-    body = models.Body(mocked_request, mock_http_response(
-        iter_content=lambda chunk_size: chunks
-    ))
+@pytest.mark.asyncio
+async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
+    async def _aiter_bytes():
+        data = open_test_img.read()
+        v = memoryview(data)
+
+        chunksize = 100
+        for i in range(math.ceil(len(v)/(chunksize))):
+            yield v[i*chunksize:min((i+1)*chunksize, len(v))]
+
+    r = MagicMock(name='response')
+    hr = MagicMock(name='http_response')
+    hr.aiter_bytes = _aiter_bytes
+    hr.num_bytes_downloaded = 0
+    hr.headers['Content-Length'] = 527
+    r.http_response = hr
+    body = models.StreamingBody(r)
 
     filename = Path(str(tmpdir)) / 'test.tif'
-    body.write(file=filename)
+    await body.write(filename, progress_bar=False)
 
     assert os.path.isfile(filename)
     assert os.stat(filename).st_size == 527
 
 
-def test_Body_write_to_file_callback(mocked_request, tmpdir):
-    class Tracker(object):
-        def __init__(self):
-            self.calls = []
+@pytest.fixture
+def get_pages():
+    p1 = {'links': {'next': 'blah'},
+          'items': [1, 2]}
+    p2 = {'links': {},
+          'items': [3, 4]}
+    responses = [
+        mock_http_response(json=p1),
+        mock_http_response(json=p2)
+    ]
 
-        def get_callback(self):
-            def register_call(start=None, wrote=None, total=None, finish=None,
-                              skip=None):
-                if start is not None:
-                    self.calls.append('start')
-                if wrote is not None and total is not None:
-                    self.calls.append('wrote, total')
-                if finish is not None:
-                    self.calls.append('finish')
-                if skip is not None:
-                    self.calls.append('skip')
-            return register_call
+    async def do_get(req):
+        return responses.pop(0)
 
-    chunks = ((str(i) * 16000).encode('utf-8') for i in range(2))
-
-    body = models.Body(mocked_request, mock_http_response(
-        iter_content=lambda chunk_size: chunks
-    ))
-
-    test = Tracker()
-    filename = Path(str(tmpdir)) / 'test.tif'
-    body.write_to_file(filename=filename, callback=test.get_callback())
-
-    assert test.calls == ['start', 'wrote, total', 'wrote, total', 'finish']
-
-    # should skip writing the file because a file with that filename already
-    # exists
-    test.calls = []
-    body.write_to_file(filename=filename, callback=test.get_callback(),
-                       overwrite=False)
-    assert test.calls == ['skip']
+    return do_get
 
 
-# class TestPaged(models.Paged):
-#     def _get_item_key(self):
-#         return TEST_ITEM_KEY
-#
-#     def _get_links_key(self):
-#         return TEST_LINKS_KEY
-#
-#     def _get_next_key(self):
-#         return TEST_NEXT_KEY
-#
-#
-# @pytest.fixture
-# def test_paged():
-#     request = models.Request('url', 'auth')
-#
-#     # make 5 pages with 5 items on each page
-#     pages = _make_pages(5, NUM_ITEMS)
-#     http_response = mock_http_response(json=next(pages))
-#
-#     # initialize the paged object with the first page
-#     paged = TestPaged(request, http_response)
-#
-#     # the remaining 4 get used here
-#     ps = MagicMock(name='PlanetSession')
-#     ps.request.side_effect = (
-#         mock_http_response(json=p) for p in pages
-#     )
-#     # mimic dispatcher.response
-#     return paged
-#
-#
-# def _make_pages(cnt, num):
-#     '''generator of 'cnt' pages containing 'num' content'''
-#     start = 0
-#     for p in range(num):
-#         nxt = 'page %d' % (p + 1,) if p + 1 < num else None
-#         start, page = _make_test_page(cnt, start, nxt)
-#         yield page
-#
-#
-# def _make_test_page(cnt, start, nxt):
-#     '''fake paged content'''
-#     envelope = {
-#         TEST_LINKS_KEY: {
-#             TEST_NEXT_KEY: nxt
-#         },
-#         TEST_ITEM_KEY: [{
-#             'testitementry': start + t
-#         } for t in range(cnt)]
-#     }
-#     return start + cnt, envelope
-#
+@pytest.mark.asyncio
+async def test_Paged_iterator(get_pages):
+    req = MagicMock()
+    paged = models.Paged(req, get_pages)
+    assert [1, 2, 3, 4] == [i async for i in paged]
 
-# def test_Paged_next(test_paged):
-#     pages = list(test_paged.iter(2))
-#     assert 2 == len(pages)
-#     assert NUM_ITEMS == len(pages[0].get()[TEST_ITEM_KEY])
-#     assert NUM_ITEMS == len(pages[1].get()[TEST_ITEM_KEY])
-#
-#
-# def test_Paged_iter(test_paged):
-#     pages = list(test_paged.iter(2))
-#     assert 2 == len(pages)
-#     assert NUM_ITEMS == len(pages[0].get()[TEST_ITEM_KEY])
-#     assert NUM_ITEMS == len(pages[1].get()[TEST_ITEM_KEY])
-#
-#
-# @pytest.mark.skip(reason='not implemented')
-# def test_Paged_items_iter():
-#     pass
-#
-#
-# @pytest.mark.skip(reason='not implemented')
-# def test_Paged_json_encode():
-#     pass
+
+@pytest.mark.asyncio
+async def test_Paged_limit(get_pages):
+    req = MagicMock()
+    paged = models.Paged(req, get_pages, limit=3)
+    assert [1, 2, 3] == [i async for i in paged]
+
+
+@pytest.fixture
+def get_orders_pages(orders_page):
+    page2 = copy.deepcopy(orders_page)
+    del page2['_links']['next']
+    responses = [
+        mock_http_response(json=orders_page),
+        mock_http_response(json=page2)
+    ]
+
+    async def do_get(req):
+        return responses.pop(0)
+
+    return do_get
+
+
+@pytest.mark.asyncio
+async def test_Orders(get_orders_pages):
+    req = MagicMock()
+    orders = models.Orders(req, get_orders_pages)
+    expected_ids = [
+        'f05b1ed7-11f0-43da-960c-a624f7c355c8',
+        '8d4799c4-5291-40c0-a7f5-adb9a974455d',
+        'f05b1ed7-11f0-43da-960c-a624f7c355c8',
+        '8d4799c4-5291-40c0-a7f5-adb9a974455d'
+    ]
+    assert expected_ids == [o.id async for o in orders]
+
+
+def test_Order_results(order_description):
+    order = models.Order(order_description)
+    assert len(order.results) == 3
+
+
+def test_Order_locations(order_description):
+    order = models.Order(order_description)
+    expected_locations = ['location1', 'location2', 'location3']
+    assert order.locations == expected_locations
