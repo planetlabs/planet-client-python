@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/planetlabs/planet-client-python.svg?branch=master)](https://travis-ci.org/planetlabs/planet-client-python)
 
-Python client library and Command-Line Interface (CLI) for Planet's APIs.
+Python client library for Planet's APIs.
 
 The client provides access to the following Planet APIs:
 * [analytics](https://developers.planet.com/docs/analytics/)
@@ -33,19 +33,8 @@ A PEX executable (Windows not supported) and source releases are
 Planet's APIs require an account for use.
 [Sign up here](https://www.planet.com/explorer/?signup).
 
-Authentication information can be obtained and stored locally with the CLI
-`planet init` command. Both the Python library and CLI will default to using
-the stored authentication information, if available (not yet implemented, see
-issues #244 and #248).
-
-Additionally, authentication information can be provided to the CLI by
-storing the api key in the environmental variable `PL_API_KEY` or by specifying
-the api key with the flag `-k` or `--api-key` (TODO: link to cli documentation
-here).
 
 ## Quick Start
-
-### Python Library Usage
 
 The client modules within the Python library are asynchronous, which greatly
 speeds up many interactions with Planet's APIs. Support for asynchronous
@@ -181,29 +170,6 @@ asyncio.run(main())
 ```
 [Example output](example_output.md)
 
-
-## CLI Usage (Not yet Implemented)
-
-**Hint:** autocompletion can be enabled in some shells using:
-```console
-    $ eval "$(_PLANET_COMPLETE=source planet)"
-```
-
-Basics and help:
-
-```console
-    $ planet --help
-```
-
-Specific API client usage:
-```console
-    $ planet data
-```    
-
-Specific command help:
-```console
-    $ planet data download --help
-```
 
 ## Documentation
 
