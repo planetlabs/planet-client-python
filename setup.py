@@ -27,7 +27,6 @@ with open('planet/api/__version__.py') as f:
 install_requires = [
     'httpx>=0.16',
     'tqdm>=4.56',
-    'pywin32 >= 1.0;platform_system=="Windows"'
 ]
 
 test_requires = [
