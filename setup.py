@@ -11,19 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from codecs import open as codecs_open
+from pathlib import Path
 from setuptools import setup, find_packages
-
-
-# Get the long description from the relevant file
-# TODO: consider moving to markdown from rst at this point
-try:
-    with codecs_open('README.rst', encoding='utf-8') as f:
-        long_description = f.read()
-except:
-    # @todo for now, fall back to this - pex fails to resolve the README
-    long_description = ''
 
 
 with open('planet/api/__version__.py') as f:
@@ -35,25 +24,27 @@ with open('planet/api/__version__.py') as f:
             continue
 
 
+install_requires = [
+    'httpx>=0.16',
+    'tqdm>=4.56',
+    'pywin32 >= 1.0;platform_system=="Windows"'
+]
+
 test_requires = [
     'pytest',
     'pytest-asyncio',
-    'respx'
+    'pytest-cov',
+    'respx==0.16.3'
 ]
 
-dev_requires = [
+lint_requires = [
     'flake8',
-    'setuptools',
-    'pex',
-    'pytest-cov',
-    'sphinx',
-    'wheel',
 ]
 
 setup(name='planet',
       version=version,
       description=u"Planet API Client",
-      long_description=long_description,
+      long_description=Path("README.md").read_text("utf-8"),
       classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: Console',
@@ -75,14 +66,10 @@ setup(name='planet',
       include_package_data=True,
       zip_safe=False,
       python_requires='>=3.7',
-      install_requires=[
-          'httpx>=0.16',
-          'tqdm>=4.56',
-          'pywin32 >= 1.0;platform_system=="Windows"'
-      ],
+      install_requires=install_requires,
       extras_require={
           'test': test_requires,
-          'dev': test_requires + dev_requires,
+          'dev': test_requires + lint_requires,
       },
       entry_points="""
       [console_scripts]
