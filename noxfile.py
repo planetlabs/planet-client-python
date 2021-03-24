@@ -11,9 +11,6 @@ def test(session):
     session.install("-e", ".[test]")
 
     options = session.posargs
-    if "-k" or "-x" in options:
-        options.append("--no-cov")
-
     session.run("pytest", "-v", *options)
 
 
