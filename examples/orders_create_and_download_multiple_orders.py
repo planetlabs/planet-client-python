@@ -27,6 +27,7 @@ import os
 import planet
 
 API_KEY = os.getenv('PL_API_KEY')
+DOWNLOAD_DIR = os.getenv('TEST_DOWNLOAD_DIR', '.')
 
 iowa_aoi = {
     "type": "Polygon",
@@ -72,8 +73,7 @@ oregon_order = planet.OrderDetails(
 async def create_and_download(order_detail, directory, client):
     # create
     print('Creating order')
-    # oid = await client.create_order(order_detail)
-    oid = '94e0d371-5448-4367-871b-9f10d9439666'
+    oid = await client.create_order(order_detail)
     print(f'Order created: {oid}')
 
     # poll
@@ -91,13 +91,9 @@ async def main():
     async with planet.Session(auth=(API_KEY, '')) as ps:
         client = planet.OrdersClient(ps)
 
-        # don't clutter directory with downloads if run as test suite
-        download_dir = TEST_DOWNLOAD_DIR or '.'
-        print(download_dir)
-
         await asyncio.gather(
-            create_and_download(iowa_order, download_dir, client),
-            create_and_download(oregon_order, download_dir, client)
+            create_and_download(iowa_order, DOWNLOAD_DIR, client),
+            create_and_download(oregon_order, DOWNLOAD_DIR, client)
         )
 
 

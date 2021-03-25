@@ -21,7 +21,9 @@ YAY automated testing and up-to-date examples!
 """
 import logging
 from pathlib import Path
-import runpy
+import os
+import subprocess
+import sys
 
 import pytest
 
@@ -39,11 +41,18 @@ def idfn(script_path):
     return script_path.name
 
 
-# run the script as __main__ and also provide a global
-# that points to the test temporary download directory,
-# to be used by the script for all downloads
+#  provide an environment variable that points to the test temporary download
+# directory, to be used by the script for all downloads
 @pytest.mark.parametrize('script', SCRIPTS, ids=idfn)
 def test_example_script_execution(script, tmpdir):
-    runpy.run_path(script,
-                   run_name='__main__',
-                   init_globals={'TEST_DOWNLOAD_DIR': str(tmpdir)})
+    completed = subprocess.run(
+        [sys.executable, str(script)],
+        env={'TEST_DOWNLOAD_DIR': str(tmpdir),
+             'PL_API_KEY':  os.getenv('PL_API_KEY')
+             },
+        stderr=subprocess.PIPE  # capture stdout for reporting
+    )
+
+    assert not completed.returncode, (
+        'script failed with following std_err output:\n'
+        f'{str(completed.stderr, "utf-8")}')

@@ -21,13 +21,12 @@ convention.
 Second, the new example needs to be tested. All examples in this directory are
 tested as a part of an automated test suite. The testing is conducted by
 `test_examples.py`.
-All example scripts need to use the `if __name__ == '__main__':`
-code block to run the script logic.
-Additionally, all downloads need to be optionally shunted to the test temporary
-directory, e.g. with `download_directory = TEST_DOWNLOAD_DIR or '.'`
+All scripts should default to downloading into the directory pointed to by the
+`TEST_DOWNLOAD_DIR` environment variable, with logic for when that variable
+is missing. For example, `DOWNLOAD_DIR = os.getenv('TEST_DOWNLOAD_DIR', '.')`.
 
 Running all example script tests is a long process and also, since each script
-communicates with the Planet servers, could affect your quotas and incur fees.
+communicates with the Planet servers, could affect your usage and incur fees.
 To minimize the pain, filter the scripts tested to e.g. the script under
 development with:
 
