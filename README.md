@@ -45,37 +45,36 @@ https://project-awesome.org/timofurrer/awesome-asyncio. The Writings and Talks
 sections are particularly helpful in getting oriented.
 
 ```python
-import asyncio
-import os
+>>> import asyncio
+>>> import os
+>>> import planet
+>>>
+>>> API_KEY = os.getenv('PL_API_KEY')
+>>>
+>>> image_ids = ['3949357_1454705_2020-12-01_241c']
+>>> order_details = planet.OrderDetails(
+...     'test_order',
+...     [planet.Product(image_ids, 'analytic', 'psorthotile')]
+... )
+>>>
+>>> async def create_order(order_details):
+...     async with planet.Session(auth=(API_KEY, '')) as ps:
+...         client = planet.OrdersClient(ps)
+...         return await client.create_order(order_details)
+>>>
+>>> oid = asyncio.run(create_order(order_details))
 
-import planet
-
-API_KEY = os.getenv('PL_API_KEY')
-
-image_ids = ['3949357_1454705_2020-12-01_241c']
-order_details = planet.OrderDetails(
-    'test_order',
-    [planet.Product(image_ids, 'analytic', 'psorthotile')]
-)
-
-async def create_order(order_details):
-    async with planet.Session(auth=(API_KEY, '')) as ps:
-        client = planet.OrdersClient(ps)
-        return await client.create_order(order_details)
-
-oid = asyncio.run(create_order(order_details))
-print(oid)
 ```
 
 Not into async? No problem. Just wrap the library and async operations together
 and call from your synchronous code.
 
 ```python
-def sync_create_order(order_details):
-    return asyncio.run(create_order(order_details))
+>>> def sync_create_order(order_details):
+...     return asyncio.run(create_order(order_details))
+>>>
+>>> oid = sync_create_order(order_details)
 
-oid = sync_create_order(order_details)
-print(oid)
 ```
 
 When using `asyncio.run` to develop synchronous code with the async library,
@@ -91,86 +90,14 @@ Do you have a use case where native synchronous support is essential? If so,
 please contribute to
 [Determine need for synchronous support](https://github.com/planetlabs/planet-client-python/issues/251)
 
-
 Why async? Because things get *really cool* when you want to work with multiple
-orders. Here's an example of submitting two orders, waiting for them to
-complete, and downloading them. The orders each clip a set of images to a
-specific area of interest (AOI), so they cannot be combined into one order.
+orders. See [orders_multiple_orders.py](examples/orders_multiple_orders.py) for
+an example of submitting two orders, waiting for them to complete, and
+downloading them. The orders each clip a set of images to a specific area of
+interest (AOI), so they cannot be combined into one order.
 (hint: [Planet Explorer](https://www.planet.com/explorer/) was used to define
 the AOIs and get the image ids.)
  
-
-```python
-import asyncio
-import os
-
-import planet
-
-API_KEY = os.getenv('PL_API_KEY')
-
-iowa_aoi = {
-    "type": "Polygon",
-    "coordinates": [[
-        [-91.198465, 42.893071],
-        [-91.121931, 42.893071],
-        [-91.121931, 42.946205],
-        [-91.198465, 42.946205],
-        [-91.198465, 42.893071]]]
-}
-
-iowa_images = [
-    '20200925_161029_69_2223',
-    '20200925_161027_48_2223'
-]
-iowa_order = planet.OrderDetails(
-    'iowa_order',
-    [planet.Product(iowa_images, 'analytic', 'PSScene4Band')],
-    tools=[planet.Tool('clip', {'aoi': iowa_aoi})]
-)
-
-oregon_aoi = {
-    "type": "Polygon",
-    "coordinates": [[
-        [-117.558734, 45.229745],
-        [-117.452447, 45.229745],
-        [-117.452447, 45.301865],
-        [-117.558734, 45.301865],
-        [-117.558734, 45.229745]]]
-}
-
-oregon_images = [
-    '20200909_182525_1014',
-    '20200909_182524_1014'
-]
-oregon_order = planet.OrderDetails(
-    'oregon_order',
-    [planet.Product(oregon_images, 'analytic', 'PSScene4Band')],
-    tools=[planet.Tool('clip', {'aoi': oregon_aoi})]
-)
-
-
-async def create_and_download(order_detail, client):
-    oid = await client.create_order(order_detail)
-    print(oid)
-    state = await client.poll(oid, verbose=True)
-    print(state)
-    filenames = await client.download_order(oid, progress_bar=True)
-    print(f'downloaded {oid}, {len(filenames)} files downloaded.')
-
-
-async def main():
-    async with planet.Session(auth=(API_KEY, '')) as ps:
-        client = planet.OrdersClient(ps)
-        await asyncio.gather(
-            create_and_download(iowa_order, client),
-            create_and_download(oregon_order, client)
-        )
-
-asyncio.run(main())
-```
-[Example output](example_output.md)
-
-
 ## Documentation
 
 Online documentation:
