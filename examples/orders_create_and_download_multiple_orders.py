@@ -69,21 +69,35 @@ oregon_order = planet.OrderDetails(
 )
 
 
-async def create_and_download(order_detail, client):
-    oid = await client.create_order(order_detail)
-    print(oid)
+async def create_and_download(order_detail, directory, client):
+    # create
+    print('Creating order')
+    # oid = await client.create_order(order_detail)
+    oid = '94e0d371-5448-4367-871b-9f10d9439666'
+    print(f'Order created: {oid}')
+
+    # poll
     state = await client.poll(oid, verbose=True)
-    print(state)
-    filenames = await client.download_order(oid, progress_bar=True)
-    print(f'downloaded {oid}, {len(filenames)} files downloaded.')
+    print(f'Order {oid} final state: {state}')
+
+    # download
+    print(f'Downloading {oid} to {directory}.')
+    filenames = await client.download_order(oid, directory, progress_bar=True)
+    print(f'Downloaded {oid}: '
+          f'{len(filenames)} files downloaded to {directory}.')
 
 
 async def main():
     async with planet.Session(auth=(API_KEY, '')) as ps:
         client = planet.OrdersClient(ps)
+
+        # don't clutter directory with downloads if run as test suite
+        download_dir = TEST_DOWNLOAD_DIR or '.'
+        print(download_dir)
+
         await asyncio.gather(
-            create_and_download(iowa_order, client),
-            create_and_download(oregon_order, client)
+            create_and_download(iowa_order, download_dir, client),
+            create_and_download(oregon_order, download_dir, client)
         )
 
 

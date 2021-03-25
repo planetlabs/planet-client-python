@@ -13,7 +13,7 @@ def test(session):
     session.install("-e", ".[test]")
 
     options = session.posargs
-    session.run("pytest", "-v", *options)
+    session.run("pytest", "-v", 'tests/', *options)
 
 
 @nox.session
@@ -28,3 +28,14 @@ def docs(session):
     session.install("-e", ".[dev]")
 
     session.run('pytest', '--doctest-glob', '*.md', '--no-cov', 'README.md')
+
+
+@nox.session
+def examples(session):
+    session.install("-e", ".[dev]")
+
+    options = session.posargs
+
+    # Because these example scripts can be long-running, output the
+    # example's stdout so we know what's happening
+    session.run('pytest', '--no-cov', 'examples/', '-s', *options)
