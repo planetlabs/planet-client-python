@@ -6,7 +6,7 @@ Python client library for Planet's APIs.
 
 The client provides access to the following Planet APIs:
 * [analytics](https://developers.planet.com/docs/analytics/)
-* [basemaps](https://developers.planet.com/docs/basemaps/) (referred to in the client as `mosaics`) 
+* [basemaps](https://developers.planet.com/docs/basemaps/) (referred to in the client as `mosaics`)
 * [data](https://developers.planet.com/docs/data/)
 * [orders](https://developers.planet.com/docs/orders/)
 
@@ -25,14 +25,10 @@ $ pip install planet
 The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs)
 flag is highly recommended for those new to [pip](https://pip.pypa.io).
 
-A PEX executable (Windows not supported) and source releases are
-[here](https://github.com/planetlabs/planet-client-python/releases/latest).
-
 ## Authentication
 
 Planet's APIs require an account for use.
 [Sign up here](https://www.planet.com/explorer/?signup).
-
 
 ## Quick Start
 
@@ -97,7 +93,7 @@ downloading them. The orders each clip a set of images to a specific area of
 interest (AOI), so they cannot be combined into one order.
 (hint: [Planet Explorer](https://www.planet.com/explorer/) was used to define
 the AOIs and get the image ids.)
- 
+
 ## Documentation
 
 Online documentation:
