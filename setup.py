@@ -69,9 +69,5 @@ setup(name='planet',
       extras_require={
           'test': test_requires,
           'dev': test_requires + lint_requires,
-      },
-      entry_points="""
-      [console_scripts]
-      planet=planet.scripts:main
-      """,
+      }
       )
