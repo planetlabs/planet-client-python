@@ -1,3 +1,6 @@
+# Pyenv
+.python-version
+
 # Distribution / packaging
 *.egg-info/
 *.egg
