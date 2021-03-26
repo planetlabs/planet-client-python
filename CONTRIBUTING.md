@@ -1,63 +1,73 @@
 # Development
 
-A virtual environment is strongly recommended; a tool like virtualenvwrapper
-can make this easier.
+For development, installing all Python versions supported by this repo is
+recommended. One way of achieving this is with
+[pyenv](https://github.com/pyenv/pyenv).
 
-Once the project repository is cloned and a virtualenv is created, install the
-required packages using:
+[Nox](https://nox.thea.codes/) is used to automate all checks and build
+documentation. Nox manages virtual environments for you, specifying Python
+versions and installing the the local, dynamic version of the Planet Python
+Client and required development packages.
+
+Where Nox is not used, a virtual environment is highly recommended.
+[pyenvwrapper](https://github.com/pyenv/pyenv-virtualenv) manages virtual
+environments and works well with pyenv. To install the local, dynamic version
+of the Planet Python Client and required development packages into the virtual
+environment use:
+
 ```console
     $ pip install -e .[dev]
 ```
-This will bring in all required development packages.
-
-A Makefile is provided to automate some tasks:
-* check - run flake8 and tests
-* html-docs - generate docs
-* pex - build pex executable
 
 ## Testing
 
-### Install a branch
+[Nox](https://nox.thea.codes/) automates all testing and linting. By default,
+Nox runs all fast tests and lints the code.
 
-A handy means of installing a branch or tag is:
-
-```console
-    $ pip install https://github.com/planetlabs/planet-client-python/archive/<branch-or-tag>.zip
-```
-Similarly, this can be done using [pipsi](https://github.com/mitsuhiko/pipsi) like:
+Install Nox in your local dev environment:
 
 ```console
-    $ pipsi install https://github.com/planetlabs/planet-client-python/archive/master.zip#egg=planet
+    $ pip install nox
 ```
 
-With virtualenvwrapper's
-[mktmpenv](https://virtualenvwrapper.readthedocs.io/en/latest/command_ref.html#mktmpenv),
-testing out a new version is as simple as:
+Run nox:
 
 ```console
-    $ mktmpenv && pip install https://github.com/planetlabs/planet-client-python/archive/master.zip
+    $ nox
 ```
 
-When the environment is deactivated, it is destroyed leaving only wheels in your cache.
+This will run tests against multiple Python versions and will lint the code.
+If a specific Python version isn't available on your development machine,
+Nox will just skip that version. While that version is skipped for local tests,
+the tests will be run on all versions with Continuous Integration (CI) when a
+pull request is initiated on the repository.
 
-### Managing Python version
+### Testing Documentation
 
-To run tests against multiple versions of Python, you can use
-[tox](http://tox.readthedocs.io/en/latest/).
+There are many code examples written into the documentation that need to be
+tested to ensure they are accurate. These tests are not run by default because
+they communicate with the Planet servers, and thus are slower and also could
+incur usages.
 
-Install tox in your local dev environment:
+To test the documentation, run the Nox `docs` session:
 
 ```console
-    $ pip install tox
+    $ nox -s docs
 ```
 
-(optionally: $ pip install --user tox to make the tool available outside of this project's virtualenv)
+### Testing Examples
 
-Run tox:
+The `examples` directory is populated with many helpful examples of how to
+use the Planet Python Client in real use cases. These examples also need to
+be tested to ensure they are accurate. These tests are not run by default
+because they are long and communicate with the Planet servers; and thus are
+very slow and also could incur usages.
+
+To test the examples, run the Nox `examples` session:
 
 ```console
-    $ tox
+    $ nox -s examples
+```
 
-This will run tests against multiple Python 3.6+ versions -- if an interpreter
-for a specific Python version isn't available on your development machine,
-tox will just skip that version.
+For more information on developing examples, see the examples
+[README.md](examples/README.md)
