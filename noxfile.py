@@ -18,21 +18,36 @@ def test(session):
 
 @nox.session
 def lint(session):
-    session.install("-e", ".[dev]")
+    session.install("-e", ".[lint]")
 
     session.run("flake8", *source_files)
 
 
 @nox.session
-def docs(session):
-    session.install("-e", ".[dev]")
+def docs_test(session):
+    session.install("-e", ".[docs]")
 
-    session.run('pytest', '--doctest-glob', '*.md', '--no-cov', 'README.md')
+    session.run('pytest', '--doctest-glob', '*.md', '--no-cov',
+                'README.md', 'docs/')
+
+
+@nox.session
+def docs(session):
+    session.install("-e", ".[docs]")
+
+    session.run("mkdocs", "build")
+
+
+@nox.session
+def watch(session):
+    session.install("--upgrade", "-e", ".[docs]")
+
+    session.run("mkdocs", "serve")
 
 
 @nox.session
 def examples(session):
-    session.install("-e", ".[dev]")
+    session.install("-e", ".[test]")
 
     options = session.posargs
 
