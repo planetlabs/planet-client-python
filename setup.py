@@ -42,7 +42,7 @@ lint_requires = [
 
 setup(name='planet',
       version=version,
-      description=u"Planet API Client",
+      description=u"Planet SDK for Python",
       long_description=Path("README.md").read_text("utf-8"),
       classifiers=[
         'Development Status :: 2 - Pre-Alpha',
@@ -55,7 +55,7 @@ setup(name='planet',
         'Topic :: Software Development',
         'Topic :: Utilities'
       ],
-      keywords='planet api client',
+      keywords='planet api sdk client',
       author='Jennifer Reiber Kyle',
       author_email='jennifer.kyle@planet.com',
       url='https://github.com/planetlabs/planet-client-python',

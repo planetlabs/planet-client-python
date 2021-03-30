@@ -1,8 +1,8 @@
-# Planet API Client
+# Planet SDK for Python
 
 [![Build Status](https://travis-ci.org/planetlabs/planet-client-python.svg?branch=master)](https://travis-ci.org/planetlabs/planet-client-python)
 
-Python client library for Planet's APIs.
+[Planet](https://planet.com) Software Development Kit (SDK) for Python.
 
 ## Documentation
 
@@ -11,7 +11,9 @@ Full documentation is available at
 
 ## Quick Start
 
-The Planet Python Client provides access to the following Planet APIs:
+The Planet SDK for Python allows Python developers to write software that makes
+use of the following Planet APIs:
+
 * [orders](https://developers.planet.com/docs/orders/)
 * [data](https://developers.planet.com/docs/data/) (not implemented)
 * [analytics](https://developers.planet.com/docs/analytics/) (not implemented)
@@ -92,7 +94,7 @@ $ pip install planet
 The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs)
 flag is highly recommended for those new to pip.
 
-The Planet Python Client requires Python 3.7+.
+The Planet SDK for Python requires Python 3.7+.
 
 ## Authentication
 
