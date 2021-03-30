@@ -4,33 +4,18 @@
 
 Python client library for Planet's APIs.
 
-The client provides access to the following Planet APIs:
-* [analytics](https://developers.planet.com/docs/analytics/)
-* [basemaps](https://developers.planet.com/docs/basemaps/) (referred to in the client as `mosaics`)
-* [data](https://developers.planet.com/docs/data/)
-* [orders](https://developers.planet.com/docs/orders/)
+## Documentation
 
-## Installation
-
-### Prerequisites
-
-* Python version 3.7+
-
-### Install package
-
-```console
-$ pip install planet
-```
-
-The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs)
-flag is highly recommended for those new to [pip](https://pip.pypa.io).
-
-## Authentication
-
-Planet's APIs require an account for use.
-[Sign up here](https://www.planet.com/explorer/?signup).
+Full documentation is available at
+[planet.labs.github.io/planet-client-python](https://planetlabs.github.io/planet-client-python/index.html)
 
 ## Quick Start
+
+The Planet Python Client provides access to the following Planet APIs:
+* [orders](https://developers.planet.com/docs/orders/)
+* [data](https://developers.planet.com/docs/data/) (not implemented)
+* [analytics](https://developers.planet.com/docs/analytics/) (not implemented)
+* [basemaps](https://developers.planet.com/docs/basemaps/) (referred to in the client as `mosaics`) (not implemented)
 
 The client modules within the Python library are asynchronous, which greatly
 speeds up many interactions with Planet's APIs. Support for asynchronous
@@ -39,6 +24,8 @@ development is native to Python 3.6+ via the
 resource for getting started with asynchronous programming in Python is
 https://project-awesome.org/timofurrer/awesome-asyncio. The Writings and Talks
 sections are particularly helpful in getting oriented.
+
+Let's start with creating an order with the Orders API:
 
 ```python
 >>> import asyncio
@@ -83,8 +70,8 @@ should be used as a main entry point for asyncio programs, and should ideally
 only be called once.*"
 
 Do you have a use case where native synchronous support is essential? If so,
-please contribute to
-[Determine need for synchronous support](https://github.com/planetlabs/planet-client-python/issues/251)
+please contribute to this
+[issue](https://github.com/planetlabs/planet-client-python/issues/251).
 
 Why async? Because things get *really cool* when you want to work with multiple
 orders. See [orders_multiple_orders.py](examples/orders_multiple_orders.py) for
@@ -94,13 +81,23 @@ interest (AOI), so they cannot be combined into one order.
 (hint: [Planet Explorer](https://www.planet.com/explorer/) was used to define
 the AOIs and get the image ids.)
 
-## Documentation
+## Installation
 
-Online documentation:
-https://planetlabs.github.io/planet-client-python/index.html
+Install with [pip](https://pip.pypa.io):
 
-Documentation is also provided for download
-[here](https://github.com/planetlabs/planet-client-python/releases/latest).
+```console
+$ pip install planet
+```
+
+The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs)
+flag is highly recommended for those new to pip.
+
+The Planet Python Client requires Python 3.7+.
+
+## Authentication
+
+Planet's APIs require an account for use.
+[Sign up here](https://www.planet.com/explorer/?signup).
 
 ## Development
 
