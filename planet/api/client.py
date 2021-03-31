@@ -16,7 +16,7 @@ import base64
 import json
 from .dispatch import RequestsDispatcher
 from . import auth
-from .exceptions import (InvalidIdentity, APIException)
+from .exceptions import (InvalidIdentity, APIException, NoPermission)
 from . import models
 from . import filters
 
@@ -357,14 +357,18 @@ class ClientV1(_Base):
         be invoked asynchronously.  Otherwise it is up to the caller to handle
         the response Body.
 
-        :param asset dict: A mosaic quad representation from the API
+        :param quad dict: A mosaic quad representation from the API
         :param callback: An optional function to aysnchronsously handle the
                          download. See :py:func:`planet.api.write_to_file`
         :returns: :py:Class:`planet.api.models.Response` containing a
                   :py:Class:`planet.api.models.Body` of the asset.
         :raises planet.api.exceptions.APIException: On API error.
         '''
-        download_url = quad['_links']['download']
+        try:
+            download_url = quad['_links']['download']
+        except KeyError:
+            msg = 'You do not have download permissions for quad {}'
+            raise NoPermission(msg.format(quad['id']))
         return self._get(download_url, models.Body, callback=callback)
 
     def check_analytics_connection(self):
