@@ -4,6 +4,8 @@ site_url: https://planetlabs.github.io/planet-client-python/
 
 theme:
     name: 'material'
+    logo: img/logo.svg
+    favicon: img/logo.svg
 
 repo_name: planetlabs/planet-client-python
 repo_url: https://github.com/planetlabs/planet-client-python
@@ -18,3 +20,4 @@ markdown_extensions:
   - codehilite:
       css_class: highlight
   - mkautodoc
+
