@@ -27,8 +27,13 @@ def lint(session):
 def docs_test(session):
     session.install("-e", ".[docs]")
 
+    options = session.posargs
+
+    # Because these doc examples can be long-running, output
+    # the INFO and above log messages so we know what's happening
     session.run('pytest', '--doctest-glob', '*.md', '--no-cov',
-                'README.md', 'docs/')
+                '--ignore-glob', '*.py',
+                '--log-cli-level=INFO', *options)
 
 
 @nox.session

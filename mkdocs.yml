@@ -11,6 +11,7 @@ edit_uri: ""
 
 nav:
     - Introduction: 'index.md'
+    - Upgrading: 'upgrading.md' 
 
 markdown_extensions:
   - admonition

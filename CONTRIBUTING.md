@@ -46,7 +46,7 @@ pull request is initiated on the repository.
 
 There are many code examples written into the documentation that need to be
 tested to ensure they are accurate. These tests are not run by default because
-they communicate with the Planet servers, and thus are slower and also could
+they communicate with the Planet services, and thus are slower and also could
 incur usages.
 
 To test the documentation, run the Nox `docs` session:
@@ -55,18 +55,32 @@ To test the documentation, run the Nox `docs` session:
     $ nox -s docs
 ```
 
+This will test all code examples in Markdown documents.
+To only test one document:
+
+```console
+    $ nox -s docs -- <document_name>.md
+```
+
 ### Testing Examples
 
 The `examples` directory is populated with many helpful examples of how to
-use the Planet Python Client in real use cases. These examples also need to
+use the Planet SDK for Python in real use cases. These examples also need to
 be tested to ensure they are accurate. These tests are not run by default
-because they are long and communicate with the Planet servers; and thus are
+because they are long and communicate with the Planet services; and thus are
 very slow and also could incur usages.
 
 To test the examples, run the Nox `examples` session:
 
 ```console
     $ nox -s examples
+```
+
+This will test all scripts within the `examples` directory.
+To only test one script:
+
+```console
+    $ nox -s examples -- <script_name>.py
 ```
 
 For more information on developing examples, see the examples

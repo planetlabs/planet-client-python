@@ -1,6 +1,6 @@
 # Examples
 
-This directory contains examples for how to use the Planet Python Client.
+This directory contains examples for how to use the Planet SDK for Python.
 
 # Navigation
 Each example script is named according to the convention
@@ -9,7 +9,7 @@ Each example script is named according to the convention
 ## Usage
 
 To use these examples, just run the scripts with `python <script_name>`. These
-examples hit the Planet servers, so be aware that usage and fees may apply.
+examples hit the Planet services, so be aware that usage and fees may apply.
 
 ## Contributing
 
@@ -31,7 +31,8 @@ To minimize the pain, filter the scripts tested to e.g. the script under
 development with:
 
 ```console
-> nox -s examples -- -k <substring_of_script_name>
+> nox -s examples -- <script_name>.py
 ````
+
 For a new script named 
-`new_script.py`, this would be `nox -s examples -- -k new_script`
+`new_script.py`, this would be `nox -s examples -- new_script.py`
