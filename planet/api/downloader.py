@@ -16,7 +16,7 @@ import os
 import threading
 import time
 from .utils import write_to_file
-from planet.api.exceptions import RequestCancelled
+from planet.api.exceptions import (RequestCancelled, NoPermission)
 try:
     import Queue as queue
 except ImportError:
@@ -466,9 +466,12 @@ class _MosaicDownloadStage(_DStage):
     def _do(self, task):
         func = self._write_tracker(task, None)
         writer = write_to_file(self._dest, func, overwrite=False)
-        self._downloads += 1
-        self._results.put((task, {'type': 'quad'},
-                           self._client.download_quad(task, writer)))
+        try:
+            self._results.put((task, {'type': 'quad'},
+                               self._client.download_quad(task, writer)))
+            self._downloads += 1
+        except NoPermission:
+            _info('No download permisson for %s, skipping', task['id'])
 
 
 class _MosaicDownloader(_Downloader):
