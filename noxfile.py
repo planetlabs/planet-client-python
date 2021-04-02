@@ -32,7 +32,8 @@ def docs_test(session):
     # Because these doc examples can be long-running, output
     # the INFO and above log messages so we know what's happening
     session.run('pytest', '--doctest-glob', '*.md', '--no-cov',
-                '--ignore-glob', '*.py',
+                '--ignore', 'examples/',
+                '--ignore', 'tests/',
                 '--log-cli-level=INFO', *options)
 
 

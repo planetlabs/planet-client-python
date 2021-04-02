@@ -40,6 +40,12 @@ lint_requires = [
     'flake8',
 ]
 
+doc_requires = [
+    'mkdocs',
+    'mkdocs-material',
+    'mkautodoc'
+]
+
 setup(name='planet',
       version=version,
       description=u"Planet SDK for Python",
@@ -68,6 +74,7 @@ setup(name='planet',
       install_requires=install_requires,
       extras_require={
           'test': test_requires,
-          'dev': test_requires + lint_requires,
-      }
+          'lint': lint_requires,
+          'docs': doc_requires,
+          'dev': test_requires + lint_requires + doc_requires}
       )
