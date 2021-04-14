@@ -43,7 +43,7 @@ lint_requires = [
 doc_requires = [
     'mkdocs',
     'mkdocs-material',
-    'mkautodoc'
+    'mkdocstrings==0.15.0'
 ]
 
 setup(name='planet',

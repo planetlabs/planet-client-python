@@ -17,9 +17,11 @@ import json
 import logging
 import os
 import time
+import typing
 
 from .. import constants
-from .models import Order, Orders, Request, StreamingBody
+from .http import Session
+from .models import Order, Orders, Request, Response, StreamingBody
 from .order_details import OrderDetails
 
 
@@ -43,13 +45,34 @@ class OrdersClientException(Exception):
 class OrdersClient():
     """High-level asynchronous access to Planet's orders API.
 
-    :param session: Open session connected to server
-    :type session: planet.api.http.Session
-    :param base_url: The base URL to use. Defaults to production orders API
-        base url.
-    :type base_url: int, optional
+    Example:
+        ```python
+        >>> import asyncio
+        >>> from planet import Session, OrdersClient
+        >>>
+        >>> async def main():
+        ...     auth = ('example_api_key', '')
+        ...     async with Session(auth=auth) as sess:
+        ...         cl = OrdersClient(sess)
+        ...         # use client here
+        ...
+        >>> asyncio.run(main())
+
+        ```
+
+
     """
-    def __init__(self, session, base_url=BASE_URL):
+    def __init__(
+        self,
+        session: Session,
+        base_url: str = BASE_URL
+    ):
+        """
+        Parameters:
+            session: Open session connected to server.
+            base_url: The base URL to use. Defaults to production orders API
+                base url.
+        """
         self._session = session
 
         self._base_url = base_url
@@ -77,23 +100,53 @@ class OrdersClient():
     def _request(self, url, method, data=None, params=None, json=None):
         return Request(url, method=method, data=data, params=params, json=json)
 
-    async def _do_request(self, request):
+    async def _do_request(
+        self,
+        request: Request
+    ) -> Response:
         '''Submit a request and get response.
 
-        :param request: request to submit
-        :type request: planet.api.models.Request
-        :returns: response
-        :rtype:  planet.api.models.Response
+        Parameters:
+            request: request to submit
         '''
         return await self._session.request(request)
 
-    async def create_order(self, order_details):
+    async def create_order(
+        self,
+        order_details: typing.Union[dict, OrderDetails]
+    ) -> str:
         '''Create an order request.
 
-        :param order_details: order request details
-        :type order_details: dict or OrderDetails
-        :returns: The ID of the order
-        :rtype: str
+        Example:
+
+        ```python
+        >>> import asyncio
+        >>> from planet import Session, OrdersClient
+        >>> from planet.api.order_details import OrderDetails, Product
+        >>>
+        >>> async def main():
+        ...     auth = ('example_api_key', '')
+        ...     image_ids = ['3949357_1454705_2020-12-01_241c']
+        ...     order_detail = OrderDetails(
+        ...         'test_order',
+        ...         [Product(image_ids, 'analytic', 'psorthotile')]
+        ...     )
+        ...     async with Session(auth=auth) as sess:
+        ...         cl = OrdersClient(sess)
+        ...         order_id = await cl.create_order(order_detail)
+        ...
+        >>> asyncio.run(main())
+
+        ```
+
+        Parameters:
+            order_details: order request details
+
+        Returns:
+            The ID of the order
+
+        Raises:
+            planet.api.exceptions.APIException: On API error.
         '''
         if not isinstance(order_details, OrderDetails):
             order_details = OrderDetails.from_dict(order_details)
@@ -107,14 +160,20 @@ class OrdersClient():
         order = Order(resp.json())
         return order.id
 
-    async def get_order(self, order_id):
+    async def get_order(
+        self,
+        order_id: str
+    ) -> Order:
         '''Get order details by Order ID.
 
-        :param order_id: The ID of the order
-        :type order_id: str
-        :returns: order
-        :rtype: planet.api.models.Order
-        :raises planet.api.exceptions.APIException: On API error.
+        Parameters:
+            order_id: The ID of the order
+
+        Returns:
+            Order information
+
+        Raises:
+            planet.api.exceptions.APIException: On API error.
         '''
         url = self._order_url(order_id)
         req = self._request(url, method='GET')
@@ -123,30 +182,44 @@ class OrdersClient():
         order = Order(resp.json())
         return order
 
-    async def cancel_order(self, order_id):
+    async def cancel_order(
+        self,
+        order_id: str
+    ) -> Response:
         '''Cancel a queued order.
 
-        According to the API docs, cancel order should return the cancelled
-        order details. But testing reveals that an empty response is returned
-        upon success.
+        **Note:** According to the API docs, cancel order should return the
+        cancelled order details. But testing reveals that an empty response is
+        returned upon success.
 
-        :param order_id: The ID of the order
-        :type order_id: str
-        :raises planet.api.exceptions.APIException: On API error.
+        Parameters:
+            order_id: The ID of the order
+
+        Returns:
+            Empty response
+
+        Raises:
+            planet.api.exceptions.APIException: On API error.
         '''
         url = self._order_url(order_id)
         req = self._request(url, method='PUT')
         await self._do_request(req)
 
-    async def cancel_orders(self, order_ids=None):
+    async def cancel_orders(
+        self,
+        order_ids: typing.List[str] = None
+    ) -> dict:
         '''Cancel queued orders in bulk.
 
-        :param order_ids: The IDs of the orders. If empty, all orders in a
-            pre-running state will be cancelled.
-        :type order_ids: list of str, opt
-        :returns: results of the bulk cancel request
-        :rtype: dict
-        :raises planet.api.exceptions.APIException: On API error.
+        Parameters:
+            order_ids: The IDs of the orders. If empty or None, all orders in a
+                pre-running state will be cancelled.
+
+        Returns:
+            Results of the bulk cancel request
+
+        Raises:
+            planet.api.exceptions.APIException: On API error.
         '''
         url = self._bulk_url() + 'cancel'
         cancel_body = {}
@@ -157,39 +230,43 @@ class OrdersClient():
         resp = await self._do_request(req)
         return resp.json()
 
-    async def aggregated_order_stats(self):
+    async def aggregated_order_stats(self) -> dict:
         '''Get aggregated counts of active orders.
 
-        :returns: Aggregated order counts
-        :rtype: dict
-        :raises planet.api.exceptions.APIException: On API error.
+        Returns:
+            Aggregated order counts
+
+        Raises:
+            planet.api.exceptions.APIException: On API error.
         '''
         url = self._stats_url()
         req = self._request(url, method='GET')
         resp = await self._do_request(req)
         return resp.json()
 
-    async def download_asset(self, location, filename=None, directory=None,
-                             overwrite=True, progress_bar=True):
-        '''Download ordered asset.
+    async def download_asset(
+        self,
+        location: str,
+        filename: str = None,
+        directory: str = None,
+        overwrite: bool = True,
+        progress_bar: bool = True
+    ) -> str:
+        """Download ordered asset.
 
-        :param location: Download location url including download token
-        :type location: str
-        :param filename: Name to assign to downloaded file. Defaults to the
-            name given in the response from the download location.
-        :type filename: str, optional
-        :param directory: Directory to write to. Defaults to current
-            directory.
-        :type directory: str, optional
-        :param overwrite: Overwrite any existing files. Defaults to True
-        :type overwrite: boolean, optional
-        :param progress_bar: Show progress bar during download. Defaults to
-            True.
-        :type progress_bar: boolean, optional
-        :return: Path to downloaded file.
-        :rtype: str
-        :raises planet.api.exceptions.APIException: On API error.
-        '''
+        Parameters:
+            location: Download location url including download token.
+            filename: Custom name to assign to downloaded file.
+            directory: Write to given directory instead of current directory.
+            overwrite: Overwrite any existing files.
+            progress_bar: Show progress bar during download.
+
+        Returns:
+            Path to downloaded file.
+
+        Raises:
+            planet.api.exceptions.APIException: On API error.
+        """
         req = self._request(location, method='GET')
 
         async with self._session.stream(req) as resp:
@@ -200,24 +277,27 @@ class OrdersClient():
                              progress_bar=progress_bar)
         return dl_path
 
-    async def download_order(self, order_id, directory=None, overwrite=True,
-                             progress_bar=False):
-        '''Download all assets in an order.
+    async def download_order(
+        self,
+        order_id: str,
+        directory: str = None,
+        overwrite: bool = True,
+        progress_bar: bool = False
+    ) -> typing.List[str]:
+        """Download all assets in an order.
 
-        :param order_id: The ID of the order
-        :type order_id: str
-        :param directory: Directory to write to. Defaults to current
-            directory.
-        :type directory: str, optional
-        :param overwrite: Overwrite any existing files. Defaults to True
-        :type overwrite: boolean, optional
-        :param progress_bar: Show progress bar during download. Defaults to
-            True.
-        :type progress_bar: boolean, optional
-        :return: Paths to downloaded files.
-        :rtype: list of str
-        :raises planet.api.exceptions.APIException: On API error.
-        '''
+        Parameters:
+            order_id: The ID of the order
+            directory: Write to given directory instead of current directory.
+            overwrite: Overwrite any existing files.
+            progress_bar: Show progress bar during download.
+
+        Returns:
+            Paths to downloaded files.
+
+        Raises:
+            planet.api.exceptions.APIException: On API error.
+        """
         order = await self.get_order(order_id)
         locations = order.locations
         LOGGER.info(
@@ -230,24 +310,29 @@ class OrdersClient():
                      for location in locations]
         return filenames
 
-    async def poll(self, order_id, state=None, wait=10, verbose=False):
-        '''Poll for order status until order reaches desired state.
+    async def poll(
+        self,
+        order_id: str,
+        state: str = None,
+        wait: int = 10,
+        verbose: bool = False
+    ) -> str:
+        """Poll for order status until order reaches desired state.
 
-        :param order_id: The ID of the order
-        :type order_id: str
-        :param state: State to poll until. If multiple, use list. Defaults to
-            any completed state.
-        :type state: str, list of str
-        :param wait: Time (in seconds) between polls
-        :type wait: int
-        :param verbose: Print current state at each poll. Defaults to False
-        :type verbose: bool
-        :return: Completed state of the order
-        :rtype: str
-        :raises planet.api.exceptions.APIException: On API error.
-        :raises OrdersClientException: If state is not supported.
+        Parameters:
+            order_id: The ID of the order
+            state: State to poll until. If multiple, use list. Defaults to
+                any completed state.
+            wait: Time (in seconds) between polls.
+            verbose: Print current state at each poll
 
-        '''
+        Returns
+            Completed state of the order
+
+        Raises:
+            planet.api.exceptions.APIException: On API error.
+            OrdersClientException: If state is not supported.
+        """
         completed = False
 
         if state:
@@ -275,18 +360,23 @@ class OrdersClient():
                 await asyncio.sleep(sleep_time)
         return state
 
-    async def list_orders(self, state=None, limit=None):
-        '''Get all order requests.
+    async def list_orders(
+        self,
+        state: str = None,
+        limit: int = None
+    ) -> typing.List[Order]:
+        """Get all order requests.
 
-        :param state: Filter orders to given state. Defaults to None
-        :type state: str, optional
-        :param limit: Limit orders to given limit. Defaults to None
-        :type limit: int, optional
-        :return: User :py:Class:`planet.api.models.Order` objects that match
-            the query
-        :rtype: list
-        :raises planet.api.exceptions.APIException: On API error.
-        '''
+        Parameters:
+            state: Filter orders to given state.
+            limit: Limit orders to given limit.
+
+        Returns:
+            User orders that match the query
+
+        Raises:
+            planet.api.exceptions.APIException: On API error.
+        """
         url = self._orders_url()
         if state:
             self._check_state(state)

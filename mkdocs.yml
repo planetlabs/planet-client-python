@@ -7,6 +7,21 @@ theme:
     logo: img/logo.svg
     favicon: img/logo.svg
 
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          rendering:
+            show_root_heading: true
+          selection:
+            inherited_members: True
+            filters:
+              - "!^_"  # exlude all members starting with _
+              - "^__init__$"  # but always include __init__ modules and methods
+      watch:
+        - planet
+
 repo_name: planetlabs/planet-client-python
 repo_url: https://github.com/planetlabs/planet-client-python
 edit_uri: ""
@@ -15,10 +30,9 @@ nav:
     - Introduction: 'index.md'
     - User Guide: 'guide.md'
     - Upgrading: 'upgrading.md'
+    - API Reference: 'api.md'
 
 markdown_extensions:
-  - admonition
   - codehilite:
       css_class: highlight
-  - mkautodoc
 
