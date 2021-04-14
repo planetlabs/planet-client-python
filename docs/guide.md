@@ -89,3 +89,15 @@ with `order_detail.json`):
 
 ```
 
+Once the order details are built up, creating an order is done within
+the context of a `Session` with the `OrdersClient`:
+
+```python
+>>> async def main():
+...     async with Session(auth=AUTH) as sess:
+...         cl = OrdersClient(sess)
+...         order_id = await cl.create_order(order_detail)
+...
+>>> asyncio.run(main())
+
+```
