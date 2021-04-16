@@ -15,9 +15,12 @@
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import copy
 import json
+import logging
 from typing import List
 
 from .. import specs
+
+LOGGER = logging.getLogger(__name__)
 
 
 class OrderDetailsException(Exception):
@@ -312,14 +315,6 @@ class Delivery():
         Returns:
             Delivery instance
         """
-        try:
-            details = copy.deepcopy(details)
-            cloud_details = details.pop(cls.cloud_key)
-            cloud_details.update(details)
-            details = cloud_details
-        except AttributeError:
-            # this is just a generic Details class. Nothing fancy to do here.
-            pass
         return cls(**details)
 
     def to_dict(self) -> dict:
@@ -340,6 +335,14 @@ class Delivery():
             details['archive_filename'] = self.archive_filename
 
         return details
+
+
+def _get_cloud_details(details, cloud_key):
+    details = copy.deepcopy(details)
+    cloud_details = details.pop(cloud_key)
+    cloud_details.update(details)
+    LOGGER.info(cloud_details)
+    return cloud_details
 
 
 class AmazonS3Delivery(Delivery):
@@ -380,6 +383,19 @@ class AmazonS3Delivery(Delivery):
         self.path_prefix = path_prefix
 
         super().__init__(archive_type, single_archive, archive_filename)
+
+    @classmethod
+    def from_dict(cls, details: dict) -> AmazonS3Delivery:
+        """Create AmazonS3Delivery instance from Orders API spec representation.
+
+        Parameters:
+            details: API spec representation of delivery.
+
+        Returns:
+            AmazonS3Delivery instance
+        """
+        cloud_details = _get_cloud_details(details, cls.cloud_key)
+        return cls(**cloud_details)
 
     def to_dict(self) -> dict:
         """Get Orders API spec representation.
@@ -442,6 +458,20 @@ class AzureBlobStorageDelivery(Delivery):
 
         super().__init__(archive_type, single_archive, archive_filename)
 
+    @classmethod
+    def from_dict(cls, details: dict) -> AzureBlobStorageDelivery:
+        """Create AzureBlobStorageDelivery instance from Orders API spec
+        representation.
+
+        Parameters:
+            details: API spec representation of delivery.
+
+        Returns:
+            AzureBlobStorageDelivery instance
+        """
+        cloud_details = _get_cloud_details(details, cls.cloud_key)
+        return cls(**cloud_details)
+
     def to_dict(self) -> dict:
         """Get Orders API spec representation.
 
@@ -497,6 +527,20 @@ class GoogleCloudStorageDelivery(Delivery):
         self.path_prefix = path_prefix
         super().__init__(archive_type, single_archive, archive_filename)
 
+    @classmethod
+    def from_dict(cls, details: dict) -> GoogleCloudStorageDelivery:
+        """Create GoogleCloudStorageDelivery instance from Orders API spec
+        representation.
+
+        Parameters:
+            details: API spec representation of delivery.
+
+        Returns:
+            GoogleCloudStorageDelivery instance
+        """
+        cloud_details = _get_cloud_details(details, cls.cloud_key)
+        return cls(**cloud_details)
+
     def to_dict(self) -> dict:
         """Get Orders API spec representation.
 
@@ -541,6 +585,20 @@ class GoogleEarthEngineDelivery(Delivery):
         self.project = project
         self.collection = collection
         super().__init__(archive_type, single_archive, archive_filename)
+
+    @classmethod
+    def from_dict(cls, details: dict) -> GoogleEarthEngineDelivery:
+        """Create GoogleEarthEngineDelivery instance from Orders API spec
+        representation.
+
+        Parameters:
+            details: API spec representation of delivery.
+
+        Returns:
+            GoogleEarthEngineDelivery instance
+        """
+        cloud_details = _get_cloud_details(details, cls.cloud_key)
+        return cls(**cloud_details)
 
     def to_dict(self) -> dict:
         """Get Orders API spec representation.

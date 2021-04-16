@@ -15,7 +15,7 @@ plugins:
           rendering:
             show_root_heading: true
           selection:
-            inherited_members: True
+            inherited_members: true
             filters:
               - "!^_"  # exlude all members starting with _
               - "^__init__$"  # but always include __init__ modules and methods
@@ -33,6 +33,6 @@ nav:
     - API Reference: 'api.md'
 
 markdown_extensions:
-  - codehilite:
-      css_class: highlight
+  - pymdownx.highlight
+  - pymdownx.superfences
 
