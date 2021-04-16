@@ -341,7 +341,7 @@ def _get_cloud_details(details, cloud_key):
     details = copy.deepcopy(details)
     cloud_details = details.pop(cloud_key)
     cloud_details.update(details)
-    LOGGER.info(cloud_details)
+    LOGGER.debug(f'cloud section of details: {cloud_details}')
     return cloud_details
 
 
