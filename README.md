@@ -7,7 +7,7 @@
 ## Documentation
 
 Full documentation is available at
-[planet.labs.github.io/planet-client-python](https://planetlabs.github.io/planet-client-python/index.html)
+[planetlabs.github.io/planet-client-python](https://planetlabs.github.io/planet-client-python/index.html)
 
 ## Quick Start
 
