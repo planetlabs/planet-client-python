@@ -291,14 +291,20 @@ class ClientV1(_Base):
         url = self._url('basemaps/v1/series/{}/mosaics'.format(series_id))
         return self._get(url, models.Mosaics).get_body()
 
-    def get_mosaics(self, name_contains=None):
+    def get_mosaics(self, name_contains=None, max_number=None):
         '''Get information for all mosaics accessible by the current user.
-
+        
+        :param name_contain str: narrow down the mosaic list to the one including this string (optional)
+        :param max_number int: the maximum number of mosaics to list (optional)
         :returns: :py:Class:`planet.api.models.Mosaics`
         '''
         params = {}
         if name_contains:
             params['name__contains'] = name_contains
+            
+        if max_number:
+            params['_page_size'] = max_number
+            
         url = self._url('basemaps/v1/mosaics')
         return self._get(url, models.Mosaics, params=params).get_body()
 
