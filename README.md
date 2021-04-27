@@ -6,8 +6,9 @@
 
 ## Documentation
 
-Full documentation is available at
-[planetlabs.github.io/planet-client-python](https://planetlabs.github.io/planet-client-python/index.html)
+Full documentation is not yet hosted online but can be built and hosted locally
+(see [CONTRIBUTING.md](CONTRIBUTING.md)) or can be read from source in the
+`docs` directory.
 
 ## Quick Start
 
@@ -104,4 +105,4 @@ Planet's APIs require an account for use.
 ## Development
 
 To contribute or develop with this library, see
-[CONTRIBUTING](https://github.com/planetlabs/planet-client-python/CONTRIBUTING.md)
+[CONTRIBUTING.md](CONTRIBUTING.md).
