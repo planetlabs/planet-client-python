@@ -25,7 +25,7 @@ with open('planet/api/__version__.py') as f:
 
 
 install_requires = [
-    'httpx>=0.16',
+    'httpx==0.16',
     'tqdm>=4.56',
 ]
 
