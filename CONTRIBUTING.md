@@ -96,8 +96,8 @@ is auto-populated from code docstrings. These docstrings must be in the
 [google format](https://mkdocstrings.github.io/handlers/python/#google-style)
 (note: we use `Parameters` in our docstrings).
 
-Nox is used to manage the process of building the documentation as well as and
-hosting it locally to assist documentation development.
+Nox is used to manage the process of building the documentation as well as
+serving it locally to assist documentation development.
 
 To build and host an automatically-updated local version of the documentation:
 
