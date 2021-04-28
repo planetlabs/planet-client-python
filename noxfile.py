@@ -1,7 +1,7 @@
 import nox
 
 nox.options.stop_on_first_error = True
-nox.options.reuse_existing_virtualenvs = False 
+nox.options.reuse_existing_virtualenvs = False
 
 nox.options.sessions = ['test', 'lint']
 
