@@ -113,4 +113,4 @@ async def test_session_retry(mock_request):
 
         ps.retry_wait_time = 0
         with pytest.raises(http.SessionException):
-            await ps.retry(test_func)
+            await ps._retry(test_func)

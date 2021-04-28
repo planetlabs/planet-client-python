@@ -4,12 +4,6 @@
 
 [Planet](https://planet.com) Software Development Kit (SDK) for Python.
 
-## Documentation
-
-Full documentation is not yet hosted online but can be built and hosted locally
-(see [CONTRIBUTING.md](CONTRIBUTING.md)) or can be read from source in the
-`docs` directory.
-
 ## Quick Start
 
 The Planet SDK for Python allows Python developers to write software that makes
@@ -76,14 +70,6 @@ Do you have a use case where native synchronous support is essential? If so,
 please contribute to this
 [issue](https://github.com/planetlabs/planet-client-python/issues/251).
 
-Why async? Because things get *really cool* when you want to work with multiple
-orders. See [orders_multiple_orders.py](examples/orders_multiple_orders.py) for
-an example of submitting two orders, waiting for them to complete, and
-downloading them. The orders each clip a set of images to a specific area of
-interest (AOI), so they cannot be combined into one order.
-(hint: [Planet Explorer](https://www.planet.com/explorer/) was used to define
-the AOIs and get the image ids.)
-
 ## Installation
 
 Install with [pip](https://pip.pypa.io):
@@ -105,4 +91,5 @@ Planet's APIs require an account for use.
 ## Development
 
 To contribute or develop with this library, see
-[CONTRIBUTING.md](CONTRIBUTING.md).
+[CONTRIBUTING](https://github.com/planetlabs/planet-client-python/CONTRIBUTING.md)
+

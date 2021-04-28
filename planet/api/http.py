@@ -13,9 +13,11 @@
 # the License.
 
 """Functionality to perform HTTP requests"""
+from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import asyncio
 from http import HTTPStatus
 import logging
+import typing
 
 import httpx
 
@@ -34,15 +36,36 @@ class SessionException(Exception):
 
 
 class Session():
-    '''Context manager for asynchronous communication with the Planet server.
+    '''Context manager for asynchronous communication with the Planet service.
 
-    Authentication for Planet servers is given as ('<api key>', '').
+    Example:
+    ```python
+    >>> import asyncio
+    >>> from planet import Session
+    >>>
+    >>> async def main():
+    ...     auth = ('example_api_key', '')
+    ...     async with Session(auth=auth) as sess:
+    ...         # communicate with services here
+    ...         pass
+    ...
+    >>> asyncio.run(main())
 
-    :param auth: Planet server authentication.
-    :type auth: httpx.Auth or tuple.
+    ```
     '''
 
-    def __init__(self, auth=None):
+    def __init__(
+        self,
+        auth: typing.Union[httpx.Auth, tuple] = None
+    ):
+        """Initialize a Session.
+
+        Authentication for Planet servers is given as `('<api key>', '')`.
+
+        Parameters:
+            auth: Planet server authentication.
+
+        """
         self._client = httpx.AsyncClient(auth=auth)
         self._client.headers.update({'User-Agent': self._get_user_agent()})
         self._client.event_hooks['request'] = [self._log_request]
@@ -62,7 +85,7 @@ class Session():
     async def aclose(self):
         await self._client.aclose()
 
-    async def retry(self, func, *a, **kw):
+    async def _retry(self, func, *a, **kw):
         '''Run an asynchronous request function with retry.'''
         # TODO: retry will be provided in httpx v1 [1] with usage [2]
         # 1. https://github.com/encode/httpcore/pull/221
@@ -86,37 +109,43 @@ class Session():
                     await asyncio.sleep(wait_time)
         raise SessionException('Too many throttles, giving up.')
 
-    async def request(self, request, stream=False):
-        '''Submit a request with retry.'''
+    async def request(
+        self,
+        request: models.Request,
+        stream: bool = False
+    ) -> models.Response:
+        '''Submit a request with retry.
+
+        Parameters:
+            request: Request to submit.
+            stream: Get the body as a stream.
+        Returns:
+            Response.
+        '''
         # TODO: retry will be provided in httpx v1 [1] with usage [2]
         # 1. https://github.com/encode/httpcore/pull/221
         # 2. https://github.com/encode/httpx/blob/
         # 89fb0cbc69ea07b123dd7b36dc1ed9151c5d398f/docs/async.md#explicit-transport-instances # noqa
         # TODO: if throttling is necessary, check out [1] once v1
         # 1. https://github.com/encode/httpx/issues/984
-        return await self.retry(self._request, request, stream=stream)
+        return await self._retry(self._request, request, stream=stream)
 
     async def _request(self, request, stream=False):
-        '''Submit a request
-
-        :param request: Request to submit
-        :type request: planet.api.models.Request
-        :param stream: Get the body as a stream. Defaults to False.
-        :type stream: boolean, optional
-        :returns: response
-        :rtype: planet.api.models.Response
-        '''
+        '''Submit a request'''
         http_resp = await self._client.send(request.http_request,
                                             stream=stream)
         return models.Response(request, http_resp)
 
-    def stream(self, request):
+    def stream(
+        self,
+        request: models.Request
+    ) -> Stream:
         '''Submit a request and get the response as a stream context manager.
 
-        :param request: Request to submit
-        :type request: planet.api.models.Request
-        :returns: Context manager providing the body as a stream.
-        :rtype: Stream
+        Parameters:
+            request: Request to submit
+        Returns:
+            Context manager providing the body as a stream.
         '''
         return Stream(
             session=self,
@@ -173,14 +202,17 @@ class Session():
 
 
 class Stream():
-    '''Context manager for asynchronous response stream from Planet server.
-
-    :param session: Open session to Planet server
-    :type session: Session
-    :param request: Request to submit
-    :type request: planet.api.models.Request
-    '''
-    def __init__(self, session, request):
+    '''Context manager for asynchronous response stream from Planet server.'''
+    def __init__(
+        self,
+        session: Session,
+        request: models.Request
+    ):
+        """
+        Parameters:
+            session: Open session to Planet server.
+            request:  Request to submit.
+        """
         self.session = session
         self.request = request
 

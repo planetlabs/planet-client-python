@@ -202,25 +202,6 @@ def test_Delivery_from_dict():
     assert d.single_archive
     assert d.archive_filename == TEST_ARCHIVE_FILENAME
 
-    test_details_cloud = {
-        'cloud': {'a': 'val'},
-        'archive_type': 'zip',
-        'single_archive': True,
-        'archive_filename': TEST_ARCHIVE_FILENAME
-    }
-
-    class TestDelivery(order_details.Delivery):
-        cloud_key = 'cloud'
-
-        def __init__(self, a, archive_type, single_archive, archive_filename):
-            self.a = a
-            super().__init__(archive_type, single_archive, archive_filename)
-
-    # does the dict get parsed correctly and do the values get sent to the
-    # constructor?
-    d2 = TestDelivery.from_dict(test_details_cloud)
-    assert d2.a == 'val'
-
 
 def test_Delivery_to_dict():
     d = order_details.Delivery(archive_type='zip',
@@ -240,6 +221,23 @@ def test_Delivery_to_dict():
       'archive_type': 'zip',
       }
     assert details == expected
+
+
+def test_AmazonS3Delivery_from_dict():
+    test_details = {
+        'amazon_s3': {
+            'aws_access_key_id': 'aws_access_key_id',
+            'aws_secret_access_key': 'aws_secret_access_key',
+            'bucket': 'bucket',
+            'aws_region': 'aws_region'
+            },
+        'archive_type': 'zip',
+        'single_archive': True,
+        'archive_filename': TEST_ARCHIVE_FILENAME
+    }
+
+    d2 = order_details.AmazonS3Delivery.from_dict(test_details)
+    assert d2.aws_region == 'aws_region'
 
 
 def test_AmazonS3Delivery_to_dict():
@@ -268,6 +266,22 @@ def test_AmazonS3Delivery_to_dict():
     assert details == expected
 
 
+def test_AzureBlobStorageDelivery_from_dict():
+    test_details = {
+        'azure_blob_storage': {
+            'account': 'account',
+            'container': 'container',
+            'sas_token': 'sas_token',
+            },
+        'archive_type': 'zip',
+        'single_archive': True,
+        'archive_filename': TEST_ARCHIVE_FILENAME
+    }
+
+    d2 = order_details.AzureBlobStorageDelivery.from_dict(test_details)
+    assert d2.sas_token == 'sas_token'
+
+
 def test_AzureBlobStorageDelivery_to_dict():
     account = 'account'
     container = 'container'
@@ -291,6 +305,21 @@ def test_AzureBlobStorageDelivery_to_dict():
     assert details == expected
 
 
+def test_GoogleCloudStorageDelivery_from_dict():
+    test_details = {
+        'google_cloud_storage': {
+            'bucket': 'bucket',
+            'credentials': 'credentials',
+            },
+        'archive_type': 'zip',
+        'single_archive': True,
+        'archive_filename': TEST_ARCHIVE_FILENAME
+    }
+
+    d2 = order_details.GoogleCloudStorageDelivery.from_dict(test_details)
+    assert d2.credentials == 'credentials'
+
+
 def test_GoogleCloudStorageDelivery_to_dict():
     bucket = 'bucket'
     credentials = 'credentials'
@@ -309,6 +338,21 @@ def test_GoogleCloudStorageDelivery_to_dict():
         'archive_type': archive_type
     }
     assert details == expected
+
+
+def test_GoogleEarthEngineDelivery_from_dict():
+    test_details = {
+        'google_earth_engine': {
+            'project': 'project',
+            'collection': 'collection',
+            },
+        'archive_type': 'zip',
+        'single_archive': True,
+        'archive_filename': TEST_ARCHIVE_FILENAME
+    }
+
+    d2 = order_details.GoogleEarthEngineDelivery.from_dict(test_details)
+    assert d2.collection == 'collection'
 
 
 def test_GoogleEarthEngineDelivery_to_dict():

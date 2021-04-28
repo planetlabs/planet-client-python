@@ -25,7 +25,7 @@ with open('planet/api/__version__.py') as f:
 
 
 install_requires = [
-    'httpx>=0.16',
+    'httpx==0.16',
     'tqdm>=4.56',
 ]
 
@@ -40,9 +40,15 @@ lint_requires = [
     'flake8',
 ]
 
+doc_requires = [
+    'mkdocs',
+    'mkdocs-material',
+    'mkdocstrings==0.15.0'
+]
+
 setup(name='planet',
       version=version,
-      description=u"Planet API Client",
+      description=u"Planet SDK for Python",
       long_description=Path("README.md").read_text("utf-8"),
       classifiers=[
         'Development Status :: 2 - Pre-Alpha',
@@ -55,7 +61,7 @@ setup(name='planet',
         'Topic :: Software Development',
         'Topic :: Utilities'
       ],
-      keywords='planet api client',
+      keywords='planet api sdk client',
       author='Jennifer Reiber Kyle',
       author_email='jennifer.kyle@planet.com',
       url='https://github.com/planetlabs/planet-client-python',
@@ -68,6 +74,7 @@ setup(name='planet',
       install_requires=install_requires,
       extras_require={
           'test': test_requires,
-          'dev': test_requires + lint_requires,
-      }
+          'lint': lint_requires,
+          'docs': doc_requires,
+          'dev': test_requires + lint_requires + doc_requires}
       )
