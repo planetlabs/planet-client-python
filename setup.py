@@ -25,7 +25,7 @@ with open('planet/api/__version__.py') as f:
 
 
 install_requires = [
-    'httpx==0.16',
+    'httpx==0.18',
     'tqdm>=4.56',
 ]
 
@@ -33,7 +33,7 @@ test_requires = [
     'pytest',
     'pytest-asyncio',
     'pytest-cov',
-    'respx==0.16.3'
+    'respx==0.17'
 ]
 
 lint_requires = [
