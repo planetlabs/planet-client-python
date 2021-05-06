@@ -17,6 +17,8 @@ import json
 import logging
 import os
 
+import httpx
+
 ENV_API_KEY = 'PL_API_KEY'
 
 SECRET_FILE_PATH = os.path.join(os.path.expanduser('~'), '.planet.json')
@@ -45,8 +47,8 @@ class Auth():
 
         When oauth is implemented, this will attempt oauth first.
 
-        The default environment variable is "PL_API_KEY" and the default
-        secret file is named ".planet.json" and stored in the user directory.
+        The default environment variable is `PL_API_KEY` and the default
+        secret file is named `.planet.json` and stored in the user directory.
 
         Parameters:
             key: API key.
@@ -86,8 +88,8 @@ class Auth():
 
         secret_file.write(secrets)
 
-    def header(self):
-        return self._auth.header()
+    def auth(self):
+        return self._auth.as_auth()
 
 
 class SecretFile():
@@ -161,6 +163,5 @@ class APIKey():
         '''Represent key as a dict.'''
         return {self.DICT_KEY: self._val}
 
-    def header(self) -> dict:
-        '''Create authorization header for api key'''
-        return {'Authorization': f'api-key {self._val}'}
+    def as_auth(self):
+        return httpx.BasicAuth(self._val, '')

@@ -52,11 +52,6 @@ def test_APIKey_to_dict():
     assert key.to_dict() == {'key': 'test_key'}
 
 
-def test_APIKey_header():
-    key = auth.APIKey(key='test_key')
-    assert key.header() == {'Authorization': 'api-key test_key'}
-
-
 def test_SecretFile_write(tmp_path):
     secret_path = str(tmp_path / '.test')
     contents = {'testkey': 'testvar'}
@@ -130,8 +125,3 @@ def test_Auth_store_exists(tmp_path):
 
     with open(secret_path, 'r') as fp:
         assert json.loads(fp.read()) == {"key": "test", "existing": "exists"}
-
-
-def test_Auth_header():
-    test_auth = auth.Auth(key='test')
-    assert test_auth.header() == {'Authorization': 'api-key test'}

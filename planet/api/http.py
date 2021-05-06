@@ -17,10 +17,10 @@ from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import asyncio
 from http import HTTPStatus
 import logging
-import typing
 
 import httpx
 
+from ..auth import Auth
 from . import exceptions, models
 from . __version__ import __version__
 
@@ -38,13 +38,33 @@ class SessionException(Exception):
 class Session():
     '''Context manager for asynchronous communication with the Planet service.
 
+    The default behavior is to look for authentication information as the
+    an api key stored in the environment variable, `PL_API_KEY`. Failing that,
+    the api key is read from the secret key. This behavior can be overridden
+    by providing an `auth.Auth()` instance as a parameter. See `auth.Auth()`
+    for more information.
+
     Example:
     ```python
     >>> import asyncio
     >>> from planet import Session
     >>>
     >>> async def main():
-    ...     auth = ('example_api_key', '')
+    ...     async with Session() as sess:
+    ...         # communicate with services here
+    ...         pass
+    ...
+    >>> asyncio.run(main())
+
+    ```
+
+    Example:
+    ```python
+    >>> import asyncio
+    >>> from planet import Auth, Session
+    >>>
+    >>> async def main():
+    ...     auth = Auth(key='examplekey')
     ...     async with Session(auth=auth) as sess:
     ...         # communicate with services here
     ...         pass
@@ -56,17 +76,16 @@ class Session():
 
     def __init__(
         self,
-        auth: typing.Union[httpx.Auth, tuple] = None
+        auth: Auth = None
     ):
         """Initialize a Session.
 
-        Authentication for Planet servers is given as `('<api key>', '')`.
-
         Parameters:
             auth: Planet server authentication.
-
         """
-        self._client = httpx.AsyncClient(auth=auth)
+        auth = auth or Auth()
+
+        self._client = httpx.AsyncClient(auth=auth.auth())
         self._client.headers.update({'User-Agent': self._get_user_agent()})
         self._client.event_hooks['request'] = [self._log_request]
         self._client.event_hooks['response'] = [
