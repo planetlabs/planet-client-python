@@ -35,16 +35,15 @@ Let's start with creating an order with the Orders API:
 >>> import os
 >>> import planet
 >>>
->>> API_KEY = os.getenv('PL_API_KEY')
->>>
 >>> image_ids = ['3949357_1454705_2020-12-01_241c']
 >>> order_details = planet.OrderDetails(
 ...     'test_order',
 ...     [planet.Product(image_ids, 'analytic', 'psorthotile')]
 ... )
 >>>
+>>> auth = planet.Auth.from_env()
 >>> async def create_order(order_details):
-...     async with planet.Session(auth=(API_KEY, '')) as ps:
+...     async with planet.Session(auth=auth) as ps:
 ...         client = planet.OrdersClient(ps)
 ...         return await client.create_order(order_details)
 >>>

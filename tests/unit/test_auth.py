@@ -21,107 +21,57 @@ from planet import auth
 LOGGER = logging.getLogger(__name__)
 
 
-def test_APIKey_init():
-    with pytest.raises(auth.APIKeyException):
-        key = auth.APIKey('')
-
-    key = auth.APIKey('mockkey')
-    assert key._val == 'mockkey'
+def test_Auth_read_key():
+    test_auth = auth.Auth.read(key='test')
+    assert test_auth.key == 'test'
 
 
-def test_APIKey_from_env(monkeypatch):
+def test_Auth_read_env(monkeypatch):
     monkeypatch.setenv('PL_API_KEY', 'a')
     monkeypatch.setenv('OTHER_VAR', 'b')
 
-    key = auth.APIKey.from_env('PL_API_KEY')
-    assert key._val == 'a'
+    test_auth_env1 = auth.Auth.read()
+    assert test_auth_env1.key == 'a'
 
-    key = auth.APIKey.from_env('OTHER_VAR')
-    assert key._val == 'b'
-
-
-def test_APIKey_from_dict():
-    test_dict = {'key': 'test_key'}
-
-    key = auth.APIKey.from_dict(test_dict)
-    assert key._val == 'test_key'
+    test_auth_env2 = auth.Auth.read(environment_variable='OTHER_VAR')
+    assert test_auth_env2.key == 'b'
 
 
-def test_APIKey_to_dict():
-    key = auth.APIKey(key='test_key')
-    assert key.to_dict() == {'key': 'test_key'}
-
-
-def test_SecretFile_write(tmp_path):
-    secret_path = str(tmp_path / '.test')
-    contents = {'testkey': 'testvar'}
-    auth.SecretFile(secret_path).write(contents)
-
-    with open(secret_path, 'r') as fp:
-        assert fp.read() == '{"testkey": "testvar"}'
-
-
-def test_SecretFile_read(tmp_path):
-    secret_path = str(tmp_path / '.test')
-
-    with open(secret_path, 'w') as fp:
-        fp.write('{"testkey": "testvar"}')
-
-    contents = auth.SecretFile(secret_path).read()
-    assert contents == {'testkey': 'testvar'}
-
-
-def test_Auth_init_key():
-    test_auth = auth.Auth(key='test')
-    assert test_auth._auth._val == 'test'
-
-
-def test_Auth_init_env(monkeypatch):
-    monkeypatch.setenv('PL_API_KEY', 'a')
-    monkeypatch.setenv('OTHER_VAR', 'b')
-
-    test_auth_env1 = auth.Auth()
-    assert test_auth_env1._auth._val == 'a'
-
-    test_auth_env2 = auth.Auth(environment_variable='OTHER_VAR')
-    assert test_auth_env2._auth._val == 'b'
-
-
-def test_Auth_init_secretfile(tmp_path, monkeypatch):
+def test_Auth_read_file(tmp_path, monkeypatch):
     monkeypatch.delenv('PL_API_KEY')
     secret_path = str(tmp_path / '.test')
     with open(secret_path, 'w') as fp:
         fp.write('{"key": "testvar"}')
 
-    test_auth = auth.Auth(secret_file_path=secret_path)
-    assert test_auth._auth._val == 'testvar'
+    test_auth = auth.Auth.read(secret_file_path=secret_path)
+    assert test_auth.key == 'testvar'
 
 
-def test_Auth_init_error(tmp_path, monkeypatch):
+def test_Auth_read_error(tmp_path, monkeypatch):
     monkeypatch.delenv('PL_API_KEY')
     secret_path = str(tmp_path / '.test')
 
     with pytest.raises(auth.AuthException):
-        auth.Auth(secret_file_path=secret_path)
+        auth.Auth.read(secret_file_path=secret_path)
 
 
-def test_Auth_store_doesnotexist(tmp_path):
+def test_Auth_write_doesnotexist(tmp_path):
+    test_auth = auth.Auth.from_key('test')
     secret_path = str(tmp_path / '.test')
-    test_auth = auth.Auth(key='test', secret_file_path=secret_path)
-    test_auth.store()
+    auth.Auth.write(test_auth, secret_path)
 
     with open(secret_path, 'r') as fp:
         assert json.loads(fp.read()) == {"key": "test"}
 
 
-def test_Auth_store_exists(tmp_path):
+def test_Auth_write_exists(tmp_path):
     secret_path = str(tmp_path / '.test')
-    test_auth = auth.Auth(key='test', secret_file_path=secret_path)
 
     with open(secret_path, 'w') as fp:
         fp.write('{"existing": "exists"}')
 
-    test_auth.store()
+    test_auth = auth.Auth.from_key('test')
+    auth.Auth.write(test_auth, secret_path)
 
     with open(secret_path, 'r') as fp:
         assert json.loads(fp.read()) == {"key": "test", "existing": "exists"}

@@ -41,8 +41,7 @@ class Session():
     The default behavior is to look for authentication information as the
     an api key stored in the environment variable, `PL_API_KEY`. Failing that,
     the api key is read from the secret key. This behavior can be overridden
-    by providing an `auth.Auth()` instance as a parameter. See `auth.Auth()`
-    for more information.
+    by providing an `auth.Auth()` instance as an argument.
 
     Example:
     ```python
@@ -64,7 +63,7 @@ class Session():
     >>> from planet import Auth, Session
     >>>
     >>> async def main():
-    ...     auth = Auth(key='examplekey')
+    ...     auth = Auth.from_key('examplekey')
     ...     async with Session(auth=auth) as sess:
     ...         # communicate with services here
     ...         pass
@@ -83,9 +82,9 @@ class Session():
         Parameters:
             auth: Planet server authentication.
         """
-        auth = auth or Auth()
+        auth = auth or Auth.read()
 
-        self._client = httpx.AsyncClient(auth=auth.auth())
+        self._client = httpx.AsyncClient(auth=auth)
         self._client.headers.update({'User-Agent': self._get_user_agent()})
         self._client.event_hooks['request'] = [self._log_request]
         self._client.event_hooks['response'] = [
