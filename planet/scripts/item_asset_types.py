@@ -31,8 +31,8 @@ DEFAULT_ITEM_TYPES = [
 ]
 
 DEFAULT_ASSET_TYPES = [
-    'analytic', 'analytic_5b', 'analytic_5b_xml', 'analytic_8b',
-    'analytic_8b_xml', 'analytic_b1', 'analytic_b10', 'analytic_b11',
+    'ortho_analytic_4b', 'analytic_5b', 'analytic_5b_xml', 'ortho_analytic_8b',
+    'ortho_analytic_8b_xml','ortho_analytic_8b_sr', 'analytic_b1', 'analytic_b10', 'analytic_b11',
     'analytic_b12', 'analytic_b2', 'analytic_b3', 'analytic_b4', 'analytic_b5',
     'analytic_b6', 'analytic_b7', 'analytic_b8', 'analytic_b8a', 'analytic_b9',
     'analytic_bqa', 'analytic_dn', 'analytic_dn_xml', 'analytic_gflags',
@@ -42,19 +42,19 @@ DEFAULT_ASSET_TYPES = [
     'analytic_obscov_500m', 'analytic_orbit_pnt', 'analytic_q_scan',
     'analytic_qc_250m', 'analytic_qc_500m', 'analytic_range',
     'analytic_sensor_azimuth', 'analytic_sensor_zenith',
-    'analytic_solar_azimuth', 'analytic_solar_zenith', 'analytic_sr',
+    'analytic_solar_azimuth', 'analytic_solar_zenith', 'ortho_analytic_4b_sr',
     'analytic_state_1km', 'analytic_sur_refl_b01', 'analytic_sur_refl_b02',
     'analytic_sur_refl_b03', 'analytic_sur_refl_b04', 'analytic_sur_refl_b05',
-    'analytic_sur_refl_b06', 'analytic_sur_refl_b07', 'analytic_xml',
-    'basic_analytic', 'basic_analytic_8b', 'basic_analytic_8b_xml',
+    'analytic_sur_refl_b06', 'analytic_sur_refl_b07', 'ortho_analytic_4b_xml',
+    'basic_analytic_4b', 'basic_analytic_8b', 'basic_analytic_8b_xml',
     'basic_analytic_b1', 'basic_analytic_b1_nitf', 'basic_analytic_b2',
     'basic_analytic_b2_nitf', 'basic_analytic_b3', 'basic_analytic_b3_nitf',
     'basic_analytic_b4', 'basic_analytic_b4_nitf', 'basic_analytic_b5',
     'basic_analytic_b5_nitf', 'basic_analytic_dn', 'basic_analytic_dn_nitf',
     'basic_analytic_dn_rpc', 'basic_analytic_dn_rpc_nitf',
     'basic_analytic_dn_xml', 'basic_analytic_dn_xml_nitf',
-    'basic_analytic_nitf', 'basic_analytic_rpc', 'basic_analytic_rpc_nitf',
-    'basic_analytic_sci', 'basic_analytic_udm2', 'basic_analytic_xml',
+    'basic_analytic_nitf', 'basic_analytic_4b_rpc', 'basic_analytic_rpc_nitf',
+    'basic_analytic_sci', 'basic_analytic_udm2', 'basic_analytic_4b_xml',
     'basic_analytic_xml_nitf', 'basic_anlytic_udm', 'basic_l1a_all_frames',
     'basic_l1a_panchromatic_dn', 'basic_l1a_panchromatic_dn_rpc',
     'basic_panchromatic', 'basic_panchromatic_dn', 'basic_panchromatic_dn_rpc',
@@ -75,8 +75,8 @@ DEFAULT_ASSET_TYPES = [
     'ps4b_basic_analytic_dn_rpc', 'ps4b_basic_analytic_dn_rpc_nitf',
     'ps4b_basic_analytic_dn_xml', 'ps4b_basic_analytic_dn_xml_nitf',
     'ps4b_basic_analytic_nitf', 'ps4b_basic_analytic_rpc_nitf',
-    'ps4b_basic_analytic_xml_nitf', 'ps4b_udm', 'udm', 'udm2', 'video_file',
-    'video_frames', 'video_metadata', 'visual', 'visual_xml'
+    'ps4b_basic_analytic_xml_nitf', 'ps4b_udm', 'udm', 'ortho_udm2', 'video_file',
+    'video_frames', 'video_metadata', 'ortho_visual', 'visual_xml'
 ]
 
 
