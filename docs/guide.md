@@ -11,10 +11,8 @@ provide for automatic clean up of connections when the context is left.
 >>> import os
 >>> from planet import Session
 >>>
->>> AUTH = (os.getenv('PL_API_KEY'), '')
->>>
 >>> async def main():
-...     async with Session(auth=AUTH) as sess:
+...     async with Session() as sess:
 ...         # perform operations here
 ...         pass
 ...
@@ -26,9 +24,34 @@ Alternatively, use `await Session.aclose()` to close a `Session` explicitly:
 
 ```python
 >>> async def main():
-...     sess = Session(auth=AUTH)
+...     sess = Session()
 ...     # perform operations here
 ...     await sess.aclose()
+...
+>>> asyncio.run(main())
+
+```
+
+## Authentication
+
+By default, authentication is read from the environment variable
+`PL_API_KEY`. If that variable is not set, then authentication is read from
+the planet secret file, named `.planet.json` and stored in the user directory.
+
+This behavior can be motified by specifying Auth explicitely using the methods
+`Auth.from_key()`, `Auth.from_file()`, and `Auth.from_env()`. For example,
+authentication can be read from a custom environment variable:
+
+```python
+>>> import asyncio
+>>> import os
+>>> from planet import Auth, Session
+>>>
+>>> auth = Auth.from_env('ALTERNATE_VAR')
+>>> async def main():
+...     async with Session() as sess:
+...         # perform operations here
+...         pass
 ...
 >>> asyncio.run(main())
 
@@ -45,7 +68,7 @@ order is completed and to download an entire order.
 >>> from planet import OrdersClient
 >>>
 >>> async def main():
-...     async with Session(auth=AUTH) as sess:
+...     async with Session() as sess:
 ...         client = OrdersClient(sess)
 ...         # perform operations here
 ...
@@ -94,7 +117,7 @@ the context of a `Session` with the `OrdersClient`:
 
 ```python
 >>> async def main():
-...     async with Session(auth=AUTH) as sess:
+...     async with Session() as sess:
 ...         cl = OrdersClient(sess)
 ...         order_id = await cl.create_order(order_detail)
 ...
