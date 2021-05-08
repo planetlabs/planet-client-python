@@ -41,9 +41,8 @@ Let's start with creating an order with the Orders API:
 ...     [planet.Product(image_ids, 'analytic', 'psorthotile')]
 ... )
 >>>
->>> auth = planet.Auth.from_env()
 >>> async def create_order(order_details):
-...     async with planet.Session(auth=auth) as ps:
+...     async with planet.Session() as ps:
 ...         client = planet.OrdersClient(ps)
 ...         return await client.create_order(order_details)
 >>>

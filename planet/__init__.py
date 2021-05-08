@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .auth import Auth
 from .api.http import Session
 from .api.models import Order
 from .api.orders import OrdersClient
@@ -20,9 +19,10 @@ from .api.order_details import (
     AzureBlobStorageDelivery, GoogleCloudStorageDelivery,
     GoogleEarthEngineDelivery, Tool)
 from .api.__version__ import __version__  # NOQA
+from .auth import Auth
+
 
 __all__ = [
-    Auth,
     Session,
     OrdersClient,
     Order,
@@ -34,5 +34,6 @@ __all__ = [
     AzureBlobStorageDelivery,
     GoogleCloudStorageDelivery,
     GoogleEarthEngineDelivery,
-    Tool
+    Tool,
+    Auth
 ]

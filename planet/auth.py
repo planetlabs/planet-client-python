@@ -13,6 +13,7 @@
 # limitations under the License.
 '''Manage authentication with Planet APIs'''
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
+import abc
 import json
 import logging
 import os
@@ -31,15 +32,13 @@ class AuthException(Exception):
     pass
 
 
-class Auth():
+class Auth(metaclass=abc.ABCMeta):
     '''Handle authentication information for use with Planet APIs.'''
     @staticmethod
     def read(
-        key: str = None,
-        environment_variable: str = None,
-        secret_file_path: str = None
+        key: str = None
     ) -> APIKeyAuth:
-        '''Read authentication information.
+        '''Reads authentication information.
 
         If key is provided, uses the key. Otherwise, tries to find key from
         environment variable `PL_API_KEY`. Finally, tries to find key from the
@@ -48,44 +47,26 @@ class Auth():
 
         Parameters:
             key: Planet API key
-            environment_variable: Alternate environment variable.
-            secret_file_path: Alternate path for the planet secret file.
         '''
         if key:
             auth = Auth.from_key(key)
         else:
             try:
-                environment_variable = environment_variable or ENV_API_KEY
-                auth = Auth.from_env(environment_variable)
-            except APIKeyAuthException:
+                auth = Auth.from_env(ENV_API_KEY)
+            except AuthException:
                 try:
-                    filename = secret_file_path or SECRET_FILE_PATH
-                    auth = Auth.from_file(filename)
+                    auth = Auth.from_file(SECRET_FILE_PATH)
                 except FileNotFoundError:
                     raise AuthException(
                         'Could not find authentication information. Set '
                         f'environment variable {ENV_API_KEY} or store '
-                        'information in secret file with `APIKeyAuth.write()`')
+                        'information in secret file with `Auth.write()`')
         return auth
-
-    @staticmethod
-    def write(
-        auth: Auth,
-        filename: str = None
-    ):
-        '''Write authentication information.
-
-        Parameters:
-            filename: Alternate path for the planet secret file.
-        '''
-        filename = filename or SECRET_FILE_PATH
-        secret_file = _SecretFile(filename)
-        secret_file.write(auth.to_dict())
 
     @staticmethod
     def from_key(
         key: str
-    ) -> APIKeyAuth:
+    ) -> Auth:
         '''Obtain authentication from api key.
 
         Parameters:
@@ -98,7 +79,7 @@ class Auth():
     @staticmethod
     def from_file(
         filename: str = None
-    ) -> APIKeyAuth:
+    ) -> Auth:
         '''Create authentication from secret file.
 
         The secret file is named `.planet.json` and is stored in the user
@@ -110,8 +91,14 @@ class Auth():
 
         '''
         filename = filename or SECRET_FILE_PATH
-        secrets = _SecretFile(filename).read()
-        auth = APIKeyAuth.from_dict(secrets)
+
+        try:
+            secrets = _SecretFile(filename).read()
+            auth = APIKeyAuth.from_dict(secrets)
+        except FileNotFoundError:
+            raise AuthException(f'File {filename} does not exist.')
+        except KeyError:
+            raise AuthException(f'File {filename} is not the correct format.')
 
         LOGGER.debug(f'Auth read from secret file {filename}.')
         return auth
@@ -119,7 +106,7 @@ class Auth():
     @staticmethod
     def from_env(
         variable_name: str = None
-    ) -> APIKeyAuth:
+    ) -> Auth:
         '''Create authentication from environment variable.
 
         Reads the `PL_API_KEY` environment variable
@@ -129,9 +116,35 @@ class Auth():
         '''
         variable_name = variable_name or ENV_API_KEY
         api_key = os.getenv(variable_name)
-        auth = APIKeyAuth(api_key)
-        LOGGER.info(f'Auth set from environment variable {variable_name}')
+        try:
+            auth = APIKeyAuth(api_key)
+            LOGGER.info(f'Auth set from environment variable {variable_name}')
+        except APIKeyAuthException:
+            raise AuthException(
+                f'Environment variable {variable_name} either does not exist '
+                'or is empty.')
         return auth
+
+    @classmethod
+    @abc.abstractmethod
+    def from_dict(
+        cls,
+        data: dict
+    ) -> Auth:
+        pass
+
+    def write(
+        self,
+        filename: str = None
+    ):
+        '''Write authentication information.
+
+        Parameters:
+            filename: Alternate path for the planet secret file.
+        '''
+        filename = filename or SECRET_FILE_PATH
+        secret_file = _SecretFile(filename)
+        secret_file.write(self.to_dict())
 
 
 class APIKeyAuthException(Exception):
@@ -163,10 +176,10 @@ class APIKeyAuth(httpx.BasicAuth, Auth):
     @classmethod
     def from_dict(
         cls,
-        secrets: dict
+        data: dict
     ) -> APIKeyAuth:
         '''Instantiate APIKeyAuth from a dict.'''
-        api_key = secrets.get(cls.DICT_KEY, None)
+        api_key = data[cls.DICT_KEY]
         return cls(api_key)
 
     def to_dict(self):
