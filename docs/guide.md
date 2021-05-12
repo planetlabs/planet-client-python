@@ -34,13 +34,43 @@ Alternatively, use `await Session.aclose()` to close a `Session` explicitly:
 
 ## Authentication
 
-By default, authentication is read from the environment variable
-`PL_API_KEY`. If that variable is not set, then authentication is read from
-the planet secret file, named `.planet.json` and stored in the user directory.
+There are two steps to managing authentication information, obtaining the
+authentication information from Planet and then managing it for local retrieval
+for authentication purposes.
 
-This behavior can be motified by specifying Auth explicitely using the methods
-`Auth.from_key()`, `Auth.from_file()`, and `Auth.from_env()`. For example,
-authentication can be read from a custom environment variable:
+The recommended method for obtaining authentication information is through
+logging in, using `Auth.from_login()` (note: using something like the `getpass`
+module is recommended to ensure your password remains secure). Alternatively,
+the api key can be obtained directly from the Planet account site and then used
+in `Auth.from_key()`.
+
+Once the authentication information is obtained, the most convenient way of
+managing it for local use is to write it to a secret file using `Auth.write()`.
+
+For example, to obtain and store authentication information:
+
+```python
+>>> import getpass
+>>> from planet import Auth
+>>>
+>>> pw = getpass.getpass()
+>>> auth = Auth.from_login('user', 'pw')
+>>> auth.write()
+
+```
+
+When a `Session` is created, by default, authentication is read from the
+environment variable `PL_API_KEY`. If that variable is not set, then
+authentication is read from the secret file created with `Auth.write()`.
+This behavior can be modified by specifying Auth explicitely using the methods
+`Auth.from_file()`, and `Auth.from_env()`. While `Auth.from_key()` and
+`Auth.from_login` can be used, it is recommended that
+those functions be used in authentication initialization and the authentication
+information be stored in an environment variable or secret file.
+
+The file and environment variable read from can be customized in the
+respective functions. For example, authentication can be read from a custom
+environment variable:
 
 ```python
 >>> import asyncio
