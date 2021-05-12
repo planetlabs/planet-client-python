@@ -21,6 +21,7 @@ import respx
 import pytest
 
 from planet.api import exceptions, http
+from planet.auth import Auth
 
 
 TEST_URL = 'mock://fantastic.com'
@@ -66,7 +67,8 @@ async def test_basesession__raise_for_status():
 
 @pytest.mark.asyncio
 async def test_session_contextmanager():
-    async with http.Session():
+    auth = Auth.from_key('mockkey')
+    async with http.Session(auth=auth):
         pass
 
 
