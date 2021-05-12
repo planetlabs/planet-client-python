@@ -119,8 +119,8 @@ def test_Auth_from_login(monkeypatch):
     mock_resp = httpx.Response(HTTPStatus.OK, json=response)
     respx.post(login_url).return_value = mock_resp
 
-    monkeypatch.setattr(auth, 'AUTH_URL', test_url)
-    test_auth = auth.Auth.from_login('email', 'pw')
+    # monkeypatch.setattr(auth, 'AUTH_URL', test_url)
+    test_auth = auth.Auth.from_login('email', 'pw', base_url=test_url)
     assert test_auth.value == 'foobar'
 
 

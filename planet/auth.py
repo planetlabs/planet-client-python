@@ -134,7 +134,8 @@ class Auth(metaclass=abc.ABCMeta):
     @staticmethod
     def from_login(
         email: str,
-        password: str
+        password: str,
+        base_url: str = None
     ) -> Auth:
         '''Create authentication from login email and password.
 
@@ -143,9 +144,11 @@ class Auth(metaclass=abc.ABCMeta):
 
         Parameters:
             email: Planet account email address.
-            password:  Planet account password.
+            password: Planet account password.
+            base_url: The base URL to use. Defaults to production
+                authentication API base url.
         '''
-        cl = AuthClient()
+        cl = AuthClient(base_url=base_url)
         auth_data = cl.login(email, password)
 
         api_key = auth_data['api_key']
