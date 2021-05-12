@@ -38,6 +38,11 @@ def mock_request():
     yield r
 
 
+@pytest.fixture
+def auth():
+    return Auth.from_key('mockkey')
+
+
 @pytest.mark.asyncio
 async def test_basesession__raise_for_status():
     http.BaseSession._raise_for_status(Mock(
@@ -66,16 +71,16 @@ async def test_basesession__raise_for_status():
 
 
 @pytest.mark.asyncio
-async def test_session_contextmanager():
-    auth = Auth.from_key('mockkey')
+async def test_session_contextmanager(auth):
     async with http.Session(auth=auth):
         pass
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session_request(mock_request):
-    async with http.Session() as ps:
+async def test_session_request(auth, mock_request):
+
+    async with http.Session(auth=auth) as ps:
         mock_resp = httpx.Response(HTTPStatus.OK, text='bubba')
         respx.get(TEST_URL).return_value = mock_resp
 
@@ -85,8 +90,8 @@ async def test_session_request(mock_request):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session_stream(mock_request):
-    async with http.Session() as ps:
+async def test_session_stream(auth, mock_request):
+    async with http.Session(auth=auth) as ps:
         mock_resp = httpx.Response(HTTPStatus.OK, text='bubba')
         respx.get(TEST_URL).return_value = mock_resp
 
@@ -97,8 +102,8 @@ async def test_session_stream(mock_request):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session_request_retry(mock_request):
-    async with http.Session() as ps:
+async def test_session_request_retry(auth, mock_request):
+    async with http.Session(auth=auth) as ps:
         route = respx.get(TEST_URL)
         route.side_effect = [
             httpx.Response(HTTPStatus.TOO_MANY_REQUESTS),
@@ -113,8 +118,8 @@ async def test_session_request_retry(mock_request):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session_retry(mock_request):
-    async with http.Session() as ps:
+async def test_session_retry(auth, mock_request):
+    async with http.Session(auth=auth) as ps:
         async def test_func():
             raise exceptions.TooManyRequests
 
