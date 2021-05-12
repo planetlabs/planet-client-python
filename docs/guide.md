@@ -46,6 +46,8 @@ in `Auth.from_key()`.
 
 Once the authentication information is obtained, the most convenient way of
 managing it for local use is to write it to a secret file using `Auth.write()`.
+It can also be accessed, e.g. to store in an environment variable, as
+`Auth.value`.
 
 For example, to obtain and store authentication information:
 

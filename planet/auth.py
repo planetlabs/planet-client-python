@@ -161,6 +161,11 @@ class Auth(metaclass=abc.ABCMeta):
     ) -> Auth:
         pass
 
+    @property
+    @abc.abstractmethod
+    def value(self):
+        pass
+
     def write(
         self,
         filename: str = None
@@ -254,8 +259,8 @@ class APIKeyAuth(httpx.BasicAuth, Auth):
         '''
         if not key:
             raise APIKeyAuthException('API key cannot be empty.')
-        self.key = key
-        super().__init__(self.key, '')
+        self._key = key
+        super().__init__(self._key, '')
 
     @classmethod
     def from_dict(
@@ -268,7 +273,11 @@ class APIKeyAuth(httpx.BasicAuth, Auth):
 
     def to_dict(self):
         '''Represent APIKeyAuth as a dict.'''
-        return {self.DICT_KEY: self.key}
+        return {self.DICT_KEY: self._key}
+
+    @property
+    def value(self):
+        return self._key
 
 
 class _SecretFile():

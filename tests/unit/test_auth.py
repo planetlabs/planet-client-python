@@ -27,14 +27,14 @@ LOGGER = logging.getLogger(__name__)
 
 def test_Auth_read_key():
     test_auth = auth.Auth.read(key='test')
-    assert test_auth.key == 'test'
+    assert test_auth.value == 'test'
 
 
 def test_Auth_read_env(monkeypatch):
     monkeypatch.setenv('PL_API_KEY', 'a')
 
     test_auth_env1 = auth.Auth.read()
-    assert test_auth_env1.key == 'a'
+    assert test_auth_env1.value == 'a'
 
 
 def test_Auth_read_file(tmp_path, monkeypatch):
@@ -45,7 +45,7 @@ def test_Auth_read_file(tmp_path, monkeypatch):
     monkeypatch.delenv('PL_API_KEY', raising=False)
     monkeypatch.setattr(auth, 'SECRET_FILE_PATH', secret_path)
     test_auth = auth.Auth.read()
-    assert test_auth.key == 'testvar'
+    assert test_auth.value == 'testvar'
 
 
 def test_Auth_read_error(tmp_path, monkeypatch):
@@ -68,7 +68,7 @@ def test_Auth_from_file_alternate_success(tmp_path):
         fp.write('{"key": "testvar"}')
 
     test_auth = auth.Auth.from_file(secret_path)
-    assert test_auth.key == 'testvar'
+    assert test_auth.value == 'testvar'
 
 
 def test_Auth_from_file_alternate_doesnotexist(tmp_path):
@@ -92,7 +92,7 @@ def test_Auth_from_env_alternate_success(monkeypatch):
     monkeypatch.delenv('PL_API_KEY', raising=False)
 
     test_auth_env1 = auth.Auth.from_env(alternate)
-    assert test_auth_env1.key == 'testkey'
+    assert test_auth_env1.value == 'testkey'
 
 
 def test_Auth_from_env_alternate_doesnotexist(monkeypatch):
@@ -121,7 +121,7 @@ def test_Auth_from_login(monkeypatch):
 
     monkeypatch.setattr(auth, 'AUTH_URL', test_url)
     test_auth = auth.Auth.from_login('email', 'pw')
-    assert test_auth.key == 'foobar'
+    assert test_auth.value == 'foobar'
 
 
 def test_Auth_write_doesnotexist(tmp_path):
