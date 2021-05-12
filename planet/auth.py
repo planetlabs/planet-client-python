@@ -14,11 +14,17 @@
 '''Manage authentication with Planet APIs'''
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import abc
+import base64
 import json
 import logging
 import os
 
 import httpx
+
+from . import constants
+from .api import http, models
+
+AUTH_URL = constants.PLANET_BASE_URL + 'v0/auth/'
 
 ENV_API_KEY = 'PL_API_KEY'
 
@@ -118,11 +124,33 @@ class Auth(metaclass=abc.ABCMeta):
         api_key = os.getenv(variable_name)
         try:
             auth = APIKeyAuth(api_key)
-            LOGGER.info(f'Auth set from environment variable {variable_name}')
+            LOGGER.debug(f'Auth set from environment variable {variable_name}')
         except APIKeyAuthException:
             raise AuthException(
                 f'Environment variable {variable_name} either does not exist '
                 'or is empty.')
+        return auth
+
+    @staticmethod
+    def from_login(
+        email: str,
+        password: str
+    ) -> Auth:
+        '''Create authentication from login email and password.
+
+        Note: To keep your password secure, the use of `getpass` is
+        recommended.
+
+        Parameters:
+            email: Planet account email address.
+            password:  Planet account password.
+        '''
+        cl = AuthClient()
+        auth_data = cl.login(email, password)
+
+        api_key = auth_data['api_key']
+        auth = APIKeyAuth(api_key)
+        LOGGER.debug('Auth set from login email and password')
         return auth
 
     @classmethod
@@ -145,6 +173,62 @@ class Auth(metaclass=abc.ABCMeta):
         filename = filename or SECRET_FILE_PATH
         secret_file = _SecretFile(filename)
         secret_file.write(self.to_dict())
+
+
+class AuthClient():
+    def __init__(
+        self,
+        base_url: str = None
+    ):
+        """
+        Parameters:
+            base_url: Alternate authentication api base URL.
+        """
+        self._base_url = base_url or AUTH_URL
+        if not self._base_url.endswith('/'):
+            self._base_url += '/'
+
+    def login(
+        self,
+        email: str,
+        password: str
+    ) -> dict:
+        '''Login using email identity and credentials.
+
+        Note: To keep your password secure, the use of `getpass` is
+        recommended.
+
+        Parameters:
+            email: Planet account email address.
+            password:  Planet account password.
+
+        Returns:
+             A JSON object containing an `api_key` property with the user's
+        API_KEY.
+        '''
+        url = self._base_url + 'login'
+        data = {'email': email,
+                'password': password
+                }
+
+        sess = http.AuthSession()
+        req = models.Request(url, method='POST', json=data)
+        resp = sess.request(req)
+        auth_data = self.decode_response(resp)
+        return auth_data
+
+    @staticmethod
+    def decode_response(response):
+        '''This is magic I don't understand'''
+        jwt = response.json()['token']
+
+        # stuff before the first '.' and after the second '.' doesn't matter
+        payload = jwt.split('.')[1]
+
+        # the '===' addition ensures adequate padding
+        payload = base64.urlsafe_b64decode(payload + '===')
+        decoded = json.loads(payload.decode())
+        return decoded
 
 
 class APIKeyAuthException(Exception):

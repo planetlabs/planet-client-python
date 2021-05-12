@@ -11,11 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import base64
+from http import HTTPStatus
 import json
 import logging
-# from unittest.mock import patch
 
+import httpx
 import pytest
+import respx
 
 from planet import auth
 
@@ -99,6 +102,26 @@ def test_Auth_from_env_alternate_doesnotexist(monkeypatch):
 
     with pytest.raises(auth.AuthException):
         _ = auth.Auth.from_env(alternate)
+
+
+@respx.mock
+def test_Auth_from_login(monkeypatch):
+    test_url = 'http://MockNotRealURL/'
+    login_url = test_url + 'login'
+
+    apikey = base64.urlsafe_b64encode(
+        json.dumps({'api_key': 'foobar'}).encode()
+    ).decode()
+
+    response = {
+        'token':  'junk.' + apikey
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=response)
+    respx.post(login_url).return_value = mock_resp
+
+    monkeypatch.setattr(auth, 'AUTH_URL', test_url)
+    test_auth = auth.Auth.from_login('email', 'pw')
+    assert test_auth.key == 'foobar'
 
 
 def test_Auth_write_doesnotexist(tmp_path):
