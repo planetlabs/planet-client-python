@@ -11,14 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import click
+import asyncio
+from functools import wraps
+import json
 import logging
 import sys
 
+import click
+
 import planet
-# from planet import __version__
-from planet.constants import PLANET_BASE_URL
+
+
+# https://github.com/pallets/click/issues/85#issuecomment-503464628
+def coro(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        return asyncio.run(f(*args, **kwargs))
+    return wrapper
 
 
 @click.group()
@@ -26,18 +35,14 @@ from planet.constants import PLANET_BASE_URL
 @click.option('-v', '--verbose', count=True,
               help=('Specify verbosity level of between 0 and 2 corresponding '
                     'to log levels warning, info, and debug respectively.'))
-@click.option('-u', '--base-url',
-              default=PLANET_BASE_URL, show_default=True,
-              help='Change base Planet API URL.')
 @click.version_option(version=planet.__version__)
-def cli(ctx, verbose, base_url):
+def cli(ctx, verbose):
     '''Planet API Client'''
     _configure_logging(verbose)
 
     # ensure that ctx.obj exists and is a dict (in case `cli()` is called
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
-    # ctx.obj['BASE_URL'] = base_url
 
 
 def _configure_logging(verbosity):
@@ -88,17 +93,34 @@ def value():
             'Please store authentication information with `planet auth init`.')
 
 
+@cli.group()
+@click.pass_context
+@click.option('-u', '--base-url',
+              default=None,
+              help='Assign custom base Orders API URL.')
+def orders(ctx, base_url):
+    '''Commands for interacting with the Orders API'''
+    auth = planet.Auth.read()
+    ctx.obj['AUTH'] = auth
+    ctx.obj['BASE_URL'] = base_url
 
-# @cli.group('orders')
-# def orders():
-#     '''Commands for interacting with the Orders API'''
-#     pass
-#
-#
-# @orders.command('list')
-# # @click.option('--status', help="'all', 'in-progress', 'completed'")
-# @pretty
-# def list_orders(pretty):
-#     '''List all pending order requests; optionally filter by status'''
-#     cl = clientv1()
-#     echo_json_response(call_and_wrap(cl.get_orders), pretty)
+
+@orders.command()
+@click.pass_context
+@coro
+@click.option('--state',
+              help='Filter orders to given state.',
+              type=click.Choice(planet.api.orders.ORDERS_STATES,
+                                case_sensitive=False))
+@click.option('--limit', help='Filter orders to given limit.',
+              default=None, type=int)
+async def list(ctx, state, limit):
+    '''List orders'''
+    auth = ctx.obj['AUTH']
+    base_url = ctx.obj['BASE_URL']
+
+    async with planet.Session(auth=auth) as sess:
+        cl = planet.OrdersClient(sess, base_url=base_url)
+        orders = await cl.list_orders(state=state, limit=limit, as_json=True)
+
+    click.echo(json.dumps(orders))
