@@ -65,7 +65,7 @@ class OrdersClient():
     def __init__(
         self,
         session: Session,
-        base_url: str = BASE_URL
+        base_url: str = None
     ):
         """
         Parameters:
@@ -75,7 +75,7 @@ class OrdersClient():
         """
         self._session = session
 
-        self._base_url = base_url
+        self._base_url = base_url or BASE_URL
         if not self._base_url.endswith('/'):
             self._base_url += '/'
 
@@ -363,13 +363,15 @@ class OrdersClient():
     async def list_orders(
         self,
         state: str = None,
-        limit: int = None
-    ) -> typing.List[Order]:
+        limit: int = None,
+        as_json: bool = False
+    ) -> typing.Union[typing.List[Order], dict]:
         """Get all order requests.
 
         Parameters:
             state: Filter orders to given state.
             limit: Limit orders to given limit.
+            as_json: Return orders as a json dict.
 
         Returns:
             User orders that match the query
@@ -384,13 +386,18 @@ class OrdersClient():
         else:
             params = None
 
-        return await self._get_orders(url, params=params, limit=limit)
+        orders = await self._get_orders(url, params=params, limit=limit)
+
+        if as_json:
+            ret = [o.json async for o in orders]
+        else:
+            ret = [o async for o in orders]
+        return ret
 
     async def _get_orders(self, url, params=None, limit=None):
         request = self._request(url, 'GET', params=params)
 
-        orders_paged = Orders(request, self._do_request, limit=limit)
-        return [o async for o in orders_paged]
+        return Orders(request, self._do_request, limit=limit)
 
     @staticmethod
     def _check_state(state):

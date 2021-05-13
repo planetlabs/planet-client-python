@@ -397,6 +397,10 @@ class Order():
         '''
         return self.data['id']
 
+    @property
+    def json(self):
+        return self.data
+
 
 class Orders(Paged):
     '''Asynchronous iterator over Orders from a paged response describing
