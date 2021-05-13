@@ -81,7 +81,7 @@ environment variable:
 >>>
 >>> auth = Auth.from_env('ALTERNATE_VAR')
 >>> async def main():
-...     async with Session() as sess:
+...     async with Session(auth=auth) as sess:
 ...         # perform operations here
 ...         pass
 ...
