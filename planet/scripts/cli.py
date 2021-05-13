@@ -65,13 +65,29 @@ def auth(ctx, base_url):
 @click.option('--email', default=None, prompt=True, help=(
     'The email address associated with your Planet credentials.'
 ))
-@click.password_option('--password', help=(
+@click.password_option('--password', confirmation_prompt=False, help=(
     'Account password. Will not be saved.'
 ))
 def init(ctx, email, password):
-    '''Login using email/password'''
-    # auth = planet.Auth.from_login(email, pw)
-    click.echo(f'base_url: {ctx.obj["BASE_URL"]}')
+    '''Obtain and store authentication information'''
+    base_url = ctx.obj["BASE_URL"]
+    auth = planet.Auth.from_login(email, password, base_url=base_url)
+    auth.write()
+    click.echo('Initialized')
+
+
+@auth.command()
+def value():
+    '''Print the stored authentication information'''
+    try:
+        auth = planet.Auth.from_file()
+        click.echo(auth.value)
+    except planet.auth.AuthException:
+        click.echo(
+            'Stored authentication information cannot be found. '
+            'Please store authentication information with `planet auth init`.')
+
+
 
 # @cli.group('orders')
 # def orders():
