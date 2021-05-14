@@ -30,6 +30,14 @@ def coro(f):
     return wrapper
 
 
+pretty = click.option('-pp', '--pretty', is_flag=True,
+                      help='Format JSON output')
+
+
+def pprint(json_dict):
+    return json.dumps(json_dict, indent=2, sort_keys=True)
+
+
 @click.group()
 @click.pass_context
 @click.option('-v', '--verbose', count=True,
@@ -108,13 +116,14 @@ def orders(ctx, base_url):
 @orders.command()
 @click.pass_context
 @coro
-@click.option('--state',
+@click.option('-s', '--state',
               help='Filter orders to given state.',
               type=click.Choice(planet.api.orders.ORDERS_STATES,
                                 case_sensitive=False))
-@click.option('--limit', help='Filter orders to given limit.',
+@click.option('-l', '--limit', help='Filter orders to given limit.',
               default=None, type=int)
-async def list(ctx, state, limit):
+@pretty
+async def list(ctx, state, limit, pretty):
     '''List orders'''
     auth = ctx.obj['AUTH']
     base_url = ctx.obj['BASE_URL']
@@ -123,4 +132,89 @@ async def list(ctx, state, limit):
         cl = planet.OrdersClient(sess, base_url=base_url)
         orders = await cl.list_orders(state=state, limit=limit, as_json=True)
 
-    click.echo(json.dumps(orders))
+    if pretty:
+        click.echo(pprint(orders))
+    else:
+        click.echo(orders)
+
+
+@orders.command()
+@click.pass_context
+@coro
+@click.argument('order_id', type=click.UUID)
+@pretty
+async def get(ctx, order_id, pretty):
+    '''Get order by order id.'''
+    auth = ctx.obj['AUTH']
+    base_url = ctx.obj['BASE_URL']
+
+    async with planet.Session(auth=auth) as sess:
+        cl = planet.OrdersClient(sess, base_url=base_url)
+        order = await cl.get_order(str(order_id))
+
+    if pretty:
+        click.echo(pprint(order.json))
+    else:
+        click.echo(order.json)
+
+
+@orders.command()
+@click.pass_context
+@coro
+@click.argument('order_id', type=click.UUID)
+async def cancel(ctx, order_id):
+    '''Get order by order id.'''
+    auth = ctx.obj['AUTH']
+    base_url = ctx.obj['BASE_URL']
+
+    async with planet.Session(auth=auth) as sess:
+        cl = planet.OrdersClient(sess, base_url=base_url)
+        await cl.cancel_order(str(order_id))
+
+    click.echo('Cancelled')
+#
+# @orders.command()
+# @click.pass_context
+# @coro
+# @click.option('--name', required=True)
+# @click.option('--id', help='One or more comma-separated item IDs',
+#               cls=RequiredUnless, this_opt_exists='ids_from_search')
+# # Note: This is passed as a string, because --item-type is a required field for
+# # both 'data search' and 'orders create'.
+# @click.option('--ids_from_search',
+#               help='Embedded data search')
+# @click.option('--clip', type=ClipAOI(),
+#               help='Provide a GeoJSON AOI Geometry for clipping')
+# @click.option('--email', default=False, is_flag=True,
+#               help='Send email notification when Order is complete')
+# @click.option('--cloudconfig', help=('Path to cloud delivery config'),
+#               type=click.Path(exists=True, resolve_path=True, readable=True,
+#                               allow_dash=False, dir_okay=False,
+#                               file_okay=True))
+# @click.option('--tools', help=('Path to toolchain json'),
+#               type=click.Path(exists=True, resolve_path=True, readable=True,
+#                               allow_dash=False, dir_okay=False,
+#                               file_okay=True))
+# @bundle_option
+# @click.option(
+#     '--item-type', multiple=False, required=True, type=ItemType(), help=(
+#         'Specify an item type'
+#     )
+# )
+# @orders.command()
+# @pretty
+# def create(**kwargs):
+#     '''Create an order'''
+#     ids_from_search = kwargs.get('ids_from_search')
+#     if ids_from_search is not None:
+#         runner = CliRunner()
+#         resp = runner.invoke(quick_search, ids_from_search).output
+#         try:
+#             id_list = ids_from_search_response(resp)
+#         except ValueError:
+#             raise click.ClickException('ids_from_search, {}'.format(resp))
+#         kwargs['id'] = id_list
+#         del kwargs['ids_from_search']
+#     cl = clientv1()
+#     request = create_order_request(**kwargs)
+#     echo_json_response(call_and_wrap(cl.create_order, request), pretty)
