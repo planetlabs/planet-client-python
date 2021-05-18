@@ -25,38 +25,6 @@ from planet import auth
 LOGGER = logging.getLogger(__name__)
 
 
-def test_Auth_read_key():
-    test_auth = auth.Auth.read(key='test')
-    assert test_auth.value == 'test'
-
-
-def test_Auth_read_env(monkeypatch):
-    monkeypatch.setenv('PL_API_KEY', 'a')
-
-    test_auth_env1 = auth.Auth.read()
-    assert test_auth_env1.value == 'a'
-
-
-def test_Auth_read_file(tmp_path, monkeypatch):
-    secret_path = str(tmp_path / '.test')
-    with open(secret_path, 'w') as fp:
-        fp.write('{"key": "testvar"}')
-
-    monkeypatch.delenv('PL_API_KEY', raising=False)
-    monkeypatch.setattr(auth, 'SECRET_FILE_PATH', secret_path)
-    test_auth = auth.Auth.read()
-    assert test_auth.value == 'testvar'
-
-
-def test_Auth_read_error(tmp_path, monkeypatch):
-    secret_path = str(tmp_path / '.doesnotexist')
-
-    monkeypatch.delenv('PL_API_KEY', raising=False)
-    monkeypatch.setattr(auth, 'SECRET_FILE_PATH', secret_path)
-    with pytest.raises(auth.AuthException):
-        auth.Auth.read()
-
-
 def test_Auth_from_key_empty():
     with pytest.raises(auth.APIKeyAuthException):
         _ = auth.Auth.from_key('')

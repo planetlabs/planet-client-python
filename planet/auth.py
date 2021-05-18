@@ -41,35 +41,6 @@ class AuthException(Exception):
 class Auth(metaclass=abc.ABCMeta):
     '''Handle authentication information for use with Planet APIs.'''
     @staticmethod
-    def read(
-        key: str = None
-    ) -> APIKeyAuth:
-        '''Reads authentication information.
-
-        If key is provided, uses the key. Otherwise, tries to find key from
-        environment variable `PL_API_KEY`. Finally, tries to find key from the
-        planet secret file, named `.planet.json` and stored in the user
-        directory.
-
-        Parameters:
-            key: Planet API key
-        '''
-        if key:
-            auth = Auth.from_key(key)
-        else:
-            try:
-                auth = Auth.from_env(ENV_API_KEY)
-            except AuthException:
-                try:
-                    auth = Auth.from_file(SECRET_FILE_PATH)
-                except FileNotFoundError:
-                    raise AuthException(
-                        'Could not find authentication information. Set '
-                        f'environment variable {ENV_API_KEY} or store '
-                        'information in secret file with `Auth.write()`')
-        return auth
-
-    @staticmethod
     def from_key(
         key: str
     ) -> Auth:

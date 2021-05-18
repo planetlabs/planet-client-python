@@ -71,11 +71,6 @@ class BaseSession():
         }.get(status, None)
 
         msg = response.text
-        # try:
-        #     msg = response.text
-        # except httpx.ResponseNotRead:
-        #     await response.aread()
-        #     msg = response.text
 
         # differentiate between over quota and rate-limiting
         if status == 429 and 'quota' in msg.lower():
@@ -90,10 +85,9 @@ class BaseSession():
 class Session(BaseSession):
     '''Context manager for asynchronous communication with the Planet service.
 
-    The default behavior is to look for authentication information as the
-    an api key stored in the environment variable, `PL_API_KEY`. Failing that,
-    the api key is read from the secret key. This behavior can be overridden
-    by providing an `auth.Auth` instance as an argument.
+    The default behavior is to read authentication information stored in the
+    secret file. This behavior can be overridden by providing an `auth.Auth`
+    instance as an argument.
 
     Example:
     ```python
@@ -134,7 +128,7 @@ class Session(BaseSession):
         Parameters:
             auth: Planet server authentication.
         """
-        auth = auth or Auth.read()
+        auth = auth or Auth.from_file()
 
         self._client = httpx.AsyncClient(auth=auth)
         self._client.headers.update({'User-Agent': self._get_user_agent()})
