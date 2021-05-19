@@ -44,6 +44,9 @@ pull request is initiated on the repository.
 
 ### Testing Documentation
 
+NOTE: Doc tests need to be reworked and are failing. See
+[#275](https://github.com/planetlabs/planet-client-python/issues/275).
+
 There are many code examples written into the documentation that need to be
 tested to ensure they are accurate. These tests are not run by default because
 they communicate with the Planet services, and thus are slower and also could
