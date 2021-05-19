@@ -25,6 +25,20 @@ from planet import auth
 LOGGER = logging.getLogger(__name__)
 
 
+# skip the global mock of _SecretFile.read
+# for this module
+@pytest.fixture(autouse=True, scope='module')
+def test_secretfile_read():
+    return
+
+
+@pytest.fixture
+def secret_path(monkeypatch, tmp_path):
+    secret_path = str(tmp_path / '.test')
+    monkeypatch.setattr(auth, 'SECRET_FILE_PATH', secret_path)
+    yield secret_path
+
+
 def test_Auth_from_key():
     test_auth_env1 = auth.Auth.from_key('testkey')
     assert test_auth_env1.value == 'testkey'
@@ -35,37 +49,34 @@ def test_Auth_from_key_empty():
         _ = auth.Auth.from_key('')
 
 
-# def test_Auth_from_file(tmp_path):
-#     secret_path = str(tmp_path / '.test')
-#     with open(secret_path, 'w') as fp:
-#         fp.write('{"key": "testvar"}')
-#
-#     test_auth = auth.Auth.from_file(secret_path)
-#     assert test_auth.value == 'testvar'
+def test_Auth_from_file(secret_path):
+    with open(secret_path, 'w') as fp:
+        fp.write('{"key": "testvar"}')
+
+    test_auth = auth.Auth.from_file()
+    assert test_auth.value == 'testvar'
 
 
-def test_Auth_from_file_alternate_success(tmp_path):
+def test_Auth_from_file_doesnotexist(secret_path):
+    with pytest.raises(auth.AuthException):
+        _ = auth.Auth.from_file(secret_path)
+
+
+def test_Auth_from_file_wrongformat(secret_path):
+    with open(secret_path, 'w') as fp:
+        fp.write('{"notkey": "testvar"}')
+
+    with pytest.raises(auth.AuthException):
+        _ = auth.Auth.from_file(secret_path)
+
+
+def test_Auth_from_file_alternate(tmp_path):
     secret_path = str(tmp_path / '.test')
     with open(secret_path, 'w') as fp:
         fp.write('{"key": "testvar"}')
 
     test_auth = auth.Auth.from_file(secret_path)
     assert test_auth.value == 'testvar'
-
-
-def test_Auth_from_file_alternate_doesnotexist(tmp_path):
-    secret_path = str(tmp_path / '.doesnotexist')
-    with pytest.raises(auth.AuthException):
-        _ = auth.Auth.from_file(secret_path)
-
-
-def test_Auth_from_file_alternate_wrongformat(tmp_path):
-    secret_path = str(tmp_path / '.wrongformat')
-    with open(secret_path, 'w') as fp:
-        fp.write('{"notkey": "testvar"}')
-
-    with pytest.raises(auth.AuthException):
-        _ = auth.Auth.from_file(secret_path)
 
 
 def test_Auth_from_env(monkeypatch):
@@ -113,7 +124,6 @@ def test_Auth_from_login(monkeypatch):
     mock_resp = httpx.Response(HTTPStatus.OK, json=response)
     respx.post(login_url).return_value = mock_resp
 
-    # monkeypatch.setattr(auth, 'AUTH_URL', test_url)
     test_auth = auth.Auth.from_login('email', 'pw', base_url=test_url)
     assert test_auth.value == 'foobar'
 
