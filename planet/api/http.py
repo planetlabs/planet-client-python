@@ -14,7 +14,6 @@
 
 """Functionality to perform HTTP requests"""
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
-# import abc
 import asyncio
 from http import HTTPStatus
 import logging

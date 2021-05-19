@@ -24,7 +24,7 @@ import httpx
 import pytest
 import respx
 
-from planet import Auth, OrdersClient, Session
+from planet import OrdersClient, Session
 
 
 TEST_URL = 'http://MockNotRealURL/'
@@ -35,8 +35,7 @@ LOGGER = logging.getLogger(__name__)
 @pytest.fixture
 @pytest.mark.asyncio
 async def session():
-    auth = Auth.from_key('mockkey')
-    async with Session(auth=auth) as ps:
+    async with Session() as ps:
         yield ps
 
 
