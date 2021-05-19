@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import asyncio
+from contextlib import asynccontextmanager
 from functools import wraps
 import json
 import logging
@@ -24,6 +25,7 @@ import planet
 
 # https://github.com/pallets/click/issues/85#issuecomment-503464628
 def coro(f):
+    '''Wraps async functions so they can be run sync with Click.'''
     @wraps(f)
     def wrapper(*args, **kwargs):
         return asyncio.run(f(*args, **kwargs))
@@ -34,8 +36,42 @@ pretty = click.option('-pp', '--pretty', is_flag=True,
                       help='Format JSON output')
 
 
-def pprint(json_dict):
-    return json.dumps(json_dict, indent=2, sort_keys=True)
+def get_auth():
+    try:
+        auth = planet.Auth.from_file()
+    except planet.auth.AuthException:
+        raise click.ClickException(
+            'Auth information does not exist or is corrupted. Initialize '
+            'with `planet auth init`.')
+    return auth
+
+
+def write_auth(email, password, base_url):
+    try:
+        auth = planet.Auth.from_login(email, password, base_url=base_url)
+    except planet.api.exceptions.InvalidAPIKey:
+        raise click.ClickException('Invalid email or password.')
+    except planet.api.exceptions.BadQuery:
+        raise click.ClickException('Not a valid email address.')
+    else:
+        auth.write()
+
+
+def json_echo(json_dict, pretty):
+    if pretty:
+        json_str = json.dumps(json_dict, indent=2, sort_keys=True)
+        click.echo(json_str)
+    else:
+        click.echo(json_dict)
+
+
+@asynccontextmanager
+async def orders_client(ctx):
+    auth = ctx.obj['AUTH']
+    base_url = ctx.obj['BASE_URL']
+    async with planet.Session(auth=auth) as sess:
+        cl = planet.OrdersClient(sess, base_url=base_url)
+        yield cl
 
 
 @click.group()
@@ -84,21 +120,14 @@ def auth(ctx, base_url):
 def init(ctx, email, password):
     '''Obtain and store authentication information'''
     base_url = ctx.obj["BASE_URL"]
-    auth = planet.Auth.from_login(email, password, base_url=base_url)
-    auth.write()
+    write_auth(email, password, base_url)
     click.echo('Initialized')
 
 
 @auth.command()
 def value():
     '''Print the stored authentication information'''
-    try:
-        auth = planet.Auth.from_file()
-        click.echo(auth.value)
-    except planet.auth.AuthException:
-        click.echo(
-            'Stored authentication information cannot be found. '
-            'Please store authentication information with `planet auth init`.')
+    click.echo(get_auth().value)
 
 
 @cli.group()
@@ -108,7 +137,7 @@ def value():
               help='Assign custom base Orders API URL.')
 def orders(ctx, base_url):
     '''Commands for interacting with the Orders API'''
-    auth = planet.Auth.read()
+    auth = get_auth()
     ctx.obj['AUTH'] = auth
     ctx.obj['BASE_URL'] = base_url
 
@@ -125,17 +154,10 @@ def orders(ctx, base_url):
 @pretty
 async def list(ctx, state, limit, pretty):
     '''List orders'''
-    auth = ctx.obj['AUTH']
-    base_url = ctx.obj['BASE_URL']
-
-    async with planet.Session(auth=auth) as sess:
-        cl = planet.OrdersClient(sess, base_url=base_url)
+    async with orders_client(ctx) as cl:
         orders = await cl.list_orders(state=state, limit=limit, as_json=True)
 
-    if pretty:
-        click.echo(pprint(orders))
-    else:
-        click.echo(orders)
+    json_echo(orders, pretty)
 
 
 @orders.command()
@@ -144,18 +166,11 @@ async def list(ctx, state, limit, pretty):
 @click.argument('order_id', type=click.UUID)
 @pretty
 async def get(ctx, order_id, pretty):
-    '''Get order by order id.'''
-    auth = ctx.obj['AUTH']
-    base_url = ctx.obj['BASE_URL']
-
-    async with planet.Session(auth=auth) as sess:
-        cl = planet.OrdersClient(sess, base_url=base_url)
+    '''Get order by order ID.'''
+    async with orders_client(ctx) as cl:
         order = await cl.get_order(str(order_id))
 
-    if pretty:
-        click.echo(pprint(order.json))
-    else:
-        click.echo(order.json)
+    json_echo(order.json, pretty)
 
 
 @orders.command()
@@ -163,16 +178,34 @@ async def get(ctx, order_id, pretty):
 @coro
 @click.argument('order_id', type=click.UUID)
 async def cancel(ctx, order_id):
-    '''Get order by order id.'''
-    auth = ctx.obj['AUTH']
-    base_url = ctx.obj['BASE_URL']
-
-    async with planet.Session(auth=auth) as sess:
-        cl = planet.OrdersClient(sess, base_url=base_url)
+    '''Cancel order by order ID.'''
+    async with orders_client(ctx) as cl:
         await cl.cancel_order(str(order_id))
 
     click.echo('Cancelled')
-#
+
+
+@orders.command()
+@click.pass_context
+@coro
+@click.argument('order_id', type=click.UUID)
+@click.option('-q', '--quiet', is_flag=True, default=False,
+              help=('Disable ANSI control output.'))
+@click.option('-o', '--overwrite', is_flag=True, default=True,
+              help=('Overwrite files if they already exist.'))
+@click.option('--dest', default='.',
+              help=('Directory to download files to.'),
+              type=click.Path(exists=True, resolve_path=True,
+                              writable=True, file_okay=False))
+async def download(ctx, order_id, quiet, overwrite, dest):
+    '''Download order by order ID.'''
+    async with orders_client(ctx) as cl:
+        await cl.download_order(str(order_id),
+                                directory=dest,
+                                overwrite=overwrite,
+                                progress_bar=not quiet)
+
+
 # @orders.command()
 # @click.pass_context
 # @coro
