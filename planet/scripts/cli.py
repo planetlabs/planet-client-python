@@ -73,6 +73,7 @@ async def orders_client(ctx):
         cl = planet.OrdersClient(sess, base_url=base_url)
         yield cl
 
+
 @click.group()
 @click.pass_context
 @click.option('-v', '--verbose', count=True,
@@ -250,21 +251,3 @@ async def download(ctx, order_id, quiet, overwrite, dest):
 #     cl = clientv1()
 #     request = create_order_request(**kwargs)
 #     echo_json_response(call_and_wrap(cl.create_order, request), pretty)
-=======
-@click.option('--state',
-              help='Filter orders to given state.',
-              type=click.Choice(planet.api.orders.ORDERS_STATES,
-                                case_sensitive=False))
-@click.option('--limit', help='Filter orders to given limit.',
-              default=None, type=int)
-async def list(ctx, state, limit):
-    '''List orders'''
-    auth = ctx.obj['AUTH']
-    base_url = ctx.obj['BASE_URL']
-
-    async with planet.Session(auth=auth) as sess:
-        cl = planet.OrdersClient(sess, base_url=base_url)
-        orders = await cl.list_orders(state=state, limit=limit, as_json=True)
-
-    click.echo(json.dumps(orders))
->>>>>>> ad4c5b6050c8788d8c63d0dc868a149364de02cf
