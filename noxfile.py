@@ -13,7 +13,9 @@ def test(session):
     session.install("-e", ".[test]")
 
     options = session.posargs
-    session.run("pytest", "-v", 'tests/', *options)
+    if '-k' in options:
+        options.append('--no-cov')
+    session.run('pytest', '--ignore', 'examples/', '-v', *options)
 
 
 @nox.session

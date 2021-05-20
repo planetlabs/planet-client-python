@@ -19,6 +19,8 @@ from .api.order_details import (
     AzureBlobStorageDelivery, GoogleCloudStorageDelivery,
     GoogleEarthEngineDelivery, Tool)
 from .api.__version__ import __version__  # NOQA
+from .auth import Auth
+
 
 __all__ = [
     Session,
@@ -32,5 +34,6 @@ __all__ = [
     AzureBlobStorageDelivery,
     GoogleCloudStorageDelivery,
     GoogleEarthEngineDelivery,
-    Tool
+    Tool,
+    Auth
 ]

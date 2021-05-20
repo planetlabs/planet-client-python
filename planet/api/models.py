@@ -100,14 +100,13 @@ class Response():
         '''
         return self.http_response.status_code
 
-    @property
     def json(self):
-        '''Response json.
+        '''Get response json.
 
-        :returns: json
+        :returns:response json
         :rtype: dict
         '''
-        return self.http_response.json
+        return self.http_response.json()
 
     async def aclose(self):
         await self.http_response.aclose()

@@ -17,10 +17,10 @@ from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import asyncio
 from http import HTTPStatus
 import logging
-import typing
 
 import httpx
 
+from ..auth import Auth
 from . import exceptions, models
 from . __version__ import __version__
 
@@ -35,8 +35,58 @@ class SessionException(Exception):
     pass
 
 
-class Session():
+class BaseSession():
+    @staticmethod
+    def _get_user_agent():
+        return 'planet-client-python/' + __version__
+
+    @staticmethod
+    def _log_request(request):
+        LOGGER.info(f'{request.method} {request.url} - Sent')
+
+    @staticmethod
+    def _log_response(response):
+        request = response.request
+        LOGGER.info(
+            f'{request.method} {request.url} - '
+            f'Status {response.status_code}')
+
+    @staticmethod
+    def _raise_for_status(response):
+        # TODO: consider using http_response.reason_phrase
+        status = response.status_code
+
+        miminum_bad_request_code = HTTPStatus.MOVED_PERMANENTLY
+        if status < miminum_bad_request_code:
+            return
+
+        exception = {
+            HTTPStatus.BAD_REQUEST: exceptions.BadQuery,
+            HTTPStatus.UNAUTHORIZED: exceptions.InvalidAPIKey,
+            HTTPStatus.FORBIDDEN: exceptions.NoPermission,
+            HTTPStatus.NOT_FOUND: exceptions.MissingResource,
+            HTTPStatus.TOO_MANY_REQUESTS: exceptions.TooManyRequests,
+            HTTPStatus.INTERNAL_SERVER_ERROR: exceptions.ServerError
+        }.get(status, None)
+
+        msg = response.text
+
+        # differentiate between over quota and rate-limiting
+        if status == 429 and 'quota' in msg.lower():
+            exception = exceptions.OverQuota
+
+        if exception:
+            raise exception(msg)
+
+        raise exceptions.APIException(f'{status}: {msg}')
+
+
+class Session(BaseSession):
     '''Context manager for asynchronous communication with the Planet service.
+
+    The default behavior is to read authentication information stored in the
+    secret file. This behavior can be overridden by providing an `auth.Auth`
+    instance as an argument.
 
     Example:
     ```python
@@ -44,7 +94,21 @@ class Session():
     >>> from planet import Session
     >>>
     >>> async def main():
-    ...     auth = ('example_api_key', '')
+    ...     async with Session() as sess:
+    ...         # communicate with services here
+    ...         pass
+    ...
+    >>> asyncio.run(main())
+
+    ```
+
+    Example:
+    ```python
+    >>> import async
+    >>> from planet import Auth, Session
+    >>>
+    >>> async def main():
+    ...     auth = Auth.from_key('examplekey')
     ...     async with Session(auth=auth) as sess:
     ...         # communicate with services here
     ...         pass
@@ -56,22 +120,31 @@ class Session():
 
     def __init__(
         self,
-        auth: typing.Union[httpx.Auth, tuple] = None
+        auth: Auth = None
     ):
         """Initialize a Session.
 
-        Authentication for Planet servers is given as `('<api key>', '')`.
-
         Parameters:
             auth: Planet server authentication.
-
         """
+        auth = auth or Auth.from_file()
+
         self._client = httpx.AsyncClient(auth=auth)
         self._client.headers.update({'User-Agent': self._get_user_agent()})
-        self._client.event_hooks['request'] = [self._log_request]
+
+        async def alog_request(*args, **kwargs):
+            return self._log_request(*args, **kwargs)
+
+        async def alog_response(*args, **kwargs):
+            return self._log_response(*args, **kwargs)
+
+        async def araise_for_status(*args, **kwargs):
+            return self._raise_for_status(*args, **kwargs)
+
+        self._client.event_hooks['request'] = [alog_request]
         self._client.event_hooks['response'] = [
-            self._log_response,
-            self._raise_for_status
+            alog_response,
+            araise_for_status
         ]
         self.retry_wait_time = RETRY_WAIT_TIME
         self.retry_count = RETRY_COUNT
@@ -152,53 +225,24 @@ class Session():
             request=request
         )
 
-    @staticmethod
-    def _get_user_agent():
-        return 'planet-client-python/' + __version__
 
-    @staticmethod
-    async def _log_request(request):
-        LOGGER.info(f'{request.method} {request.url} - Sent')
+class AuthSession(BaseSession):
+    '''Synchronous connection to the Planet Auth service.'''
+    def __init__(self):
+        """Initialize an AuthSession.
+        """
+        self._client = httpx.Client(timeout=None)
+        self._client.headers.update({'User-Agent': self._get_user_agent()})
+        self._client.event_hooks['request'] = [self._log_request]
+        self._client.event_hooks['response'] = [
+            self._log_response,
+            self._raise_for_status
+        ]
 
-    @staticmethod
-    async def _log_response(response):
-        request = response.request
-        LOGGER.info(
-            f'{request.method} {request.url} - '
-            f'Status {response.status_code}')
-
-    @staticmethod
-    async def _raise_for_status(response):
-        # TODO: consider using http_response.reason_phrase
-        status = response.status_code
-
-        miminum_bad_request_code = HTTPStatus.MOVED_PERMANENTLY
-        if status < miminum_bad_request_code:
-            return
-
-        exception = {
-            HTTPStatus.BAD_REQUEST: exceptions.BadQuery,
-            HTTPStatus.UNAUTHORIZED: exceptions.InvalidAPIKey,
-            HTTPStatus.FORBIDDEN: exceptions.NoPermission,
-            HTTPStatus.NOT_FOUND: exceptions.MissingResource,
-            HTTPStatus.TOO_MANY_REQUESTS: exceptions.TooManyRequests,
-            HTTPStatus.INTERNAL_SERVER_ERROR: exceptions.ServerError
-        }.get(status, None)
-
-        try:
-            msg = response.text
-        except httpx.ResponseNotRead:
-            await response.aread()
-            msg = response.text
-
-        # differentiate between over quota and rate-limiting
-        if status == 429 and 'quota' in msg.lower():
-            exception = exceptions.OverQuota
-
-        if exception:
-            raise exception(msg)
-
-        raise exceptions.APIException(f'{status}: {msg}')
+    def request(self, request):
+        '''Submit a request'''
+        http_resp = self._client.send(request.http_request)
+        return models.Response(request, http_resp)
 
 
 class Stream():

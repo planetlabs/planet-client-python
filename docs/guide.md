@@ -11,10 +11,8 @@ provide for automatic clean up of connections when the context is left.
 >>> import os
 >>> from planet import Session
 >>>
->>> AUTH = (os.getenv('PL_API_KEY'), '')
->>>
 >>> async def main():
-...     async with Session(auth=AUTH) as sess:
+...     async with Session() as sess:
 ...         # perform operations here
 ...         pass
 ...
@@ -26,9 +24,64 @@ Alternatively, use `await Session.aclose()` to close a `Session` explicitly:
 
 ```python
 >>> async def main():
-...     sess = Session(auth=AUTH)
+...     sess = Session()
 ...     # perform operations here
 ...     await sess.aclose()
+...
+>>> asyncio.run(main())
+
+```
+
+## Authentication
+
+There are two steps to managing authentication information, obtaining the
+authentication information from Planet and then managing it for local retrieval
+for authentication purposes.
+
+The recommended method for obtaining authentication information is through
+logging in, using `Auth.from_login()` (note: using something like the `getpass`
+module is recommended to ensure your password remains secure). Alternatively,
+the api key can be obtained directly from the Planet account site and then used
+in `Auth.from_key()`.
+
+Once the authentication information is obtained, the most convenient way of
+managing it for local use is to write it to a secret file using `Auth.write()`.
+It can also be accessed, e.g. to store in an environment variable, as
+`Auth.value`.
+
+For example, to obtain and store authentication information:
+
+```python
+>>> import getpass
+>>> from planet import Auth
+>>>
+>>> pw = getpass.getpass()
+>>> auth = Auth.from_login('user', 'pw')
+>>> auth.write()
+
+```
+
+When a `Session` is created, by default, authentication is read from the secret
+file created with `Auth.write()`. This behavior can be modified by specifying
+`Auth` explicitely using the methods `Auth.from_file()` and `Auth.from_env()`.
+While `Auth.from_key()` and `Auth.from_login` can be used, it is recommended
+that those functions be used in authentication initialization and the
+authentication information be stored using `Auth.write()`.
+
+The file and environment variable read from can be customized in the
+respective functions. For example, authentication can be read from a custom
+environment variable:
+
+```python
+>>> import asyncio
+>>> import os
+>>> from planet import Auth, Session
+>>>
+>>> auth = Auth.from_env('ALTERNATE_VAR')
+>>> async def main():
+...     async with Session(auth=auth) as sess:
+...         # perform operations here
+...         pass
 ...
 >>> asyncio.run(main())
 
@@ -45,7 +98,7 @@ order is completed and to download an entire order.
 >>> from planet import OrdersClient
 >>>
 >>> async def main():
-...     async with Session(auth=AUTH) as sess:
+...     async with Session() as sess:
 ...         client = OrdersClient(sess)
 ...         # perform operations here
 ...
@@ -94,7 +147,7 @@ the context of a `Session` with the `OrdersClient`:
 
 ```python
 >>> async def main():
-...     async with Session(auth=AUTH) as sess:
+...     async with Session() as sess:
 ...         cl = OrdersClient(sess)
 ...         order_id = await cl.create_order(order_detail)
 ...
