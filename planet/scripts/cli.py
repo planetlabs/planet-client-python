@@ -36,27 +36,6 @@ pretty = click.option('-pp', '--pretty', is_flag=True,
                       help='Format JSON output')
 
 
-def get_auth():
-    try:
-        auth = planet.Auth.from_file()
-    except planet.auth.AuthException:
-        raise click.ClickException(
-            'Auth information does not exist or is corrupted. Initialize '
-            'with `planet auth init`.')
-    return auth
-
-
-def write_auth(email, password, base_url):
-    try:
-        auth = planet.Auth.from_login(email, password, base_url=base_url)
-    except planet.api.exceptions.InvalidAPIKey:
-        raise click.ClickException('Invalid email or password.')
-    except planet.api.exceptions.BadQuery:
-        raise click.ClickException('Not a valid email address.')
-    else:
-        auth.write()
-
-
 def json_echo(json_dict, pretty):
     if pretty:
         json_str = json.dumps(json_dict, indent=2, sort_keys=True)
@@ -124,10 +103,31 @@ def init(ctx, email, password):
     click.echo('Initialized')
 
 
+def write_auth(email, password, base_url):
+    try:
+        auth = planet.Auth.from_login(email, password, base_url=base_url)
+    except planet.api.exceptions.InvalidAPIKey:
+        raise click.ClickException('Invalid email or password.')
+    except planet.api.exceptions.BadQuery:
+        raise click.ClickException('Not a valid email address.')
+    else:
+        auth.write()
+
+
 @auth.command()
 def value():
     '''Print the stored authentication information'''
     click.echo(get_auth().value)
+
+
+def get_auth():
+    try:
+        auth = planet.Auth.from_file()
+    except planet.auth.AuthException:
+        raise click.ClickException(
+            'Auth information does not exist or is corrupted. Initialize '
+            'with `planet auth init`.')
+    return auth
 
 
 @cli.group()
