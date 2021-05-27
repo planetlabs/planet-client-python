@@ -148,6 +148,25 @@ async def test_list_orders_limit(order_descriptions, session):
 
 @respx.mock
 @pytest.mark.asyncio
+async def test_list_orders_asjson(order_descriptions, session):
+    list_url = TEST_URL + 'orders/v2/'
+
+    order1, order2, order3 = order_descriptions
+
+    page1_response = {
+        "_links": {"_self": "string"},
+        "orders": [order1]
+    }
+    mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.get(list_url).return_value = mock_resp1
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+    orders = await cl.list_orders(as_json=True)
+    assert orders[0]['id'] == 'oid1'
+
+
+@respx.mock
+@pytest.mark.asyncio
 async def test_create_order(oid, order_description, order_details, session):
     create_url = TEST_URL + 'orders/v2/'
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
