@@ -23,12 +23,18 @@ from planet.scripts.cli import cli
 LOGGER = logging.getLogger(__name__)
 
 
+@pytest.fixture(autouse=True)
+def patch_session(monkeypatch):
+    '''Make sure we don't actually make any http calls'''
+    monkeypatch.setattr(planet, 'Session', MagicMock(spec=planet.Session))
+
+
 @pytest.fixture
 def runner():
     return CliRunner()
 
 
-def test_auth_init_bad_pw(runner, monkeypatch):
+def test_cli_auth_init_bad_pw(runner, monkeypatch):
     def invalidapikey(*args, **kwargs):
         raise planet.api.exceptions.InvalidAPIKey
 
@@ -37,7 +43,7 @@ def test_auth_init_bad_pw(runner, monkeypatch):
     assert 'Error: Invalid email or password.' in result.output
 
 
-def test_auth_init_bad_email(runner, monkeypatch):
+def test_cli_auth_init_bad_email(runner, monkeypatch):
     def badquery(*args, **kwargs):
         raise planet.api.exceptions.BadQuery
 
@@ -46,7 +52,7 @@ def test_auth_init_bad_email(runner, monkeypatch):
     assert 'Error: Not a valid email address.' in result.output
 
 
-def test_auth_init_success(runner, monkeypatch):
+def test_cli_auth_init_success(runner, monkeypatch):
     mock_api_auth = MagicMock(spec=planet.auth.APIKeyAuth)
     mock_auth = MagicMock(spec=planet.Auth)
     mock_auth.from_login.return_value = mock_api_auth
@@ -58,7 +64,7 @@ def test_auth_init_success(runner, monkeypatch):
     assert 'Initialized' in result.output
 
 
-def test_auth_value_failure(runner, monkeypatch):
+def test_cli_auth_value_failure(runner, monkeypatch):
     def authexception(*args, **kwargs):
         raise planet.auth.AuthException
 
@@ -69,7 +75,27 @@ def test_auth_value_failure(runner, monkeypatch):
         in result.output
 
 
-def test_auth_value_success(runner):
+def test_cli_auth_value_success(runner):
     result = runner.invoke(cli, ['auth', 'value'])
     assert not result.exception
     assert result.output == 'testkey\n'
+
+
+def test_cli_orders_list_empty(runner, monkeypatch):
+    async def lo(*arg, **kwarg):
+        return []
+    monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'list_orders', lo)
+
+    result = runner.invoke(cli, ['orders', 'list'])
+    assert not result.exception
+    assert '[]' in result.output
+
+
+def test_cli_orders_list_success(runner, monkeypatch):
+    async def lo(*arg, **kwarg):
+        return [{'order': 'yep'}]
+
+    monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'list_orders', lo)
+    result = runner.invoke(cli, ['orders', 'list'])
+    assert not result.exception
+    assert "{'order': 'yep'}" in result.output

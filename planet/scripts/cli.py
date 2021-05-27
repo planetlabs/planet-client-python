@@ -21,6 +21,7 @@ import sys
 import click
 
 import planet
+from planet import OrdersClient, Session
 
 
 # https://github.com/pallets/click/issues/85#issuecomment-503464628
@@ -48,8 +49,8 @@ def json_echo(json_dict, pretty):
 async def orders_client(ctx):
     auth = ctx.obj['AUTH']
     base_url = ctx.obj['BASE_URL']
-    async with planet.Session(auth=auth) as sess:
-        cl = planet.OrdersClient(sess, base_url=base_url)
+    async with Session(auth=auth) as sess:
+        cl = OrdersClient(sess, base_url=base_url)
         yield cl
 
 
