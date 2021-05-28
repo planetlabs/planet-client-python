@@ -117,10 +117,14 @@ def test_cli_orders_cancel(runner, monkeypatch, order_description):
 def test_cli_orders_download(runner, monkeypatch):
     async def do(*arg, **kwarg):
         return ['file1']
-
     monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'download_order', do)
+
+    async def poll(*arg, **kwarg):
+        return
+    monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'poll', poll)
+
     result = runner.invoke(
         cli, ['orders', 'download', TEST_OID])
     assert not result.exception
     # assert "file1" in result.output
-    assert 'Downloaded 1 files.\nfile1\n' == result.output
+    assert 'Downloaded 1 files.\n' == result.output
