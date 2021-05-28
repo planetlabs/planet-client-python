@@ -23,6 +23,9 @@ from planet.scripts.cli import cli
 LOGGER = logging.getLogger(__name__)
 
 
+TEST_OID = 'a8e74f65-5fbd-4b2c-917e-8b69b7e0772b'
+
+
 @pytest.fixture(autouse=True)
 def patch_session(monkeypatch):
     '''Make sure we don't actually make any http calls'''
@@ -89,3 +92,35 @@ def test_cli_orders_list_success(runner, monkeypatch):
     result = runner.invoke(cli, ['orders', 'list'])
     assert not result.exception
     assert "{'order': 'yep'}" in result.output
+
+
+def test_cli_orders_get(runner, monkeypatch, order_description):
+    async def go(*arg, **kwarg):
+        return planet.api.orders.Order(order_description)
+
+    monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'get_order', go)
+    result = runner.invoke(
+        cli, ['orders', 'get', TEST_OID])
+    assert not result.exception
+
+
+def test_cli_orders_cancel(runner, monkeypatch, order_description):
+    async def co(*arg, **kwarg):
+        return ''
+
+    monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'cancel_order', co)
+    result = runner.invoke(
+        cli, ['orders', 'cancel', TEST_OID])
+    assert not result.exception
+
+
+def test_cli_orders_download(runner, monkeypatch):
+    async def do(*arg, **kwarg):
+        return ['file1']
+
+    monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'download_order', do)
+    result = runner.invoke(
+        cli, ['orders', 'download', TEST_OID])
+    assert not result.exception
+    # assert "file1" in result.output
+    assert 'Downloaded 1 files.\nfile1\n' == result.output

@@ -206,10 +206,12 @@ async def cancel(ctx, order_id):
 async def download(ctx, order_id, quiet, overwrite, dest):
     '''Download order by order ID.'''
     async with orders_client(ctx) as cl:
-        await cl.download_order(str(order_id),
-                                directory=dest,
-                                overwrite=overwrite,
-                                progress_bar=not quiet)
+        filenames = await cl.download_order(
+                str(order_id),
+                directory=dest,
+                overwrite=overwrite,
+                progress_bar=not quiet)
+    click.echo(f'Downloaded {len(filenames)} files.\n' + "\n".join(filenames))
 
 
 # @orders.command()
