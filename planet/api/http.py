@@ -244,6 +244,15 @@ class AuthSession(BaseSession):
         http_resp = self._client.send(request.http_request)
         return models.Response(request, http_resp)
 
+    @classmethod
+    def _raise_for_status(cls, response):
+        try:
+            super()._raise_for_status(response)
+        except exceptions.BadQuery:
+            raise exceptions.APIException('Not a valid email address.')
+        except exceptions.InvalidAPIKey:
+            raise exceptions.APIException('Incorrect email or password.')
+
 
 class Stream():
     '''Context manager for asynchronous response stream from Planet server.'''

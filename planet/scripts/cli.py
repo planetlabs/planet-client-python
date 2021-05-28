@@ -54,6 +54,16 @@ async def orders_client(ctx):
         yield cl
 
 
+def handle_exceptions(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            f(*args, **kwargs)
+        except planet.api.exceptions.APIException as ex:
+            raise click.ClickException(ex)
+    return wrapper
+
+
 @click.group()
 @click.pass_context
 @click.option('-v', '--verbose', count=True,
@@ -91,6 +101,7 @@ def auth(ctx, base_url):
 
 @auth.command()
 @click.pass_context
+@handle_exceptions
 @click.option('--email', default=None, prompt=True, help=(
     'The email address associated with your Planet credentials.'
 ))
@@ -100,19 +111,9 @@ def auth(ctx, base_url):
 def init(ctx, email, password):
     '''Obtain and store authentication information'''
     base_url = ctx.obj["BASE_URL"]
-    write_auth(email, password, base_url)
+    plauth = planet.Auth.from_login(email, password, base_url=base_url)
+    plauth.write()
     click.echo('Initialized')
-
-
-def write_auth(email, password, base_url):
-    try:
-        auth = planet.Auth.from_login(email, password, base_url=base_url)
-    except planet.api.exceptions.InvalidAPIKey:
-        raise click.ClickException('Invalid email or password.')
-    except planet.api.exceptions.BadQuery:
-        raise click.ClickException('Not a valid email address.')
-    else:
-        auth.write()
 
 
 @auth.command()
@@ -145,6 +146,7 @@ def orders(ctx, base_url):
 
 @orders.command()
 @click.pass_context
+@handle_exceptions
 @coro
 @click.option('-s', '--state',
               help='Filter orders to given state.',
@@ -163,6 +165,7 @@ async def list(ctx, state, limit, pretty):
 
 @orders.command()
 @click.pass_context
+@handle_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
 @pretty
@@ -176,6 +179,7 @@ async def get(ctx, order_id, pretty):
 
 @orders.command()
 @click.pass_context
+@handle_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
 async def cancel(ctx, order_id):
@@ -188,6 +192,7 @@ async def cancel(ctx, order_id):
 
 @orders.command()
 @click.pass_context
+@handle_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
 @click.option('-q', '--quiet', is_flag=True, default=False,

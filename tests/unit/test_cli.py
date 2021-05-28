@@ -35,21 +35,11 @@ def runner():
 
 
 def test_cli_auth_init_bad_pw(runner, monkeypatch):
-    def invalidapikey(*args, **kwargs):
-        raise planet.api.exceptions.InvalidAPIKey
-
-    monkeypatch.setattr(planet.Auth, 'from_login', invalidapikey)
+    def apiexcept(*args, **kwargs):
+        raise planet.api.exceptions.APIException('nope')
+    monkeypatch.setattr(planet.Auth, 'from_login', apiexcept)
     result = runner.invoke(cli, args=['auth', 'init'], input='email\npw\n')
-    assert 'Error: Invalid email or password.' in result.output
-
-
-def test_cli_auth_init_bad_email(runner, monkeypatch):
-    def badquery(*args, **kwargs):
-        raise planet.api.exceptions.BadQuery
-
-    monkeypatch.setattr(planet.Auth, 'from_login', badquery)
-    result = runner.invoke(cli, args=['auth', 'init'], input='email\npw\n')
-    assert 'Error: Not a valid email address.' in result.output
+    assert 'Error: nope' in result.output
 
 
 def test_cli_auth_init_success(runner, monkeypatch):

@@ -37,8 +37,7 @@ def mock_request():
     yield r
 
 
-@pytest.mark.asyncio
-async def test_basesession__raise_for_status():
+def test_basesession__raise_for_status():
     http.BaseSession._raise_for_status(Mock(
         status_code=HTTPStatus.CREATED, text=''
     ))
@@ -131,3 +130,15 @@ async def test_authsession_request(mock_request):
 
     resp = sess.request(mock_request)
     assert resp.http_response.text == 'bubba'
+
+
+def test_authsession__raise_for_status():
+    with pytest.raises(exceptions.APIException):
+        http.AuthSession._raise_for_status(Mock(
+            status_code=HTTPStatus.BAD_REQUEST, text=''
+            ))
+
+    with pytest.raises(exceptions.APIException):
+        http.AuthSession._raise_for_status(Mock(
+            status_code=HTTPStatus.UNAUTHORIZED, text=''
+            ))
