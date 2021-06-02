@@ -306,7 +306,38 @@ class Delivery():
         self.archive_filename = archive_filename
 
     @classmethod
-    def from_dict(cls, details: dict) -> Delivery:
+    def from_dict(cls, details: dict, subclass: bool = True) -> Delivery:
+        """Create Delivery instance from Orders API spec representation.
+
+        Parameters:
+            details: API spec representation of delivery.
+            subclass: Create a subclass of Delivery if the necessary
+                information is provided.
+
+        Returns:
+            Delivery or Delivery subclass instance
+        """
+        def _create_subclass(details):
+            subclasses = [AmazonS3Delivery,
+                          AzureBlobStorageDelivery,
+                          GoogleCloudStorageDelivery,
+                          GoogleEarthEngineDelivery
+                          ]
+            created = False
+            for cls in subclasses:
+                try:
+                    created = cls.from_dict(details)
+                except KeyError:
+                    pass
+                else:
+                    break
+            return created
+
+        created = _create_subclass(details) or cls._from_dict(details)
+        return created
+
+    @classmethod
+    def _from_dict(cls, details: dict) -> Delivery:
         """Create Delivery instance from Orders API spec representation.
 
         Parameters:
