@@ -67,3 +67,60 @@ def orders_page():
 @pytest.fixture
 def oid():
     return 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'
+
+
+@pytest.fixture
+def write_to_tmp_json_file(tmp_path):
+    def write(data):
+        cc = tmp_path / 'cc.json'
+        with open(cc, 'w') as fp:
+            json.dump(data, fp)
+        return cc
+    return write
+
+
+@pytest.fixture
+def geom_geojson():
+    # these need to be tuples, not list, or they will be changed
+    # by shapely
+    return {
+        "type": "Polygon",
+        "coordinates": [[
+            [
+                37.791595458984375,
+                14.84923123791421
+                ],
+            [
+                37.90214538574219,
+                14.84923123791421
+                ],
+            [
+                37.90214538574219,
+                14.945448293647944
+                ],
+            [
+                37.791595458984375,
+                14.945448293647944
+                ],
+            [
+                37.791595458984375,
+                14.84923123791421
+                ]
+        ]]
+      }
+
+
+@pytest.fixture
+def feature_geojson(geom_geojson):
+    return {
+      "type": "Feature",
+      "properties": {},
+      "geometry": geom_geojson}
+
+
+@pytest.fixture
+def featureclass_geojson(feature_geojson):
+    return {
+          "type": "FeatureCollection",
+          "features": [feature_geojson]
+        }

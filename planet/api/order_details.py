@@ -16,7 +16,9 @@ from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import copy
 import json
 import logging
-from typing import List
+from typing import List, Union
+
+from shapely import geometry as sgeom
 
 from .. import specs
 
@@ -90,6 +92,15 @@ class OrderDetails():
 
         if self.order_type is not None:
             self.order_type = specs.validate_order_type(order_type)
+
+    def __eq__(self, other):
+        return self.to_dict() == other.to_dict()
+
+    def __repr__(self):
+        return str(self.to_dict())
+
+    def __str__(self):
+        return json.dumps(self.to_dict(), indent=4, sort_keys=True)
 
     @classmethod
     def from_dict(cls, details: dict) -> OrderDetails:
@@ -306,7 +317,47 @@ class Delivery():
         self.archive_filename = archive_filename
 
     @classmethod
-    def from_dict(cls, details: dict, subclass: bool = True) -> Delivery:
+    def from_file(
+        cls,
+        filename: str,
+        subclass: bool = True
+        ) -> Union[
+                Delivery,
+                AmazonS3Delivery,
+                AzureBlobStorageDelivery,
+                GoogleCloudStorageDelivery,
+                GoogleEarthEngineDelivery]:
+        """Create Delivery instance from file containing Orders API spec
+        representation.
+
+        Parameters:
+            filename: Path to file.
+            subclass: Create a subclass of Delivery if the necessary
+                information is provided.
+
+        Raises:
+            FileNotFoundError: If filename does not exist.
+            json.decoder.JSONDecodeError: If filename contents is not valid
+                json.
+
+        Returns:
+            Delivery or Delivery subclass instance
+        """
+        with open(filename) as f:
+            details = json.load(f)
+        return cls.from_dict(details, subclass=subclass)
+
+    @classmethod
+    def from_dict(
+        cls,
+        details: dict,
+        subclass: bool = True
+        ) -> Union[
+                Delivery,
+                AmazonS3Delivery,
+                AzureBlobStorageDelivery,
+                GoogleCloudStorageDelivery,
+                GoogleEarthEngineDelivery]:
         """Create Delivery instance from Orders API spec representation.
 
         Parameters:
@@ -318,11 +369,12 @@ class Delivery():
             Delivery or Delivery subclass instance
         """
         def _create_subclass(details):
-            subclasses = [AmazonS3Delivery,
-                          AzureBlobStorageDelivery,
-                          GoogleCloudStorageDelivery,
-                          GoogleEarthEngineDelivery
-                          ]
+            subclasses = [
+                AmazonS3Delivery,
+                AzureBlobStorageDelivery,
+                GoogleCloudStorageDelivery,
+                GoogleEarthEngineDelivery
+                ]
             created = False
             for cls in subclasses:
                 try:
@@ -665,12 +717,16 @@ class Tool():
         parameters: dict
     ):
         """
-        Parameters**
+        Parameters:
             name: Tool name.
             parameters: Tool parameters.
         """
         self.name = specs.validate_tool(name)
         self.parameters = parameters
+
+    def __eq__(self, other):
+        return (self.name == other.name and
+                self.parameters == other.parameters)
 
     @classmethod
     def from_dict(cls, details: dict) -> Tool:
@@ -695,3 +751,90 @@ class Tool():
             API spec representation of Tool.
         """
         return {self.name: self.parameters}
+
+
+class GeoJSONException(Exception):
+    '''invalid geojson'''
+    pass
+
+
+class GeoJSON():
+    def __init__(self, data):
+        if isinstance(data, sgeom.base.BaseGeometry):
+            self._type = type(data)
+            self._data = sgeom.mapping(data)
+        elif isinstance(data, dict):
+            geom = self._geom_from_dict(data)
+            shp = self._shape_from_geom(geom)
+            self._type = type(shp)
+            self._data = geom
+        else:
+            raise GeoJSONException('data must be shapely shape or dict')
+
+    @classmethod
+    def _geom_from_dict(cls, data):
+        '''
+        If data is a feature class, gets geometry from first feature.
+        '''
+        if set(('coordinates', 'type')).issubset(set(data.keys())):
+            # already a geom
+            ret = data
+        else:
+            try:
+                # feature
+                ret = cls._geom_from_dict(data["geometry"])
+            except KeyError:
+                try:
+                    # featureclass
+                    features = data['features']
+                except KeyError:
+                    raise GeoJSONException('Invalid GeoJSON')
+
+                ret = cls._geom_from_dict(features[0])
+        return ret
+
+    @staticmethod
+    def _shape_from_geom(data):
+        if 'type' not in data:
+            raise GeoJSONException(
+                'Missing \'type\' key.')
+        elif 'coordinates' not in data:
+            raise GeoJSONException(
+                'Missing \'coordinates\' key.')
+
+        try:
+            # ugh, this changes the underlying data
+            # notably coordinates as a list are converted to a tuple
+            shape = sgeom.shape(data)
+        except ValueError as e:
+            # invalid type or coordinates
+            raise GeoJSONException(e)
+        return shape
+
+    @property
+    def type(self):
+        return self._type
+
+    def to_dict(self):
+        return self._data
+
+    def to_str(self):
+        return json.dumps(self.to_dict())
+
+
+class ClipTool(Tool):
+    '''Clip tool description for a given clip region.'''
+    def __init__(
+        self,
+        aoi: Union[dict, sgeom.Polygon, GeoJSON]
+    ):
+        """
+        Parameters:
+            aoi: clip GeoJSON.
+        """
+        if not isinstance(aoi, GeoJSON):
+            aoi = GeoJSON(aoi)
+            assert aoi.type == sgeom.Polygon
+
+        parameters = {'aoi': aoi.to_dict()}
+        super().__init__('clip', parameters)

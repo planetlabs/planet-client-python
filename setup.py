@@ -27,6 +27,7 @@ with open('planet/api/__version__.py') as f:
 install_requires = [
     'click>=8.0.0',
     'httpx==0.16.1',
+    'shapely>=1.7.1',
     'tqdm>=4.56',
 ]
 

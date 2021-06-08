@@ -11,9 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import json
 import logging
 
 import pytest
+from shapely import geometry as sgeom
 
 from planet import specs
 from planet.api import order_details
@@ -216,6 +218,27 @@ def test_Delivery_from_dict(as3_details, abs_details, delivery_details,
         assert isinstance(order_details.Delivery.from_dict(details), cls)
 
 
+def test_Delivery_from_file(tmp_path, delivery_details):
+    detail_file = tmp_path / 'cc.json'
+    with open(detail_file, 'w') as fp:
+        json.dump(delivery_details, fp)
+
+    d = order_details.Delivery.from_file(detail_file)
+    assert isinstance(d, order_details.Delivery)
+    assert d.archive_type == 'zip'
+
+    with pytest.raises(FileNotFoundError):
+        does_not_exist_file = tmp_path / 'doesnotexist.json'
+        order_details.Delivery.from_file(does_not_exist_file)
+
+    wrong_format_file = tmp_path / 'wrongformat.json'
+    with open(wrong_format_file, 'w') as fp:
+        fp.write('blahblah')
+
+    with pytest.raises(json.decoder.JSONDecodeError):
+        order_details.Delivery.from_file(wrong_format_file)
+
+
 def test_Delivery_to_dict(delivery_details):
     d = order_details.Delivery(archive_type='zip',
                                single_archive=True,
@@ -380,3 +403,79 @@ def test_Tool_to_dict():
 
     with pytest.raises(specs.SpecificationException):
         _ = order_details.Tool('notsupported', 'jsonstring')
+
+
+def test_ClipTool_basic(geom_geojson):
+    ct = order_details.ClipTool(geom_geojson)
+    assert ct.name == 'clip'
+
+
+def assert_geom_eq(g1, g2):
+    g = json.loads(json.dumps(g1).replace(")", "]").replace("(", "["))
+    assert g == g2
+
+
+def test_GeoJSON__shape_from_geom_success(geom_geojson):
+    shp = order_details.GeoJSON._shape_from_geom(geom_geojson)
+    assert_geom_eq(sgeom.mapping(shp), geom_geojson)
+
+
+def test_GeoJSON__shape_from_geom_missing_type(geom_geojson):
+    geom_geojson.pop('type')
+    with pytest.raises(order_details.GeoJSONException):
+        _ = order_details.GeoJSON._shape_from_geom(geom_geojson)
+
+
+def test_GeoJSON__shape_from_geom_invalid_type(geom_geojson):
+    geom_geojson['type'] = 'invalid'
+    with pytest.raises(order_details.GeoJSONException):
+        _ = order_details.GeoJSON._shape_from_geom(geom_geojson)
+
+
+def test_GeoJSON__shape_from_geom_missing_coordinates(geom_geojson):
+    geom_geojson.pop('coordinates')
+    with pytest.raises(order_details.GeoJSONException):
+        _ = order_details.GeoJSON._shape_from_geom(geom_geojson)
+
+
+def test_GeoJSON__shape_from_geom_invalid_coordinates(geom_geojson):
+    geom_geojson['coordinates'] = 'invalid'
+    with pytest.raises(order_details.GeoJSONException):
+        _ = order_details.GeoJSON._shape_from_geom(geom_geojson)
+
+
+def test_GeoJSON__shape_from_geom_empty_coordinates(geom_geojson):
+    geom_geojson['coordinates'] = []
+    _ = order_details.GeoJSON._shape_from_geom(geom_geojson)
+
+
+def test_GeoJSON__geom_from_dict_success(
+        feature_geojson, featureclass_geojson, geom_geojson):
+    geom = order_details.GeoJSON._geom_from_dict(geom_geojson)
+    assert_geom_eq(geom, geom_geojson)
+
+    f_geom = order_details.GeoJSON._geom_from_dict(feature_geojson)
+    assert_geom_eq(f_geom, geom_geojson)
+
+    fc_geom = order_details.GeoJSON._geom_from_dict(featureclass_geojson)
+    assert_geom_eq(fc_geom, geom_geojson)
+
+
+def test_GeoJSON__geom_from_dict_no_geometry(feature_geojson):
+    feature_geojson.pop('geometry')
+    with pytest.raises(order_details.GeoJSONException):
+        _ = order_details.GeoJSON._geom_from_dict(feature_geojson)
+
+
+def test_GeoJSON__init__(geom_geojson):
+    geo = order_details.GeoJSON(geom_geojson)
+    assert_geom_eq(geo.to_dict(), geom_geojson)
+
+
+def test_ClipTool(geom_geojson):
+    tool = order_details.ClipTool(geom_geojson)
+    assert tool.name == 'clip'
+    assert_geom_eq(tool.parameters['aoi'], geom_geojson)
+
+    geo = order_details.GeoJSON(geom_geojson)
+    _ = order_details.ClipTool(geo)

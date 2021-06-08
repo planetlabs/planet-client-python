@@ -21,7 +21,10 @@ import sys
 import click
 
 import planet
-from planet import OrdersClient, Session
+from planet import OrdersClient, Session  # allow mocking
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 # https://github.com/pallets/click/issues/85#issuecomment-503464628
@@ -215,48 +218,125 @@ async def download(ctx, order_id, quiet, overwrite, dest):
     click.echo(f'Downloaded {len(filenames)} files.')
 
 
-# @orders.command()
-# @click.pass_context
-# @coro
-# @click.option('--name', required=True)
-# @click.option('--id', help='One or more comma-separated item IDs',
-#               cls=RequiredUnless, this_opt_exists='ids_from_search')
-# # Note: This is passed as a string, because --item-type is a required field for
-# # both 'data search' and 'orders create'.
+def split_id_list(ctx, param, value):
+    # split list by ',' and remove whitespace
+    ids = [i.strip() for i in value.split(',')]
+
+    # validate passed ids
+    for iid in ids:
+        click.UUID(iid)
+
+    return ids
+
+
+def validate_item_type(ctx, param, value):
+    try:
+        planet.specs.validate_item_type(value, ctx.params['bundle'],
+                                        report_field_name=False)
+    except planet.specs.SpecificationException as e:
+        raise click.BadParameter(e)
+    return value
+
+
+def read_file_geojson(ctx, param, value):
+    # skip this if the filename is None
+    if not value:
+        return value
+
+    json_value = read_file_json(ctx, param, value)
+    geo = planet.GeoJSON(json_value)
+    return geo
+
+
+def read_file_json(ctx, param, value):
+    # skip this if the filename is None
+    if not value:
+        return value
+
+    try:
+        LOGGER.debug('reading json from file')
+        json_value = json.load(value)
+    except json.decoder.JSONDecodeError:
+        raise click.ClickException('File does not contain valid json.')
+    except click.FileError as e:
+        raise click.ClickException(e)
+
+    return json_value
+
+
+def read_tools(ctx, param, value):
+    if not value:
+        return value
+
+    # do not allow specifying tools if clip is already specified
+    if ctx.params['clip']:
+        raise click.BadParameter("Specify only one of '--clip' or '--tools'")
+
+    # read the json
+    return read_file_json(ctx, param, value)
+
+
+@orders.command()
+@click.pass_context
+@handle_exceptions
+@coro
+@click.option('--name', required=True)
+@click.option('--id', 'ids', help='One or more comma-separated item IDs',
+              type=click.STRING, callback=split_id_list)
 # @click.option('--ids_from_search',
 #               help='Embedded data search')
-# @click.option('--clip', type=ClipAOI(),
-#               help='Provide a GeoJSON AOI Geometry for clipping')
-# @click.option('--email', default=False, is_flag=True,
-#               help='Send email notification when Order is complete')
-# @click.option('--cloudconfig', help=('Path to cloud delivery config'),
-#               type=click.Path(exists=True, resolve_path=True, readable=True,
-#                               allow_dash=False, dir_okay=False,
-#                               file_okay=True))
-# @click.option('--tools', help=('Path to toolchain json'),
-#               type=click.Path(exists=True, resolve_path=True, readable=True,
-#                               allow_dash=False, dir_okay=False,
-#                               file_okay=True))
-# @bundle_option
-# @click.option(
-#     '--item-type', multiple=False, required=True, type=ItemType(), help=(
-#         'Specify an item type'
-#     )
-# )
-# @orders.command()
-# @pretty
-# def create(**kwargs):
-#     '''Create an order'''
-#     ids_from_search = kwargs.get('ids_from_search')
-#     if ids_from_search is not None:
-#         runner = CliRunner()
-#         resp = runner.invoke(quick_search, ids_from_search).output
-#         try:
-#             id_list = ids_from_search_response(resp)
-#         except ValueError:
-#             raise click.ClickException('ids_from_search, {}'.format(resp))
-#         kwargs['id'] = id_list
-#         del kwargs['ids_from_search']
-#     cl = clientv1()
-#     request = create_order_request(**kwargs)
-#     echo_json_response(call_and_wrap(cl.create_order, request), pretty)
+@click.option('--bundle', multiple=False, required=True,
+              help='Specify bundle',
+              type=click.Choice(planet.specs.get_product_bundles(),
+                                case_sensitive=False))
+@click.option('--item-type', multiple=False, required=True,
+              help='Specify an item type',
+              type=click.STRING, callback=validate_item_type)
+@click.option('--email', default=False, is_flag=True,
+              help='Send email notification when Order is complete')
+@click.option('--cloudconfig', help='Cloud delivery config json file.',
+              type=click.File('rb'), callback=read_file_json)
+@click.option('--clip', help='Clip GeoJSON file.',
+              type=click.File('rb'), callback=read_file_geojson)
+@click.option('--tools', help='Toolchain json file.',
+              type=click.File('rb'), callback=read_tools)
+async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
+                 tools):
+    '''Create an order'''
+    product = planet.Product(ids, bundle, item_type)
+    notifications = planet.Notifications(email=email) if email else None
+
+    delivery = planet.Delivery.from_dict(cloudconfig) \
+        if cloudconfig else None
+
+    if clip:
+        tools = [planet.ClipTool(clip)]
+    # else if tools:
+    #     tools = [planet.Tool.from_dict(t) for t in tools]
+    else:
+        tools = None
+
+    order_details = planet.OrderDetails(
+        name,
+        products=[product],
+        delivery=delivery,
+        notifications=notifications,
+        tools=tools)
+
+    async with orders_client(ctx) as cl:
+        oid = await cl.create_order(order_details)
+    click.echo(f'Created order {oid}.')
+    #
+    # ids_from_search = kwargs.get('ids_from_search')
+    # if ids_from_search is not None:
+    #     runner = CliRunner()
+    #     resp = runner.invoke(quick_search, ids_from_search).output
+    #     try:
+    #         id_list = ids_from_search_response(resp)
+    #     except ValueError:
+    #         raise click.ClickException('ids_from_search, {}'.format(resp))
+    #     kwargs['id'] = id_list
+    #     del kwargs['ids_from_search']
+    # cl = clientv1()
+    # request = create_order_request(**kwargs)
+    # echo_json_response(call_and_wrap(cl.create_order, request), pretty)
