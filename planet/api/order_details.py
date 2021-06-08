@@ -18,9 +18,7 @@ import json
 import logging
 from typing import List, Union
 
-from shapely import geometry as sgeom
-
-from .. import specs
+from .. import geojson, specs
 
 LOGGER = logging.getLogger(__name__)
 
@@ -753,88 +751,21 @@ class Tool():
         return {self.name: self.parameters}
 
 
-class GeoJSONException(Exception):
-    '''invalid geojson'''
-    pass
-
-
-class GeoJSON():
-    def __init__(self, data):
-        if isinstance(data, sgeom.base.BaseGeometry):
-            self._type = type(data)
-            self._data = sgeom.mapping(data)
-        elif isinstance(data, dict):
-            geom = self._geom_from_dict(data)
-            shp = self._shape_from_geom(geom)
-            self._type = type(shp)
-            self._data = geom
-        else:
-            raise GeoJSONException('data must be shapely shape or dict')
-
-    @classmethod
-    def _geom_from_dict(cls, data):
-        '''
-        If data is a feature class, gets geometry from first feature.
-        '''
-        if set(('coordinates', 'type')).issubset(set(data.keys())):
-            # already a geom
-            ret = data
-        else:
-            try:
-                # feature
-                ret = cls._geom_from_dict(data["geometry"])
-            except KeyError:
-                try:
-                    # featureclass
-                    features = data['features']
-                except KeyError:
-                    raise GeoJSONException('Invalid GeoJSON')
-
-                ret = cls._geom_from_dict(features[0])
-        return ret
-
-    @staticmethod
-    def _shape_from_geom(data):
-        if 'type' not in data:
-            raise GeoJSONException(
-                'Missing \'type\' key.')
-        elif 'coordinates' not in data:
-            raise GeoJSONException(
-                'Missing \'coordinates\' key.')
-
-        try:
-            # ugh, this changes the underlying data
-            # notably coordinates as a list are converted to a tuple
-            shape = sgeom.shape(data)
-        except ValueError as e:
-            # invalid type or coordinates
-            raise GeoJSONException(e)
-        return shape
-
-    @property
-    def type(self):
-        return self._type
-
-    def to_dict(self):
-        return self._data
-
-    def to_str(self):
-        return json.dumps(self.to_dict())
-
-
 class ClipTool(Tool):
     '''Clip tool description for a given clip region.'''
     def __init__(
         self,
-        aoi: Union[dict, sgeom.Polygon, GeoJSON]
+        aoi: Union[dict, geojson.Polygon]
     ):
         """
         Parameters:
             aoi: clip GeoJSON.
         """
-        if not isinstance(aoi, GeoJSON):
-            aoi = GeoJSON(aoi)
-            assert aoi.type == sgeom.Polygon
+        if not isinstance(aoi, geojson.Polygon):
+            try:
+                aoi = geojson.Polygon.from_geometry(aoi)
+            except AttributeError:
+                aoi = geojson.Polygon(aoi)
 
         parameters = {'aoi': aoi.to_dict()}
         super().__init__('clip', parameters)

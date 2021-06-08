@@ -17,9 +17,10 @@ from .api.orders import OrdersClient
 from .api.order_details import (
     OrderDetails, Product, Notifications, Delivery, AmazonS3Delivery,
     AzureBlobStorageDelivery, GoogleCloudStorageDelivery,
-    GoogleEarthEngineDelivery, Tool, ClipTool, GeoJSON)
+    GoogleEarthEngineDelivery, Tool, ClipTool)
 from .api.__version__ import __version__  # NOQA
 from .auth import Auth
+from .geojson import Geometry
 
 
 __all__ = [
@@ -35,7 +36,7 @@ __all__ = [
     GoogleCloudStorageDelivery,
     GoogleEarthEngineDelivery,
     ClipTool,
-    GeoJSON,
     Tool,
-    Auth
+    Auth,
+    Geometry
 ]

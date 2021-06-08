@@ -15,9 +15,8 @@ import json
 import logging
 
 import pytest
-from shapely import geometry as sgeom
 
-from planet import specs
+from planet import geojson, specs
 from planet.api import order_details
 
 LOGGER = logging.getLogger(__name__)
@@ -405,77 +404,20 @@ def test_Tool_to_dict():
         _ = order_details.Tool('notsupported', 'jsonstring')
 
 
-def test_ClipTool_basic(geom_geojson):
+def test_ClipTool_success_dict(geom_geojson):
     ct = order_details.ClipTool(geom_geojson)
     assert ct.name == 'clip'
+    assert ct.parameters['aoi'] == geom_geojson
 
 
-def assert_geom_eq(g1, g2):
-    g = json.loads(json.dumps(g1).replace(")", "]").replace("(", "["))
-    assert g == g2
+def test_ClipTool_success_geom(geom_geojson):
+    geo = geojson.Geometry(geom_geojson)
+    ct = order_details.ClipTool(geo)
+    assert ct.name == 'clip'
+    assert ct.parameters['aoi'] == geom_geojson
 
 
-def test_GeoJSON__shape_from_geom_success(geom_geojson):
-    shp = order_details.GeoJSON._shape_from_geom(geom_geojson)
-    assert_geom_eq(sgeom.mapping(shp), geom_geojson)
-
-
-def test_GeoJSON__shape_from_geom_missing_type(geom_geojson):
-    geom_geojson.pop('type')
-    with pytest.raises(order_details.GeoJSONException):
-        _ = order_details.GeoJSON._shape_from_geom(geom_geojson)
-
-
-def test_GeoJSON__shape_from_geom_invalid_type(geom_geojson):
-    geom_geojson['type'] = 'invalid'
-    with pytest.raises(order_details.GeoJSONException):
-        _ = order_details.GeoJSON._shape_from_geom(geom_geojson)
-
-
-def test_GeoJSON__shape_from_geom_missing_coordinates(geom_geojson):
-    geom_geojson.pop('coordinates')
-    with pytest.raises(order_details.GeoJSONException):
-        _ = order_details.GeoJSON._shape_from_geom(geom_geojson)
-
-
-def test_GeoJSON__shape_from_geom_invalid_coordinates(geom_geojson):
-    geom_geojson['coordinates'] = 'invalid'
-    with pytest.raises(order_details.GeoJSONException):
-        _ = order_details.GeoJSON._shape_from_geom(geom_geojson)
-
-
-def test_GeoJSON__shape_from_geom_empty_coordinates(geom_geojson):
-    geom_geojson['coordinates'] = []
-    _ = order_details.GeoJSON._shape_from_geom(geom_geojson)
-
-
-def test_GeoJSON__geom_from_dict_success(
-        feature_geojson, featureclass_geojson, geom_geojson):
-    geom = order_details.GeoJSON._geom_from_dict(geom_geojson)
-    assert_geom_eq(geom, geom_geojson)
-
-    f_geom = order_details.GeoJSON._geom_from_dict(feature_geojson)
-    assert_geom_eq(f_geom, geom_geojson)
-
-    fc_geom = order_details.GeoJSON._geom_from_dict(featureclass_geojson)
-    assert_geom_eq(fc_geom, geom_geojson)
-
-
-def test_GeoJSON__geom_from_dict_no_geometry(feature_geojson):
-    feature_geojson.pop('geometry')
-    with pytest.raises(order_details.GeoJSONException):
-        _ = order_details.GeoJSON._geom_from_dict(feature_geojson)
-
-
-def test_GeoJSON__init__(geom_geojson):
-    geo = order_details.GeoJSON(geom_geojson)
-    assert_geom_eq(geo.to_dict(), geom_geojson)
-
-
-def test_ClipTool(geom_geojson):
-    tool = order_details.ClipTool(geom_geojson)
-    assert tool.name == 'clip'
-    assert_geom_eq(tool.parameters['aoi'], geom_geojson)
-
-    geo = order_details.GeoJSON(geom_geojson)
-    _ = order_details.ClipTool(geo)
+def test_ClipTool_wrong_type(point_geom_geojson):
+    geom = geojson.Geometry(point_geom_geojson)
+    with pytest.raises(geojson.WrongTypeException):
+        _ = order_details.ClipTool(geom)

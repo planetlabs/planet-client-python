@@ -124,3 +124,14 @@ def featureclass_geojson(feature_geojson):
           "type": "FeatureCollection",
           "features": [feature_geojson]
         }
+
+
+@pytest.fixture
+def point_geom_geojson():
+    return {
+        "type": "Point",
+        "coordinates": [
+                37.791595458984375,
+                14.84923123791421
+                ]
+        }

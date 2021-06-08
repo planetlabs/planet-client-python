@@ -203,14 +203,13 @@ def test_cli_orders_create_cloudconfig(
                         create_order_params['item_type'])],
         delivery=planet.Delivery.from_file(cloudconfig)
         )
-    print(expected_details)
     mock_create_order.assert_called_with(expected_details)
 
 
 def test_cli_read_file_geojson(clipaoi):
     with open(clipaoi, 'r') as cfile:
         res = planet.scripts.cli.read_file_geojson({}, 'clip', cfile)
-    assert type(res) == planet.GeoJSON
+    assert type(res) == planet.Geometry
 
 
 def test_cli_orders_create_clip(
@@ -238,7 +237,6 @@ def test_cli_orders_create_clip(
                         create_order_params['item_type'])],
         tools=[planet.Tool('clip', {'aoi': geom_geojson})]
         )
-    print(expected_details)
     mock_create_order.assert_called_with(expected_details)
 
 

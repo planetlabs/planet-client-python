@@ -244,7 +244,7 @@ def read_file_geojson(ctx, param, value):
         return value
 
     json_value = read_file_json(ctx, param, value)
-    geo = planet.GeoJSON(json_value)
+    geo = planet.Geometry(json_value)
     return geo
 
 
@@ -265,6 +265,7 @@ def read_file_json(ctx, param, value):
 
 
 def read_tools(ctx, param, value):
+    # skip this if the filename is None
     if not value:
         return value
 
