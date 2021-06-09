@@ -45,7 +45,7 @@ def json_echo(json_dict, pretty):
         json_str = json.dumps(json_dict, indent=2, sort_keys=True)
         click.echo(json_str)
     else:
-        click.echo(json_dict)
+        click.echo(json.dumps(json_dict))
 
 
 @asynccontextmanager
@@ -230,15 +230,6 @@ def split_id_list(ctx, param, value):
     return ids
 
 
-def validate_item_type(ctx, param, value):
-    try:
-        planet.specs.validate_item_type(value, ctx.params['bundle'],
-                                        report_field_name=False)
-    except planet.specs.SpecificationException as e:
-        raise click.BadParameter(e)
-    return value
-
-
 def read_file_geojson(ctx, param, value):
     # skip this if the filename is None
     if not value:
@@ -277,10 +268,11 @@ def read_file_json(ctx, param, value):
 @click.option('--bundle', multiple=False, required=True,
               help='Specify bundle',
               type=click.Choice(planet.specs.get_product_bundles(),
-                                case_sensitive=False))
+                                case_sensitive=False),
+              is_eager=True)
 @click.option('--item-type', multiple=False, required=True,
               help='Specify an item type',
-              type=click.STRING, callback=validate_item_type)
+              type=click.STRING)
 @click.option('--email', default=False, is_flag=True,
               help='Send email notification when Order is complete')
 @click.option('--cloudconfig', help='Cloud delivery config json file.',
@@ -292,8 +284,12 @@ def read_file_json(ctx, param, value):
 @pretty
 async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
                  tools, pretty):
-    '''Create an order'''
-    product = planet.Product(ids, bundle, item_type)
+    '''Create an order.'''
+    try:
+        product = planet.Product(ids, bundle, item_type)
+    except planet.specs.SpecificationException as e:
+        raise click.BadParameter(e)
+
     notifications = planet.Notifications(email=email) if email else None
 
     delivery = planet.Delivery.from_dict(cloudconfig) \

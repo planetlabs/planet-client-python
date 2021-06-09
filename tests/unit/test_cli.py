@@ -89,7 +89,7 @@ def test_cli_orders_list_success(runner, monkeypatch):
     monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'list_orders', lo)
     result = runner.invoke(cli, ['orders', 'list'])
     assert not result.exception
-    assert "{'order': 'yep'}" in result.output
+    assert '{"order": "yep"}' in result.output
 
 
 def test_cli_orders_get(runner, monkeypatch, order_description, oid):
@@ -322,7 +322,7 @@ def test_cli_orders_create_validate_item_type(
             '--item-type', 'PSScene3Band'
             ])
     assert failed_item_type_result.exception
-    assert "Invalid value for '--item-type'" in failed_item_type_result.output
+    assert "Invalid value: item_type" in failed_item_type_result.output
 
 
 def test_cli_orders_create_validate_cloudconfig(
