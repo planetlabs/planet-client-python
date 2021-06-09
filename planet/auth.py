@@ -14,12 +14,12 @@
 '''Manage authentication with Planet APIs'''
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import abc
-import base64
 import json
 import logging
 import os
 
 import httpx
+import jwt
 
 from . import constants
 from .api import http, models
@@ -198,16 +198,9 @@ class AuthClient():
 
     @staticmethod
     def decode_response(response):
-        '''This is magic I don't understand'''
-        jwt = response.json()['token']
-
-        # stuff before the first '.' and after the second '.' doesn't matter
-        payload = jwt.split('.')[1]
-
-        # the '===' addition ensures adequate padding
-        payload = base64.urlsafe_b64decode(payload + '===')
-        decoded = json.loads(payload.decode())
-        return decoded
+        '''Decode the token JWT'''
+        token = response.json()['token']
+        return jwt.decode(token, options={'verify_signature': False})
 
 
 class APIKeyAuthException(Exception):
