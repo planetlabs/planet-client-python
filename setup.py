@@ -44,6 +44,7 @@ lint_requires = [
 
 doc_requires = [
     'mkdocs==1.1',
+    'mkdocs-click==0.4.0',
     'mkdocs-material',
     'mkdocstrings==0.15.0'
 ]

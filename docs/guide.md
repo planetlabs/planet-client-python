@@ -1,6 +1,7 @@
 # User Guide
 
-## Session
+## API
+### Session
 
 Communication with the Planet services is provided with the `Session` class.
 The recommended way to use a `Session` is as a context manager. This will
@@ -32,7 +33,7 @@ Alternatively, use `await Session.aclose()` to close a `Session` explicitly:
 
 ```
 
-## Authentication
+### Authentication
 
 There are two steps to managing authentication information, obtaining the
 authentication information from Planet and then managing it for local retrieval
@@ -87,7 +88,7 @@ environment variable:
 
 ```
 
-## Orders Client
+### Orders Client
 
 The Orders Client mostly mirrors the
 [Orders API](https://developers.planet.com/docs/orders/reference/#tag/Orders),
@@ -106,7 +107,7 @@ order is completed and to download an entire order.
 
 ```
 
-### Creating an Order
+#### Creating an Order
 
 When creating an order, the order details must be provided to the API. There
 are two ways to specify the order details, a `JSON` blob and an `OrderDetails`
@@ -154,3 +155,122 @@ the context of a `Session` with the `OrdersClient`:
 >>> asyncio.run(main())
 
 ```
+
+## CLI
+
+### Authentication
+
+The `auth` command allows the CLI to authenticate with Planet servers. Before
+any other command is run, the CLI authentication should be initiated with
+
+```console
+$ planet auth init
+```
+
+To store the authentication information in an environment variable, e.g.
+for passing into a Docker instance:
+
+```console
+$ export PL_API_KEY=$(planet auth value)
+```
+
+### Orders API
+
+Most `orders` cli commands are simple wrappers around the
+[Planet Orders API](https://developers.planet.com/docs/orders/reference/#tag/Orders)
+commands.
+
+
+#### Create Order File Inputs
+
+Creating an order supports JSON files as inputs and these need to follow certain
+formats.
+
+
+##### --cloudconfig
+The file given with the `--cloudconfig` option should contain JSON that follows
+the options and format given in
+[Delivery to Cloud Storage](https://developers.planet.com/docs/orders/delivery/#delivery-to-cloud-storage).
+
+An example would be:
+
+Example: `cloudconfig.json`
+```
+{
+    "amazon_s3": {
+        "aws_access_key_id": "aws_access_key_id",
+        "aws_secret_access_key": "aws_secret_access_key",
+        "bucket": "bucket",
+        "aws_region": "aws_region"
+    },
+    "archive_type": "zip"
+}
+```
+
+##### --clip
+The file given with the `--clip` option should contain valid [GeoJSON](https://geojson.org/).
+It can be a Polygon geometry, a Feature, or a FeatureClass. If it is a FeatureClass,
+only the first Feature is used for the clip geometry.
+
+Example: `aoi.geojson`
+```
+{
+    "type": "Polygon",
+    "coordinates": [
+        [
+            [
+                37.791595458984375,
+                14.84923123791421
+            ],
+            [
+                37.90214538574219,
+                14.84923123791421
+            ],
+            [
+                37.90214538574219,
+                14.945448293647944
+            ],
+            [
+                37.791595458984375,
+                14.945448293647944
+            ],
+            [
+                37.791595458984375,
+                14.84923123791421
+            ]
+        ]
+    ]
+}
+```
+
+##### --tools
+The file given with the `--tools` option should contain JSON that follows the
+format for a toolchain, the "tools" section of an order. The toolchain options
+and format are given in
+[Creating Toolchains](https://developers.planet.com/docs/orders/tools-toolchains/#creating-toolchains).
+
+Example: `tools.json`
+```
+[
+    {
+        "toar": {
+            "scale_factor": 10000
+        }
+    },
+    {
+        "reproject": {
+            "projection": "WGS84",
+            "kernel": "cubic"
+        }
+    },
+    {
+        "tile": {
+            "tile_size": 1232,
+            "origin_x": -180,
+            "origin_y": -90,
+            "pixel_size": 2.7056277056e-05,
+            "name_template": "C1232_30_30_{tilex:04d}_{tiley:04d}"
+        }
+    }
+```
+
