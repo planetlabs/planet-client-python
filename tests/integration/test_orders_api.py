@@ -173,9 +173,9 @@ async def test_create_order(oid, order_description, order_details, session):
     respx.post(create_url).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
-    created_oid = await cl.create_order(order_details)
+    order = await cl.create_order(order_details)
 
-    assert created_oid == oid
+    assert order.json == order_description
 
 
 @respx.mock

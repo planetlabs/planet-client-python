@@ -224,7 +224,8 @@ def split_id_list(ctx, param, value):
 
     # validate passed ids
     for iid in ids:
-        click.UUID(iid)
+        if not iid:
+            raise click.BadParameter('id cannot be empty string.')
 
     return ids
 
@@ -288,8 +289,9 @@ def read_file_json(ctx, param, value):
               type=click.File('rb'), callback=read_file_geojson)
 @click.option('--tools', help='Toolchain json file.',
               type=click.File('rb'), callback=read_file_json)
+@pretty
 async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
-                 tools):
+                 tools, pretty):
     '''Create an order'''
     product = planet.Product(ids, bundle, item_type)
     notifications = planet.Notifications(email=email) if email else None
@@ -315,19 +317,6 @@ async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
         tools=tools)
 
     async with orders_client(ctx) as cl:
-        oid = await cl.create_order(order_details)
-    click.echo(f'Created order {oid}.')
-    #
-    # ids_from_search = kwargs.get('ids_from_search')
-    # if ids_from_search is not None:
-    #     runner = CliRunner()
-    #     resp = runner.invoke(quick_search, ids_from_search).output
-    #     try:
-    #         id_list = ids_from_search_response(resp)
-    #     except ValueError:
-    #         raise click.ClickException('ids_from_search, {}'.format(resp))
-    #     kwargs['id'] = id_list
-    #     del kwargs['ids_from_search']
-    # cl = clientv1()
-    # request = create_order_request(**kwargs)
-    # echo_json_response(call_and_wrap(cl.create_order, request), pretty)
+        order = await cl.create_order(order_details)
+
+    json_echo(order.json, pretty)

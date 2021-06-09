@@ -169,28 +169,17 @@ def tools(tools_json, write_to_tmp_json_file):
 
 
 @pytest.fixture
-def mock_create_order(monkeypatch, oid):
-    mock_create_order = AsyncMock(return_value=oid)
+def mock_create_order(monkeypatch, order_description):
+    mock_create_order = AsyncMock(
+            return_value=planet.api.orders.Order(order_description))
     monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'create_order',
                         mock_create_order)
     return mock_create_order
 
 
 @pytest.fixture
-def test_ids(oid):
-    # uuid generated with https://www.uuidgenerator.net/
-    test_id2 = '65f4aa35-b46b-48ba-b165-12b49986795c'
-    return oid, test_id2
-
-
-@pytest.fixture
-def create_order_params(oid):
-    return {
-        'id': oid,
-        'name': 'test',
-        'bundle': 'analytic_udm2',
-        'item_type': 'PSScene4Band'
-    }
+def test_id(order_details):
+    return order_details['products'][0]['item_ids'][0]
 
 
 def test_cli_read_file_geojson(clipaoi):
@@ -199,158 +188,151 @@ def test_cli_read_file_geojson(clipaoi):
     assert type(res) == planet.Geometry
 
 
-def test_cli_orders_create_cloudconfig(
-        runner, mock_create_order, create_order_params, cloudconfig, oid
-        ):
-
-    basic_result = runner.invoke(
-        cli, [
+@pytest.fixture
+def create_order_basic_cmds(order_details, test_id):
+    product = order_details['products'][0]
+    return [
             'orders', 'create',
-            '--name', create_order_params['name'],
-            '--id', create_order_params['id'],
-            '--bundle', create_order_params['bundle'],
-            '--item-type', create_order_params['item_type'],
-            '--cloudconfig', cloudconfig
-              ]
+            '--name', order_details['name'],
+            '--id', test_id,
+            '--bundle', product['product_bundle'],
+            '--item-type', product['item_type']
+        ]
+
+
+@pytest.fixture
+def name(order_details):
+    return order_details['name']
+
+
+@pytest.fixture
+def products(order_details, test_id):
+    product = order_details['products'][0]
+    return [
+        planet.Product([test_id],
+                       product['product_bundle'],
+                       product['item_type'])
+    ]
+
+
+def test_cli_orders_create_cloudconfig(
+        runner, mock_create_order, create_order_basic_cmds, name, products,
+        cloudconfig,
+        ):
+    basic_result = runner.invoke(
+        cli, create_order_basic_cmds + ['--cloudconfig', cloudconfig]
     )
     assert not basic_result.exception
-    assert f'Created order {oid}' in basic_result.output
 
     mock_create_order.assert_called_once()
 
     expected_details = planet.OrderDetails(
-        create_order_params['name'],
-        [planet.Product([create_order_params['id']],
-                        create_order_params['bundle'],
-                        create_order_params['item_type'])],
+        name, products,
         delivery=planet.Delivery.from_file(cloudconfig)
         )
     mock_create_order.assert_called_with(expected_details)
 
 
 def test_cli_orders_create_clip(
-        runner, mock_create_order, create_order_params, clipaoi, oid,
-        geom_geojson):
+        runner, mock_create_order, create_order_basic_cmds, name, products,
+        clipaoi, geom_geojson
+        ):
     basic_result = runner.invoke(
-        cli, [
-            'orders', 'create',
-            '--name', create_order_params['name'],
-            '--id', create_order_params['id'],
-            '--bundle', create_order_params['bundle'],
-            '--item-type', create_order_params['item_type'],
-            '--clip', clipaoi
-              ]
+        cli, create_order_basic_cmds + ['--clip', clipaoi]
     )
     assert not basic_result.exception
-    assert f'Created order {oid}' in basic_result.output
 
     mock_create_order.assert_called_once()
 
     expected_details = planet.OrderDetails(
-        create_order_params['name'],
-        [planet.Product([create_order_params['id']],
-                        create_order_params['bundle'],
-                        create_order_params['item_type'])],
+        name, products,
         tools=[planet.Tool('clip', {'aoi': geom_geojson})]
-        )
+    )
+
     mock_create_order.assert_called_with(expected_details)
 
 
 def test_cli_orders_create_tools(
-        runner, mock_create_order, create_order_params, tools, oid,
-        tools_json):
+        runner, mock_create_order, create_order_basic_cmds, name, products,
+        tools, tools_json):
     basic_result = runner.invoke(
-        cli, [
-            'orders', 'create',
-            '--name', create_order_params['name'],
-            '--id', create_order_params['id'],
-            '--bundle', create_order_params['bundle'],
-            '--item-type', create_order_params['item_type'],
-            '--tools', tools
-              ]
+        cli, create_order_basic_cmds + ['--tools', tools]
     )
     assert not basic_result.exception
-    assert f'Created order {oid}' in basic_result.output
 
     mock_create_order.assert_called_once()
 
     expected_details = planet.OrderDetails(
-        create_order_params['name'],
-        [planet.Product([create_order_params['id']],
-                        create_order_params['bundle'],
-                        create_order_params['item_type'])],
+        name, products,
         tools=[planet.Tool.from_dict(t) for t in tools_json]
-        )
+    )
+
     mock_create_order.assert_called_with(expected_details)
 
 
-def test_cli_orders_create_validate_id(runner, mock_create_order,
-                                       create_order_params, oid):
+def test_cli_orders_create_validate_id(
+        runner, mock_create_order, order_details, test_id
+        ):
     # uuid generated with https://www.uuidgenerator.net/
     test_id2 = '65f4aa35-b46b-48ba-b165-12b49986795c'
-    success_ids = ','.join([oid, test_id2])
-    fail_ids = '1.2,2'
+    success_ids = ','.join([test_id, test_id2])
+    fail_ids = '1,,2'
+
+    product = order_details['products'][0]
 
     # id string is correct format
     success_mult_ids_result = runner.invoke(
         cli, [
             'orders', 'create',
-            '--name', create_order_params['name'],
+            '--name', order_details['name'],
             '--id', success_ids,
-            '--bundle', create_order_params['bundle'],
-            '--item-type', create_order_params['item_type']
-              ])
-    # assert not success_mult_ids_result.exception
-    assert f'Created order {oid}' in success_mult_ids_result.output
+            '--bundle', product['product_bundle'],
+            '--item-type', product['item_type']
+        ])
+
+    assert not success_mult_ids_result.exception
 
     # id string is wrong format
     failed_mult_ids_result = runner.invoke(
         cli, [
             'orders', 'create',
-            '--name', create_order_params['name'],
+            '--name', order_details['name'],
             '--id', fail_ids,
-            '--bundle', create_order_params['bundle'],
-            '--item-type', create_order_params['item_type']
-              ])
+            '--bundle', product['product_bundle'],
+            '--item-type', product['item_type']
+        ])
     assert failed_mult_ids_result.exception
-    assert "Invalid value for '--id': '1.2' is not a valid UUID." \
-        in failed_mult_ids_result.output
+    assert "id cannot be empty" in failed_mult_ids_result.output
 
 
-def test_cli_orders_create_validate_item_type(runner, mock_create_order,
-                                              create_order_params):
-    fail_item_type = 'PSScene3Band'
-
+def test_cli_orders_create_validate_item_type(
+        runner, mock_create_order, order_details, test_id
+        ):
     # item type is not valid for bundle
     failed_item_type_result = runner.invoke(
         cli, [
             'orders', 'create',
-            '--name', create_order_params['name'],
-            '--id', create_order_params['id'],
-            '--bundle', create_order_params['bundle'],
-            '--item-type', fail_item_type
-              ])
+            '--name', order_details['name'],
+            '--id', test_id,
+            '--bundle', 'analytic_udm2',
+            '--item-type', 'PSScene3Band'
+            ])
     assert failed_item_type_result.exception
     assert "Invalid value for '--item-type'" in failed_item_type_result.output
 
 
-def test_cli_orders_create_validate_cloudconfig(runner, mock_create_order,
-                                                create_order_params, tmp_path):
+def test_cli_orders_create_validate_cloudconfig(
+        runner, mock_create_order, create_order_basic_cmds,
+        tmp_path,
+        ):
     # write invalid text to file
-    cc = tmp_path / 'cc.json'
-    with open(cc, 'w') as fp:
+    cloudconfig = tmp_path / 'cc.json'
+    with open(cloudconfig, 'w') as fp:
         fp.write('')
 
-    # cloudconfig file is wrong format
     wrong_format_result = runner.invoke(
-        cli, [
-            'orders', 'create',
-            '--name', create_order_params['name'],
-            '--id', create_order_params['id'],
-            '--bundle', create_order_params['bundle'],
-            '--item-type', create_order_params['item_type'],
-            '--cloudconfig', cc
-              ])
+        cli, create_order_basic_cmds + ['--cloudconfig', cloudconfig]
+    )
     assert wrong_format_result.exception
     assert "File does not contain valid json." \
         in wrong_format_result.output
@@ -358,59 +340,18 @@ def test_cli_orders_create_validate_cloudconfig(runner, mock_create_order,
     # cloudconfig file doesn't exist
     doesnotexistfile = tmp_path / 'doesnotexist.json'
     doesnotexit_result = runner.invoke(
-        cli, [
-            'orders', 'create',
-            '--name', create_order_params['name'],
-            '--id', create_order_params['id'],
-            '--bundle', create_order_params['bundle'],
-            '--item-type', create_order_params['item_type'],
-            '--cloudconfig', doesnotexistfile
-              ])
+        cli, create_order_basic_cmds + ['--cloudconfig', doesnotexistfile]
+    )
     assert doesnotexit_result.exception
     assert "No such file or directory" in doesnotexit_result.output
 
 
-# def test_cli_orders_create_validate_tools(
-#         runner, mock_create_order, create_order_params, tools, clipaoi, oid,
-#         tools_json):
-#     clip_and_tools_result = runner.invoke(
-#         cli, [
-#             'orders', 'create',
-#             '--name', create_order_params['name'],
-#             '--id', create_order_params['id'],
-#             '--bundle', create_order_params['bundle'],
-#             '--item-type', create_order_params['item_type'],
-#             '--tools', tools
-#               ]
-#     )
-#     assert not clip_and_tools_result.exception
-#     assert f'Created order {oid}' in clip_and_tools_result.output
-#
-#     # mock_create_order.assert_called_once()
-#     #
-#     # expected_details = planet.OrderDetails(
-#     #     create_order_params['name'],
-#     #     [planet.Product([create_order_params['id']],
-#     #                     create_order_params['bundle'],
-#     #                     create_order_params['item_type'])],
-#     #     tools=[planet.Tool.from_dict(t) for t in tools_json]
-#     #     )
-#     # mock_create_order.assert_called_with(expected_details)
-
-
 def test_cli_orders_create_validate_tools(
-        runner, mock_create_order, create_order_params, tools, oid,
-        clipaoi):
-    basic_result = runner.invoke(
-        cli, [
-            'orders', 'create',
-            '--name', create_order_params['name'],
-            '--id', create_order_params['id'],
-            '--bundle', create_order_params['bundle'],
-            '--item-type', create_order_params['item_type'],
-            '--clip', clipaoi,
-            '--tools', tools,
+        runner, mock_create_order, create_order_basic_cmds,
+        tools, clipaoi,
+        ):
 
-              ]
+    clip_and_tools_result = runner.invoke(
+        cli, create_order_basic_cmds + ['--tools', tools, '--clip', clipaoi]
     )
-    assert basic_result.exception
+    assert clip_and_tools_result.exception

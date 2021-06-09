@@ -158,7 +158,7 @@ class OrdersClient():
         resp = await self._do_request(req)
 
         order = Order(resp.json())
-        return order.id
+        return order
 
     async def get_order(
         self,
