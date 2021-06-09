@@ -217,27 +217,6 @@ def test_Delivery_from_dict(as3_details, abs_details, delivery_details,
         assert isinstance(order_details.Delivery.from_dict(details), cls)
 
 
-def test_Delivery_from_file(tmp_path, delivery_details):
-    detail_file = tmp_path / 'cc.json'
-    with open(detail_file, 'w') as fp:
-        json.dump(delivery_details, fp)
-
-    d = order_details.Delivery.from_file(detail_file)
-    assert isinstance(d, order_details.Delivery)
-    assert d.archive_type == 'zip'
-
-    with pytest.raises(FileNotFoundError):
-        does_not_exist_file = tmp_path / 'doesnotexist.json'
-        order_details.Delivery.from_file(does_not_exist_file)
-
-    wrong_format_file = tmp_path / 'wrongformat.json'
-    with open(wrong_format_file, 'w') as fp:
-        fp.write('blahblah')
-
-    with pytest.raises(json.decoder.JSONDecodeError):
-        order_details.Delivery.from_file(wrong_format_file)
-
-
 def test_Delivery_to_dict(delivery_details):
     d = order_details.Delivery(archive_type='zip',
                                single_archive=True,

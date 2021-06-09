@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
+import json
 import logging
 from unittest.mock import MagicMock, Mock
 
@@ -226,9 +227,12 @@ def test_cli_orders_create_cloudconfig(
 
     mock_create_order.assert_called_once()
 
+    with open(cloudconfig, 'r') as f:
+        cc = json.load(f)
+
     expected_details = planet.OrderDetails(
         name, products,
-        delivery=planet.Delivery.from_file(cloudconfig)
+        delivery=planet.Delivery.from_dict(cc)
         )
     mock_create_order.assert_called_with(expected_details)
 

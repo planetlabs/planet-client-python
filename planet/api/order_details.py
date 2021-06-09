@@ -315,37 +315,6 @@ class Delivery():
         self.archive_filename = archive_filename
 
     @classmethod
-    def from_file(
-        cls,
-        filename: str,
-        subclass: bool = True
-        ) -> Union[
-                Delivery,
-                AmazonS3Delivery,
-                AzureBlobStorageDelivery,
-                GoogleCloudStorageDelivery,
-                GoogleEarthEngineDelivery]:
-        """Create Delivery instance from file containing Orders API spec
-        representation.
-
-        Parameters:
-            filename: Path to file.
-            subclass: Create a subclass of Delivery if the necessary
-                information is provided.
-
-        Raises:
-            FileNotFoundError: If filename does not exist.
-            json.decoder.JSONDecodeError: If filename contents is not valid
-                json.
-
-        Returns:
-            Delivery or Delivery subclass instance
-        """
-        with open(filename) as f:
-            details = json.load(f)
-        return cls.from_dict(details, subclass=subclass)
-
-    @classmethod
     def from_dict(
         cls,
         details: dict,
