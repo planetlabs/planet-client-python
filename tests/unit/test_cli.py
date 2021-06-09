@@ -144,12 +144,28 @@ def cloudconfig(write_to_tmp_json_file):
             },
         'archive_type': 'zip',
     }
-    return write_to_tmp_json_file(as3_details)
+    return write_to_tmp_json_file(as3_details, 'cloudconfig.json')
 
 
 @pytest.fixture
 def clipaoi(feature_geojson, write_to_tmp_json_file):
-    return write_to_tmp_json_file(feature_geojson)
+    return write_to_tmp_json_file(feature_geojson, 'clip.json')
+
+
+@pytest.fixture
+def tools_json(geom_geojson):
+    return [
+            {
+                'clip': {'aoi': geom_geojson}
+            }, {
+                'composite': {}
+            }
+    ]
+
+
+@pytest.fixture
+def tools(tools_json, write_to_tmp_json_file):
+    return write_to_tmp_json_file(tools_json, 'tools.json')
 
 
 @pytest.fixture
@@ -175,6 +191,12 @@ def create_order_params(oid):
         'bundle': 'analytic_udm2',
         'item_type': 'PSScene4Band'
     }
+
+
+def test_cli_read_file_geojson(clipaoi):
+    with open(clipaoi, 'r') as cfile:
+        res = planet.scripts.cli.read_file_geojson({}, 'clip', cfile)
+    assert type(res) == planet.Geometry
 
 
 def test_cli_orders_create_cloudconfig(
@@ -206,12 +228,6 @@ def test_cli_orders_create_cloudconfig(
     mock_create_order.assert_called_with(expected_details)
 
 
-def test_cli_read_file_geojson(clipaoi):
-    with open(clipaoi, 'r') as cfile:
-        res = planet.scripts.cli.read_file_geojson({}, 'clip', cfile)
-    assert type(res) == planet.Geometry
-
-
 def test_cli_orders_create_clip(
         runner, mock_create_order, create_order_params, clipaoi, oid,
         geom_geojson):
@@ -236,6 +252,34 @@ def test_cli_orders_create_clip(
                         create_order_params['bundle'],
                         create_order_params['item_type'])],
         tools=[planet.Tool('clip', {'aoi': geom_geojson})]
+        )
+    mock_create_order.assert_called_with(expected_details)
+
+
+def test_cli_orders_create_tools(
+        runner, mock_create_order, create_order_params, tools, oid,
+        tools_json):
+    basic_result = runner.invoke(
+        cli, [
+            'orders', 'create',
+            '--name', create_order_params['name'],
+            '--id', create_order_params['id'],
+            '--bundle', create_order_params['bundle'],
+            '--item-type', create_order_params['item_type'],
+            '--tools', tools
+              ]
+    )
+    assert not basic_result.exception
+    assert f'Created order {oid}' in basic_result.output
+
+    mock_create_order.assert_called_once()
+
+    expected_details = planet.OrderDetails(
+        create_order_params['name'],
+        [planet.Product([create_order_params['id']],
+                        create_order_params['bundle'],
+                        create_order_params['item_type'])],
+        tools=[planet.Tool.from_dict(t) for t in tools_json]
         )
     mock_create_order.assert_called_with(expected_details)
 
@@ -326,8 +370,37 @@ def test_cli_orders_create_validate_cloudconfig(runner, mock_create_order,
     assert "No such file or directory" in doesnotexit_result.output
 
 
-def test_cli_orders_create_validate_tools(runner, mock_create_order,
-                                          create_order_params, tmp_path):
+# def test_cli_orders_create_validate_tools(
+#         runner, mock_create_order, create_order_params, tools, clipaoi, oid,
+#         tools_json):
+#     clip_and_tools_result = runner.invoke(
+#         cli, [
+#             'orders', 'create',
+#             '--name', create_order_params['name'],
+#             '--id', create_order_params['id'],
+#             '--bundle', create_order_params['bundle'],
+#             '--item-type', create_order_params['item_type'],
+#             '--tools', tools
+#               ]
+#     )
+#     assert not clip_and_tools_result.exception
+#     assert f'Created order {oid}' in clip_and_tools_result.output
+#
+#     # mock_create_order.assert_called_once()
+#     #
+#     # expected_details = planet.OrderDetails(
+#     #     create_order_params['name'],
+#     #     [planet.Product([create_order_params['id']],
+#     #                     create_order_params['bundle'],
+#     #                     create_order_params['item_type'])],
+#     #     tools=[planet.Tool.from_dict(t) for t in tools_json]
+#     #     )
+#     # mock_create_order.assert_called_with(expected_details)
+
+
+def test_cli_orders_create_validate_tools(
+        runner, mock_create_order, create_order_params, tools, oid,
+        clipaoi):
     basic_result = runner.invoke(
         cli, [
             'orders', 'create',
@@ -335,9 +408,9 @@ def test_cli_orders_create_validate_tools(runner, mock_create_order,
             '--id', create_order_params['id'],
             '--bundle', create_order_params['bundle'],
             '--item-type', create_order_params['item_type'],
-            '--clip', 'something',
+            '--clip', clipaoi,
+            '--tools', tools,
+
               ]
     )
-    # assert not basic_result.exception
-    # assert f'Created order {d}' in basic_result.output
-    raise NotImplementedError
+    assert basic_result.exception

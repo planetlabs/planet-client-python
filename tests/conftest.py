@@ -71,8 +71,8 @@ def oid():
 
 @pytest.fixture
 def write_to_tmp_json_file(tmp_path):
-    def write(data):
-        cc = tmp_path / 'cc.json'
+    def write(data, filename):
+        cc = tmp_path / filename
         with open(cc, 'w') as fp:
             json.dump(data, fp)
         return cc

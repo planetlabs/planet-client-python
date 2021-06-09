@@ -264,19 +264,6 @@ def read_file_json(ctx, param, value):
     return json_value
 
 
-def read_tools(ctx, param, value):
-    # skip this if the filename is None
-    if not value:
-        return value
-
-    # do not allow specifying tools if clip is already specified
-    if ctx.params['clip']:
-        raise click.BadParameter("Specify only one of '--clip' or '--tools'")
-
-    # read the json
-    return read_file_json(ctx, param, value)
-
-
 @orders.command()
 @click.pass_context
 @handle_exceptions
@@ -300,7 +287,7 @@ def read_tools(ctx, param, value):
 @click.option('--clip', help='Clip GeoJSON file.',
               type=click.File('rb'), callback=read_file_geojson)
 @click.option('--tools', help='Toolchain json file.',
-              type=click.File('rb'), callback=read_tools)
+              type=click.File('rb'), callback=read_file_json)
 async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
                  tools):
     '''Create an order'''
@@ -310,10 +297,13 @@ async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
     delivery = planet.Delivery.from_dict(cloudconfig) \
         if cloudconfig else None
 
-    if clip:
+    if clip and tools:
+        raise click.BadParameter("Specify only one of '--clip' or '--tools'")
+    elif clip:
         tools = [planet.ClipTool(clip)]
-    # else if tools:
-    #     tools = [planet.Tool.from_dict(t) for t in tools]
+
+    elif tools:
+        tools = [planet.Tool.from_dict(t) for t in tools]
     else:
         tools = None
 
