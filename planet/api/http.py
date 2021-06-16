@@ -70,13 +70,17 @@ class BaseSession():
         }.get(status, None)
 
         LOGGER.debug(f"Exception type: {exception}")
+        LOGGER.debug(f"Response text: {response.text}")
 
         if exception == exceptions.TooManyRequests:
             # differentiate between over quota and rate-limiting
             if 'quota' in response.text.lower():
                 exception = exceptions.OverQuota
 
-        msg = cls._parse_message(response)
+        try:
+            msg = cls._parse_message(response)
+        except Exception:
+            msg = response.text
 
         if exception:
             raise exception(msg)
