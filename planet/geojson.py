@@ -31,7 +31,7 @@ class WrongTypeException(GeoJSONException):
     pass
 
 
-class Geometry():
+class Geometry(dict):
     '''Manage and validate GeoJSON geometry description.'''
     def __init__(
         self,
@@ -46,8 +46,9 @@ class Geometry():
         Parameters:
             data: GeoJSON geometry, Feature, or FeatureClass.
         """
-        self._data = self._geom_from_dict(data)
-        self._type = self._geom_type(self._data)
+        geom = self._geom_from_dict(data)
+        super().__init__(geom)
+        self._validate()
 
     @classmethod
     def _geom_from_dict(
@@ -83,17 +84,21 @@ class Geometry():
                 ret = cls._geom_from_dict(features[0])
         return ret
 
-    @staticmethod
-    def _geom_type(data: dict):
-        '''
-        Parameters:
-            data: GeoJSON geometry
+    def __eq__(self, other):
+        def _tuple_to_list(obj):
+            return json.loads(
+                    json.dumps(obj).replace(")", "]").replace("(", "["))
 
+        return _tuple_to_list(self) == _tuple_to_list(other)
+
+    def _validate(self):
+        '''
         Raises:
             GeoJSONException: If data is not valid GeoJSON geometry, Feature,
             or FeatureClass.
-            WrongTypeException: If geometry coordinates to not fit type.
+            WrongTypeException: If geometry coordinates do not fit type.
         '''
+        data = self
         if 'type' not in data:
             raise GeoJSONException(
                 'Missing \'type\' key.')
@@ -102,9 +107,7 @@ class Geometry():
                 'Missing \'coordinates\' key.')
 
         try:
-            # ugh, this changes the underlying data
-            # notably coordinates as a list are converted to a tuple
-            shape = sgeom.shape(data)
+            sgeom.shape(data)
         except ValueError as e:
             # invalid type or coordinates
             raise GeoJSONException(e)
@@ -112,16 +115,9 @@ class Geometry():
             # wrong type
             raise WrongTypeException('Geometry coordinates do not fit type')
 
-        return shape.type
-
-    def type_matches(self, other):
-        return issubclass(self._type, other)
-
-    def to_dict(self):
-        return self._data
-
-    def to_str(self):
-        return json.dumps(self.to_dict())
+    @property
+    def type(self):
+        return self['type']
 
 
 class Polygon(Geometry):
@@ -143,11 +139,6 @@ class Polygon(Geometry):
             WrongTypeException: If data geometry type is not Polygon.
         """
         super().__init__(data)
-        if self._type.lower() != 'polygon':
+        if self.type.lower() != 'polygon':
             raise WrongTypeException(
-                f'Invalid geometry type: {self._type} is not Polygon.'
-                )
-
-    @classmethod
-    def from_geometry(cls, geometry):
-        return cls(geometry.to_dict())
+                f'Invalid geometry type: {self.type} is not Polygon.')

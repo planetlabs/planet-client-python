@@ -298,8 +298,12 @@ async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
     if clip and tools:
         raise click.BadParameter("Specify only one of '--clip' or '--tools'")
     elif clip:
-        tools = [planet.ClipTool(clip)]
+        try:
+            clip = planet.geojson.Polygon(clip)
+        except planet.geojson.GeoJSONException as e:
+            raise click.BadParameter(e)
 
+        tools = [planet.ClipTool(clip)]
     elif tools:
         tools = [planet.Tool.from_dict(t) for t in tools]
     else:

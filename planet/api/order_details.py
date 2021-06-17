@@ -730,11 +730,5 @@ class ClipTool(Tool):
         Parameters:
             aoi: clip GeoJSON.
         """
-        if not isinstance(aoi, geojson.Polygon):
-            try:
-                aoi = geojson.Polygon.from_geometry(aoi)
-            except AttributeError:
-                aoi = geojson.Polygon(aoi)
-
-        parameters = {'aoi': aoi.to_dict()}
+        parameters = {'aoi': geojson.Polygon(aoi)}
         super().__init__('clip', parameters)

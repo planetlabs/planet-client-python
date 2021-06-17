@@ -359,3 +359,17 @@ def test_cli_orders_create_validate_tools(
         cli, create_order_basic_cmds + ['--tools', tools, '--clip', clipaoi]
     )
     assert clip_and_tools_result.exception
+
+
+def test_cli_orders_create_validate_clip(
+        runner, mock_create_order, create_order_basic_cmds,
+        point_geom_geojson, write_to_tmp_json_file
+        ):
+    clip_point = write_to_tmp_json_file(point_geom_geojson, 'point.json')
+
+    clip_point_result = runner.invoke(
+        cli, create_order_basic_cmds + ['--clip', clip_point]
+    )
+    assert clip_point_result.exception
+    assert "Invalid geometry type: Point is not Polygon" in \
+        clip_point_result.output
