@@ -389,13 +389,11 @@ def test_ClipTool_success_dict(geom_geojson):
 
 
 def test_ClipTool_success_geom(geom_geojson):
-    geo = geojson.Geometry(geom_geojson)
-    ct = order_details.ClipTool(geo)
+    ct = order_details.ClipTool(geom_geojson)
     assert ct.name == 'clip'
     assert ct.parameters['aoi'] == geom_geojson
 
 
 def test_ClipTool_wrong_type(point_geom_geojson):
-    geom = geojson.Geometry(point_geom_geojson)
     with pytest.raises(geojson.WrongTypeException):
-        _ = order_details.ClipTool(geom)
+        _ = order_details.ClipTool(point_geom_geojson)

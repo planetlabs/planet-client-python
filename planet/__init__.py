@@ -20,7 +20,6 @@ from .api.order_details import (
     GoogleEarthEngineDelivery, Tool, ClipTool)
 from .api.__version__ import __version__  # NOQA
 from .auth import Auth
-from .geojson import Geometry
 
 
 __all__ = [
@@ -38,5 +37,4 @@ __all__ = [
     ClipTool,
     Tool,
     Auth,
-    Geometry
 ]

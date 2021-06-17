@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """Functionality for interacting with GeoJSON."""
-import json
 import logging
 
 import shapely.geometry as sgeom
@@ -31,114 +30,94 @@ class WrongTypeException(GeoJSONException):
     pass
 
 
-class Geometry(dict):
-    '''Manage and validate GeoJSON geometry description.'''
-    def __init__(
-        self,
-        data: dict
-    ):
-        """
-        Initialize GeoJSON.
+class DataLossWarning(UserWarning):
+    """Warn that data will be lost."""
 
-        If data represents a GeoJSON FeatureClass, the geometry of the first
-        Feature is used.
 
-        Parameters:
-            data: GeoJSON geometry, Feature, or FeatureClass.
-        """
-        geom = self._geom_from_dict(data)
-        super().__init__(geom)
-        self._validate()
+def as_geom(data: dict) -> dict:
+    """Extract the geometry from GeoJSON and validate.
 
-    @classmethod
-    def _geom_from_dict(
-        cls,
-        data: dict
-    ):
-        '''Extract the geometry description from GeoJSON.
+    Parameters:
+        data: GeoJSON geometry, Feature, or FeatureClass.
 
-        If data represents a FeatureClass, the geometry from the first feature
-        is used.
+    Returns:
+        GeoJSON geometry.
 
-        Parameters:
-            data: GeoJSON geometry, Feature, or FeatureClass.
-
-        Raises:
-            GeoJSONException: If data is not valid GeoJSON geometry, Feature,
+    Raises:
+        GeoJSONException: If data is not valid GeoJSON geometry, Feature,
             or FeatureClass.
-        '''
-        if set(('coordinates', 'type')).issubset(set(data.keys())):
-            # already a geom
-            ret = data
-        else:
-            try:
-                # feature
-                ret = cls._geom_from_dict(data["geometry"])
-            except KeyError:
-                try:
-                    # featureclass
-                    features = data['features']
-                except KeyError:
-                    raise GeoJSONException('Invalid GeoJSON')
+        DataLossWarning: If more than one Feature is in a FeatureClass.
+    """
+    geom = geom_from_geojson(data)
+    validate_geom(geom)
+    return geom
 
-                ret = cls._geom_from_dict(features[0])
-        return ret
 
-    def __eq__(self, other):
-        def _tuple_to_list(obj):
-            return json.loads(
-                    json.dumps(obj).replace(")", "]").replace("(", "["))
+def as_polygon(data: dict) -> dict:
+    geom = as_geom(data)
+    geom_type = geom['type']
+    if geom_type.lower() != 'polygon':
+        raise WrongTypeException(
+            f'Invalid geometry type: {geom_type} is not Polygon.')
+    return geom
 
-        return _tuple_to_list(self) == _tuple_to_list(other)
 
-    def _validate(self):
-        '''
-        Raises:
-            GeoJSONException: If data is not valid GeoJSON geometry, Feature,
-            or FeatureClass.
-            WrongTypeException: If geometry coordinates do not fit type.
-        '''
-        data = self
-        if 'type' not in data:
-            raise GeoJSONException(
-                'Missing \'type\' key.')
-        elif 'coordinates' not in data:
-            raise GeoJSONException(
-                'Missing \'coordinates\' key.')
+def geom_from_geojson(data: dict) -> dict:
+    """Get GeoJSON geometry from GeoJSON.
 
+    Parameters:
+        data: GeoJSON geometry, Feature, or FeatureClass.
+
+    Returns:
+        GeoJSON geometry.
+
+    Raises:
+        GeoJSONException: If data is not valid GeoJSON geometry
+    """
+    if set(('coordinates', 'type')).issubset(set(data.keys())):
+        # already a geom
+        ret = data
+    else:
         try:
-            sgeom.shape(data)
-        except ValueError as e:
-            # invalid type or coordinates
-            raise GeoJSONException(e)
-        except TypeError:
-            # wrong type
-            raise WrongTypeException('Geometry coordinates do not fit type')
+            # feature
+            ret = as_geom(data["geometry"])
+        except KeyError:
+            try:
+                # featureclass
+                features = data['features']
+            except KeyError:
+                raise GeoJSONException('Invalid GeoJSON: {data}')
 
-    @property
-    def type(self):
-        return self['type']
+            if len(features) > 1:
+                raise DataLossWarning(
+                    'FeatureClass has more than one Feature, using only first'
+                    ' feature.')
 
-
-class Polygon(Geometry):
-    def __init__(
-        self,
-        data: dict
-    ):
-        """
-        Initialize GeoJSON.
-
-        If data represents a GeoJSON FeatureClass, the geometry of the first
-        Feature is used.
-
-        Parameters:
-            data: Feature, FeatureClass, or geometry GeoJSON description.
+            ret = as_geom(features[0])
+    return ret
 
 
-        Raises:
-            WrongTypeException: If data geometry type is not Polygon.
-        """
-        super().__init__(data)
-        if self.type.lower() != 'polygon':
-            raise WrongTypeException(
-                f'Invalid geometry type: {self.type} is not Polygon.')
+def validate_geom(data: dict):
+    """Validate GeoJSON geometry.
+
+    Parameters:
+        data: GeoJSON geometry.
+
+    Raises:
+        GeoJSONException: If data is not a valid GeoJSON geometry.
+    """
+    if 'type' not in data:
+        raise GeoJSONException(
+            'Missing \'type\' key.')
+    elif 'coordinates' not in data:
+        raise GeoJSONException(
+            'Missing \'coordinates\' key.')
+
+    try:
+        sgeom.shape(data)
+    except ValueError as e:
+        # invalid type or coordinates
+        raise GeoJSONException(e)
+    except TypeError:
+        # wrong type
+        raise GeoJSONException('Geometry coordinates do not fit type')

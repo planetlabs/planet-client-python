@@ -236,7 +236,7 @@ def read_file_geojson(ctx, param, value):
         return value
 
     json_value = read_file_json(ctx, param, value)
-    geo = planet.Geometry(json_value)
+    geo = planet.geojson.as_geom(json_value)
     return geo
 
 
@@ -299,7 +299,7 @@ async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
         raise click.BadParameter("Specify only one of '--clip' or '--tools'")
     elif clip:
         try:
-            clip = planet.geojson.Polygon(clip)
+            clip = planet.geojson.as_polygon(clip)
         except planet.geojson.GeoJSONException as e:
             raise click.BadParameter(e)
 

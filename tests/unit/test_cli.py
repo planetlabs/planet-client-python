@@ -183,10 +183,10 @@ def test_id(order_details):
     return order_details['products'][0]['item_ids'][0]
 
 
-def test_cli_read_file_geojson(clipaoi):
+def test_cli_read_file_geojson(clipaoi, geom_geojson):
     with open(clipaoi, 'r') as cfile:
         res = planet.scripts.cli.read_file_geojson({}, 'clip', cfile)
-    assert type(res) == planet.Geometry
+    assert res == geom_geojson
 
 
 @pytest.fixture

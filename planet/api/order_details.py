@@ -730,5 +730,5 @@ class ClipTool(Tool):
         Parameters:
             aoi: clip GeoJSON.
         """
-        parameters = {'aoi': geojson.Polygon(aoi)}
+        parameters = {'aoi': geojson.as_polygon(aoi)}
         super().__init__('clip', parameters)
