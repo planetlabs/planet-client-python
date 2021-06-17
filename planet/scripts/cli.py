@@ -262,14 +262,14 @@ def read_file_json(ctx, param, value):
 @coro
 @click.option('--name', required=True)
 @click.option('--id', 'ids', help='One or more comma-separated item IDs',
-              type=click.STRING, callback=split_id_list)
+              type=click.STRING, callback=split_id_list, required=True)
 # @click.option('--ids_from_search',
 #               help='Embedded data search')
 @click.option('--bundle', multiple=False, required=True,
               help='Specify bundle',
               type=click.Choice(planet.specs.get_product_bundles(),
                                 case_sensitive=False),
-              is_eager=True)
+              )
 @click.option('--item-type', multiple=False, required=True,
               help='Specify an item type',
               type=click.STRING)
