@@ -89,7 +89,7 @@ def geom_from_geojson(data: dict) -> dict:
                 raise GeoJSONException('Invalid GeoJSON: {data}')
 
             if len(features) > 1:
-                raise DataLossWarning(
+                LOGGER.warning(
                     'FeatureClass has more than one Feature, using only first'
                     ' feature.')
 

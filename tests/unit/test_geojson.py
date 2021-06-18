@@ -38,12 +38,16 @@ def test_geom_from_geojson_success(
         assert_geom_equal):
     ggeo = geojson.as_geom(geom_geojson)
     assert_geom_equal(ggeo, geom_geojson)
-    #
-    # fgeo = geojson.geom_from_geojson(feature_geojson)
-    # assert_geom_equal(fgeo, geom_geojson)
-    #
-    # fcgeo = geojson.geom_from_geojson(featureclass_geojson)
-    # assert_geom_equal(fcgeo, geom_geojson)
+
+    fgeo = geojson.geom_from_geojson(feature_geojson)
+    assert_geom_equal(fgeo, geom_geojson)
+
+    fcgeo = geojson.geom_from_geojson(featureclass_geojson)
+    assert_geom_equal(fcgeo, geom_geojson)
+
+    featureclass_geojson['features'].append(feature_geojson)
+    ffcgeo = geojson.geom_from_geojson(featureclass_geojson)
+    assert_geom_equal(ffcgeo, geom_geojson)
 
 
 def test_geom_from_geojson_no_geometry(feature_geojson):
