@@ -286,14 +286,21 @@ async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
                  tools, pretty):
     '''Create an order.'''
     try:
-        product = planet.Product(ids, bundle, item_type)
+        product = planet.order_details.product(ids, bundle, item_type)
     except planet.specs.SpecificationException as e:
         raise click.BadParameter(e)
 
-    notifications = planet.Notifications(email=email) if email else None
+    if email:
+        notifications = planet.order_details.notifications(email=email)
+    else:
+        notifications = None
 
-    delivery = planet.Delivery.from_dict(cloudconfig) \
-        if cloudconfig else None
+    if cloudconfig:
+        delivery = planet.order_details.delivery(
+            cloud_config=cloudconfig
+        )
+    else:
+        delivery = None
 
     if clip and tools:
         raise click.BadParameter("Specify only one of '--clip' or '--tools'")
@@ -303,13 +310,9 @@ async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
         except planet.geojson.GeoJSONException as e:
             raise click.BadParameter(e)
 
-        tools = [planet.ClipTool(clip)]
-    elif tools:
-        tools = [planet.Tool.from_dict(t) for t in tools]
-    else:
-        tools = None
+        tools = [planet.order_details.clip_tool(clip)]
 
-    order_details = planet.OrderDetails(
+    request = planet.order_details.build_request(
         name,
         products=[product],
         delivery=delivery,
@@ -317,6 +320,6 @@ async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
         tools=tools)
 
     async with orders_client(ctx) as cl:
-        order = await cl.create_order(order_details)
+        order = await cl.create_order(request)
 
     json_echo(order.json, pretty)

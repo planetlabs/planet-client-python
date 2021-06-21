@@ -13,10 +13,8 @@
 # the License.
 """Functionality for preparing order details for use in creating an order"""
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
-import copy
-import json
 import logging
-from typing import List, Union
+from typing import List
 
 from .. import geojson, specs
 
@@ -28,707 +26,315 @@ class OrderDetailsException(Exception):
     pass
 
 
-class OrderDetails():
-    '''Validating and preparing order details for submission.
-
-    Can be built up from order detail parts:
+def build_request(
+        name: str,
+        products: List[dict],
+        subscription_id: int = 0,
+        delivery: dict = None,
+        notifications: dict = None,
+        order_type: str = None,
+        tools: List[dict] = None
+) -> dict:
+    '''Prepare an order request.
 
     ```python
-    >>> from planet.api.order_details import OrderDetails, Product
+    >>> from planet.api.order_details import build_request, product
     >>>
     >>> image_ids = ['3949357_1454705_2020-12-01_241c']
-    >>> order_detail = OrderDetails(
+    >>> order_request = build_request(
     ...     'test_order',
-    ...     [Product(image_ids, 'analytic', 'psorthotile')]
+    ...     [product(image_ids, 'analytic', 'psorthotile')]
     ... )
     ...
 
     ```
 
-    or from a dict describing the order detail:
+    Parameters:
+        name: Name of the order.
+        products: Product(s) from the Data API to order.
+        subscription_id: Apply this orders against this quota subscription.
+        delivery: Specify custom delivery handling.
+        notifications: Specify custom notifications handling.
+        order_type: Accept a partial order, indicated by 'partial'.
+        tools: Tools to apply to the products. Order defines
+            the toolchain order of operatations.
 
-    ```python
-    >>> order_detail_json = {
-    ...     'name': 'test_order',
-    ...     'products': [{'item_ids': ['3949357_1454705_2020-12-01_241c'],
-    ...                   'item_type': 'PSOrthoTile',
-    ...                   'product_bundle': 'analytic'}],
-    ... }
-    ...
-    >>> order_detail = OrderDetails.from_dict(order_detail_json)
-
-    ```
     '''
-    def __init__(
-        self,
-        name: str,
-        products: List[Product],
-        subscription_id: int = 0,
-        delivery: Delivery = None,
-        notifications: Notifications = None,
-        order_type: str = None,
-        tools: List[Tool] = None
-    ):
-        """
-        Parameters:
-            name: Name of the order.
-            products: Product(s) from the Data API to order.
-            subscription_id: Apply this orders against this quota subscription.
-            delivery: Specify custom delivery handling.
-            notifications: Specify custom notifications handling.
-            order_type: Accept a partial order, indicated by 'partial'.
-            tools: Tools to apply to the products. Order defines
-                the toolchain order of operatations.
-        """
-        self.name = name
-        self.products = products
-        self.subscription_id = subscription_id
-        self.delivery = delivery
-        self.notifications = notifications
-        self.order_type = order_type
-        self.tools = tools
-
-        if self.order_type is not None:
-            self.order_type = specs.validate_order_type(order_type)
-
-    def __eq__(self, other):
-        return self.to_dict() == other.to_dict()
-
-    def __repr__(self):
-        return str(self.to_dict())
-
-    def __str__(self):
-        return json.dumps(self.to_dict(), indent=4, sort_keys=True)
-
-    @classmethod
-    def from_dict(cls, details: dict) -> OrderDetails:
-        """Create OrderDetails instance from Orders API spec representation.
-
-        Parameters:
-            details: API spec representation of OrderDetails.
-
-        Returns:
-            OrderDetails instance
-        """
-        name = details['name']
-        products = [Product.from_dict(p) for p in details['products']]
-
-        subscription_id = details.get('subscription_id', None)
-
-        delivery = details.get('delivery', None)
-        if delivery:
-            delivery = Delivery.from_dict(delivery)
-
-        notifications = details.get('notifications', None)
-        if notifications:
-            notifications = Notifications.from_dict(notifications)
-
-        order_type = details.get('order_type', None)
-        tools = [Tool.from_dict(t) for t in details.get('tools', [])]
-
-        return cls(name,
-                   products,
-                   subscription_id,
-                   delivery,
-                   notifications,
-                   order_type,
-                   tools)
-
-    def to_dict(self) -> dict:
-        """Get Orders API spec representation.
-
-        Returns:
-            API spec representation of OrderDetails.
-        """
-        details = {
-            'name': self.name,
-            'products': [p.to_dict() for p in self.products]
-        }
-
-        if self.subscription_id is not None:
-            details['subscription_id'] = self.subscription_id
-
-        if self.delivery is not None:
-            details['delivery'] = self.delivery.to_dict()
-
-        if self.notifications is not None:
-            details['notifications'] = self.notifications.to_dict()
-
-        if self.order_type is not None:
-            details['order_type'] = self.order_type
-
-        if self.tools is not None:
-            details['tools'] = [t.to_dict() for t in self.tools]
-
-        return details
-
-    @property
-    def json(self) -> str:
-        '''Order details as a string representing json.'''
-        return json.dumps(self.to_dict())
-
-
-class Product():
-    '''Product description for an order detail.'''
-
-    def __init__(
-        self,
-        item_ids: List[str],
-        product_bundle: str,
-        item_type: str,
-        fallback_bundle: str = None
-    ):
-        """
-        Parameters:
-            item_ids: IDs of the catalog items to include in the order.
-            product_bundle: Set of asset types for the catalog items.
-            item_type: The class of spacecraft and processing characteristics
-                for the catalog items.
-            fallback_bundle: In case product_bundle not having
-                all asset types available, which would result in failed
-                delivery, try a fallback bundle
-        """
-        self.item_ids = item_ids
-        self.product_bundle = specs.validate_bundle(product_bundle)
-
-        if fallback_bundle is not None:
-            self.fallback_bundle = specs.validate_bundle(fallback_bundle)
-        else:
-            self.fallback_bundle = None
-
-        self.item_type = specs.validate_item_type(item_type, product_bundle)
-        if fallback_bundle is not None:
-            specs.validate_item_type(item_type, fallback_bundle)
-
-    @classmethod
-    def from_dict(cls, details: dict) -> Product:
-        """Create Product instance from Orders API spec representation.
-
-        Parameters:
-            details: API spec representation of product.
-
-        Returns:
-            Product instance
-        """
-        bundles = details['product_bundle'].split(',')
-        product_bundle = bundles[0]
-        try:
-            fallback_bundle = bundles[1]
-        except IndexError:
-            fallback_bundle = None
-
-        return cls(details['item_ids'],
-                   product_bundle,
-                   details['item_type'],
-                   fallback_bundle)
-
-    def to_dict(self) -> dict:
-        """Get Orders API spec representation.
-
-        Returns:
-            API spec representation of product.
-        """
-        product_bundle = self.product_bundle
-        if self.fallback_bundle is not None:
-            product_bundle = ','.join([product_bundle, self.fallback_bundle])
-        product_dict = {
-            'item_ids': self.item_ids,
-            'item_type': self.item_type,
-            'product_bundle': product_bundle
-        }
-        return product_dict
-
-
-class Notifications():
-    '''Notifications description for an order detail.'''
-    def __init__(
-        self,
-        email: bool = False,
-        webhook_url: str = None,
-        webhook_per_order: bool = False
-    ):
-        """
-        Parameters:
-            email: Enable email notifications for an order.
-            webhook_url: URL for notification when the order is ready.
-            webhook_per_order: Request a single webhook call per order instead
-                of one call per each delivered item.
-        """
-        self.email = email
-        self.webhook_url = webhook_url
-        self.webhook_per_order = webhook_per_order
-
-    @classmethod
-    def from_dict(cls, details: dict) -> Notifications:
-        """Create Notifications instance from Orders API spec representation.
-
-        Parameters:
-            details: API spec representation of notifications.
-
-        Returns:
-            Notifications instance
-        """
-        return cls(**details)
-
-    def to_dict(self) -> dict:
-        """Get Orders API spec representation.
-
-        Returns:
-            API spec representation of notifications.
-        """
-        details = {}
-
-        if self.email:
-            details['email'] = self.email
-
-        if self.webhook_url is not None:
-            details['webhook_url'] = self.webhook_url
-
-        if self.webhook_per_order:
-            details['webhook_per_order'] = True
-
-        return details
-
-
-class Delivery():
-    '''Manages order detail delivery description.'''
-    def __init__(
-        self,
-        archive_type: str = None,
-        single_archive: bool = False,
-        archive_filename: str = None
-    ):
-        """
-        Parameters:
-            archive_type: Archive order files. Only supports 'zip'.
-            single_archive: Archive all bundles together in a single file.
-            archive_filename: Custom naming convention to use to name the
-                archive file that is received. Uses the template variables
-                {{name}} and {{order_id}}. e.g. "{{name}}_{{order_id}}.zip".
-        """
-        if archive_type:
-            self.archive_type = specs.validate_archive_type(archive_type)
-        else:
-            self.archive_type = archive_type
-
-        self.single_archive = single_archive
-        self.archive_filename = archive_filename
-
-    @classmethod
-    def from_dict(
-        cls,
-        details: dict,
-        subclass: bool = True
-        ) -> Union[
-                Delivery,
-                AmazonS3Delivery,
-                AzureBlobStorageDelivery,
-                GoogleCloudStorageDelivery,
-                GoogleEarthEngineDelivery]:
-        """Create Delivery instance from Orders API spec representation.
-
-        Parameters:
-            details: API spec representation of delivery.
-            subclass: Create a subclass of Delivery if the necessary
-                information is provided.
-
-        Returns:
-            Delivery or Delivery subclass instance
-        """
-        def _create_subclass(details):
-            subclasses = [
-                AmazonS3Delivery,
-                AzureBlobStorageDelivery,
-                GoogleCloudStorageDelivery,
-                GoogleEarthEngineDelivery
-                ]
-            created = False
-            for cls in subclasses:
-                try:
-                    created = cls.from_dict(details)
-                except KeyError:
-                    pass
-                else:
-                    break
-            return created
-
-        created = _create_subclass(details) or cls._from_dict(details)
-        return created
-
-    @classmethod
-    def _from_dict(cls, details: dict) -> Delivery:
-        """Create Delivery instance from Orders API spec representation.
-
-        Parameters:
-            details: API spec representation of delivery.
-
-        Returns:
-            Delivery instance
-        """
-        return cls(**details)
-
-    def to_dict(self) -> dict:
-        """Get Orders API spec representation.
-
-        Returns:
-            API spec representation of delivery.
-        """
-        details = {}
-
-        if self.archive_type:
-            details['archive_type'] = self.archive_type
-
-        if self.single_archive:
-            details['single_archive'] = self.single_archive
-
-        if self.archive_filename:
-            details['archive_filename'] = self.archive_filename
-
-        return details
-
-
-def _get_cloud_details(details, cloud_key):
-    details = copy.deepcopy(details)
-    cloud_details = details.pop(cloud_key)
-    cloud_details.update(details)
-    LOGGER.debug(f'cloud section of details: {cloud_details}')
-    return cloud_details
-
-
-class AmazonS3Delivery(Delivery):
-    '''Amazon S3 delivery description for an order detail.'''
-
-    cloud_key = 'amazon_s3'
-
-    def __init__(
-        self,
-        aws_access_key_id: str,
-        aws_secret_access_key: str,
-        bucket: str,
-        aws_region: str,
-        path_prefix: str = None,
-        archive_type: str = False,
-        single_archive: bool = False,
-        archive_filename: str = None
-    ):
-        """
-        Parameters:
-            aws_access_key_id: S3 account access key.
-            aws_secret_access_key: S3 account secret key.
-            bucket: The name of the bucket that will receive the order output.
-            aws_region: The region where the bucket lives in AWS.
-            path_prefix: Custom string to prepend to the files delivered to the
-                bucket. A slash (/) character will be treated as a "folder".
-                Any other characters will be added as a prefix to the files.
-            archive_type: Archive order files. Only supports 'zip'.
-            single_archive: Archive all bundles together in a single file.
-            archive_filename: Custom naming convention to use to name the
-                archive file that is received. Uses the template variables
-                {{name}} and {{order_id}}. e.g. "{{name}}_{{order_id}}.zip".
-        """
-        self.aws_access_key_id = aws_access_key_id
-        self.aws_secret_access_key = aws_secret_access_key
-        self.aws_region = aws_region
-        self.bucket = bucket
-        self.path_prefix = path_prefix
-
-        super().__init__(archive_type, single_archive, archive_filename)
-
-    @classmethod
-    def from_dict(cls, details: dict) -> AmazonS3Delivery:
-        """Create AmazonS3Delivery instance from Orders API spec representation.
-
-        Parameters:
-            details: API spec representation of delivery.
-
-        Returns:
-            AmazonS3Delivery instance
-        """
-        cloud_details = _get_cloud_details(details, cls.cloud_key)
-        return cls(**cloud_details)
-
-    def to_dict(self) -> dict:
-        """Get Orders API spec representation.
-
-        Returns:
-            API spec representation of AmazonS3Delivery.
-        """
-        cloud_details = {
-            'aws_access_key_id': self.aws_access_key_id,
-            'aws_secret_access_key': self.aws_secret_access_key,
-            'bucket': self.bucket,
-            'aws_region': self.aws_region,
-        }
-
-        if self.path_prefix:
-            cloud_details['path_prefix'] = self.path_prefix
-
-        details = super().to_dict()
-        details[self.cloud_key] = cloud_details
-        return details
-
-
-class AzureBlobStorageDelivery(Delivery):
-    '''Azure Blob Storage delivery description for an order detail.'''
-
-    cloud_key = 'azure_blob_storage'
-
-    def __init__(
-        self,
-        account: str,
-        container: str,
-        sas_token: str,
-        storage_endpoint_suffix: str = None,
-        path_prefix: str = None,
-        archive_type: str = False,
-        single_archive: bool = False,
-        archive_filename: str = None
-    ):
-        """
-        Parameters:
-            account: Azure account.
-            container: ABS container name.
-            sas_token: Shared-Access Signature token. Token should be specified
-                without a leading '?'.
-            storage_endpoint_suffix: Deliver order to a sovereign cloud.
-            path_prefix: Custom string to prepend to the files delivered to the
-                bucket. A slash (/) character will be treated as a "folder".
-                Any other characters will be added as a prefix to the files.
-            archive_type: Archive order files. Only supports 'zip'.
-            single_archive: Archive all bundles together in a single file.
-            archive_filename: Custom naming convention to use to name the
-                archive file that is received. Uses the template variables
-                {{name}} and {{order_id}}. e.g. "{{name}}_{{order_id}}.zip".
-        """
-        self.account = account
-        self.container = container
-        self.sas_token = sas_token
-        self.storage_endpoint_suffix = storage_endpoint_suffix
-        self.path_prefix = path_prefix
-
-        super().__init__(archive_type, single_archive, archive_filename)
-
-    @classmethod
-    def from_dict(cls, details: dict) -> AzureBlobStorageDelivery:
-        """Create AzureBlobStorageDelivery instance from Orders API spec
-        representation.
-
-        Parameters:
-            details: API spec representation of delivery.
-
-        Returns:
-            AzureBlobStorageDelivery instance
-        """
-        cloud_details = _get_cloud_details(details, cls.cloud_key)
-        return cls(**cloud_details)
-
-    def to_dict(self) -> dict:
-        """Get Orders API spec representation.
-
-        Returns:
-            API spec representation of AzureBlobStorageDelivery.
-        """
-        cloud_details = {
-            'account': self.account,
-            'container': self.container,
-            'sas_token': self.sas_token,
-        }
-
-        if self.storage_endpoint_suffix:
-            cloud_details['storage_endpoint_suffix'] = \
-                self.storage_endpoint_suffix
-
-        if self.path_prefix:
-            cloud_details['path_prefix'] = self.path_prefix
-
-        details = super().to_dict()
-        details[self.cloud_key] = cloud_details
-        return details
-
-
-class GoogleCloudStorageDelivery(Delivery):
-    '''Google Cloud Storage delivery description for an order detail.'''
-    cloud_key = 'google_cloud_storage'
-
-    def __init__(
-        self,
-        bucket: str,
-        credentials: str,
-        path_prefix: str = None,
-        archive_type: str = False,
-        single_archive: bool = False,
-        archive_filename: str = None
-    ):
-        """
-        Parameters:
-            bucket: GCS bucket name.
-            credentials: JSON-string of service account for bucket.
-            path_prefix: Custom string to prepend to the files delivered to the
-                bucket. A slash (/) character will be treated as a "folder".
-                Any other characters will be added as a prefix to the files.
-            archive_type: Archive order files. Only supports 'zip'.
-            single_archive: Archive all bundles together in a single file.
-            archive_filename: Custom naming convention to use to name the
-                archive file that is received. Uses the template variables
-                {{name}} and {{order_id}}. e.g. "{{name}}_{{order_id}}.zip".
-        """
-        self.bucket = bucket
-        self.credentials = credentials
-        self.path_prefix = path_prefix
-        super().__init__(archive_type, single_archive, archive_filename)
-
-    @classmethod
-    def from_dict(cls, details: dict) -> GoogleCloudStorageDelivery:
-        """Create GoogleCloudStorageDelivery instance from Orders API spec
-        representation.
-
-        Parameters:
-            details: API spec representation of delivery.
-
-        Returns:
-            GoogleCloudStorageDelivery instance
-        """
-        cloud_details = _get_cloud_details(details, cls.cloud_key)
-        return cls(**cloud_details)
-
-    def to_dict(self) -> dict:
-        """Get Orders API spec representation.
-
-        Returns:
-            API spec representation of GoogleCloudStorageDelivery.
-        """
-        cloud_details = {
-            'bucket': self.bucket,
-            'credentials': self.credentials,
-        }
-
-        if self.path_prefix:
-            cloud_details['path_prefix'] = self.path_prefix
-
-        details = super().to_dict()
-        details[self.cloud_key] = cloud_details
-        return details
-
-
-class GoogleEarthEngineDelivery(Delivery):
-    '''Google Earth Engine delivery description for an order detail.'''
-    cloud_key = 'google_earth_engine'
-
-    def __init__(
-        self,
-        project: str,
-        collection: str,
-        archive_type: str = False,
-        single_archive: bool = False,
-        archive_filename: str = None
-    ):
-        """
-        Parameters:
-            project: GEE project name.
-            collection: GEE Image Collection name.
-            archive_type: Archive order files. Only supports 'zip'.
-            single_archive: Archive all bundles together in a single file.
-            archive_filename: Custom naming convention to use to name the
-                archive file that is received. Uses the template variables
-                {{name}} and {{order_id}}. e.g. "{{name}}_{{order_id}}.zip".
-        """
-        self.project = project
-        self.collection = collection
-        super().__init__(archive_type, single_archive, archive_filename)
-
-    @classmethod
-    def from_dict(cls, details: dict) -> GoogleEarthEngineDelivery:
-        """Create GoogleEarthEngineDelivery instance from Orders API spec
-        representation.
-
-        Parameters:
-            details: API spec representation of delivery.
-
-        Returns:
-            GoogleEarthEngineDelivery instance
-        """
-        cloud_details = _get_cloud_details(details, cls.cloud_key)
-        return cls(**cloud_details)
-
-    def to_dict(self) -> dict:
-        """Get Orders API spec representation.
-
-        Returns:
-            API spec representation of GoogleEarthEngineDelivery.
-        """
-        cloud_details = {
-            'project': self.project,
-            'collection': self.collection,
-        }
-
-        details = super().to_dict()
-        details[self.cloud_key] = cloud_details
-        return details
-
-
-class ToolException(Exception):
-    '''Exceptions thrown by Tool'''
-    pass
-
-
-class Tool():
-    '''Tool description for an order detail.
+    details = {
+        'name': name,
+        'products': products
+    }
+
+    if subscription_id:
+        details['subscription_id'] = subscription_id
+
+    if delivery:
+        details['delivery'] = delivery
+
+    if notifications:
+        details['notifications'] = notifications
+
+    if order_type:
+        order_type = specs.validate_order_type(order_type)
+        details['order_type'] = order_type
+
+    if tools:
+        details['tools'] = tools
+
+    return details
+
+
+def product(
+    item_ids: List[str],
+    product_bundle: str,
+    item_type: str,
+    fallback_bundle: str = None
+) -> dict:
+    '''Product description for an order detail.
+
+    Parameters:
+        item_ids: IDs of the catalog items to include in the order.
+        product_bundle: Set of asset types for the catalog items.
+        item_type: The class of spacecraft and processing characteristics
+            for the catalog items.
+        fallback_bundle: In case product_bundle not having
+            all asset types available, which would result in failed
+            delivery, try a fallback bundle
+    '''
+    product_bundle = specs.validate_bundle(product_bundle)
+    item_type = specs.validate_item_type(item_type, product_bundle)
+
+    if fallback_bundle is not None:
+        fallback_bundle = specs.validate_bundle(fallback_bundle)
+        specs.validate_item_type(item_type, fallback_bundle)
+        product_bundle = ','.join([product_bundle, fallback_bundle])
+
+    product_dict = {
+        'item_ids': item_ids,
+        'item_type': item_type,
+        'product_bundle': product_bundle
+    }
+    return product_dict
+
+
+def notifications(
+    email: bool = False,
+    webhook_url: str = None,
+    webhook_per_order: bool = False
+) -> dict:
+    '''Notifications description for an order detail.
+
+    Parameters:
+        email: Enable email notifications for an order.
+        webhook_url: URL for notification when the order is ready.
+        webhook_per_order: Request a single webhook call per order instead
+            of one call per each delivered item.
+    '''
+    details = {}
+
+    if email:
+        details['email'] = email
+
+    if webhook_url is not None:
+        details['webhook_url'] = webhook_url
+
+    if webhook_per_order:
+        details['webhook_per_order'] = True
+
+    return details
+
+
+def delivery(
+    archive_type: str = None,
+    single_archive: bool = False,
+    archive_filename: str = None,
+    cloud_config: dict = None
+) -> dict:
+    '''Order delivery configuration.
+
+    Example:
+        ```python
+        amazon_s3_config = amazon_s3(
+            'access_key',
+            'secret_access_key',
+            'bucket_name',
+            'us-east-2',
+            'folder1/prefix/'
+        )
+        delivery_config = delivery(
+            archive_type='zip',
+            single_archive=True,
+            archive_filename='{{order_id}}.zip'
+            cloud_config=amazon_s3_config
+        )
+        ```
+
+    Parameters:
+        archive_type: Archive order files. Only supports 'zip'.
+        single_archive: Archive all bundles together in a single file.
+        archive_filename: Custom naming convention to use to name the
+            archive file that is received. Uses the template variables
+            {{name}} and {{order_id}}. e.g. "{{name}}_{{order_id}}.zip".
+        cloud_config: Cloud delivery configuration.
+    '''
+    if archive_type:
+        archive_type = specs.validate_archive_type(archive_type)
+
+    fields = ['archive_type', 'single_archive', 'archive_filename']
+    values = [archive_type, single_archive, archive_filename]
+
+    config = dict((k, v) for k, v in zip(fields, values) if v)
+
+    if cloud_config:
+        config.update(cloud_config)
+    return config
+
+
+def amazon_s3(
+    aws_access_key_id: str,
+    aws_secret_access_key: str,
+    bucket: str,
+    aws_region: str,
+    path_prefix: str = None
+) -> dict:
+    '''Amazon S3 Cloud configuration.
+
+    Parameters:
+        aws_access_key_id: S3 account access key.
+        aws_secret_access_key: S3 account secret key.
+        bucket: The name of the bucket that will receive the order output.
+        aws_region: The region where the bucket lives in AWS.
+        path_prefix: Custom string to prepend to the files delivered to the
+            bucket. A slash (/) character will be treated as a "folder".
+            Any other characters will be added as a prefix to the files.
+    '''
+    cloud_details = {
+        'aws_access_key_id': aws_access_key_id,
+        'aws_secret_access_key': aws_secret_access_key,
+        'bucket': bucket,
+        'aws_region': aws_region,
+    }
+
+    if path_prefix:
+        cloud_details['path_prefix'] = path_prefix
+
+    return {'amazon_s3': cloud_details}
+
+
+def azure_blob_storage(
+    account: str,
+    container: str,
+    sas_token: str,
+    storage_endpoint_suffix: str = None,
+    path_prefix: str = None
+) -> dict:
+    '''Azure Blob Storage configuration.
+
+    Parameters:
+        account: Azure account.
+        container: ABS container name.
+        sas_token: Shared-Access Signature token. Token should be specified
+            without a leading '?'.
+        storage_endpoint_suffix: Deliver order to a sovereign cloud.
+        path_prefix: Custom string to prepend to the files delivered to the
+            bucket. A slash (/) character will be treated as a "folder".
+            Any other characters will be added as a prefix to the files.
+    '''
+    cloud_details = {
+        'account': account,
+        'container': container,
+        'sas_token': sas_token,
+    }
+
+    if storage_endpoint_suffix:
+        cloud_details['storage_endpoint_suffix'] = storage_endpoint_suffix
+
+    if path_prefix:
+        cloud_details['path_prefix'] = path_prefix
+
+    return {'azure_blob_storage': cloud_details}
+
+
+def google_cloud_storage(
+    bucket: str,
+    credentials: str,
+    path_prefix: str = None
+) -> dict:
+    '''Google Cloud Storage configuration.
+
+    Parameters:
+        bucket: GCS bucket name.
+        credentials: JSON-string of service account for bucket.
+        path_prefix: Custom string to prepend to the files delivered to the
+            bucket. A slash (/) character will be treated as a "folder".
+            Any other characters will be added as a prefix to the files.
+    '''
+    cloud_details = {
+        'bucket': bucket,
+        'credentials': credentials,
+    }
+
+    if path_prefix:
+        cloud_details['path_prefix'] = path_prefix
+
+    return {'google_cloud_storage': cloud_details}
+
+
+def google_earth_engine(
+    project: str,
+    collection: str
+) -> dict:
+    '''Google Earth Engine configuration.
+
+    Parameters:
+        project: GEE project name.
+        collection: GEE Image Collection name.
+    '''
+    cloud_details = {
+        'project': project,
+        'collection': collection,
+    }
+    return {'google_earth_engine': cloud_details}
+
+
+def tool(name: str, parameters: dict) -> dict:
+    '''Create the API spec representation of a tool.
 
     See [Tools and Toolchains](
     https://developers.planet.com/docs/orders/tools-toolchains/)
     for more information on available tools and tool parameters.
+
+    Parameters:
+        name: Tool name.
+        parameters: Tool parameters.
     '''
-    def __init__(
-        self,
-        name: str,
-        parameters: dict
-    ):
-        """
-        Parameters:
-            name: Tool name.
-            parameters: Tool parameters.
-        """
-        self.name = specs.validate_tool(name)
-        self.parameters = parameters
-
-    def __eq__(self, other):
-        return (self.name == other.name and
-                self.parameters == other.parameters)
-
-    @classmethod
-    def from_dict(cls, details: dict) -> Tool:
-        """Create Tool instance from Orders API spec representation.
-
-        Parameters:
-            details: API spec representation of Tool.
-
-        Returns:
-            Tool instance
-        """
-        if len(details) != 1:
-            raise ToolException(
-                'Tool description must have only one item, name: parameters')
-        name, parameters = details.popitem()
-        return cls(name, parameters)
-
-    def to_dict(self) -> dict:
-        """Get Orders API spec representation.
-
-        Returns:
-            API spec representation of Tool.
-        """
-        return {self.name: self.parameters}
+    name = specs.validate_tool(name)
+    return {name: parameters}
 
 
-class ClipTool(Tool):
-    '''Clip tool description for a given clip region.'''
-    def __init__(
-        self,
-        aoi: Union[dict, geojson.Polygon]
-    ):
-        """
-        Parameters:
-            aoi: clip GeoJSON.
-        """
-        parameters = {'aoi': geojson.as_polygon(aoi)}
-        super().__init__('clip', parameters)
+def clip_tool(aoi: dict) -> dict:
+    '''Create the API spec representation of a clip tool.
+
+    Example:
+        ```python
+        aoi = {
+            "type": "Polygon",
+            "coordinates": [[
+                [37.791595458984375, 14.84923123791421],
+                [37.90214538574219, 14.84923123791421],
+                [37.90214538574219, 14.945448293647944],
+                [37.791595458984375, 14.945448293647944],
+                [37.791595458984375, 14.84923123791421]
+            ]]
+          }
+        tool = clip_tool(aoi)
+        ```
+
+    Parameters:
+        aoi: clip GeoJSON.
+
+    Raises:
+        geojson.GeoJSONException: If GeoJSON is not a valid polygon.
+    '''
+    parameters = {'aoi': geojson.as_polygon(aoi)}
+    return tool('clip', parameters)
