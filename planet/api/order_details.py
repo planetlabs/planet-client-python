@@ -21,11 +21,6 @@ from .. import geojson, specs
 LOGGER = logging.getLogger(__name__)
 
 
-class OrderDetailsException(Exception):
-    """Exceptions thrown by OrderDetails"""
-    pass
-
-
 def build_request(
         name: str,
         products: List[dict],
@@ -38,13 +33,24 @@ def build_request(
     '''Prepare an order request.
 
     ```python
-    >>> from planet.api.order_details import build_request, product
-    >>>
-    >>> image_ids = ['3949357_1454705_2020-12-01_241c']
+    >>> from planet.api.order_details import (
+    ...     build_request, product, toar_tool, reproject_tool, tile_tool)
+    ...
+    >>> products = [
+    ...     product(['20170614_113217_3163208_RapidEye-5'],
+    ...             'analytic', 'REOrthoTile')])
+    ... ]
+    ...
+    >>> tools = [
+    ...     toar_tool(scale_factor=10000),
+    ...     reproject_tool(projection='WSG84', kernel='cubic'),
+    ...     tile_tool(1232, origin_x=-180, origin_y=-90,
+    ...               pixel_size=0.000027056277056,
+    ...               name_template='C1232_30_30_{tilex:04d}_{tiley:04d}')
+    ... ]
+    ...
     >>> order_request = build_request(
-    ...     'test_order',
-    ...     [product(image_ids, 'analytic', 'psorthotile')]
-    ... )
+    ...     'test_order', products, tools)
     ...
 
     ```
@@ -118,9 +124,9 @@ def product(
 
 
 def notifications(
-    email: bool = False,
+    email: bool = None,
     webhook_url: str = None,
-    webhook_per_order: bool = False
+    webhook_per_order: bool = None
 ) -> dict:
     '''Notifications description for an order detail.
 
@@ -130,18 +136,7 @@ def notifications(
         webhook_per_order: Request a single webhook call per order instead
             of one call per each delivered item.
     '''
-    details = {}
-
-    if email:
-        details['email'] = email
-
-    if webhook_url is not None:
-        details['webhook_url'] = webhook_url
-
-    if webhook_per_order:
-        details['webhook_per_order'] = True
-
-    return details
+    return dict((k, v) for k, v in locals().items() if v)
 
 
 def delivery(
@@ -297,7 +292,7 @@ def google_earth_engine(
     return {'google_earth_engine': cloud_details}
 
 
-def tool(name: str, parameters: dict) -> dict:
+def _tool(name: str, parameters: dict) -> dict:
     '''Create the API spec representation of a tool.
 
     See [Tools and Toolchains](
@@ -337,4 +332,106 @@ def clip_tool(aoi: dict) -> dict:
         geojson.GeoJSONException: If GeoJSON is not a valid polygon.
     '''
     parameters = {'aoi': geojson.as_polygon(aoi)}
-    return tool('clip', parameters)
+    return _tool('clip', parameters)
+
+
+def composite_tool() -> dict:
+    '''Create the API spec representation of a composite tool.
+    '''
+    return _tool('composite', {})
+
+
+def coregister_tool(anchor_item: str) -> dict:
+    '''Create the API spec representation of a coregister tool.
+
+    Parameters:
+        anchor_item: The item_id of the item to which all other items should be
+            coregistered.
+    '''
+    return _tool('coregister', {'anchor_item': anchor_item})
+
+
+def file_format_tool(file_format: str) -> dict:
+    '''Create the API spec representation of a file format tool.
+
+    Parameters:
+        file_format: The format of the tool output. Either 'COG' or 'PL_NITF'.
+    '''
+    return _tool('file_format', {'format': file_format})
+
+
+def reproject_tool(
+    projection: str,
+    resolution: float = None,
+    kernel: str = None
+) -> dict:
+    '''Create the API spec representation of a reproject tool.
+
+    Parameters:
+        projection: A coordinate system in the form EPSG:n. (ex. EPSG:4326 for
+            WGS84, EPSG:32611 for UTM 11 North (WGS84), or EPSG:3857 for Web
+            Mercator).
+        resolution: The pixel width and height in the output file. The API
+            default is the resolution of the input item. This value will be in
+            meters unless the coordinate system is geographic (like EPSG:4326),
+            then it will be a pixel size in decimal degrees.
+        kernel: The resampling kernel used. The API default is "near". This
+            parameter also supports "bilinear", "cubic", "cubicspline",
+            "lanczos", "average" and "mode".
+    '''
+    parameters = dict((k, v) for k, v in locals().items() if v)
+    return _tool('reproject', parameters)
+
+
+def tile_tool(
+    tile_size: int,
+    origin_x: float = None,
+    origin_y: float = None,
+    pixel_size: float = None,
+    name_template: str = None,
+    conformal_x_scaling: bool = None
+) -> dict:
+    '''Create the API spec representation of a reproject tool.
+
+    Parameters:
+        tile_size: Height and width of output tiles in pixels and lines
+            (always square).
+        origin_x: Tiling system x origin in projected coordinates. The API
+            default is zero.
+        origin_y: Tiling system y origin in projected coordinates. The API
+            default is zero.
+        pixel_size: Tiling system pixel size in projected coordinates. The API
+            default is the pixel_size of input raster.
+        name_template: A naming template for creating output tile filenames.
+            The API default is "{tilex}_{tiley}.tif" resulting in filenames
+            like 128_200.tif. The {tilex} and {tiley} parameters can be of the
+            form {tilex:06d} to produce a fixed width field with leading zeros.
+    '''
+    parameters = dict((k, v) for k, v in locals().items() if v)
+    return _tool('tile', parameters)
+
+
+def toar_tool(
+    scale_factor: int = None,
+) -> dict:
+    '''Create the API spec representation of a TOAR tool.
+
+    Parameters:
+        scale_factor: Scale factor applied to convert 0.0 to 1.0 reflectance
+            floating point values to a value that fits in 16bit integer pixels.
+            The API default is 10000. Values over 65535 could result in high
+            reflectances not fitting in 16bit integers.
+    '''
+    parameters = {}
+    if scale_factor:
+        parameters['scale_factor'] = scale_factor
+    return _tool('toar', parameters)
+
+
+def harmonize_tool() -> dict:
+    '''Create the API spec representation of a harmonize tool.
+
+    Currently, only "PS2" (Dove Classic) is supported as a target sensor, and
+    it will transform only items captured by “PS2.SD” (Dove-R).
+    '''
+    return _tool('harmonize', {'target_sensor': 'PS2'})

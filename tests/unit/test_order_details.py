@@ -130,6 +130,11 @@ def test_notifications():
       }
     assert notifications_config == expected
 
+    empty_notifications_config = order_details.notifications(
+    )
+    empty_expected = {}
+    assert empty_notifications_config == empty_expected
+
 
 def test_delivery():
     as3_config = {
@@ -222,15 +227,15 @@ def test_google_earth_engine():
     assert gee_config == expected
 
 
-def test_tool():
-    test_tool = order_details.tool('band_math', 'jsonstring')
+def test__tool():
+    test_tool = order_details._tool('band_math', 'jsonstring')
     assert test_tool == {'band_math': 'jsonstring'}
 
     with pytest.raises(specs.SpecificationException):
-        _ = order_details.tool('notsupported', 'jsonstring')
+        _ = order_details._tool('notsupported', 'jsonstring')
 
 
-def test_clip_tool_success(geom_geojson):
+def test_clip_tool(geom_geojson, point_geom_geojson):
     ct = order_details.clip_tool(geom_geojson)
     expected = {
         'clip': {
@@ -238,7 +243,51 @@ def test_clip_tool_success(geom_geojson):
         }}
     assert ct == expected
 
-
-def test_clip_tool_wrong_type(point_geom_geojson):
     with pytest.raises(geojson.WrongTypeException):
         _ = order_details.clip_tool(point_geom_geojson)
+
+
+def test_reproject_tool():
+    rt = order_details.reproject_tool(
+        projection='proj',
+        resolution=5
+    )
+    expected = {
+        'reproject': {
+            'projection': 'proj',
+            'resolution': 5
+            }
+        }
+    assert rt == expected
+
+
+def test_tile_tool():
+    tt = order_details.tile_tool(
+        30,
+        pixel_size=3
+    )
+    expected = {
+        'tile': {
+            'tile_size': 30,
+            'pixel_size': 3
+        }
+    }
+    assert tt == expected
+
+
+def test_toar_tool():
+    tt = order_details.toar_tool(
+        scale_factor=5
+    )
+    expected = {
+        'toar': {
+            'scale_factor': 5
+            }
+    }
+    assert tt == expected
+
+    tt_empty = order_details.toar_tool()
+    expected_empty = {
+        'toar': {}
+    }
+    assert tt_empty == expected_empty
