@@ -67,6 +67,13 @@ def test_validate_arhive_type():
         specs.validate_archive_type('notsupported')
 
 
+def test_validate_file_format():
+    assert 'COG' == specs.validate_file_format('cog')
+
+    with pytest.raises(specs.SpecificationException):
+        specs.validate_archive_type('notsupported')
+
+
 def test_get_product_bundles():
     bundles = specs.get_product_bundles()
     assert TEST_PRODUCT_BUNDLE in bundles

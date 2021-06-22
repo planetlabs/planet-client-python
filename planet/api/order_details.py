@@ -65,6 +65,9 @@ def build_request(
         tools: Tools to apply to the products. Order defines
             the toolchain order of operatations.
 
+    Raises:
+        planet.specs.SpecificationException: If order_type is not a valid
+            order type.
     '''
     details = {
         'name': name,
@@ -106,6 +109,11 @@ def product(
         fallback_bundle: In case product_bundle not having
             all asset types available, which would result in failed
             delivery, try a fallback bundle
+
+    Raises:
+        planet.specs.SpecificationException: If bundle or fallback bundle
+            are not valid bundles or if item_type is not valid for the given
+            bundle or fallback bundle.
     '''
     product_bundle = specs.validate_bundle(product_bundle)
     item_type = specs.validate_item_type(item_type, product_bundle)
@@ -171,6 +179,9 @@ def delivery(
             archive file that is received. Uses the template variables
             {{name}} and {{order_id}}. e.g. "{{name}}_{{order_id}}.zip".
         cloud_config: Cloud delivery configuration.
+
+    Raises:
+        planet.specs.SpecificationException: If archive_type is not valid.
     '''
     if archive_type:
         archive_type = specs.validate_archive_type(archive_type)
@@ -302,6 +313,10 @@ def _tool(name: str, parameters: dict) -> dict:
     Parameters:
         name: Tool name.
         parameters: Tool parameters.
+
+    Raises:
+        planet.specs.SpecificationException: If name is not the name of a valid
+            Orders API tool.
     '''
     name = specs.validate_tool(name)
     return {name: parameters}
@@ -356,7 +371,12 @@ def file_format_tool(file_format: str) -> dict:
 
     Parameters:
         file_format: The format of the tool output. Either 'COG' or 'PL_NITF'.
+
+    Raises:
+        planet.specs.SpecificationException: If file_format is not one of
+            'COG' or 'PL_NITF'
     '''
+    file_format = specs.validate_file_format(file_format)
     return _tool('file_format', {'format': file_format})
 
 
