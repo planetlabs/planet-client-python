@@ -116,23 +116,21 @@ function.
 An example of creating the request JSON with `build_request`:
 
 ```python
->>> from planet.api.order_details import (
-...     build_request, product, toar_tool, reproject_tool, tile_tool)
-...
+>>> from planet import order_details 
 >>> products = [
-...     product(['20170614_113217_3163208_RapidEye-5'],
-...             'analytic', 'REOrthoTile')])
+...     order_details.product(['20170614_113217_3163208_RapidEye-5'],
+...                           'analytic', 'REOrthoTile')
 ... ]
 ...
 >>> tools = [
-...     toar_tool(scale_factor=10000),
-...     reproject_tool(projection='WSG84', kernel='cubic'),
-...     tile_tool(1232, origin_x=-180, origin_y=-90,
+...     order_details.toar_tool(scale_factor=10000),
+...     order_details.reproject_tool(projection='WSG84', kernel='cubic'),
+...     order_details.tile_tool(1232, origin_x=-180, origin_y=-90,
 ...               pixel_size=0.000027056277056,
 ...               name_template='C1232_30_30_{tilex:04d}_{tiley:04d}')
 ... ]
 ...
->>> order_request = build_request(
+>>> order_request = order_details.build_request(
 ...     'test_order', products, tools)
 ...
 
