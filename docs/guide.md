@@ -109,36 +109,71 @@ order is completed and to download an entire order.
 
 #### Creating an Order
 
-When creating an order, the order details must be provided to the API. There
-are two ways to specify the order details, a `JSON` blob and an `OrderDetails`
-instance.
+When creating an order, the order details must be provided to the API as a JSON
+blob. This JSON blob can be built up manually or by using the `build_request`
+function.
 
-An `OrderDetails` instance is built up from instances of `Product`, `Tool`, 
-`Delivery`, and `Notification` alongside other, simple parameters.
-
-An example of creating an `OrderDetails` instance:
+An example of creating the request JSON with `build_request`:
 
 ```python
->>> from planet.api.order_details import OrderDetails, Product
->>>
->>> image_ids = ['3949357_1454705_2020-12-01_241c']
->>> order_detail = OrderDetails(
-...     'test_order',
-...     [Product(image_ids, 'analytic', 'psorthotile')]
-... )
+>>> from planet.api.order_details import (
+...     build_request, product, toar_tool, reproject_tool, tile_tool)
+...
+>>> products = [
+...     product(['20170614_113217_3163208_RapidEye-5'],
+...             'analytic', 'REOrthoTile')])
+... ]
+...
+>>> tools = [
+...     toar_tool(scale_factor=10000),
+...     reproject_tool(projection='WSG84', kernel='cubic'),
+...     tile_tool(1232, origin_x=-180, origin_y=-90,
+...               pixel_size=0.000027056277056,
+...               name_template='C1232_30_30_{tilex:04d}_{tiley:04d}')
+... ]
+...
+>>> order_request = build_request(
+...     'test_order', products, tools)
 ...
 
 ```
 
-The same thing, expressed as a `JSON` blob (pro tip: this can be obtained
-with `order_detail.json`):
+The same thing, expressed as a `JSON` blob:
 
 ```python
 >>> order_detail = {
-...     'name': 'test_order',
-...     'products': [{'item_ids': ['3949357_1454705_2020-12-01_241c'],
-...                   'item_type': 'PSOrthoTile',
-...                   'product_bundle': 'analytic'}],
+...   "name": "test_order",
+...   "products": [
+...     {
+...       "item_ids": [
+...         "20170614_113217_3163208_RapidEye-5"
+...       ],
+...       "item_type": "REOrthoTile",
+...       "product_bundle": "analytic"
+...     }
+...   ],
+...   "subscription_id": [
+...     {
+...       "toar": {
+...         "scale_factor": 10000
+...       }
+...     },
+...     {
+...       "reproject": {
+...         "projection": "WSG84",
+...         "kernel": "cubic"
+...       }
+...     },
+...     {
+...       "tile": {
+...         "tile_size": 1232,
+...         "origin_x": -180,
+...         "origin_y": -90,
+...         "pixel_size": 2.7056277056e-05,
+...         "name_template": "C1232_30_30_{tilex:04d}_{tiley:04d}"
+...       }
+...     }
+...   ]
 ... }
 
 ```
