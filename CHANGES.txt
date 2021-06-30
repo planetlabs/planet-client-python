@@ -1,6 +1,11 @@
-1.4.7 (2021-02-16)
+1.4.7 (2021-06-30)
 
-- Add basic_l1_all_frames asset type
+- New: basic_l1_all_frames asset 
+- New: PSSCene 8-band assets & item type
+- New: ortho_analytic_sr asset
+- Fix: Raise NoPermission exception when the user does not have download access
+- Fix: force zip of entire order via cli and create test of download
+- Fix: fixed orders model object with next key, Fix #226
 
 1.4.6 (2020-05-18)
 
