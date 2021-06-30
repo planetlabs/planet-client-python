@@ -4,15 +4,15 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CLI Reference &#8212; Planet API Client 1.4.6 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>CLI Reference &#8212; Planet API Client 1.4.7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Examples" href="examples.html" />
@@ -78,54 +78,55 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="cli-reference">
+  <section id="cli-reference">
 <h1>CLI Reference<a class="headerlink" href="#cli-reference" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="command-line-concepts">
+<section id="command-line-concepts">
 <h2>Command Line Concepts<a class="headerlink" href="#command-line-concepts" title="Permalink to this headline">¶</a></h2>
 <p>Some forward material.</p>
-</div>
-<div class="section" id="option-types-formatting">
+</section>
+<section id="option-types-formatting">
 <h2>Option Types Formatting<a class="headerlink" href="#option-types-formatting" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="filter">
+<section id="filter">
 <span id="cli-metavar-filter"></span><h3>FILTER<a class="headerlink" href="#filter" title="Permalink to this headline">¶</a></h3>
 <p>Specify a Data API search filter provided as JSON.
 <code class="docutils literal notranslate"><span class="pre">&#64;-</span></code> specifies stdin and <code class="docutils literal notranslate"><span class="pre">&#64;filename</span></code> specifies reading from a file
 named ‘filename’. Otherwise, the value is assumed to be JSON.</p>
-</div>
-<div class="section" id="geom">
+</section>
+<section id="geom">
 <span id="cli-metavar-geom"></span><h3>GEOM<a class="headerlink" href="#geom" title="Permalink to this headline">¶</a></h3>
 <p>Specify a geometry in GeoJSON format either as an inline value,
 stdin, or a file. <code class="docutils literal notranslate"><span class="pre">&#64;-</span></code> specifies stdin and <code class="docutils literal notranslate"><span class="pre">&#64;filename</span></code> specifies
 reading from a file named ‘filename’. Otherwise, the value is assumed to
 be GeoJSON.</p>
-</div>
-<div class="section" id="field-values">
+</section>
+<section id="field-values">
 <span id="cli-metavar-field-values"></span><h3>FIELD VALUES…<a class="headerlink" href="#field-values" title="Permalink to this headline">¶</a></h3>
 <p>Specifies an ‘in’ query where FIELD is a property
 of the item-type and VALUES is space or comma separated text or numbers.</p>
-</div>
-<div class="section" id="field-comp-value">
+</section>
+<section id="field-comp-value">
 <span id="cli-metavar-field-comp-value"></span><h3>FIELD COMP VALUE…<a class="headerlink" href="#field-comp-value" title="Permalink to this headline">¶</a></h3>
 <p>A comparison query format where FIELD is a
 property of the item-type and COMP is one of lt, lte, gt, gte and VALUE is
 the number or date to compare against.</p>
 <p>Note: ISO-8601 variants are supported. For example, <code class="docutils literal notranslate"><span class="pre">2017</span></code> is short for
 <code class="docutils literal notranslate"><span class="pre">2017-01-01T00:00:00+00:00</span></code>.</p>
-</div>
-<div class="section" id="asset-type">
+</section>
+<section id="asset-type">
 <span id="cli-metavar-asset-type"></span><h3>ASSET-TYPE<a class="headerlink" href="#asset-type" title="Permalink to this headline">¶</a></h3>
 <p>Specify Asset-Type(s) of interest. Case-insenstive,
 supports glob-matching, e.g. <code class="docutils literal notranslate"><span class="pre">visual*</span></code> specifies <code class="docutils literal notranslate"><span class="pre">visual</span></code> and
 <code class="docutils literal notranslate"><span class="pre">visual_xml</span></code>.</p>
-</div>
-<div class="section" id="item-type">
+</section>
+<section id="item-type">
 <span id="cli-metavar-item-type"></span><h3>ITEM-TYPE<a class="headerlink" href="#item-type" title="Permalink to this headline">¶</a></h3>
 <p>Specify Item-Type(s) of interest. Case-insensitive,
-supports glob-matching, e.g. <code class="docutils literal notranslate"><span class="pre">psscene*</span></code> means <code class="docutils literal notranslate"><span class="pre">PSScene3Band</span></code> and
-<code class="docutils literal notranslate"><span class="pre">PSScene4Band</span></code>. The <code class="docutils literal notranslate"><span class="pre">all</span></code> value specifies every Item-Type.</p>
-</div>
-</div>
-<div class="section" id="general-options">
+supports glob-matching, e.g. <code class="docutils literal notranslate"><span class="pre">psscene*</span></code> means <code class="docutils literal notranslate"><span class="pre">PSScene</span></code>,
+<code class="docutils literal notranslate"><span class="pre">PSScene3Band</span></code>, and <code class="docutils literal notranslate"><span class="pre">PSScene4Band</span></code>. The <code class="docutils literal notranslate"><span class="pre">all</span></code> value specifies
+every Item-Type.</p>
+</section>
+</section>
+<section id="general-options">
 <h2>General Options<a class="headerlink" href="#general-options" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">--workers</span></code></dt><dd><p>The number of concurrent downloads when requesting multiple scenes. - Default 4</p>
@@ -139,17 +140,17 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 <dt><code class="docutils literal notranslate"><span class="pre">--version</span></code></dt><dd><p>Show the version and exit.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="general-commands">
+</section>
+<section id="general-commands">
 <h2>General Commands<a class="headerlink" href="#general-commands" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="#cli-command-help"><span class="std std-ref">help</span></a> None</p>
 <p><a class="reference internal" href="#cli-command-init"><span class="std std-ref">init</span></a> None</p>
-<div class="section" id="help">
+<section id="help">
 <span id="cli-command-help"></span><span id="index-0"></span><h3>help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h3>
 <p>Get command help</p>
 <p>Usage: help [OPTIONS] [COMMAND]</p>
-</div>
-<div class="section" id="init">
+</section>
+<section id="init">
 <span id="cli-command-init"></span><span id="index-1"></span><h3>init<a class="headerlink" href="#init" title="Permalink to this headline">¶</a></h3>
 <p>Login using email/password</p>
 <p>Usage: init [OPTIONS]</p>
@@ -177,9 +178,9 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 </tr>
 </tbody>
 </table>
-</div>
-</div>
-<div class="section" id="data-api">
+</section>
+</section>
+<section id="data-api">
 <h2>Data API<a class="headerlink" href="#data-api" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="#cli-command-create-search"><span class="std std-ref">create-search</span></a> None</p>
 <p><a class="reference internal" href="#cli-command-download"><span class="std std-ref">download</span></a> None</p>
@@ -188,7 +189,7 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 <p><a class="reference internal" href="#cli-command-search"><span class="std std-ref">search</span></a> None</p>
 <p><a class="reference internal" href="#cli-command-searches"><span class="std std-ref">searches</span></a> None</p>
 <p><a class="reference internal" href="#cli-command-stats"><span class="std std-ref">stats</span></a> None</p>
-<div class="section" id="create-search">
+<section id="create-search">
 <span id="cli-command-create-search"></span><span id="index-2"></span><h3>create-search<a class="headerlink" href="#create-search" title="Permalink to this headline">¶</a></h3>
 <p>Create a saved search</p>
 <p>Usage: create-search [OPTIONS]</p>
@@ -254,8 +255,8 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="download">
+</section>
+<section id="download">
 <span id="cli-command-download"></span><span id="index-3"></span><h3>download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h3>
 <p>Activate and download</p>
 <p>Usage: download [OPTIONS]</p>
@@ -339,8 +340,8 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="cli-command-filter">
+</section>
+<section id="cli-command-filter">
 <span id="index-4"></span><span id="id1"></span><h3>filter<a class="headerlink" href="#cli-command-filter" title="Permalink to this headline">¶</a></h3>
 <p>Output a AND filter as JSON to stdout.</p>
 <p>If provided using –filter-json, combine the filters.</p>
@@ -389,8 +390,8 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="saved-search">
+</section>
+<section id="saved-search">
 <span id="cli-command-saved-search"></span><span id="index-5"></span><h3>saved-search<a class="headerlink" href="#saved-search" title="Permalink to this headline">¶</a></h3>
 <p>Execute a saved search</p>
 <p>Usage: saved-search [OPTIONS] [SEARCH_ID]</p>
@@ -424,8 +425,8 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="search">
+</section>
+<section id="search">
 <span id="cli-command-search"></span><span id="index-6"></span><h3>search<a class="headerlink" href="#search" title="Permalink to this headline">¶</a></h3>
 <p>Execute a quick search.</p>
 <p>Usage: search [OPTIONS]</p>
@@ -493,8 +494,8 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="searches">
+</section>
+<section id="searches">
 <span id="cli-command-searches"></span><span id="index-7"></span><h3>searches<a class="headerlink" href="#searches" title="Permalink to this headline">¶</a></h3>
 <p>List searches</p>
 <p>Usage: searches [OPTIONS]</p>
@@ -530,8 +531,8 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="stats">
+</section>
+<section id="stats">
 <span id="cli-command-stats"></span><span id="index-8"></span><h3>stats<a class="headerlink" href="#stats" title="Permalink to this headline">¶</a></h3>
 <p>Get search stats</p>
 <p>Usage: stats [OPTIONS]</p>
@@ -599,9 +600,9 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
 </tr>
 </tbody>
 </table>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
           </div>
@@ -614,7 +615,7 @@ supports glob-matching, e.g. <code class="docutils literal notranslate"><span cl
       &copy;2017-2019 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

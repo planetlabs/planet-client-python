@@ -4,15 +4,15 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Examples &#8212; Planet API Client 1.4.6 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Examples &#8212; Planet API Client 1.4.7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="API" href="../api/index.html" />
@@ -78,9 +78,9 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="examples">
+  <section id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="data-examples">
+<section id="data-examples">
 <h2>Data Examples<a class="headerlink" href="#data-examples" title="Permalink to this headline">¶</a></h2>
 <p>Get the latest 10 items from the API of any ItemType:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --limit 10
@@ -90,8 +90,8 @@
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type PSScene3Band --date acquired gt 2017-02-14
 </pre></div>
 </div>
-<p>Item types can be specified case-insensitively, with prefix matching in the CLI:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type psscene --date acquired gt 2017-02-14
+<p>Item types can be specified case-insensitively, with glob matching in the CLI:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type psscene* --date acquired gt 2017-02-14
 </pre></div>
 </div>
 <p>Search for a month. Note: criteria are applied as an AND filter:</p>
@@ -123,8 +123,8 @@
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data download --item-type PSScene3Band --limit 3 --dest images-download-directory
 </pre></div>
 </div>
-</div>
-<div class="section" id="mosaic-examples">
+</section>
+<section id="mosaic-examples">
 <h2>Mosaic Examples<a class="headerlink" href="#mosaic-examples" title="Permalink to this headline">¶</a></h2>
 <p>List information for all mosaics you have access to:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet mosaics list
@@ -177,8 +177,8 @@ are hundreds of Terabytes in size):</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet mosaics series list-mosaics &lt;series_id&gt;
 </pre></div>
 </div>
-</div>
-<div class="section" id="analytics-examples">
+</section>
+<section id="analytics-examples">
 <h2>Analytics Examples<a class="headerlink" href="#analytics-examples" title="Permalink to this headline">¶</a></h2>
 <p>These examples assume that the reader is already familiar with the <a class="reference external" href="https://docs.google.com/document/d/1-ZgGIFKb9IxxVMjTb603lRd6pwEygcri5rKxcsEjk8E/">Analytics User Guide</a>.</p>
 <p>List information for all feeds, subscriptions, or collections you have access to:</p>
@@ -258,8 +258,8 @@ planet analytics collections features get target-quad &lt;collection_id or subsc
 planet analytics collections features get source-image-info &lt;collection_id or subscription_id&gt; &lt;feature_id&gt;
 </pre></div>
 </div>
-</div>
-<div class="section" id="orders-examples">
+</section>
+<section id="orders-examples">
 <h2>Orders Examples<a class="headerlink" href="#orders-examples" title="Permalink to this headline">¶</a></h2>
 <p>List all recent orders for the authenticated user:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders list
@@ -281,7 +281,7 @@ meant to be easily interoperable with other tools, e.g. <a class="reference exte
 </pre></div>
 </div>
 <p>Optionally, a <cite>–dest &lt;path to destination&gt;</cite> flag may be specified too.</p>
-<div class="section" id="creating-an-order">
+<section id="creating-an-order">
 <h3>Creating an Order<a class="headerlink" href="#creating-an-order" title="Permalink to this headline">¶</a></h3>
 <p>The minimal command to create a simple order looks something like:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders create --name &quot;my order&quot; \
@@ -480,24 +480,24 @@ storage destination, for example:</p>
 </div>
 <p>You can find complete documentation of Orders API cloud storage delivery and
 required credentials <a class="reference external" href="https://developers.planet.com/docs/orders/ordering-delivery/#delivery-to-cloud-storage_1">in the docs here</a>.</p>
-</div>
-</div>
-<div class="section" id="integration-with-other-tools">
+</section>
+</section>
+<section id="integration-with-other-tools">
 <h2>Integration With Other Tools<a class="headerlink" href="#integration-with-other-tools" title="Permalink to this headline">¶</a></h2>
 <p>The output of search results is valid GeoJSON so these can be piped into a file or tool.</p>
 <p>Create a <cite>gist</cite> using the <a class="reference external" href="http://defunkt.io/gist/">gist</a> command:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type psscene --limit 100 | gist -f latest-scenes.geojson
 </pre></div>
 </div>
-<div class="section" id="searching-using-a-shapefile">
+<section id="searching-using-a-shapefile">
 <h3>Searching Using a Shapefile<a class="headerlink" href="#searching-using-a-shapefile" title="Permalink to this headline">¶</a></h3>
 <p>Searching an area of interest described by a Shapefile, can be accomplished by chaining commands with <a class="reference external" href="https://github.com/Toblerity/Fiona">Fiona</a>.:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ fio dump santiago-de-chile.shp | planet data search --item-type psscene --geom @-
 </pre></div>
 </div>
 <p>Note: the <cite>&#64;-</cite> value for <cite>–geom</cite> specifies reading from stdin</p>
-</div>
-<div class="section" id="extracting-metadata-fields">
+</section>
+<section id="extracting-metadata-fields">
 <h3>Extracting Metadata Fields<a class="headerlink" href="#extracting-metadata-fields" title="Permalink to this headline">¶</a></h3>
 <p>Using <a class="reference external" href="https://stedolan.github.io/jq/">jq</a>, useful information can be parsed from data returned by the Planet API.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ planet data search --item-type psscene --limit <span class="m">100</span> <span class="p">|</span> jq -r <span class="s2">&quot;.features[].id&quot;</span>
@@ -512,17 +512,17 @@ required credentials <a class="reference external" href="https://developers.plan
 ...
 </pre></div>
 </div>
-</div>
-<div class="section" id="search-overlapping-imagery">
+</section>
+<section id="search-overlapping-imagery">
 <h3>Search Overlapping Imagery<a class="headerlink" href="#search-overlapping-imagery" title="Permalink to this headline">¶</a></h3>
 <p>Querying for Planet scenes that overlap another data source is easily accomplished by using <a class="reference external" href="https://github.com/mapbox/rasterio">Rasterio</a>.
 Given that this Landsat scene was taken on April 14, 2015, it might be useful to search for Planet scenes that were taken in a similar timeframe.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ rio bounds LC82210682015104LGN00_B1.TIF <span class="p">|</span> planet data search --item-type psscene --geom - --date acquired gt <span class="m">2015</span>-04-12 --date acquired lt <span class="m">2015</span>-04-14
 </pre></div>
 </div>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
           </div>
@@ -535,7 +535,7 @@ Given that this Landsat scene was taken on April 14, 2015, it might be useful to
       &copy;2017-2019 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

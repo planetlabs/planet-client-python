@@ -4,15 +4,15 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Examples &#8212; Planet API Client 1.4.6 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Examples &#8212; Planet API Client 1.4.7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="prev" title="Reference" href="reference.html" />
@@ -75,23 +75,23 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="examples">
+  <section id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="importing-the-api">
+<section id="importing-the-api">
 <h2>Importing the API<a class="headerlink" href="#importing-the-api" title="Permalink to this headline">¶</a></h2>
 <p>Everything needed is provided in the <cite>api</cite> module.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">planet</span> <span class="kn">import</span> <span class="n">api</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="creating-a-client">
+</section>
+<section id="creating-a-client">
 <h2>Creating a Client<a class="headerlink" href="#creating-a-client" title="Permalink to this headline">¶</a></h2>
 <p>Without any arguments, the Client will look for an API_KEY using the operating system environment variable <cite>PL_API_KEY</cite>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">ClientV1</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="searching-for-items">
+</section>
+<section id="searching-for-items">
 <h2>Searching for Items<a class="headerlink" href="#searching-for-items" title="Permalink to this headline">¶</a></h2>
 <p>A common case is searching for items in an AOI.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">aoi</span> <span class="o">=</span> <span class="p">{</span>
@@ -123,8 +123,8 @@
   <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -137,7 +137,7 @@
       &copy;2017-2019 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
