@@ -1,4 +1,4 @@
-# Copyright 2020 Planet Labs, Inc.
+# Copyright 2021 Planet Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,18 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .http import Session
-from .models import Order
-from . import order_details
-from .__version__ import __version__  # NOQA
-from .auth import Auth
-from .clients import OrdersClient
-
+from .orders import OrdersClient
 
 __all__ = [
-    Session,
     OrdersClient,
-    Order,
-    order_details,
-    Auth,
 ]

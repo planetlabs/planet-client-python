@@ -21,8 +21,7 @@ import os
 import httpx
 import jwt
 
-from . import constants
-from .api import http, models
+from . import constants, http, models
 
 AUTH_URL = constants.PLANET_BASE_URL + 'v0/auth/'
 

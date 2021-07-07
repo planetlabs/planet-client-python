@@ -62,7 +62,7 @@ def handle_exceptions(f):
     def wrapper(*args, **kwargs):
         try:
             f(*args, **kwargs)
-        except planet.api.exceptions.APIException as ex:
+        except planet.exceptions.APIException as ex:
             raise click.ClickException(ex)
     return wrapper
 
@@ -153,7 +153,7 @@ def orders(ctx, base_url):
 @coro
 @click.option('-s', '--state',
               help='Filter orders to given state.',
-              type=click.Choice(planet.api.orders.ORDERS_STATES,
+              type=click.Choice(planet.clients.orders.ORDERS_STATES,
                                 case_sensitive=False))
 @click.option('-l', '--limit', help='Filter orders to given limit.',
               default=None, type=int)
