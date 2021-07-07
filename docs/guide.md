@@ -150,7 +150,7 @@ The same thing, expressed as a `JSON` blob:
 ...       "product_bundle": "analytic"
 ...     }
 ...   ],
-...   "subscription_id": [
+...   "tools": [
 ...     {
 ...       "toar": {
 ...         "scale_factor": 10000
