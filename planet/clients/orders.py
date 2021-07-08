@@ -20,8 +20,8 @@ import time
 import typing
 
 from .. import constants
-from .http import Session
-from .models import Order, Orders, Request, Response, StreamingBody
+from ..http import Session
+from ..models import Order, Orders, Request, Response, StreamingBody
 
 
 BASE_URL = constants.PLANET_BASE_URL + 'compute/ops/'

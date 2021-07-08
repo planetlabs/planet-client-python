@@ -36,7 +36,7 @@ def runner():
 
 def test_cli_auth_init_bad_pw(runner, monkeypatch):
     def apiexcept(*args, **kwargs):
-        raise planet.api.exceptions.APIException('nope')
+        raise planet.exceptions.APIException('nope')
     monkeypatch.setattr(planet.Auth, 'from_login', apiexcept)
     result = runner.invoke(cli, args=['auth', 'init'], input='email\npw\n')
     assert 'Error: nope' in result.output
@@ -93,7 +93,7 @@ def test_cli_orders_list_success(runner, monkeypatch):
 
 def test_cli_orders_get(runner, monkeypatch, order_description, oid):
     async def go(*arg, **kwarg):
-        return planet.api.orders.Order(order_description)
+        return planet.models.Order(order_description)
 
     monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'get_order', go)
     result = runner.invoke(
@@ -170,7 +170,7 @@ def tools(tools_json, write_to_tmp_json_file):
 @pytest.fixture
 def mock_create_order(monkeypatch, order_description):
     mock_create_order = AsyncMock(
-            return_value=planet.api.orders.Order(order_description))
+            return_value=planet.models.Order(order_description))
     monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'create_order',
                         mock_create_order)
     return mock_create_order

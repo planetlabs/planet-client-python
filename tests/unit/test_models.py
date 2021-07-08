@@ -23,7 +23,7 @@ import re
 from httpx import URL
 import pytest
 
-from planet.api import models
+from planet import models
 
 
 LOGGER = logging.getLogger(__name__)
