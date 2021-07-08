@@ -12,7 +12,7 @@
     rendering:
       show_root_full_path: false
 
-## ::: planet.order_details
+## ::: planet.order_request
     rendering:
       show_root_full_path: false
 

@@ -109,9 +109,9 @@ order is completed and to download an entire order.
 
 #### Creating an Order
 
-When creating an order, the order details must be provided to the API as a JSON
-blob. This JSON blob can be built up manually or by using the `build_request`
-function.
+When creating an order, the order request details must be provided to the API
+as a JSON blob. This JSON blob can be built up manually or by using the
+`build_request` function.
 
 An example of creating the request JSON with `build_request`:
 
