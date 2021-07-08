@@ -286,17 +286,17 @@ async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
                  tools, pretty):
     '''Create an order.'''
     try:
-        product = planet.order_details.product(ids, bundle, item_type)
+        product = planet.order_request.product(ids, bundle, item_type)
     except planet.specs.SpecificationException as e:
         raise click.BadParameter(e)
 
     if email:
-        notifications = planet.order_details.notifications(email=email)
+        notifications = planet.order_request.notifications(email=email)
     else:
         notifications = None
 
     if cloudconfig:
-        delivery = planet.order_details.delivery(
+        delivery = planet.order_request.delivery(
             cloud_config=cloudconfig
         )
     else:
@@ -310,9 +310,9 @@ async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
         except planet.geojson.GeoJSONException as e:
             raise click.BadParameter(e)
 
-        tools = [planet.order_details.clip_tool(clip)]
+        tools = [planet.order_request.clip_tool(clip)]
 
-    request = planet.order_details.build_request(
+    request = planet.order_request.build_request(
         name,
         products=[product],
         delivery=delivery,

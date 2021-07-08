@@ -177,8 +177,8 @@ def mock_create_order(monkeypatch, order_description):
 
 
 @pytest.fixture
-def test_id(order_details):
-    return order_details['products'][0]['item_ids'][0]
+def test_id(order_request):
+    return order_request['products'][0]['item_ids'][0]
 
 
 def test_cli_read_file_geojson(clipaoi, geom_geojson):
@@ -188,11 +188,11 @@ def test_cli_read_file_geojson(clipaoi, geom_geojson):
 
 
 @pytest.fixture
-def create_order_basic_cmds(order_details, test_id):
-    product = order_details['products'][0]
+def create_order_basic_cmds(order_request, test_id):
+    product = order_request['products'][0]
     return [
             'orders', 'create',
-            '--name', order_details['name'],
+            '--name', order_request['name'],
             '--id', test_id,
             '--bundle', product['product_bundle'],
             '--item-type', product['item_type']
@@ -200,15 +200,15 @@ def create_order_basic_cmds(order_details, test_id):
 
 
 @pytest.fixture
-def name(order_details):
-    return order_details['name']
+def name(order_request):
+    return order_request['name']
 
 
 @pytest.fixture
-def products(order_details, test_id):
-    product = order_details['products'][0]
+def products(order_request, test_id):
+    product = order_request['products'][0]
     return [
-        planet.order_details.product(
+        planet.order_request.product(
             [test_id],
             product['product_bundle'],
             product['item_type'])
@@ -273,20 +273,20 @@ def test_cli_orders_create_tools(
 
 
 def test_cli_orders_create_validate_id(
-        runner, mock_create_order, order_details, test_id
+        runner, mock_create_order, order_request, test_id
         ):
     # uuid generated with https://www.uuidgenerator.net/
     test_id2 = '65f4aa35-b46b-48ba-b165-12b49986795c'
     success_ids = ','.join([test_id, test_id2])
     fail_ids = '1,,2'
 
-    product = order_details['products'][0]
+    product = order_request['products'][0]
 
     # id string is correct format
     success_mult_ids_result = runner.invoke(
         cli, [
             'orders', 'create',
-            '--name', order_details['name'],
+            '--name', order_request['name'],
             '--id', success_ids,
             '--bundle', product['product_bundle'],
             '--item-type', product['item_type']
@@ -298,7 +298,7 @@ def test_cli_orders_create_validate_id(
     failed_mult_ids_result = runner.invoke(
         cli, [
             'orders', 'create',
-            '--name', order_details['name'],
+            '--name', order_request['name'],
             '--id', fail_ids,
             '--bundle', product['product_bundle'],
             '--item-type', product['item_type']
@@ -308,13 +308,13 @@ def test_cli_orders_create_validate_id(
 
 
 def test_cli_orders_create_validate_item_type(
-        runner, mock_create_order, order_details, test_id
+        runner, mock_create_order, order_request, test_id
         ):
     # item type is not valid for bundle
     failed_item_type_result = runner.invoke(
         cli, [
             'orders', 'create',
-            '--name', order_details['name'],
+            '--name', order_request['name'],
             '--id', test_id,
             '--bundle', 'analytic_udm2',
             '--item-type', 'PSScene3Band'

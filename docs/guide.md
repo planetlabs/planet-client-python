@@ -116,21 +116,21 @@ function.
 An example of creating the request JSON with `build_request`:
 
 ```python
->>> from planet import order_details 
+>>> from planet import order_request
 >>> products = [
-...     order_details.product(['20170614_113217_3163208_RapidEye-5'],
+...     order_request.product(['20170614_113217_3163208_RapidEye-5'],
 ...                           'analytic', 'REOrthoTile')
 ... ]
 ...
 >>> tools = [
-...     order_details.toar_tool(scale_factor=10000),
-...     order_details.reproject_tool(projection='WSG84', kernel='cubic'),
-...     order_details.tile_tool(1232, origin_x=-180, origin_y=-90,
+...     order_request.toar_tool(scale_factor=10000),
+...     order_request.reproject_tool(projection='WSG84', kernel='cubic'),
+...     order_request.tile_tool(1232, origin_x=-180, origin_y=-90,
 ...               pixel_size=0.000027056277056,
 ...               name_template='C1232_30_30_{tilex:04d}_{tiley:04d}')
 ... ]
 ...
->>> order_request = order_details.build_request(
+>>> request = order_request.build_request(
 ...     'test_order', products, tools)
 ...
 
@@ -139,7 +139,7 @@ An example of creating the request JSON with `build_request`:
 The same thing, expressed as a `JSON` blob:
 
 ```python
->>> order_detail = {
+>>> request = {
 ...   "name": "test_order",
 ...   "products": [
 ...     {
@@ -176,14 +176,14 @@ The same thing, expressed as a `JSON` blob:
 
 ```
 
-Once the order details are built up, creating an order is done within
+Once the order request is built up, creating an order is done within
 the context of a `Session` with the `OrdersClient`:
 
 ```python
 >>> async def main():
 ...     async with Session() as sess:
 ...         cl = OrdersClient(sess)
-...         order_id = await cl.create_order(order_detail)
+...         order_id = await cl.create_order(request)
 ...
 >>> asyncio.run(main())
 
