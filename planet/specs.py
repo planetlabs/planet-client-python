@@ -38,10 +38,11 @@ def validate_bundle(bundle):
     return _validate_field(bundle, supported, 'product_bundle')
 
 
-def validate_item_type(item_type, bundle):
+def validate_item_type(item_type, bundle, report_field_name=True):
     bundle = validate_bundle(bundle)
     supported = get_item_types(bundle)
-    return _validate_field(item_type, supported, 'item_type')
+    field_name = 'item_type' if report_field_name else None
+    return _validate_field(item_type, supported, field_name)
 
 
 def validate_order_type(order_type):
@@ -61,7 +62,8 @@ def _validate_field(value, supported, field_name=None):
     try:
         value = get_match(value, supported)
     except(NoMatchException):
-        msg = f'\'{value}\' not in {list(supported)}'
+        opts = ', '.join(["'"+s+"'" for s in supported])
+        msg = f'\'{value}\' is not one of {opts}.'
         if field_name:
             msg = f'{field_name} - ' + msg
         raise SpecificationException(msg)

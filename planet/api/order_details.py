@@ -16,9 +16,9 @@ from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import copy
 import json
 import logging
-from typing import List
+from typing import List, Union
 
-from .. import specs
+from .. import geojson, specs
 
 LOGGER = logging.getLogger(__name__)
 
@@ -90,6 +90,15 @@ class OrderDetails():
 
         if self.order_type is not None:
             self.order_type = specs.validate_order_type(order_type)
+
+    def __eq__(self, other):
+        return self.to_dict() == other.to_dict()
+
+    def __repr__(self):
+        return str(self.to_dict())
+
+    def __str__(self):
+        return json.dumps(self.to_dict(), indent=4, sort_keys=True)
 
     @classmethod
     def from_dict(cls, details: dict) -> OrderDetails:
@@ -306,7 +315,48 @@ class Delivery():
         self.archive_filename = archive_filename
 
     @classmethod
-    def from_dict(cls, details: dict) -> Delivery:
+    def from_dict(
+        cls,
+        details: dict,
+        subclass: bool = True
+        ) -> Union[
+                Delivery,
+                AmazonS3Delivery,
+                AzureBlobStorageDelivery,
+                GoogleCloudStorageDelivery,
+                GoogleEarthEngineDelivery]:
+        """Create Delivery instance from Orders API spec representation.
+
+        Parameters:
+            details: API spec representation of delivery.
+            subclass: Create a subclass of Delivery if the necessary
+                information is provided.
+
+        Returns:
+            Delivery or Delivery subclass instance
+        """
+        def _create_subclass(details):
+            subclasses = [
+                AmazonS3Delivery,
+                AzureBlobStorageDelivery,
+                GoogleCloudStorageDelivery,
+                GoogleEarthEngineDelivery
+                ]
+            created = False
+            for cls in subclasses:
+                try:
+                    created = cls.from_dict(details)
+                except KeyError:
+                    pass
+                else:
+                    break
+            return created
+
+        created = _create_subclass(details) or cls._from_dict(details)
+        return created
+
+    @classmethod
+    def _from_dict(cls, details: dict) -> Delivery:
         """Create Delivery instance from Orders API spec representation.
 
         Parameters:
@@ -634,12 +684,16 @@ class Tool():
         parameters: dict
     ):
         """
-        Parameters**
+        Parameters:
             name: Tool name.
             parameters: Tool parameters.
         """
         self.name = specs.validate_tool(name)
         self.parameters = parameters
+
+    def __eq__(self, other):
+        return (self.name == other.name and
+                self.parameters == other.parameters)
 
     @classmethod
     def from_dict(cls, details: dict) -> Tool:
@@ -664,3 +718,17 @@ class Tool():
             API spec representation of Tool.
         """
         return {self.name: self.parameters}
+
+
+class ClipTool(Tool):
+    '''Clip tool description for a given clip region.'''
+    def __init__(
+        self,
+        aoi: Union[dict, geojson.Polygon]
+    ):
+        """
+        Parameters:
+            aoi: clip GeoJSON.
+        """
+        parameters = {'aoi': geojson.as_polygon(aoi)}
+        super().__init__('clip', parameters)

@@ -37,31 +37,91 @@ def mock_request():
     yield r
 
 
-@pytest.mark.asyncio
-async def test_basesession__raise_for_status():
-    http.BaseSession._raise_for_status(Mock(
-        status_code=HTTPStatus.CREATED, text=''
+@pytest.fixture
+def mock_response():
+    def mocker(code, text='', json={"message": "nope"}):
+        r = Mock()
+        r.status_code = code
+        r.text = text
+        r.json = Mock(return_value=json)
+        return r
+    return mocker
+
+
+def test_basesession__raise_for_status(mock_response):
+    http.BaseSession._raise_for_status(mock_response(
+        HTTPStatus.CREATED,
+        json={}
     ))
 
     with pytest.raises(exceptions.BadQuery):
-        http.BaseSession._raise_for_status(Mock(
-            status_code=HTTPStatus.BAD_REQUEST, text=''
+        http.BaseSession._raise_for_status(mock_response(
+            HTTPStatus.BAD_REQUEST,
+            json={}
         ))
 
     with pytest.raises(exceptions.TooManyRequests):
-        http.BaseSession._raise_for_status(Mock(
-            status_code=HTTPStatus.TOO_MANY_REQUESTS, text=''
+        http.BaseSession._raise_for_status(mock_response(
+            HTTPStatus.TOO_MANY_REQUESTS,
+            text='',
+            json={}
         ))
 
     with pytest.raises(exceptions.OverQuota):
-        http.BaseSession._raise_for_status(Mock(
-            status_code=HTTPStatus.TOO_MANY_REQUESTS, text='exceeded QUOTA'
+        http.BaseSession._raise_for_status(mock_response(
+            HTTPStatus.TOO_MANY_REQUESTS,
+            text='exceeded QUOTA"',
+            json={}
         ))
 
     with pytest.raises(exceptions.APIException):
-        http.BaseSession._raise_for_status(Mock(
-            status_code=HTTPStatus.METHOD_NOT_ALLOWED, text='not sure'
+        http.BaseSession._raise_for_status(mock_response(
+            HTTPStatus.METHOD_NOT_ALLOWED,
+            json={}
         ))
+
+
+def test_basesession__parse_message(mock_response):
+    create_order_bad_id_msg = {
+        "field": {
+            "Details": [
+                {"message": "Item ID 1 / Item Type PSScene3Band doesn't exist"}
+            ]
+        },
+        "general": [
+            {"message": "Unable to accept order"}
+        ]
+    }
+
+    msg = http.BaseSession._parse_message(mock_response(
+            HTTPStatus.BAD_REQUEST,
+            json=create_order_bad_id_msg
+        ))
+    assert msg == (
+        "Unable to accept order - " +
+        "Item ID 1 / Item Type PSScene3Band doesn't exist"
+    )
+
+    oid = 'f8da0a3e-174f-4359-b088-a961ac76f0e7'
+    id_not_found_msg = {
+        "message": f"Could not load order ID: {oid}."
+    }
+    msg = http.BaseSession._parse_message(mock_response(
+            HTTPStatus.NOT_FOUND,
+            json=id_not_found_msg
+        ))
+    assert msg == f"Could not load order ID: {oid}."
+
+    bad_oid = 'f8da0a3e-174f-4359-b088-a961ac76f0e'
+    bad_id_msg = {
+        "code": 601,
+        "message": f"order_id in path must be of type uuid: \"{bad_oid}\""
+    }
+    msg = http.BaseSession._parse_message(mock_response(
+            HTTPStatus.BAD_REQUEST,
+            json=bad_id_msg
+        ))
+    assert msg == f'order_id in path must be of type uuid: "{bad_oid}"'
 
 
 @pytest.mark.asyncio
@@ -96,12 +156,12 @@ async def test_session_stream(mock_request):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session_request_retry(mock_request):
+async def test_session_request_retry(mock_request, mock_response):
     async with http.Session() as ps:
         route = respx.get(TEST_URL)
         route.side_effect = [
-            httpx.Response(HTTPStatus.TOO_MANY_REQUESTS),
-            httpx.Response(HTTPStatus.OK)
+            httpx.Response(HTTPStatus.TOO_MANY_REQUESTS, json={}),
+            httpx.Response(HTTPStatus.OK, json={})
         ]
 
         ps.retry_wait_time = 0  # lets not slow down tests for this
@@ -131,3 +191,17 @@ async def test_authsession_request(mock_request):
 
     resp = sess.request(mock_request)
     assert resp.http_response.text == 'bubba'
+
+
+def test_authsession__raise_for_status(mock_response):
+    with pytest.raises(exceptions.APIException):
+        http.AuthSession._raise_for_status(mock_response(
+            HTTPStatus.BAD_REQUEST,
+            json={}
+            ))
+
+    with pytest.raises(exceptions.APIException):
+        http.AuthSession._raise_for_status(mock_response(
+            HTTPStatus.UNAUTHORIZED,
+            json={}
+            ))

@@ -17,7 +17,7 @@ from .api.orders import OrdersClient
 from .api.order_details import (
     OrderDetails, Product, Notifications, Delivery, AmazonS3Delivery,
     AzureBlobStorageDelivery, GoogleCloudStorageDelivery,
-    GoogleEarthEngineDelivery, Tool)
+    GoogleEarthEngineDelivery, Tool, ClipTool)
 from .api.__version__ import __version__  # NOQA
 from .auth import Auth
 
@@ -34,6 +34,7 @@ __all__ = [
     AzureBlobStorageDelivery,
     GoogleCloudStorageDelivery,
     GoogleEarthEngineDelivery,
+    ClipTool,
     Tool,
-    Auth
+    Auth,
 ]

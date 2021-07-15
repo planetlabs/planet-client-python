@@ -15,7 +15,7 @@ import logging
 
 import pytest
 
-from planet import specs
+from planet import geojson, specs
 from planet.api import order_details
 
 LOGGER = logging.getLogger(__name__)
@@ -190,30 +190,38 @@ def test_Delivery():
     assert d.archive_type == 'zip'
 
 
-def test_Delivery_from_dict():
-    test_details = {
+@pytest.fixture
+def delivery_details():
+    return {
       'archive_type': 'zip',
       'single_archive': True,
       'archive_filename': TEST_ARCHIVE_FILENAME
       }
 
-    d = order_details.Delivery.from_dict(test_details)
+
+def test_Delivery_from_dict(as3_details, abs_details, delivery_details,
+                            gcs_details, gee_details):
+    d = order_details.Delivery.from_dict(delivery_details)
+    assert isinstance(d, order_details.Delivery)
     assert d.archive_type == 'zip'
     assert d.single_archive
     assert d.archive_filename == TEST_ARCHIVE_FILENAME
 
+    subclass_details = [as3_details, abs_details, gcs_details, gee_details]
+    subclasses = [order_details.AmazonS3Delivery,
+                  order_details.AzureBlobStorageDelivery,
+                  order_details.GoogleCloudStorageDelivery,
+                  order_details.GoogleEarthEngineDelivery]
+    for details, cls in zip(subclass_details, subclasses):
+        assert isinstance(order_details.Delivery.from_dict(details), cls)
 
-def test_Delivery_to_dict():
+
+def test_Delivery_to_dict(delivery_details):
     d = order_details.Delivery(archive_type='zip',
                                single_archive=True,
                                archive_filename=TEST_ARCHIVE_FILENAME)
     details = d.to_dict()
-    expected = {
-      'archive_type': 'zip',
-      'single_archive': True,
-      'archive_filename': TEST_ARCHIVE_FILENAME
-      }
-    assert details == expected
+    assert details == delivery_details
 
     d = order_details.Delivery(archive_type='zip')
     details = d.to_dict()
@@ -223,8 +231,9 @@ def test_Delivery_to_dict():
     assert details == expected
 
 
-def test_AmazonS3Delivery_from_dict():
-    test_details = {
+@pytest.fixture
+def as3_details():
+    return {
         'amazon_s3': {
             'aws_access_key_id': 'aws_access_key_id',
             'aws_secret_access_key': 'aws_secret_access_key',
@@ -232,19 +241,19 @@ def test_AmazonS3Delivery_from_dict():
             'aws_region': 'aws_region'
             },
         'archive_type': 'zip',
-        'single_archive': True,
-        'archive_filename': TEST_ARCHIVE_FILENAME
     }
 
-    d2 = order_details.AmazonS3Delivery.from_dict(test_details)
+
+def test_AmazonS3Delivery_from_dict(as3_details):
+    d2 = order_details.AmazonS3Delivery.from_dict(as3_details)
     assert d2.aws_region == 'aws_region'
 
 
-def test_AmazonS3Delivery_to_dict():
-    aws_access_key_id = 'keyid'
-    aws_secret_access_key = 'accesskey'
+def test_AmazonS3Delivery_to_dict(as3_details):
+    aws_access_key_id = 'aws_access_key_id'
+    aws_secret_access_key = 'aws_secret_access_key'
     bucket = 'bucket'
-    aws_region = 'awsregion'
+    aws_region = 'aws_region'
     archive_type = 'zip'
 
     d = order_details.AmazonS3Delivery(
@@ -254,35 +263,27 @@ def test_AmazonS3Delivery_to_dict():
         aws_region,
         archive_type=archive_type)
     details = d.to_dict()
-    expected = {
-        'amazon_s3': {
-            'aws_access_key_id': aws_access_key_id,
-            'aws_secret_access_key': aws_secret_access_key,
-            'bucket': bucket,
-            'aws_region': aws_region
-        },
-        'archive_type': archive_type
-    }
-    assert details == expected
+    assert details == as3_details
 
 
-def test_AzureBlobStorageDelivery_from_dict():
-    test_details = {
+@pytest.fixture
+def abs_details():
+    return {
         'azure_blob_storage': {
             'account': 'account',
             'container': 'container',
             'sas_token': 'sas_token',
             },
         'archive_type': 'zip',
-        'single_archive': True,
-        'archive_filename': TEST_ARCHIVE_FILENAME
     }
 
-    d2 = order_details.AzureBlobStorageDelivery.from_dict(test_details)
+
+def test_AzureBlobStorageDelivery_from_dict(abs_details):
+    d2 = order_details.AzureBlobStorageDelivery.from_dict(abs_details)
     assert d2.sas_token == 'sas_token'
 
 
-def test_AzureBlobStorageDelivery_to_dict():
+def test_AzureBlobStorageDelivery_to_dict(abs_details):
     account = 'account'
     container = 'container'
     sas_token = 'sas_token'
@@ -294,33 +295,26 @@ def test_AzureBlobStorageDelivery_to_dict():
         sas_token,
         archive_type=archive_type)
     details = d.to_dict()
-    expected = {
-        'azure_blob_storage': {
-            'account': account,
-            'container': container,
-            'sas_token': sas_token,
-        },
-        'archive_type': archive_type
-    }
-    assert details == expected
+    assert details == abs_details
 
 
-def test_GoogleCloudStorageDelivery_from_dict():
-    test_details = {
+@pytest.fixture
+def gcs_details():
+    return {
         'google_cloud_storage': {
             'bucket': 'bucket',
             'credentials': 'credentials',
             },
         'archive_type': 'zip',
-        'single_archive': True,
-        'archive_filename': TEST_ARCHIVE_FILENAME
     }
 
-    d2 = order_details.GoogleCloudStorageDelivery.from_dict(test_details)
+
+def test_GoogleCloudStorageDelivery_from_dict(gcs_details):
+    d2 = order_details.GoogleCloudStorageDelivery.from_dict(gcs_details)
     assert d2.credentials == 'credentials'
 
 
-def test_GoogleCloudStorageDelivery_to_dict():
+def test_GoogleCloudStorageDelivery_to_dict(gcs_details):
     bucket = 'bucket'
     credentials = 'credentials'
     archive_type = 'zip'
@@ -330,32 +324,26 @@ def test_GoogleCloudStorageDelivery_to_dict():
         credentials,
         archive_type=archive_type)
     details = d.to_dict()
-    expected = {
-        'google_cloud_storage': {
-            'bucket': bucket,
-            'credentials': credentials,
-        },
-        'archive_type': archive_type
-    }
-    assert details == expected
+    assert details == gcs_details
 
 
-def test_GoogleEarthEngineDelivery_from_dict():
-    test_details = {
+@pytest.fixture
+def gee_details():
+    return {
         'google_earth_engine': {
             'project': 'project',
             'collection': 'collection',
             },
         'archive_type': 'zip',
-        'single_archive': True,
-        'archive_filename': TEST_ARCHIVE_FILENAME
     }
 
-    d2 = order_details.GoogleEarthEngineDelivery.from_dict(test_details)
+
+def test_GoogleEarthEngineDelivery_from_dict(gee_details):
+    d2 = order_details.GoogleEarthEngineDelivery.from_dict(gee_details)
     assert d2.collection == 'collection'
 
 
-def test_GoogleEarthEngineDelivery_to_dict():
+def test_GoogleEarthEngineDelivery_to_dict(gee_details):
     project = 'project'
     collection = 'collection'
     archive_type = 'zip'
@@ -365,14 +353,7 @@ def test_GoogleEarthEngineDelivery_to_dict():
         collection,
         archive_type=archive_type)
     details = d.to_dict()
-    expected = {
-        'google_earth_engine': {
-            'project': project,
-            'collection': collection,
-        },
-        'archive_type': archive_type
-    }
-    assert details == expected
+    assert details == gee_details
 
 
 def test_Tool():
@@ -399,3 +380,20 @@ def test_Tool_to_dict():
 
     with pytest.raises(specs.SpecificationException):
         _ = order_details.Tool('notsupported', 'jsonstring')
+
+
+def test_ClipTool_success_dict(geom_geojson):
+    ct = order_details.ClipTool(geom_geojson)
+    assert ct.name == 'clip'
+    assert ct.parameters['aoi'] == geom_geojson
+
+
+def test_ClipTool_success_geom(geom_geojson):
+    ct = order_details.ClipTool(geom_geojson)
+    assert ct.name == 'clip'
+    assert ct.parameters['aoi'] == geom_geojson
+
+
+def test_ClipTool_wrong_type(point_geom_geojson):
+    with pytest.raises(geojson.WrongTypeException):
+        _ = order_details.ClipTool(point_geom_geojson)

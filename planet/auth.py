@@ -74,7 +74,7 @@ class Auth(metaclass=abc.ABCMeta):
             auth = APIKeyAuth.from_dict(secrets)
         except FileNotFoundError:
             raise AuthException(f'File {filename} does not exist.')
-        except KeyError:
+        except (KeyError, json.decoder.JSONDecodeError):
             raise AuthException(f'File {filename} is not the correct format.')
 
         LOGGER.debug(f'Auth read from secret file {filename}.')
@@ -258,7 +258,7 @@ class _SecretFile():
         try:
             secrets_to_write = self.read()
             secrets_to_write.update(contents)
-        except FileNotFoundError:
+        except (FileNotFoundError, KeyError, json.decoder.JSONDecodeError):
             secrets_to_write = contents
 
         self._write(secrets_to_write)

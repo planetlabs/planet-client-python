@@ -31,8 +31,10 @@ nav:
     - User Guide: 'guide.md'
     - Upgrading: 'upgrading.md'
     - API Reference: 'api.md'
+    - CLI Reference: 'cli.md'
 
 markdown_extensions:
   - pymdownx.highlight
   - pymdownx.superfences
+  - mkdocs-click
 

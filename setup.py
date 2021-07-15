@@ -25,7 +25,9 @@ with open('planet/api/__version__.py') as f:
 
 
 install_requires = [
-    'httpx==0.16',
+    'click>=8.0.0',
+    'httpx==0.16.1',
+    'shapely>=1.7.1',
     'pyjwt>=2.1',
     'tqdm>=4.56',
 ]
@@ -42,7 +44,8 @@ lint_requires = [
 ]
 
 doc_requires = [
-    'mkdocs',
+    'mkdocs==1.1',
+    'mkdocs-click==0.4.0',
     'mkdocs-material',
     'mkdocstrings==0.15.0'
 ]
@@ -77,5 +80,10 @@ setup(name='planet',
           'test': test_requires,
           'lint': lint_requires,
           'docs': doc_requires,
-          'dev': test_requires + lint_requires + doc_requires}
+          'dev': test_requires + lint_requires + doc_requires},
+      entry_points={
+          'console_scripts': [
+              'planet=planet.scripts.cli:cli',
+          ],
+        },
       )

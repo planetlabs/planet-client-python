@@ -51,8 +51,8 @@ class BaseSession():
             f'{request.method} {request.url} - '
             f'Status {response.status_code}')
 
-    @staticmethod
-    def _raise_for_status(response):
+    @classmethod
+    def _raise_for_status(cls, response):
         # TODO: consider using http_response.reason_phrase
         status = response.status_code
 
@@ -69,16 +69,47 @@ class BaseSession():
             HTTPStatus.INTERNAL_SERVER_ERROR: exceptions.ServerError
         }.get(status, None)
 
-        msg = response.text
+        LOGGER.debug(f"Exception type: {exception}")
+        LOGGER.debug(f"Response text: {response.text}")
 
-        # differentiate between over quota and rate-limiting
-        if status == 429 and 'quota' in msg.lower():
-            exception = exceptions.OverQuota
+        if exception == exceptions.TooManyRequests:
+            # differentiate between over quota and rate-limiting
+            if 'quota' in response.text.lower():
+                exception = exceptions.OverQuota
+
+        try:
+            msg = cls._parse_message(response)
+        except Exception:
+            msg = response.text
 
         if exception:
             raise exception(msg)
 
         raise exceptions.APIException(f'{status}: {msg}')
+
+    @staticmethod
+    def _parse_message(response):
+        msg = response.json()
+        LOGGER.debug(f'Raw response message: {msg}')
+
+        try:
+            msg = msg['message']
+        except KeyError:
+            try:
+                new_msg = msg['general'][0]['message']
+                try:
+                    msg_field = msg['field']
+                    key = list(msg_field.keys())[0]
+                    LOGGER.debug(f'key: {key}')
+                    new_msg = (new_msg + ' - ' + msg_field[key][0]['message'])
+                except Exception:
+                    pass
+                msg = new_msg
+            except Exception:
+                pass
+
+        LOGGER.debug(f'Processed response message: {msg}')
+        return msg
 
 
 class Session(BaseSession):
@@ -243,6 +274,15 @@ class AuthSession(BaseSession):
         '''Submit a request'''
         http_resp = self._client.send(request.http_request)
         return models.Response(request, http_resp)
+
+    @classmethod
+    def _raise_for_status(cls, response):
+        try:
+            super()._raise_for_status(response)
+        except exceptions.BadQuery:
+            raise exceptions.APIException('Not a valid email address.')
+        except exceptions.InvalidAPIKey:
+            raise exceptions.APIException('Incorrect email or password.')
 
 
 class Stream():
