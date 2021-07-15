@@ -45,10 +45,6 @@ def test_geom_from_geojson_success(
     fcgeo = geojson.geom_from_geojson(featureclass_geojson)
     assert_geom_equal(fcgeo, geom_geojson)
 
-    featureclass_geojson['features'].append(feature_geojson)
-    ffcgeo = geojson.geom_from_geojson(featureclass_geojson)
-    assert_geom_equal(ffcgeo, geom_geojson)
-
 
 def test_geom_from_geojson_no_geometry(feature_geojson):
     feature_geojson.pop('geometry')
@@ -66,6 +62,13 @@ def test_geom_from_geojson_missing_type(geom_geojson):
     geom_geojson.pop('type')
     with pytest.raises(geojson.GeoJSONException):
         _ = geojson.geom_from_geojson(geom_geojson)
+
+
+def test_geom_from_geojson_multiple_features(featureclass_geojson):
+    # duplicate the feature
+    featureclass_geojson['features'] = 2 * featureclass_geojson['features']
+    with pytest.raises(geojson.MultipleFeaturesException):
+        _ = geojson.geom_from_geojson(featureclass_geojson)
 
 
 def test_validate_geom_invalid_type(geom_geojson):

@@ -30,8 +30,9 @@ class WrongTypeException(GeoJSONException):
     pass
 
 
-class DataLossWarning(UserWarning):
-    """Warn that data will be lost."""
+class MultipleFeaturesException(GeoJSONException):
+    '''multiple features when only one is acceptable'''
+    pass
 
 
 def as_geom(data: dict) -> dict:
@@ -80,7 +81,7 @@ def geom_from_geojson(data: dict) -> dict:
     else:
         try:
             # feature
-            ret = as_geom(data["geometry"])
+            ret = as_geom(data['geometry'])
         except KeyError:
             try:
                 # featureclass
@@ -89,9 +90,9 @@ def geom_from_geojson(data: dict) -> dict:
                 raise GeoJSONException('Invalid GeoJSON: {data}')
 
             if len(features) > 1:
-                LOGGER.warning(
-                    'FeatureClass has more than one Feature, using only first'
-                    ' feature.')
+                raise MultipleFeaturesException(
+                    'FeatureClass has multiple features. Only one feature '
+                    'can be used to get geometry.')
 
             ret = as_geom(features[0])
     return ret
