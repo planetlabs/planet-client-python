@@ -18,6 +18,7 @@ import logging
 import os
 import time
 import typing
+import uuid
 
 from .. import constants
 from ..http import Session
@@ -80,8 +81,14 @@ class OrdersClient():
 
     @staticmethod
     def _check_order_id(oid):
-        if not oid or not isinstance(oid, str):
-            raise OrdersClientException(f'Order id ({oid}) is invalid.')
+        msg = f'Order id ({oid}) must be a valid UUID string.'
+        if not isinstance(oid, str):
+            raise OrdersClientException(msg)
+
+        try:
+            uuid.UUID(oid)
+        except ValueError:
+            raise OrdersClientException(msg)
 
     def _orders_url(self):
         return self._base_url + ORDERS_PATH
@@ -90,7 +97,7 @@ class OrdersClient():
         return self._base_url + STATS_PATH
 
     def _order_url(self, order_id):
-        self._check_order_id
+        self._check_order_id(order_id)
         return self._orders_url() + order_id
 
     def _bulk_url(self):
