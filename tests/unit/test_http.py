@@ -81,49 +81,6 @@ def test_basesession__raise_for_status(mock_response):
         ))
 
 
-def test_basesession__parse_message(mock_response):
-    create_order_bad_id_msg = {
-        "field": {
-            "Details": [
-                {"message": "Item ID 1 / Item Type PSScene3Band doesn't exist"}
-            ]
-        },
-        "general": [
-            {"message": "Unable to accept order"}
-        ]
-    }
-
-    msg = http.BaseSession._parse_message(mock_response(
-            HTTPStatus.BAD_REQUEST,
-            json=create_order_bad_id_msg
-        ))
-    assert msg == (
-        "Unable to accept order - " +
-        "Item ID 1 / Item Type PSScene3Band doesn't exist"
-    )
-
-    oid = 'f8da0a3e-174f-4359-b088-a961ac76f0e7'
-    id_not_found_msg = {
-        "message": f"Could not load order ID: {oid}."
-    }
-    msg = http.BaseSession._parse_message(mock_response(
-            HTTPStatus.NOT_FOUND,
-            json=id_not_found_msg
-        ))
-    assert msg == f"Could not load order ID: {oid}."
-
-    bad_oid = 'f8da0a3e-174f-4359-b088-a961ac76f0e'
-    bad_id_msg = {
-        "code": 601,
-        "message": f"order_id in path must be of type uuid: \"{bad_oid}\""
-    }
-    msg = http.BaseSession._parse_message(mock_response(
-            HTTPStatus.BAD_REQUEST,
-            json=bad_id_msg
-        ))
-    assert msg == f'order_id in path must be of type uuid: "{bad_oid}"'
-
-
 @pytest.mark.asyncio
 async def test_session_contextmanager():
     async with http.Session():

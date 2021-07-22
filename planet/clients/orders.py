@@ -20,7 +20,7 @@ import time
 import typing
 import uuid
 
-from .. import constants
+from .. import constants, exceptions
 from ..http import Session
 from ..models import Order, Orders, Request, Response, StreamingBody
 
@@ -128,7 +128,7 @@ class OrdersClient():
         ```python
         >>> import asyncio
         >>> from planet import Session, OrdersClient
-        >>> from planet.api.order_request import build_request, product
+        >>> from planet.order_request import build_request, product
         >>>
         >>> async def main():
         ...     image_ids = ['3949357_1454705_2020-12-01_241c']
@@ -151,11 +151,21 @@ class OrdersClient():
             The ID of the order
 
         Raises:
-            planet.api.exceptions.APIException: On API error.
+            planet.exceptions.APIException: On API error.
         '''
         url = self._orders_url()
-        req = self._request(url, method='POST', data=json.dumps(request))
-        resp = await self._do_request(req)
+        req = self._request(url, method='POST', json=request)
+
+        try:
+            resp = await self._do_request(req)
+        except exceptions.BadQuery as ex:
+            msg_json = json.loads(ex.message)
+
+            # get first error field
+            field = next(iter(msg_json['field'].keys()))
+            msg = (msg_json['general'][0]['message'] + ' - ' +
+                   msg_json['field'][field][0]['message'])
+            raise exceptions.BadQuery(msg)
 
         order = Order(resp.json())
         return order
@@ -173,11 +183,19 @@ class OrdersClient():
             Order information
 
         Raises:
-            planet.api.exceptions.APIException: On API error.
+            OrdersClientException: If order_id is not valid UUID.
+            planet.exceptions.APIException: On API error.
         '''
         url = self._order_url(order_id)
+
         req = self._request(url, method='GET')
-        resp = await self._do_request(req)
+
+        try:
+            resp = await self._do_request(req)
+        except exceptions.MissingResource as ex:
+            msg_json = json.loads(ex.message)
+            msg = msg_json['message']
+            raise exceptions.MissingResource(msg)
 
         order = Order(resp.json())
         return order
@@ -199,11 +217,21 @@ class OrdersClient():
             Empty response
 
         Raises:
-            planet.api.exceptions.APIException: On API error.
+            OrdersClientException: If order_id is not valid UUID.
+            planet.exceptions.APIException: On API error.
         '''
         url = self._order_url(order_id)
         req = self._request(url, method='PUT')
-        await self._do_request(req)
+
+        try:
+            await self._do_request(req)
+        except exceptions.Conflict as ex:
+            try:
+                msg = json.loads(ex.message)['message']
+                ex.message = msg
+            except Exception:
+                pass
+            raise ex
 
     async def cancel_orders(
         self,
@@ -224,6 +252,8 @@ class OrdersClient():
         url = self._bulk_url() + 'cancel'
         cancel_body = {}
         if order_ids:
+            for oid in order_ids:
+                self._check_order_id(oid)
             cancel_body['order_ids'] = order_ids
 
         req = self._request(url, method='POST', json=cancel_body)
@@ -330,8 +360,9 @@ class OrdersClient():
             Completed state of the order
 
         Raises:
-            planet.api.exceptions.APIException: On API error.
-            OrdersClientException: If state is not supported.
+            planet.exceptions.APIException: On API error.
+            OrdersClientException: If order_id is not valid or state is not
+                supported.
         """
         completed = False
 
