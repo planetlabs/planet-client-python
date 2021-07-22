@@ -247,7 +247,7 @@ class OrdersClient():
             Results of the bulk cancel request
 
         Raises:
-            planet.api.exceptions.APIException: On API error.
+            planet.exceptions.APIException: On API error.
         '''
         url = self._bulk_url() + 'cancel'
         cancel_body = {}
@@ -267,7 +267,7 @@ class OrdersClient():
             Aggregated order counts
 
         Raises:
-            planet.api.exceptions.APIException: On API error.
+            planet.exceptions.APIException: On API error.
         '''
         url = self._stats_url()
         req = self._request(url, method='GET')
@@ -295,7 +295,7 @@ class OrdersClient():
             Path to downloaded file.
 
         Raises:
-            planet.api.exceptions.APIException: On API error.
+            planet.exceptions.APIException: On API error.
         """
         req = self._request(location, method='GET')
 
@@ -326,7 +326,7 @@ class OrdersClient():
             Paths to downloaded files.
 
         Raises:
-            planet.api.exceptions.APIException: On API error.
+            planet.exceptions.APIException: On API error.
         """
         order = await self.get_order(order_id)
         locations = order.locations
@@ -408,7 +408,7 @@ class OrdersClient():
             User orders that match the query
 
         Raises:
-            planet.api.exceptions.APIException: On API error.
+            planet.exceptions.APIException: On API error.
         """
         url = self._orders_url()
         if state:
