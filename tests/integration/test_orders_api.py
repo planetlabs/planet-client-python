@@ -40,14 +40,6 @@ async def session():
 
 
 @pytest.fixture
-@pytest.mark.asyncio
-async def client():
-    async with Session() as ps:
-        cl = OrdersClient(session, base_url=TEST_URL)
-        yield cl
-
-
-@pytest.fixture
 def order_descriptions(order_description):
     order1 = order_description
     order1['id'] = 'oid1'
@@ -461,15 +453,17 @@ async def test_poll(oid, order_description, session):
 
 
 @pytest.mark.asyncio
-async def test_poll_invalid_oid(client):
+async def test_poll_invalid_oid(session):
+    cl = OrdersClient(session, base_url=TEST_URL)
     with pytest.raises(clients.orders.OrdersClientException):
-        _ = await client.poll("invalid_oid", wait=0)
+        _ = await cl.poll("invalid_oid", wait=0)
 
 
 @pytest.mark.asyncio
-async def test_poll_invalid_state(oid, client):
+async def test_poll_invalid_state(oid, session):
+    cl = OrdersClient(session, base_url=TEST_URL)
     with pytest.raises(clients.orders.OrdersClientException):
-        _ = await client.poll(oid, state="invalid_state", wait=0)
+        _ = await cl.poll(oid, state="invalid_state", wait=0)
 
 
 @respx.mock
