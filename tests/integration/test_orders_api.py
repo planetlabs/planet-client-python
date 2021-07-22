@@ -40,6 +40,14 @@ async def session():
 
 
 @pytest.fixture
+@pytest.mark.asyncio
+async def client():
+    async with Session() as ps:
+        cl = OrdersClient(session, base_url=TEST_URL)
+        yield cl
+
+
+@pytest.fixture
 def order_descriptions(order_description):
     order1 = order_description
     order1['id'] = 'oid1'
@@ -48,6 +56,12 @@ def order_descriptions(order_description):
     order3 = copy.deepcopy(order_description)
     order3['id'] = 'oid3'
     return [order1, order2, order3]
+
+
+@pytest.fixture
+def oid2():
+    # obtained from uuid.uuid1()
+    return '5ece1dc0-ea81-11eb-837c-acde48001122'
 
 
 @respx.mock
@@ -309,7 +323,7 @@ async def test_cancel_order(oid, order_description, session):
 async def test_cancel_order_invalid_id(session):
     cl = OrdersClient(session, base_url=TEST_URL)
     with pytest.raises(clients.orders.OrdersClientException):
-        _ = await cl.cancel_order('-')
+        _ = await cl.cancel_order('invalid_order_id')
 
 
 @respx.mock
@@ -344,23 +358,23 @@ async def test_cancel_order_id_cannot_be_cancelled(oid, session):
 
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    with pytest.raises(exceptions.APIException, match=msg):
+    with pytest.raises(exceptions.Conflict, match=msg):
         _ = await cl.cancel_order(oid)
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_cancel_orders_by_ids(session):
+async def test_cancel_orders_by_ids(session, oid, oid2):
     bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
-    test_ids = ["oid1", "oid2", "oid3"]
+    test_ids = [oid, oid2]
     example_result = {
         "result": {
-            "succeeded": {"count": 2},
+            "succeeded": {"count": 1},
             "failed": {
                 "count": 1,
                 "failures": [
                     {
-                        "order_id": "oid3",
+                        "order_id": oid2,
                         "message": "Order not in a cancellable state",
                     }
                 ]
@@ -380,6 +394,13 @@ async def test_cancel_orders_by_ids(session):
     }
     actual_body = json.loads(respx.calls.last.request.content)
     assert actual_body == expected_body
+
+
+@pytest.mark.asyncio
+async def test_cancel_orders_by_ids_invalid_id(session, oid):
+    cl = OrdersClient(session, base_url=TEST_URL)
+    with pytest.raises(clients.orders.OrdersClientException):
+        _ = await cl.cancel_orders([oid, "invalid_oid"])
 
 
 @respx.mock
@@ -437,6 +458,18 @@ async def test_poll(oid, order_description, session):
     ]
     state = await cl.poll(oid, state='running', wait=0)
     assert state == 'running'
+
+
+@pytest.mark.asyncio
+async def test_poll_invalid_oid(client):
+    with pytest.raises(clients.orders.OrdersClientException):
+        _ = await client.poll("invalid_oid", wait=0)
+
+
+@pytest.mark.asyncio
+async def test_poll_invalid_state(oid, client):
+    with pytest.raises(clients.orders.OrdersClientException):
+        _ = await client.poll(oid, state="invalid_state", wait=0)
 
 
 @respx.mock
