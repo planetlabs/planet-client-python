@@ -226,12 +226,11 @@ class OrdersClient():
         try:
             await self._do_request(req)
         except exceptions.Conflict as ex:
-            try:
-                msg = json.loads(ex.message)['message']
-                ex.message = msg
-            except Exception:
-                pass
-            raise ex
+            msg = json.loads(ex.message)['message']
+            raise exceptions.Conflict(msg)
+        except exceptions.MissingResource as ex:
+            msg = json.loads(ex.message)['message']
+            raise exceptions.MissingResource(msg)
 
     async def cancel_orders(
         self,

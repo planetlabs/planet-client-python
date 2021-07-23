@@ -24,19 +24,12 @@ import httpx
 import pytest
 import respx
 
-from planet import OrdersClient, Session, clients, exceptions
+from planet import OrdersClient, clients, exceptions
 
 
 TEST_URL = 'http://MockNotRealURL/'
 
 LOGGER = logging.getLogger(__name__)
-
-
-@pytest.fixture
-@pytest.mark.asyncio
-async def session():
-    async with Session() as ps:
-        yield ps
 
 
 @pytest.fixture
@@ -227,7 +220,8 @@ async def test_create_order_bad_item_type(order_request, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_create_order_item_id_does_not_exist(order_request, session):
+async def test_create_order_item_id_does_not_exist(
+        order_request, session, match_pytest_raises):
     create_url = TEST_URL + 'orders/v2/'
 
     resp = {
@@ -255,7 +249,7 @@ async def test_create_order_item_id_does_not_exist(order_request, session):
         "Unable to accept order - Item ID 4500474_2133707_2021-05-20_2419 " +
         "/ Item Type PSScene3Band doesn't exist")
 
-    with pytest.raises(exceptions.BadQuery, match=expected_msg):
+    with match_pytest_raises(exceptions.BadQuery, expected_msg):
         _ = await cl.create_order(order_request)
 
 
@@ -281,7 +275,8 @@ async def test_get_order_invalid_id(session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_get_order_id_doesnt_exist(oid, session):
+async def test_get_order_id_doesnt_exist(
+        oid, session, match_pytest_raises):
     get_url = TEST_URL + 'orders/v2/' + oid
 
     msg = f'Could not load order ID: {oid}.'
@@ -293,7 +288,7 @@ async def test_get_order_id_doesnt_exist(oid, session):
 
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    with pytest.raises(exceptions.MissingResource, match=msg):
+    with match_pytest_raises(exceptions.MissingResource, msg):
         _ = await cl.get_order(oid)
 
 
@@ -320,7 +315,8 @@ async def test_cancel_order_invalid_id(session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_cancel_order_id_doesnt_exist(oid, session):
+async def test_cancel_order_id_doesnt_exist(
+        oid, session, match_pytest_raises):
     cancel_url = TEST_URL + 'orders/v2/' + oid
 
     msg = f'No such order ID: {oid}.'
@@ -332,13 +328,14 @@ async def test_cancel_order_id_doesnt_exist(oid, session):
 
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    with pytest.raises(exceptions.MissingResource, match=msg):
+    with match_pytest_raises(exceptions.MissingResource, msg):
         _ = await cl.cancel_order(oid)
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_cancel_order_id_cannot_be_cancelled(oid, session):
+async def test_cancel_order_id_cannot_be_cancelled(
+        oid, session, match_pytest_raises):
     cancel_url = TEST_URL + 'orders/v2/' + oid
 
     msg = 'Order not in a cancellable state'
@@ -350,7 +347,7 @@ async def test_cancel_order_id_cannot_be_cancelled(oid, session):
 
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    with pytest.raises(exceptions.Conflict, match=msg):
+    with match_pytest_raises(exceptions.Conflict, msg):
         _ = await cl.cancel_order(oid)
 
 
