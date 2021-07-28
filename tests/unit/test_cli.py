@@ -35,6 +35,28 @@ def runner():
     return CliRunner()
 
 
+def test_cli_info_verbosity(runner, monkeypatch):
+    log_level = None
+
+    def configtest(stream, level, format):
+        nonlocal log_level
+        log_level = level
+    monkeypatch.setattr(planet.scripts.cli.logging, 'basicConfig', configtest)
+
+    def patch(*args, **kwargs):
+        pass
+    monkeypatch.setattr(planet.scripts.cli, 'value', patch)
+
+    _ = runner.invoke(cli, args=['auth', 'value'])
+    assert log_level == logging.WARNING
+
+    _ = runner.invoke(cli, args=['-v', 'auth', 'value'])
+    assert log_level == logging.INFO
+
+    _ = runner.invoke(cli, args=['-vv', 'auth', 'value'])
+    assert log_level == logging.DEBUG
+
+
 def test_cli_auth_init_bad_pw(runner, monkeypatch):
     def apiexcept(*args, **kwargs):
         raise planet.api.exceptions.APIException('nope')
