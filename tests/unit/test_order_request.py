@@ -15,8 +15,7 @@ import logging
 
 import pytest
 
-from planet import geojson, specs
-from planet.api import order_request
+from planet import geojson, order_request, specs
 
 LOGGER = logging.getLogger(__name__)
 

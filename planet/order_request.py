@@ -16,7 +16,7 @@ from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import logging
 from typing import List
 
-from .. import geojson, specs
+from . import geojson, specs
 
 LOGGER = logging.getLogger(__name__)
 

@@ -20,9 +20,9 @@ import logging
 
 import httpx
 
-from ..auth import Auth
+from .auth import Auth
 from . import exceptions, models
-from . __version__ import __version__
+from .__version__ import __version__
 
 RETRY_COUNT = 5
 RETRY_WAIT_TIME = 1  # seconds

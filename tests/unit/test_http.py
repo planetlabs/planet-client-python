@@ -20,7 +20,7 @@ import respx
 
 import pytest
 
-from planet.api import exceptions, http
+from planet import exceptions, http
 
 
 TEST_URL = 'mock://fantastic.com'
