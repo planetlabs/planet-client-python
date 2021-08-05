@@ -35,18 +35,25 @@ Let's start with creating an order with the Orders API:
 >>> import os
 >>> import planet
 >>>
->>> image_ids = ['3949357_1454705_2020-12-01_241c']
->>> order_details = planet.OrderDetails(
-...     'test_order',
-...     [planet.Product(image_ids, 'analytic', 'psorthotile')]
-... )
->>>
->>> async def create_order(order_details):
+>>> request = {
+...   "name": "test_order",
+...   "products": [
+...     {
+...       "item_ids": [
+...         "3949357_1454705_2020-12-01_241c"
+...       ],
+...       "item_type": "PSOrthoTile",
+...       "product_bundle": "analytic"
+...     }
+...   ]
+... }
+...
+>>> async def create_order(request):
 ...     async with planet.Session() as ps:
 ...         client = planet.OrdersClient(ps)
-...         return await client.create_order(order_details)
->>>
->>> oid = asyncio.run(create_order(order_details))
+...         return await client.create_order(request)
+...
+>>> oid = asyncio.run(create_order(request))
 
 ```
 

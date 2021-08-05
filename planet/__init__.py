@@ -14,10 +14,7 @@
 from .api.http import Session
 from .api.models import Order
 from .api.orders import OrdersClient
-from .api.order_details import (
-    OrderDetails, Product, Notifications, Delivery, AmazonS3Delivery,
-    AzureBlobStorageDelivery, GoogleCloudStorageDelivery,
-    GoogleEarthEngineDelivery, Tool, ClipTool)
+from .api import order_details
 from .api.__version__ import __version__  # NOQA
 from .auth import Auth
 
@@ -26,15 +23,6 @@ __all__ = [
     Session,
     OrdersClient,
     Order,
-    OrderDetails,
-    Product,
-    Notifications,
-    Delivery,
-    AmazonS3Delivery,
-    AzureBlobStorageDelivery,
-    GoogleCloudStorageDelivery,
-    GoogleEarthEngineDelivery,
-    ClipTool,
-    Tool,
+    order_details,
     Auth,
 ]

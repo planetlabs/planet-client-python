@@ -22,7 +22,6 @@ import typing
 from .. import constants
 from .http import Session
 from .models import Order, Orders, Request, Response, StreamingBody
-from .order_details import OrderDetails
 
 
 BASE_URL = constants.PLANET_BASE_URL + 'compute/ops/'
@@ -113,7 +112,7 @@ class OrdersClient():
 
     async def create_order(
         self,
-        order_details: typing.Union[dict, OrderDetails]
+        request: dict
     ) -> str:
         '''Create an order request.
 
@@ -122,18 +121,17 @@ class OrdersClient():
         ```python
         >>> import asyncio
         >>> from planet import Session, OrdersClient
-        >>> from planet.api.order_details import OrderDetails, Product
+        >>> from planet.api.order_details import build_request, product
         >>>
         >>> async def main():
-        ...     auth = ('example_api_key', '')
         ...     image_ids = ['3949357_1454705_2020-12-01_241c']
-        ...     order_detail = OrderDetails(
+        ...     request = build_request(
         ...         'test_order',
-        ...         [Product(image_ids, 'analytic', 'psorthotile')]
+        ...         [product(image_ids, 'analytic', 'psorthotile')]
         ...     )
-        ...     async with Session(auth=auth) as sess:
+        ...     async with Session() as sess:
         ...         cl = OrdersClient(sess)
-        ...         order_id = await cl.create_order(order_detail)
+        ...         order_id = await cl.create_order(request)
         ...
         >>> asyncio.run(main())
 
@@ -148,13 +146,8 @@ class OrdersClient():
         Raises:
             planet.api.exceptions.APIException: On API error.
         '''
-        if not isinstance(order_details, OrderDetails):
-            order_details = OrderDetails.from_dict(order_details)
-
-        data = json.dumps(order_details.to_dict())
-
         url = self._orders_url()
-        req = self._request(url, method='POST', data=data)
+        req = self._request(url, method='POST', data=json.dumps(request))
         resp = await self._do_request(req)
 
         order = Order(resp.json())

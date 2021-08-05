@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-import json
 import logging
 from unittest.mock import MagicMock, Mock
 
@@ -157,8 +156,8 @@ class AsyncMock(Mock):
 
 
 @pytest.fixture
-def cloudconfig(write_to_tmp_json_file):
-    as3_details = {
+def cloudconfig():
+    return {
         'amazon_s3': {
             'aws_access_key_id': 'aws_access_key_id',
             'aws_secret_access_key': 'aws_secret_access_key',
@@ -167,7 +166,6 @@ def cloudconfig(write_to_tmp_json_file):
             },
         'archive_type': 'zip',
     }
-    return write_to_tmp_json_file(as3_details, 'cloudconfig.json')
 
 
 @pytest.fixture
@@ -232,30 +230,30 @@ def name(order_details):
 def products(order_details, test_id):
     product = order_details['products'][0]
     return [
-        planet.Product([test_id],
-                       product['product_bundle'],
-                       product['item_type'])
+        planet.order_details.product(
+            [test_id],
+            product['product_bundle'],
+            product['item_type'])
     ]
 
 
 def test_cli_orders_create_cloudconfig(
         runner, mock_create_order, create_order_basic_cmds, name, products,
-        cloudconfig,
+        cloudconfig, write_to_tmp_json_file
         ):
+    cc_file = write_to_tmp_json_file(cloudconfig, 'cloudconfig.json')
     basic_result = runner.invoke(
-        cli, create_order_basic_cmds + ['--cloudconfig', cloudconfig]
+        cli, create_order_basic_cmds + ['--cloudconfig', cc_file]
     )
     assert not basic_result.exception
 
     mock_create_order.assert_called_once()
 
-    with open(cloudconfig, 'r') as f:
-        cc = json.load(f)
-
-    expected_details = planet.OrderDetails(
-        name, products,
-        delivery=planet.Delivery.from_dict(cc)
-        )
+    expected_details = {
+        'name': name,
+        'products': products,
+        'delivery': cloudconfig
+    }
     mock_create_order.assert_called_with(expected_details)
 
 
@@ -270,11 +268,11 @@ def test_cli_orders_create_clip(
 
     mock_create_order.assert_called_once()
 
-    expected_details = planet.OrderDetails(
-        name, products,
-        tools=[planet.Tool('clip', {'aoi': geom_geojson})]
-    )
-
+    expected_details = {
+        'name': name,
+        'products': products,
+        'tools': [{'clip': {'aoi': geom_geojson}}]
+    }
     mock_create_order.assert_called_with(expected_details)
 
 
@@ -288,11 +286,11 @@ def test_cli_orders_create_tools(
 
     mock_create_order.assert_called_once()
 
-    expected_details = planet.OrderDetails(
-        name, products,
-        tools=[planet.Tool.from_dict(t) for t in tools_json]
-    )
-
+    expected_details = {
+        'name': name,
+        'products': products,
+        'tools': tools_json
+    }
     mock_create_order.assert_called_with(expected_details)
 
 

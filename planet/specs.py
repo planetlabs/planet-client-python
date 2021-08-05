@@ -24,6 +24,7 @@ SUPPORTED_TOOLS = ['band_math', 'clip', 'composite', 'coregister',
                    'file_format', 'reproject', 'tile', 'toar', 'harmonize']
 SUPPORTED_ORDER_TYPES = ['full', 'partial']
 SUPPORTED_ARCHIVE_TYPES = ['zip']
+SUPPORTED_FILE_FORMATS = ['COG', 'PL_NITF']
 
 LOGGER = logging.getLogger(__name__)
 
@@ -56,6 +57,10 @@ def validate_archive_type(archive_type):
 
 def validate_tool(tool):
     return _validate_field(tool, SUPPORTED_TOOLS, 'tool')
+
+
+def validate_file_format(file_format):
+    return _validate_field(file_format, SUPPORTED_FILE_FORMATS, 'file_format')
 
 
 def _validate_field(value, supported, field_name=None):
