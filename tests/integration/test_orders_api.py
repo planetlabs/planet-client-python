@@ -24,19 +24,12 @@ import httpx
 import pytest
 import respx
 
-from planet import OrdersClient, Session
+from planet import OrdersClient, clients, exceptions
 
 
 TEST_URL = 'http://MockNotRealURL/'
 
 LOGGER = logging.getLogger(__name__)
-
-
-@pytest.fixture
-@pytest.mark.asyncio
-async def session():
-    async with Session() as ps:
-        yield ps
 
 
 @pytest.fixture
@@ -48,6 +41,12 @@ def order_descriptions(order_description):
     order3 = copy.deepcopy(order_description)
     order3['id'] = 'oid3'
     return [order1, order2, order3]
+
+
+@pytest.fixture
+def oid2():
+    # obtained from uuid.uuid1()
+    return '5ece1dc0-ea81-11eb-837c-acde48001122'
 
 
 @respx.mock
@@ -103,6 +102,14 @@ async def test_list_orders_state(order_descriptions, session):
 
     oids = list(o.id for o in orders)
     assert oids == ['oid1', 'oid2']
+
+
+@pytest.mark.asyncio
+async def test_list_orders_state_invalid_state(session):
+    cl = OrdersClient(session, base_url=TEST_URL)
+
+    with pytest.raises(clients.orders.OrdersClientException):
+        _ = await cl.list_orders(state='invalidstate')
 
 
 @respx.mock
@@ -180,6 +187,74 @@ async def test_create_order(oid, order_description, order_request, session):
 
 @respx.mock
 @pytest.mark.asyncio
+async def test_create_order_bad_item_type(order_request, session):
+    create_url = TEST_URL + 'orders/v2/'
+
+    resp = {
+        "field": {
+            "Products": [
+                {
+                    "message": ("Bad item type 'invalid' for bundle type " +
+                                "'analytic'")
+                }
+            ]
+        },
+        "general": [
+            {
+                "message": "Unable to accept order"
+            }
+        ]
+    }
+    mock_resp = httpx.Response(400, json=resp)
+    respx.post(create_url).return_value = mock_resp
+    order_request['products'][0]['item_type'] = 'invalid'
+    cl = OrdersClient(session, base_url=TEST_URL)
+
+    expected_msg = (
+        "Unable to accept order - Bad item type 'invalid' for bundle type " +
+        "'analytic'")
+
+    with pytest.raises(exceptions.BadQuery, match=expected_msg):
+        _ = await cl.create_order(order_request)
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_create_order_item_id_does_not_exist(
+        order_request, session, match_pytest_raises):
+    create_url = TEST_URL + 'orders/v2/'
+
+    resp = {
+        "field": {
+            "Details": [
+                {
+                    "message": ("Item ID 4500474_2133707_2021-05-20_2419 / " +
+                                "Item Type PSScene3Band doesn't exist")
+                }
+            ]
+        },
+        "general": [
+            {
+                "message": "Unable to accept order"
+            }
+        ]
+    }
+    mock_resp = httpx.Response(400, json=resp)
+    respx.post(create_url).return_value = mock_resp
+    order_request['products'][0]['item_ids'] = \
+        '4500474_2133707_2021-05-20_2419'
+    cl = OrdersClient(session, base_url=TEST_URL)
+
+    expected_msg = (
+        "Unable to accept order - Item ID 4500474_2133707_2021-05-20_2419 " +
+        "/ Item Type PSScene3Band doesn't exist")
+
+    with match_pytest_raises(exceptions.BadQuery, expected_msg):
+        _ = await cl.create_order(order_request)
+
+
+@respx.mock
+@pytest.mark.asyncio
 async def test_get_order(oid, order_description, session):
     get_url = TEST_URL + 'orders/v2/' + oid
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
@@ -189,6 +264,32 @@ async def test_get_order(oid, order_description, session):
     order = await cl.get_order(oid)
 
     assert order.state == 'queued'
+
+
+@pytest.mark.asyncio
+async def test_get_order_invalid_id(session):
+    cl = OrdersClient(session, base_url=TEST_URL)
+    with pytest.raises(clients.orders.OrdersClientException):
+        _ = await cl.get_order('-')
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_get_order_id_doesnt_exist(
+        oid, session, match_pytest_raises):
+    get_url = TEST_URL + 'orders/v2/' + oid
+
+    msg = f'Could not load order ID: {oid}.'
+    resp = {
+        "message": msg
+    }
+    mock_resp = httpx.Response(404, json=resp)
+    respx.get(get_url).return_value = mock_resp
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+
+    with match_pytest_raises(exceptions.MissingResource, msg):
+        _ = await cl.get_order(oid)
 
 
 @respx.mock
@@ -205,20 +306,65 @@ async def test_cancel_order(oid, order_description, session):
     await cl.cancel_order(oid)
 
 
+@pytest.mark.asyncio
+async def test_cancel_order_invalid_id(session):
+    cl = OrdersClient(session, base_url=TEST_URL)
+    with pytest.raises(clients.orders.OrdersClientException):
+        _ = await cl.cancel_order('invalid_order_id')
+
+
 @respx.mock
 @pytest.mark.asyncio
-async def test_cancel_orders_by_ids(session):
+async def test_cancel_order_id_doesnt_exist(
+        oid, session, match_pytest_raises):
+    cancel_url = TEST_URL + 'orders/v2/' + oid
+
+    msg = f'No such order ID: {oid}.'
+    resp = {
+        "message": msg
+    }
+    mock_resp = httpx.Response(404, json=resp)
+    respx.put(cancel_url).return_value = mock_resp
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+
+    with match_pytest_raises(exceptions.MissingResource, msg):
+        _ = await cl.cancel_order(oid)
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_cancel_order_id_cannot_be_cancelled(
+        oid, session, match_pytest_raises):
+    cancel_url = TEST_URL + 'orders/v2/' + oid
+
+    msg = 'Order not in a cancellable state'
+    resp = {
+        "message": msg
+    }
+    mock_resp = httpx.Response(409, json=resp)
+    respx.put(cancel_url).return_value = mock_resp
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+
+    with match_pytest_raises(exceptions.Conflict, msg):
+        _ = await cl.cancel_order(oid)
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_cancel_orders_by_ids(session, oid, oid2):
     bulk_cancel_url = TEST_URL + 'bulk/orders/v2/cancel'
-    test_ids = ["oid1", "oid2", "oid3"]
+    test_ids = [oid, oid2]
     example_result = {
         "result": {
-            "succeeded": {"count": 2},
+            "succeeded": {"count": 1},
             "failed": {
                 "count": 1,
                 "failures": [
                     {
-                        "order_id": "oid3",
-                        "message": "bummer"
+                        "order_id": oid2,
+                        "message": "Order not in a cancellable state",
                     }
                 ]
             }
@@ -237,6 +383,13 @@ async def test_cancel_orders_by_ids(session):
     }
     actual_body = json.loads(respx.calls.last.request.content)
     assert actual_body == expected_body
+
+
+@pytest.mark.asyncio
+async def test_cancel_orders_by_ids_invalid_id(session, oid):
+    cl = OrdersClient(session, base_url=TEST_URL)
+    with pytest.raises(clients.orders.OrdersClientException):
+        _ = await cl.cancel_orders([oid, "invalid_oid"])
 
 
 @respx.mock
@@ -294,6 +447,20 @@ async def test_poll(oid, order_description, session):
     ]
     state = await cl.poll(oid, state='running', wait=0)
     assert state == 'running'
+
+
+@pytest.mark.asyncio
+async def test_poll_invalid_oid(session):
+    cl = OrdersClient(session, base_url=TEST_URL)
+    with pytest.raises(clients.orders.OrdersClientException):
+        _ = await cl.poll("invalid_oid", wait=0)
+
+
+@pytest.mark.asyncio
+async def test_poll_invalid_state(oid, session):
+    cl = OrdersClient(session, base_url=TEST_URL)
+    with pytest.raises(clients.orders.OrdersClientException):
+        _ = await cl.poll(oid, state="invalid_state", wait=0)
 
 
 @respx.mock

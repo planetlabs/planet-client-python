@@ -53,7 +53,6 @@ class BaseSession():
 
     @classmethod
     def _raise_for_status(cls, response):
-        # TODO: consider using http_response.reason_phrase
         status = response.status_code
 
         miminum_bad_request_code = HTTPStatus.MOVED_PERMANENTLY
@@ -65,51 +64,21 @@ class BaseSession():
             HTTPStatus.UNAUTHORIZED: exceptions.InvalidAPIKey,
             HTTPStatus.FORBIDDEN: exceptions.NoPermission,
             HTTPStatus.NOT_FOUND: exceptions.MissingResource,
+            HTTPStatus.CONFLICT: exceptions.Conflict,
             HTTPStatus.TOO_MANY_REQUESTS: exceptions.TooManyRequests,
             HTTPStatus.INTERNAL_SERVER_ERROR: exceptions.ServerError
-        }.get(status, None)
-
+        }.get(status, exceptions.APIException)
         LOGGER.debug(f"Exception type: {exception}")
-        LOGGER.debug(f"Response text: {response.text}")
+
+        msg = response.text
+        LOGGER.debug(f"Response text: {msg}")
 
         if exception == exceptions.TooManyRequests:
             # differentiate between over quota and rate-limiting
-            if 'quota' in response.text.lower():
+            if 'quota' in msg.lower():
                 exception = exceptions.OverQuota
 
-        try:
-            msg = cls._parse_message(response)
-        except Exception:
-            msg = response.text
-
-        if exception:
-            raise exception(msg)
-
-        raise exceptions.APIException(f'{status}: {msg}')
-
-    @staticmethod
-    def _parse_message(response):
-        msg = response.json()
-        LOGGER.debug(f'Raw response message: {msg}')
-
-        try:
-            msg = msg['message']
-        except KeyError:
-            try:
-                new_msg = msg['general'][0]['message']
-                try:
-                    msg_field = msg['field']
-                    key = list(msg_field.keys())[0]
-                    LOGGER.debug(f'key: {key}')
-                    new_msg = (new_msg + ' - ' + msg_field[key][0]['message'])
-                except Exception:
-                    pass
-                msg = new_msg
-            except Exception:
-                pass
-
-        LOGGER.debug(f'Processed response message: {msg}')
-        return msg
+        raise exception(msg)
 
 
 class Session(BaseSession):

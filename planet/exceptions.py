@@ -15,7 +15,9 @@
 
 class APIException(Exception):
     '''General unexpected response'''
-    pass
+    @property
+    def message(self):
+        return self.args[0]
 
 
 class BadQuery(APIException):
@@ -35,6 +37,11 @@ class NoPermission(APIException):
 
 class MissingResource(APIException):
     '''Request for non existing resource, HTTP 404'''
+    pass
+
+
+class Conflict(APIException):
+    '''Request conflict with current state of the target resource, HTTP 409'''
     pass
 
 
