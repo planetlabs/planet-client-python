@@ -167,13 +167,13 @@ async def test_list_orders_asjson(order_descriptions, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_create_order(oid, order_description, order_details, session):
+async def test_create_order(oid, order_description, order_request, session):
     create_url = TEST_URL + 'orders/v2/'
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(create_url).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
-    order = await cl.create_order(order_details)
+    order = await cl.create_order(order_request)
 
     assert order.json == order_description
 

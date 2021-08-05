@@ -53,7 +53,7 @@ def order_description():
 
 
 @pytest.fixture
-def order_details():
+def order_request():
     filename = 'order_details_psorthotile_analytic.json'
     return _get_file_json(filename)
 

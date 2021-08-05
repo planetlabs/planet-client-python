@@ -121,7 +121,7 @@ class OrdersClient():
         ```python
         >>> import asyncio
         >>> from planet import Session, OrdersClient
-        >>> from planet.api.order_details import build_request, product
+        >>> from planet.api.order_request import build_request, product
         >>>
         >>> async def main():
         ...     image_ids = ['3949357_1454705_2020-12-01_241c']
@@ -138,7 +138,7 @@ class OrdersClient():
         ```
 
         Parameters:
-            order_details: order request details
+            request: order request definition
 
         Returns:
             The ID of the order

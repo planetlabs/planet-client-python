@@ -16,7 +16,7 @@ import logging
 import pytest
 
 from planet import geojson, specs
-from planet.api import order_details
+from planet.api import order_request
 
 LOGGER = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ def test_build_request():
     order_type = 'partial'
     tool = {'band_math': 'jsonstring'}
 
-    request = order_details.build_request(
+    request = order_request.build_request(
         'test_name',
         [product],
         subscription_id=subscription_id,
@@ -75,7 +75,7 @@ def test_build_request():
 
     order_type = 'notsupported'
     with pytest.raises(specs.SpecificationException):
-        _ = order_details.build_request(
+        _ = order_request.build_request(
             'test_name',
             [product],
             subscription_id=subscription_id,
@@ -87,7 +87,7 @@ def test_build_request():
 
 
 def test_product():
-    product_config = order_details.product(
+    product_config = order_request.product(
         [TEST_ID], TEST_PRODUCT_BUNDLE, TEST_ITEM_TYPE,
         fallback_bundle=TEST_FALLBACK_BUNDLE)
 
@@ -99,26 +99,26 @@ def test_product():
     assert product_config == expected
 
     with pytest.raises(specs.SpecificationException):
-        _ = order_details.product([TEST_ID],
+        _ = order_request.product([TEST_ID],
                                   'notsupported',
                                   TEST_ITEM_TYPE,
                                   fallback_bundle=TEST_FALLBACK_BUNDLE)
 
     with pytest.raises(specs.SpecificationException):
-        _ = order_details.product([TEST_ID],
+        _ = order_request.product([TEST_ID],
                                   TEST_PRODUCT_BUNDLE,
                                   'notsupported',
                                   fallback_bundle=TEST_FALLBACK_BUNDLE)
 
     with pytest.raises(specs.SpecificationException):
-        _ = order_details.product([TEST_ID],
+        _ = order_request.product([TEST_ID],
                                   TEST_PRODUCT_BUNDLE,
                                   TEST_ITEM_TYPE,
                                   fallback_bundle='notsupported')
 
 
 def test_notifications():
-    notifications_config = order_details.notifications(
+    notifications_config = order_request.notifications(
         email='email',
         webhook_url='webhookurl',
         webhook_per_order=True
@@ -130,7 +130,7 @@ def test_notifications():
       }
     assert notifications_config == expected
 
-    empty_notifications_config = order_details.notifications(
+    empty_notifications_config = order_request.notifications(
     )
     empty_expected = {}
     assert empty_notifications_config == empty_expected
@@ -145,7 +145,7 @@ def test_delivery():
             'aws_region': 'aws_region'
             }
     }
-    delivery_config = order_details.delivery(
+    delivery_config = order_request.delivery(
         'zip',
         True,
         TEST_ARCHIVE_FILENAME,
@@ -167,7 +167,7 @@ def test_delivery():
 
 
 def test_amazon_s3():
-    as3_config = order_details.amazon_s3(
+    as3_config = order_request.amazon_s3(
         'aws_access_key_id',
         'aws_secret_access_key',
         'bucket',
@@ -185,7 +185,7 @@ def test_amazon_s3():
 
 
 def test_azure_blob_storage():
-    abs_config = order_details.azure_blob_storage(
+    abs_config = order_request.azure_blob_storage(
         'account',
         'container',
         'sas_token'
@@ -201,7 +201,7 @@ def test_azure_blob_storage():
 
 
 def test_google_cloud_storage():
-    gcs_config = order_details.google_cloud_storage(
+    gcs_config = order_request.google_cloud_storage(
         'bucket',
         'credentials'
     )
@@ -216,7 +216,7 @@ def test_google_cloud_storage():
 
 
 def test_google_earth_engine():
-    gee_config = order_details.google_earth_engine('project', 'collection')
+    gee_config = order_request.google_earth_engine('project', 'collection')
     expected = {
         'google_earth_engine': {
             'project': 'project',
@@ -228,15 +228,15 @@ def test_google_earth_engine():
 
 
 def test__tool():
-    test_tool = order_details._tool('band_math', 'jsonstring')
+    test_tool = order_request._tool('band_math', 'jsonstring')
     assert test_tool == {'band_math': 'jsonstring'}
 
     with pytest.raises(specs.SpecificationException):
-        _ = order_details._tool('notsupported', 'jsonstring')
+        _ = order_request._tool('notsupported', 'jsonstring')
 
 
 def test_clip_tool(geom_geojson, point_geom_geojson):
-    ct = order_details.clip_tool(geom_geojson)
+    ct = order_request.clip_tool(geom_geojson)
     expected = {
         'clip': {
             'aoi': geom_geojson
@@ -244,11 +244,11 @@ def test_clip_tool(geom_geojson, point_geom_geojson):
     assert ct == expected
 
     with pytest.raises(geojson.WrongTypeException):
-        _ = order_details.clip_tool(point_geom_geojson)
+        _ = order_request.clip_tool(point_geom_geojson)
 
 
 def test_reproject_tool():
-    rt = order_details.reproject_tool(
+    rt = order_request.reproject_tool(
         projection='proj',
         resolution=5
     )
@@ -262,7 +262,7 @@ def test_reproject_tool():
 
 
 def test_tile_tool():
-    tt = order_details.tile_tool(
+    tt = order_request.tile_tool(
         30,
         pixel_size=3
     )
@@ -276,7 +276,7 @@ def test_tile_tool():
 
 
 def test_toar_tool():
-    tt = order_details.toar_tool(
+    tt = order_request.toar_tool(
         scale_factor=5
     )
     expected = {
@@ -286,7 +286,7 @@ def test_toar_tool():
     }
     assert tt == expected
 
-    tt_empty = order_details.toar_tool()
+    tt_empty = order_request.toar_tool()
     expected_empty = {
         'toar': {}
     }
