@@ -59,7 +59,7 @@ Basics and help::
 
     planet
 
-The CLI provides access to the `data API <https://www.planet.com/docs/reference/data-api/>`__ ::
+The CLI provides access to the `data API <https://developers.planet.com/docs/apis/data/>`__ ::
 
     planet data
 
