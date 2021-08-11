@@ -7,7 +7,7 @@ This library provides a command-line-interface (CLI) and Python library to make 
 
 The command line interface is intended to be functional for many tasks but is just a thin layer on the lower level Python API.
 
-Also see the `API Reference Docs <https://www.planet.com/docs>`_ for more information.
+Also see the `API Reference Docs <https://developers.planet.com/docs/apis/>`_ for more information.
 
 .. toctree::
    :maxdepth: 3
