@@ -30,6 +30,7 @@ STATS_PATH = 'stats/orders/v2/'
 ORDERS_PATH = 'orders/v2/'
 BULK_PATH = 'bulk/orders/v2/'
 
+# Order states: https://developers.planet.com/docs/orders/ordering/#order-states
 ORDERS_STATES_COMPLETE = ['success', 'partial', 'cancelled', 'failed']
 ORDERS_STATES_IN_PROGRESS = ['queued', 'running']
 ORDERS_STATES = ORDERS_STATES_IN_PROGRESS + ORDERS_STATES_COMPLETE
@@ -249,7 +250,7 @@ class OrdersClient():
         location: str,
         filename: str = None,
         directory: str = None,
-        overwrite: bool = True,
+        overwrite: bool = False,
         progress_bar: bool = True
     ) -> str:
         """Download ordered asset.
@@ -272,16 +273,25 @@ class OrdersClient():
         async with self._session.stream(req) as resp:
             body = StreamingBody(resp)
             dl_path = os.path.join(directory or '.', filename or body.name)
-            await body.write(dl_path,
-                             overwrite=overwrite,
-                             progress_bar=progress_bar)
+            is_dl_path = os.path.isfile(dl_path)
+            # File doesn't exist or overwrite requested OR file doesn't exist and do not overwrite
+            if (overwrite or not is_dl_path) or (not overwrite and not is_dl_path):
+                await body.write(dl_path,
+                                overwrite=overwrite,
+                                progress_bar=progress_bar)
+            # File exists and do not overwrite it
+            else:
+                # Log something -> didn't download image vecause already existed
+                # Maybe even write something on the terminal?
+                pass
+            
         return dl_path
 
     async def download_order(
         self,
         order_id: str,
         directory: str = None,
-        overwrite: bool = True,
+        overwrite: bool = False,
         progress_bar: bool = False
     ) -> typing.List[str]:
         """Download all assets in an order.

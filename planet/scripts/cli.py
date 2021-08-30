@@ -17,6 +17,7 @@ from functools import wraps
 import json
 import logging
 import sys
+import os
 
 import click
 
@@ -200,7 +201,7 @@ async def cancel(ctx, order_id):
 @click.argument('order_id', type=click.UUID)
 @click.option('-q', '--quiet', is_flag=True, default=False,
               help=('Disable ANSI control output.'))
-@click.option('-o', '--overwrite', is_flag=True, default=True,
+@click.option('-o', '--overwrite', is_flag=True, default=False,
               help=('Overwrite files if they already exist.'))
 @click.option('--dest', default='.',
               help=('Directory to download files to.'),
@@ -215,8 +216,13 @@ async def download(ctx, order_id, quiet, overwrite, dest):
                 directory=dest,
                 overwrite=overwrite,
                 progress_bar=not quiet)
-    click.echo(f'Downloaded {len(filenames)} files.')
-
+    
+    # If all files for order aready exist, do not download.
+    if all([os.path.isfile(file) for file in filenames]):
+        click.echo(f'Files for the order already exist in the designated directory, {dest}, and download skipped. '
+                   'Please include the overwrite flag, "-o" or "--overwrite", to overwrite files for the order.')
+    else:
+        click.echo(f'Downloaded {len(filenames)} files.')
 
 def split_id_list(ctx, param, value):
     # split list by ',' and remove whitespace
