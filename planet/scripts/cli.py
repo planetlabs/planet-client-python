@@ -207,22 +207,43 @@ async def cancel(ctx, order_id):
               help=('Directory to download files to.'),
               type=click.Path(exists=True, resolve_path=True,
                               writable=True, file_okay=False))
+                              
 async def download(ctx, order_id, quiet, overwrite, dest):
     '''Download order by order ID.'''
-    async with orders_client(ctx) as cl:
-        await cl.poll(str(order_id), verbose=True)
-        filenames = await cl.download_order(
-                str(order_id),
-                directory=dest,
-                overwrite=overwrite,
-                progress_bar=not quiet)
-    
-    # If all files for order aready exist, do not download.
-    if all([os.path.isfile(file) for file in filenames]):
-        click.echo(f'Files for the order already exist in the designated directory, {dest}, and download skipped. '
-                   'Please include the overwrite flag, "-o" or "--overwrite", to overwrite files for the order.')
-    else:
-        click.echo(f'Downloaded {len(filenames)} files.')
+
+    if overwrite:
+        # Explicity ask the user if they want to overwrite their data
+        overwrite_decision = click.prompt(f'You have selected to overwrite your data. Proceed? [y/n]', type=str).lower()
+        if (overwrite_decision != 'y') and (overwrite_decision != 'n'):
+            raise click.ClickException('Select either [y] (yes) or [n] (no).')
+
+    # Download the user's order            
+    if (overwrite and overwrite_decision == 'y') or (not overwrite):
+        async with orders_client(ctx) as cl:
+            await cl.poll(str(order_id), verbose=True)
+            filenames, NUM_DOWNLOADS, NUM_DOWNLOADS_SKIPPED = await cl.download_order(
+                    str(order_id),
+                    directory=dest,
+                    overwrite=overwrite,
+                    progress_bar=not quiet)
+    # Do not download the user's order
+    elif overwrite_decision == 'n':
+        filenames = 0
+        NUM_DOWNLOADS = 0
+        NUM_DOWNLOADS_SKIPPED = 0
+        pass
+
+    # Tell the user how much data and what data was downloaded
+    click.echo(f'Downloaded {NUM_DOWNLOADS} files.')
+    for i in range(NUM_DOWNLOADS):
+        click.echo(f'Downloaded: {filenames[i]}')
+    if NUM_DOWNLOADS_SKIPPED > 0:
+        click.echo(f'Skipped {NUM_DOWNLOADS_SKIPPED} files.')
+        for i in range(NUM_DOWNLOADS_SKIPPED):
+            click.echo(f'Skipped: {filenames[i]}')
+        click.echo(f'These files already exist. '
+                    'Please include the overwrite flag, "-o" or "--overwrite", to overwrite files for the order. '
+                    'For example: planet orders download --overwrite my-order-id')
 
 def split_id_list(ctx, param, value):
     # split list by ',' and remove whitespace
