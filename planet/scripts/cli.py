@@ -17,7 +17,6 @@ from functools import wraps
 import json
 import logging
 import sys
-import os
 
 import click
 
