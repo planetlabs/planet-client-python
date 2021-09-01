@@ -82,9 +82,9 @@ async def create_and_download(order_detail, directory, client):
 
     # download
     print(f'Downloading {oid} to {directory}.')
-    filenames = await client.download_order(oid, directory, progress_bar=True)
+    filenames, NUM_DOWNLOADS, NUM_DOWNLOADS_SKIPPED = await client.download_order(oid, directory, progress_bar=True)
     print(f'Downloaded {oid}: '
-          f'{len(filenames)} files downloaded to {directory}.')
+          f'{NUM_DOWNLOADS} files downloaded to {directory}. {NUM_DOWNLOADS_SKIPPED} skipped downloads (not overwritten).')
 
 
 async def main():
