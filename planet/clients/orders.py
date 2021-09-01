@@ -75,7 +75,9 @@ class OrdersClient():
                 base url.
         """
         self._session = session
-
+        self.NUM_DOWNLOADS = 0
+        self.NUM_DOWNLOADS_SKIPPED = 0
+        
         self._base_url = base_url or BASE_URL
         if not self._base_url.endswith('/'):
             self._base_url += '/'
@@ -277,6 +279,7 @@ class OrdersClient():
     async def download_asset(
         self,
         location: str,
+        order_id: str,
         filename: str = None,
         directory: str = None,
         overwrite: bool = False,
@@ -286,6 +289,7 @@ class OrdersClient():
 
         Parameters:
             location: Download location url including download token.
+            order_id: The ID of the order            
             filename: Custom name to assign to downloaded file.
             directory: Write to given directory instead of current directory.
             overwrite: Overwrite any existing files.
@@ -301,20 +305,26 @@ class OrdersClient():
 
         async with self._session.stream(req) as resp:
             body = StreamingBody(resp)
-            dl_path = os.path.join(directory or '.', filename or body.name)
-            is_dl_path = os.path.isfile(dl_path)
-            # File doesn't exist or overwrite requested OR file doesn't exist and do not overwrite
-            if (overwrite or not is_dl_path) or (not overwrite and not is_dl_path):
-                await body.write(dl_path,
-                                overwrite=overwrite,
-                                progress_bar=progress_bar)
-            # File exists and do not overwrite it
-            else:
-                # Log something -> didn't download image vecause already existed
-                # Maybe even write something on the terminal?
+            dl_path = os.path.join(directory or '.', order_id)
+            # If path to download data doesn't exist, create directory
+            # Consistent with https://developers.planet.com/docs/orders/delivery/
+            if not os.path.isdir(dl_path):
+                os.mkdir(dl_path)
+            file_path = os.path.join(dl_path, filename or body.name)
+            is_file_path = os.path.isfile(file_path)
+
+            # Overwrite data or file doesn't exist in requested path
+            if overwrite or not is_file_path:
+                await body.write(file_path,
+                                 overwrite=overwrite,
+                                 progress_bar=progress_bar)
+                self.NUM_DOWNLOADS += 1
+            # Do not overwrite and file exists
+            elif is_file_path and not overwrite:
+                self.NUM_DOWNLOADS_SKIPPED += 1
                 pass
             
-        return dl_path
+        return file_path
 
     async def download_order(
         self,
@@ -333,6 +343,8 @@ class OrdersClient():
 
         Returns:
             Paths to downloaded files.
+            Number of downloaded files.
+            Number of skipped downloads.
 
         Raises:
             planet.exceptions.APIException: On API error.
@@ -343,11 +355,12 @@ class OrdersClient():
             f'downloading {len(locations)} assets from order {order_id}'
         )
         filenames = [await self.download_asset(location,
+                                               order_id,
                                                directory=directory,
                                                overwrite=overwrite,
                                                progress_bar=progress_bar)
                      for location in locations]
-        return filenames
+        return filenames, self.NUM_DOWNLOADS, self.NUM_DOWNLOADS_SKIPPED
 
     async def poll(
         self,
