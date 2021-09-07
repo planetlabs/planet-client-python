@@ -22,7 +22,8 @@ import re
 import string
 
 import httpx
-from tqdm.asyncio import tqdm
+
+from . import reporting
 
 LOGGER = logging.getLogger(__name__)
 
@@ -171,51 +172,30 @@ class StreamingBody():
         async for c in self.response.aiter_bytes():
             yield c
 
-    async def write(self, filename, overwrite=True, progress_bar=True):
-        '''Write the body to a file.
+    async def write(
+        self,
+        filename: str,
+        overwrite: bool = True,
+        progress_bar: bool = True
+    ):
+        '''Write the body to a file, optionally reporting status.
 
-        :param filename: Name to assign to downloaded file.
-        :type filename: str
-        :param overwrite: Overwrite any existing files. Defaults to True
-        :type overwrite: boolean, optional
-        :param progress_bar: Show progress bar during download. Defaults to
+        Parameters:
+            filename: Name to assign to downloaded file.
+            overwrite: Overwrite any existing files. Defaults to True
+            progress_bar: Show progress bar during download. Defaults to
             True.
-        :type progress_bar: boolean, optional
         '''
-        class _LOG():
-            def __init__(self, total, unit, filename, disable):
-                self.total = total
-                self.unit = unit
-                self.disable = disable
-                self.previous = 0
-                self.filename = filename
-
-                if not self.disable:
-                    LOGGER.debug(f'writing to {self.filename}')
-
-            def update(self, new):
-                if new-self.previous > self.unit and not self.disable:
-                    # LOGGER.debug(f'{new-self.previous}')
-                    perc = int(100 * new / self.total)
-                    LOGGER.debug(f'{self.filename}: '
-                                 f'wrote {perc}% of {self.total}')
-                    self.previous = new
-
-        unit = 1024*1024
-
         mode = 'wb' if overwrite else 'xb'
         try:
             with open(filename, mode) as fp:
-                _log = _LOG(self.size, 16*unit, filename, disable=progress_bar)
-                with tqdm(total=self.size, unit_scale=True,
-                          unit_divisor=unit, unit='B',
-                          desc=filename, disable=not progress_bar) as progress:
+                with reporting.FileDownloadBar(filename, self.size) as bar:
                     previous = self.num_bytes_downloaded
                     async for chunk in self.aiter_bytes():
                         fp.write(chunk)
                         new = self.num_bytes_downloaded
-                        _log.update(new)
-                        progress.update(new-previous)
+                        if progress_bar:
+                            bar.update(new-previous, logger=LOGGER.debug)
                         previous = new
         except FileExistsError:
             LOGGER.info(f'File {filename} exists, not overwriting')

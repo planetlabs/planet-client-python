@@ -30,16 +30,42 @@ class ProgressBar():
         self.bar.close()
 
     def open_bar(self):
+        """Initialize and start the progress bar."""
         return NotImplementedError
 
 
 class StateBar(ProgressBar):
-    def __init__(self, order_id=None, state=None):
+    """Bar reporter of order state.
+
+    Example:
+        ```python
+        from planet import reporting
+
+        with reporting.StateBar(state='creating') as bar:
+            bar.update(state='created', order_id='oid')
+            ...
+        ```
+    """
+    def __init__(
+        self,
+        order_id: str = None,
+        state: str = None
+    ):
+        """Initialize the object.
+
+        Parameters:
+            filename: Name of file to display.
+            size: File size in bytes.
+            unit: Value to scale number of report iterations.
+                (e.g. 1024*1024 scales to reporting in Megabytes.)
+        """
+
         self.state = state or ''
         self.order_id = order_id or ''
         super().__init__()
 
     def open_bar(self):
+        """Initialize and start the progress bar."""
         self.bar = tqdm(
             bar_format="{elapsed} - {desc} - {postfix[0]}: {postfix[1]}",
             desc=self.desc, postfix=["state", self.state])
@@ -64,13 +90,39 @@ class StateBar(ProgressBar):
 
 
 class FileDownloadBar(ProgressBar):
-    def __init__(self, filename, size, unit=None):
+    """Bar reporter of file download progress.
+
+    Example:
+        ```python
+        from planet import reporting
+
+        with reporting.FileDownloadBar('img.tif', 100000) as bar:
+            bar.update(1000)
+            ...
+        ```
+    """
+
+    def __init__(
+        self,
+        filename: str,
+        size: int,
+        unit: int = None
+    ):
+        """Initialize the object.
+
+        Parameters:
+            filename: Name of file to display.
+            size: File size in bytes.
+            unit: Value to scale number of report iterations.
+                (e.g. 1024*1024 scales to reporting in Megabytes.)
+        """
         self.filename = filename
         self.size = size
         self.unit = unit or 1024*1024
         super().__init__()
 
     def open_bar(self):
+        """Initialize and start the progress bar."""
         self.bar = tqdm(
             total=self.size,
             unit_scale=True,
@@ -86,7 +138,11 @@ class FileDownloadBar(ProgressBar):
 
 
 class OrderDownloadBar(ProgressBar):
-    def __init__(self, order_id=None, num_files=None):
+    def __init__(
+        self,
+        order_id: str = None,
+        num_files: int = None
+    ):
         self.order_id = order_id or ''
         self.num_files = num_files or 0
         super().__init__()
@@ -94,6 +150,7 @@ class OrderDownloadBar(ProgressBar):
         self.file_bars = []
 
     def open_bar(self):
+        """Initialize and start the progress bar."""
         self.bar = tqdm(
             range(self.num_files),
             desc=self.order_id)
@@ -104,9 +161,9 @@ class OrderDownloadBar(ProgressBar):
 
     def update(
         self,
-        order_id=None,
-        num_files=None,
-        add_file=False,
+        order_id: str = None,
+        num_files: int = None,
+        add_file: bool = False,
         logger=None
     ):
         if order_id:

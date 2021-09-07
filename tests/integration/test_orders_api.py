@@ -18,6 +18,7 @@ import logging
 import math
 import os
 from pathlib import Path
+from unittest.mock import Mock
 
 
 import httpx
@@ -436,8 +437,15 @@ async def test_poll(oid, order_description, session):
         httpx.Response(HTTPStatus.OK, json=order_description2),
         httpx.Response(HTTPStatus.OK, json=order_description3)
     ]
-    state = await cl.poll(oid, wait=0)
+
+    mock_report = Mock()
+    state = await cl.poll(oid, wait=0, report=mock_report)
     assert state == 'success'
+
+    # check state was reported as expected
+    assert mock_report.call_count == 3
+    states = [c[2]['state'] for c in mock_report.mock_calls]
+    assert ['queued', 'running', 'success'] == states
 
     route = respx.get(get_url)
     route.side_effect = [
