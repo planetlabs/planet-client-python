@@ -12,7 +12,11 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """Functionality for reporting progress."""
+import logging
+
 from tqdm.asyncio import tqdm
+
+LOGGER = logging.getLogger(__name__)
 
 
 class ProgressBar():
@@ -74,8 +78,10 @@ class StateBar(ProgressBar):
     def desc(self):
         return f'order {self.order_id}'
 
-    def update(self, state=None, order_id=None, logger=None):
+    def update(self, state=None, order_id=None):
         if state:
+            if state != self.state:
+                LOGGER.info('{order_id} state: {state}')
             self.state = state
             self.bar.postfix[1] = self.state
 
@@ -85,8 +91,7 @@ class StateBar(ProgressBar):
 
         self.bar.refresh()
 
-        if logger:
-            logger(str(self.bar))
+        LOGGER.debug(str(self.bar))
 
 
 class FileDownloadBar(ProgressBar):
@@ -101,12 +106,12 @@ class FileDownloadBar(ProgressBar):
             ...
         ```
     """
-
     def __init__(
         self,
         filename: str,
         size: int,
-        unit: int = None
+        unit: int = None,
+        disable: bool = False
     ):
         """Initialize the object.
 
@@ -128,65 +133,9 @@ class FileDownloadBar(ProgressBar):
             unit_scale=True,
             unit_divisor=self.unit,
             unit='B',
-            desc=self.filename)
+            desc=self.filename,
+            disable=self.disable)
 
     def update(self, downloaded_amt, logger=None):
         self.bar.update(downloaded_amt)
-
-        if logger:
-            logger(str(self.bar))
-
-
-class OrderDownloadBar(ProgressBar):
-    def __init__(
-        self,
-        order_id: str = None,
-        num_files: int = None
-    ):
-        self.order_id = order_id or ''
-        self.num_files = num_files or 0
-        super().__init__()
-
-        self.file_bars = []
-
-    def open_bar(self):
-        """Initialize and start the progress bar."""
-        self.bar = tqdm(
-            range(self.num_files),
-            desc=self.order_id)
-
-    @property
-    def desc(self):
-        return f'order {self.order_id}'
-
-    def update(
-        self,
-        order_id: str = None,
-        num_files: int = None,
-        add_file: bool = False,
-        logger=None
-    ):
-        if order_id:
-            self.order_id = order_id
-            self.bar.set_description_str(self.desc, refresh=False)
-
-        if num_files:
-            self.bar.total = num_files
-
-        self.bar.refresh()
-
-        if logger:
-            logger(str(self.bar))
-
-    #     if add_file:
-    #         self.file_bars.append(
-    #         return self.create_file_reporter
-    #
-    # from contextlib import contextmanager
-    # @contextmanager
-    # def create_file_reporter(self, filename, size, unit=None):
-    #     new_bar = FileDownloadBar(filename, size, unit)
-    #     new_bar.open()
-    #
-    #     with FileDownloadBar(filename, size, unit) as bar:
-    #         yield bar.update
+        LOGGER.debug(str(self.bar))
