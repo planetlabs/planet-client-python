@@ -304,7 +304,6 @@ class OrdersClient():
         async with self._session.stream(req) as resp:
             body = StreamingBody(resp)
             dl_path = os.path.join(directory or '.', filename or body.name)
-
             await body.write(dl_path,
                              overwrite=overwrite,
                              progress_bar=progress_bar)
