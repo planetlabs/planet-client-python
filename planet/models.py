@@ -24,7 +24,6 @@ import string
 import httpx
 from tqdm.asyncio import tqdm
 
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -174,6 +173,7 @@ class StreamingBody():
 
     async def write(self, filename, overwrite=True, progress_bar=True):
         '''Write the body to a file.
+
         :param filename: Name to assign to downloaded file.
         :type filename: str
         :param overwrite: Overwrite any existing files. Defaults to True
