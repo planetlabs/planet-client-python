@@ -20,6 +20,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class ProgressBar():
+    """Abstract base class for progress bar reporters."""
     def __init__(self):
         self.bar = None
 
@@ -58,10 +59,8 @@ class StateBar(ProgressBar):
         """Initialize the object.
 
         Parameters:
-            filename: Name of file to display.
-            size: File size in bytes.
-            unit: Value to scale number of report iterations.
-                (e.g. 1024*1024 scales to reporting in Megabytes.)
+            order_id: Id of the order.
+            state: State of the order.
         """
 
         self.state = state or ''
@@ -78,7 +77,11 @@ class StateBar(ProgressBar):
     def desc(self):
         return f'order {self.order_id}'
 
-    def update(self, state=None, order_id=None):
+    def update(
+        self,
+        state: str = None,
+        order_id: str = None
+    ):
         if state:
             if state != self.state:
                 LOGGER.info('{order_id} state: {state}')
@@ -91,51 +94,4 @@ class StateBar(ProgressBar):
 
         self.bar.refresh()
 
-        LOGGER.debug(str(self.bar))
-
-
-class FileDownloadBar(ProgressBar):
-    """Bar reporter of file download progress.
-
-    Example:
-        ```python
-        from planet import reporting
-
-        with reporting.FileDownloadBar('img.tif', 100000) as bar:
-            bar.update(1000)
-            ...
-        ```
-    """
-    def __init__(
-        self,
-        filename: str,
-        size: int,
-        unit: int = None,
-        disable: bool = False
-    ):
-        """Initialize the object.
-
-        Parameters:
-            filename: Name of file to display.
-            size: File size in bytes.
-            unit: Value to scale number of report iterations.
-                (e.g. 1024*1024 scales to reporting in Megabytes.)
-        """
-        self.filename = filename
-        self.size = size
-        self.unit = unit or 1024*1024
-        super().__init__()
-
-    def open_bar(self):
-        """Initialize and start the progress bar."""
-        self.bar = tqdm(
-            total=self.size,
-            unit_scale=True,
-            unit_divisor=self.unit,
-            unit='B',
-            desc=self.filename,
-            disable=self.disable)
-
-    def update(self, downloaded_amt, logger=None):
-        self.bar.update(downloaded_amt)
         LOGGER.debug(str(self.bar))

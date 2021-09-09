@@ -8,29 +8,27 @@ The recommended way to use a `Session` is as a context manager. This will
 provide for automatic clean up of connections when the context is left.
 
 ```python
->>> import asyncio
->>> import os
->>> from planet import Session
->>>
->>> async def main():
-...     async with Session() as sess:
-...         # perform operations here
-...         pass
-...
->>> asyncio.run(main())
+import asyncio
+import os
+from planet import Session
 
+async def main():
+    async with Session() as sess:
+        # perform operations here
+        pass
+
+asyncio.run(main())
 ```
 
 Alternatively, use `await Session.aclose()` to close a `Session` explicitly:
 
 ```python
->>> async def main():
-...     sess = Session()
-...     # perform operations here
-...     await sess.aclose()
-...
->>> asyncio.run(main())
+async def main():
+    sess = Session()
+    # perform operations here
+    await sess.aclose()
 
+asyncio.run(main())
 ```
 
 ### Authentication
@@ -53,13 +51,12 @@ It can also be accessed, e.g. to store in an environment variable, as
 For example, to obtain and store authentication information:
 
 ```python
->>> import getpass
->>> from planet import Auth
->>>
->>> pw = getpass.getpass()
->>> auth = Auth.from_login('user', 'pw')
->>> auth.write()
+import getpass
+from planet import Auth
 
+pw = getpass.getpass()
+auth = Auth.from_login('user', 'pw')
+auth.write()
 ```
 
 When a `Session` is created, by default, authentication is read from the secret
@@ -74,18 +71,17 @@ respective functions. For example, authentication can be read from a custom
 environment variable:
 
 ```python
->>> import asyncio
->>> import os
->>> from planet import Auth, Session
->>>
->>> auth = Auth.from_env('ALTERNATE_VAR')
->>> async def main():
-...     async with Session(auth=auth) as sess:
-...         # perform operations here
-...         pass
-...
->>> asyncio.run(main())
+import asyncio
+import os
+from planet import Auth, Session
 
+auth = Auth.from_env('ALTERNATE_VAR')
+async def main():
+    async with Session(auth=auth) as sess:
+        # perform operations here
+        pass
+
+asyncio.run(main())
 ```
 
 ### Orders Client
@@ -96,15 +92,14 @@ with the only difference being the addition of the ability to poll for when an
 order is completed and to download an entire order.
 
 ```python
->>> from planet import OrdersClient
->>>
->>> async def main():
-...     async with Session() as sess:
-...         client = OrdersClient(sess)
-...         # perform operations here
-...
->>> asyncio.run(main())
+from planet import OrdersClient
 
+async def main():
+    async with Session() as sess:
+        client = OrdersClient(sess)
+        # perform operations here
+
+asyncio.run(main())
 ```
 
 #### Creating an Order
@@ -116,77 +111,105 @@ as a JSON blob. This JSON blob can be built up manually or by using the
 An example of creating the request JSON with `build_request`:
 
 ```python
->>> from planet import order_request
->>> products = [
-...     order_request.product(['20170614_113217_3163208_RapidEye-5'],
-...                           'analytic', 'REOrthoTile')
-... ]
-...
->>> tools = [
-...     order_request.toar_tool(scale_factor=10000),
-...     order_request.reproject_tool(projection='WSG84', kernel='cubic'),
-...     order_request.tile_tool(1232, origin_x=-180, origin_y=-90,
-...               pixel_size=0.000027056277056,
-...               name_template='C1232_30_30_{tilex:04d}_{tiley:04d}')
-... ]
-...
->>> request = order_request.build_request(
-...     'test_order', products, tools)
-...
+from planet import order_request
+products = [
+    order_request.product(['20170614_113217_3163208_RapidEye-5'],
+                          'analytic', 'REOrthoTile')
+]
 
+tools = [
+    order_request.toar_tool(scale_factor=10000),
+    order_request.reproject_tool(projection='WSG84', kernel='cubic'),
+    order_request.tile_tool(1232, origin_x=-180, origin_y=-90,
+              pixel_size=0.000027056277056,
+              name_template='C1232_30_30_{tilex:04d}_{tiley:04d}')
+]
+
+request = order_request.build_request(
+    'test_order', products, tools)
 ```
 
 The same thing, expressed as a `JSON` blob:
 
 ```python
->>> request = {
-...   "name": "test_order",
-...   "products": [
-...     {
-...       "item_ids": [
-...         "20170614_113217_3163208_RapidEye-5"
-...       ],
-...       "item_type": "REOrthoTile",
-...       "product_bundle": "analytic"
-...     }
-...   ],
-...   "tools": [
-...     {
-...       "toar": {
-...         "scale_factor": 10000
-...       }
-...     },
-...     {
-...       "reproject": {
-...         "projection": "WSG84",
-...         "kernel": "cubic"
-...       }
-...     },
-...     {
-...       "tile": {
-...         "tile_size": 1232,
-...         "origin_x": -180,
-...         "origin_y": -90,
-...         "pixel_size": 2.7056277056e-05,
-...         "name_template": "C1232_30_30_{tilex:04d}_{tiley:04d}"
-...       }
-...     }
-...   ]
-... }
-
+request = {
+  "name": "test_order",
+  "products": [
+    {
+      "item_ids": [
+        "20170614_113217_3163208_RapidEye-5"
+      ],
+      "item_type": "REOrthoTile",
+      "product_bundle": "analytic"
+    }
+  ],
+  "tools": [
+    {
+      "toar": {
+        "scale_factor": 10000
+      }
+    },
+    {
+      "reproject": {
+        "projection": "WSG84",
+        "kernel": "cubic"
+      }
+    },
+    {
+      "tile": {
+        "tile_size": 1232,
+        "origin_x": -180,
+        "origin_y": -90,
+        "pixel_size": 2.7056277056e-05,
+        "name_template": "C1232_30_30_{tilex:04d}_{tiley:04d}"
+      }
+    }
+  ]
+}
 ```
 
 Once the order request is built up, creating an order is done within
 the context of a `Session` with the `OrdersClient`:
 
 ```python
->>> async def main():
-...     async with Session() as sess:
-...         cl = OrdersClient(sess)
-...         order_id = await cl.create_order(request)
-...
->>> asyncio.run(main())
+async def main():
+    async with Session() as sess:
+        cl = OrdersClient(sess)
+        order_id = await cl.create_order(request)
 
+asyncio.run(main())
+```
+
+#### Polling and Downloading an Order
+
+Once an order is created, the Orders API takes some time to create the order
+and thus we must wait a while before downloading the order.
+We can use polling to watch the order creation process and find out when the 
+order is created successfully and ready to download.
+
+With polling and download, it is often desired to track progress as these 
+processes can take a long time. Therefore, in this example, we use a progress
+bar from the `reporting` module to report poll status. `download_order` has
+reporting built in.
+
+```python
+from planet import reporting
+
+async def create_poll_and_download():
+    async with Session() as sess:
+        cl = OrdersClient(sess)
+        with reporting.StateBar(state='creating') as bar:
+            # create order
+            order = await cl.create_order(request)
+            bar.update(state='created', order_id=order.id)
+
+            # poll
+            await cl.poll(order.id, report=bar.update)
+
+        # download
+        await cl.download_order(order.id)
+
+asyncio.run(create_poll_and_download())
 ```
 
 ## CLI
@@ -228,7 +251,7 @@ the options and format given in
 An example would be:
 
 Example: `cloudconfig.json`
-```
+```python
 {
     "amazon_s3": {
         "aws_access_key_id": "aws_access_key_id",
@@ -246,7 +269,7 @@ It can be a Polygon geometry, a Feature, or a FeatureClass. If it is a FeatureCl
 only the first Feature is used for the clip geometry.
 
 Example: `aoi.geojson`
-```
+```python
 {
     "type": "Polygon",
     "coordinates": [
@@ -283,7 +306,7 @@ and format are given in
 [Creating Toolchains](https://developers.planet.com/docs/orders/tools-toolchains/#creating-toolchains).
 
 Example: `tools.json`
-```
+```python
 [
     {
         "toar": {

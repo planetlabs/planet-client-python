@@ -161,10 +161,13 @@ class OrdersClient():
         except exceptions.BadQuery as ex:
             msg_json = json.loads(ex.message)
 
-            # get first error field
-            field = next(iter(msg_json['field'].keys()))
-            msg = (msg_json['general'][0]['message'] + ' - ' +
-                   msg_json['field'][field][0]['message'])
+            msg = msg_json['general'][0]['message']
+            try:
+                # get first error field
+                field = next(iter(msg_json['field'].keys()))
+                msg += ' - ' + msg_json['field'][field][0]['message']
+            except AttributeError:
+                pass
             raise exceptions.BadQuery(msg)
 
         order = Order(resp.json())
@@ -350,6 +353,14 @@ class OrdersClient():
         """Poll for order status until order reaches desired state, optionally
         reporting status.
 
+        Example:
+            ```python
+            from planet.reporting import StateBar
+
+            with StateBar as bar:
+                await poll(order_id, report=bar.update)
+            ```
+
         Parameters:
             order_id: The ID of the order
             state: State to poll until. If multiple, use list. Defaults to
@@ -357,7 +368,8 @@ class OrdersClient():
             wait: Time (in seconds) between polls.
             report: Callback function for progress updates. Invoked with
                 keyword arguments `state` (poll state) and `logger`
-                (callback for logging progress bar status).
+                (callback for logging progress bar status). Recommended
+                value is `reporting.StateBar.update`.
 
         Returns
             Completed state of the order.
@@ -384,7 +396,9 @@ class OrdersClient():
             state = order.state
 
             if report:
-                report(state=order.state, logger=LOGGER.info)
+                report(state=order.state)
+            else:
+                LOGGER.debug(state)
 
             completed = state in states
             if not completed:
