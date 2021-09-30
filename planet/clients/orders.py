@@ -30,7 +30,7 @@ STATS_PATH = 'stats/orders/v2/'
 ORDERS_PATH = 'orders/v2/'
 BULK_PATH = 'bulk/orders/v2/'
 
-# Order states: https://developers.planet.com/docs/orders/ordering/#order-states
+# Order states https://developers.planet.com/docs/orders/ordering/#order-states
 ORDERS_STATES_COMPLETE = ['success', 'partial', 'cancelled', 'failed']
 ORDERS_STATES_IN_PROGRESS = ['queued', 'running']
 ORDERS_STATES = ORDERS_STATES_IN_PROGRESS + ORDERS_STATES_COMPLETE
@@ -75,7 +75,7 @@ class OrdersClient():
                 base url.
         """
         self._session = session
-        
+
         self._base_url = base_url or BASE_URL
         if not self._base_url.endswith('/'):
             self._base_url += '/'
@@ -304,9 +304,9 @@ class OrdersClient():
             body = StreamingBody(resp)
             dl_path = os.path.join(directory, filename or body.name)
             await body.write(dl_path,
-                            overwrite=overwrite,
-                            progress_bar=progress_bar)
-            
+                             overwrite=overwrite,
+                             progress_bar=progress_bar)
+
         return dl_path
 
     async def download_order(
@@ -337,7 +337,7 @@ class OrdersClient():
         LOGGER.info(
             f'downloading {len(locations)} assets from order {order_id}'
         )
-        
+
         # If a directory wasn't provided, choose current working directory
         directory = directory or '.'
 
@@ -346,7 +346,7 @@ class OrdersClient():
                                                overwrite=overwrite,
                                                progress_bar=progress_bar)
                      for location in locations]
-        
+
         return filenames
 
     async def poll(
@@ -440,7 +440,6 @@ class OrdersClient():
         return Orders(request, self._do_request, limit=limit)
 
     @staticmethod
-
     def _check_state(state):
         if state not in ORDERS_STATES:
             raise OrdersClientException(

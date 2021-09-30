@@ -147,7 +147,7 @@ def test_cli_orders_download(runner, monkeypatch, oid):
     result = runner.invoke(
         cli, ['orders', 'download', oid])
     assert not result.exception
-    
+
     # Check the output is as expected (list all files downloaded line-by-line)
     # Add a new line character (\n) for each test filename
     all_test_files_newline = [s + '\n' for s in all_test_files]

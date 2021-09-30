@@ -206,14 +206,13 @@ async def cancel(ctx, order_id):
               help=('Directory to download files to.'),
               type=click.Path(exists=True, resolve_path=True,
                               writable=True, file_okay=False))
-                              
 async def download(ctx, order_id, quiet, overwrite, dest):
     '''Download order by order ID.'''
 
-    # Download the user's order            
+    # Download the user's order
     async with orders_client(ctx) as cl:
         await cl.poll(str(order_id), verbose=True)
-        filenames= await cl.download_order(
+        filenames = await cl.download_order(
                 str(order_id),
                 directory=dest,
                 overwrite=overwrite,
@@ -222,6 +221,7 @@ async def download(ctx, order_id, quiet, overwrite, dest):
     # Tell user all files that exist in order
     for i in range(len(filenames)):
         click.echo(filenames[i])
+
 
 def split_id_list(ctx, param, value):
     # split list by ',' and remove whitespace
