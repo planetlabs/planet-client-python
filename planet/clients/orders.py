@@ -292,7 +292,7 @@ class OrdersClient():
             progress_bar: Show progress bar during download.
 
         Returns:
-            All files in an order.
+            Path to downloaded file.
 
         Raises:
             planet.exceptions.APIException: On API error.
@@ -314,7 +314,7 @@ class OrdersClient():
         order_id: str,
         directory: str = None,
         overwrite: bool = False,
-        progress_bar: bool = False,
+        progress_bar: bool = False
     ) -> typing.List[str]:
         """Download all assets in an order.
 
@@ -326,8 +326,6 @@ class OrdersClient():
 
         Returns:
             Paths to downloaded files.
-            Number of downloaded files.
-            Number of skipped downloads.
 
         Raises:
             planet.exceptions.APIException: On API error.
