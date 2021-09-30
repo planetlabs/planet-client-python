@@ -134,8 +134,10 @@ def test_cli_orders_cancel(runner, monkeypatch, order_description, oid):
 
 
 def test_cli_orders_download(runner, monkeypatch, oid):
+    all_test_files = ['file1.json', 'file2.zip', 'file3.tiff', 'file4.jpg']
+
     async def do(*arg, **kwarg):
-        return ['file1']
+        return all_test_files
     monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'download_order', do)
 
     async def poll(*arg, **kwarg):
@@ -145,8 +147,14 @@ def test_cli_orders_download(runner, monkeypatch, oid):
     result = runner.invoke(
         cli, ['orders', 'download', oid])
     assert not result.exception
-    # assert "file1" in result.output
-    assert 'Downloaded 1 files.\n' == result.output
+    
+    # Check the output is as expected (list all files downloaded line-by-line)
+    # Add a new line character (\n) for each test filename
+    all_test_files_newline = [s + '\n' for s in all_test_files]
+    # Add all strings together (remove all commas in the list)
+    all_test_files_newline_squashed = ''.join(all_test_files_newline)
+    # Expect output to look like 'file1\nfile2\n...fileN\n'
+    assert all_test_files_newline_squashed == result.output
 
 
 class AsyncMock(Mock):
