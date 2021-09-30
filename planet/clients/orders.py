@@ -314,8 +314,8 @@ class OrdersClient():
         order_id: str,
         directory: str = None,
         overwrite: bool = False,
-        progress_bar: bool = False
-    ) -> list[str]:
+        progress_bar: bool = False,
+    ) -> typing.List[str]:
         """Download all assets in an order.
 
         Parameters:
@@ -337,8 +337,9 @@ class OrdersClient():
         LOGGER.info(
             f'downloading {len(locations)} assets from order {order_id}'
         )
-
-        directory = self._set_path(order_id=order_id, directory=directory)
+        
+        # If a directory wasn't provided, choose current working directory
+        directory = directory or '.'
 
         filenames = [await self.download_asset(location,
                                                directory=directory,
@@ -439,35 +440,6 @@ class OrdersClient():
         return Orders(request, self._do_request, limit=limit)
 
     @staticmethod
-
-    def _set_path(
-        order_id: str,
-        directory: str
-    ) -> str:
-        """Ensures that the user downloads their data to a directory named by the Order ID.
-           This is consistent with our order delivery layout https://developers.planet.com/docs/orders/delivery/ 
-
-            Parameters:
-                order_id: The ID of the order
-                directory: Directory to ensure exists.
-
-            Returns:
-                Directory to downloaded files.
-
-            Raises:
-                planet.api.exceptions.APIException: On API error.
-        """
-
-        # If a directory wasn't provided, choose current working directory
-        directory = directory or '.'
-
-        if directory.split("/")[-1] != order_id:
-            directory = os.path.join(directory, order_id)
-        
-        if not os.path.isdir(directory):
-            os.mkdir(directory)
-
-        return directory
 
     def _check_state(state):
         if state not in ORDERS_STATES:
