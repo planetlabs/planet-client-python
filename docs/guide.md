@@ -64,7 +64,7 @@ For example, to obtain and store authentication information:
 
 When a `Session` is created, by default, authentication is read from the secret
 file created with `Auth.write()`. This behavior can be modified by specifying
-`Auth` explicitely using the methods `Auth.from_file()` and `Auth.from_env()`.
+`Auth` explicitly using the methods `Auth.from_file()` and `Auth.from_env()`.
 While `Auth.from_key()` and `Auth.from_login` can be used, it is recommended
 that those functions be used in authentication initialization and the
 authentication information be stored using `Auth.write()`.
