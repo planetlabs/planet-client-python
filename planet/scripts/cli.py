@@ -219,8 +219,8 @@ async def download(ctx, order_id, quiet, overwrite, dest):
                 progress_bar=not quiet)
 
     # Tell user all files that exist in order
-    for i in range(len(filenames)):
-        click.echo(filenames[i])
+    for f in filenames:
+        click.echo(f)
 
 
 def split_id_list(ctx, param, value):

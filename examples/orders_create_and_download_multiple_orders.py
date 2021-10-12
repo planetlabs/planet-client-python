@@ -83,8 +83,8 @@ async def create_and_download(order_detail, directory, client):
     # download
     print(f'Downloading {oid} to {directory}.')
     filenames = await client.download_order(oid, directory, progress_bar=True)
-    for i in range(len(filenames)):
-        print(filenames[i])
+    for f in filenames:
+        print(f)
 
 
 async def main():
