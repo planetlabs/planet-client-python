@@ -150,11 +150,9 @@ def test_cli_orders_download(runner, monkeypatch, oid):
 
     # Check the output is as expected (list all files downloaded line-by-line)
     # Add a new line character (\n) for each test filename
-    all_test_files_newline = [s + '\n' for s in all_test_files]
-    # Add all strings together (remove all commas in the list)
-    all_test_files_newline_squashed = ''.join(all_test_files_newline)
+    all_test_files_newline = '\n'.join(all_test_files) + '\n'
     # Expect output to look like 'file1\nfile2\n...fileN\n'
-    assert all_test_files_newline_squashed == result.output
+    assert all_test_files_newline == result.output
 
 
 class AsyncMock(Mock):
