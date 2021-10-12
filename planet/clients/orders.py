@@ -297,12 +297,11 @@ class OrdersClient():
         Raises:
             planet.exceptions.APIException: On API error.
         """
-
         req = self._request(location, method='GET')
 
         async with self._session.stream(req) as resp:
             body = StreamingBody(resp)
-            dl_path = os.path.join(directory, filename or body.name)
+            dl_path = os.path.join(directory or '.', filename or body.name)
             await body.write(dl_path,
                              overwrite=overwrite,
                              progress_bar=progress_bar)
@@ -335,9 +334,6 @@ class OrdersClient():
         LOGGER.info(
             f'downloading {len(locations)} assets from order {order_id}'
         )
-
-        # If a directory wasn't provided, choose current working directory
-        directory = directory or '.'
 
         filenames = [await self.download_asset(location,
                                                directory=directory,
