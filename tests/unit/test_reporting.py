@@ -19,7 +19,7 @@ from planet import reporting
 LOGGER = logging.getLogger(__name__)
 
 
-def test_StateBar():
+def test_StateBar_enabled():
     with reporting.StateBar() as bar:
         expected_init = '..:.. - order  - state: '
         assert(re.fullmatch(expected_init, str(bar)))
@@ -27,3 +27,8 @@ def test_StateBar():
         expected_update = '..:.. - order 1 - state: init'
         bar.update(order_id='1', state='init')
         assert(re.fullmatch(expected_update, str(bar)))
+
+
+def test_StateBar_disabled():
+    with reporting.StateBar(disable=True) as bar:
+        assert bar.bar.disable

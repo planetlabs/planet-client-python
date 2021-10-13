@@ -21,8 +21,12 @@ LOGGER = logging.getLogger(__name__)
 
 class ProgressBar():
     """Abstract base class for progress bar reporters."""
-    def __init__(self):
+    def __init__(
+        self,
+        disable: bool = False
+    ):
         self.bar = None
+        self.disable = disable
 
     def __str__(self):
         return str(self.bar)
@@ -54,7 +58,8 @@ class StateBar(ProgressBar):
     def __init__(
         self,
         order_id: str = None,
-        state: str = None
+        state: str = None,
+        disable: bool = False,
     ):
         """Initialize the object.
 
@@ -65,13 +70,14 @@ class StateBar(ProgressBar):
 
         self.state = state or ''
         self.order_id = order_id or ''
-        super().__init__()
+        super().__init__(disable=disable)
 
     def open_bar(self):
         """Initialize and start the progress bar."""
         self.bar = tqdm(
             bar_format="{elapsed} - {desc} - {postfix[0]}: {postfix[1]}",
-            desc=self.desc, postfix=["state", self.state])
+            desc=self.desc, postfix=["state", self.state],
+            disable=self.disable)
 
     @property
     def desc(self):

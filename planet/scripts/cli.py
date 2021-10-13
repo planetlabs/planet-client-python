@@ -209,12 +209,13 @@ async def cancel(ctx, order_id):
 async def download(ctx, order_id, quiet, overwrite, dest):
     '''Download order by order ID.'''
     async with orders_client(ctx) as cl:
-        await cl.poll(str(order_id), verbose=True)
-        filenames = await cl.download_order(
-                str(order_id),
-                directory=dest,
-                overwrite=overwrite,
-                progress_bar=not quiet)
+        with planet.reporting.StateBar(disable=quiet) as bar:
+            await cl.poll(str(order_id), report=bar.update)
+            filenames = await cl.download_order(
+                    str(order_id),
+                    directory=dest,
+                    overwrite=overwrite,
+                    progress_bar=not quiet)
     click.echo(f'Downloaded {len(filenames)} files.')
 
 
