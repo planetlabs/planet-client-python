@@ -346,17 +346,22 @@ class OrdersClient():
         self,
         order_id: str,
         state: str = None,
-        wait: int = 10,
+        wait: int = 1,
         report=None
     ) -> str:
         """Poll for order status until order reaches desired state, optionally
         reporting status.
 
+        By default, the Orders API is polled every 1 second for status updates.
+        The API rate limit for this endpoint is 10 requests per second.
+        If many orders are being polled asynchronously, consider
+        increasing the wait to avoid throttling.
+
         Example:
             ```python
             from planet.reporting import StateBar
 
-            with StateBar as bar:
+            with StateBar() as bar:
                 await poll(order_id, report=bar.update)
             ```
 
