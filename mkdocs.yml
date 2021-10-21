@@ -30,6 +30,7 @@ nav:
     - Introduction: 'index.md'
     - User Guide: 'guide.md'
     - Upgrading: 'upgrading.md'
+    - Early Access: 'v2_earlyaccess.md'
     - API Reference: 'api.md'
     - CLI Reference: 'cli.md'
 
@@ -37,4 +38,4 @@ markdown_extensions:
   - pymdownx.highlight
   - pymdownx.superfences
   - mkdocs-click
-
+  - admonition
