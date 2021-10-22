@@ -600,27 +600,9 @@ async def test_download_order_overwrite_true_preexisting_data(
     f.write(json.dumps(original_content))
     f.close()
 
-    # Create mock HTTP response
-    dl_url = TEST_URL + 'download/1?token=IAmAToken'
-    order_description['_links']['results'] = [
-        {'location': dl_url},
-    ]
-
-    get_url = TEST_URL + 'orders/v2/' + oid
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.get(get_url).return_value = mock_resp
-
     downloaded_content = {'key': 'downloaded_file'}
-    mock_resp = httpx.Response(
-        HTTPStatus.OK,
-        json=downloaded_content,
-        headers={
-            'Content-Type': 'application/json',
-            'Content-Disposition': 'attachment; filename="file.json"'
-        })
-    respx.get(dl_url).return_value = mock_resp
-
-    cl = OrdersClient(session, base_url=TEST_URL)
+    cl = await get_orders_client(downloaded_content, order_description, oid,
+                                 session)
     # Download order and overwrite data
     _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=True)
 
@@ -644,27 +626,9 @@ async def test_download_order_overwrite_false_preexisting_data(
     f.write(json.dumps(original_content))
     f.close()
 
-    # Create mock HTTP response
-    dl_url = TEST_URL + 'download/1?token=IAmAToken'
-    order_description['_links']['results'] = [
-        {'location': dl_url},
-    ]
-
-    get_url = TEST_URL + 'orders/v2/' + oid
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.get(get_url).return_value = mock_resp
-
     downloaded_content = {'key': 'downloaded_file'}
-    mock_resp = httpx.Response(
-        HTTPStatus.OK,
-        json=downloaded_content,
-        headers={
-            'Content-Type': 'application/json',
-            'Content-Disposition': 'attachment; filename="file.json"'
-        })
-    respx.get(dl_url).return_value = mock_resp
-
-    cl = OrdersClient(session, base_url=TEST_URL)
+    cl = await get_orders_client(downloaded_content, order_description, oid,
+                                 session)
     # Download order and overwrite data
     _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
 
@@ -681,27 +645,9 @@ async def test_download_order_overwrite_true_nonexisting_data(
     set to true without pre-existing data.
     '''
 
-    # Create mock HTTP response
-    dl_url = TEST_URL + 'download/1?token=IAmAToken'
-    order_description['_links']['results'] = [
-        {'location': dl_url},
-    ]
-
-    get_url = TEST_URL + 'orders/v2/' + oid
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.get(get_url).return_value = mock_resp
-
     downloaded_content = {'key': 'downloaded_file'}
-    mock_resp = httpx.Response(
-        HTTPStatus.OK,
-        json=downloaded_content,
-        headers={
-            'Content-Type': 'application/json',
-            'Content-Disposition': 'attachment; filename="file.json"'
-        })
-    respx.get(dl_url).return_value = mock_resp
-
-    cl = OrdersClient(session, base_url=TEST_URL)
+    cl = await get_orders_client(downloaded_content, order_description, oid,
+                                 session)
     # Download order and overwrite data
     _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=True)
 
@@ -718,6 +664,22 @@ async def test_download_order_overwrite_false_nonexisting_data(
     set to false without pre-existing data.
     '''
 
+    downloaded_content = {'key': 'downloaded_file'}
+    cl = await get_orders_client(downloaded_content, order_description, oid,
+                                 session)
+    # Download order and overwrite data
+    _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
+
+    assert json.loads(open(Path(tmpdir, 'file.json')).read()) != ...
+    downloaded_content
+
+
+async def get_orders_client(
+        downloaded_content, order_description, oid, session):
+    '''
+    Mock an HTTP response and return the Orders client.
+    '''
+
     # Create mock HTTP response
     dl_url = TEST_URL + 'download/1?token=IAmAToken'
     order_description['_links']['results'] = [
@@ -728,7 +690,6 @@ async def test_download_order_overwrite_false_nonexisting_data(
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.get(get_url).return_value = mock_resp
 
-    downloaded_content = {'key': 'downloaded_file'}
     mock_resp = httpx.Response(
         HTTPStatus.OK,
         json=downloaded_content,
@@ -737,10 +698,7 @@ async def test_download_order_overwrite_false_nonexisting_data(
             'Content-Disposition': 'attachment; filename="file.json"'
         })
     respx.get(dl_url).return_value = mock_resp
-
+    # Get the Orders client
     cl = OrdersClient(session, base_url=TEST_URL)
-    # Download order and overwrite data
-    _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
 
-    assert json.loads(open(Path(tmpdir, 'file.json')).read()) != ...
-    downloaded_content
+    return cl
