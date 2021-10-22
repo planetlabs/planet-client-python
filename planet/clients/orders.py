@@ -305,7 +305,6 @@ class OrdersClient():
             await body.write(dl_path,
                              overwrite=overwrite,
                              progress_bar=progress_bar)
-
         return dl_path
 
     async def download_order(
@@ -334,13 +333,11 @@ class OrdersClient():
         LOGGER.info(
             f'downloading {len(locations)} assets from order {order_id}'
         )
-
         filenames = [await self.download_asset(location,
                                                directory=directory,
                                                overwrite=overwrite,
                                                progress_bar=progress_bar)
                      for location in locations]
-
         return filenames
 
     async def poll(
