@@ -13,7 +13,6 @@
 # limitations under the License.
 """Manage data for requests and responses."""
 import copy
-import datetime
 import json
 import logging
 import mimetypes
@@ -156,16 +155,6 @@ class StreamingBody():
         :rtype: int
         '''
         return self.response.num_bytes_downloaded
-
-    def last_modified(self):
-        '''Read the last-modified header as a datetime, if present.
-
-        :returns: last-modified header
-        :rtype: datatime or None
-        '''
-        lm = self.response.headers.get('last-modified', None)
-        return datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S GMT') if lm \
-            else None
 
     async def aiter_bytes(self):
         async for c in self.response.aiter_bytes():
