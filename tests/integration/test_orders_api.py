@@ -48,6 +48,45 @@ def oid2():
     return '5ece1dc0-ea81-11eb-837c-acde48001122'
 
 
+@pytest.fixture
+def downloaded_content():
+    return {'key': 'downloaded_file'}
+
+
+@pytest.fixture
+def original_content():
+    return {'key': 'original_file'}
+
+
+@pytest.fixture
+def create_download_mock(downloaded_content, order_description, oid):
+    '''
+    Mock an HTTP response for download.
+    '''
+
+    def f():
+        # Create mock HTTP response
+        dl_url = TEST_URL + 'download/1?token=IAmAToken'
+        order_description['_links']['results'] = [
+            {'location': dl_url},
+        ]
+
+        get_url = TEST_URL + 'orders/v2/' + oid
+        mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+        respx.get(get_url).return_value = mock_resp
+
+        mock_resp = httpx.Response(
+            HTTPStatus.OK,
+            json=downloaded_content,
+            headers={
+                'Content-Type': 'application/json',
+                'Content-Disposition': 'attachment; filename="file.json"'
+            })
+        respx.get(dl_url).return_value = mock_resp
+
+    return f
+
+
 @respx.mock
 @pytest.mark.asyncio
 async def test_list_orders_basic(order_descriptions, session):
@@ -542,7 +581,13 @@ async def test_download_asset_img(tmpdir, open_test_img, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_download_order(tmpdir, order_description, oid, session):
+async def test_download_order_success(tmpdir, order_description, oid, session):
+    '''
+    Test if download_order() successfully downloads an order with two files,
+    given a singular order ID.
+    '''
+
+    # Mock an HTTP response for download
     dl_url1 = TEST_URL + 'download/1?token=IAmAToken'
     dl_url2 = TEST_URL + 'download/2?token=IAmAnotherToken'
     order_description['_links']['results'] = [
@@ -572,133 +617,105 @@ async def test_download_order(tmpdir, order_description, oid, session):
         })
     respx.get(dl_url2).return_value = mock_resp2
 
+    # Create Orders client
     cl = OrdersClient(session, base_url=TEST_URL)
+    # Download order and return the filenames of the downloaded files
     filenames = await cl.download_order(oid, directory=str(tmpdir))
 
+    # Check there are as many files as expected
     assert len(filenames) == 2
 
-    assert json.loads(open(filenames[0]).read()) == {'key': 'value'}
+    # Check that the downloaded files have the correct filename and contents
+    assert json.load(open(filenames[0])) == {'key': 'value'}
     assert Path(filenames[0]).name == 'm1.json'
-
-    assert json.loads(open(filenames[1]).read()) == {'key2': 'value2'}
+    assert json.load(open(filenames[1])) == {'key2': 'value2'}
     assert Path(filenames[1]).name == 'm2.json'
 
 
 @respx.mock
 @pytest.mark.asyncio
 async def test_download_order_overwrite_true_preexisting_data(
-        tmpdir, order_description, oid, session):
+        tmpdir, oid, session, create_download_mock, original_content,
+        downloaded_content):
     '''
     Test if download_order() overwrites pre-existing data with
     overwrite flag set to True.
     '''
 
-    # Create a JSON
-    original_content = {'key': 'original_file'}
-    # Save JSON to tmpdir
-    f = open(Path(tmpdir, 'file.json'), "a")
-    f.write(json.dumps(original_content))
-    f.close()
+    # Save JSON to out_file in tmpdir
+    with open(Path(tmpdir, 'file.json'), "a") as out_file:
+        json.dump(original_content, out_file)
 
-    downloaded_content = {'key': 'downloaded_file'}
-    cl = await get_orders_client(downloaded_content, order_description, oid,
-                                 session)
+    # Create mock response for downloading
+    create_download_mock()
+    # Create Orders client
+    cl = OrdersClient(session, base_url=TEST_URL)
     # Download order and overwrite data
     _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=True)
 
-    assert json.loads(open(Path(tmpdir, 'file.json')).read()) != ...
-    downloaded_content
+    # Check that the data downloaded has overwritten the original data
+    assert json.load(open(Path(tmpdir, 'file.json'))) == downloaded_content
 
 
 @respx.mock
 @pytest.mark.asyncio
 async def test_download_order_overwrite_false_preexisting_data(
-        tmpdir, order_description, oid, session):
+        tmpdir, oid, session, create_download_mock, original_content):
     '''
     Test if download_order() does not overwrite pre-existing
     data with overwrite flag set to False.
     '''
 
-    # Create a JSON
-    original_content = {'key': 'original_file'}
-    # Save JSON to tmpdir
-    f = open(Path(tmpdir, 'file.json'), "a")
-    f.write(json.dumps(original_content))
-    f.close()
+    # Save JSON to out_file in tmpdir
+    with open(Path(tmpdir, 'file.json'), "a") as out_file:
+        json.dump(original_content, out_file)
 
-    downloaded_content = {'key': 'downloaded_file'}
-    cl = await get_orders_client(downloaded_content, order_description, oid,
-                                 session)
+    # Create mock response for downloading
+    create_download_mock()
+    # Create Orders client
+    cl = OrdersClient(session, base_url=TEST_URL)
     # Download order and overwrite data
     _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
 
-    assert json.loads(open(Path(tmpdir, 'file.json')).read()) != ...
-    original_content
+    # Check that the original data has not been overwritten
+    assert json.load(open(Path(tmpdir, 'file.json'))) == original_content
 
 
 @respx.mock
 @pytest.mark.asyncio
 async def test_download_order_overwrite_true_nonexisting_data(
-        tmpdir, order_description, oid, session):
+        tmpdir, oid, session, create_download_mock, downloaded_content):
     '''
     Test if download_order() downloads data with overwrite flag
     set to true without pre-existing data.
     '''
 
-    downloaded_content = {'key': 'downloaded_file'}
-    cl = await get_orders_client(downloaded_content, order_description, oid,
-                                 session)
+    # Save JSON to out_file in tmpdir
+    create_download_mock()
+    # Create Orders client
+    cl = OrdersClient(session, base_url=TEST_URL)
     # Download order and overwrite data
     _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=True)
 
-    assert json.loads(open(Path(tmpdir, 'file.json')).read()) != ...
-    downloaded_content
+    # Check that the data downloaded has the correct contents
+    assert json.load(open(Path(tmpdir, 'file.json'))) == downloaded_content
 
 
 @respx.mock
 @pytest.mark.asyncio
 async def test_download_order_overwrite_false_nonexisting_data(
-        tmpdir, order_description, oid, session):
+        tmpdir, oid, session, create_download_mock, downloaded_content):
     '''
     Test if download_order() downloads data with overwrite flag
     set to false without pre-existing data.
     '''
 
-    downloaded_content = {'key': 'downloaded_file'}
-    cl = await get_orders_client(downloaded_content, order_description, oid,
-                                 session)
+    # Save JSON to out_file in tmpdir
+    create_download_mock()
+    # Create Orders client
+    cl = OrdersClient(session, base_url=TEST_URL)
     # Download order and overwrite data
     _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
 
-    assert json.loads(open(Path(tmpdir, 'file.json')).read()) != ...
-    downloaded_content
-
-
-async def get_orders_client(
-        downloaded_content, order_description, oid, session):
-    '''
-    Mock an HTTP response and return the Orders client.
-    '''
-
-    # Create mock HTTP response
-    dl_url = TEST_URL + 'download/1?token=IAmAToken'
-    order_description['_links']['results'] = [
-        {'location': dl_url},
-    ]
-
-    get_url = TEST_URL + 'orders/v2/' + oid
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.get(get_url).return_value = mock_resp
-
-    mock_resp = httpx.Response(
-        HTTPStatus.OK,
-        json=downloaded_content,
-        headers={
-            'Content-Type': 'application/json',
-            'Content-Disposition': 'attachment; filename="file.json"'
-        })
-    respx.get(dl_url).return_value = mock_resp
-    # Get the Orders client
-    cl = OrdersClient(session, base_url=TEST_URL)
-
-    return cl
+    # Check that the data downloaded has the correct contents
+    assert json.load(open(Path(tmpdir, 'file.json'))) == downloaded_content
