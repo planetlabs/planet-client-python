@@ -230,7 +230,8 @@ def test_Order_locations(order_description):
 
 
 def test_last_modified_emptyheader():
-    '''This function tests the last_modified function for an empty header, by seeing if the last_modified is None.
+    '''This function tests the last_modified function for an empty header, by
+    seeing if the last_modified is None.
     '''
     r = MagicMock(name='response')
     r.request.url = URL('https://planet.com/path/to/example.tif?foo=f6f1')
@@ -248,8 +249,10 @@ def test_last_modified_emptyheader():
     expected = None
     assert output == expected
 
+
 def test_last_modified_completeheader():
-    '''This function tests the last_modified function for an existing header, by comparing the last_modified date to
+    '''This function tests the last_modified function for an existing header,
+    by comparing the last_modified date to
     an expected output.
     '''
     r = MagicMock(name='response')
@@ -266,5 +269,6 @@ def test_last_modified_completeheader():
     r.http_response = hr
     body = models.StreamingBody(r)
     output = body.last_modified()
-    expected = datetime.strptime(hr.headers['last-modified'], '%a, %d %b %Y %H:%M:%S GMT')
+    expected = datetime.strptime(hr.headers['last-modified'],
+                                 '%a, %d %b %Y %H:%M:%S GMT')
     assert output == expected
