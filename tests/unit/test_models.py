@@ -229,10 +229,25 @@ def test_Order_locations(order_description):
     assert order.locations == expected_locations
 
 
-# 3def test_last_modified_emptyheader():
-#
-#
-#
+def test_last_modified_emptyheader():
+    '''This function tests the last_modified function for an empty header, by seeing if the last_modified is None.
+    '''
+    r = MagicMock(name='response')
+    r.request.url = URL('https://planet.com/path/to/example.tif?foo=f6f1')
+    hr = MagicMock(name='http_response')
+    hr.headers = {
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256',
+        'content-disposition': 'attachment; filename="open_california.tif"'
+    }
+    r.http_response = hr
+    body = models.StreamingBody(r)
+    output = body.last_modified()
+    expected = None
+    assert output == expected
+
 def test_last_modified_completeheader():
     '''This function tests the last_modified function for an existing header, by comparing the last_modified date to
     an expected output.
