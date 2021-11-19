@@ -15,8 +15,13 @@ environments and works well with pyenv. To install the local, dynamic version
 of the Planet Python Client and required development packages into the virtual
 environment use:
 
+- Bash
 ```console
     $ pip install -e .[dev]
+```
+- Zsh
+```console
+    $ pip install -e .'[dev]'
 ```
 
 ## Testing
