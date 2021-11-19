@@ -95,8 +95,11 @@ DEFAULT_BUNDLES = [u'all', u'all_udm2', u'analytic', u'analytic_sr',
 
 def _get_json_or_raise(url, timeout=11):
     api_key = find_api_key()
-    headers = {'User-Agent': _get_user_agent(),
-               'Authorization': 'api-key %s' % api_key}
+    headers = {
+        'User-Agent': _get_user_agent(),
+        'X-Planet-App': 'python-client',
+        'Authorization': 'api-key %s' % api_key
+    }
     resp = requests.get(url, timeout=timeout, headers=headers)
     resp.raise_for_status()
     return resp.json()

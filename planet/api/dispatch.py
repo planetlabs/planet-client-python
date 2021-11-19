@@ -136,13 +136,15 @@ class RequestsDispatcher(object):
     def __init__(self, workers=4):
         # general session for sync api calls
         self.session = RedirectSession()
-        self.session.headers.update({'User-Agent': _get_user_agent()})
+        self.session.headers.update({
+            'User-Agent': _get_user_agent(),
+            'X-Planet-App': 'python-client'
+        })
         # ensure all calls to the session are throttled
         self.session.request = _Throttler().wrap(self.session.request)
         # the asyncpool is reserved for long-running async tasks
-        self._asyncpool = FuturesSession(
-            max_workers=workers,
-            session=self.session)
+        self._asyncpool = FuturesSession(max_workers=workers,
+                                         session=self.session)
 
     def response(self, request):
         return Response(request, self)
