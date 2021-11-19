@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# import io
 import copy
 import logging
 import math
@@ -19,12 +18,12 @@ from unittest.mock import MagicMock
 import os
 from pathlib import Path
 import re
+from datetime import datetime
 
 from httpx import URL
 import pytest
 
 from planet import models
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -57,7 +56,6 @@ def test_StreamingBody_name():
     }
     r.http_response = hr
     body = models.StreamingBody(r)
-
     assert body.name == 'open_california.tif'
 
     r = MagicMock(name='response')
@@ -229,3 +227,29 @@ def test_Order_locations(order_description):
     order = models.Order(order_description)
     expected_locations = ['location1', 'location2', 'location3']
     assert order.locations == expected_locations
+
+
+# 3def test_last_modified_emptyheader():
+#
+#
+#
+def test_last_modified_completeheader():
+    '''This function tests the last_modified function for an existing header, by comparing the last_modified date to
+    an expected output.
+    '''
+    r = MagicMock(name='response')
+    r.request.url = URL('https://planet.com/path/to/example.tif?foo=f6f1')
+    hr = MagicMock(name='http_response')
+    hr.headers = {
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256',
+        'content-disposition': 'attachment; filename="open_california.tif"'
+    }
+    r.http_response = hr
+    body = models.StreamingBody(r)
+    output = body.last_modified()
+    expected = datetime.strptime(hr.headers['last-modified'], '%a, %d %b %Y %H:%M:%S GMT')
+    assert output == expected
