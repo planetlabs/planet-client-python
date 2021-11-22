@@ -82,7 +82,7 @@ please contribute to this
 [issue](https://github.com/planetlabs/planet-client-python/issues/251).
 
 Why async? Because things get *really cool* when you want to work with multiple
-orders. See [orders_multiple_orders.py](examples/orders_multiple_orders.py) for
+orders. See [orders_create_and_download_multiple_orders.py](examples/orders_create_and_download_multiple_orders.py) for
 an example of submitting two orders, waiting for them to complete, and
 downloading them. The orders each clip a set of images to a specific area of
 interest (AOI), so they cannot be combined into one order.
