@@ -34,6 +34,7 @@ class RequestException(Exception):
 
 class Request():
     '''Handles a HTTP request for the Planet server.
+
     :param url: URL of API endpoint
     :type url: str
     :param params: Values to send in the query string. Defaults to None.
@@ -68,6 +69,7 @@ class Request():
     @url.setter
     def url(self, url):
         '''Set the url.
+
         :param url: URL of API endpoint
         :type url: str
         '''
@@ -75,7 +77,8 @@ class Request():
 
 
 class Response():
-    '''Handles the Planet server's response to a HTTP request
+    '''Handles the Planet server's response to a HTTP request.
+
     :param request: Request that was submitted to the server
     :type request: :py:Class:`Request`
     :param http_response: Response that was received from the server
@@ -91,6 +94,7 @@ class Response():
     @property
     def status_code(self):
         '''HTTP status code.
+
         :returns: status code
         :rtype: int
         '''
@@ -98,6 +102,7 @@ class Response():
 
     def json(self):
         '''Get response json.
+
         :returns:response json
         :rtype: dict
         '''
@@ -109,6 +114,7 @@ class Response():
 
 class StreamingBody():
     '''A representation of a streaming resource from the API.
+
     :param response: Response that was received from the server
     :type response: :py:Class:`requests.models.Response`
         '''
@@ -122,6 +128,7 @@ class StreamingBody():
         The default is to use the content-disposition header value from the
         response. If not found, falls back to resolving the name from the url
         or generating a random name with the type from the response.
+
         :returns: name of this resource
         :rtype: str
         '''
@@ -134,6 +141,7 @@ class StreamingBody():
     @property
     def size(self):
         '''The size of the body.
+
         :returns: size of the body
         :rtype: int
         '''
@@ -142,6 +150,7 @@ class StreamingBody():
     @property
     def num_bytes_downloaded(self):
         '''The number of bytes downloaded.
+
         :returns: number of bytes downloaded
         :rtype: int
         '''
@@ -149,6 +158,7 @@ class StreamingBody():
 
     def last_modified(self):
         '''Read the last-modified header as a datetime, if present.
+
         :returns: last-modified header
         :rtype: datatime or None
         '''
@@ -162,6 +172,7 @@ class StreamingBody():
 
     async def write(self, filename, overwrite=True, progress_bar=True):
         '''Write the body to a file.
+
         :param filename: Name to assign to downloaded file.
         :type filename: str
         :param overwrite: Overwrite any existing files. Defaults to True
@@ -211,6 +222,7 @@ class StreamingBody():
 
 def _get_filename_from_headers(headers):
     """Get a filename from the Content-Disposition header, if available.
+
     :param headers dict: a ``dict`` of response headers
     :returns: a filename (i.e. ``basename``)
     :rtype: str or None
@@ -222,6 +234,7 @@ def _get_filename_from_headers(headers):
 
 def _get_filename_from_url(url):
     """Get a filename from a URL.
+
     :returns: a filename (i.e. ``basename``)
     :rtype: str or None
     """
@@ -232,6 +245,7 @@ def _get_filename_from_url(url):
 
 def _get_random_filename(content_type=None):
     """Get a pseudo-random, Planet-looking filename.
+
     :returns: a filename (i.e. ``basename``)
     :rtype: str
     """
@@ -246,6 +260,7 @@ class Paged():
     '''Asynchronous iterator over results in a paged resource from the Planet
     server.
     Each returned result is a json dict.
+
     :param request: Open session connected to server
     :type request: planet.api.http.ASession
     :param do_request_fcn: Function for submitting a request. Takes as input
@@ -274,6 +289,7 @@ class Paged():
 
     async def __anext__(self):
         '''Asynchronous next.
+        
         :returns: next item as json
         :rtype: dict
         '''
@@ -327,6 +343,7 @@ class Paged():
 
 class Order():
     '''Managing description of an order returned from Orders API.
+
     :param data: Response json describing order
     :type data: dict
     '''
@@ -343,6 +360,7 @@ class Order():
     @property
     def results(self):
         '''Results for each item in order.
+
         :return: result for each item in order
         :rtype: list of dict
         '''
@@ -353,6 +371,7 @@ class Order():
     @property
     def locations(self):
         '''Download locations for order results.
+
         :return: download locations in order
         :rtype: list of str
         '''
@@ -361,6 +380,7 @@ class Order():
     @property
     def state(self):
         '''State of the order.
+
         :return: state of order
         :rtype: str
         '''
@@ -369,6 +389,7 @@ class Order():
     @property
     def id(self):
         '''ID of the order.
+
         :return: id of order
         :rtype: str
         '''
