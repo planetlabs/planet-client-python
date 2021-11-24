@@ -289,7 +289,6 @@ class Paged():
 
     async def __anext__(self):
         '''Asynchronous next.
-        
         :returns: next item as json
         :rtype: dict
         '''
