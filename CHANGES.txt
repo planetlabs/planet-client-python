@@ -1,3 +1,9 @@
+1.4.8 (2021-11-30)
+
+- New: ortho_analytic_3b asset
+- Fix: broken links in documentation & readme
+- New: requests now use custom `X-Planet-App` client header for tracking
+
 1.4.7 (2021-06-30)
 
 - New: basic_l1_all_frames asset 
