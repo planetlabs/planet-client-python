@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Reference &#8212; Planet API Client 1.4.7 documentation</title>
+    <title>Reference &#8212; Planet API Client 1.4.8 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -93,7 +93,7 @@
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="planet.api.ClientV1">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.</span></span><span class="sig-name descname"><span class="pre">ClientV1</span></span><a class="headerlink" href="#planet.api.ClientV1" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.</span></span><span class="sig-name descname"><span class="pre">ClientV1</span></span><a class="headerlink" href="#planet.api.ClientV1" title="Permalink to this definition">¶</a></dt>
 <dd><p>ClientV1 provides basic low-level access to Planet’s API. Only one
 ClientV1 should be in existence for an application. The Client is thread
 safe and takes care to avoid API throttling and also retry any throttled
@@ -806,7 +806,7 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 <p>The basic <cite>Body</cite> methods include:</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="planet.api.models.Body">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.models.</span></span><span class="sig-name descname"><span class="pre">Body</span></span><a class="headerlink" href="#planet.api.models.Body" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.models.</span></span><span class="sig-name descname"><span class="pre">Body</span></span><a class="headerlink" href="#planet.api.models.Body" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Body is a representation of a resource from the API.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="planet.api.models.Body.get_raw">
@@ -822,7 +822,7 @@ that has an <cite>isoformat</cite> callable that returns an ISO-8601 compliant s
 
 <dl class="py property">
 <dt class="sig sig-object py" id="planet.api.models.Body.name">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#planet.api.models.Body.name" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#planet.api.models.Body.name" title="Permalink to this definition">¶</a></dt>
 <dd><p>The name of this resource. The default is to use the
 content-disposition header value from the response.</p>
 </dd></dl>
@@ -854,7 +854,7 @@ invoked 3 different ways:</p>
 <p>The <cite>Response</cite> class returned by download functions has two methods:</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="planet.api.models.Response">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.models.</span></span><span class="sig-name descname"><span class="pre">Response</span></span><a class="headerlink" href="#planet.api.models.Response" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.models.</span></span><span class="sig-name descname"><span class="pre">Response</span></span><a class="headerlink" href="#planet.api.models.Response" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="py method">
 <dt class="sig sig-object py" id="planet.api.models.Response.cancel">
 <span class="sig-name descname"><span class="pre">cancel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Response.cancel" title="Permalink to this definition">¶</a></dt>
@@ -888,7 +888,7 @@ invoked 3 different ways:</p>
 <p>Most responses are more specific than a body. The JSON body provides the contents as JSON.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="planet.api.models.JSON">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.models.</span></span><span class="sig-name descname"><span class="pre">JSON</span></span><a class="headerlink" href="#planet.api.models.JSON" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.models.</span></span><span class="sig-name descname"><span class="pre">JSON</span></span><a class="headerlink" href="#planet.api.models.JSON" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Body that contains JSON</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="planet.api.models.JSON.get">
@@ -906,7 +906,7 @@ When using the <cite>iterator</cite> from the <a class="reference internal" href
 <p>To handle assembling the items from each page into a collection again and streaming them as JSON, use the <a class="reference internal" href="#planet.api.models.Paged.json_encode" title="planet.api.models.Paged.json_encode"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Paged.json_encode()</span></code></a> method.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="planet.api.models.Paged">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.models.</span></span><span class="sig-name descname"><span class="pre">Paged</span></span><a class="headerlink" href="#planet.api.models.Paged" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.models.</span></span><span class="sig-name descname"><span class="pre">Paged</span></span><a class="headerlink" href="#planet.api.models.Paged" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="py method">
 <dt class="sig sig-object py" id="planet.api.models.Paged.items_iter">
 <span class="sig-name descname"><span class="pre">items_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">limit</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#planet.api.models.Paged.items_iter" title="Permalink to this definition">¶</a></dt>
@@ -958,13 +958,13 @@ as many pages as present, streaming the contents out as JSON.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="planet.api.models.Items">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.models.</span></span><span class="sig-name descname"><span class="pre">Items</span></span><a class="headerlink" href="#planet.api.models.Items" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.models.</span></span><span class="sig-name descname"><span class="pre">Items</span></span><a class="headerlink" href="#planet.api.models.Items" title="Permalink to this definition">¶</a></dt>
 <dd><p>Items is a Body that contains a FeatureCollection so when using <cite>items_iter</cite>, it will yield <cite>Feature</cite> GeoJSON objects.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="planet.api.models.Searches">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.models.</span></span><span class="sig-name descname"><span class="pre">Searches</span></span><a class="headerlink" href="#planet.api.models.Searches" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.models.</span></span><span class="sig-name descname"><span class="pre">Searches</span></span><a class="headerlink" href="#planet.api.models.Searches" title="Permalink to this definition">¶</a></dt>
 <dd><p>Searches is a Body that contains an array of searches, so when using <cite>items_iter</cite>, it will yield <cite>Search</cite> JSON objects.</p>
 </dd></dl>
 
@@ -1017,7 +1017,7 @@ items and assets.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="planet.api.downloader.Downloader">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.downloader.</span></span><span class="sig-name descname"><span class="pre">Downloader</span></span><a class="headerlink" href="#planet.api.downloader.Downloader" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.downloader.</span></span><span class="sig-name descname"><span class="pre">Downloader</span></span><a class="headerlink" href="#planet.api.downloader.Downloader" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Downloader manages activation and download of Item Assets from the
 Data API. A Downloader should only be processing one request to either
 <cite>activate</cite> or <cite>download</cite> at a time. These functions are synchronous and
@@ -1102,61 +1102,61 @@ otherwise None</p></li>
 the potential to raise one of the following exceptions:</p>
 <span class="target" id="module-planet.api.exceptions"></span><dl class="py exception">
 <dt class="sig sig-object py" id="planet.api.exceptions.APIException">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">APIException</span></span><a class="headerlink" href="#planet.api.exceptions.APIException" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">APIException</span></span><a class="headerlink" href="#planet.api.exceptions.APIException" title="Permalink to this definition">¶</a></dt>
 <dd><p>General unexpected response</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="planet.api.exceptions.BadQuery">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">BadQuery</span></span><a class="headerlink" href="#planet.api.exceptions.BadQuery" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">BadQuery</span></span><a class="headerlink" href="#planet.api.exceptions.BadQuery" title="Permalink to this definition">¶</a></dt>
 <dd><p>Invalid inputs, HTTP 400</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="planet.api.exceptions.InvalidAPIKey">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidAPIKey</span></span><a class="headerlink" href="#planet.api.exceptions.InvalidAPIKey" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidAPIKey</span></span><a class="headerlink" href="#planet.api.exceptions.InvalidAPIKey" title="Permalink to this definition">¶</a></dt>
 <dd><p>Invalid key, HTTP 401</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="planet.api.exceptions.InvalidIdentity">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidIdentity</span></span><a class="headerlink" href="#planet.api.exceptions.InvalidIdentity" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidIdentity</span></span><a class="headerlink" href="#planet.api.exceptions.InvalidIdentity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Raised when logging in with invalid credentials</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="planet.api.exceptions.MissingResource">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">MissingResource</span></span><a class="headerlink" href="#planet.api.exceptions.MissingResource" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">MissingResource</span></span><a class="headerlink" href="#planet.api.exceptions.MissingResource" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request for non existing resource, HTTP 404</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="planet.api.exceptions.NoPermission">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">NoPermission</span></span><a class="headerlink" href="#planet.api.exceptions.NoPermission" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">NoPermission</span></span><a class="headerlink" href="#planet.api.exceptions.NoPermission" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insufficient permissions, HTTP 403</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="planet.api.exceptions.OverQuota">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">OverQuota</span></span><a class="headerlink" href="#planet.api.exceptions.OverQuota" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">OverQuota</span></span><a class="headerlink" href="#planet.api.exceptions.OverQuota" title="Permalink to this definition">¶</a></dt>
 <dd><p>Quota exceeded, HTTP 429</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="planet.api.exceptions.RequestCancelled">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">RequestCancelled</span></span><a class="headerlink" href="#planet.api.exceptions.RequestCancelled" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">RequestCancelled</span></span><a class="headerlink" href="#planet.api.exceptions.RequestCancelled" title="Permalink to this definition">¶</a></dt>
 <dd><p>Internal exception when a request is cancelled</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="planet.api.exceptions.ServerError">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">ServerError</span></span><a class="headerlink" href="#planet.api.exceptions.ServerError" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">ServerError</span></span><a class="headerlink" href="#planet.api.exceptions.ServerError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unexpected internal server error, HTTP 500</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="planet.api.exceptions.TooManyRequests">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">TooManyRequests</span></span><a class="headerlink" href="#planet.api.exceptions.TooManyRequests" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">planet.api.exceptions.</span></span><span class="sig-name descname"><span class="pre">TooManyRequests</span></span><a class="headerlink" href="#planet.api.exceptions.TooManyRequests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Too many requests, HTTP 429</p>
 </dd></dl>
 
@@ -1174,7 +1174,7 @@ the potential to raise one of the following exceptions:</p>
       &copy;2017-2019 PLANET LABS INC. ALL RIGHTS RESERVED. MADE IN SAN FRANCISCO. 645 HARRISON STREET, SAN FRANCISCO 94107.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
