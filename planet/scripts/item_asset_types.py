@@ -31,7 +31,7 @@ DEFAULT_ITEM_TYPES = [
 ]
 
 DEFAULT_ASSET_TYPES = [
-    'ortho_analytic_4b', 'analytic_5b', 'analytic_5b_xml', 'ortho_analytic_8b',
+    'ortho_analytic_3b', 'ortho_analytic_4b', 'analytic_5b', 'analytic_5b_xml', 'ortho_analytic_8b',
     'ortho_analytic_8b_xml','ortho_analytic_8b_sr', 'analytic_b1', 'analytic_b10', 'analytic_b11',
     'analytic_b12', 'analytic_b2', 'analytic_b3', 'analytic_b4', 'analytic_b5',
     'analytic_b6', 'analytic_b7', 'analytic_b8', 'analytic_b8a', 'analytic_b9',
