@@ -617,12 +617,10 @@ async def test_download_order_success(tmpdir, order_description, oid, session):
         })
     respx.get(dl_url2).return_value = mock_resp2
 
-    # Create Orders client
     cl = OrdersClient(session, base_url=TEST_URL)
-    # Download order and return the filenames of the downloaded files
     filenames = await cl.download_order(oid, directory=str(tmpdir))
 
-    # Check there are as many files as expected
+    # Check there are as many files as expected, given in order_description
     assert len(filenames) == 2
 
     # Check that the downloaded files have the correct filename and contents
@@ -642,15 +640,12 @@ async def test_download_order_overwrite_true_preexisting_data(
     overwrite flag set to True.
     '''
 
-    # Save JSON to out_file in tmpdir
+    # Save JSON to a temporary file
     with open(Path(tmpdir, 'file.json'), "a") as out_file:
         json.dump(original_content, out_file)
 
-    # Create mock response for downloading
     create_download_mock()
-    # Create Orders client
     cl = OrdersClient(session, base_url=TEST_URL)
-    # Download order and overwrite data
     _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=True)
 
     # Check that the data downloaded has overwritten the original data
@@ -666,15 +661,12 @@ async def test_download_order_overwrite_false_preexisting_data(
     data with overwrite flag set to False.
     '''
 
-    # Save JSON to out_file in tmpdir
+    # Save JSON to a temporary file
     with open(Path(tmpdir, 'file.json'), "a") as out_file:
         json.dump(original_content, out_file)
 
-    # Create mock response for downloading
     create_download_mock()
-    # Create Orders client
     cl = OrdersClient(session, base_url=TEST_URL)
-    # Download order and overwrite data
     _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
 
     # Check that the original data has not been overwritten
@@ -690,14 +682,11 @@ async def test_download_order_overwrite_true_nonexisting_data(
     set to true without pre-existing data.
     '''
 
-    # Save JSON to out_file in tmpdir
     create_download_mock()
-    # Create Orders client
     cl = OrdersClient(session, base_url=TEST_URL)
-    # Download order and overwrite data
     _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=True)
 
-    # Check that the data downloaded has the correct contents
+    # Check that the was data downloaded and has the correct contents
     assert json.load(open(Path(tmpdir, 'file.json'))) == downloaded_content
 
 
@@ -710,12 +699,9 @@ async def test_download_order_overwrite_false_nonexisting_data(
     set to false without pre-existing data.
     '''
 
-    # Save JSON to out_file in tmpdir
     create_download_mock()
-    # Create Orders client
     cl = OrdersClient(session, base_url=TEST_URL)
-    # Download order and overwrite data
     _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
 
-    # Check that the data downloaded has the correct contents
+    # Check that the was data downloaded and has the correct contents
     assert json.load(open(Path(tmpdir, 'file.json'))) == downloaded_content
