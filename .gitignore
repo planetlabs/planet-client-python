@@ -15,7 +15,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
-*.coverage.*
+.coverage.*
 
 # OS X
 .DS_Store
