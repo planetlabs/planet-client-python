@@ -15,6 +15,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+*.coverage.*
 
 # OS X
 .DS_Store
@@ -25,5 +26,6 @@ coverage.xml
 *.png
 *.tif*
 *.geojson
-*.vscode
-*.coverage.*
+
+# Editors
+.vscode/
