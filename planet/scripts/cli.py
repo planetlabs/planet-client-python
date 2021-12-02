@@ -200,7 +200,7 @@ async def cancel(ctx, order_id):
 @click.argument('order_id', type=click.UUID)
 @click.option('-q', '--quiet', is_flag=True, default=False,
               help=('Disable ANSI control output.'))
-@click.option('-o', '--overwrite', is_flag=True, default=True,
+@click.option('-o', '--overwrite', is_flag=True, default=False,
               help=('Overwrite files if they already exist.'))
 @click.option('--dest', default='.',
               help=('Directory to download files to.'),
@@ -208,6 +208,8 @@ async def cancel(ctx, order_id):
                               writable=True, file_okay=False))
 async def download(ctx, order_id, quiet, overwrite, dest):
     '''Download order by order ID.'''
+
+    # Download the user's order
     async with orders_client(ctx) as cl:
         with planet.reporting.StateBar(order_id=order_id,
                                        disable=quiet) as bar:

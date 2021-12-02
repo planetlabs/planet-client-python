@@ -134,19 +134,23 @@ def test_cli_orders_cancel(runner, monkeypatch, order_description, oid):
 
 
 def test_cli_orders_download(runner, monkeypatch, oid):
+    all_test_files = ['file1.json', 'file2.zip', 'file3.tiff', 'file4.jpg']
+
     async def do(*arg, **kwarg):
-        return ['file1']
+        return all_test_files
     monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'download_order', do)
 
     async def poll(*arg, **kwarg):
         return
     monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'poll', poll)
 
+    # Number of files in all_test_files
+    expected = 'Downloaded 4 files.\n'
+
+    # allow for some progress reporting
     result = runner.invoke(
         cli, ['orders', 'download', oid])
     assert not result.exception
-    expected = 'Downloaded 1 files.\n'
-    # allow for some progress reporting
     assert expected in result.output
 
     # test quiet option, should be no progress reporting
