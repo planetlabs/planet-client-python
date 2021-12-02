@@ -26,7 +26,6 @@ import os
 
 import planet
 
-API_KEY = os.getenv('PL_API_KEY')
 DOWNLOAD_DIR = os.getenv('TEST_DOWNLOAD_DIR', '.')
 
 iowa_aoi = {
@@ -43,10 +42,10 @@ iowa_images = [
     '20200925_161029_69_2223',
     '20200925_161027_48_2223'
 ]
-iowa_order = planet.OrderDetails(
+iowa_order = planet.order_request.build_request(
     'iowa_order',
-    [planet.Product(iowa_images, 'analytic', 'PSScene4Band')],
-    tools=[planet.Tool('clip', {'aoi': iowa_aoi})]
+    [planet.order_request.product(iowa_images, 'analytic', 'PSScene4Band')],
+    tools=[planet.order_request.clip_tool(iowa_aoi)]
 )
 
 oregon_aoi = {
@@ -63,37 +62,33 @@ oregon_images = [
     '20200909_182525_1014',
     '20200909_182524_1014'
 ]
-oregon_order = planet.OrderDetails(
+oregon_order = planet.order_request.build_request(
     'oregon_order',
-    [planet.Product(oregon_images, 'analytic', 'PSScene4Band')],
-    tools=[planet.Tool('clip', {'aoi': oregon_aoi})]
+    [planet.order_request.product(oregon_images, 'analytic', 'PSScene4Band')],
+    tools=[planet.order_request.clip_tool(oregon_aoi)]
 )
 
 
 async def create_and_download(order_detail, directory, client):
-    # create
-    print('Creating order')
-    oid = await client.create_order(order_detail)
-    print(f'Order created: {oid}')
+    with planet.reporting.StateBar(state='creating') as reporter:
+        # create
+        order = await client.create_order(order_detail)
+        reporter.update(state='created', order_id=order.id)
 
-    # poll
-    state = await client.poll(oid, verbose=True)
-    print(f'Order {oid} final state: {state}')
+        # poll
+        await client.poll(order.id, report=reporter.update)
 
     # download
-    print(f'Downloading {oid} to {directory}.')
-    filenames = await client.download_order(oid, directory, progress_bar=True)
-    print(f'Downloaded {oid}: '
-          f'{len(filenames)} files downloaded to {directory}.')
+    await client.download_order(order.id, progress_bar=True)
 
 
 async def main():
-    async with planet.Session(auth=(API_KEY, '')) as ps:
+    async with planet.Session() as ps:
         client = planet.OrdersClient(ps)
 
         await asyncio.gather(
             create_and_download(iowa_order, DOWNLOAD_DIR, client),
-            create_and_download(oregon_order, DOWNLOAD_DIR, client)
+            create_and_download(oregon_order, DOWNLOAD_DIR, client),
         )
 
 

@@ -64,7 +64,7 @@ For example, to obtain and store authentication information:
 
 When a `Session` is created, by default, authentication is read from the secret
 file created with `Auth.write()`. This behavior can be modified by specifying
-`Auth` explicitely using the methods `Auth.from_file()` and `Auth.from_env()`.
+`Auth` explicitly using the methods `Auth.from_file()` and `Auth.from_env()`.
 While `Auth.from_key()` and `Auth.from_login` can be used, it is recommended
 that those functions be used in authentication initialization and the
 authentication information be stored using `Auth.write()`.
@@ -187,6 +187,38 @@ the context of a `Session` with the `OrdersClient`:
 ...
 >>> asyncio.run(main())
 
+```
+
+#### Polling and Downloading an Order
+
+Once an order is created, the Orders API takes some time to create the order
+and thus we must wait a while before downloading the order.
+We can use polling to watch the order creation process and find out when the
+order is created successfully and ready to download.
+
+With polling and download, it is often desired to track progress as these
+processes can take a long time. Therefore, in this example, we use a progress
+bar from the `reporting` module to report poll status. `download_order` has
+reporting built in.
+
+```python
+from planet import reporting
+
+>>> async def create_poll_and_download():
+...     async with Session() as sess:
+...         cl = OrdersClient(sess)
+...         with reporting.StateBar(state='creating') as bar:
+...             # create order
+...             order = await cl.create_order(request)
+...             bar.update(state='created', order_id=order.id)
+...
+...             # poll
+...             await cl.poll(order.id, report=bar.update)
+...
+...         # download
+...         await cl.download_order(order.id)
+...
+>>> asyncio.run(create_poll_and_download())
 ```
 
 ## CLI

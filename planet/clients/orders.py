@@ -161,10 +161,13 @@ class OrdersClient():
         except exceptions.BadQuery as ex:
             msg_json = json.loads(ex.message)
 
-            # get first error field
-            field = next(iter(msg_json['field'].keys()))
-            msg = (msg_json['general'][0]['message'] + ' - ' +
-                   msg_json['field'][field][0]['message'])
+            msg = msg_json['general'][0]['message']
+            try:
+                # get first error field
+                field = next(iter(msg_json['field'].keys()))
+                msg += ' - ' + msg_json['field'][field][0]['message']
+            except AttributeError:
+                pass
             raise exceptions.BadQuery(msg)
 
         order = Order(resp.json())
@@ -343,28 +346,43 @@ class OrdersClient():
         self,
         order_id: str,
         state: str = None,
-        wait: int = 10,
-        verbose: bool = False
+        wait: int = 1,
+        report=None
     ) -> str:
-        """Poll for order status until order reaches desired state.
+        """Poll for order status until order reaches desired state, optionally
+        reporting status.
+
+        By default, the Orders API is polled every 1 second for status updates.
+        The API rate limit for this endpoint is 10 requests per second.
+        If many orders are being polled asynchronously, consider
+        increasing the wait to avoid throttling.
+
+        Example:
+            ```python
+            from planet.reporting import StateBar
+
+            with StateBar() as bar:
+                await poll(order_id, report=bar.update)
+            ```
 
         Parameters:
             order_id: The ID of the order
             state: State to poll until. If multiple, use list. Defaults to
                 any completed state.
             wait: Time (in seconds) between polls.
-            verbose: Print current state at each poll
+            report: Callback function for progress updates. Invoked with
+                keyword arguments `state` (poll state) and `logger`
+                (callback for logging progress bar status). Recommended
+                value is `reporting.StateBar.update`.
 
         Returns
-            Completed state of the order
+            Completed state of the order.
 
         Raises:
             planet.exceptions.APIException: On API error.
             OrdersClientException: If order_id is not valid or state is not
                 supported.
         """
-        completed = False
-
         if state:
             if state not in ORDERS_STATES:
                 raise OrdersClientException(
@@ -374,19 +392,22 @@ class OrdersClient():
         else:
             states = ORDERS_STATES_COMPLETE
 
+        completed = False
         while not completed:
             t = time.time()
+
             order = await self.get_order(order_id)
             state = order.state
-            msg = f'order {order_id} state: {state}'
-            LOGGER.info(msg)
-            if verbose:
-                print(msg)
+
+            if report:
+                report(state=order.state)
+            else:
+                LOGGER.debug(state)
 
             completed = state in states
             if not completed:
                 sleep_time = max(wait-(time.time()-t), 0)
-                LOGGER.info(f'sleeping {sleep_time}s')
+                LOGGER.debug(f'sleeping {sleep_time}s')
                 await asyncio.sleep(sleep_time)
         return state
 

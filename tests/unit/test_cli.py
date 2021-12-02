@@ -145,8 +145,15 @@ def test_cli_orders_download(runner, monkeypatch, oid):
     result = runner.invoke(
         cli, ['orders', 'download', oid])
     assert not result.exception
-    # assert "file1" in result.output
-    assert 'Downloaded 1 files.\n' == result.output
+    expected = 'Downloaded 1 files.\n'
+    # allow for some progress reporting
+    assert expected in result.output
+
+    # test quiet option, should be no progress reporting
+    result = runner.invoke(
+        cli, ['orders', 'download', '-q', oid])
+    assert not result.exception
+    assert expected == result.output
 
 
 class AsyncMock(Mock):
