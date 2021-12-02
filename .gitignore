@@ -26,4 +26,4 @@ coverage.xml
 *.tif*
 *.geojson
 *.vscode
-*.coverage
+*.coverage.*
