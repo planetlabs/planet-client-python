@@ -23,5 +23,7 @@ coverage.xml
 *.jpg
 *.jpeg
 *.png
+*.tif*
 *.geojson
 *.vscode
+*.coverage
