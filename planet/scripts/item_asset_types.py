@@ -31,8 +31,9 @@ DEFAULT_ITEM_TYPES = [
 ]
 
 DEFAULT_ASSET_TYPES = [
-    'ortho_analytic_3b', 'ortho_analytic_4b', 'analytic_5b', 'analytic_5b_xml', 'ortho_analytic_8b',
-    'ortho_analytic_8b_xml','ortho_analytic_8b_sr', 'analytic_b1', 'analytic_b10', 'analytic_b11',
+    'ortho_analytic_3b', 'ortho_analytic_4b', 'analytic_5b',
+    'analytic_5b_xml', 'ortho_analytic_8b', 'ortho_analytic_8b_xml',
+    'ortho_analytic_8b_sr', 'analytic_b1', 'analytic_b10', 'analytic_b11',
     'analytic_b12', 'analytic_b2', 'analytic_b3', 'analytic_b4', 'analytic_b5',
     'analytic_b6', 'analytic_b7', 'analytic_b8', 'analytic_b8a', 'analytic_b9',
     'analytic_bqa', 'analytic_dn', 'analytic_dn_xml', 'analytic_gflags',
@@ -75,14 +76,17 @@ DEFAULT_ASSET_TYPES = [
     'ps4b_basic_analytic_dn_rpc', 'ps4b_basic_analytic_dn_rpc_nitf',
     'ps4b_basic_analytic_dn_xml', 'ps4b_basic_analytic_dn_xml_nitf',
     'ps4b_basic_analytic_nitf', 'ps4b_basic_analytic_rpc_nitf',
-    'ps4b_basic_analytic_xml_nitf', 'ps4b_udm', 'udm', 'ortho_udm2', 'video_file',
-    'video_frames', 'video_metadata', 'ortho_visual', 'visual_xml'
+    'ps4b_basic_analytic_xml_nitf', 'ps4b_udm', 'udm', 'ortho_udm2',
+    'video_file', 'video_frames', 'video_metadata', 'ortho_visual',
+    'visual_xml'
 ]
 
 
 DEFAULT_BUNDLES = [u'all', u'all_udm2', u'analytic', u'analytic_sr',
-                   u'analytic_sr_udm2', u'analytic_udm2', u'basic_analytic',
-                   u'basic_analytic_nitf', u'basic_analytic_nitf_udm2',
+                   u'analytic_3b_udm2', u'analytic_8b_udm2',
+                   u'analytic_8b_sr_udm2', u'analytic_sr_udm2',
+                   u'analytic_udm2', u'basic_analytic', u'basic_analytic_nitf',
+                   u'basic_analytic_nitf_udm2', u'basic_analytic_8b_udm2',
                    u'basic_analytic_udm2', u'basic_panchromatic',
                    u'basic_panchromatic_dn', u'basic_uncalibrated_dn',
                    u'basic_uncalibrated_dn_nitf',
