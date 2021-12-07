@@ -1,3 +1,13 @@
+# Changes.txt
+1.4.9 (2021-12-07)
+
+- New: analytic_8b_udm2 asset
+- New: basic_analytic_8b_udm2 asset
+- New: analytic_8b_sr_udm2 asset
+- New: analytic_3b_udm2 asset
+- Add support for 8-band asset types
+- Add support for 3-band UDM2 asset type
+
 1.4.8 (2021-11-30)
 
 - New: ortho_analytic_3b asset
