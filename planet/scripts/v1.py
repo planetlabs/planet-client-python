@@ -415,10 +415,21 @@ def get_mosaic_list_for_feed(feed_id):
     for type_ in ['target', 'source']:
         feed_image_conf = feed_info.get(type_)
 
-        if feed_image_conf['type'] != 'mosaic':
-            msg_format = 'The {} for this feed is not a mosaic type.'
-            click.ClickException(msg_format.format(type_))
-            continue
+        # "target" type appears to have a single dict, but "source" type
+        # seems to give a list of dicts. API change or something else?
+        if isinstance(feed_image_conf, list):
+            feed_image_conf = feed_image_conf[0]
+
+        try:
+            if feed_image_conf['type'] != 'mosaic':
+                # Unsure about the following lines. Why create an
+                # exception if we don't raise it?
+                msg_format = 'The {} for this feed is not a mosaic type.'
+                click.ClickException(msg_format.format(type_))
+                continue
+        except:
+            import pdb; pdb.set_trace()
+            raise
 
         mosaic_series = feed_image_conf['config']['series_id']
 
@@ -470,6 +481,8 @@ def get_mosaic_list_for_subscription(subscription_id):
         feed_image_conf = feed_info.get(type_)
 
         if feed_image_conf['type'] != 'mosaic':
+            # Unsure about the following lines. The exception is not
+            # raised.
             msg_format = 'The {} for this feed is not a mosaic type.'
             click.ClickException(msg_format.format(type_))
             continue
