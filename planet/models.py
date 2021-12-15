@@ -13,7 +13,7 @@
 # limitations under the License.
 """Manage data for requests and responses."""
 import copy
-import datetime
+from datetime import datetime
 import json
 import logging
 import mimetypes
@@ -77,7 +77,7 @@ class Request():
 
 
 class Response():
-    '''Handles the Planet server's response to a HTTP request
+    '''Handles the Planet server's response to a HTTP request.
 
     :param request: Request that was submitted to the server
     :type request: :py:Class:`Request`
@@ -125,7 +125,6 @@ class StreamingBody():
     @property
     def name(self):
         '''The name of this resource.
-
         The default is to use the content-disposition header value from the
         response. If not found, falls back to resolving the name from the url
         or generating a random name with the type from the response.
@@ -260,7 +259,6 @@ def _get_random_filename(content_type=None):
 class Paged():
     '''Asynchronous iterator over results in a paged resource from the Planet
     server.
-
     Each returned result is a json dict.
 
     :param request: Open session connected to server
@@ -291,7 +289,6 @@ class Paged():
 
     async def __anext__(self):
         '''Asynchronous next.
-
         :returns: next item as json
         :rtype: dict
         '''
