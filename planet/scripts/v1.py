@@ -408,36 +408,28 @@ def list_feeds(pretty, limit, stats):
 @feeds.command('list-mosaics')
 @click.argument('feed_id')
 def get_mosaic_list_for_feed(feed_id):
-    '''List mosaics linked to feed'''
+    """List mosaics linked to feed."""
     cl = clientv1()
     feed_info = cl.get_feed_info(feed_id).get()
 
-    for type_ in ['target', 'source']:
+    for type_ in ["target", "source"]:
+        click.echo("{} mosaics:".format(type_))
+
         feed_image_conf = feed_info.get(type_)
 
-        # "target" type appears to have a single dict, but "source" type
-        # seems to give a list of dicts. API change or something else?
-        if isinstance(feed_image_conf, list):
-            feed_image_conf = feed_image_conf[0]
+        # "target" type has a single dict, "source" type has a list of
+        # dicts. We normalize to a list.
+        if not isinstance(feed_image_conf, list):
+            feed_image_conf = [feed_image_conf]
 
-        try:
-            if feed_image_conf['type'] != 'mosaic':
-                # Unsure about the following lines. Why create an
-                # exception if we don't raise it?
-                msg_format = 'The {} for this feed is not a mosaic type.'
-                click.ClickException(msg_format.format(type_))
+        for conf_item in feed_image_conf:
+            if conf_item["type"] != "mosaic":
                 continue
-        except:
-            import pdb; pdb.set_trace()
-            raise
 
-        mosaic_series = feed_image_conf['config']['series_id']
-
-        mosaics = cl.get_mosaics_for_series(mosaic_series)
-
-        click.echo('{} mosaics:'.format(type_))
-        for mosaic in mosaics.get()['mosaics']:
-            click.echo('\t{}'.format(mosaic['name']))
+            mosaic_series = conf_item["config"]["series_id"]
+            mosaics = cl.get_mosaics_for_series(mosaic_series)
+            for mosaic in mosaics.get()["mosaics"]:
+                click.echo("\t{}".format(mosaic["name"]))
 
 
 @feeds.command('describe')
