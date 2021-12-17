@@ -1,4 +1,9 @@
 # Changes.txt
+
+Next (TBD)
+
+- Fix: handle FeedSource array in analytics API.
+
 1.4.9 (2021-12-07)
 
 - New: analytic_8b_udm2 asset

@@ -24,12 +24,12 @@
         "args": {},
         "namespace": "{{ .Namespace }}"
       },
-      "source": {
+      "source": [{
         "config": {
           "series_id": "mosaic_series_id"
         },
         "type": "mosaic"
-      },
+      }],
       "status": "active",
       "target": {
         "type": "collection"

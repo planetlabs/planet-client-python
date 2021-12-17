@@ -34,11 +34,7 @@ with open('planet/api/__version__.py') as f:
             continue
 
 
-test_requires = [
-    'mock',
-    'pytest',
-    'requests-mock',
-]
+test_requires = ['mock', 'pytest', 'pytz', 'requests-mock', 'tox']
 
 dev_requires = [
     'flake8',
