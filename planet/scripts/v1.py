@@ -405,15 +405,9 @@ def list_feeds(pretty, limit, stats):
     echo_json_response(response, pretty, limit)
 
 
-@feeds.command('list-mosaics')
-@click.argument('feed_id')
-def get_mosaic_list_for_feed(feed_id):
-    """List mosaics linked to feed."""
-    cl = clientv1()
-    feed_info = cl.get_feed_info(feed_id).get()
-
+def print_feed_mosaic_list(feed_info, client):
+    """Print the listing of mosaics for a feed."""
     for type_ in ["target", "source"]:
-
         feed_image_conf = feed_info.get(type_, None)
         if not feed_image_conf:
             continue
@@ -429,9 +423,18 @@ def get_mosaic_list_for_feed(feed_id):
 
             click.echo("{} mosaics:".format(type_))
             mosaic_series = conf_item["config"]["series_id"]
-            mosaics = cl.get_mosaics_for_series(mosaic_series)
+            mosaics = client.get_mosaics_for_series(mosaic_series)
             for mosaic in mosaics.get()["mosaics"]:
                 click.echo("\t{}".format(mosaic["name"]))
+
+
+@feeds.command('list-mosaics')
+@click.argument('feed_id')
+def get_mosaic_list_for_feed(feed_id):
+    """List mosaics linked to feed."""
+    cl = clientv1()
+    feed_info = cl.get_feed_info(feed_id).get()
+    print_feed_mosaic_list(feed_info, cl)
 
 
 @feeds.command('describe')
@@ -470,24 +473,7 @@ def get_mosaic_list_for_subscription(subscription_id):
     cl = clientv1()
     sub_info = cl.get_subscription_info(subscription_id).get()
     feed_info = cl.get_feed_info(sub_info['feedID']).get()
-
-    for type_ in ['target', 'source']:
-        feed_image_conf = feed_info.get(type_)
-
-        if feed_image_conf['type'] != 'mosaic':
-            # Unsure about the following lines. The exception is not
-            # raised.
-            msg_format = 'The {} for this feed is not a mosaic type.'
-            click.ClickException(msg_format.format(type_))
-            continue
-
-        mosaic_series = feed_image_conf['config']['series_id']
-
-        mosaics = cl.get_mosaics_for_series(mosaic_series)
-
-        click.echo('{} mosaics:'.format(type_))
-        for mosaic in mosaics.get()['mosaics']:
-            click.echo('\t{}'.format(mosaic['name']))
+    print_feed_mosaic_list(feed_info, cl)
 
 
 @subscriptions.command('describe')
@@ -523,22 +509,7 @@ def get_mosaic_list_for_collection(subscription_id):
     cl = clientv1()
     sub_info = cl.get_subscription_info(subscription_id).get()
     feed_info = cl.get_feed_info(sub_info['feedID']).get()
-
-    for type_ in ['target', 'source']:
-        feed_image_conf = feed_info.get(type_)
-
-        if feed_image_conf['type'] != 'mosaic':
-            msg_format = 'The {} for this feed is not a mosaic type.'
-            click.ClickException(msg_format.format(type_))
-            continue
-
-        mosaic_series = feed_image_conf['config']['series_id']
-
-        mosaics = cl.get_mosaics_for_series(mosaic_series)
-
-        click.echo('{} mosaics:'.format(type_))
-        for mosaic in mosaics.get()['mosaics']:
-            click.echo('\t{}'.format(mosaic['name']))
+    print_feed_mosaic_list(feed_info, cl)
 
 
 @collections.command('describe')
