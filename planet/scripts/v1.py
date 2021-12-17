@@ -421,9 +421,10 @@ def print_feed_mosaic_list(feed_info, client):
             if conf_item["type"] != "mosaic":
                 continue
 
-            click.echo("{} mosaics:".format(type_))
             mosaic_series = conf_item["config"]["series_id"]
             mosaics = client.get_mosaics_for_series(mosaic_series)
+            click.echo("{} mosaics:".format(type_))
+
             for mosaic in mosaics.get()["mosaics"]:
                 click.echo("\t{}".format(mosaic["name"]))
 
