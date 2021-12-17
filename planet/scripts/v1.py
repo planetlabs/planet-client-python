@@ -413,9 +413,10 @@ def get_mosaic_list_for_feed(feed_id):
     feed_info = cl.get_feed_info(feed_id).get()
 
     for type_ in ["target", "source"]:
-        click.echo("{} mosaics:".format(type_))
 
-        feed_image_conf = feed_info.get(type_)
+        feed_image_conf = feed_info.get(type_, None)
+        if not feed_image_conf:
+            continue
 
         # "target" type has a single dict, "source" type has a list of
         # dicts. We normalize to a list.
@@ -426,6 +427,7 @@ def get_mosaic_list_for_feed(feed_id):
             if conf_item["type"] != "mosaic":
                 continue
 
+            click.echo("{} mosaics:".format(type_))
             mosaic_series = conf_item["config"]["series_id"]
             mosaics = cl.get_mosaics_for_series(mosaic_series)
             for mosaic in mosaics.get()["mosaics"]:
