@@ -110,7 +110,7 @@ def poll_for_success(order_url, auth, num_loops=50):
         raise Exception('order did not succeed')
 
 
-def test_download_order(order_id, num_runs):
+def download_order(order_id, num_runs):
     # # these are the files inside the zip
     # expected_files = [
     #     '20200505_193841_ssc4d1_0018_analytic_reproject.tif',
@@ -189,5 +189,5 @@ if __name__ == '__main__':
     order_url = ORDERS_URL + '/' + order_id
     poll_for_success(order_url, auth)
 
-    test_download_order(order_id, args.runs)
+    download_order(order_id, args.runs)
     logger.info('order id: {}'.format(order_id))
