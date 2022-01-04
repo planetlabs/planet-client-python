@@ -39,4 +39,4 @@ jobs:
         python -m pip install -e .[test]
     - name: Test
       run: |
-	python -m pytest -v -rxXs --cov planet --cov-report term-missing
+        python -m pytest -v -rxXs --cov planet --cov-report term-missing
