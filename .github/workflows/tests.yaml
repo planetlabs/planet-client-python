@@ -1,5 +1,5 @@
 ---
-name: CI
+name: "CI for v1"
 
 on:
   push:
