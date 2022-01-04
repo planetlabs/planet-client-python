@@ -46,18 +46,34 @@ def test_item_type():
     assert 'invalid choice: x' in str(e.value)
 
 
-@mock.patch('planet.scripts.types.get_asset_types',
-            new=mock.Mock(return_value=DEFAULT_ASSET_TYPES))
-def test_asset_type():
-    check = convert_asserter(AssetType())
-    check('visual*', ['visual', 'visual_xml'])
-    check('*data_*', ['metadata_aux', 'metadata_txt'])
-    check('analytic', ['analytic'])
-    check('analytic,visual', ['analytic', 'visual'])
+@mock.patch(
+    "planet.scripts.types.get_asset_types",
+    new=mock.Mock(return_value=DEFAULT_ASSET_TYPES),
+)
+@pytest.mark.parametrize(
+    "pattern,type_list",
+    [
+        ("visual*", ["visual", "visual_xml"]),
+        ("*data_*", ["metadata_aux", "metadata_txt"]),
+        ("analytic", ["analytic"]),
+        ("analytic,visual", ["analytic", "visual"]),
+    ],
+)
+def test_asset_type_convert(pattern, type_list):
+    """Patterns are correctly converted to a list of assert types."""
+    assert sorted(AssetType()(pattern)) == sorted(type_list)
 
-    with pytest.raises(Exception) as e:
-        AssetType().convert('x', None, None)
-    assert 'invalid choice: x' in str(e.value)
+
+@mock.patch(
+    "planet.scripts.types.get_asset_types",
+    new=mock.Mock(return_value=DEFAULT_ASSET_TYPES),
+)
+@pytest.mark.parametrize("pattern", ["x", "foo?", "?visual", "visual?"])
+def test_asset_type_convert_invalid(pattern):
+    """Invalid patterns result in an exception."""
+    with pytest.raises(Exception) as exc:
+        AssetType()(pattern)
+    assert "invalid choice:" in str(exc.value)
 
 
 def test_geom_type():
