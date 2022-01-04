@@ -1,0 +1,5 @@
+include CHANGES.txt README.rst setup.py
+recursive-include tests *.py *.rst
+recursive-include tests/fixtures *.*
+recursive-include docs *.rst
+exclude MANIFEST.in

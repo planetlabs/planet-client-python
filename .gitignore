@@ -21,3 +21,5 @@ coverage.xml
 *.jpeg
 *.png
 *.geojson
+testenv
+.venv
