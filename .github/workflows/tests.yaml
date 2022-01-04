@@ -1,15 +1,15 @@
-name: "Tests"
+---
+name: CI
 
 on:
   push:
     branches: ["master"]
   pull_request:
     branches: ["master"]
-  schedule:
-    - cron: '0 0 * * 0'
+  workflow_dispatch:
 
 jobs:
-  test:
+  tests:
     name: "Python ${{ matrix.python-version }}"
     runs-on: "ubuntu-latest"
 
@@ -19,15 +19,15 @@ jobs:
         python-version: ["2.7", "3.7", "3.8", "3.9"]
 
     steps:
-      uses: "actions/checkout@v2"
-      uses: "actions/setup-python@v2"
-      with:
-        python-version: "${{ matrix.python-version }}"
-    - name: "Install dependencies"
-      run: |
-        python -VV
-        python -m site
-        python -m pip install --upgrade pip setuptools wheel
-        python -m pip install --upgrade coverage[toml] virtualenv tox tox-gh-actions
-    - name: "Run tox targets for ${{ matrix.python-version }}"
-      run: "python -m tox"
+      - uses: "actions/checkout@v2"
+      - uses: "actions/setup-python@v2"
+        with:
+          python-version: "${{ matrix.python-version }}"
+      - name: "Install dependencies"
+        run: |
+          python -VV
+          python -m site
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install --upgrade coverage[toml] virtualenv tox tox-gh-actions
+      - name: "Run tox targets for ${{ matrix.python-version }}"
+        run: "python -m tox"
