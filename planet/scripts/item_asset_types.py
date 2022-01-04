@@ -78,7 +78,7 @@ DEFAULT_ASSET_TYPES = [
     'ps4b_basic_analytic_nitf', 'ps4b_basic_analytic_rpc_nitf',
     'ps4b_basic_analytic_xml_nitf', 'ps4b_udm', 'udm', 'ortho_udm2',
     'video_file', 'video_frames', 'video_metadata', 'ortho_visual',
-    'visual_xml'
+    'visual', 'visual_xml'
 ]
 
 
