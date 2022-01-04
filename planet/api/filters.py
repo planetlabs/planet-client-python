@@ -166,6 +166,14 @@ def permission_filter(*perms):
     '''
     return _filter('PermissionFilter', config=perms)
 
+def asset_filter(assets):
+    '''Build an AssetFilter with the specified asset types.
+
+    >>> asset_filter(['analytic_sr']) == \
+    {'type': 'AssetFilter', 'config': ['analytic_sr']}
+    True
+    '''
+    return _filter('AssetFilter', config=assets)
 
 def string_filter(field_name, *vals):
     '''Build a StringInFilter.
