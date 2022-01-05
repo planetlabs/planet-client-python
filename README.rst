@@ -4,8 +4,9 @@ Planet API Client
 
 Python client library and CLI for Planet's public API.
 
-.. image:: https://travis-ci.org/planetlabs/planet-client-python.svg?branch=master
-   :target: https://travis-ci.org/planetlabs/planet-client-python
+.. image:: https://github.com/planet/planet-client-python/actions/workflows/tests.yaml/badge.svg?branch=master
+   :target: https://github.com/planetlabs/planet-client-python/actions
+   :alt: CI for v1
 
 
 Installation
