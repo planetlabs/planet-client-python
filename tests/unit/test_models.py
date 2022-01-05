@@ -161,9 +161,9 @@ async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
     assert os.stat(filename).st_size == 527
 
     # Check that when file already exists write() returns None
-    dl_filename = await body.write(filename, overwrite=False, 
+    dl_filename = await body.write(filename, overwrite=False,
                                    progress_bar=False)
-    assert dl_filename == None
+    assert dl_filename == ''
 
 
 @pytest.fixture

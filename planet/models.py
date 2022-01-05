@@ -219,7 +219,7 @@ class StreamingBody():
             return filename
         except FileExistsError:
             LOGGER.info(f'File {filename} exists, not overwriting')
-            return None
+            return ''
 
 
 def _get_filename_from_headers(headers):
