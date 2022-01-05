@@ -145,7 +145,7 @@ def test_cli_orders_download(runner, monkeypatch, oid):
     monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'poll', poll)
 
     # Number of files in all_test_files
-    expected = 'Downloaded 4 files.\n'
+    expected = str(all_test_files) + "\n"
 
     # allow for some progress reporting
     result = runner.invoke(
