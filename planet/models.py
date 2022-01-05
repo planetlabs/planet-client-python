@@ -216,8 +216,10 @@ class StreamingBody():
                         _log.update(new)
                         progress.update(new-previous)
                         previous = new
+            return filename
         except FileExistsError:
             LOGGER.info(f'File {filename} exists, not overwriting')
+            return None
 
 
 def _get_filename_from_headers(headers):
