@@ -305,10 +305,10 @@ class OrdersClient():
         async with self._session.stream(req) as resp:
             body = StreamingBody(resp)
             dl_path = os.path.join(directory or '.', filename or body.name)
-            await body.write(dl_path,
-                             overwrite=overwrite,
-                             progress_bar=progress_bar)
-        return dl_path
+            dl_filename = await body.write(dl_path,
+                                           overwrite=overwrite,
+                                           progress_bar=progress_bar)
+        return dl_filename
 
     async def download_order(
         self,
@@ -341,7 +341,7 @@ class OrdersClient():
                                                overwrite=overwrite,
                                                progress_bar=progress_bar)
                      for location in locations]
-        return filenames
+        return list(filter(None, filenames))
 
     async def poll(
         self,
