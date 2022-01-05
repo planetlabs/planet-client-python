@@ -655,8 +655,13 @@ async def test_download_order_overwrite_true_preexisting_data(
 
     create_download_mock()
     cl = OrdersClient(session, base_url=TEST_URL)
-    _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=True)
+    filenames = await cl.download_order(oid, directory=str(tmpdir),
+                                        overwrite=True)
 
+    # Check that filenames returned are of only those downloaded (1 file)
+    assert len(filenames) == 1
+    # Check that filenames are returned as strings in a list
+    assert filenames == [Path(tmpdir, 'file.json').as_posix()]
     # Check that the data downloaded has overwritten the original data
     assert json.load(open(Path(tmpdir, 'file.json'))) == downloaded_content
 
@@ -676,8 +681,13 @@ async def test_download_order_overwrite_false_preexisting_data(
 
     create_download_mock()
     cl = OrdersClient(session, base_url=TEST_URL)
-    _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
+    filenames = await cl.download_order(oid, directory=str(tmpdir),
+                                        overwrite=False)
 
+    # Check that filenames returned are of only those downloaded (no files)
+    assert len(filenames) == 0
+    # Check that filenames are returned as strings in a list
+    assert filenames == []
     # Check that the original data has not been overwritten
     assert json.load(open(Path(tmpdir, 'file.json'))) == original_content
 
@@ -693,8 +703,13 @@ async def test_download_order_overwrite_true_nonexisting_data(
 
     create_download_mock()
     cl = OrdersClient(session, base_url=TEST_URL)
-    _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=True)
+    filenames = await cl.download_order(oid, directory=str(tmpdir),
+                                        overwrite=True)
 
+    # Check that filenames returned are of only those downloaded (1 file)
+    assert len(filenames) == 1
+    # Check that filenames are returned as strings in a list
+    assert filenames == [Path(tmpdir, 'file.json').as_posix()]
     # Check that the was data downloaded and has the correct contents
     assert json.load(open(Path(tmpdir, 'file.json'))) == downloaded_content
 
@@ -710,7 +725,12 @@ async def test_download_order_overwrite_false_nonexisting_data(
 
     create_download_mock()
     cl = OrdersClient(session, base_url=TEST_URL)
-    _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
+    filenames = await cl.download_order(oid, directory=str(tmpdir),
+                                        overwrite=False)
 
+    # Check that filenames returned are of only those downloaded (1 file)
+    assert len(filenames) == 1
+    # Check that filenames are returned as strings in a list
+    assert filenames == [Path(tmpdir, 'file.json').as_posix()]
     # Check that the was data downloaded and has the correct contents
     assert json.load(open(Path(tmpdir, 'file.json'))) == downloaded_content
