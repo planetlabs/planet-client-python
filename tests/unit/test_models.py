@@ -153,10 +153,17 @@ async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
     body = models.StreamingBody(r)
 
     filename = Path(str(tmpdir)) / 'test.tif'
-    await body.write(filename, progress_bar=False)
+    dl_filename = await body.write(filename, progress_bar=False)
 
+    # Check that when file doesn't exist write() returns the filename
+    assert filename == dl_filename
     assert os.path.isfile(filename)
     assert os.stat(filename).st_size == 527
+
+    # Check that when file already exists write() returns None
+    dl_filename = await body.write(filename, overwrite=False, 
+                                   progress_bar=False)
+    assert dl_filename == None
 
 
 @pytest.fixture
