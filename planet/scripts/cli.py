@@ -219,7 +219,7 @@ async def download(ctx, order_id, quiet, overwrite, dest):
                     directory=dest,
                     overwrite=overwrite,
                     progress_bar=not quiet)
-    click.echo(f'Downloaded {len(filenames)} files.')
+    click.echo(str(filenames))
 
 
 def split_id_list(ctx, param, value):
