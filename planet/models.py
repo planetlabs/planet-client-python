@@ -180,6 +180,10 @@ class StreamingBody():
         :param progress_bar: Show progress bar during download. Defaults to
             True.
         :type progress_bar: boolean, optional
+
+        Returns:
+            Path to downloaded file.
+
         '''
         class _LOG():
             def __init__(self, total, unit, filename, disable):
