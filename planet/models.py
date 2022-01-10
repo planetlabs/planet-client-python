@@ -180,6 +180,9 @@ class StreamingBody():
         :param progress_bar: Show progress bar during download. Defaults to
             True.
         :type progress_bar: boolean, optional
+
+        Raises:
+            FileExistsError: If file already exists.
         '''
         class _LOG():
             def __init__(self, total, unit, filename, disable):
