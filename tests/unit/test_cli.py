@@ -144,20 +144,15 @@ def test_cli_orders_download(runner, monkeypatch, oid):
         return
     monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'poll', poll)
 
-    # Number of files in all_test_files
-    expected = str(all_test_files) + "\n"
-
     # allow for some progress reporting
     result = runner.invoke(
         cli, ['orders', 'download', oid])
     assert not result.exception
-    assert expected in result.output
 
     # test quiet option, should be no progress reporting
     result = runner.invoke(
         cli, ['orders', 'download', '-q', oid])
     assert not result.exception
-    assert expected == result.output
 
 
 class AsyncMock(Mock):
