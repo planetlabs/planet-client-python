@@ -180,10 +180,6 @@ class StreamingBody():
         :param progress_bar: Show progress bar during download. Defaults to
             True.
         :type progress_bar: boolean, optional
-
-        Returns:
-            Path to downloaded file.
-
         '''
         class _LOG():
             def __init__(self, total, unit, filename, disable):
@@ -220,10 +216,9 @@ class StreamingBody():
                         _log.update(new)
                         progress.update(new-previous)
                         previous = new
-            return filename
         except FileExistsError:
             LOGGER.info(f'File {filename} exists, not overwriting')
-            return ''
+            raise FileExistsError
 
 
 def _get_filename_from_headers(headers):
