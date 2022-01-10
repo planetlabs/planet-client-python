@@ -159,7 +159,6 @@ async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
     assert os.stat(filename).st_size == 527
 
 
-
 @pytest.fixture
 def get_pages():
     p1 = {'links': {'next': 'blah'},
