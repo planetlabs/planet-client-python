@@ -214,12 +214,9 @@ async def download(ctx, order_id, quiet, overwrite, dest):
         with planet.reporting.StateBar(order_id=order_id,
                                        disable=quiet) as bar:
             await cl.poll(str(order_id), report=bar.update)
-            filenames = await cl.download_order(
-                    str(order_id),
-                    directory=dest,
-                    overwrite=overwrite,
-                    progress_bar=not quiet)
-    click.echo(str(filenames))
+            _ = await cl.download_order(str(order_id), directory=dest,
+                                        overwrite=overwrite,
+                                        progress_bar=not quiet)
 
 
 def split_id_list(ctx, param, value):
