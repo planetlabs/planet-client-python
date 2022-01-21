@@ -68,3 +68,7 @@ class InvalidIdentity(APIException):
 class RequestCancelled(Exception):
     '''Internal exception when a request is cancelled'''
     pass
+
+
+class OrderError(APIException):
+    """Raised when the orders client fails."""

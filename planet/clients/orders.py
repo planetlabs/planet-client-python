@@ -122,7 +122,7 @@ class OrdersClient():
         self,
         request: dict
     ) -> str:
-        '''Create an order request.
+        """Create an order.
 
         Example:
 
@@ -149,30 +149,23 @@ class OrdersClient():
             request: order request definition
 
         Returns:
-            The ID of the order
+            Order
 
         Raises:
-            planet.exceptions.APIException: On API error.
-        '''
+            OrderError if order creation fails. The exception will
+            usually have a __context__ with a very verbose error
+            messaage from the service endpoint.
+
+        """
         url = self._orders_url()
         req = self._request(url, method='POST', json=request)
 
         try:
             resp = await self._do_request(req)
-        except exceptions.BadQuery as ex:
-            msg_json = json.loads(ex.message)
+        except exceptions.BadQuery as bad_query:
+            raise OrderError("Order creation failed.") from bad_query
 
-            msg = msg_json['general'][0]['message']
-            try:
-                # get first error field
-                field = next(iter(msg_json['field'].keys()))
-                msg += ' - ' + msg_json['field'][field][0]['message']
-            except AttributeError:
-                pass
-            raise exceptions.BadQuery(msg)
-
-        order = Order(resp.json())
-        return order
+        return Order(resp.json())
 
     async def get_order(
         self,
