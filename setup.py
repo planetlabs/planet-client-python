@@ -34,7 +34,7 @@ install_requires = [
 
 test_requires = [
     'pytest',
-    'pytest-asyncio',
+    'pytest-asyncio==0.16',
     'pytest-cov',
     'respx==0.16.3'
 ]
