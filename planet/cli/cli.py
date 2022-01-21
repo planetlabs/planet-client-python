@@ -27,23 +27,27 @@ LOGGER = logging.getLogger(__name__)
 
 @click.group()
 @click.pass_context
-@click.option('-v', '--verbose', count=True,
-              help=('Specify verbosity level of between 0 and 2 corresponding '
-                    'to log levels warning, info, and debug respectively.'))
+@click.option('--verbosity',
+              type=click.Choice(['warning', 'info', 'debug', 'none']),
+              help='Set maximum log level.')
+@click.option('--quiet',
+              is_flag=True, default=False,
+              help='Disable all progress reporting.')
 @click.version_option(version=planet.__version__)
-def cli(ctx, verbose):
-    '''Planet API Client'''
-    _configure_logging(verbose)
+def cli(ctx, verbosity, quiet):
+    """Planet API SDK Command Line Interface"""
+    _configure_logging(verbosity)
 
-    # ensure that ctx.obj exists and is a dict (in case `cli()` is called
-    # by means other than the `if` block below)
     ctx.ensure_object(dict)
+    # TODO: store quiet flag
 
 
 def _configure_logging(verbosity):
-    '''configure logging via verbosity level of between 0 and 2 corresponding
-    to log levels warning, info and debug respectfully.'''
-    log_level = max(logging.DEBUG, logging.WARNING - logging.DEBUG*verbosity)
+    """set logging level from verbosity parameter"""
+    # TODO: get log_level from verbosity 
+    log_level = logging.DEBUG
+    # log_level = max(logging.DEBUG, logging.WARNING - logging.DEBUG*verbosity)
+
     logging.basicConfig(
         stream=sys.stderr, level=log_level,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
