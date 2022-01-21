@@ -327,7 +327,7 @@ async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
         try:
             order = await cl.create_order(request)
         except OrderError as error:
-            service_resp = json.loads(err.__context__.message)
+            service_resp = json.loads(error.__context__.message)
             LOGGER.info("Order failed: service_resp=%r", service_resp)
             raise click.ClickException(error.message)
 

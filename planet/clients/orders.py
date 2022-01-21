@@ -155,7 +155,7 @@ class OrdersClient():
         Raises:
             OrderError if order creation fails. The exception will
             usually have a __context__ with a very verbose error
-            messaage from the service endpoint.
+            message from the service endpoint.
 
         """
         url = self._orders_url()
