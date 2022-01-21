@@ -22,7 +22,7 @@ import click
 
 import planet
 from planet import OrdersClient, Session  # allow mocking
-
+from planet.exceptions import OrderError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -324,6 +324,11 @@ async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
         tools=tools)
 
     async with orders_client(ctx) as cl:
-        order = await cl.create_order(request)
+        try:
+            order = await cl.create_order(request)
+        except OrderError as error:
+            service_resp = json.loads(err.__context__.message)
+            LOGGER.info("Order failed: service_resp=%r", service_resp)
+            raise click.ClickException(error.message)
 
     json_echo(order.json, pretty)

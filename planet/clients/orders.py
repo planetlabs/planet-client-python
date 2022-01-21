@@ -21,6 +21,7 @@ import typing
 import uuid
 
 from .. import constants, exceptions
+from ..exceptions import OrderError
 from ..http import Session
 from ..models import Order, Orders, Request, Response, StreamingBody
 
