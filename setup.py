@@ -83,7 +83,7 @@ setup(name='planet',
           'dev': test_requires + lint_requires + doc_requires},
       entry_points={
           'console_scripts': [
-              'planet=planet.cli.cli:cli',
+              'planet=planet.cli.cli:main',
           ],
         },
       )

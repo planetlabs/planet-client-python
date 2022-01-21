@@ -34,7 +34,7 @@ LOGGER = logging.getLogger(__name__)
               is_flag=True, default=False,
               help='Disable all progress reporting.')
 @click.version_option(version=planet.__version__)
-def cli(ctx, verbosity, quiet):
+def main(ctx, verbosity, quiet):
     """Planet API SDK Command Line Interface"""
     _configure_logging(verbosity)
 
@@ -44,7 +44,7 @@ def cli(ctx, verbosity, quiet):
 
 def _configure_logging(verbosity):
     """set logging level from verbosity parameter"""
-    # TODO: get log_level from verbosity 
+    # TODO: get log_level from verbosity
     log_level = logging.DEBUG
     # log_level = max(logging.DEBUG, logging.WARNING - logging.DEBUG*verbosity)
 
@@ -54,5 +54,5 @@ def _configure_logging(verbosity):
     )
 
 
-cli.add_command(auth)
-cli.add_command(orders)
+main.add_command(auth)
+main.add_command(orders)
