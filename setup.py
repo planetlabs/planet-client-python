@@ -25,6 +25,7 @@ with open('planet/__version__.py') as f:
 
 
 install_requires = [
+    'aiohttp',
     'click>=8.0.0',
     'httpx==0.16.1',
     'shapely>=1.7.1',
