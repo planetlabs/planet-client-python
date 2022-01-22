@@ -26,12 +26,7 @@ from .utils import coro, get_auth, handle_exceptions, json_echo
 LOGGER = logging.getLogger(__name__)
 
 pretty = click.option('-pp', '--pretty', is_flag=True,
-                      help='Format JSON output.')
-
-limit = click.option('-l', '--limit',
-                     help=('Maximum number of results to return. Default is ' +
-                           '100. A value of 0 means no maximum.'),
-                     default=100, type=int)
+                      help='Format JSON output')
 
 
 @asynccontextmanager
