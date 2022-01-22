@@ -18,8 +18,7 @@ import click
 
 import planet
 
-from .auth import auth
-from .orders import orders
+from . import auth, orders
 
 
 LOGGER = logging.getLogger(__name__)
@@ -45,7 +44,7 @@ def main(ctx, verbosity, quiet):
 def _configure_logging(verbosity):
     """set logging level from verbosity parameter"""
     # TODO: get log_level from verbosity
-    log_level = logging.DEBUG
+    log_level = logging.WARNING
     # log_level = max(logging.DEBUG, logging.WARNING - logging.DEBUG*verbosity)
 
     logging.basicConfig(
@@ -54,5 +53,5 @@ def _configure_logging(verbosity):
     )
 
 
-main.add_command(auth)
-main.add_command(orders)
+main.add_command(auth.auth)
+main.add_command(orders.orders)

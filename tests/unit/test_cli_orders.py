@@ -1,6 +1,6 @@
-# # Copyright 2021 Planet Labs, Inc.
-# #
-# # Licensed under the Apache License, Version 2.0 (the "License"); you may not
+# Copyright 2022 Planet Labs, PBC.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
 # the License at
 #
@@ -11,16 +11,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-import logging
 from unittest.mock import MagicMock, Mock
 
 from click.testing import CliRunner
 import pytest
 
 import planet
-from planet.scripts.cli import cli
+from planet.cli import cli
 
-LOGGER = logging.getLogger(__name__)
+
+@pytest.fixture
+def runner():
+    return CliRunner()
 
 
 @pytest.fixture(autouse=True)
@@ -30,132 +32,75 @@ def patch_session(monkeypatch):
 
 
 @pytest.fixture
-def runner():
-    return CliRunner()
+def patch_ordersclient(monkeypatch):
+    def patch(to_patch, patch_with):
+        monkeypatch.setattr(cli.orders.OrdersClient, to_patch, patch_with)
+    return patch
 
 
-def test_cli_info_verbosity(runner, monkeypatch):
-    log_level = None
-
-    def configtest(stream, level, format):
-        nonlocal log_level
-        log_level = level
-    monkeypatch.setattr(planet.scripts.cli.logging, 'basicConfig', configtest)
-
-    def patch(*args, **kwargs):
-        pass
-    monkeypatch.setattr(planet.scripts.cli, 'value', patch)
-
-    _ = runner.invoke(cli, args=['auth', 'value'])
-    assert log_level == logging.WARNING
-
-    _ = runner.invoke(cli, args=['-v', 'auth', 'value'])
-    assert log_level == logging.INFO
-
-    _ = runner.invoke(cli, args=['-vv', 'auth', 'value'])
-    assert log_level == logging.DEBUG
-
-
-def test_cli_auth_init_bad_pw(runner, monkeypatch):
-    def apiexcept(*args, **kwargs):
-        raise planet.exceptions.APIException('nope')
-    monkeypatch.setattr(planet.Auth, 'from_login', apiexcept)
-    result = runner.invoke(cli, args=['auth', 'init'], input='email\npw\n')
-    assert 'Error: nope' in result.output
-
-
-def test_cli_auth_init_success(runner, monkeypatch):
-    mock_api_auth = MagicMock(spec=planet.auth.APIKeyAuth)
-    mock_auth = MagicMock(spec=planet.Auth)
-    mock_auth.from_login.return_value = mock_api_auth
-    monkeypatch.setattr(planet, 'Auth', mock_auth)
-
-    result = runner.invoke(cli, args=['auth', 'init'], input='email\npw\n')
-    mock_auth.from_login.assert_called_once()
-    mock_api_auth.write.assert_called_once()
-    assert 'Initialized' in result.output
-
-
-def test_cli_auth_value_failure(runner, monkeypatch):
-    def authexception(*args, **kwargs):
-        raise planet.auth.AuthException
-
-    monkeypatch.setattr(planet.Auth, 'from_file', authexception)
-
-    result = runner.invoke(cli, ['auth', 'value'])
-    assert 'Error: Auth information does not exist or is corrupted.' \
-        in result.output
-
-
-def test_cli_auth_value_success(runner):
-    result = runner.invoke(cli, ['auth', 'value'])
-    assert not result.exception
-    assert result.output == 'testkey\n'
-
-
-def test_cli_orders_list_empty(runner, monkeypatch):
+def test_cli_orders_list_empty(runner, patch_ordersclient):
     async def lo(*arg, **kwarg):
         return []
-    monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'list_orders', lo)
+    patch_ordersclient('list_orders', lo)
 
-    result = runner.invoke(cli, ['orders', 'list'])
+    result = runner.invoke(cli.main, ['orders', 'list'])
     assert not result.exception
     assert '[]' in result.output
 
 
-def test_cli_orders_list_success(runner, monkeypatch):
+def test_cli_orders_list_success(runner, patch_ordersclient):
     async def lo(*arg, **kwarg):
         return [{'order': 'yep'}]
+    patch_ordersclient('list_orders', lo)
 
-    monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'list_orders', lo)
-    result = runner.invoke(cli, ['orders', 'list'])
+    result = runner.invoke(cli.main, ['orders', 'list'])
     assert not result.exception
     assert '{"order": "yep"}' in result.output
 
 
-def test_cli_orders_get(runner, monkeypatch, order_description, oid):
+def test_cli_orders_get(runner, patch_ordersclient, order_description, oid):
     async def go(*arg, **kwarg):
         return planet.models.Order(order_description)
+    patch_ordersclient('get_order', go)
 
-    monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'get_order', go)
     result = runner.invoke(
-        cli, ['orders', 'get', oid])
+        cli.main, ['orders', 'get', oid])
     assert not result.exception
 
 
-def test_cli_orders_cancel(runner, monkeypatch, order_description, oid):
+def test_cli_orders_cancel(runner, patch_ordersclient, order_description, oid):
     async def co(*arg, **kwarg):
         return ''
+    patch_ordersclient('cancel_order', co)
 
-    monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'cancel_order', co)
     result = runner.invoke(
-        cli, ['orders', 'cancel', oid])
+        cli.main, ['orders', 'cancel', oid])
     assert not result.exception
 
 
-def test_cli_orders_download(runner, monkeypatch, oid):
+def test_cli_orders_download(runner, patch_ordersclient, oid):
     all_test_files = ['file1.json', 'file2.zip', 'file3.tiff', 'file4.jpg']
 
     async def do(*arg, **kwarg):
         return all_test_files
-    monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'download_order', do)
+    patch_ordersclient('download_order', do)
 
     async def poll(*arg, **kwarg):
         return
-    monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'poll', poll)
+    patch_ordersclient('poll', poll)
 
     # Number of files in all_test_files
     expected = 'Downloaded 4 files.\n'
 
     # allow for some progress reporting
     result = runner.invoke(
-        cli, ['orders', 'download', oid])
+        cli.main, ['orders', 'download', oid])
     assert not result.exception
     assert expected in result.output
 
     # test quiet option, should be no progress reporting
     result = runner.invoke(
-        cli, ['orders', 'download', '-q', oid])
+        cli.main, ['orders', 'download', '-q', oid])
     assert not result.exception
     assert expected == result.output
 
@@ -201,11 +146,10 @@ def tools(tools_json, write_to_tmp_json_file):
 
 
 @pytest.fixture
-def mock_create_order(monkeypatch, order_description):
+def mock_create_order(patch_ordersclient, order_description):
     mock_create_order = AsyncMock(
             return_value=planet.models.Order(order_description))
-    monkeypatch.setattr(planet.scripts.cli.OrdersClient, 'create_order',
-                        mock_create_order)
+    patch_ordersclient('create_order', mock_create_order)
     return mock_create_order
 
 
@@ -216,7 +160,7 @@ def test_id(order_request):
 
 def test_cli_read_file_geojson(clipaoi, geom_geojson):
     with open(clipaoi, 'r') as cfile:
-        res = planet.scripts.cli.read_file_geojson({}, 'clip', cfile)
+        res = cli.orders.read_file_geojson({}, 'clip', cfile)
     assert res == geom_geojson
 
 
@@ -254,7 +198,7 @@ def test_cli_orders_create_cloudconfig(
         ):
     cc_file = write_to_tmp_json_file(cloudconfig, 'cloudconfig.json')
     basic_result = runner.invoke(
-        cli, create_order_basic_cmds + ['--cloudconfig', cc_file]
+        cli.main, create_order_basic_cmds + ['--cloudconfig', cc_file]
     )
     assert not basic_result.exception
 
@@ -273,7 +217,7 @@ def test_cli_orders_create_clip(
         clipaoi, geom_geojson
         ):
     basic_result = runner.invoke(
-        cli, create_order_basic_cmds + ['--clip', clipaoi]
+        cli.main, create_order_basic_cmds + ['--clip', clipaoi]
     )
     assert not basic_result.exception
 
@@ -291,7 +235,7 @@ def test_cli_orders_create_tools(
         runner, mock_create_order, create_order_basic_cmds, name, products,
         tools, tools_json):
     basic_result = runner.invoke(
-        cli, create_order_basic_cmds + ['--tools', tools]
+        cli.main, create_order_basic_cmds + ['--tools', tools]
     )
     assert not basic_result.exception
 
@@ -317,7 +261,7 @@ def test_cli_orders_create_validate_id(
 
     # id string is correct format
     success_mult_ids_result = runner.invoke(
-        cli, [
+        cli.main, [
             'orders', 'create',
             '--name', order_request['name'],
             '--id', success_ids,
@@ -329,7 +273,7 @@ def test_cli_orders_create_validate_id(
 
     # id string is wrong format
     failed_mult_ids_result = runner.invoke(
-        cli, [
+        cli.main, [
             'orders', 'create',
             '--name', order_request['name'],
             '--id', fail_ids,
@@ -345,7 +289,7 @@ def test_cli_orders_create_validate_item_type(
         ):
     # item type is not valid for bundle
     failed_item_type_result = runner.invoke(
-        cli, [
+        cli.main, [
             'orders', 'create',
             '--name', order_request['name'],
             '--id', test_id,
@@ -366,7 +310,7 @@ def test_cli_orders_create_validate_cloudconfig(
         fp.write('')
 
     wrong_format_result = runner.invoke(
-        cli, create_order_basic_cmds + ['--cloudconfig', cloudconfig]
+        cli.main, create_order_basic_cmds + ['--cloudconfig', cloudconfig]
     )
     assert wrong_format_result.exception
     assert "File does not contain valid json." \
@@ -375,7 +319,7 @@ def test_cli_orders_create_validate_cloudconfig(
     # cloudconfig file doesn't exist
     doesnotexistfile = tmp_path / 'doesnotexist.json'
     doesnotexit_result = runner.invoke(
-        cli, create_order_basic_cmds + ['--cloudconfig', doesnotexistfile]
+        cli.main, create_order_basic_cmds + ['--cloudconfig', doesnotexistfile]
     )
     assert doesnotexit_result.exception
     assert "No such file or directory" in doesnotexit_result.output
@@ -387,7 +331,8 @@ def test_cli_orders_create_validate_tools(
         ):
 
     clip_and_tools_result = runner.invoke(
-        cli, create_order_basic_cmds + ['--tools', tools, '--clip', clipaoi]
+        cli.main,
+        create_order_basic_cmds + ['--tools', tools, '--clip', clipaoi]
     )
     assert clip_and_tools_result.exception
 
@@ -399,7 +344,7 @@ def test_cli_orders_create_validate_clip(
     clip_point = write_to_tmp_json_file(point_geom_geojson, 'point.json')
 
     clip_point_result = runner.invoke(
-        cli, create_order_basic_cmds + ['--clip', clip_point]
+        cli.main, create_order_basic_cmds + ['--clip', clip_point]
     )
     assert clip_point_result.exception
     assert "Invalid geometry type: Point is not Polygon" in \
