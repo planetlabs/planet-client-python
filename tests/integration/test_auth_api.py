@@ -1,4 +1,4 @@
-# Copyright 2021 Planet Labs, Inc.
+# Copyright 2021 Planet Labs, PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -24,14 +24,13 @@ from planet.auth import AuthClient
 
 
 TEST_URL = 'http://MockNotRealURL/'
-AUTH_URL = TEST_URL + 'v0/auth/'
 
 LOGGER = logging.getLogger(__name__)
 
 
 @respx.mock
 def test_AuthClient_success():
-    login_url = AUTH_URL + 'login'
+    login_url = TEST_URL + 'login'
 
     payload = {'api_key': 'iamakey'}
     resp = {'token': jwt.encode(payload, 'key')}
@@ -46,7 +45,7 @@ def test_AuthClient_success():
 
 @respx.mock
 def test_AuthClient_invalid_email():
-    login_url = AUTH_URL + 'login'
+    login_url = TEST_URL + 'login'
 
     resp = {
         "errors": {
@@ -69,7 +68,7 @@ def test_AuthClient_invalid_email():
 
 @respx.mock
 def test_AuthClient_invalid_password():
-    login_url = AUTH_URL + 'login'
+    login_url = TEST_URL + 'login'
 
     resp = {
         "errors": None,
