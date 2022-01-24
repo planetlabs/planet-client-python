@@ -35,6 +35,7 @@ BULK_PATH = 'bulk/orders/v2/'
 ORDERS_STATES_COMPLETE = ['success', 'partial', 'cancelled', 'failed']
 ORDERS_STATES_IN_PROGRESS = ['queued', 'running']
 ORDERS_STATES = ORDERS_STATES_IN_PROGRESS + ORDERS_STATES_COMPLETE
+POLL_SLEEP = 15
 
 LOGGER = logging.getLogger(__name__)
 
@@ -164,6 +165,46 @@ class OrdersClient():
                     raise OrderError("Order creation failed.") from service_err
                 else:
                     return Order(await resp.json())
+
+    async def wait(self, order: Order, max_requests: int = 40) -> str:
+        """Wait until order reaches a final state and return the name.
+
+        Polls the order description service endpoint every 15 seconds.
+
+        Parameters:
+            order: an active Order.
+            max_requests: the maximum number of polling requests.
+
+        Returns:
+            state: the final state name.
+
+        Raises:
+            OrderError if a final state is not returned.
+
+        """
+        url = self._order_url(order.id)
+
+        async with ClientSession() as session:
+            i = 0
+            while i < max_requests:
+
+                async with session.get(url) as resp:
+                    try:
+                        resp.raise_for_status()
+                    except Exception as service_err:
+                        raise OrderError(
+                            "Order polling failed.") from service_err
+
+                    order = Order(await resp.json())
+
+                    if order.state in ("success", "partial", "failed",
+                                       "cancelled"):
+                        return order.state
+                    else:
+                        time.sleep(POLL_SLEEP)
+                        i += 1
+
+            raise OrderError("Maximum polling requests exceeded.")
 
     async def get_order(self, order_id: str) -> Order:
         '''Get order details by Order ID.
