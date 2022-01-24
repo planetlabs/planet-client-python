@@ -166,7 +166,9 @@ class OrdersClient():
                 else:
                     return Order(await resp.json())
 
-    async def wait(self, order: Order, max_requests: int = 40) -> str:
+    async def wait_for_finish(self,
+                              order: Order,
+                              max_requests: int = 40) -> str:
         """Wait until order reaches a final state and return the name.
 
         Polls the order description service endpoint every 15 seconds.

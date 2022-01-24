@@ -75,7 +75,7 @@ async def test_wait_service_failure(mock_http_get):
 
     client = OrdersClient(None)
     with pytest.raises(OrderError) as excinfo:
-        await client.wait(order)
+        await client.wait_for_finish(order)
 
     assert type(excinfo.value.__context__) == RuntimeError
     assert str(excinfo.value.__context__) == "Boom! Service failure"
@@ -100,7 +100,7 @@ async def test_wait_timeout(mock_http_get):
 
     client = OrdersClient(None)
     with pytest.raises(OrderError):
-        await client.wait(order, max_requests=3)
+        await client.wait_for_finish(order, max_requests=3)
 
     assert mock_http_get.call_count == 3
 
@@ -123,4 +123,4 @@ async def test_wait_success(mock_http_get):
     order = Order({"id": str(uuid.uuid4()), "state": "queued"})
 
     client = OrdersClient(None)
-    assert "success" == await client.wait(order)
+    assert "success" == await client.wait_for_finish(order)
