@@ -65,7 +65,7 @@ async def test_create_order_success(mock_http_post):
 
 @pytest.mark.asyncio
 @patch("planet.clients.orders.ClientSession.get")
-async def test_wait_service_failure(mock_http_get):
+async def test_wait_for_finsh_service_failure(mock_http_get):
     """Get expected chained exception on fake service failure."""
     mock_http_get.return_value.__aenter__.return_value.raise_for_status = Mock(
         side_effect=RuntimeError("Boom! Service failure"))
@@ -84,7 +84,7 @@ async def test_wait_service_failure(mock_http_get):
 @pytest.mark.asyncio
 @patch("planet.clients.orders.ClientSession.get")
 @patch("planet.clients.orders.POLL_SLEEP", 0.01)
-async def test_wait_timeout(mock_http_get):
+async def test_wait_for_finsh_timeout(mock_http_get):
     """Get OrderError when max polling requests has been reached."""
     # We script the service responses to always succeed, return "queued"
     # the first time, and "running" infinitely thereafter.
@@ -108,7 +108,7 @@ async def test_wait_timeout(mock_http_get):
 @pytest.mark.asyncio
 @patch("planet.clients.orders.ClientSession.get")
 @patch("planet.clients.orders.POLL_SLEEP", 0.01)
-async def test_wait_success(mock_http_get):
+async def test_wait_for_finsh_success(mock_http_get):
     """Wait and return final state."""
     # We script the service responses to always succeed, return
     # "running" the first few times, and "success" infinitely
