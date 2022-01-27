@@ -14,7 +14,7 @@
 
 
 class APIException(Exception):
-    '''General unexpected response'''
+    '''General unexpected API response'''
     @property
     def message(self):
         return self.args[0]
@@ -67,4 +67,9 @@ class InvalidIdentity(APIException):
 
 class RequestCancelled(Exception):
     '''Internal exception when a request is cancelled'''
+    pass
+
+
+class AuthException(Exception):
+    '''Exceptions encountered during authentication'''
     pass

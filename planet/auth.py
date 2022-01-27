@@ -22,6 +22,7 @@ import httpx
 import jwt
 
 from . import constants, http, models
+from .exceptions import AuthException
 
 
 LOGGER = logging.getLogger(__name__)
@@ -29,11 +30,6 @@ LOGGER = logging.getLogger(__name__)
 BASE_URL = constants.PLANET_BASE_URL
 ENV_API_KEY = 'PL_API_KEY'
 SECRET_FILE_PATH = os.path.join(os.path.expanduser('~'), '.planet.json')
-
-
-class AuthException(Exception):
-    '''exceptions thrown by Auth'''
-    pass
 
 
 class Auth(metaclass=abc.ABCMeta):
