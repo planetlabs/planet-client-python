@@ -1,8 +1,9 @@
 """Tests of Orders client and aiohttp implementation."""
 
 import itertools
+from pathlib import Path
 import uuid
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -124,3 +125,36 @@ async def test_wait_for_finsh_success(mock_http_get):
 
     client = OrdersClient(None)
     assert "success" == await client.wait_for_finish(order)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("num_results", [0, 1, 12])
+@patch("planet.clients.orders.ClientSession.get")
+async def test_download_order_chunked(mock_http_get, num_results, tmp_path):
+    """Download and save mock order results to a temporary directory."""
+    # Program the responses to return 7 bytes of data in two chunks.
+    mock_http_get.return_value.__aenter__.return_value.raise_for_status = Mock(
+        return_value=None)
+    mock_http_get.return_value.__aenter__.return_value.content.iter_chunks = Mock(
+        return_value=AsyncMock(
+            **{"__aiter__.return_value": [(b'abcd', True), (b'efg', True)]}))
+
+    fake_locations = [
+        "https://example.com/{}.txt".format(i) for i in range(num_results)
+    ]
+    order = Order({
+        "_links": {
+            "results": [{
+                "location": location
+            } for location in fake_locations]
+        }
+    })
+
+    client = OrdersClient(None)
+    await client.download_order(order, tmp_path)
+
+    files = [p.name for p in tmp_path.iterdir()]
+    assert len(files) == num_results
+    assert sorted(files) == sorted([Path(loc).name for loc in fake_locations])
+    for f in tmp_path.iterdir():
+        assert f.read_bytes() == b"abcdefg"

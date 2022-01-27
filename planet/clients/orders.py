@@ -16,6 +16,7 @@ import asyncio
 import json
 import logging
 import os
+from pathlib import Path
 import time
 import typing
 import uuid
@@ -36,6 +37,7 @@ ORDERS_STATES_COMPLETE = ['success', 'partial', 'cancelled', 'failed']
 ORDERS_STATES_IN_PROGRESS = ['queued', 'running']
 ORDERS_STATES = ORDERS_STATES_IN_PROGRESS + ORDERS_STATES_COMPLETE
 POLL_SLEEP = 15
+MAX_CONCURRENCY = 8
 
 LOGGER = logging.getLogger(__name__)
 
@@ -203,37 +205,35 @@ class OrdersClient():
                                        "cancelled"):
                         return order.state
                     else:
-                        time.sleep(POLL_SLEEP)
+                        await asyncio.sleep(POLL_SLEEP)
                         i += 1
 
             raise OrderError("Maximum polling requests exceeded.")
 
     async def get_order(self, order_id: str) -> Order:
-        '''Get order details by Order ID.
+        """Get order details by Order ID.
 
         Parameters:
             order_id: The ID of the order
 
         Returns:
-            Order information
+            Order
 
         Raises:
-            OrdersClientException: If order_id is not valid UUID.
-            planet.exceptions.APIException: On API error.
-        '''
+            OrderError
+
+        """
         url = self._order_url(order_id)
 
-        req = self._request(url, method='GET')
-
-        try:
-            resp = await self._do_request(req)
-        except exceptions.MissingResource as ex:
-            msg_json = json.loads(ex.message)
-            msg = msg_json['message']
-            raise exceptions.MissingResource(msg)
-
-        order = Order(resp.json())
-        return order
+        async with ClientSession() as session:
+            async with session.get(url) as resp:
+                try:
+                    resp.raise_for_status()
+                except Exception as service_err:
+                    raise OrderError(
+                        "Order description fetch failed.") from service_err
+                else:
+                    return Order(await resp.json())
 
     async def cancel_order(self, order_id: str) -> Response:
         '''Cancel a queued order.
@@ -302,68 +302,51 @@ class OrdersClient():
         resp = await self._do_request(req)
         return resp.json()
 
-    async def download_asset(self,
-                             location: str,
-                             filename: str = None,
-                             directory: str = None,
-                             overwrite: bool = False,
-                             progress_bar: bool = True) -> str:
-        """Download ordered asset.
-
-        Parameters:
-            location: Download location url including download token.
-            filename: Custom name to assign to downloaded file.
-            directory: Write to given directory instead of current directory.
-            overwrite: Overwrite any existing files.
-            progress_bar: Show progress bar during download.
-
-        Returns:
-            Path to downloaded file.
-
-        Raises:
-            planet.exceptions.APIException: On API error.
-        """
-        req = self._request(location, method='GET')
-
-        async with self._session.stream(req) as resp:
-            body = StreamingBody(resp)
-            dl_path = os.path.join(directory or '.', filename or body.name)
-            await body.write(dl_path,
-                             overwrite=overwrite,
-                             progress_bar=progress_bar)
-        return dl_path
-
     async def download_order(self,
-                             order_id: str,
-                             directory: str = None,
+                             order: Order,
+                             directory: Path,
                              overwrite: bool = False,
-                             progress_bar: bool = False) -> typing.List[str]:
-        """Download all assets in an order.
+                             callback=None,
+                             callback_args: tuple = None,
+                             callback_kwargs: dict = None) -> None:
+        """Download all assets in a finished order.
 
         Parameters:
-            order_id: The ID of the order
-            directory: Write to given directory instead of current directory.
+            order: a finished Order.
+            directory: a download directory Path.
             overwrite: Overwrite any existing files.
-            progress_bar: Show progress bar during download.
 
         Returns:
-            Paths to downloaded files.
+            None.
 
         Raises:
-            planet.exceptions.APIException: On API error.
+            OrderError
+
         """
-        order = await self.get_order(order_id)
-        locations = order.locations
-        LOGGER.info(
-            f'downloading {len(locations)} assets from order {order_id}')
-        filenames = [
-            await self.download_asset(location,
-                                      directory=directory,
-                                      overwrite=overwrite,
-                                      progress_bar=progress_bar)
-            for location in locations
-        ]
-        return filenames
+        semaphore = asyncio.Semaphore(MAX_CONCURRENCY)
+
+        async with ClientSession() as session:
+
+            async def _save_asset(url: str, path: Path) -> None:
+                """Download resource at url and save to path directory."""
+                async with semaphore:
+                    filename = path.joinpath(Path(url).name)
+                    async with session.get(url) as resp:
+                        try:
+                            resp.raise_for_status()
+                        except Exception as service_err:
+                            raise OrderError(
+                                "Order asset fetch failed.") from service_err
+                        with open(filename, "wb") as f:
+                            async for data, _ in resp.content.iter_chunks():
+                                f.write(data)
+
+                    if callback:
+                        await callback(url, *callback_args, **callback_kwargs)
+
+            tasks = asyncio.gather(
+                *[_save_asset(url, directory) for url in order.locations])
+            await tasks
 
     async def poll(self,
                    order_id: str,
