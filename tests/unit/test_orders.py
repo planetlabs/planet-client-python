@@ -10,6 +10,20 @@ import pytest
 from planet.clients.orders import Order, OrdersClient, OrderError
 
 
+# This is an experiment in reusing mock configuration to save keystrokes
+# and prevent configuration errors. I think it could lead to more
+# complexity than per-test configuration. I suspect that respx has a lot
+# of this kind of thing under the hood.
+def async_mock_response(status, body):
+    mock_resp = AsyncMock()
+    cfg = {
+        '__aenter__.return_value.raise_for_status':
+        Mock(side_effect=RuntimeError(body))
+    }
+    mock_resp.configure_mock(**cfg)
+    return mock_resp
+
+
 @pytest.mark.asyncio
 @patch("planet.clients.orders.ClientSession.post")
 async def test_create_order_failure(mock_http_post):
@@ -22,8 +36,10 @@ async def test_create_order_failure(mock_http_post):
     # raise_for_status() is a normal (not-async) Python method and so
     # we must explicitly use (not-async) Mock. Otherwise all the
     # attributes of mock_http_post will be AsyncMock objects.
-    mock_http_post.return_value.__aenter__.return_value.raise_for_status = Mock(
-        side_effect=RuntimeError("Boom! Service failure"))
+    # mock_http_post.return_value.__aenter__.return_value.raise_for_status = Mock(
+    #     side_effect=RuntimeError("Boom! Service failure"))
+    mock_http_post.return_value = async_mock_response(500,
+                                                      "Boom! Service failure")
 
     # In this demo version of OrdersClient a session is created
     # internally and so we don't need to give it one.
