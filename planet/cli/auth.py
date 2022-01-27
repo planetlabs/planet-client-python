@@ -17,7 +17,7 @@ import logging
 import click
 
 import planet
-from .utils import handle_exceptions
+from .cmds import translate_exceptions
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ def auth(ctx, base_url):
 
 @auth.command()
 @click.pass_context
-@handle_exceptions
+@translate_exceptions
 @click.option('--email', default=None, prompt=True, help=(
     'The email address associated with your Planet credentials.'
 ))
@@ -50,16 +50,7 @@ def init(ctx, email, password):
 
 
 @auth.command()
+@translate_exceptions
 def value():
     '''Print the stored authentication information'''
-    click.echo(get_auth().value)
-
-
-def get_auth():
-    try:
-        auth = planet.Auth.from_file()
-    except planet.auth.AuthException:
-        raise click.ClickException(
-            'Auth information does not exist or is corrupted. Initialize '
-            'with `planet auth init`.')
-    return auth
+    click.echo(planet.Auth.from_file().value)

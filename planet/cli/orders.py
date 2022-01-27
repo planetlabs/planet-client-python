@@ -21,7 +21,8 @@ import click
 import planet
 from planet import OrdersClient, Session  # allow mocking
 
-from .utils import coro, get_auth, handle_exceptions, json_echo
+from .cmds import coro, translate_exceptions
+from .io import echo_json
 
 LOGGER = logging.getLogger(__name__)
 
@@ -45,14 +46,14 @@ async def orders_client(ctx):
               help='Assign custom base Orders API URL.')
 def orders(ctx, base_url):
     '''Commands for interacting with the Orders API'''
-    auth = get_auth()
+    auth = planet.Auth.from_file()
     ctx.obj['AUTH'] = auth
     ctx.obj['BASE_URL'] = base_url
 
 
 @orders.command()
 @click.pass_context
-@handle_exceptions
+@translate_exceptions
 @coro
 @click.option('-s', '--state',
               help='Filter orders to given state.',
@@ -66,12 +67,12 @@ async def list(ctx, state, limit, pretty):
     async with orders_client(ctx) as cl:
         orders = await cl.list_orders(state=state, limit=limit, as_json=True)
 
-    json_echo(orders, pretty)
+    echo_json(orders, pretty)
 
 
 @orders.command()
 @click.pass_context
-@handle_exceptions
+@translate_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
 @pretty
@@ -80,12 +81,12 @@ async def get(ctx, order_id, pretty):
     async with orders_client(ctx) as cl:
         order = await cl.get_order(str(order_id))
 
-    json_echo(order.json, pretty)
+    echo_json(order.json, pretty)
 
 
 @orders.command()
 @click.pass_context
-@handle_exceptions
+@translate_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
 async def cancel(ctx, order_id):
@@ -98,7 +99,7 @@ async def cancel(ctx, order_id):
 
 @orders.command()
 @click.pass_context
-@handle_exceptions
+@translate_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
 @click.option('-q', '--quiet', is_flag=True, default=False,
@@ -165,7 +166,7 @@ def read_file_json(ctx, param, value):
 
 @orders.command()
 @click.pass_context
-@handle_exceptions
+@translate_exceptions
 @coro
 @click.option('--name', required=True)
 @click.option('--id', 'ids', help='One or more comma-separated item IDs',
@@ -229,4 +230,4 @@ async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
     async with orders_client(ctx) as cl:
         order = await cl.create_order(request)
 
-    json_echo(order.json, pretty)
+    echo_json(order.json, pretty)
