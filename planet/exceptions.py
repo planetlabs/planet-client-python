@@ -13,7 +13,12 @@
 # limitations under the License.
 
 
-class APIException(Exception):
+class PlanetException(Exception):
+    """Root for all exceptions thrown by the SDK"""
+    pass
+
+
+class APIException(PlanetException):
     '''General unexpected API response'''
     @property
     def message(self):
@@ -65,11 +70,11 @@ class InvalidIdentity(APIException):
     pass
 
 
-class RequestCancelled(Exception):
+class RequestCancelled(PlanetException):
     '''Internal exception when a request is cancelled'''
     pass
 
 
-class AuthException(Exception):
+class AuthException(PlanetException):
     '''Exceptions encountered during authentication'''
     pass
