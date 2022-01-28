@@ -27,7 +27,7 @@ from .exceptions import AuthException
 
 LOGGER = logging.getLogger(__name__)
 
-BASE_URL = constants.PLANET_BASE_URL
+BASE_URL = constants.PLANET_BASE_URL + 'v0/auth/'
 ENV_API_KEY = 'PL_API_KEY'
 SECRET_FILE_PATH = os.path.join(os.path.expanduser('~'), '.planet.json')
 
@@ -161,8 +161,6 @@ class AuthClient():
         if not self._base_url.endswith('/'):
             self._base_url += '/'
 
-        self._auth_url = self._base_url + 'v0/auth/'
-
     def login(
         self,
         email: str,
@@ -181,7 +179,7 @@ class AuthClient():
              A JSON object containing an `api_key` property with the user's
         API_KEY.
         '''
-        url = self._auth_url + 'login'
+        url = self._base_url + 'login'
         data = {'email': email,
                 'password': password
                 }
