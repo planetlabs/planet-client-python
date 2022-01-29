@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 from http import HTTPStatus
-from unittest.mock import MagicMock
+import json
 
 from click.testing import CliRunner
 import httpx
@@ -20,36 +20,90 @@ import jwt
 import pytest
 import respx
 
-import planet
 from planet.cli import cli
 
 TEST_URL = 'http://MockNotRealURL/'
 
 
-@pytest.fixture(autouse=True)
-def patch_session(monkeypatch):
-    '''Make sure we don't actually make any http calls'''
-    monkeypatch.setattr(planet, 'Session', MagicMock(spec=planet.Session))
+# skip the global mock of _SecretFile.read
+# for this module
+@pytest.fixture(autouse=True, scope='module')
+def test_secretfile_read():
+    return
+
+
+@pytest.fixture
+def redirect_secretfile(tmp_path):
+    '''patch the cli so it works with a temporary secretfile
+
+    this is to avoid collisions with the actual planet secretfile
+    '''
+    secretfile_path = tmp_path / 'secret.json'
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(cli.auth.planet.auth, 'SECRET_FILE_PATH', secretfile_path)
+        yield secretfile_path
 
 
 @respx.mock
-@pytest.mark.asyncio
-def test_cli_auth_init_base_url():
-    '''Test base url option
+def test_cli_auth_init_success(redirect_secretfile):
+    """Test the successful auth init path
 
-    Uses the auth init path to ensure the base url is changed to the mocked
-    url. So, ends up testing the auth init path somewhat as well
-    '''
-    login_url = TEST_URL + 'login'
+    Also tests the base-url command, since we will get an exception
+    if the base url is not changed to the mocked url
+    """
+    login_url = f'{TEST_URL}login'
 
-    payload = {'api_key': 'iamakey'}
+    payload = {'api_key': 'test_cli_auth_init_success_key'}
     resp = {'token': jwt.encode(payload, 'key')}
     mock_resp = httpx.Response(HTTPStatus.OK, json=resp)
     respx.post(login_url).return_value = mock_resp
 
     result = CliRunner().invoke(
-        cli.main,
-        args=['auth', '--base-url', TEST_URL, 'init'],
-        input='email\npw\n')
+            cli.main,
+            args=['auth', '--base-url', TEST_URL, 'init'],
+            input='email\npw\n')
 
+    # we would get a 'url not mocked' exception if the base url wasn't
+    # changed to the mocked url
     assert not result.exception
+
+    assert 'Initialized' in result.output
+
+
+@respx.mock
+def test_cli_auth_init_bad_pw(redirect_secretfile):
+    login_url = f'{TEST_URL}login'
+
+    resp = {"errors": None,
+            "message": "Invalid email or password",
+            "status": 401,
+            "success": False}
+    mock_resp = httpx.Response(401, json=resp)
+    respx.post(login_url).return_value = mock_resp
+
+    result = CliRunner().invoke(
+            cli.main,
+            args=['auth', '--base-url', TEST_URL, 'init'],
+            input='email\npw\n')
+
+    assert result.exception
+    assert 'Error: Incorrect email or password.\n' in result.output
+
+
+def test_cli_auth_value_success(redirect_secretfile):
+    key = 'test_cli_auth_value_success_key'
+    content = {'key': key}
+    with open(redirect_secretfile, 'w') as f:
+        json.dump(content, f)
+
+    result = CliRunner().invoke(cli.main, ['auth', 'value'])
+    assert not result.exception
+    assert result.output == f'{key}\n'
+
+
+def test_cli_auth_value_failure(redirect_secretfile):
+    result = CliRunner().invoke(cli.main, ['auth', 'value'])
+    assert result.exception
+    assert 'Error: Auth information does not exist or is corrupted.' \
+        in result.output
