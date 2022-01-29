@@ -21,15 +21,14 @@ import os
 import httpx
 import jwt
 
-from . import constants, http, models
+from . import http, models
+from .constants import PLANET_BASE_URL, SECRET_FILE_PATH
 from .exceptions import AuthException
-
 
 LOGGER = logging.getLogger(__name__)
 
-BASE_URL = constants.PLANET_BASE_URL + 'v0/auth/'
+BASE_URL = PLANET_BASE_URL + 'v0/auth/'
 ENV_API_KEY = 'PL_API_KEY'
-SECRET_FILE_PATH = os.path.join(os.path.expanduser('~'), '.planet.json')
 
 
 class Auth(metaclass=abc.ABCMeta):
