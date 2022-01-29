@@ -20,15 +20,15 @@ import time
 import typing
 import uuid
 
-from .. import constants, exceptions
+from .. import exceptions
+from ..constants import PLANET_BASE_URL
 from ..http import Session
 from ..models import Order, Orders, Request, Response, StreamingBody
 
 
-BASE_URL = constants.PLANET_BASE_URL + 'compute/ops/'
-STATS_PATH = 'stats/orders/v2/'
-ORDERS_PATH = 'orders/v2/'
-BULK_PATH = 'bulk/orders/v2/'
+STATS_PATH = 'compute/ops/stats/orders/v2/'
+ORDERS_PATH = 'compute/ops/orders/v2/'
+BULK_PATH = 'compute/ops/bulk/orders/v2/'
 
 # Order states https://developers.planet.com/docs/orders/ordering/#order-states
 ORDERS_STATES_COMPLETE = ['success', 'partial', 'cancelled', 'failed']
@@ -52,16 +52,13 @@ class OrdersClient():
         >>> from planet import Session, OrdersClient
         >>>
         >>> async def main():
-        ...     auth = ('example_api_key', '')
-        ...     async with Session(auth=auth) as sess:
+        ...     async with Session() as sess:
         ...         cl = OrdersClient(sess)
         ...         # use client here
         ...
         >>> asyncio.run(main())
 
         ```
-
-
     """
     def __init__(
         self,
@@ -71,12 +68,12 @@ class OrdersClient():
         """
         Parameters:
             session: Open session connected to server.
-            base_url: The base URL to use. Defaults to production orders API
-                base url.
+            base_url: The base URL to use. Defaults to Planet production
+                services base url.
         """
         self._session = session
 
-        self._base_url = base_url or BASE_URL
+        self._base_url = base_url or PLANET_BASE_URL
         if not self._base_url.endswith('/'):
             self._base_url += '/'
 
@@ -92,17 +89,17 @@ class OrdersClient():
             raise OrdersClientException(msg)
 
     def _orders_url(self):
-        return self._base_url + ORDERS_PATH
+        return f'{self._base_url}{ORDERS_PATH}'
 
     def _stats_url(self):
-        return self._base_url + STATS_PATH
+        return f'{self._base_url}{STATS_PATH}'
 
     def _order_url(self, order_id):
         self._check_order_id(order_id)
-        return self._orders_url() + order_id
+        return f'{self._orders_url()}{order_id}'
 
     def _bulk_url(self):
-        return self._base_url + BULK_PATH
+        return f'{self._base_url}{BULK_PATH}'
 
     def _request(self, url, method, data=None, params=None, json=None):
         return Request(url, method=method, data=data, params=params, json=json)

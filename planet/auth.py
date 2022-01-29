@@ -27,7 +27,8 @@ from .exceptions import AuthException
 
 LOGGER = logging.getLogger(__name__)
 
-BASE_URL = PLANET_BASE_URL + 'v0/auth/'
+AUTH_PATH = 'v0/auth/'
+
 ENV_API_KEY = 'PL_API_KEY'
 
 
@@ -109,8 +110,8 @@ class Auth(metaclass=abc.ABCMeta):
         Parameters:
             email: Planet account email address.
             password: Planet account password.
-            base_url: The base URL to use. Defaults to production
-                authentication API base url.
+            base_url: The base URL to use. Defaults to Planet production
+                services base url.
         '''
         cl = AuthClient(base_url=base_url)
         auth_data = cl.login(email, password)
@@ -154,9 +155,10 @@ class AuthClient():
     ):
         """
         Parameters:
-            base_url: Alternate authentication api base URL.
+            base_url: The base URL to use. Defaults to Planet production
+                services base url.
         """
-        self._base_url = base_url or BASE_URL
+        self._base_url = base_url or PLANET_BASE_URL
         if not self._base_url.endswith('/'):
             self._base_url += '/'
 
@@ -178,7 +180,7 @@ class AuthClient():
              A JSON object containing an `api_key` property with the user's
         API_KEY.
         '''
-        url = self._base_url + 'login'
+        url = f'{self._base_url}{AUTH_PATH}login'
         data = {'email': email,
                 'password': password
                 }
