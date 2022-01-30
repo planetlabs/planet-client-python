@@ -24,12 +24,9 @@ LOGGER = logging.getLogger(__name__)
 
 @click.group()
 @click.pass_context
-@click.option('-u', '--base-url',
-              default=None,
-              help='Assign custom base Auth API URL.')
-def auth(ctx, base_url):
+def auth(ctx):
     '''Commands for working with Planet authentication'''
-    ctx.obj['BASE_URL'] = base_url
+    pass
 
 
 @auth.command()
@@ -43,7 +40,7 @@ def auth(ctx, base_url):
 ))
 def init(ctx, email, password):
     '''Obtain and store authentication information'''
-    base_url = ctx.obj["BASE_URL"]
+    base_url = ctx.obj['BASE_URL']
     plauth = planet.Auth.from_login(email, password, base_url=base_url)
     plauth.write()
     click.echo('Initialized')

@@ -61,7 +61,7 @@ def test_cli_auth_init_success(redirect_secretfile):
 
     result = CliRunner().invoke(
             cli.main,
-            args=['auth', '--base-url', TEST_URL, 'init'],
+            args=['--base-url', TEST_URL, 'auth', 'init'],
             input='email\npw\n')
 
     # we would get a 'url not mocked' exception if the base url wasn't
@@ -82,7 +82,7 @@ def test_cli_auth_init_bad_pw(redirect_secretfile):
 
     result = CliRunner().invoke(
             cli.main,
-            args=['auth', '--base-url', TEST_URL, 'init'],
+            args=['--base-url', TEST_URL, 'auth', 'init'],
             input='email\npw\n')
 
     assert result.exception
