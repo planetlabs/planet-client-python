@@ -305,15 +305,22 @@ def test_cli_orders_download_quiet(invoke, mock_download_response, oid):
         assert message == result.output
 
 
+@pytest.mark.parametrize(
+    "id_string, expected_ids",
+    [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
+     ('4500474_2133707_2021-05-20_2419,4500474_2133707_2021-05-20_2420',
+      ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])
+     ])
 @respx.mock
-def test_cli_orders_create_basic(invoke, order_description):
+def test_cli_orders_create_basic_success(
+        expected_ids, id_string, invoke, order_description):
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
     result = invoke([
         'orders', 'create',
         '--name', 'test',
-        '--id', '4500474_2133707_2021-05-20_2419',
+        '--id', id_string,
         '--bundle', 'analytic',
         '--item-type', 'PSOrthoTile'
         ])
@@ -323,7 +330,7 @@ def test_cli_orders_create_basic(invoke, order_description):
     order_request = {
         "name": "test",
         "products": [{
-            "item_ids": ["4500474_2133707_2021-05-20_2419"],
+            "item_ids": expected_ids,
             "item_type": "PSOrthoTile",
             "product_bundle": "analytic"
         }],
@@ -342,6 +349,18 @@ def test_cli_orders_create_basic_item_type_invalid(invoke):
         ])
     assert result.exception
     assert 'Error: Invalid value: item_type' in result.output
+
+
+def test_cli_orders_create_id_empty(invoke):
+    result = invoke([
+        'orders', 'create',
+        '--name', 'test',
+        '--id', '',
+        '--bundle', 'analytic',
+        '--item-type', 'invalid'
+        ])
+    assert result.exit_code
+    assert 'id cannot be empty string.' in result.output
 
 
 @respx.mock
