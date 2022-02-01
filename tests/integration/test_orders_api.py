@@ -37,23 +37,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 @pytest.fixture
-def order_descriptions(order_description):
-    order1 = order_description
-    order1['id'] = 'oid1'
-    order2 = copy.deepcopy(order_description)
-    order2['id'] = 'oid2'
-    order3 = copy.deepcopy(order_description)
-    order3['id'] = 'oid3'
-    return [order1, order2, order3]
-
-
-@pytest.fixture
-def oid2():
-    # obtained from uuid.uuid1()
-    return '5ece1dc0-ea81-11eb-837c-acde48001122'
-
-
-@pytest.fixture
 def downloaded_content():
     return {'key': 'downloaded_file'}
 
@@ -95,8 +78,7 @@ def create_download_mock(downloaded_content, order_description, oid):
 @respx.mock
 @pytest.mark.asyncio
 async def test_list_orders_basic(order_descriptions, session):
-    list_url = TEST_ORDERS_URL
-    next_page_url = list_url + 'blob/?page_marker=IAmATest'
+    next_page_url = TEST_ORDERS_URL + 'blob/?page_marker=IAmATest'
 
     order1, order2, order3 = order_descriptions
 
@@ -141,6 +123,9 @@ async def test_list_orders_state(order_descriptions, session):
     respx.get(list_url).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
+
+    # if the value of state doesn't get sent as a url parameter,
+    # the mock will fail and this test will fail
     orders = await cl.list_orders(state='failed')
 
     oids = list(o.id for o in orders)
@@ -158,13 +143,7 @@ async def test_list_orders_state_invalid_state(session):
 @respx.mock
 @pytest.mark.asyncio
 async def test_list_orders_limit(order_descriptions, session):
-    # check that the client doesn't try to get the next page when the
-    # limit is already reached by providing link to next page but not
-    # registering a response. if the client tries to get the next
-    # page, an error will occur
-
-    list_url = TEST_ORDERS_URL
-    nono_page_url = list_url + '?page_marker=OhNoNo'
+    nono_page_url = TEST_ORDERS_URL + '?page_marker=OhNoNo'
 
     order1, order2, order3 = order_descriptions
 
@@ -175,23 +154,14 @@ async def test_list_orders_limit(order_descriptions, session):
         "orders": [order1, order2]
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
-
-    page2_response = {
-        "_links": {
-            "_self": "string",
-        },
-        "orders": [order3]
-    }
-    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
-
-    respx.route(method="GET", url__eq=list_url).mock(return_value=mock_resp)
-    nono_route = respx.route(method="GET", url__eq=nono_page_url).mock(
-        return_value=mock_resp2)
+    respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
+
+    # since nono_page_url is not mocked, an error will occur if the client
+    # attempts to access the next page when the limit is already reached
     orders = await cl.list_orders(limit=1)
 
-    assert not nono_route.called
     oids = [o.id for o in orders]
     assert oids == ['oid1']
 
@@ -389,8 +359,9 @@ async def test_cancel_order_id_cannot_be_cancelled(
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_cancel_orders_by_ids(session, oid, oid2):
+async def test_cancel_orders_by_ids(session, oid):
     bulk_cancel_url = TEST_BULK_URL + 'cancel'
+    oid2 = '5ece1dc0-ea81-11eb-837c-acde48001122'
     test_ids = [oid, oid2]
     example_result = {
         "result": {
