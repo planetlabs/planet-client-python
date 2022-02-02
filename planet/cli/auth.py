@@ -29,7 +29,7 @@ LOGGER = logging.getLogger(__name__)
               help='Assign custom base Auth API URL.')
 def auth(ctx, base_url):
     '''Commands for working with Planet authentication'''
-    ctx.obj["BASE_URL"] = base_url
+    ctx.obj['BASE_URL'] = base_url
 
 
 @auth.command()
