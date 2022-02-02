@@ -24,9 +24,12 @@ LOGGER = logging.getLogger(__name__)
 
 @click.group()
 @click.pass_context
-def auth(ctx):
+@click.option('-u', '--base-url',
+              default=None,
+              help='Assign custom base Auth API URL.')
+def auth(ctx, base_url):
     '''Commands for working with Planet authentication'''
-    pass
+    ctx.obj['BASE_URL'] = base_url
 
 
 @auth.command()

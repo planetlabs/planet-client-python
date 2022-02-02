@@ -20,11 +20,11 @@ import pytest
 import respx
 
 from planet import exceptions
-from planet.auth import AUTH_PATH, AuthClient
+from planet.auth import AuthClient
 
 
-TEST_URL = 'http://MockNotRealURL/'
-TEST_LOGIN_URL = f'{TEST_URL}{AUTH_PATH}login'
+TEST_URL = 'http://MockNotRealURL/api/path'
+TEST_LOGIN_URL = f'{TEST_URL}/login'
 
 LOGGER = logging.getLogger(__name__)
 

@@ -26,20 +26,17 @@ LOGGER = logging.getLogger(__name__)
 
 @click.group()
 @click.pass_context
-@click.option('--base-url', default=None,
-              help='Assign custom base url for Planet services.')
 @click.option('-v', '--verbose', count=True,
               help=('Specify verbosity level of between 0 and 2 corresponding '
                     'to log levels warning, info, and debug respectively.'))
 @click.version_option(version=planet.__version__)
-def main(ctx, base_url, verbose):
+def main(ctx, verbose):
     '''Planet API Client'''
     _configure_logging(verbose)
 
     # ensure that ctx.obj exists and is a dict (in case `cli()` is called
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
-    ctx.obj['BASE_URL'] = base_url
 
 
 def _configure_logging(verbosity):

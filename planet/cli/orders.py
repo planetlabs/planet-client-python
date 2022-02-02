@@ -41,9 +41,13 @@ async def orders_client(ctx):
 
 @click.group()
 @click.pass_context
-def orders(ctx):
+@click.option('-u', '--base-url',
+              default=None,
+              help='Assign custom base Orders API URL.')
+def orders(ctx, base_url):
     '''Commands for interacting with the Orders API'''
     ctx.obj['AUTH'] = planet.Auth.from_file()
+    ctx.obj['BASE_URL'] = base_url
 
 
 @orders.command()

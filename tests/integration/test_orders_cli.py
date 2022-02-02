@@ -23,11 +23,11 @@ import pytest
 import respx
 
 from planet.cli import cli
-from planet.clients.orders import ORDERS_PATH
 
-TEST_URL = 'http://MockNotRealURL/'
-TEST_ORDERS_URL = f'{TEST_URL}{ORDERS_PATH}'
-TEST_DOWNLOAD_URL = f'{TEST_URL}comp/ops/download/'
+TEST_URL = 'http://MockNotRealURL/api/path'
+TEST_DOWNLOAD_URL = f'{TEST_URL}/download'
+TEST_ORDERS_URL = f'{TEST_URL}/orders/v2'
+
 
 # NOTE: These tests use a lot of the same mocked responses as test_orders_api.
 
@@ -36,14 +36,14 @@ TEST_DOWNLOAD_URL = f'{TEST_URL}comp/ops/download/'
 def invoke():
     def _invoke(extra_args, runner=None):
         runner = runner or CliRunner()
-        args = ['--base-url', TEST_URL] + extra_args
+        args = ['orders', '--base-url', TEST_URL] + extra_args
         return runner.invoke(cli.main, args=args)
     return _invoke
 
 
 @respx.mock
 def test_cli_orders_list_basic(invoke, order_descriptions):
-    next_page_url = TEST_ORDERS_URL + 'blob/?page_marker=IAmATest'
+    next_page_url = TEST_ORDERS_URL + '/blob/?page_marker=IAmATest'
     order1, order2, order3 = order_descriptions
 
     page1_response = {
@@ -63,7 +63,7 @@ def test_cli_orders_list_basic(invoke, order_descriptions):
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
-    result = invoke(['orders', 'list'])
+    result = invoke(['list'])
     assert not result.exception
     assert [order1, order2, order3] == json.loads(result.output)
 
@@ -79,7 +79,7 @@ def test_cli_orders_list_empty(invoke):
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
-    result = invoke(['orders', 'list'])
+    result = invoke(['list'])
     assert not result.exception
     assert [] == json.loads(result.output)
 
@@ -101,7 +101,7 @@ def test_cli_orders_list_state(invoke, order_descriptions):
 
     # if the value of state doesn't get sent as a url parameter,
     # the mock will fail and this test will fail
-    result = invoke(['orders', 'list', '--state', 'failed'])
+    result = invoke(['list', '--state', 'failed'])
     assert not result.exception
     assert [order1, order2] == json.loads(result.output)
 
@@ -121,7 +121,7 @@ def test_cli_orders_list_limit(invoke, order_descriptions):
     # limiting is done within the client, no change to api call
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
-    result = invoke(['orders', 'list', '--limit', '1'])
+    result = invoke(['list', '--limit', '1'])
     assert not result.exception
     assert [order1] == json.loads(result.output)
 
@@ -140,54 +140,54 @@ def test_cli_orders_list_pretty(invoke, monkeypatch, order_description):
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
-    result = invoke(['orders', 'list', '--pretty'])
+    result = invoke(['list', '--pretty'])
     assert not result.exception
     mock_echo_json.assert_called_once_with([order_description], True)
 
 
 @respx.mock
 def test_cli_orders_get(invoke, oid, order_description):
-    get_url = TEST_ORDERS_URL + oid
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.get(get_url).return_value = mock_resp
 
-    result = invoke(['orders', 'get', oid])
+    result = invoke(['get', oid])
     assert not result.exception
     assert order_description == json.loads(result.output)
 
 
 @respx.mock
 def test_cli_orders_get_id_not_found(invoke, oid):
-    get_url = TEST_ORDERS_URL + oid
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
     error_json = {'message': 'A descriptive error message'}
     mock_resp = httpx.Response(404, json=error_json)
     respx.get(get_url).return_value = mock_resp
 
-    result = invoke(['orders', 'get', oid])
+    result = invoke(['get', oid])
     assert result.exception
     assert 'Error: A descriptive error message\n' == result.output
 
 
 @respx.mock
 def test_cli_orders_cancel(invoke, oid, order_description):
-    cancel_url = TEST_ORDERS_URL + oid
+    cancel_url = f'{TEST_ORDERS_URL}/{oid}'
     order_description['state'] = 'cancelled'
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.put(cancel_url).return_value = mock_resp
 
-    result = invoke(['orders', 'cancel', oid])
+    result = invoke(['cancel', oid])
     assert not result.exception
     assert 'Cancelled\n' == result.output
 
 
 @respx.mock
 def test_cli_orders_cancel_id_not_found(invoke, oid):
-    cancel_url = TEST_ORDERS_URL + oid
+    cancel_url = f'{TEST_ORDERS_URL}/{oid}'
     error_json = {'message': 'A descriptive error message'}
     mock_resp = httpx.Response(404, json=error_json)
     respx.put(cancel_url).return_value = mock_resp
 
-    result = invoke(['orders', 'cancel', oid])
+    result = invoke(['cancel', oid])
     assert result.exception
     assert 'Error: A descriptive error message\n' == result.output
 
@@ -197,14 +197,14 @@ def mock_download_response(oid, order_description):
     def _func():
         # Mock an HTTP response for polling and download
         order_description['state'] = 'success'
-        dl_url1 = TEST_DOWNLOAD_URL + '1?token=IAmAToken'
-        dl_url2 = TEST_DOWNLOAD_URL + '2?token=IAmAnotherToken'
+        dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
+        dl_url2 = TEST_DOWNLOAD_URL + '/2?token=IAmAnotherToken'
         order_description['_links']['results'] = [
             {'location': dl_url1},
             {'location': dl_url2}
         ]
 
-        get_url = TEST_ORDERS_URL + oid
+        get_url = f'{TEST_ORDERS_URL}/{oid}'
         mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
         respx.get(get_url).return_value = mock_resp
 
@@ -234,7 +234,7 @@ def test_cli_orders_download(invoke, mock_download_response, oid):
 
     runner = CliRunner()
     with runner.isolated_filesystem() as folder:
-        result = invoke(['orders', 'download', oid], runner=runner)
+        result = invoke(['download', oid], runner=runner)
         assert not result.exception
 
         # output is progress reporting plus the message
@@ -257,8 +257,7 @@ def test_cli_orders_download_dest(invoke, mock_download_response, oid):
     with runner.isolated_filesystem() as folder:
         dest_dir = Path(folder) / 'foobar'
         dest_dir.mkdir()
-        result = invoke(['orders', 'download', '--dest', 'foobar', oid],
-                        runner=runner)
+        result = invoke(['download', '--dest', 'foobar', oid], runner=runner)
         assert not result.exception
 
         # Check that the files were downloaded to the custom directory
@@ -279,14 +278,14 @@ def test_cli_orders_download_overwrite(
         write_to_tmp_json_file({'foo': 'bar'}, filepath)
 
         # check the file doesn't get overwritten by default
-        result = invoke(['orders', 'download', oid],
-                        runner=runner)
+        result = invoke(['download', oid], runner=runner)
         assert not result.exception
         assert json.load(open(filepath)) == {'foo': 'bar'}
 
         # check the file gets overwritten
-        result = invoke(['orders', 'download', '--overwrite', oid],
+        result = invoke(['download', '--overwrite', oid],
                         runner=runner)
+        assert not result.exception
         assert json.load(open(filepath)) == {'key': 'value'}
 
 
@@ -297,7 +296,7 @@ def test_cli_orders_download_quiet(invoke, mock_download_response, oid):
 
     runner = CliRunner()
     with runner.isolated_filesystem():
-        result = invoke(['orders', 'download', '-q', oid], runner=runner)
+        result = invoke(['download', '-q', oid], runner=runner)
         assert not result.exception
 
         # no progress reporting, just the message
@@ -318,7 +317,7 @@ def test_cli_orders_create_basic_success(
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
     result = invoke([
-        'orders', 'create',
+        'create',
         '--name', 'test',
         '--id', id_string,
         '--bundle', 'analytic',
@@ -341,7 +340,7 @@ def test_cli_orders_create_basic_success(
 
 def test_cli_orders_create_basic_item_type_invalid(invoke):
     result = invoke([
-        'orders', 'create',
+        'create',
         '--name', 'test',
         '--id', '4500474_2133707_2021-05-20_2419',
         '--bundle', 'analytic',
@@ -353,7 +352,7 @@ def test_cli_orders_create_basic_item_type_invalid(invoke):
 
 def test_cli_orders_create_id_empty(invoke):
     result = invoke([
-        'orders', 'create',
+        'create',
         '--name', 'test',
         '--id', '',
         '--bundle', 'analytic',
@@ -372,7 +371,7 @@ def test_cli_orders_create_clip(
     aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
 
     result = invoke([
-        'orders', 'create',
+        'create',
         '--name', 'test',
         '--id', '4500474_2133707_2021-05-20_2419',
         '--bundle', 'analytic',
@@ -405,7 +404,7 @@ def test_cli_orders_create_clip_featureclass(
     fc_file = write_to_tmp_json_file(featureclass_geojson, 'fc.geojson')
 
     result = invoke([
-        'orders', 'create',
+        'create',
         '--name', 'test',
         '--id', '4500474_2133707_2021-05-20_2419',
         '--bundle', 'analytic',
@@ -432,7 +431,7 @@ def test_cli_orders_create_clip_invalid_geometry(
     aoi_file = write_to_tmp_json_file(point_geom_geojson, 'aoi.geojson')
 
     result = invoke([
-        'orders', 'create',
+        'create',
         '--name', 'test',
         '--id', '4500474_2133707_2021-05-20_2419',
         '--bundle', 'analytic',
@@ -452,7 +451,7 @@ def test_cli_orders_create_clip_and_tools(
     aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
 
     result = invoke([
-        'orders', 'create',
+        'create',
         '--name', 'test',
         '--id', '4500474_2133707_2021-05-20_2419',
         '--bundle', 'analytic',
@@ -482,7 +481,7 @@ def test_cli_orders_create_cloudconfig(
     config_file = write_to_tmp_json_file(config_json, 'config.json')
 
     result = invoke([
-        'orders', 'create',
+        'create',
         '--name', 'test',
         '--id', '4500474_2133707_2021-05-20_2419',
         '--bundle', 'analytic',
@@ -511,7 +510,7 @@ def test_cli_orders_create_email(
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
     result = invoke([
-        'orders', 'create',
+        'create',
         '--name', 'test',
         '--id', '4500474_2133707_2021-05-20_2419',
         '--bundle', 'analytic',
@@ -543,7 +542,7 @@ def test_cli_orders_create_tools(
     tools_file = write_to_tmp_json_file(tools_json, 'tools.json')
 
     result = invoke([
-        'orders', 'create',
+        'create',
         '--name', 'test',
         '--id', '4500474_2133707_2021-05-20_2419',
         '--bundle', 'analytic',
@@ -567,7 +566,7 @@ def test_cli_orders_create_tools(
 
 def test_cli_orders_read_file_json_doesnotexist(invoke):
     result = invoke([
-        'orders', 'create',
+        'create',
         '--name', 'test',
         '--id', '4500474_2133707_2021-05-20_2419',
         '--bundle', 'analytic',
@@ -586,7 +585,7 @@ def test_cli_orders_read_file_json_invalidjson(invoke, tmp_path):
         fp.write('[Invali]d j*son')
 
     result = invoke([
-        'orders', 'create',
+        'create',
         '--name', 'test',
         '--id', '4500474_2133707_2021-05-20_2419',
         '--bundle', 'analytic',

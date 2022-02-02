@@ -20,11 +20,10 @@ import jwt
 import pytest
 import respx
 
-from planet.auth import AUTH_PATH
 from planet.cli import cli
 
-TEST_URL = 'http://MockNotRealURL/'
-TEST_LOGIN_URL = f'{TEST_URL}{AUTH_PATH}login'
+TEST_URL = 'http://MockNotRealURL/api/path'
+TEST_LOGIN_URL = f'{TEST_URL}/login'
 
 
 # skip the global mock of _SecretFile.read
@@ -61,7 +60,7 @@ def test_cli_auth_init_success(redirect_secretfile):
 
     result = CliRunner().invoke(
             cli.main,
-            args=['--base-url', TEST_URL, 'auth', 'init'],
+            args=['auth', '--base-url', TEST_URL, 'init'],
             input='email\npw\n')
 
     # we would get a 'url not mocked' exception if the base url wasn't
@@ -82,7 +81,7 @@ def test_cli_auth_init_bad_pw(redirect_secretfile):
 
     result = CliRunner().invoke(
             cli.main,
-            args=['--base-url', TEST_URL, 'auth', 'init'],
+            args=['auth', '--base-url', TEST_URL, 'init'],
             input='email\npw\n')
 
     assert result.exception
