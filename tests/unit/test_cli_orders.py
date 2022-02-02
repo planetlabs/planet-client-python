@@ -89,8 +89,8 @@ def test_cli_orders_download(runner, patch_ordersclient, oid):
         return
     patch_ordersclient('poll', poll)
 
-    # Number of files in all_test_files
-    expected = 'Downloaded 4 files.\n'
+    # Download should not report anything
+    expected = ''
 
     # allow for some progress reporting
     result = runner.invoke(
