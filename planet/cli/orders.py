@@ -157,8 +157,6 @@ def read_file_json(ctx, param, value):
         json_value = json.load(value)
     except json.decoder.JSONDecodeError:
         raise click.ClickException('File does not contain valid json.')
-    except click.FileError as e:
-        raise click.ClickException(e)
 
     return json_value
 
