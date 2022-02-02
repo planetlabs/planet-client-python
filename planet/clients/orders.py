@@ -69,8 +69,8 @@ class OrdersClient():
         """
         Parameters:
             session: Open session connected to server.
-            base_url: The base URL to use. Defaults to Planet production
-                services base url.
+            base_url: The base URL to use. Defaults to production orders API
+                base url.
         """
         self._session = session
 

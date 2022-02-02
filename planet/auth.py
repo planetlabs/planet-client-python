@@ -109,8 +109,8 @@ class Auth(metaclass=abc.ABCMeta):
         Parameters:
             email: Planet account email address.
             password: Planet account password.
-            base_url: The base URL to use. Defaults to Planet production
-                services base url.
+            base_url: The base URL to use. Defaults to production
+                authentication API base url.
         '''
         cl = AuthClient(base_url=base_url)
         auth_data = cl.login(email, password)
@@ -154,8 +154,8 @@ class AuthClient():
     ):
         """
         Parameters:
-            base_url: The base URL to use. Defaults to Planet production
-                services base url.
+            base_url: The base URL to use. Defaults to production
+                authentication API base url.
         """
         self._base_url = base_url or BASE_URL
         if self._base_url.endswith('/'):
