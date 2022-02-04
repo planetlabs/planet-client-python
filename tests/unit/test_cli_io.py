@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-from unittest.mock import Mock
+from unittest.mock import patch
 
 import pytest
 
@@ -21,10 +21,8 @@ from planet.cli import io
 @pytest.mark.parametrize(
     "pretty,expected",
     [(False, '{"key": "val"}'), (True, '{\n  "key": "val"\n}')])
-def test_cli_echo_json(pretty, expected, monkeypatch):
-    mock_echo = Mock()
-    monkeypatch.setattr(io.click, 'echo', mock_echo)
-
+@patch('planet.cli.io.click.echo')
+def test_cli_echo_json(mock_echo, pretty, expected):
     obj = {'key': 'val'}
     io.echo_json(obj, pretty)
     mock_echo.assert_called_once_with(expected)
