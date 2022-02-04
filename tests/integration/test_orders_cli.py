@@ -237,10 +237,8 @@ def test_cli_orders_download(invoke, mock_download_response, oid):
         result = invoke(['download', oid], runner=runner)
         assert not result.exception
 
-        # output is progress reporting plus the message
-        message = 'Downloaded 2 files.\n'
-        assert message in result.output
-        assert message != result.output
+        # no message, output is only progress reporting
+        assert result.output.startswith('\r00:00 - order')
 
         # Check that the files were downloaded and have the correct contents
         f1_path = Path(folder) / 'm1.json'
