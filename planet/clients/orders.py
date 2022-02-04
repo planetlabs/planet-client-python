@@ -26,7 +26,7 @@ from ..http import Session
 from ..models import Order, Orders, Request, Response, StreamingBody
 
 
-BASE_URL = f'{PLANET_BASE_URL}compute/ops'
+BASE_URL = f'{PLANET_BASE_URL}/compute/ops'
 STATS_PATH = '/stats/orders/v2'
 ORDERS_PATH = '/orders/v2'
 BULK_PATH = '/bulk/orders/v2'
