@@ -26,8 +26,7 @@ from .io import echo_json
 
 LOGGER = logging.getLogger(__name__)
 
-pretty = click.option('-pp', '--pretty', is_flag=True,
-                      help='Format JSON output')
+pretty = click.option('--pretty', is_flag=True, help='Format JSON output')
 
 
 @asynccontextmanager
@@ -76,7 +75,10 @@ async def list(ctx, state, limit, pretty):
 @click.argument('order_id', type=click.UUID)
 @pretty
 async def get(ctx, order_id, pretty):
-    '''Get order by order ID.'''
+    """Get order
+
+    This command outputs the order description, optionally pretty-printed.
+    """
     async with orders_client(ctx) as cl:
         order = await cl.get_order(str(order_id))
 
