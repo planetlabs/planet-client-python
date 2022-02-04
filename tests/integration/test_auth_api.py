@@ -23,19 +23,18 @@ from planet import exceptions
 from planet.auth import AuthClient
 
 
-TEST_URL = 'http://MockNotRealURL/'
+TEST_URL = 'http://MockNotRealURL/api/path'
+TEST_LOGIN_URL = f'{TEST_URL}/login'
 
 LOGGER = logging.getLogger(__name__)
 
 
 @respx.mock
 def test_AuthClient_success():
-    login_url = TEST_URL + 'login'
-
     payload = {'api_key': 'iamakey'}
     resp = {'token': jwt.encode(payload, 'key')}
     mock_resp = httpx.Response(HTTPStatus.OK, json=resp)
-    respx.post(login_url).return_value = mock_resp
+    respx.post(TEST_LOGIN_URL).return_value = mock_resp
 
     cl = AuthClient(base_url=TEST_URL)
     auth_data = cl.login('email', 'password')
@@ -45,8 +44,6 @@ def test_AuthClient_success():
 
 @respx.mock
 def test_AuthClient_invalid_email():
-    login_url = TEST_URL + 'login'
-
     resp = {
         "errors": {
             "email": [
@@ -58,7 +55,7 @@ def test_AuthClient_invalid_email():
         "success": False
     }
     mock_resp = httpx.Response(400, json=resp)
-    respx.post(login_url).return_value = mock_resp
+    respx.post(TEST_LOGIN_URL).return_value = mock_resp
 
     cl = AuthClient(base_url=TEST_URL)
     with pytest.raises(exceptions.APIException,
@@ -68,8 +65,6 @@ def test_AuthClient_invalid_email():
 
 @respx.mock
 def test_AuthClient_invalid_password():
-    login_url = TEST_URL + 'login'
-
     resp = {
         "errors": None,
         "message": "Invalid email or password",
@@ -77,7 +72,7 @@ def test_AuthClient_invalid_password():
         "success": False
     }
     mock_resp = httpx.Response(401, json=resp)
-    respx.post(login_url).return_value = mock_resp
+    respx.post(TEST_LOGIN_URL).return_value = mock_resp
 
     cl = AuthClient(base_url=TEST_URL)
     with pytest.raises(exceptions.APIException,

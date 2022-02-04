@@ -21,15 +21,14 @@ import os
 import httpx
 import jwt
 
-from . import constants, http, models
+from . import http, models
+from .constants import PLANET_BASE_URL, SECRET_FILE_PATH
 from .exceptions import AuthException
-
 
 LOGGER = logging.getLogger(__name__)
 
-BASE_URL = constants.PLANET_BASE_URL + 'v0/auth/'
+BASE_URL = f'{PLANET_BASE_URL}/v0/auth'
 ENV_API_KEY = 'PL_API_KEY'
-SECRET_FILE_PATH = os.path.join(os.path.expanduser('~'), '.planet.json')
 
 
 class Auth(metaclass=abc.ABCMeta):
@@ -155,11 +154,12 @@ class AuthClient():
     ):
         """
         Parameters:
-            base_url: Alternate authentication api base URL.
+            base_url: The base URL to use. Defaults to production
+                authentication API base url.
         """
         self._base_url = base_url or BASE_URL
-        if not self._base_url.endswith('/'):
-            self._base_url += '/'
+        if self._base_url.endswith('/'):
+            self._base_url = self._base_url[:-1]
 
     def login(
         self,
@@ -179,7 +179,7 @@ class AuthClient():
              A JSON object containing an `api_key` property with the user's
         API_KEY.
         '''
-        url = self._base_url + 'login'
+        url = f'{self._base_url}/login'
         data = {'email': email,
                 'password': password
                 }

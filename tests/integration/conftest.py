@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import contextlib
+import copy
 
 import pytest
 
@@ -33,3 +34,14 @@ def match_pytest_raises():
         with pytest.raises(ex, match=f'^{msg}$') as pt:
             yield pt
     return cm
+
+
+@pytest.fixture
+def order_descriptions(order_description):
+    order1 = order_description
+    order1['id'] = 'oid1'
+    order2 = copy.deepcopy(order_description)
+    order2['id'] = 'oid2'
+    order3 = copy.deepcopy(order_description)
+    order3['id'] = 'oid3'
+    return [order1, order2, order3]

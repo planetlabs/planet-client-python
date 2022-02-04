@@ -43,7 +43,7 @@ def auth(ctx, base_url):
 ))
 def init(ctx, email, password):
     '''Obtain and store authentication information'''
-    base_url = ctx.obj["BASE_URL"]
+    base_url = ctx.obj['BASE_URL']
     plauth = planet.Auth.from_login(email, password, base_url=base_url)
     plauth.write()
     click.echo('Initialized')

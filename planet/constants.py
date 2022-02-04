@@ -12,5 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 '''Constants used across the code base'''
+import os
 
-PLANET_BASE_URL = 'https://api.planet.com/'
+PLANET_BASE_URL = 'https://api.planet.com'
+
+SECRET_FILE_PATH = os.path.join(os.path.expanduser('~'), '.planet.json')

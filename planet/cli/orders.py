@@ -46,8 +46,7 @@ async def orders_client(ctx):
               help='Assign custom base Orders API URL.')
 def orders(ctx, base_url):
     '''Commands for interacting with the Orders API'''
-    auth = planet.Auth.from_file()
-    ctx.obj['AUTH'] = auth
+    ctx.obj['AUTH'] = planet.Auth.from_file()
     ctx.obj['BASE_URL'] = base_url
 
 
@@ -157,8 +156,6 @@ def read_file_json(ctx, param, value):
         json_value = json.load(value)
     except json.decoder.JSONDecodeError:
         raise click.ClickException('File does not contain valid json.')
-    except click.FileError as e:
-        raise click.ClickException(e)
 
     return json_value
 
