@@ -21,15 +21,13 @@ from . import geojson, specs
 LOGGER = logging.getLogger(__name__)
 
 
-def build_request(
-        name: str,
-        products: List[dict],
-        subscription_id: int = 0,
-        delivery: dict = None,
-        notifications: dict = None,
-        order_type: str = None,
-        tools: List[dict] = None
-) -> dict:
+def build_request(name: str,
+                  products: List[dict],
+                  subscription_id: int = 0,
+                  delivery: dict = None,
+                  notifications: dict = None,
+                  order_type: str = None,
+                  tools: List[dict] = None) -> dict:
     '''Prepare an order request.
 
     ```python
@@ -69,10 +67,7 @@ def build_request(
         planet.specs.SpecificationException: If order_type is not a valid
             order type.
     '''
-    details = {
-        'name': name,
-        'products': products
-    }
+    details = {'name': name, 'products': products}
 
     if subscription_id:
         details['subscription_id'] = subscription_id
@@ -93,12 +88,10 @@ def build_request(
     return details
 
 
-def product(
-    item_ids: List[str],
-    product_bundle: str,
-    item_type: str,
-    fallback_bundle: str = None
-) -> dict:
+def product(item_ids: List[str],
+            product_bundle: str,
+            item_type: str,
+            fallback_bundle: str = None) -> dict:
     '''Product description for an order detail.
 
     Parameters:
@@ -131,11 +124,9 @@ def product(
     return product_dict
 
 
-def notifications(
-    email: bool = None,
-    webhook_url: str = None,
-    webhook_per_order: bool = None
-) -> dict:
+def notifications(email: bool = None,
+                  webhook_url: str = None,
+                  webhook_per_order: bool = None) -> dict:
     '''Notifications description for an order detail.
 
     Parameters:
@@ -147,12 +138,10 @@ def notifications(
     return dict((k, v) for k, v in locals().items() if v)
 
 
-def delivery(
-    archive_type: str = None,
-    single_archive: bool = False,
-    archive_filename: str = None,
-    cloud_config: dict = None
-) -> dict:
+def delivery(archive_type: str = None,
+             single_archive: bool = False,
+             archive_filename: str = None,
+             cloud_config: dict = None) -> dict:
     '''Order delivery configuration.
 
     Example:
@@ -196,13 +185,11 @@ def delivery(
     return config
 
 
-def amazon_s3(
-    aws_access_key_id: str,
-    aws_secret_access_key: str,
-    bucket: str,
-    aws_region: str,
-    path_prefix: str = None
-) -> dict:
+def amazon_s3(aws_access_key_id: str,
+              aws_secret_access_key: str,
+              bucket: str,
+              aws_region: str,
+              path_prefix: str = None) -> dict:
     '''Amazon S3 Cloud configuration.
 
     Parameters:
@@ -227,13 +214,11 @@ def amazon_s3(
     return {'amazon_s3': cloud_details}
 
 
-def azure_blob_storage(
-    account: str,
-    container: str,
-    sas_token: str,
-    storage_endpoint_suffix: str = None,
-    path_prefix: str = None
-) -> dict:
+def azure_blob_storage(account: str,
+                       container: str,
+                       sas_token: str,
+                       storage_endpoint_suffix: str = None,
+                       path_prefix: str = None) -> dict:
     '''Azure Blob Storage configuration.
 
     Parameters:
@@ -261,11 +246,9 @@ def azure_blob_storage(
     return {'azure_blob_storage': cloud_details}
 
 
-def google_cloud_storage(
-    bucket: str,
-    credentials: str,
-    path_prefix: str = None
-) -> dict:
+def google_cloud_storage(bucket: str,
+                         credentials: str,
+                         path_prefix: str = None) -> dict:
     '''Google Cloud Storage configuration.
 
     Parameters:
@@ -286,10 +269,7 @@ def google_cloud_storage(
     return {'google_cloud_storage': cloud_details}
 
 
-def google_earth_engine(
-    project: str,
-    collection: str
-) -> dict:
+def google_earth_engine(project: str, collection: str) -> dict:
     '''Google Earth Engine configuration.
 
     Parameters:
@@ -380,11 +360,9 @@ def file_format_tool(file_format: str) -> dict:
     return _tool('file_format', {'format': file_format})
 
 
-def reproject_tool(
-    projection: str,
-    resolution: float = None,
-    kernel: str = None
-) -> dict:
+def reproject_tool(projection: str,
+                   resolution: float = None,
+                   kernel: str = None) -> dict:
     '''Create the API spec representation of a reproject tool.
 
     Parameters:
@@ -403,14 +381,12 @@ def reproject_tool(
     return _tool('reproject', parameters)
 
 
-def tile_tool(
-    tile_size: int,
-    origin_x: float = None,
-    origin_y: float = None,
-    pixel_size: float = None,
-    name_template: str = None,
-    conformal_x_scaling: bool = None
-) -> dict:
+def tile_tool(tile_size: int,
+              origin_x: float = None,
+              origin_y: float = None,
+              pixel_size: float = None,
+              name_template: str = None,
+              conformal_x_scaling: bool = None) -> dict:
     '''Create the API spec representation of a reproject tool.
 
     Parameters:
@@ -431,9 +407,7 @@ def tile_tool(
     return _tool('tile', parameters)
 
 
-def toar_tool(
-    scale_factor: int = None,
-) -> dict:
+def toar_tool(scale_factor: int = None,) -> dict:
     '''Create the API spec representation of a TOAR tool.
 
     Parameters:

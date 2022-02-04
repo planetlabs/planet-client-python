@@ -22,7 +22,6 @@ import pytest
 
 from planet import exceptions, http
 
-
 TEST_URL = 'mock://fantastic.com'
 
 LOGGER = logging.getLogger(__name__)
@@ -31,54 +30,44 @@ LOGGER = logging.getLogger(__name__)
 @pytest.fixture
 def mock_request():
     r = Mock()
-    r.http_request = httpx.Request(
-        'GET',
-        TEST_URL)
+    r.http_request = httpx.Request('GET', TEST_URL)
     yield r
 
 
 @pytest.fixture
 def mock_response():
+
     def mocker(code, text='', json={"message": "nope"}):
         r = Mock()
         r.status_code = code
         r.text = text
         r.json = Mock(return_value=json)
         return r
+
     return mocker
 
 
 def test_basesession__raise_for_status(mock_response):
-    http.BaseSession._raise_for_status(mock_response(
-        HTTPStatus.CREATED,
-        json={}
-    ))
+    http.BaseSession._raise_for_status(
+        mock_response(HTTPStatus.CREATED, json={}))
 
     with pytest.raises(exceptions.BadQuery):
-        http.BaseSession._raise_for_status(mock_response(
-            HTTPStatus.BAD_REQUEST,
-            json={}
-        ))
+        http.BaseSession._raise_for_status(
+            mock_response(HTTPStatus.BAD_REQUEST, json={}))
 
     with pytest.raises(exceptions.TooManyRequests):
-        http.BaseSession._raise_for_status(mock_response(
-            HTTPStatus.TOO_MANY_REQUESTS,
-            text='',
-            json={}
-        ))
+        http.BaseSession._raise_for_status(
+            mock_response(HTTPStatus.TOO_MANY_REQUESTS, text='', json={}))
 
     with pytest.raises(exceptions.OverQuota):
-        http.BaseSession._raise_for_status(mock_response(
-            HTTPStatus.TOO_MANY_REQUESTS,
-            text='exceeded QUOTA"',
-            json={}
-        ))
+        http.BaseSession._raise_for_status(
+            mock_response(HTTPStatus.TOO_MANY_REQUESTS,
+                          text='exceeded QUOTA"',
+                          json={}))
 
     with pytest.raises(exceptions.APIException):
-        http.BaseSession._raise_for_status(mock_response(
-            HTTPStatus.METHOD_NOT_ALLOWED,
-            json={}
-        ))
+        http.BaseSession._raise_for_status(
+            mock_response(HTTPStatus.METHOD_NOT_ALLOWED, json={}))
 
 
 @pytest.mark.asyncio
@@ -131,6 +120,7 @@ async def test_session_request_retry(mock_request, mock_response):
 @pytest.mark.asyncio
 async def test_session_retry(mock_request):
     async with http.Session() as ps:
+
         async def test_func():
             raise exceptions.TooManyRequests
 
@@ -152,13 +142,9 @@ async def test_authsession_request(mock_request):
 
 def test_authsession__raise_for_status(mock_response):
     with pytest.raises(exceptions.APIException):
-        http.AuthSession._raise_for_status(mock_response(
-            HTTPStatus.BAD_REQUEST,
-            json={}
-            ))
+        http.AuthSession._raise_for_status(
+            mock_response(HTTPStatus.BAD_REQUEST, json={}))
 
     with pytest.raises(exceptions.APIException):
-        http.AuthSession._raise_for_status(mock_response(
-            HTTPStatus.UNAUTHORIZED,
-            json={}
-            ))
+        http.AuthSession._raise_for_status(
+            mock_response(HTTPStatus.UNAUTHORIZED, json={}))

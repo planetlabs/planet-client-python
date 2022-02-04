@@ -58,10 +58,9 @@ def test_cli_auth_init_success(redirect_secretfile):
     mock_resp = httpx.Response(HTTPStatus.OK, json=resp)
     respx.post(TEST_LOGIN_URL).return_value = mock_resp
 
-    result = CliRunner().invoke(
-            cli.main,
-            args=['auth', '--base-url', TEST_URL, 'init'],
-            input='email\npw\n')
+    result = CliRunner().invoke(cli.main,
+                                args=['auth', '--base-url', TEST_URL, 'init'],
+                                input='email\npw\n')
 
     # we would get a 'url not mocked' exception if the base url wasn't
     # changed to the mocked url
@@ -72,17 +71,18 @@ def test_cli_auth_init_success(redirect_secretfile):
 
 @respx.mock
 def test_cli_auth_init_bad_pw(redirect_secretfile):
-    resp = {"errors": None,
-            "message": "Invalid email or password",
-            "status": 401,
-            "success": False}
+    resp = {
+        "errors": None,
+        "message": "Invalid email or password",
+        "status": 401,
+        "success": False
+    }
     mock_resp = httpx.Response(401, json=resp)
     respx.post(TEST_LOGIN_URL).return_value = mock_resp
 
-    result = CliRunner().invoke(
-            cli.main,
-            args=['auth', '--base-url', TEST_URL, 'init'],
-            input='email\npw\n')
+    result = CliRunner().invoke(cli.main,
+                                args=['auth', '--base-url', TEST_URL, 'init'],
+                                input='email\npw\n')
 
     assert result.exception
     assert 'Error: Incorrect email or password.\n' in result.output

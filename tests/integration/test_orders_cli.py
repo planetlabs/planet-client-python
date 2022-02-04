@@ -28,16 +28,17 @@ TEST_URL = 'http://MockNotRealURL/api/path'
 TEST_DOWNLOAD_URL = f'{TEST_URL}/download'
 TEST_ORDERS_URL = f'{TEST_URL}/orders/v2'
 
-
 # NOTE: These tests use a lot of the same mocked responses as test_orders_api.
 
 
 @pytest.fixture
 def invoke():
+
     def _invoke(extra_args, runner=None):
         runner = runner or CliRunner()
         args = ['orders', '--base-url', TEST_URL] + extra_args
         return runner.invoke(cli.main, args=args)
+
     return _invoke
 
 
@@ -49,17 +50,14 @@ def test_cli_orders_list_basic(invoke, order_descriptions):
     page1_response = {
         "_links": {
             "_self": "string",
-            "next": next_page_url},
+            "next": next_page_url
+        },
         "orders": [order1, order2]
     }
     mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(TEST_ORDERS_URL).return_value = mock_resp1
 
-    page2_response = {
-        "_links": {
-            "_self": next_page_url},
-        "orders": [order3]
-    }
+    page2_response = {"_links": {"_self": next_page_url}, "orders": [order3]}
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
@@ -70,12 +68,7 @@ def test_cli_orders_list_basic(invoke, order_descriptions):
 
 @respx.mock
 def test_cli_orders_list_empty(invoke):
-    page1_response = {
-        "_links": {
-            "_self": "string"
-        },
-        "orders": []
-    }
+    page1_response = {"_links": {"_self": "string"}, "orders": []}
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
@@ -90,12 +83,7 @@ def test_cli_orders_list_state(invoke, order_descriptions):
 
     order1, order2, _ = order_descriptions
 
-    page1_response = {
-        "_links": {
-            "_self": "string"
-        },
-        "orders": [order1, order2]
-    }
+    page1_response = {"_links": {"_self": "string"}, "orders": [order1, order2]}
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(list_url).return_value = mock_resp
 
@@ -110,12 +98,7 @@ def test_cli_orders_list_state(invoke, order_descriptions):
 def test_cli_orders_list_limit(invoke, order_descriptions):
     order1, order2, _ = order_descriptions
 
-    page1_response = {
-        "_links": {
-            "_self": "string"
-        },
-        "orders": [order1, order2]
-    }
+    page1_response = {"_links": {"_self": "string"}, "orders": [order1, order2]}
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
 
     # limiting is done within the client, no change to api call
@@ -194,15 +177,17 @@ def test_cli_orders_cancel_id_not_found(invoke, oid):
 
 @pytest.fixture
 def mock_download_response(oid, order_description):
+
     def _func():
         # Mock an HTTP response for polling and download
         order_description['state'] = 'success'
         dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
         dl_url2 = TEST_DOWNLOAD_URL + '/2?token=IAmAnotherToken'
-        order_description['_links']['results'] = [
-            {'location': dl_url1},
-            {'location': dl_url2}
-        ]
+        order_description['_links']['results'] = [{
+            'location': dl_url1
+        }, {
+            'location': dl_url2
+        }]
 
         get_url = f'{TEST_ORDERS_URL}/{oid}'
         mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
@@ -225,6 +210,7 @@ def mock_download_response(oid, order_description):
                 'Content-Disposition': 'attachment; filename="m2.json"'
             })
         respx.get(dl_url2).return_value = mock_resp2
+
     return _func
 
 
@@ -266,8 +252,8 @@ def test_cli_orders_download_dest(invoke, mock_download_response, oid):
 
 
 @respx.mock
-def test_cli_orders_download_overwrite(
-        invoke, mock_download_response, oid, write_to_tmp_json_file):
+def test_cli_orders_download_overwrite(invoke, mock_download_response, oid,
+                                       write_to_tmp_json_file):
     mock_download_response()
 
     runner = CliRunner()
@@ -281,13 +267,13 @@ def test_cli_orders_download_overwrite(
         assert json.load(open(filepath)) == {'foo': 'bar'}
 
         # check the file gets overwritten
-        result = invoke(['download', '--overwrite', oid],
-                        runner=runner)
+        result = invoke(['download', '--overwrite', oid], runner=runner)
         assert not result.exception
         assert json.load(open(filepath)) == {'key': 'value'}
 
 
-@pytest.mark.skip('https://github.com/planetlabs/planet-client-python/issues/352') # noqa
+@pytest.mark.skip(
+    'https://github.com/planetlabs/planet-client-python/issues/352')  # noqa
 @respx.mock
 def test_cli_orders_download_quiet(invoke, mock_download_response, oid):
     mock_download_response()
@@ -306,26 +292,23 @@ def test_cli_orders_download_quiet(invoke, mock_download_response, oid):
     "id_string, expected_ids",
     [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
      ('4500474_2133707_2021-05-20_2419,4500474_2133707_2021-05-20_2420',
-      ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])
-     ])
+      ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])])
 @respx.mock
-def test_cli_orders_create_basic_success(
-        expected_ids, id_string, invoke, order_description):
+def test_cli_orders_create_basic_success(expected_ids, id_string, invoke,
+                                         order_description):
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
     result = invoke([
-        'create',
-        '--name', 'test',
-        '--id', id_string,
-        '--bundle', 'analytic',
+        'create', '--name', 'test', '--id', id_string, '--bundle', 'analytic',
         '--item-type', 'PSOrthoTile'
-        ])
+    ])
     assert not result.exception
     assert order_description == json.loads(result.output)
 
     order_request = {
-        "name": "test",
+        "name":
+            "test",
         "products": [{
             "item_ids": expected_ids,
             "item_type": "PSOrthoTile",
@@ -338,44 +321,34 @@ def test_cli_orders_create_basic_success(
 
 def test_cli_orders_create_basic_item_type_invalid(invoke):
     result = invoke([
-        'create',
-        '--name', 'test',
-        '--id', '4500474_2133707_2021-05-20_2419',
-        '--bundle', 'analytic',
-        '--item-type', 'invalid'
-        ])
+        'create', '--name', 'test', '--id', '4500474_2133707_2021-05-20_2419',
+        '--bundle', 'analytic', '--item-type', 'invalid'
+    ])
     assert result.exception
     assert 'Error: Invalid value: item_type' in result.output
 
 
 def test_cli_orders_create_id_empty(invoke):
     result = invoke([
-        'create',
-        '--name', 'test',
-        '--id', '',
-        '--bundle', 'analytic',
+        'create', '--name', 'test', '--id', '', '--bundle', 'analytic',
         '--item-type', 'invalid'
-        ])
+    ])
     assert result.exit_code
     assert 'id cannot be empty string.' in result.output
 
 
 @respx.mock
-def test_cli_orders_create_clip(
-        invoke, geom_geojson, order_description, write_to_tmp_json_file):
+def test_cli_orders_create_clip(invoke, geom_geojson, order_description,
+                                write_to_tmp_json_file):
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
     aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
 
     result = invoke([
-        'create',
-        '--name', 'test',
-        '--id', '4500474_2133707_2021-05-20_2419',
-        '--bundle', 'analytic',
-        '--item-type', 'PSOrthoTile',
-        '--clip', aoi_file
-        ])
+        'create', '--name', 'test', '--id', '4500474_2133707_2021-05-20_2419',
+        '--bundle', 'analytic', '--item-type', 'PSOrthoTile', '--clip', aoi_file
+    ])
     assert not result.exception
 
     order_request = {
@@ -385,16 +358,20 @@ def test_cli_orders_create_clip(
             "item_type": "PSOrthoTile",
             "product_bundle": "analytic",
         }],
-        "tools": [{'clip': {'aoi': geom_geojson}}]
+        "tools": [{
+            'clip': {
+                'aoi': geom_geojson
+            }
+        }]
     }
     sent_request = json.loads(respx.calls.last.request.content)
     assert sent_request == order_request
 
 
 @respx.mock
-def test_cli_orders_create_clip_featureclass(
-        invoke, featureclass_geojson, geom_geojson, order_description,
-        write_to_tmp_json_file):
+def test_cli_orders_create_clip_featureclass(invoke, featureclass_geojson,
+                                             geom_geojson, order_description,
+                                             write_to_tmp_json_file):
     """Tests that the clip option takes in feature class geojson as well"""
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
@@ -402,13 +379,9 @@ def test_cli_orders_create_clip_featureclass(
     fc_file = write_to_tmp_json_file(featureclass_geojson, 'fc.geojson')
 
     result = invoke([
-        'create',
-        '--name', 'test',
-        '--id', '4500474_2133707_2021-05-20_2419',
-        '--bundle', 'analytic',
-        '--item-type', 'PSOrthoTile',
-        '--clip', fc_file
-        ])
+        'create', '--name', 'test', '--id', '4500474_2133707_2021-05-20_2419',
+        '--bundle', 'analytic', '--item-type', 'PSOrthoTile', '--clip', fc_file
+    ])
     assert not result.exception
 
     order_request = {
@@ -418,52 +391,48 @@ def test_cli_orders_create_clip_featureclass(
             "item_type": "PSOrthoTile",
             "product_bundle": "analytic",
         }],
-        "tools": [{'clip': {'aoi': geom_geojson}}]
+        "tools": [{
+            'clip': {
+                'aoi': geom_geojson
+            }
+        }]
     }
     sent_request = json.loads(respx.calls.last.request.content)
     assert sent_request == order_request
 
 
-def test_cli_orders_create_clip_invalid_geometry(
-        invoke, point_geom_geojson, write_to_tmp_json_file):
+def test_cli_orders_create_clip_invalid_geometry(invoke, point_geom_geojson,
+                                                 write_to_tmp_json_file):
     aoi_file = write_to_tmp_json_file(point_geom_geojson, 'aoi.geojson')
 
     result = invoke([
-        'create',
-        '--name', 'test',
-        '--id', '4500474_2133707_2021-05-20_2419',
-        '--bundle', 'analytic',
-        '--item-type', 'PSOrthoTile',
-        '--clip', aoi_file
-        ])
+        'create', '--name', 'test', '--id', '4500474_2133707_2021-05-20_2419',
+        '--bundle', 'analytic', '--item-type', 'PSOrthoTile', '--clip', aoi_file
+    ])
     assert result.exception
     error_msg = ('Error: Invalid value: Invalid geometry type: ' +
                  'Point is not Polygon.')
     assert error_msg in result.output
 
 
-def test_cli_orders_create_clip_and_tools(
-        invoke, geom_geojson, write_to_tmp_json_file):
+def test_cli_orders_create_clip_and_tools(invoke, geom_geojson,
+                                          write_to_tmp_json_file):
     # interestingly, it is important that both clip and tools
     # option values lead to valid json files
     aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
 
     result = invoke([
-        'create',
-        '--name', 'test',
-        '--id', '4500474_2133707_2021-05-20_2419',
-        '--bundle', 'analytic',
-        '--item-type', 'PSOrthoTile',
-        '--clip', aoi_file,
-        '--tools', aoi_file
-        ])
+        'create', '--name', 'test', '--id', '4500474_2133707_2021-05-20_2419',
+        '--bundle', 'analytic', '--item-type', 'PSOrthoTile', '--clip',
+        aoi_file, '--tools', aoi_file
+    ])
     assert result.exception
     assert "Specify only one of '--clip' or '--tools'" in result.output
 
 
 @respx.mock
-def test_cli_orders_create_cloudconfig(
-        invoke, geom_geojson, order_description, write_to_tmp_json_file):
+def test_cli_orders_create_cloudconfig(invoke, geom_geojson, order_description,
+                                       write_to_tmp_json_file):
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
@@ -473,19 +442,16 @@ def test_cli_orders_create_cloudconfig(
             'aws_secret_access_key': 'aws_secret_access_key',
             'bucket': 'bucket',
             'aws_region': 'aws_region'
-            },
+        },
         'archive_type': 'zip'
     }
     config_file = write_to_tmp_json_file(config_json, 'config.json')
 
     result = invoke([
-        'create',
-        '--name', 'test',
-        '--id', '4500474_2133707_2021-05-20_2419',
-        '--bundle', 'analytic',
-        '--item-type', 'PSOrthoTile',
-        '--cloudconfig', config_file
-        ])
+        'create', '--name', 'test', '--id', '4500474_2133707_2021-05-20_2419',
+        '--bundle', 'analytic', '--item-type', 'PSOrthoTile', '--cloudconfig',
+        config_file
+    ])
     assert not result.exception
 
     order_request = {
@@ -502,19 +468,14 @@ def test_cli_orders_create_cloudconfig(
 
 
 @respx.mock
-def test_cli_orders_create_email(
-        invoke, geom_geojson, order_description):
+def test_cli_orders_create_email(invoke, geom_geojson, order_description):
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
     result = invoke([
-        'create',
-        '--name', 'test',
-        '--id', '4500474_2133707_2021-05-20_2419',
-        '--bundle', 'analytic',
-        '--item-type', 'PSOrthoTile',
-        '--email'
-        ])
+        'create', '--name', 'test', '--id', '4500474_2133707_2021-05-20_2419',
+        '--bundle', 'analytic', '--item-type', 'PSOrthoTile', '--email'
+    ])
     assert not result.exception
 
     order_request = {
@@ -524,15 +485,17 @@ def test_cli_orders_create_email(
             "item_type": "PSOrthoTile",
             "product_bundle": "analytic",
         }],
-        "notifications": {"email": True}
+        "notifications": {
+            "email": True
+        }
     }
     sent_request = json.loads(respx.calls.last.request.content)
     assert sent_request == order_request
 
 
 @respx.mock
-def test_cli_orders_create_tools(
-        invoke, geom_geojson, order_description, write_to_tmp_json_file):
+def test_cli_orders_create_tools(invoke, geom_geojson, order_description,
+                                 write_to_tmp_json_file):
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
@@ -540,13 +503,10 @@ def test_cli_orders_create_tools(
     tools_file = write_to_tmp_json_file(tools_json, 'tools.json')
 
     result = invoke([
-        'create',
-        '--name', 'test',
-        '--id', '4500474_2133707_2021-05-20_2419',
-        '--bundle', 'analytic',
-        '--item-type', 'PSOrthoTile',
-        '--tools', tools_file
-        ])
+        'create', '--name', 'test', '--id', '4500474_2133707_2021-05-20_2419',
+        '--bundle', 'analytic', '--item-type', 'PSOrthoTile', '--tools',
+        tools_file
+    ])
     assert not result.exception
 
     order_request = {
@@ -564,13 +524,10 @@ def test_cli_orders_create_tools(
 
 def test_cli_orders_read_file_json_doesnotexist(invoke):
     result = invoke([
-        'create',
-        '--name', 'test',
-        '--id', '4500474_2133707_2021-05-20_2419',
-        '--bundle', 'analytic',
-        '--item-type', 'PSOrthoTile',
-        '--tools', 'doesnnotexist.json'
-        ])
+        'create', '--name', 'test', '--id', '4500474_2133707_2021-05-20_2419',
+        '--bundle', 'analytic', '--item-type', 'PSOrthoTile', '--tools',
+        'doesnnotexist.json'
+    ])
     assert result.exception
     error_msg = ("Error: Invalid value for '--tools': 'doesnnotexist.json': " +
                  "No such file or directory")
@@ -583,12 +540,9 @@ def test_cli_orders_read_file_json_invalidjson(invoke, tmp_path):
         fp.write('[Invali]d j*son')
 
     result = invoke([
-        'create',
-        '--name', 'test',
-        '--id', '4500474_2133707_2021-05-20_2419',
-        '--bundle', 'analytic',
-        '--item-type', 'PSOrthoTile',
-        '--tools', invalid_filename
+        'create', '--name', 'test', '--id', '4500474_2133707_2021-05-20_2419',
+        '--bundle', 'analytic', '--item-type', 'PSOrthoTile', '--tools',
+        invalid_filename
     ])
     assert result.exception
     error_msg = "Error: File does not contain valid json."

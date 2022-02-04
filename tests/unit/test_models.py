@@ -87,12 +87,11 @@ def test_StreamingBody_name():
     body = models.StreamingBody(r)
 
     assert body.name.startswith('planet-')
-    assert (body.name.endswith('.tiff') or
-            body.name.endswith('.tif'))
+    assert (body.name.endswith('.tiff') or body.name.endswith('.tif'))
 
 
-@pytest.mark.parametrize('headers,expected', [
-    ({
+@pytest.mark.parametrize(
+    'headers,expected', [({
         'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
         'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
         'accept-ranges': 'bytes',
@@ -100,15 +99,13 @@ def test_StreamingBody_name():
         'content-length': '57350256',
         'content-disposition': 'attachment; filename="open_california.tif"'
     }, 'open_california.tif'),
-    ({
-        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
-        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
-        'accept-ranges': 'bytes',
-        'content-type': 'image/tiff',
-        'content-length': '57350256'
-    }, None),
-    ({}, None)
-])
+                         ({
+                             'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+                             'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+                             'accept-ranges': 'bytes',
+                             'content-type': 'image/tiff',
+                             'content-length': '57350256'
+                         }, None), ({}, None)])
 def test__get_filename_from_headers(headers, expected):
     assert models._get_filename_from_headers(headers) == expected
 
@@ -136,13 +133,14 @@ def test__get_random_filename(content_type, check):
 
 @pytest.mark.asyncio
 async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
+
     async def _aiter_bytes():
         data = open_test_img.read()
         v = memoryview(data)
 
         chunksize = 100
-        for i in range(math.ceil(len(v)/(chunksize))):
-            yield v[i*chunksize:min((i+1)*chunksize, len(v))]
+        for i in range(math.ceil(len(v) / (chunksize))):
+            yield v[i * chunksize:min((i + 1) * chunksize, len(v))]
 
     r = MagicMock(name='response')
     hr = MagicMock(name='http_response')
@@ -161,14 +159,9 @@ async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
 
 @pytest.fixture
 def get_pages():
-    p1 = {'links': {'next': 'blah'},
-          'items': [1, 2]}
-    p2 = {'links': {},
-          'items': [3, 4]}
-    responses = [
-        mock_http_response(json=p1),
-        mock_http_response(json=p2)
-    ]
+    p1 = {'links': {'next': 'blah'}, 'items': [1, 2]}
+    p2 = {'links': {}, 'items': [3, 4]}
+    responses = [mock_http_response(json=p1), mock_http_response(json=p2)]
 
     async def do_get(req):
         return responses.pop(0)

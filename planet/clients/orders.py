@@ -25,7 +25,6 @@ from ..constants import PLANET_BASE_URL
 from ..http import Session
 from ..models import Order, Orders, Request, Response, StreamingBody
 
-
 BASE_URL = f'{PLANET_BASE_URL}compute/ops'
 STATS_PATH = '/stats/orders/v2'
 ORDERS_PATH = '/orders/v2'
@@ -61,11 +60,8 @@ class OrdersClient():
 
         ```
     """
-    def __init__(
-        self,
-        session: Session,
-        base_url: str = None
-    ):
+
+    def __init__(self, session: Session, base_url: str = None):
         """
         Parameters:
             session: Open session connected to server.
@@ -98,10 +94,7 @@ class OrdersClient():
     def _request(self, url, method, data=None, params=None, json=None):
         return Request(url, method=method, data=data, params=params, json=json)
 
-    async def _do_request(
-        self,
-        request: Request
-    ) -> Response:
+    async def _do_request(self, request: Request) -> Response:
         '''Submit a request and get response.
 
         Parameters:
@@ -109,10 +102,7 @@ class OrdersClient():
         '''
         return await self._session.request(request)
 
-    async def create_order(
-        self,
-        request: dict
-    ) -> str:
+    async def create_order(self, request: dict) -> str:
         '''Create an order request.
 
         Example:
@@ -165,10 +155,7 @@ class OrdersClient():
         order = Order(resp.json())
         return order
 
-    async def get_order(
-        self,
-        order_id: str
-    ) -> Order:
+    async def get_order(self, order_id: str) -> Order:
         '''Get order details by Order ID.
 
         Parameters:
@@ -196,10 +183,7 @@ class OrdersClient():
         order = Order(resp.json())
         return order
 
-    async def cancel_order(
-        self,
-        order_id: str
-    ) -> Response:
+    async def cancel_order(self, order_id: str) -> Response:
         '''Cancel a queued order.
 
         **Note:** According to the API docs, cancel order should return the
@@ -230,10 +214,7 @@ class OrdersClient():
             msg = json.loads(ex.message)['message']
             raise exceptions.MissingResource(msg)
 
-    async def cancel_orders(
-        self,
-        order_ids: typing.List[str] = None
-    ) -> dict:
+    async def cancel_orders(self, order_ids: typing.List[str] = None) -> dict:
         '''Cancel queued orders in bulk.
 
         Parameters:
@@ -271,14 +252,12 @@ class OrdersClient():
         resp = await self._do_request(req)
         return resp.json()
 
-    async def download_asset(
-        self,
-        location: str,
-        filename: str = None,
-        directory: str = None,
-        overwrite: bool = False,
-        progress_bar: bool = True
-    ) -> str:
+    async def download_asset(self,
+                             location: str,
+                             filename: str = None,
+                             directory: str = None,
+                             overwrite: bool = False,
+                             progress_bar: bool = True) -> str:
         """Download ordered asset.
 
         Parameters:
@@ -304,13 +283,11 @@ class OrdersClient():
                              progress_bar=progress_bar)
         return dl_path
 
-    async def download_order(
-        self,
-        order_id: str,
-        directory: str = None,
-        overwrite: bool = False,
-        progress_bar: bool = False
-    ) -> typing.List[str]:
+    async def download_order(self,
+                             order_id: str,
+                             directory: str = None,
+                             overwrite: bool = False,
+                             progress_bar: bool = False) -> typing.List[str]:
         """Download all assets in an order.
 
         Parameters:
@@ -328,22 +305,21 @@ class OrdersClient():
         order = await self.get_order(order_id)
         locations = order.locations
         LOGGER.info(
-            f'downloading {len(locations)} assets from order {order_id}'
-        )
-        filenames = [await self.download_asset(location,
-                                               directory=directory,
-                                               overwrite=overwrite,
-                                               progress_bar=progress_bar)
-                     for location in locations]
+            f'downloading {len(locations)} assets from order {order_id}')
+        filenames = [
+            await self.download_asset(location,
+                                      directory=directory,
+                                      overwrite=overwrite,
+                                      progress_bar=progress_bar)
+            for location in locations
+        ]
         return filenames
 
-    async def poll(
-        self,
-        order_id: str,
-        state: str = None,
-        wait: int = 1,
-        report=None
-    ) -> str:
+    async def poll(self,
+                   order_id: str,
+                   state: str = None,
+                   wait: int = 1,
+                   report=None) -> str:
         """Poll for order status until order reaches desired state, optionally
         reporting status.
 
@@ -380,9 +356,8 @@ class OrdersClient():
         """
         if state:
             if state not in ORDERS_STATES:
-                raise OrdersClientException(
-                    f'{state} should be one of'
-                    f'{ORDERS_STATES}')
+                raise OrdersClientException(f'{state} should be one of'
+                                            f'{ORDERS_STATES}')
             states = [state]
         else:
             states = ORDERS_STATES_COMPLETE
@@ -401,17 +376,16 @@ class OrdersClient():
 
             completed = state in states
             if not completed:
-                sleep_time = max(wait-(time.time()-t), 0)
+                sleep_time = max(wait - (time.time() - t), 0)
                 LOGGER.debug(f'sleeping {sleep_time}s')
                 await asyncio.sleep(sleep_time)
         return state
 
     async def list_orders(
-        self,
-        state: str = None,
-        limit: int = None,
-        as_json: bool = False
-    ) -> typing.Union[typing.List[Order], dict]:
+            self,
+            state: str = None,
+            limit: int = None,
+            as_json: bool = False) -> typing.Union[typing.List[Order], dict]:
         """Get all order requests.
 
         Parameters:
@@ -450,5 +424,4 @@ class OrdersClient():
         if state not in ORDERS_STATES:
             raise OrdersClientException(
                 f'Order state (\'{state}\') should be one of: '
-                f'{ORDERS_STATES}'
-            )
+                f'{ORDERS_STATES}')

@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-
 """Functionality to perform HTTP requests"""
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import asyncio
@@ -36,6 +35,7 @@ class SessionException(Exception):
 
 
 class BaseSession():
+
     @staticmethod
     def _get_user_agent():
         return 'planet-client-python/' + __version__
@@ -47,9 +47,8 @@ class BaseSession():
     @staticmethod
     def _log_response(response):
         request = response.request
-        LOGGER.info(
-            f'{request.method} {request.url} - '
-            f'Status {response.status_code}')
+        LOGGER.info(f'{request.method} {request.url} - '
+                    f'Status {response.status_code}')
 
     @classmethod
     def _raise_for_status(cls, response):
@@ -118,10 +117,7 @@ class Session(BaseSession):
     ```
     '''
 
-    def __init__(
-        self,
-        auth: Auth = None
-    ):
+    def __init__(self, auth: Auth = None):
         """Initialize a Session.
 
         Parameters:
@@ -143,8 +139,7 @@ class Session(BaseSession):
 
         self._client.event_hooks['request'] = [alog_request]
         self._client.event_hooks['response'] = [
-            alog_response,
-            araise_for_status
+            alog_response, araise_for_status
         ]
         self.retry_wait_time = RETRY_WAIT_TIME
         self.retry_count = RETRY_COUNT
@@ -182,11 +177,9 @@ class Session(BaseSession):
                     await asyncio.sleep(wait_time)
         raise SessionException('Too many throttles, giving up.')
 
-    async def request(
-        self,
-        request: models.Request,
-        stream: bool = False
-    ) -> models.Response:
+    async def request(self,
+                      request: models.Request,
+                      stream: bool = False) -> models.Response:
         '''Submit a request with retry.
 
         Parameters:
@@ -205,14 +198,10 @@ class Session(BaseSession):
 
     async def _request(self, request, stream=False):
         '''Submit a request'''
-        http_resp = await self._client.send(request.http_request,
-                                            stream=stream)
+        http_resp = await self._client.send(request.http_request, stream=stream)
         return models.Response(request, http_resp)
 
-    def stream(
-        self,
-        request: models.Request
-    ) -> Stream:
+    def stream(self, request: models.Request) -> Stream:
         '''Submit a request and get the response as a stream context manager.
 
         Parameters:
@@ -220,14 +209,12 @@ class Session(BaseSession):
         Returns:
             Context manager providing the body as a stream.
         '''
-        return Stream(
-            session=self,
-            request=request
-        )
+        return Stream(session=self, request=request)
 
 
 class AuthSession(BaseSession):
     '''Synchronous connection to the Planet Auth service.'''
+
     def __init__(self):
         """Initialize an AuthSession.
         """
@@ -235,8 +222,7 @@ class AuthSession(BaseSession):
         self._client.headers.update({'User-Agent': self._get_user_agent()})
         self._client.event_hooks['request'] = [self._log_request]
         self._client.event_hooks['response'] = [
-            self._log_response,
-            self._raise_for_status
+            self._log_response, self._raise_for_status
         ]
 
     def request(self, request):
@@ -256,11 +242,8 @@ class AuthSession(BaseSession):
 
 class Stream():
     '''Context manager for asynchronous response stream from Planet server.'''
-    def __init__(
-        self,
-        session: Session,
-        request: models.Request
-    ):
+
+    def __init__(self, session: Session, request: models.Request):
         """
         Parameters:
             session: Open session to Planet server.

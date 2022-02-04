@@ -56,7 +56,9 @@ def create_download_mock(downloaded_content, order_description, oid):
         # Create mock HTTP response
         dl_url = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
         order_description['_links']['results'] = [
-            {'location': dl_url},
+            {
+                'location': dl_url
+            },
         ]
 
         get_url = f'{TEST_ORDERS_URL}/{oid}'
@@ -85,17 +87,14 @@ async def test_list_orders_basic(order_descriptions, session):
     page1_response = {
         "_links": {
             "_self": "string",
-            "next": next_page_url},
+            "next": next_page_url
+        },
         "orders": [order1, order2]
     }
     mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(TEST_ORDERS_URL).return_value = mock_resp1
 
-    page2_response = {
-        "_links": {
-            "_self": next_page_url},
-        "orders": [order3]
-    }
+    page2_response = {"_links": {"_self": next_page_url}, "orders": [order3]}
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
@@ -113,12 +112,7 @@ async def test_list_orders_state(order_descriptions, session):
 
     order1, order2, _ = order_descriptions
 
-    page1_response = {
-        "_links": {
-            "_self": "string"
-        },
-        "orders": [order1, order2]
-    }
+    page1_response = {"_links": {"_self": "string"}, "orders": [order1, order2]}
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(list_url).return_value = mock_resp
 
@@ -150,7 +144,8 @@ async def test_list_orders_limit(order_descriptions, session):
     page1_response = {
         "_links": {
             "_self": "string",
-            "next": nono_page_url},
+            "next": nono_page_url
+        },
         "orders": [order1, order2]
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
@@ -171,10 +166,7 @@ async def test_list_orders_limit(order_descriptions, session):
 async def test_list_orders_asjson(order_descriptions, session):
     order1, order2, order3 = order_descriptions
 
-    page1_response = {
-        "_links": {"_self": "string"},
-        "orders": [order1]
-    }
+    page1_response = {"_links": {"_self": "string"}, "orders": [order1]}
     mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(TEST_ORDERS_URL).return_value = mock_resp1
 
@@ -200,18 +192,14 @@ async def test_create_order(oid, order_description, order_request, session):
 async def test_create_order_bad_item_type(order_request, session):
     resp = {
         "field": {
-            "Products": [
-                {
-                    "message": ("Bad item type 'invalid' for bundle type " +
-                                "'analytic'")
-                }
-            ]
+            "Products": [{
+                "message":
+                    ("Bad item type 'invalid' for bundle type " + "'analytic'")
+            }]
         },
-        "general": [
-            {
-                "message": "Unable to accept order"
-            }
-        ]
+        "general": [{
+            "message": "Unable to accept order"
+        }]
     }
     mock_resp = httpx.Response(400, json=resp)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
@@ -228,22 +216,18 @@ async def test_create_order_bad_item_type(order_request, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_create_order_item_id_does_not_exist(
-        order_request, session, match_pytest_raises):
+async def test_create_order_item_id_does_not_exist(order_request, session,
+                                                   match_pytest_raises):
     resp = {
         "field": {
-            "Details": [
-                {
-                    "message": ("Item ID 4500474_2133707_2021-05-20_2419 / " +
-                                "Item Type PSScene3Band doesn't exist")
-                }
-            ]
+            "Details": [{
+                "message": ("Item ID 4500474_2133707_2021-05-20_2419 / " +
+                            "Item Type PSScene3Band doesn't exist")
+            }]
         },
-        "general": [
-            {
-                "message": "Unable to accept order"
-            }
-        ]
+        "general": [{
+            "message": "Unable to accept order"
+        }]
     }
     mock_resp = httpx.Response(400, json=resp)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
@@ -281,14 +265,11 @@ async def test_get_order_invalid_id(session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_get_order_id_doesnt_exist(
-        oid, session, match_pytest_raises):
+async def test_get_order_id_doesnt_exist(oid, session, match_pytest_raises):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
 
     msg = f'Could not load order ID: {oid}.'
-    resp = {
-        "message": msg
-    }
+    resp = {"message": msg}
     mock_resp = httpx.Response(404, json=resp)
     respx.get(get_url).return_value = mock_resp
 
@@ -321,14 +302,11 @@ async def test_cancel_order_invalid_id(session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_cancel_order_id_doesnt_exist(
-        oid, session, match_pytest_raises):
+async def test_cancel_order_id_doesnt_exist(oid, session, match_pytest_raises):
     cancel_url = f'{TEST_ORDERS_URL}/{oid}'
 
     msg = f'No such order ID: {oid}.'
-    resp = {
-        "message": msg
-    }
+    resp = {"message": msg}
     mock_resp = httpx.Response(404, json=resp)
     respx.put(cancel_url).return_value = mock_resp
 
@@ -340,14 +318,12 @@ async def test_cancel_order_id_doesnt_exist(
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_cancel_order_id_cannot_be_cancelled(
-        oid, session, match_pytest_raises):
+async def test_cancel_order_id_cannot_be_cancelled(oid, session,
+                                                   match_pytest_raises):
     cancel_url = f'{TEST_ORDERS_URL}/{oid}'
 
     msg = 'Order not in a cancellable state'
-    resp = {
-        "message": msg
-    }
+    resp = {"message": msg}
     mock_resp = httpx.Response(409, json=resp)
     respx.put(cancel_url).return_value = mock_resp
 
@@ -364,15 +340,16 @@ async def test_cancel_orders_by_ids(session, oid):
     test_ids = [oid, oid2]
     example_result = {
         "result": {
-            "succeeded": {"count": 1},
+            "succeeded": {
+                "count": 1
+            },
             "failed": {
-                "count": 1,
-                "failures": [
-                    {
-                        "order_id": oid2,
-                        "message": "Order not in a cancellable state",
-                    }
-                ]
+                "count":
+                    1,
+                "failures": [{
+                    "order_id": oid2,
+                    "message": "Order not in a cancellable state",
+                }]
             }
         }
     }
@@ -384,9 +361,7 @@ async def test_cancel_orders_by_ids(session, oid):
 
     assert res == example_result
 
-    expected_body = {
-            "order_ids": test_ids
-    }
+    expected_body = {"order_ids": test_ids}
     actual_body = json.loads(respx.calls.last.request.content)
     assert actual_body == expected_body
 
@@ -403,7 +378,9 @@ async def test_cancel_orders_by_ids_invalid_id(session, oid):
 async def test_cancel_orders_all(session):
     example_result = {
         "result": {
-            "succeeded": {"count": 2},
+            "succeeded": {
+                "count": 2
+            },
             "failed": {
                 "count": 0,
                 "failures": []
@@ -533,13 +510,14 @@ async def test_download_asset_img(tmpdir, open_test_img, session):
         v = memoryview(data)
 
         chunksize = 100
-        for i in range(math.ceil(len(v)/(chunksize))):
-            yield v[i*chunksize:min((i+1)*chunksize, len(v))]
+        for i in range(math.ceil(len(v) / (chunksize))):
+            yield v[i * chunksize:min((i + 1) * chunksize, len(v))]
 
     # populate request parameter to avoid respx cloning, which throws
     # an error caused by respx and not this code
     # https://github.com/lundberg/respx/issues/130
-    mock_resp = httpx.Response(HTTPStatus.OK, stream=_stream_img(),
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               stream=_stream_img(),
                                headers=img_headers,
                                request='donotcloneme')
     respx.get(dl_url).return_value = mock_resp
@@ -562,10 +540,11 @@ async def test_download_order_success(tmpdir, order_description, oid, session):
     # Mock an HTTP response for download
     dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
     dl_url2 = TEST_DOWNLOAD_URL + '/2?token=IAmAnotherToken'
-    order_description['_links']['results'] = [
-        {'location': dl_url1},
-        {'location': dl_url2}
-    ]
+    order_description['_links']['results'] = [{
+        'location': dl_url1
+    }, {
+        'location': dl_url2
+    }]
 
     get_url = f'{TEST_ORDERS_URL}/{oid}'
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
