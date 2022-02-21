@@ -55,7 +55,7 @@ def orders(ctx, base_url):
 @coro
 @click.option('-s', '--state',
               help='Filter orders to given state.',
-              type=click.Choice(planet.clients.orders.ORDERS_STATES,
+              type=click.Choice(planet.clients.orders.ORDERS_STATES_ALL,
                                 case_sensitive=False))
 @click.option('-l', '--limit', help='Filter orders to given limit.',
               default=None, type=int)

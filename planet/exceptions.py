@@ -78,3 +78,20 @@ class RequestCancelled(PlanetException):
 class AuthException(PlanetException):
     '''Exceptions encountered during authentication'''
     pass
+
+
+class OrdersClientError(PlanetException):
+    """Exceptions thrown by OrdersClient"""
+    pass
+
+
+class ValueError(PlanetException, ValueError):
+    """Planet ValueError"""
+    pass
+
+
+class MaxAttemptsError(PlanetException):
+    """Maximum number of attempts was reached."""
+    def __init__(self, max_num):
+        self.message = f'Maximum number of attempts ({max_num}) reached.'
+        super().__init__(self.message)

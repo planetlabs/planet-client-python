@@ -32,16 +32,10 @@ ORDERS_PATH = '/orders/v2'
 BULK_PATH = '/bulk/orders/v2'
 
 # Order states https://developers.planet.com/docs/orders/ordering/#order-states
-ORDERS_STATES_COMPLETE = ['success', 'partial', 'cancelled', 'failed']
-ORDERS_STATES_IN_PROGRESS = ['queued', 'running']
-ORDERS_STATES = ORDERS_STATES_IN_PROGRESS + ORDERS_STATES_COMPLETE
+ORDERS_STATES_COMPLETE = set(['success', 'partial', 'cancelled', 'failed'])
+ORDERS_STATES_ALL = ORDERS_STATES_COMPLETE | set(['queued', 'running'])
 
 LOGGER = logging.getLogger(__name__)
-
-
-class OrdersClientException(Exception):
-    """Exceptions thrown by OrdersClient"""
-    pass
 
 
 class OrdersClient():
@@ -80,14 +74,11 @@ class OrdersClient():
 
     @staticmethod
     def _check_order_id(oid):
-        msg = f'Order id ({oid}) must be a valid UUID string.'
-        if not isinstance(oid, str):
-            raise OrdersClientException(msg)
-
         try:
-            uuid.UUID(oid)
-        except ValueError:
-            raise OrdersClientException(msg)
+            uuid.UUID(hex=oid)
+        except (ValueError, AttributeError):
+            msg = f'Order id ({oid}) is not a valid UUID hexadecimal string.'
+            raise exceptions.ValueError(msg)
 
     def _orders_url(self):
         return f'{self._base_url}{ORDERS_PATH}'
@@ -337,34 +328,51 @@ class OrdersClient():
                      for location in locations]
         return filenames
 
-    async def poll(
+    async def wait(
         self,
         order_id: str,
-        state: str = None,
-        wait: int = 1,
+        states: typing.Iterable[str] = ORDERS_STATES_COMPLETE,
+        delay: int = 5,
+        max_attempts: int = 200,
         report=None
     ) -> str:
-        """Poll for order status until order reaches desired state, optionally
-        reporting status.
+        """Wait until order reaches one of the specified states.
 
-        By default, the Orders API is polled every 1 second for status updates.
-        The API rate limit for this endpoint is 10 requests per second.
-        If many orders are being polled asynchronously, consider
-        increasing the wait to avoid throttling.
+        This function polls the Orders API to determine the order state, with
+        the specified delay between each polling attempt, until either the
+        order reaches one of the set of desired states or the number of
+        maximum attempts is reached.
+
+        Setting 'delay' to zero results in no delay between polling attempts.
+        This will likely result in throttling by the Orders API, which has
+        a rate limit of 10 requests per second. If many orders are being
+        polled asynchronously, consider increasing the delay to avoid
+        throttling.
+
+        Setting 'max_attempts' to zero will result in no limit on the number
+        of attempts.
+
+        By default, the set of states that result are polled for is the
+        set of completed states. This can be changed to any set of valid
+        order states. It is not recommended to change this to a subset of
+        completed states, as this opens up the possibility of the the
+        specified state never being reached (i.e. if the order completes in
+        a 'partial' state but only the 'success' state was specified).
+
 
         Example:
             ```python
             from planet.reporting import StateBar
 
             with StateBar() as bar:
-                await poll(order_id, report=bar.update)
+                await wait(order_id, report=bar.update)
             ```
 
         Parameters:
             order_id: The ID of the order
-            state: State to poll until. If multiple, use list. Defaults to
-                any completed state.
-            wait: Time (in seconds) between polls.
+            states: Order states that will end polling.
+            delay: Time (in seconds) between polls.
+            max_attempts: Maximum number of polls.
             report: Callback function for progress updates. Invoked with
                 keyword arguments `state` (poll state) and `logger`
                 (callback for logging progress bar status). Recommended
@@ -375,20 +383,21 @@ class OrdersClient():
 
         Raises:
             planet.exceptions.APIException: On API error.
-            OrdersClientException: If order_id is not valid or state is not
-                supported.
+            planet.exceptions.ValueError: If order_id or one or more of the
+                states are not valid.
+            planet.exceptions.MaxAttemptsError: If the maximum number of
+                attempts is reached before one of the specified states is
+                reached.
         """
-        if state:
-            if state not in ORDERS_STATES:
-                raise OrdersClientException(
-                    f'{state} should be one of'
-                    f'{ORDERS_STATES}')
-            states = [state]
-        else:
-            states = ORDERS_STATES_COMPLETE
+        invalid_states = set(states) - ORDERS_STATES_ALL
+        if invalid_states:
+            raise exceptions.ValueError(
+                f'{invalid_states} are not valid states. '
+                f'Valid states are {ORDERS_STATES_ALL}')
 
-        completed = False
-        while not completed:
+        num_attempts = 0
+        done = False
+        while not done:
             t = time.time()
 
             order = await self.get_order(order_id)
@@ -396,12 +405,16 @@ class OrdersClient():
 
             if report:
                 report(state=order.state)
-            else:
-                LOGGER.debug(state)
+            LOGGER.debug(state)
 
-            completed = state in states
-            if not completed:
-                sleep_time = max(wait-(time.time()-t), 0)
+            done = state in states
+            if not done:
+                if max_attempts:
+                    num_attempts += 1
+                    if num_attempts >= max_attempts:
+                        raise exceptions.MaxAttemptsError(max_attempts)
+
+                sleep_time = max(delay-(time.time()-t), 0)
                 LOGGER.debug(f'sleeping {sleep_time}s')
                 await asyncio.sleep(sleep_time)
         return state
@@ -424,10 +437,14 @@ class OrdersClient():
 
         Raises:
             planet.exceptions.APIException: On API error.
+            planet.exceptions.ValueError: If state is not valid.
         """
         url = self._orders_url()
         if state:
-            self._check_state(state)
+            if state not in ORDERS_STATES_ALL:
+                raise exceptions.ValueError(
+                    f'Order state ({state}) is not a valid state. '
+                    f'Valid states are {ORDERS_STATES_ALL}')
             params = {"state": state}
         else:
             params = None
@@ -444,11 +461,3 @@ class OrdersClient():
         request = self._request(url, 'GET', params=params)
 
         return Orders(request, self._do_request, limit=limit)
-
-    @staticmethod
-    def _check_state(state):
-        if state not in ORDERS_STATES:
-            raise OrdersClientException(
-                f'Order state (\'{state}\') should be one of: '
-                f'{ORDERS_STATES}'
-            )

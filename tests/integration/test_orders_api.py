@@ -424,15 +424,13 @@ async def test_cancel_orders_all(session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_poll(oid, order_description, session):
+async def test_wait_default(oid, order_description, session):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
 
     order_description2 = copy.deepcopy(order_description)
     order_description2['state'] = 'running'
     order_description3 = copy.deepcopy(order_description)
     order_description3['state'] = 'success'
-
-    cl = OrdersClient(session, base_url=TEST_URL)
 
     route = respx.get(get_url)
     route.side_effect = [
@@ -443,7 +441,9 @@ async def test_poll(oid, order_description, session):
 
     mock_bar = create_autospec(reporting.StateBar)
     mock_report = mock_bar.update
-    state = await cl.poll(oid, wait=0, report=mock_report)
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+    state = await cl.wait(oid, delay=0, report=mock_report)
     assert state == 'success'
 
     # check state was reported as expected
@@ -451,28 +451,75 @@ async def test_poll(oid, order_description, session):
     states = [c[2]['state'] for c in mock_report.mock_calls]
     assert ['queued', 'running', 'success'] == states
 
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_wait_states(oid, order_description, session):
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+
+    order_description2 = copy.deepcopy(order_description)
+    order_description2['state'] = 'running'
+    order_description3 = copy.deepcopy(order_description)
+    order_description3['state'] = 'success'
+
     route = respx.get(get_url)
     route.side_effect = [
         httpx.Response(HTTPStatus.OK, json=order_description),
         httpx.Response(HTTPStatus.OK, json=order_description2),
         httpx.Response(HTTPStatus.OK, json=order_description3)
     ]
-    state = await cl.poll(oid, state='running', wait=0)
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+    state = await cl.wait(oid, states=['running'], delay=0)
     assert state == 'running'
 
 
+@respx.mock
 @pytest.mark.asyncio
-async def test_poll_invalid_oid(session):
+async def test_wait_max_attempts_enabled(oid, order_description, session):
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+
+    route = respx.get(get_url)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.OK, json=order_description),
+    ]
+
     cl = OrdersClient(session, base_url=TEST_URL)
-    with pytest.raises(clients.orders.OrdersClientException):
-        _ = await cl.poll("invalid_oid", wait=0)
+    with pytest.raises(exceptions.MaxAttemptsError):
+        await cl.wait(oid, max_attempts=1, delay=0)
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_wait_max_attempts_disabled(oid, order_description, session):
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+
+    route = respx.get(get_url)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.OK, json=order_description),
+    ] * 300
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+    with pytest.raises(RuntimeError):
+        # falls off the end of the mocked responses
+        await cl.wait(oid, max_attempts=0, delay=0)
 
 
 @pytest.mark.asyncio
-async def test_poll_invalid_state(oid, session):
+async def test_wait_invalid_oid(session):
     cl = OrdersClient(session, base_url=TEST_URL)
-    with pytest.raises(clients.orders.OrdersClientException):
-        _ = await cl.poll(oid, state="invalid_state", wait=0)
+    with pytest.raises(exceptions.ValueError):
+        await cl.wait("invalid_oid", delay=0)
+
+
+@pytest.mark.asyncio
+async def test_wait_invalid_states(oid, session):
+    cl = OrdersClient(session, base_url=TEST_URL)
+    with pytest.raises(exceptions.ValueError):
+        await cl.wait(oid, states=["invalid_state"], delay=0)
+
+    with pytest.raises(exceptions.ValueError):
+        await cl.wait(oid, states='string instead of list', delay=0)
 
 
 @respx.mock
