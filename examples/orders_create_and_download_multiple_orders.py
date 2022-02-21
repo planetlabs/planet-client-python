@@ -75,8 +75,8 @@ async def create_and_download(order_detail, directory, client):
         order = await client.create_order(order_detail)
         reporter.update(state='created', order_id=order.id)
 
-        # poll
-        await client.poll(order.id, report=reporter.update)
+        # wait for completion
+        await client.wait(order.id, report=reporter.update_state)
 
     # download
     await client.download_order(order.id, progress_bar=True)

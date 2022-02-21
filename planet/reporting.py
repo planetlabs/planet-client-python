@@ -83,14 +83,16 @@ class StateBar(ProgressBar):
     def desc(self):
         return f'order {self.order_id}'
 
+    def update_state(self, state: str):
+        """Simple function to be used as a callback for state reporting"""
+        self.update(state=state)
+
     def update(
         self,
         state: str = None,
         order_id: str = None
     ):
         if state:
-            if state != self.state:
-                LOGGER.info('{order_id} state: {state}')
             self.state = state
             self.bar.postfix[1] = self.state
 
@@ -99,5 +101,3 @@ class StateBar(ProgressBar):
             self.bar.set_description_str(self.desc, refresh=False)
 
         self.bar.refresh()
-
-        LOGGER.debug(str(self.bar))

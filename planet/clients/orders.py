@@ -334,23 +334,22 @@ class OrdersClient():
         states: typing.Iterable[str] = ORDERS_STATES_COMPLETE,
         delay: int = 5,
         max_attempts: int = 200,
-        report=None
+        report: typing.Callable[[str], None] = None
     ) -> str:
         """Wait until order reaches one of the specified states.
 
         This function polls the Orders API to determine the order state, with
-        the specified delay between each polling attempt, until either the
-        order reaches one of the set of desired states or the number of
-        maximum attempts is reached.
+        the specified delay between each polling attempt, until the
+        order reaches one of the set of desired states. If the maximum number
+        of attempts is reached before the order reaches one of the desired
+        states, an exception is raised. Setting 'max_attempts' to zero will
+        result in no limit on the number of attempts.
 
         Setting 'delay' to zero results in no delay between polling attempts.
         This will likely result in throttling by the Orders API, which has
         a rate limit of 10 requests per second. If many orders are being
         polled asynchronously, consider increasing the delay to avoid
         throttling.
-
-        Setting 'max_attempts' to zero will result in no limit on the number
-        of attempts.
 
         By default, the set of states that result are polled for is the
         set of completed states. This can be changed to any set of valid
@@ -359,13 +358,12 @@ class OrdersClient():
         specified state never being reached (i.e. if the order completes in
         a 'partial' state but only the 'success' state was specified).
 
-
         Example:
             ```python
             from planet.reporting import StateBar
 
             with StateBar() as bar:
-                await wait(order_id, report=bar.update)
+                await wait(order_id, report=bar.update_state)
             ```
 
         Parameters:
@@ -373,13 +371,10 @@ class OrdersClient():
             states: Order states that will end polling.
             delay: Time (in seconds) between polls.
             max_attempts: Maximum number of polls.
-            report: Callback function for progress updates. Invoked with
-                keyword arguments `state` (poll state) and `logger`
-                (callback for logging progress bar status). Recommended
-                value is `reporting.StateBar.update`.
+            report: Callback function for reporting progress updates.
 
         Returns
-            Completed state of the order.
+            State of the order.
 
         Raises:
             planet.exceptions.APIException: On API error.
@@ -403,9 +398,10 @@ class OrdersClient():
             order = await self.get_order(order_id)
             state = order.state
 
-            if report:
-                report(state=order.state)
             LOGGER.debug(state)
+
+            if report:
+                report(order.state)
 
             done = state in states
             if not done:

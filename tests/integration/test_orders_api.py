@@ -18,7 +18,7 @@ import logging
 import math
 import os
 from pathlib import Path
-from unittest.mock import create_autospec
+from unittest.mock import call, create_autospec
 
 import httpx
 import pytest
@@ -439,17 +439,37 @@ async def test_wait_default(oid, order_description, session):
         httpx.Response(HTTPStatus.OK, json=order_description3)
     ]
 
-    mock_bar = create_autospec(reporting.StateBar)
-    mock_report = mock_bar.update
-
     cl = OrdersClient(session, base_url=TEST_URL)
-    state = await cl.wait(oid, delay=0, report=mock_report)
+    state = await cl.wait(oid, delay=0)
     assert state == 'success'
 
-    # check state was reported as expected
-    assert mock_report.call_count == 3
-    states = [c[2]['state'] for c in mock_report.mock_calls]
-    assert ['queued', 'running', 'success'] == states
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_wait_reporter(oid, order_description, session):
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+
+    order_description2 = copy.deepcopy(order_description)
+    order_description2['state'] = 'running'
+    order_description3 = copy.deepcopy(order_description)
+    order_description3['state'] = 'success'
+
+    route = respx.get(get_url)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.OK, json=order_description),
+        httpx.Response(HTTPStatus.OK, json=order_description2),
+        httpx.Response(HTTPStatus.OK, json=order_description3)
+    ]
+
+    mock_bar = create_autospec(reporting.StateBar)
+    mock_report = mock_bar.update_state
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+    await cl.wait(oid, delay=0, report=mock_report)
+
+    # check state was sent to reporter as expected
+    expected = [call(s) for s in ['queued', 'running', 'success']]
+    mock_report.assert_has_calls(expected)
 
 
 @respx.mock
