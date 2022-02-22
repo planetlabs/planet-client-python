@@ -24,8 +24,7 @@ import httpx
 import pytest
 import respx
 
-from planet import OrdersClient, clients, exceptions, reporting
-# from planet.clients.orders import BULK_PATH, ORDERS_PATH, STATS_PATH
+from planet import OrdersClient, exceptions, reporting
 
 TEST_URL = 'http://www.MockNotRealURL.com/api/path'
 TEST_BULK_CANCEL_URL = f'{TEST_URL}/bulk/orders/v2/cancel'
@@ -136,8 +135,8 @@ async def test_list_orders_state(order_descriptions, session):
 async def test_list_orders_state_invalid_state(session):
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    with pytest.raises(clients.orders.OrdersClientException):
-        _ = await cl.list_orders(state='invalidstate')
+    with pytest.raises(exceptions.ValueError):
+        await cl.list_orders(state='invalidstate')
 
 
 @respx.mock
@@ -275,8 +274,8 @@ async def test_get_order(oid, order_description, session):
 @pytest.mark.asyncio
 async def test_get_order_invalid_id(session):
     cl = OrdersClient(session, base_url=TEST_URL)
-    with pytest.raises(clients.orders.OrdersClientException):
-        _ = await cl.get_order('-')
+    with pytest.raises(exceptions.ValueError):
+        await cl.get_order('-')
 
 
 @respx.mock
@@ -315,8 +314,8 @@ async def test_cancel_order(oid, order_description, session):
 @pytest.mark.asyncio
 async def test_cancel_order_invalid_id(session):
     cl = OrdersClient(session, base_url=TEST_URL)
-    with pytest.raises(clients.orders.OrdersClientException):
-        _ = await cl.cancel_order('invalid_order_id')
+    with pytest.raises(exceptions.ValueError):
+        await cl.cancel_order('invalid_order_id')
 
 
 @respx.mock
@@ -394,7 +393,7 @@ async def test_cancel_orders_by_ids(session, oid):
 @pytest.mark.asyncio
 async def test_cancel_orders_by_ids_invalid_id(session, oid):
     cl = OrdersClient(session, base_url=TEST_URL)
-    with pytest.raises(clients.orders.OrdersClientException):
+    with pytest.raises(exceptions.ValueError):
         _ = await cl.cancel_orders([oid, "invalid_oid"])
 
 
