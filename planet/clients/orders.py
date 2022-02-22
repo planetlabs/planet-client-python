@@ -74,6 +74,7 @@ class OrdersClient():
 
     @staticmethod
     def _check_order_id(oid):
+        """Raises planet.exceptions.ValueError if oid is not a valid UUID"""
         try:
             uuid.UUID(hex=oid)
         except (ValueError, AttributeError):
@@ -169,7 +170,7 @@ class OrdersClient():
             Order information
 
         Raises:
-            OrdersClientException: If order_id is not valid UUID.
+            planet.exceptions.ValueError: If order_id is not a valid UUID.
             planet.exceptions.APIException: On API error.
         '''
         self._check_order_id(order_id)
@@ -204,7 +205,7 @@ class OrdersClient():
             Empty response
 
         Raises:
-            OrdersClientException: If order_id is not valid UUID.
+            planet.exceptions.ValueError: If order_id is not a valid UUID.
             planet.exceptions.APIException: On API error.
         '''
         self._check_order_id(order_id)
@@ -235,6 +236,8 @@ class OrdersClient():
             Results of the bulk cancel request
 
         Raises:
+            planet.exceptions.ValueError: If an entry in order_ids is not a
+                valid UUID.
             planet.exceptions.APIException: On API error.
         '''
         url = f'{self._base_url}{BULK_PATH}/cancel'
@@ -315,8 +318,17 @@ class OrdersClient():
 
         Raises:
             planet.exceptions.APIException: On API error.
+            planet.exceptions.StateError: If the order is not in a completed
+                state.
         """
         order = await self.get_order(order_id)
+        if order.state not in ORDERS_STATES_COMPLETE:
+            raise exceptions.StateError(
+                order.state,
+                'Order cannot be downloaded because the order is not in a '
+                'completed state. Consider using wait functionality before '
+                'attempting to download.')
+
         locations = order.locations
         LOGGER.info(
             f'downloading {len(locations)} assets from order {order_id}'

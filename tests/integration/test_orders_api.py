@@ -53,6 +53,7 @@ def create_download_mock(downloaded_content, order_description, oid):
 
     def f():
         # Create mock HTTP response
+        order_description['state'] = 'success'
         dl_url = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
         order_description['_links']['results'] = [
             {'location': dl_url},
@@ -626,6 +627,7 @@ async def test_download_order_success(tmpdir, order_description, oid, session):
     '''
 
     # Mock an HTTP response for download
+    order_description['state'] = 'success'
     dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
     dl_url2 = TEST_DOWNLOAD_URL + '/2?token=IAmAnotherToken'
     order_description['_links']['results'] = [
@@ -666,6 +668,24 @@ async def test_download_order_success(tmpdir, order_description, oid, session):
     assert Path(filenames[0]).name == 'm1.json'
     assert json.load(open(filenames[1])) == {'key2': 'value2'}
     assert Path(filenames[1]).name == 'm2.json'
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_download_order_state(
+        tmpdir, order_description, oid, session):
+    dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
+    order_description['_links']['results'] = [
+        {'location': dl_url1},
+    ]
+
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.get(get_url).return_value = mock_resp
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+    with pytest.raises(exceptions.StateError):
+        await cl.download_order(oid, directory=str(tmpdir))
 
 
 @respx.mock
