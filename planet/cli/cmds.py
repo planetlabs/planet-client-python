@@ -52,10 +52,10 @@ def translate_exceptions(func):
     def wrapper(*args, **kwargs):
         try:
             func(*args, **kwargs)
-        except exceptions.APIException as ex:
-            raise click.ClickException(ex)
         except exceptions.AuthException:
             raise click.ClickException(
                 'Auth information does not exist or is corrupted. Initialize '
                 'with `planet auth init`.')
+        except exceptions.PlanetException as ex:
+            raise click.ClickException(ex)
     return wrapper
