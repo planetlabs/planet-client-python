@@ -39,6 +39,9 @@ def test_StateBar___init___disabled():
     with reporting.StateBar(disable=True) as bar:
         assert bar.bar.disable
 
+        # just make sure this doesn't error out
+        bar.update(order_id='1', state='init')
+
 
 def test_StateBar_update():
     with reporting.StateBar() as bar:

@@ -92,9 +92,15 @@ class StateBar(ProgressBar):
         state: str = None,
         order_id: str = None
     ):
+        # if not self.disable:
         if state:
             self.state = state
-            self.bar.postfix[1] = self.state
+            try:
+                self.bar.postfix[1] = self.state
+            except AttributeError:
+                # If the bar is disabled, attempting to access self.bar.postfix
+                # will result in an error. In this case, just skip it.
+                pass
 
         if order_id:
             self.order_id = order_id
