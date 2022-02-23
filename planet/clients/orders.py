@@ -380,9 +380,10 @@ class OrdersClient():
 
         Parameters:
             order_id: The ID of the order
-            states: Order states that will end polling.
+            states: Order states that will end polling. Defaults to all
+                completed states.
             delay: Time (in seconds) between polls.
-            max_attempts: Maximum number of polls.
+            max_attempts: Maximum number of polls. Set to zero for no limit.
             report: Callback function for reporting progress updates.
 
         Returns
