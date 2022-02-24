@@ -92,7 +92,6 @@ class StateBar(ProgressBar):
         state: str = None,
         order_id: str = None
     ):
-        # if not self.disable:
         if state:
             self.state = state
             try:
