@@ -23,6 +23,7 @@ with open('planet/__version__.py') as f:
             continue
 
 install_requires = [
+    'arrow',
     'click>=8.0.0',
     'httpx==0.16.1',
     'shapely>=1.7.1',

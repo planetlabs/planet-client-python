@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """Functionality for interacting with the orders api"""
+
 import asyncio
 import json
 import logging
@@ -20,10 +21,12 @@ import time
 import typing
 import uuid
 
+import arrow
+
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
-from ..models import Order, Orders, Request, Response, StreamingBody
+from ..models import Order, OrderComponent, Orders, Request, Response, StreamingBody
 
 BASE_URL = f'{PLANET_BASE_URL}/compute/ops'
 STATS_PATH = '/stats/orders/v2'
@@ -94,6 +97,34 @@ class OrdersClient():
     def _request(self, url, method, data=None, params=None, json=None):
         return Request(url, method=method, data=data, params=params, json=json)
 
+    def _order_factory(self, contents: dict) -> Order:
+        """Convert API response contents to an instance of Order."""
+        links = contents.get("_links", [])
+        results = []
+
+        for res in links.get("results", []):
+            expires_at = res.get("expires_at", None)
+            if expires_at:
+                expires = arrow.get(expires_at).datetime
+            else:
+                expires = None
+
+            results.append( OrderComponent(delivery=res.get("delivery", None), name=res.get("name", None), location=res.get("location", None), expires=expires))
+
+        created_on = res.get("created_on", None)
+        if created_on:
+            created = arrow.get(created_on).datetime
+        else:
+            created = None
+
+        last_modified = res.get("last_modified", None)
+        if last_modified:
+            last_modified = arrow.get(last_modified).datetime
+        else:
+            last_modified = None
+
+        return Order(id=contents["id"], state=contents["state"], results=results, created=created, last_modified=last_modified, last_message=contents["last_message"], error_hints=contents["error_hints"], request=contents)
+
     async def _do_request(self, request: Request) -> Response:
         '''Submit a request and get response.
 
@@ -152,7 +183,7 @@ class OrdersClient():
                 pass
             raise exceptions.BadQuery(msg)
 
-        order = Order(resp.json())
+        order = self._order_factory(resp.json())
         return order
 
     async def get_order(self, order_id: str) -> Order:
@@ -180,7 +211,7 @@ class OrdersClient():
             msg = msg_json['message']
             raise exceptions.MissingResource(msg)
 
-        order = Order(resp.json())
+        order = self._order_factory(resp.json())
         return order
 
     async def cancel_order(self, order_id: str) -> Response:
@@ -303,7 +334,7 @@ class OrdersClient():
             planet.exceptions.APIException: On API error.
         """
         order = await self.get_order(order_id)
-        locations = order.locations
+        locations = [component.location for component in order.results]
         LOGGER.info(
             f'downloading {len(locations)} assets from order {order_id}')
         filenames = [
@@ -384,14 +415,12 @@ class OrdersClient():
     async def list_orders(
             self,
             state: str = None,
-            limit: int = None,
-            as_json: bool = False) -> typing.Union[typing.List[Order], dict]:
+            limit: int = None) -> typing.Union[typing.List[Order], dict]:
         """Get all order requests.
 
         Parameters:
             state: Filter orders to given state.
             limit: Limit orders to given limit.
-            as_json: Return orders as a json dict.
 
         Returns:
             User orders that match the query
@@ -407,17 +436,15 @@ class OrdersClient():
             params = None
 
         orders = await self._get_orders(url, params=params, limit=limit)
-
-        if as_json:
-            ret = [o.json async for o in orders]
-        else:
-            ret = [o async for o in orders]
-        return ret
+        return [order async for order in orders]
 
     async def _get_orders(self, url, params=None, limit=None):
         request = self._request(url, 'GET', params=params)
 
-        return Orders(request, self._do_request, limit=limit)
+        return Orders(request,
+                      self._do_request,
+                      self._order_factory,
+                      limit=limit)
 
     @staticmethod
     def _check_state(state):

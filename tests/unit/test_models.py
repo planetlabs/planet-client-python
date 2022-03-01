@@ -24,6 +24,7 @@ from httpx import URL
 import pytest
 
 from planet import models
+from planet.clients.orders import OrdersClient
 
 LOGGER = logging.getLogger(__name__)
 
@@ -210,7 +211,8 @@ def get_orders_pages(orders_page):
 @pytest.mark.asyncio
 async def test_Orders(get_orders_pages):
     req = MagicMock()
-    orders = models.Orders(req, get_orders_pages)
+    orders = models.Orders(req, get_orders_pages,
+                           OrdersClient(None)._order_factory)
     expected_ids = [
         'f05b1ed7-11f0-43da-960c-a624f7c355c8',
         '8d4799c4-5291-40c0-a7f5-adb9a974455d',
@@ -218,17 +220,6 @@ async def test_Orders(get_orders_pages):
         '8d4799c4-5291-40c0-a7f5-adb9a974455d'
     ]
     assert expected_ids == [o.id async for o in orders]
-
-
-def test_Order_results(order_description):
-    order = models.Order(order_description)
-    assert len(order.results) == 3
-
-
-def test_Order_locations(order_description):
-    order = models.Order(order_description)
-    expected_locations = ['location1', 'location2', 'location3']
-    assert order.locations == expected_locations
 
 
 def test_last_modified_emptyheader():

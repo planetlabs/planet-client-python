@@ -14,13 +14,14 @@
 """Manage data for requests and responses."""
 import copy
 from datetime import datetime
-import json
 import logging
 import mimetypes
 import random
 import re
 import string
+import typing
 
+from attrs import asdict, define
 import httpx
 from tqdm.asyncio import tqdm
 
@@ -265,6 +266,29 @@ def _get_random_filename(content_type=None):
     return name
 
 
+@define
+class OrderComponent:
+    delivery: str
+    expires: datetime
+    location: str
+    name: str
+
+
+@define
+class Order:
+    created: datetime
+    error_hints: typing.List[str]
+    id: str
+    last_message: str
+    last_modified: datetime
+    request: dict
+    results: typing.List[OrderComponent]
+    state: str
+
+    def to_dict(self):
+        return self.request
+
+
 class Paged():
     '''Asynchronous iterator over results in a paged resource from the Planet
     server.
@@ -349,65 +373,6 @@ class Paged():
         return next_link
 
 
-class Order():
-    '''Managing description of an order returned from Orders API.
-
-    :param data: Response json describing order
-    :type data: dict
-    '''
-    LINKS_KEY = '_links'
-    RESULTS_KEY = 'results'
-    LOCATION_KEY = 'location'
-
-    def __init__(self, data):
-        self.data = data
-
-    def __str__(self):
-        return "<Order> " + json.dumps(self.data)
-
-    @property
-    def results(self):
-        '''Results for each item in order.
-
-        :return: result for each item in order
-        :rtype: list of dict
-        '''
-        links = self.data[self.LINKS_KEY]
-        results = links.get(self.RESULTS_KEY, None)
-        return results
-
-    @property
-    def locations(self):
-        '''Download locations for order results.
-
-        :return: download locations in order
-        :rtype: list of str
-        '''
-        return list(r[self.LOCATION_KEY] for r in self.results)
-
-    @property
-    def state(self):
-        '''State of the order.
-
-        :return: state of order
-        :rtype: str
-        '''
-        return self.data['state']
-
-    @property
-    def id(self):
-        '''ID of the order.
-
-        :return: id of order
-        :rtype: str
-        '''
-        return self.data['id']
-
-    @property
-    def json(self):
-        return self.data
-
-
 class Orders(Paged):
     '''Asynchronous iterator over Orders from a paged response describing
     orders.'''
@@ -415,5 +380,9 @@ class Orders(Paged):
     NEXT_KEY = 'next'
     ITEMS_KEY = 'orders'
 
+    def __init__(self, request, do_request_fcn, order_factory, limit=None):
+        super().__init__(request, do_request_fcn, limit=limit)
+        self._order_factory = order_factory
+
     async def __anext__(self):
-        return Order(await super().__anext__())
+        return self._order_factory(await super().__anext__())
