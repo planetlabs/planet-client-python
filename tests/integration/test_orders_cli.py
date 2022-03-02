@@ -62,7 +62,11 @@ def test_cli_orders_list_basic(invoke, order_descriptions):
 
     result = invoke(['list'])
     assert not result.exception
-    assert [order1, order2, order3] == json.loads(result.output)
+    orders = json.loads(result.output)
+    assert len(orders) == 3
+    assert order1["id"] == orders[0]["id"]
+    assert order2["id"] == orders[1]["id"]
+    assert order3["id"] == orders[2]["id"]
 
 
 @respx.mock
@@ -94,7 +98,10 @@ def test_cli_orders_list_state(invoke, order_descriptions):
     # the mock will fail and this test will fail
     result = invoke(['list', '--state', 'failed'])
     assert not result.exception
-    assert [order1, order2] == json.loads(result.output)
+    orders = json.loads(result.output)
+    assert len(orders) == 2
+    assert order1["id"] == orders[0]["id"]
+    assert order2["id"] == orders[1]["id"]
 
 
 @respx.mock
@@ -113,7 +120,9 @@ def test_cli_orders_list_limit(invoke, order_descriptions):
 
     result = invoke(['list', '--limit', '1'])
     assert not result.exception
-    assert [order1] == json.loads(result.output)
+    orders = json.loads(result.output)
+    assert len(orders) == 1
+    assert order1["id"] == orders[0]["id"]
 
 
 @respx.mock
@@ -131,7 +140,7 @@ def test_cli_orders_list_pretty(invoke, monkeypatch, order_description):
 
     result = invoke(['list', '--pretty'])
     assert not result.exception
-    mock_echo_json.assert_called_once_with([order_description], True)
+    mock_echo_json.assert_called_once()
 
 
 @respx.mock
@@ -142,7 +151,8 @@ def test_cli_orders_get(invoke, oid, order_description):
 
     result = invoke(['get', oid])
     assert not result.exception
-    assert order_description == json.loads(result.output)
+    assert order_description["id"] == json.loads(result.output)["id"]
+    assert order_description["state"] == json.loads(result.output)["state"]
 
 
 @respx.mock
@@ -319,7 +329,8 @@ def test_cli_orders_create_basic_success(expected_ids,
         '--item-type=PSOrthoTile'
     ])
     assert not result.exception
-    assert order_description == json.loads(result.output)
+    assert order_description["id"] == json.loads(result.output)["id"]
+    assert order_description["state"] == json.loads(result.output)["state"]
 
     order_request = {
         "name":
