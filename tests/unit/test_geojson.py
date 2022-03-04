@@ -23,6 +23,7 @@ LOGGER = logging.getLogger(__name__)
 
 @pytest.fixture
 def assert_geom_equal():
+
     def _tuple_to_list(obj):
         return json.loads(json.dumps(obj).replace(")", "]").replace("(", "["))
 
@@ -30,12 +31,14 @@ def assert_geom_equal():
         str_1 = _tuple_to_list(geom_1)
         str_2 = _tuple_to_list(geom_2)
         assert str_1 == str_2
+
     return fcn
 
 
-def test_geom_from_geojson_success(
-        geom_geojson, feature_geojson, featureclass_geojson,
-        assert_geom_equal):
+def test_geom_from_geojson_success(geom_geojson,
+                                   feature_geojson,
+                                   featureclass_geojson,
+                                   assert_geom_equal):
     ggeo = geojson.as_geom(geom_geojson)
     assert_geom_equal(ggeo, geom_geojson)
 

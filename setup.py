@@ -14,7 +14,6 @@
 from pathlib import Path
 from setuptools import setup, find_packages
 
-
 with open('planet/__version__.py') as f:
     for line in f:
         if line.find("__version__") >= 0:
@@ -22,7 +21,6 @@ with open('planet/__version__.py') as f:
             version = version.strip('"')
             version = version.strip("'")
             continue
-
 
 install_requires = [
     'click>=8.0.0',
@@ -33,16 +31,10 @@ install_requires = [
 ]
 
 test_requires = [
-    'pytest',
-    'pytest-asyncio==0.16',
-    'pytest-cov',
-    'respx==0.16.3'
+    'pytest', 'pytest-asyncio==0.16', 'pytest-cov', 'respx==0.16.3'
 ]
 
-lint_requires = [
-    'flake8',
-    'yapf'
-]
+lint_requires = ['flake8', 'yapf']
 
 doc_requires = [
     'mkdocs==1.1',
@@ -51,11 +43,12 @@ doc_requires = [
     'mkdocstrings==0.15.0'
 ]
 
-setup(name='planet',
-      version=version,
-      description=u"Planet SDK for Python",
-      long_description=Path("README.md").read_text("utf-8"),
-      classifiers=[
+setup(
+    name='planet',
+    version=version,
+    description=u"Planet SDK for Python",
+    long_description=Path("README.md").read_text("utf-8"),
+    classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: Console',
         'Intended Audience :: Developers',
@@ -65,26 +58,27 @@ setup(name='planet',
         'Topic :: Scientific/Engineering',
         'Topic :: Software Development',
         'Topic :: Utilities'
-      ],
-      keywords='planet api sdk client',
-      author='Jennifer Reiber Kyle',
-      author_email='jennifer.kyle@planet.com',
-      url='https://github.com/planetlabs/planet-client-python',
-      license='Apache 2.0',
-      packages=find_packages(exclude=['examples', 'tests']),
-      data_files=[('', ['LICENSE'])],
-      include_package_data=True,
-      zip_safe=False,
-      python_requires='>=3.7',
-      install_requires=install_requires,
-      extras_require={
-          'test': test_requires,
-          'lint': lint_requires,
-          'docs': doc_requires,
-          'dev': test_requires + lint_requires + doc_requires},
-      entry_points={
-          'console_scripts': [
-              'planet=planet.cli.cli:main',
-          ],
-        },
-      )
+    ],
+    keywords='planet api sdk client',
+    author='Jennifer Reiber Kyle',
+    author_email='jennifer.kyle@planet.com',
+    url='https://github.com/planetlabs/planet-client-python',
+    license='Apache 2.0',
+    packages=find_packages(exclude=['examples', 'tests']),
+    data_files=[('', ['LICENSE'])],
+    include_package_data=True,
+    zip_safe=False,
+    python_requires='>=3.7',
+    install_requires=install_requires,
+    extras_require={
+        'test': test_requires,
+        'lint': lint_requires,
+        'docs': doc_requires,
+        'dev': test_requires + lint_requires + doc_requires
+    },
+    entry_points={
+        'console_scripts': [
+            'planet=planet.cli.cli:main',
+        ],
+    },
+)

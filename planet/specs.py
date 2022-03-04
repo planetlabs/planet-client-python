@@ -17,11 +17,19 @@ import logging
 import os
 from pathlib import Path
 
-
 DATA_DIR = 'data'
 PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2020_03_10.json'
-SUPPORTED_TOOLS = ['band_math', 'clip', 'composite', 'coregister',
-                   'file_format', 'reproject', 'tile', 'toar', 'harmonize']
+SUPPORTED_TOOLS = [
+    'band_math',
+    'clip',
+    'composite',
+    'coregister',
+    'file_format',
+    'reproject',
+    'tile',
+    'toar',
+    'harmonize'
+]
 SUPPORTED_ORDER_TYPES = ['full', 'partial']
 SUPPORTED_ARCHIVE_TYPES = ['zip']
 SUPPORTED_FILE_FORMATS = ['COG', 'PL_NITF']
@@ -51,8 +59,9 @@ def validate_order_type(order_type):
 
 
 def validate_archive_type(archive_type):
-    return _validate_field(
-        archive_type, SUPPORTED_ARCHIVE_TYPES, 'archive_type')
+    return _validate_field(archive_type,
+                           SUPPORTED_ARCHIVE_TYPES,
+                           'archive_type')
 
 
 def validate_tool(tool):
@@ -66,8 +75,8 @@ def validate_file_format(file_format):
 def _validate_field(value, supported, field_name=None):
     try:
         value = get_match(value, supported)
-    except(NoMatchException):
-        opts = ', '.join(["'"+s+"'" for s in supported])
+    except (NoMatchException):
+        opts = ', '.join(["'" + s + "'" for s in supported])
         msg = f'\'{value}\' is not one of {opts}.'
         if field_name:
             msg = f'{field_name} - ' + msg
@@ -89,7 +98,7 @@ def get_match(test_entry, spec_entries):
     try:
         match = next(t for t in spec_entries
                      if t.lower() == test_entry.lower())
-    except(StopIteration):
+    except (StopIteration):
         raise NoMatchException
 
     return match

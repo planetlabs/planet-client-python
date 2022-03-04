@@ -24,7 +24,8 @@ LOGGER = logging.getLogger(__name__)
 
 @click.group()
 @click.pass_context
-@click.option('-u', '--base-url',
+@click.option('-u',
+              '--base-url',
               default=None,
               help='Assign custom base Auth API URL.')
 def auth(ctx, base_url):
@@ -35,12 +36,14 @@ def auth(ctx, base_url):
 @auth.command()
 @click.pass_context
 @translate_exceptions
-@click.option('--email', default=None, prompt=True, help=(
-    'The email address associated with your Planet credentials.'
-))
-@click.password_option('--password', confirmation_prompt=False, help=(
-    'Account password. Will not be saved.'
-))
+@click.option(
+    '--email',
+    default=None,
+    prompt=True,
+    help=('The email address associated with your Planet credentials.'))
+@click.password_option('--password',
+                       confirmation_prompt=False,
+                       help=('Account password. Will not be saved.'))
 def init(ctx, email, password):
     '''Obtain and store authentication information'''
     base_url = ctx.obj['BASE_URL']

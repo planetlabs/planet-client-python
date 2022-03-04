@@ -40,7 +40,8 @@ async def orders_client(ctx):
 
 @click.group()
 @click.pass_context
-@click.option('-u', '--base-url',
+@click.option('-u',
+              '--base-url',
               default=None,
               help='Assign custom base Orders API URL.')
 def orders(ctx, base_url):
@@ -53,12 +54,16 @@ def orders(ctx, base_url):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.option('-s', '--state',
+@click.option('-s',
+              '--state',
               help='Filter orders to given state.',
               type=click.Choice(planet.clients.orders.ORDERS_STATES,
                                 case_sensitive=False))
-@click.option('-l', '--limit', help='Filter orders to given limit.',
-              default=None, type=int)
+@click.option('-l',
+              '--limit',
+              help='Filter orders to given limit.',
+              default=None,
+              type=int)
 @pretty
 async def list(ctx, state, limit, pretty):
     '''List orders'''
@@ -103,14 +108,23 @@ async def cancel(ctx, order_id):
 @translate_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
-@click.option('-q', '--quiet', is_flag=True, default=False,
+@click.option('-q',
+              '--quiet',
+              is_flag=True,
+              default=False,
               help=('Disable ANSI control output.'))
-@click.option('-o', '--overwrite', is_flag=True, default=False,
+@click.option('-o',
+              '--overwrite',
+              is_flag=True,
+              default=False,
               help=('Overwrite files if they already exist.'))
-@click.option('--dest', default='.',
+@click.option('--dest',
+              default='.',
               help=('Directory to download files to.'),
-              type=click.Path(exists=True, resolve_path=True,
-                              writable=True, file_okay=False))
+              type=click.Path(exists=True,
+                              resolve_path=True,
+                              writable=True,
+                              file_okay=False))
 async def download(ctx, order_id, quiet, overwrite, dest):
     '''Download order by order ID.'''
 
@@ -119,11 +133,10 @@ async def download(ctx, order_id, quiet, overwrite, dest):
         with planet.reporting.StateBar(order_id=order_id,
                                        disable=quiet) as bar:
             await cl.poll(str(order_id), report=bar.update)
-            _ = await cl.download_order(
-                    str(order_id),
-                    directory=dest,
-                    overwrite=overwrite,
-                    progress_bar=not quiet)
+            _ = await cl.download_order(str(order_id),
+                                        directory=dest,
+                                        overwrite=overwrite,
+                                        progress_bar=not quiet)
 
 
 def split_id_list(ctx, param, value):
@@ -167,29 +180,54 @@ def read_file_json(ctx, param, value):
 @translate_exceptions
 @coro
 @click.option('--name', required=True)
-@click.option('--id', 'ids', help='One or more comma-separated item IDs',
-              type=click.STRING, callback=split_id_list, required=True)
+@click.option('--id',
+              'ids',
+              help='One or more comma-separated item IDs',
+              type=click.STRING,
+              callback=split_id_list,
+              required=True)
 # @click.option('--ids_from_search',
 #               help='Embedded data search')
-@click.option('--bundle', multiple=False, required=True,
-              help='Specify bundle',
-              type=click.Choice(planet.specs.get_product_bundles(),
-                                case_sensitive=False),
-              )
-@click.option('--item-type', multiple=False, required=True,
+@click.option(
+    '--bundle',
+    multiple=False,
+    required=True,
+    help='Specify bundle',
+    type=click.Choice(planet.specs.get_product_bundles(),
+                      case_sensitive=False),
+)
+@click.option('--item-type',
+              multiple=False,
+              required=True,
               help='Specify an item type',
               type=click.STRING)
-@click.option('--email', default=False, is_flag=True,
+@click.option('--email',
+              default=False,
+              is_flag=True,
               help='Send email notification when Order is complete')
-@click.option('--cloudconfig', help='Cloud delivery config json file.',
-              type=click.File('rb'), callback=read_file_json)
-@click.option('--clip', help='Clip GeoJSON file.',
-              type=click.File('rb'), callback=read_file_geojson)
-@click.option('--tools', help='Toolchain json file.',
-              type=click.File('rb'), callback=read_file_json)
+@click.option('--cloudconfig',
+              help='Cloud delivery config json file.',
+              type=click.File('rb'),
+              callback=read_file_json)
+@click.option('--clip',
+              help='Clip GeoJSON file.',
+              type=click.File('rb'),
+              callback=read_file_geojson)
+@click.option('--tools',
+              help='Toolchain json file.',
+              type=click.File('rb'),
+              callback=read_file_json)
 @pretty
-async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
-                 tools, pretty):
+async def create(ctx,
+                 name,
+                 ids,
+                 bundle,
+                 item_type,
+                 email,
+                 cloudconfig,
+                 clip,
+                 tools,
+                 pretty):
     '''Create an order.'''
     try:
         product = planet.order_request.product(ids, bundle, item_type)
@@ -202,9 +240,7 @@ async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
         notifications = None
 
     if cloudconfig:
-        delivery = planet.order_request.delivery(
-            cloud_config=cloudconfig
-        )
+        delivery = planet.order_request.delivery(cloud_config=cloudconfig)
     else:
         delivery = None
 
@@ -218,12 +254,11 @@ async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
 
         tools = [planet.order_request.clip_tool(clip)]
 
-    request = planet.order_request.build_request(
-        name,
-        products=[product],
-        delivery=delivery,
-        notifications=notifications,
-        tools=tools)
+    request = planet.order_request.build_request(name,
+                                                 products=[product],
+                                                 delivery=delivery,
+                                                 notifications=notifications,
+                                                 tools=tools)
 
     async with orders_client(ctx) as cl:
         order = await cl.create_order(request)
