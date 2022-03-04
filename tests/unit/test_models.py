@@ -109,28 +109,23 @@ def test__get_filename_from_headers(headers, expected):
     assert models._get_filename_from_headers(headers) == expected
 
 
-@pytest.mark.parametrize(
-    'url,expected',
-    [
-        (URL('https://planet.com/'), None),
-        (URL('https://planet.com/path/to/'), None),
-        (URL('https://planet.com/path/to/example.tif'), 'example.tif'),
-        (URL('https://planet.com/path/to/example.tif?foo=f6f1&bar=baz'),
-         'example.tif'),
-        (URL('https://planet.com/path/to/example.tif?foo=f6f1#quux'),
-         'example.tif'),
-    ])
+@pytest.mark.parametrize('url,expected', [
+    (URL('https://planet.com/'), None),
+    (URL('https://planet.com/path/to/'), None),
+    (URL('https://planet.com/path/to/example.tif'), 'example.tif'),
+    (URL('https://planet.com/path/to/example.tif?foo=f6f1&bar=baz'),
+     'example.tif'),
+    (URL('https://planet.com/path/to/example.tif?foo=f6f1#quux'),
+     'example.tif'),
+])
 def test__get_filename_from_url(url, expected):
     assert models._get_filename_from_url(url) == expected
 
 
-@pytest.mark.parametrize(
-    'content_type,check',
-    [
-        (None,
-         lambda x: re.match(r'^planet-[a-z0-9]{8}$', x, re.I) is not None),
-        ('image/tiff', lambda x: x.endswith(('.tif', '.tiff'))),
-    ])
+@pytest.mark.parametrize('content_type,check', [
+    (None, lambda x: re.match(r'^planet-[a-z0-9]{8}$', x, re.I) is not None),
+    ('image/tiff', lambda x: x.endswith(('.tif', '.tiff'))),
+])
 def test__get_random_filename(content_type, check):
     assert check(models._get_random_filename(content_type))
 
@@ -192,7 +187,8 @@ def get_orders_pages(orders_page):
     page2 = copy.deepcopy(orders_page)
     del page2['_links']['next']
     responses = [
-        mock_http_response(json=orders_page), mock_http_response(json=page2)
+        mock_http_response(json=orders_page),
+        mock_http_response(json=page2)
     ]
 
     async def do_get(req):

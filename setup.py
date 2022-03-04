@@ -37,9 +37,7 @@ test_requires = [
 lint_requires = ['flake8', 'yapf']
 
 doc_requires = [
-    'mkdocs==1.1',
-    'mkdocs-click==0.4.0',
-    'mkdocs-material',
+    'mkdocs==1.1', 'mkdocs-click==0.4.0', 'mkdocs-material',
     'mkdocstrings==0.15.0'
 ]
 
@@ -49,14 +47,11 @@ setup(
     description=u"Planet SDK for Python",
     long_description=Path("README.md").read_text("utf-8"),
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
-        'Environment :: Console',
+        'Development Status :: 2 - Pre-Alpha', 'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Topic :: Scientific/Engineering',
-        'Topic :: Software Development',
+        'Operating System :: OS Independent', 'Programming Language :: Python',
+        'Topic :: Scientific/Engineering', 'Topic :: Software Development',
         'Topic :: Utilities'
     ],
     keywords='planet api sdk client',
