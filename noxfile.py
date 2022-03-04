@@ -23,6 +23,7 @@ def lint(session):
     session.install("-e", ".[lint]")
 
     session.run("flake8", *source_files)
+    session.run('yapf', '--diff', '-r', *source_files)
 
 
 @nox.session

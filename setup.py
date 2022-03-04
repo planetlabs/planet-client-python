@@ -41,6 +41,7 @@ test_requires = [
 
 lint_requires = [
     'flake8',
+    'yapf'
 ]
 
 doc_requires = [
