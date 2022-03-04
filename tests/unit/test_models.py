@@ -97,8 +97,14 @@ NO_NAME_HEADERS = {
     'content-type': 'image/tiff',
     'content-length': '57350256'
 }
-OPEN_CALIFORNIA_HEADERS = NO_NAME_HEADERS.update(
-    {'content-disposition': 'attachment; filename="open_california.tif"'})
+OPEN_CALIFORNIA_HEADERS = {
+    'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+    'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+    'accept-ranges': 'bytes',
+    'content-type': 'image/tiff',
+    'content-length': '57350256',
+    'content-disposition': 'attachment; filename="open_california.tif"'
+}
 
 
 @pytest.mark.parametrize('headers,expected',
