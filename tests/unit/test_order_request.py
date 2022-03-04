@@ -157,8 +157,7 @@ def test_delivery():
 
 def test_amazon_s3():
     as3_config = order_request.amazon_s3('aws_access_key_id',
-                                         'aws_secret_access_key',
-                                         'bucket',
+                                         'aws_secret_access_key', 'bucket',
                                          'aws_region')
     expected = {
         'amazon_s3': {
@@ -172,8 +171,7 @@ def test_amazon_s3():
 
 
 def test_azure_blob_storage():
-    abs_config = order_request.azure_blob_storage('account',
-                                                  'container',
+    abs_config = order_request.azure_blob_storage('account', 'container',
                                                   'sas_token')
     expected = {
         'azure_blob_storage': {

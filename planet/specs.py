@@ -20,15 +20,8 @@ from pathlib import Path
 DATA_DIR = 'data'
 PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2020_03_10.json'
 SUPPORTED_TOOLS = [
-    'band_math',
-    'clip',
-    'composite',
-    'coregister',
-    'file_format',
-    'reproject',
-    'tile',
-    'toar',
-    'harmonize'
+    'band_math', 'clip', 'composite', 'coregister', 'file_format', 'reproject',
+    'tile', 'toar', 'harmonize'
 ]
 SUPPORTED_ORDER_TYPES = ['full', 'partial']
 SUPPORTED_ARCHIVE_TYPES = ['zip']
@@ -59,8 +52,7 @@ def validate_order_type(order_type):
 
 
 def validate_archive_type(archive_type):
-    return _validate_field(archive_type,
-                           SUPPORTED_ARCHIVE_TYPES,
+    return _validate_field(archive_type, SUPPORTED_ARCHIVE_TYPES,
                            'archive_type')
 
 

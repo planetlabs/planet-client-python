@@ -218,16 +218,8 @@ def read_file_json(ctx, param, value):
               type=click.File('rb'),
               callback=read_file_json)
 @pretty
-async def create(ctx,
-                 name,
-                 ids,
-                 bundle,
-                 item_type,
-                 email,
-                 cloudconfig,
-                 clip,
-                 tools,
-                 pretty):
+async def create(ctx, name, ids, bundle, item_type, email, cloudconfig, clip,
+                 tools, pretty):
     '''Create an order.'''
     try:
         product = planet.order_request.product(ids, bundle, item_type)

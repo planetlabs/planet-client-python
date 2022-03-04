@@ -87,7 +87,8 @@ async def test_list_orders_basic(order_descriptions, session):
 
     page1_response = {
         "_links": {
-            "_self": "string", "next": next_page_url
+            "_self": "string",
+            "next": next_page_url
         },
         "orders": [order1, order2]
     }
@@ -115,7 +116,8 @@ async def test_list_orders_state(order_descriptions, session):
     page1_response = {
         "_links": {
             "_self": "string"
-        }, "orders": [order1, order2]
+        },
+        "orders": [order1, order2]
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(list_url).return_value = mock_resp
@@ -147,7 +149,8 @@ async def test_list_orders_limit(order_descriptions, session):
 
     page1_response = {
         "_links": {
-            "_self": "string", "next": nono_page_url
+            "_self": "string",
+            "next": nono_page_url
         },
         "orders": [order1, order2]
     }
@@ -219,8 +222,7 @@ async def test_create_order_bad_item_type(order_request, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_create_order_item_id_does_not_exist(order_request,
-                                                   session,
+async def test_create_order_item_id_does_not_exist(order_request, session,
                                                    match_pytest_raises):
     resp = {
         "field": {
@@ -322,8 +324,7 @@ async def test_cancel_order_id_doesnt_exist(oid, session, match_pytest_raises):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_cancel_order_id_cannot_be_cancelled(oid,
-                                                   session,
+async def test_cancel_order_id_cannot_be_cancelled(oid, session,
                                                    match_pytest_raises):
     cancel_url = f'{TEST_ORDERS_URL}/{oid}'
 
@@ -385,8 +386,10 @@ async def test_cancel_orders_all(session):
         "result": {
             "succeeded": {
                 "count": 2
-            }, "failed": {
-                "count": 0, "failures": []
+            },
+            "failed": {
+                "count": 0,
+                "failures": []
             }
         }
     }
@@ -460,10 +463,12 @@ async def test_poll_invalid_state(oid, session):
 async def test_aggegated_order_stats(session):
     example_stats = {
         "organization": {
-            "queued_orders": 0, "running_orders": 6
+            "queued_orders": 0,
+            "running_orders": 6
         },
         "user": {
-            "queued_orders": 0, "running_orders": 0
+            "queued_orders": 0,
+            "running_orders": 0
         }
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=example_stats)
@@ -587,11 +592,7 @@ async def test_download_order_success(tmpdir, order_description, oid, session):
 @respx.mock
 @pytest.mark.asyncio
 async def test_download_order_overwrite_true_preexisting_data(
-        tmpdir,
-        oid,
-        session,
-        create_download_mock,
-        original_content,
+        tmpdir, oid, session, create_download_mock, original_content,
         downloaded_content):
     '''
     Test if download_order() overwrites pre-existing data with
