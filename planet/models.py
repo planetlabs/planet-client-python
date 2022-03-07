@@ -268,6 +268,16 @@ def _get_random_filename(content_type=None):
 
 @define
 class OrderComponent:
+    """Description of a component, or part, of a Planet data order.
+
+    Attributes:
+        delivery (str): The current state of this order request
+            component.
+        expires (datetime): When the download link (if present) expires.
+        location (str): The (optional) download link for this asset.
+        name (str): The name of the component.
+
+    """
     delivery: str
     expires: datetime
     location: str
@@ -276,6 +286,31 @@ class OrderComponent:
 
 @define
 class Order:
+    """Description of a Planet data order.
+
+    There are two kinds of information in an order description: the
+    product and delivery criteria chosen by the user, which is called
+    the "request"; and several attributes describing the state of order
+    processing which are determined by the Planet Orders API.
+
+    Attributes:
+        created (datetime): The UTC date this Order request was created.
+            Provided by the Orders API.
+        error_hints (list of str): Hints related to any reported error.
+            API provided.
+        id (str): A UUID to uniquely identify this Order request. API
+            provided.
+        last_message (str): Some info on the current order state. API
+            provided.
+        last_modified (str): The UTC date this Order request was last
+            modified. API provided.
+        request (dict): Product and delivery criteria. User provided.
+        results (list of OrderComponent): The canonical links to this
+            Order's results. API provided.
+        state (str): The current state of this Order request. API
+            provided.
+
+    """
     created: datetime
     error_hints: typing.List[str]
     id: str
