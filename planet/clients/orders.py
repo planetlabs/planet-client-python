@@ -109,21 +109,32 @@ class OrdersClient():
             else:
                 expires = None
 
-            results.append( OrderComponent(delivery=res.get("delivery", None), name=res.get("name", None), location=res.get("location", None), expires=expires))
+            results.append(
+                OrderComponent(delivery=res.get("delivery", None),
+                               name=res.get("name", None),
+                               location=res.get("location", None),
+                               expires=expires))
 
-        created_on = res.get("created_on", None)
+        created_on = contents.get("created_on", None)
         if created_on:
             created = arrow.get(created_on).datetime
         else:
             created = None
 
-        last_modified = res.get("last_modified", None)
+        last_modified = contents.get("last_modified", None)
         if last_modified:
             last_modified = arrow.get(last_modified).datetime
         else:
             last_modified = None
 
-        return Order(id=contents["id"], state=contents["state"], results=results, created=created, last_modified=last_modified, last_message=contents["last_message"], error_hints=contents["error_hints"], request=contents)
+        return Order(id=contents["id"],
+                     state=contents["state"],
+                     results=results,
+                     created=created,
+                     last_modified=last_modified,
+                     last_message=contents["last_message"],
+                     error_hints=contents["error_hints"],
+                     request=contents)
 
     async def _do_request(self, request: Request) -> Response:
         '''Submit a request and get response.

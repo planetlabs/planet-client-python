@@ -211,7 +211,8 @@ def get_orders_pages(orders_page):
 @pytest.mark.asyncio
 async def test_Orders(get_orders_pages):
     req = MagicMock()
-    orders = models.Orders(req, get_orders_pages,
+    orders = models.Orders(req,
+                           get_orders_pages,
                            OrdersClient(None)._order_factory)
     expected_ids = [
         'f05b1ed7-11f0-43da-960c-a624f7c355c8',

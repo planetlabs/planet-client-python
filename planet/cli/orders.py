@@ -68,8 +68,9 @@ def orders(ctx, base_url):
 async def list(ctx, state, limit, pretty):
     '''List orders'''
     async with orders_client(ctx) as cl:
-        orders = await cl.list_orders(state=state, limit=limit, as_json=True)
+        orders = await cl.list_orders(state=state, limit=limit)
 
+    orders = [order.to_dict() for order in orders]
     echo_json(orders, pretty)
 
 
@@ -87,7 +88,7 @@ async def get(ctx, order_id, pretty):
     async with orders_client(ctx) as cl:
         order = await cl.get_order(str(order_id))
 
-    echo_json(order.json, pretty)
+    echo_json(order.to_dict(), pretty)
 
 
 @orders.command()
@@ -263,4 +264,4 @@ async def create(ctx,
     async with orders_client(ctx) as cl:
         order = await cl.create_order(request)
 
-    echo_json(order.json, pretty)
+    echo_json(order.to_dict(), pretty)
