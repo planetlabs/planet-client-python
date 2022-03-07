@@ -313,11 +313,11 @@ def test_cli_orders_create_basic_success(expected_ids,
 
     result = invoke([
         'create',
-        '--name', 'test',
-        '--id', id_string,
-        '--bundle', 'analytic',
-        '--item-type', 'PSOrthoTile'
-        ])  # yapf: disable
+        '--name=test',
+        f'--id={id_string}',
+        '--bundle=analytic',
+        '--item-type=PSOrthoTile'
+    ])
     assert not result.exception
     assert order_description == json.loads(result.output)
 
@@ -337,11 +337,11 @@ def test_cli_orders_create_basic_success(expected_ids,
 def test_cli_orders_create_basic_item_type_invalid(invoke):
     result = invoke([
         'create',
-        '--name', 'test',
-        '--id', '4500474_2133707_2021-05-20_2419',
-        '--bundle', 'analytic',
-        '--item-type', 'invalid'
-        ])  # yapf: disable
+        '--name=test',
+        '--id=4500474_2133707_2021-05-20_2419',
+        '--bundle=analytic',
+        '--item-type=invalid'
+    ])
     assert result.exception
     assert 'Error: Invalid value: item_type' in result.output
 
@@ -597,16 +597,11 @@ def test_cli_orders_create_tools(invoke,
 
     result = invoke([
         'create',
-        '--name',
-        'test',
-        '--id',
-        '4500474_2133707_2021-05-20_2419',
-        '--bundle',
-        'analytic',
-        '--item-type',
-        'PSOrthoTile',
-        '--tools',
-        tools_file
+        '--name=test',
+        '--id=4500474_2133707_2021-05-20_2419',
+        '--bundle=analytic',
+        '--item-type=PSOrthoTile',
+        f'--tools={tools_file}'
     ])
     assert not result.exception
 
@@ -628,16 +623,11 @@ def test_cli_orders_create_tools(invoke,
 def test_cli_orders_read_file_json_doesnotexist(invoke):
     result = invoke([
         'create',
-        '--name',
-        'test',
-        '--id',
-        '4500474_2133707_2021-05-20_2419',
-        '--bundle',
-        'analytic',
-        '--item-type',
-        'PSOrthoTile',
-        '--tools',
-        'doesnnotexist.json'
+        '--name=test',
+        '--id=4500474_2133707_2021-05-20_2419',
+        '--bundle=analytic',
+        '--item-type=PSOrthoTile',
+        '--tools=doesnnotexist.json'
     ])
     assert result.exception
     error_msg = ("Error: Invalid value for '--tools': 'doesnnotexist.json': " +
@@ -652,16 +642,11 @@ def test_cli_orders_read_file_json_invalidjson(invoke, tmp_path):
 
     result = invoke([
         'create',
-        '--name',
-        'test',
-        '--id',
-        '4500474_2133707_2021-05-20_2419',
-        '--bundle',
-        'analytic',
-        '--item-type',
-        'PSOrthoTile',
-        '--tools',
-        invalid_filename
+        '--name=test',
+        '--id=4500474_2133707_2021-05-20_2419',
+        '--bundle=analytic',
+        '--item-type=PSOrthoTile',
+        f'--tools={invalid_filename}'
     ])
     assert result.exception
     error_msg = "Error: File does not contain valid json."
