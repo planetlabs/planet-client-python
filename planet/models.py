@@ -21,7 +21,7 @@ import re
 import string
 import typing
 
-from attrs import asdict, define
+from attrs import define
 import httpx
 from tqdm.asyncio import tqdm
 

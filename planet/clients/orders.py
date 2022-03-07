@@ -26,7 +26,12 @@ import arrow
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
-from ..models import Order, OrderComponent, Orders, Request, Response, StreamingBody
+from ..models import (Order,
+                      OrderComponent,
+                      Orders,
+                      Request,
+                      Response,
+                      StreamingBody)
 
 BASE_URL = f'{PLANET_BASE_URL}/compute/ops'
 STATS_PATH = '/stats/orders/v2'
