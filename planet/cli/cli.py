@@ -26,7 +26,9 @@ LOGGER = logging.getLogger(__name__)
 
 @click.group()
 @click.pass_context
-@click.option('-v', '--verbose', count=True,
+@click.option('-v',
+              '--verbose',
+              count=True,
               help=('Specify verbosity level of between 0 and 2 corresponding '
                     'to log levels warning, info, and debug respectively.'))
 @click.version_option(version=planet.__version__)
@@ -42,11 +44,11 @@ def main(ctx, verbose):
 def _configure_logging(verbosity):
     '''configure logging via verbosity level of between 0 and 2 corresponding
     to log levels warning, info and debug respectfully.'''
-    log_level = max(logging.DEBUG, logging.WARNING - logging.DEBUG*verbosity)
+    log_level = max(logging.DEBUG, logging.WARNING - logging.DEBUG * verbosity)
     logging.basicConfig(
-        stream=sys.stderr, level=log_level,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+        stream=sys.stderr,
+        level=log_level,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
 main.add_command(auth.auth)

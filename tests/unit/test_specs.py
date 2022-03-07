@@ -25,10 +25,7 @@ TEST_ITEM_TYPE = 'PSOrthoTile'
 
 
 def test_get_type_match():
-    spec_list = [
-        'Locket',
-        'drop',
-        'DEER']
+    spec_list = ['Locket', 'drop', 'DEER']
 
     test_entry = 'locket'
     assert 'Locket' == specs.get_match(test_entry, spec_list)

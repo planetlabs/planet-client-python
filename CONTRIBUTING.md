@@ -1,33 +1,13 @@
-# Development
+# Contributing
 
-For development, installing all Python versions supported by this repo is
-recommended. One way of achieving this is with
-[pyenv](https://github.com/pyenv/pyenv).
+Thank you for your interest in contributing to the Planet SDK for Python! This
+document explains how to contribute successfully.
 
-[Nox](https://nox.thea.codes/) is used to automate all checks and build
-documentation. Nox manages virtual environments for you, specifying Python
-versions and installing the the local, dynamic version of the Planet Python
-Client and required development packages.
+## Tools
 
-Where Nox is not used, a virtual environment is highly recommended.
-[pyenvwrapper](https://github.com/pyenv/pyenv-virtualenv) manages virtual
-environments and works well with pyenv. To install the local, dynamic version
-of the Planet Python Client and required development packages into the virtual
-environment use:
-
-- Bash
-```console
-    $ pip install -e .[dev]
-```
-- Zsh
-```console
-    $ pip install -e .'[dev]'
-```
-
-## Testing
-
-[Nox](https://nox.thea.codes/) automates all testing and linting. By default,
-Nox runs all fast tests and lints the code.
+This repository uses two primary tools for development:
+* [Nox](https://nox.thea.codes/) to automate testing
+* [YAPF](https://github.com/google/yapf) to enforce style guidelines
 
 Install Nox in your local dev environment:
 
@@ -35,17 +15,125 @@ Install Nox in your local dev environment:
     $ pip install nox
 ```
 
-Run nox:
+Install YAPF in your local dev environment:
+
+```console
+    $ pip install yapf
+```
+
+### Nox
+
+In this repository, Nox is used to automate testing, linting, and to build
+documentation. Nox manages virtual environments for you, specifying Python
+versions and installing the the local, dynamic version of the Plant SDK for
+Python and required development packages.
+
+Run Nox:
 
 ```console
     $ nox
 ```
 
-This will run tests against multiple Python versions and will lint the code.
+If no changes have been made to the Nox environment since it was last run,
+speed up the run by reusing the environment:
+
+```console
+    $ nox -r
+```
+
+The configuration for Nox is given in `noxfile.py`. See the Nox link above for
+advanced usage.
+
+##### Alternative to Nox
+Nox is the recommended way to manage local testing. With Nox it is not necessary
+to install the Planet SDK for Python on the local machine for testing.
+However, Nox is not necessary for local testing. Where Nox is not used, a
+virtual environment is highly recommended.
+[pyenvwrapper](https://github.com/pyenv/pyenv-virtualenv) manages virtual
+environments and works well with pyenv. To install the local, dynamic version
+of the Planet SDK for Python and required development packages into the virtual
+environment use:
+
+```console
+    $ pip install -e .[dev]
+```
+
+### YAPF
+
+Code in this repository follows the
+[PEP8](https://www.python.org/dev/peps/pep-0008/) style guide and uses
+[YAPF](https://github.com/google/yapf) to enforce and automate formatting.
+Linting in Nox will fail if YAPF would reformat a portion of the code.
+Helpfully, YAPF can be used to automatically reformat the code for you so you
+don't have to worry about formatting issues. WIN!
+
+To see how YAPF would reformat a file:
+
+```console
+    $ yapf --diff [file]
+```
+
+To reformat the file:
+
+```console
+    $ yapf --in-place [file]
+```
+
+The configuration for YAPF is given in `setup.cfg` and `.yapfignore`.
+See the YAPF link above for advanced usage.
+
+##### Alternative to YAPF
+
+YAPF is not required to follow the style and formatting guidelines. You can
+perform all formatting on your own using the linting output as a guild. Painful,
+maybe, but possible!
+
+## Testing
+
+When a Pull Request (PR) is created, the Continuous Integration (CI) runs all
+tests with Nox on all supported versions of Python. Before a PR can be
+considered, all tests must pass. To minimize the feedback loop, we recommend
+running Nox on your local machine. By default, Nox runs all fast tests and
+lints the code.
+
+Installing all supported Python versions locally is recommended. This allows
+Nox to fully reproduce the CI tests.
+One way of achieving this is with [pyenv](https://github.com/pyenv/pyenv).
 If a specific Python version isn't available on your development machine,
-Nox will just skip that version. While that version is skipped for local tests,
-the tests will be run on all versions with Continuous Integration (CI) when a
-pull request is initiated on the repository.
+Nox will just skip that version in the local tests.
+
+Testing is performed with [pytest](https://docs.pytest.org/) and
+[pytest-cov](https://pytest-cov.readthedocs.io/). The configuration for these
+packages is given in `setup.cfg`.
+
+Command-line arguments can be passed to pytest within Nox. For example, to only
+run the tests on a certain file, use:
+
+```console
+    $ nox -- [file]
+```
+
+By default, Nox runs tests on all supported Python versions along with linting.
+However, Nox can run a test on a single Python version, as well.
+
+To run tests on python 3.7:
+
+```console
+    $ nox -s test-3.7
+```
+
+## Linting
+
+In addition to running tests, the CI also lints the code. Again, this is done
+using Nox. Linting is performed using [flake8](https://flake8.pycqa.org/)
+and YAPF (mentioned above). By default, Nox runs tests along with linting.
+However, Nox can run linting alone.
+
+To run linting:
+
+```console
+    $ nox -s lint
+```
 
 ### Testing Documentation
 
@@ -83,7 +171,6 @@ To test the examples, run the Nox `examples` session:
 ```console
     $ nox -s examples
 ```
-
 
 This will test all scripts within the `examples` directory.
 To only test one script:
