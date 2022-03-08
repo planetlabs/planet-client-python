@@ -1,4 +1,4 @@
-# Copyright 2020 Planet Labs, Inc.
+# Copyright 2020 Planet Labs, PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ from planet import specs
 
 LOGGER = logging.getLogger(__name__)
 
-TEST_PRODUCT_BUNDLE = 'analytic'
-
-TEST_ITEM_TYPE = 'PSOrthoTile'
+TEST_PRODUCT_BUNDLE = 'visual'
+# must be a valid item type for TEST_PRODUCT_BUNDLE
+TEST_ITEM_TYPE = 'PSScene'
 
 
 def test_get_type_match():
@@ -34,7 +34,7 @@ def test_get_type_match():
         specs.get_match('a', ['b'])
 
 
-def test_validate_bundle():
+def test_validate_bundle_supported():
     assert 'analytic' == specs.validate_bundle('ANALYTIC')
 
     with pytest.raises(specs.SpecificationException):

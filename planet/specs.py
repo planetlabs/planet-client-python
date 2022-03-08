@@ -1,4 +1,4 @@
-# Copyright 2020 Planet Labs, Inc.
+# Copyright 2020 Planet Labs, PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import os
 from pathlib import Path
 
 DATA_DIR = 'data'
-PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2020_03_10.json'
+PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2022_02_02.json'
 SUPPORTED_TOOLS = [
     'band_math',
     'clip',
