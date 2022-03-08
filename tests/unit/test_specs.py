@@ -37,36 +37,49 @@ def test_get_type_match():
 def test_validate_bundle_supported():
     assert 'analytic' == specs.validate_bundle('ANALYTIC')
 
+
+def test_validate_bundle_notsupported():
     with pytest.raises(specs.SpecificationException):
         specs.validate_bundle('notsupported')
 
 
-def test_validate_item_type():
+def test_validate_item_type_supported():
     assert 'PSOrthoTile' == specs.validate_item_type('psorthotile', 'analytic')
 
+
+def test_validate_item_type_notsupported_bundle():
     with pytest.raises(specs.SpecificationException):
         specs.validate_item_type('psorthotile', 'wha')
 
+
+def test_validate_item_type_notsupported_itemtype():
+    with pytest.raises(specs.SpecificationException):
         specs.validate_item_type('notsupported', 'analytic')
 
 
-def test_validate_order_type():
+def test_validate_order_type_supported():
     assert 'full' == specs.validate_order_type('FULL')
 
+
+def test_validate_order_type_notsupported():
     with pytest.raises(specs.SpecificationException):
         specs.validate_order_type('notsupported')
 
 
-def test_validate_arhive_type():
+def test_validate_arhive_type_supported():
     assert 'zip' == specs.validate_archive_type('ZIP')
 
+
+def test_validate_arhive_type_notsupported():
     with pytest.raises(specs.SpecificationException):
         specs.validate_archive_type('notsupported')
 
 
-def test_validate_file_format():
+def test_validate_file_format_supported():
     assert 'COG' == specs.validate_file_format('cog')
 
+
+def test_validate_file_format_notsupported():
     with pytest.raises(specs.SpecificationException):
         specs.validate_archive_type('notsupported')
 
