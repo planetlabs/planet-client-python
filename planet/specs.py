@@ -1,4 +1,4 @@
-# Copyright 2020 Planet Labs, Inc.
+# Copyright 2020 Planet Labs, PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import os
 from pathlib import Path
 
 DATA_DIR = 'data'
-PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2020_03_10.json'
+PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2022_02_02.json'
 SUPPORTED_TOOLS = [
     'band_math',
     'clip',
@@ -47,11 +47,10 @@ def validate_bundle(bundle):
     return _validate_field(bundle, supported, 'product_bundle')
 
 
-def validate_item_type(item_type, bundle, report_field_name=True):
+def validate_item_type(item_type, bundle):
     bundle = validate_bundle(bundle)
     supported = get_item_types(bundle)
-    field_name = 'item_type' if report_field_name else None
-    return _validate_field(item_type, supported, field_name)
+    return _validate_field(item_type, supported, 'item_type')
 
 
 def validate_order_type(order_type):
@@ -72,14 +71,12 @@ def validate_file_format(file_format):
     return _validate_field(file_format, SUPPORTED_FILE_FORMATS, 'file_format')
 
 
-def _validate_field(value, supported, field_name=None):
+def _validate_field(value, supported, field_name):
     try:
         value = get_match(value, supported)
     except (NoMatchException):
         opts = ', '.join(["'" + s + "'" for s in supported])
-        msg = f'\'{value}\' is not one of {opts}.'
-        if field_name:
-            msg = f'{field_name} - ' + msg
+        msg = f'{field_name} - \'{value}\' is not one of {opts}.'
         raise SpecificationException(msg)
     return value
 
