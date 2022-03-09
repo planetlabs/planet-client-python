@@ -3,7 +3,7 @@ import nox
 nox.options.stop_on_first_error = True
 nox.options.reuse_existing_virtualenvs = False
 
-nox.options.sessions = ['test', 'lint']
+nox.options.sessions = ['test', 'lint', 'docs']
 
 source_files = ("planet", "examples", "tests", "setup.py", "noxfile.py")
 
