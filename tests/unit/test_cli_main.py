@@ -36,34 +36,35 @@ def test_cli_info_verbosity(monkeypatch):
         log_level = level
     monkeypatch.setattr(cli.logging, 'basicConfig', configtest)
 
+
 def test_loggingoutput_normal(capfd):
     # test a normal case
     runner = CliRunner()
     result = runner.invoke(cli.main, args=['--verbosity', 'debug', 'orders'], 
-    catch_exceptions=True)
+        catch_exceptions=True)
     assert "Commands for interacting with the Orders API" in result.output
 
 
-def test_loggingoutput_space(capfd): 
+def test_loggingoutput_space(capfd):
     # test a case with extra spaces (should still work)
     runner = CliRunner()
     result = runner.invoke(cli.main, args=['--verbosity', ' debug ', 'orders'], 
-    catch_exceptions=True)
+        catch_exceptions=True)
     assert "Commands for interacting with the Orders API" in result.output
 
 
-def test_loggingoutput_misspell(capfd): 
+def test_loggingoutput_misspell(capfd):
     # test a case where the argument is misspelled
     runner = CliRunner()
     result = runner.invoke(cli.main, args=['--verbosity', 'debu', 'orders'], 
-    catch_exceptions=True)
+        catch_exceptions=True)
     assert "please set verbosity" in str(result.exception)
 
 
-def test_loggingoutput_number(capfd): 
+def test_loggingoutput_number(capfd):
     # test a case when input includes number instead of string
     runner = CliRunner()
-    result = runner.invoke(cli.main, args=['--verbosity', 45, 'orders'], catch_exceptions=True)
+    result = runner.invoke(cli.main, args=['--verbosity', 45, 'orders'], 
+        catch_exceptions=True)
     assert "please set verbosity" in str(result.exception)
 
-    
