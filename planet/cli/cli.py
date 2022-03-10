@@ -27,16 +27,14 @@ LOGGER = logging.getLogger(__name__)
 
 @click.group()
 @click.pass_context
-@click.option('--verbosity', default='warning', help=("Optional: set verbosity level to warning, info, or debug. Defaults to warning."))
-
+@click.option('--verbosity', default='warning', 
+help=("Optional: set verbosity level to warning, info, or debug. Defaults to warning."))
 @click.version_option(version=planet.__version__)
 def main(ctx, verbosity):
     '''Planet API Client
-    
     Inputs:
     ctx -- context object
     verbosity -- user input for verbosity.
-    
     '''
     _configure_logging(verbosity)
 
@@ -53,7 +51,7 @@ def _configure_logging(verbosity):
     verbosity -- user input for verbosity.
 
     '''
-    # make the user input string lowercase and strip any leading or trailing spaces
+    # make the user input string lowercase & strip leading/trailing spaces
     verbosity_input = verbosity.lower()
     verbosity_input = verbosity_input.strip()
 
@@ -70,6 +68,7 @@ def _configure_logging(verbosity):
         stream=sys.stderr, level=log_level,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
+
 
 main.add_command(auth.auth)
 main.add_command(orders.orders)
