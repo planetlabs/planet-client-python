@@ -93,6 +93,7 @@ class ValueError(PlanetException, ValueError):
 
 class MaxAttemptsError(PlanetException):
     """Maximum number of attempts was reached."""
+
     def __init__(self, max_num):
         message = f'Maximum number of attempts ({max_num}) reached.'
         super().__init__(message)
@@ -100,6 +101,7 @@ class MaxAttemptsError(PlanetException):
 
 class StateError(PlanetException):
     """Resource is not in the right state for operation."""
+
     def __init__(self, state, message=''):
         self.state = state
         msg = f'Invalid state ({state}) for operation. {message}'

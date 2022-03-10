@@ -125,13 +125,21 @@ def split_list_arg(ctx, param, value):
 @translate_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
-@click.option('--delay', type=int, default=5,
+@click.option('--delay',
+              type=int,
+              default=5,
               help='Time (in seconds) between polls.')
-@click.option('--max-attempts', type=int, default=5,
+@click.option('--max-attempts',
+              type=int,
+              default=5,
               help='Maximum number of polls. Set to zero for no limit.')
-@click.option('--quiet', is_flag=True, default=False,
+@click.option('--quiet',
+              is_flag=True,
+              default=False,
               help='Disable ANSI control output.')
-@click.option('--states', type=click.STRING, callback=split_list_arg,
+@click.option('--states',
+              type=click.STRING,
+              callback=split_list_arg,
               help=('One or more comma-separated order states that will end '
                     'polling. Defaults to all completed states.'))
 async def wait(ctx, order_id, delay, max_attempts, quiet, states):

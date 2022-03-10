@@ -318,14 +318,12 @@ class OrdersClient():
         ]
         return filenames
 
-    async def wait(
-        self,
-        order_id: str,
-        states: typing.Iterable[str] = ORDERS_STATES_COMPLETE,
-        delay: int = 5,
-        max_attempts: int = 200,
-        report: typing.Callable[[str], None] = None
-    ) -> str:
+    async def wait(self,
+                   order_id: str,
+                   states: typing.Iterable[str] = ORDERS_STATES_COMPLETE,
+                   delay: int = 5,
+                   max_attempts: int = 200,
+                   report: typing.Callable[[str], None] = None) -> str:
         """Wait until order reaches one of the specified states.
 
         This function polls the Orders API to determine the order state, with
