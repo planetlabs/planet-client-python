@@ -22,7 +22,6 @@ import respx
 from planet import exceptions
 from planet.auth import AuthClient
 
-
 TEST_URL = 'http://MockNotRealURL/api/path'
 TEST_LOGIN_URL = f'{TEST_URL}/login'
 
@@ -46,9 +45,7 @@ def test_AuthClient_success():
 def test_AuthClient_invalid_email():
     resp = {
         "errors": {
-            "email": [
-                "Not a valid email address."
-            ]
+            "email": ["Not a valid email address."]
         },
         "message": "error validating request against UserAuthenticationSchema",
         "status": 400,
