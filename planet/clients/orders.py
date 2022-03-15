@@ -32,10 +32,30 @@ ORDERS_PATH = '/orders/v2'
 BULK_PATH = '/bulk/orders/v2'
 
 # Order states https://developers.planet.com/docs/orders/ordering/#order-states
-ORDERS_STATES_COMPLETE = set(['success', 'partial', 'cancelled', 'failed'])
-ORDERS_STATES_ALL = ORDERS_STATES_COMPLETE | set(['queued', 'running'])
+# ORDERS_STATES_IN_PROGRESS = set(['queued', 'running'])
+# ORDERS_STATES_COMPLETE = set(['success', 'partial', 'cancelled', 'failed'])
+# ORDERS_STATES_ALL = ORDERS_STATES_COMPLETE | ORDERS_STATES_IN_PROGRESS
+# this is in order of state progression except for completed states
+ORDER_STATE_SEQUENCE = \
+    ('queued', 'running', 'failed', 'success', 'partial', 'cancelled')
 
 LOGGER = logging.getLogger(__name__)
+
+
+class OrderStates():
+    SEQUENCE = ORDER_STATE_SEQUENCE
+
+    @classmethod
+    def _get_position(cls, state):
+        return cls.SEQUENCE.index(state)
+
+    @classmethod
+    def reached(cls, state, test):
+        return cls._get_position(test) >= cls._get_position(state)
+
+    @classmethod
+    def passed(cls, state, test):
+        return cls._get_position(test) > cls._get_position(state)
 
 
 class OrdersClient():
@@ -322,7 +342,7 @@ class OrdersClient():
                 state.
         """
         order = await self.get_order(order_id)
-        if order.state not in ORDERS_STATES_COMPLETE:
+        if not OrderStates.passed('running', order.state):
             raise exceptions.StateError(
                 order.state,
                 'Order cannot be downloaded because the order is not in a '
@@ -343,18 +363,18 @@ class OrdersClient():
     async def wait(
         self,
         order_id: str,
-        states: typing.Iterable[str] = ORDERS_STATES_COMPLETE,
+        state: str = None,
         delay: int = 5,
         max_attempts: int = 200,
         report: typing.Callable[[str], None] = None
     ) -> str:
-        """Wait until order reaches one of the specified states.
+        """Wait until order reaches desired state.
 
         This function polls the Orders API to determine the order state, with
         the specified delay between each polling attempt, until the
-        order reaches one of the set of desired states. If the maximum number
-        of attempts is reached before the order reaches one of the desired
-        states, an exception is raised. Setting 'max_attempts' to zero will
+        order reaches a completed state, or earlier state, if specified.
+        If the maximum number of attempts is reached before polling is
+        complete, an exception is raised. Setting 'max_attempts' to zero will
         result in no limit on the number of attempts.
 
         Setting 'delay' to zero results in no delay between polling attempts.
@@ -363,28 +383,24 @@ class OrdersClient():
         polled asynchronously, consider increasing the delay to avoid
         throttling.
 
-        By default, the set of states that result are polled for is the
-        set of completed states. This can be changed to any set of valid
-        order states. It is not recommended to change this to a subset of
-        completed states, as this opens up the possibility of the the
-        specified state never being reached (i.e. if the order completes in
-        a 'partial' state but only the 'success' state was specified).
+        By default, polling completes when the order reaches a completed state.
+        If 'state' is given, polling will complete when the specified earlier
+        state is reached or passed.
 
         Example:
             ```python
             from planet.reporting import StateBar
 
             with StateBar() as bar:
-                await wait(order_id, report=bar.update_state)
+                await wait(order_id, callback=bar.update_state)
             ```
 
         Parameters:
-            order_id: The ID of the order
-            states: Order states that will end polling. Defaults to all
-                completed states.
+            order_id: The ID of the order.
+            state: Complete polling when order reaches or passes this state.
             delay: Time (in seconds) between polls.
             max_attempts: Maximum number of polls. Set to zero for no limit.
-            report: Callback function for reporting progress updates.
+            callback: Function that handles state progress updates.
 
         Returns
             State of the order.
@@ -397,11 +413,9 @@ class OrdersClient():
                 attempts is reached before one of the specified states is
                 reached.
         """
-        invalid_states = set(states) - ORDERS_STATES_ALL
-        if invalid_states:
+        if state and state not in ORDER_STATE_SEQUENCE:
             raise exceptions.ValueError(
-                f'{invalid_states} are not valid states. '
-                f'Valid states are {ORDERS_STATES_ALL}')
+                f'{state} must be one of {ORDER_STATE_SEQUENCE}')
 
         num_attempts = 0
         done = False
@@ -409,14 +423,16 @@ class OrdersClient():
             t = time.time()
 
             order = await self.get_order(order_id)
-            state = order.state
+            current_state = order.state
 
             LOGGER.debug(state)
 
             if report:
                 report(order.state)
 
-            done = state in states
+            done = OrderStates.passed('running', current_state) or \
+                (state and OrderStates.reached(state, current_state))
+
             if not done:
                 if max_attempts:
                     num_attempts += 1
@@ -426,7 +442,7 @@ class OrdersClient():
                 sleep_time = max(delay-(time.time()-t), 0)
                 LOGGER.debug(f'sleeping {sleep_time}s')
                 await asyncio.sleep(sleep_time)
-        return state
+        return current_state
 
     async def list_orders(
         self,
@@ -449,11 +465,12 @@ class OrdersClient():
             planet.exceptions.ValueError: If state is not valid.
         """
         url = self._orders_url()
+
         if state:
-            if state not in ORDERS_STATES_ALL:
+            if state not in ORDER_STATE_SEQUENCE:
                 raise exceptions.ValueError(
                     f'Order state ({state}) is not a valid state. '
-                    f'Valid states are {ORDERS_STATES_ALL}')
+                    f'Valid states are {ORDER_STATE_SEQUENCE}')
             params = {"state": state}
         else:
             params = None

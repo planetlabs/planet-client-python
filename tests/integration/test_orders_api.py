@@ -25,6 +25,7 @@ import pytest
 import respx
 
 from planet import OrdersClient, exceptions, reporting
+from planet.clients.orders import OrderStates
 
 TEST_URL = 'http://www.MockNotRealURL.com/api/path'
 TEST_BULK_CANCEL_URL = f'{TEST_URL}/bulk/orders/v2/cancel'
@@ -73,6 +74,18 @@ def create_download_mock(downloaded_content, order_description, oid):
         respx.get(dl_url).return_value = mock_resp
 
     return f
+
+
+def test_OrderStates_reached():
+    assert not OrderStates.reached('running', 'queued')
+    assert OrderStates.reached('running', 'running')
+    assert OrderStates.reached('running', 'failed')
+
+
+def test_OrderStates_passed():
+    assert not OrderStates.reached('running', 'queued')
+    assert not OrderStates.passed('running', 'running')
+    assert OrderStates.passed('running', 'success')
 
 
 @respx.mock
@@ -474,7 +487,7 @@ async def test_wait_reporter(oid, order_description, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_wait_states(oid, order_description, session):
+async def test_wait_state(oid, order_description, session):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
 
     order_description2 = copy.deepcopy(order_description)
@@ -490,7 +503,7 @@ async def test_wait_states(oid, order_description, session):
     ]
 
     cl = OrdersClient(session, base_url=TEST_URL)
-    state = await cl.wait(oid, states=['running'], delay=0)
+    state = await cl.wait(oid, state='running', delay=0)
     assert state == 'running'
 
 
@@ -533,13 +546,10 @@ async def test_wait_invalid_oid(session):
 
 
 @pytest.mark.asyncio
-async def test_wait_invalid_states(oid, session):
+async def test_wait_invalid_state(oid, session):
     cl = OrdersClient(session, base_url=TEST_URL)
     with pytest.raises(exceptions.ValueError):
-        await cl.wait(oid, states=["invalid_state"], delay=0)
-
-    with pytest.raises(exceptions.ValueError):
-        await cl.wait(oid, states='string instead of list', delay=0)
+        await cl.wait(oid, state="invalid_state", delay=0)
 
 
 @respx.mock
