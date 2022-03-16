@@ -32,7 +32,7 @@ ORDERS_PATH = '/orders/v2'
 BULK_PATH = '/bulk/orders/v2'
 
 # Order states https://developers.planet.com/docs/orders/ordering/#order-states
-# this is in order of state progression except for completed states
+# this is in order of state progression except for final states
 ORDER_STATE_SEQUENCE = \
     ('queued', 'running', 'failed', 'success', 'partial', 'cancelled')
 
@@ -53,6 +53,10 @@ class OrderStates():
     @classmethod
     def passed(cls, state, test):
         return cls._get_position(test) > cls._get_position(state)
+
+    @classmethod
+    def is_final(cls, test):
+        return cls.passed('running', test)
 
 
 class OrdersClient():
@@ -339,10 +343,10 @@ class OrdersClient():
                 state.
         """
         order = await self.get_order(order_id)
-        if not OrderStates.passed('running', order.state):
+        if not OrderStates.is_final(order.state):
             raise exceptions.ClientError(
                 'Order cannot be downloaded because the order state '
-                f'({order.state}) is not a completed state. '
+                f'({order.state}) is not a final state. '
                 'Consider using wait functionality before '
                 'attempting to download.')
 
@@ -371,7 +375,7 @@ class OrdersClient():
 
         This function polls the Orders API to determine the order state, with
         the specified delay between each polling attempt, until the
-        order reaches a completed state, or earlier state, if specified.
+        order reaches a final state, or earlier state, if specified.
         If the maximum number of attempts is reached before polling is
         complete, an exception is raised. Setting 'max_attempts' to zero will
         result in no limit on the number of attempts.
@@ -382,7 +386,7 @@ class OrdersClient():
         polled asynchronously, consider increasing the delay to avoid
         throttling.
 
-        By default, polling completes when the order reaches a completed state.
+        By default, polling completes when the order reaches a final state.
         If 'state' is given, polling will complete when the specified earlier
         state is reached or passed.
 
@@ -396,7 +400,7 @@ class OrdersClient():
 
         Parameters:
             order_id: The ID of the order.
-            state: Complete polling when order reaches or passes this state.
+            state: State prior to a final state that will end polling.
             delay: Time (in seconds) between polls.
             max_attempts: Maximum number of polls. Set to zero for no limit.
             callback: Function that handles state progress updates.
@@ -408,7 +412,7 @@ class OrdersClient():
             planet.exceptions.APIException: On API error.
             planet.exceptions.ClientError: If order_id or state is not valid or
                 if the maximum number of attempts is reached before the
-                specified states is reached.
+                specified state or a final state is reached.
         """
         if state and state not in ORDER_STATE_SEQUENCE:
             raise exceptions.ClientError(
@@ -428,7 +432,7 @@ class OrdersClient():
             if callback:
                 callback(order.state)
 
-            if OrderStates.passed('running', current_state) or \
+            if OrderStates.is_final(current_state) or \
                     (state and OrderStates.reached(state, current_state)):
                 break
 

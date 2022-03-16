@@ -126,7 +126,7 @@ def split_list_arg(ctx, param, value):
 @click.option('--quiet', is_flag=True, default=False,
               help='Disable ANSI control output.')
 @click.option('--state',
-              help='State prior to a completed state that will end polling.',
+              help='State prior to a final state that will end polling.',
               type=click.Choice(planet.clients.orders.ORDER_STATE_SEQUENCE,
                                 case_sensitive=False))
 async def wait(ctx, order_id, delay, max_attempts, quiet, state):
@@ -136,7 +136,7 @@ async def wait(ctx, order_id, delay, max_attempts, quiet, state):
 
     This function polls the Orders API to determine the order state, with
     the specified delay between each polling attempt, until the
-    order reaches a completed state, or earlier state, if specified.
+    order reaches a final state or earlier state, if specified.
     If the maximum number of attempts is reached before polling is
     complete, an exception is raised. Setting --max-attempts to zero will
     result in no limit on the number of attempts.
@@ -147,7 +147,7 @@ async def wait(ctx, order_id, delay, max_attempts, quiet, state):
     polled asynchronously, consider increasing the delay to avoid
     throttling.
 
-    By default, polling completes when the order reaches a completed state.
+    By default, polling completes when the order reaches a final state.
     If --state is specified, polling will complete when the specified earlier
     state is reached or passed.
     """
