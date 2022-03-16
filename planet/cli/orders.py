@@ -123,11 +123,17 @@ def split_list_arg(ctx, param, value):
 @translate_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
-@click.option('--delay', type=int, default=5,
+@click.option('--delay',
+              type=int,
+              default=5,
               help='Time (in seconds) between polls.')
-@click.option('--max-attempts', type=int, default=5,
+@click.option('--max-attempts',
+              type=int,
+              default=5,
               help='Maximum number of polls. Set to zero for no limit.')
-@click.option('--quiet', is_flag=True, default=False,
+@click.option('--quiet',
+              is_flag=True,
+              default=False,
               help='Disable ANSI control output.')
 @click.option('--state',
               help='State prior to a final state that will end polling.',
@@ -171,9 +177,15 @@ async def wait(ctx, order_id, delay, max_attempts, quiet, state):
 @translate_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
-@click.option('-q', '--quiet', is_flag=True, default=False,
+@click.option('-q',
+              '--quiet',
+              is_flag=True,
+              default=False,
               help='Disable ANSI control output.')
-@click.option('-o', '--overwrite', is_flag=True, default=False,
+@click.option('-o',
+              '--overwrite',
+              is_flag=True,
+              default=False,
               help=('Overwrite files if they already exist.'))
 @click.option('--dest',
               default='.',
@@ -220,8 +232,12 @@ def read_file_json(ctx, param, value):
 @translate_exceptions
 @coro
 @click.option('--name', required=True)
-@click.option('--id', 'ids', help='One or more comma-separated item IDs',
-              type=click.STRING, callback=split_list_arg, required=True)
+@click.option('--id',
+              'ids',
+              help='One or more comma-separated item IDs',
+              type=click.STRING,
+              callback=split_list_arg,
+              required=True)
 # @click.option('--ids_from_search',
 #               help='Embedded data search')
 @click.option(

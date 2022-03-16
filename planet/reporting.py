@@ -83,19 +83,11 @@ class StateBar(ProgressBar):
     def desc(self):
         return f'order {self.order_id}'
 
-<<<<<<< HEAD
     def update_state(self, state: str):
         """Simple function to be used as a callback for state reporting"""
         self.update(state=state)
 
-    def update(
-        self,
-        state: str = None,
-        order_id: str = None
-    ):
-=======
     def update(self, state: str = None, order_id: str = None):
->>>>>>> v2
         if state:
             self.state = state
             try:

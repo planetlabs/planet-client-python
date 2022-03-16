@@ -221,9 +221,7 @@ def test_cli_orders_wait_max_attempts(invoke, order_description, oid):
     order_description3['state'] = 'success'
 
     route = respx.get(get_url)
-    route.side_effect = [
-        httpx.Response(HTTPStatus.OK, json=order_description)
-    ]
+    route.side_effect = [httpx.Response(HTTPStatus.OK, json=order_description)]
 
     runner = CliRunner()
     result = invoke(['wait', '--delay', '0', '--max-attempts', '1', oid],
@@ -240,9 +238,7 @@ def test_cli_orders_wait_quiet(invoke, order_description, oid):
     order_description['state'] = 'success'
 
     route = respx.get(get_url)
-    route.side_effect = [
-        httpx.Response(HTTPStatus.OK, json=order_description)
-    ]
+    route.side_effect = [httpx.Response(HTTPStatus.OK, json=order_description)]
 
     runner = CliRunner()
     result = invoke(['wait', '--delay', '0', '--quiet', oid], runner=runner)
@@ -427,11 +423,15 @@ def test_cli_orders_create_basic_item_type_invalid(invoke):
 def test_cli_orders_create_id_empty(invoke):
     result = invoke([
         'create',
-        '--name', 'test',
-        '--id', '',
-        '--bundle', 'analytic',
-        '--item-type', 'PSOrthoTile'
-        ])
+        '--name',
+        'test',
+        '--id',
+        '',
+        '--bundle',
+        'analytic',
+        '--item-type',
+        'PSOrthoTile'
+    ])
     assert result.exit_code
     assert 'Entry cannot be an empty string.' in result.output
 

@@ -664,11 +664,12 @@ async def test_download_order_success(tmpdir, order_description, oid, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_download_order_state(
-        tmpdir, order_description, oid, session):
+async def test_download_order_state(tmpdir, order_description, oid, session):
     dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
     order_description['_links']['results'] = [
-        {'location': dl_url1},
+        {
+            'location': dl_url1
+        },
     ]
 
     get_url = f'{TEST_ORDERS_URL}/{oid}'
