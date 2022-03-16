@@ -20,6 +20,7 @@ class PlanetException(Exception):
 
 class APIException(PlanetException):
     '''General unexpected API response'''
+
     @property
     def message(self):
         return self.args[0]

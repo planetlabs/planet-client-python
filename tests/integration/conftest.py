@@ -29,10 +29,12 @@ async def session():
 @pytest.fixture
 def match_pytest_raises():
     '''this is like pytest.raises but does a full string match'''
+
     @contextlib.contextmanager
     def cm(ex, msg):
         with pytest.raises(ex, match=f'^{msg}$') as pt:
             yield pt
+
     return cm
 
 

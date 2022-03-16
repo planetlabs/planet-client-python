@@ -75,11 +75,8 @@ class OrdersClient():
 
         ```
     """
-    def __init__(
-        self,
-        session: Session,
-        base_url: str = None
-    ):
+
+    def __init__(self, session: Session, base_url: str = None):
         """
         Parameters:
             session: Open session connected to server.
@@ -110,10 +107,7 @@ class OrdersClient():
     def _request(self, url, method, data=None, params=None, json=None):
         return Request(url, method=method, data=data, params=params, json=json)
 
-    async def _do_request(
-        self,
-        request: Request
-    ) -> Response:
+    async def _do_request(self, request: Request) -> Response:
         '''Submit a request and get response.
 
         Parameters:
@@ -121,10 +115,7 @@ class OrdersClient():
         '''
         return await self._session.request(request)
 
-    async def create_order(
-        self,
-        request: dict
-    ) -> str:
+    async def create_order(self, request: dict) -> str:
         '''Create an order request.
 
         Example:
@@ -177,10 +168,7 @@ class OrdersClient():
         order = Order(resp.json())
         return order
 
-    async def get_order(
-        self,
-        order_id: str
-    ) -> Order:
+    async def get_order(self, order_id: str) -> Order:
         '''Get order details by Order ID.
 
         Parameters:
@@ -208,10 +196,7 @@ class OrdersClient():
         order = Order(resp.json())
         return order
 
-    async def cancel_order(
-        self,
-        order_id: str
-    ) -> Response:
+    async def cancel_order(self, order_id: str) -> Response:
         '''Cancel a queued order.
 
         **Note:** According to the API docs, cancel order should return the
@@ -242,10 +227,7 @@ class OrdersClient():
             msg = json.loads(ex.message)['message']
             raise exceptions.MissingResource(msg)
 
-    async def cancel_orders(
-        self,
-        order_ids: typing.List[str] = None
-    ) -> dict:
+    async def cancel_orders(self, order_ids: typing.List[str] = None) -> dict:
         '''Cancel queued orders in bulk.
 
         Parameters:
@@ -285,14 +267,12 @@ class OrdersClient():
         resp = await self._do_request(req)
         return resp.json()
 
-    async def download_asset(
-        self,
-        location: str,
-        filename: str = None,
-        directory: str = None,
-        overwrite: bool = False,
-        progress_bar: bool = True
-    ) -> str:
+    async def download_asset(self,
+                             location: str,
+                             filename: str = None,
+                             directory: str = None,
+                             overwrite: bool = False,
+                             progress_bar: bool = True) -> str:
         """Download ordered asset.
 
         Parameters:
@@ -318,13 +298,11 @@ class OrdersClient():
                              progress_bar=progress_bar)
         return dl_path
 
-    async def download_order(
-        self,
-        order_id: str,
-        directory: str = None,
-        overwrite: bool = False,
-        progress_bar: bool = False
-    ) -> typing.List[str]:
+    async def download_order(self,
+                             order_id: str,
+                             directory: str = None,
+                             overwrite: bool = False,
+                             progress_bar: bool = False) -> typing.List[str]:
         """Download all assets in an order.
 
         Parameters:

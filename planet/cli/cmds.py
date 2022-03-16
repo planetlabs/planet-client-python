@@ -30,9 +30,11 @@ def coro(func):
     Returns:
         wrapper function
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         return asyncio.run(func(*args, **kwargs))
+
     return wrapper
 
 
@@ -48,6 +50,7 @@ def translate_exceptions(func):
     Raises:
         ClickException
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
@@ -58,4 +61,5 @@ def translate_exceptions(func):
                 'with `planet auth init`.')
         except exceptions.PlanetException as ex:
             raise click.ClickException(ex)
+
     return wrapper

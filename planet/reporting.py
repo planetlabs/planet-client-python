@@ -21,10 +21,8 @@ LOGGER = logging.getLogger(__name__)
 
 class ProgressBar():
     """Abstract base class for progress bar reporters."""
-    def __init__(
-        self,
-        disable: bool = False
-    ):
+
+    def __init__(self, disable: bool = False):
         self.bar = None
         self.disable = disable
 
@@ -55,6 +53,7 @@ class StateBar(ProgressBar):
             ...
         ```
     """
+
     def __init__(
         self,
         order_id: str = None,
@@ -76,13 +75,15 @@ class StateBar(ProgressBar):
         """Initialize and start the progress bar."""
         self.bar = tqdm(
             bar_format="{elapsed} - {desc} - {postfix[0]}: {postfix[1]}",
-            desc=self.desc, postfix=["state", self.state],
+            desc=self.desc,
+            postfix=["state", self.state],
             disable=self.disable)
 
     @property
     def desc(self):
         return f'order {self.order_id}'
 
+<<<<<<< HEAD
     def update_state(self, state: str):
         """Simple function to be used as a callback for state reporting"""
         self.update(state=state)
@@ -92,6 +93,9 @@ class StateBar(ProgressBar):
         state: str = None,
         order_id: str = None
     ):
+=======
+    def update(self, state: str = None, order_id: str = None):
+>>>>>>> v2
         if state:
             self.state = state
             try:

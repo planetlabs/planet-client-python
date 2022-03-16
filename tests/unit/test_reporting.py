@@ -22,11 +22,11 @@ LOGGER = logging.getLogger(__name__)
 def test_StateBar___init___default():
     with reporting.StateBar() as bar:
         expected_init = '..:.. - order  - state: '
-        assert(re.fullmatch(expected_init, str(bar)))
+        assert (re.fullmatch(expected_init, str(bar)))
 
         expected_update = '..:.. - order 1 - state: init'
         bar.update(order_id='1', state='init')
-        assert(re.fullmatch(expected_update, str(bar)))
+        assert (re.fullmatch(expected_update, str(bar)))
 
 
 def test_StateBar___init___stateandorder():
