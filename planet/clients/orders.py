@@ -32,9 +32,6 @@ ORDERS_PATH = '/orders/v2'
 BULK_PATH = '/bulk/orders/v2'
 
 # Order states https://developers.planet.com/docs/orders/ordering/#order-states
-# ORDERS_STATES_IN_PROGRESS = set(['queued', 'running'])
-# ORDERS_STATES_COMPLETE = set(['success', 'partial', 'cancelled', 'failed'])
-# ORDERS_STATES_ALL = ORDERS_STATES_COMPLETE | ORDERS_STATES_IN_PROGRESS
 # this is in order of state progression except for completed states
 ORDER_STATE_SEQUENCE = \
     ('queued', 'running', 'failed', 'success', 'partial', 'cancelled')
@@ -94,12 +91,12 @@ class OrdersClient():
 
     @staticmethod
     def _check_order_id(oid):
-        """Raises planet.exceptions.ValueError if oid is not a valid UUID"""
+        """Raises planet.exceptions.ClientError if oid is not a valid UUID"""
         try:
             uuid.UUID(hex=oid)
         except (ValueError, AttributeError):
             msg = f'Order id ({oid}) is not a valid UUID hexadecimal string.'
-            raise exceptions.ValueError(msg)
+            raise exceptions.ClientError(msg)
 
     def _orders_url(self):
         return f'{self._base_url}{ORDERS_PATH}'
@@ -190,7 +187,7 @@ class OrdersClient():
             Order information
 
         Raises:
-            planet.exceptions.ValueError: If order_id is not a valid UUID.
+            planet.exceptions.ClientError: If order_id is not a valid UUID.
             planet.exceptions.APIException: On API error.
         '''
         self._check_order_id(order_id)
@@ -225,7 +222,7 @@ class OrdersClient():
             Empty response
 
         Raises:
-            planet.exceptions.ValueError: If order_id is not a valid UUID.
+            planet.exceptions.ClientError: If order_id is not a valid UUID.
             planet.exceptions.APIException: On API error.
         '''
         self._check_order_id(order_id)
@@ -256,7 +253,7 @@ class OrdersClient():
             Results of the bulk cancel request
 
         Raises:
-            planet.exceptions.ValueError: If an entry in order_ids is not a
+            planet.exceptions.ClientError: If an entry in order_ids is not a
                 valid UUID.
             planet.exceptions.APIException: On API error.
         '''
@@ -338,12 +335,12 @@ class OrdersClient():
 
         Raises:
             planet.exceptions.APIException: On API error.
-            planet.exceptions.StateError: If the order is not in a completed
+            planet.exceptions.ClientError: If the order is not in a completed
                 state.
         """
         order = await self.get_order(order_id)
         if not OrderStates.passed('running', order.state):
-            raise exceptions.StateError(
+            raise exceptions.ClientError(
                 order.state,
                 'Order cannot be downloaded because the order is not in a '
                 'completed state. Consider using wait functionality before '
@@ -407,14 +404,12 @@ class OrdersClient():
 
         Raises:
             planet.exceptions.APIException: On API error.
-            planet.exceptions.ValueError: If order_id or one or more of the
-                states are not valid.
-            planet.exceptions.MaxAttemptsError: If the maximum number of
-                attempts is reached before one of the specified states is
-                reached.
+            planet.exceptions.ClientError: If order_id or state is not valid or
+                if the maximum number of attempts is reached before the
+                specified states is reached.
         """
         if state and state not in ORDER_STATE_SEQUENCE:
-            raise exceptions.ValueError(
+            raise exceptions.ClientError(
                 f'{state} must be one of {ORDER_STATE_SEQUENCE}')
 
         num_attempts = 0
@@ -437,7 +432,9 @@ class OrdersClient():
                 if max_attempts:
                     num_attempts += 1
                     if num_attempts >= max_attempts:
-                        raise exceptions.MaxAttemptsError(max_attempts)
+                        raise exceptions.ClientError(
+                            f'Maximum number of attempts ({max_attempts}) '
+                            'reached.')
 
                 sleep_time = max(delay-(time.time()-t), 0)
                 LOGGER.debug(f'sleeping {sleep_time}s')
@@ -462,13 +459,13 @@ class OrdersClient():
 
         Raises:
             planet.exceptions.APIException: On API error.
-            planet.exceptions.ValueError: If state is not valid.
+            planet.exceptions.ClientError: If state is not valid.
         """
         url = self._orders_url()
 
         if state:
             if state not in ORDER_STATE_SEQUENCE:
-                raise exceptions.ValueError(
+                raise exceptions.ClientError(
                     f'Order state ({state}) is not a valid state. '
                     f'Valid states are {ORDER_STATE_SEQUENCE}')
             params = {"state": state}

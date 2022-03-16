@@ -149,7 +149,7 @@ async def test_list_orders_state(order_descriptions, session):
 async def test_list_orders_state_invalid_state(session):
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    with pytest.raises(exceptions.ValueError):
+    with pytest.raises(exceptions.ClientError):
         await cl.list_orders(state='invalidstate')
 
 
@@ -288,7 +288,7 @@ async def test_get_order(oid, order_description, session):
 @pytest.mark.asyncio
 async def test_get_order_invalid_id(session):
     cl = OrdersClient(session, base_url=TEST_URL)
-    with pytest.raises(exceptions.ValueError):
+    with pytest.raises(exceptions.ClientError):
         await cl.get_order('-')
 
 
@@ -328,7 +328,7 @@ async def test_cancel_order(oid, order_description, session):
 @pytest.mark.asyncio
 async def test_cancel_order_invalid_id(session):
     cl = OrdersClient(session, base_url=TEST_URL)
-    with pytest.raises(exceptions.ValueError):
+    with pytest.raises(exceptions.ClientError):
         await cl.cancel_order('invalid_order_id')
 
 
@@ -407,7 +407,7 @@ async def test_cancel_orders_by_ids(session, oid):
 @pytest.mark.asyncio
 async def test_cancel_orders_by_ids_invalid_id(session, oid):
     cl = OrdersClient(session, base_url=TEST_URL)
-    with pytest.raises(exceptions.ValueError):
+    with pytest.raises(exceptions.ClientError):
         _ = await cl.cancel_orders([oid, "invalid_oid"])
 
 
@@ -518,7 +518,7 @@ async def test_wait_max_attempts_enabled(oid, order_description, session):
     ]
 
     cl = OrdersClient(session, base_url=TEST_URL)
-    with pytest.raises(exceptions.MaxAttemptsError):
+    with pytest.raises(exceptions.ClientError):
         await cl.wait(oid, max_attempts=1, delay=0)
 
 
@@ -541,14 +541,14 @@ async def test_wait_max_attempts_disabled(oid, order_description, session):
 @pytest.mark.asyncio
 async def test_wait_invalid_oid(session):
     cl = OrdersClient(session, base_url=TEST_URL)
-    with pytest.raises(exceptions.ValueError):
+    with pytest.raises(exceptions.ClientError):
         await cl.wait("invalid_oid", delay=0)
 
 
 @pytest.mark.asyncio
 async def test_wait_invalid_state(oid, session):
     cl = OrdersClient(session, base_url=TEST_URL)
-    with pytest.raises(exceptions.ValueError):
+    with pytest.raises(exceptions.ClientError):
         await cl.wait(oid, state="invalid_state", delay=0)
 
 
@@ -694,7 +694,7 @@ async def test_download_order_state(
     respx.get(get_url).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
-    with pytest.raises(exceptions.StateError):
+    with pytest.raises(exceptions.ClientError):
         await cl.download_order(oid, directory=str(tmpdir))
 
 

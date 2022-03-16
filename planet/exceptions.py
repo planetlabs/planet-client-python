@@ -70,36 +70,16 @@ class InvalidIdentity(APIException):
     pass
 
 
-class RequestCancelled(PlanetException):
-    '''Internal exception when a request is cancelled'''
+class ClientError(PlanetException):
+    """Exceptions thrown client-side"""
     pass
 
 
-class AuthException(PlanetException):
+class AuthException(ClientError):
     '''Exceptions encountered during authentication'''
     pass
 
 
-class OrdersClientError(PlanetException):
-    """Exceptions thrown by OrdersClient"""
+class RequestCancelled(ClientError):
+    '''Internal exception when a request is cancelled'''
     pass
-
-
-class ValueError(PlanetException, ValueError):
-    """Planet ValueError"""
-    pass
-
-
-class MaxAttemptsError(PlanetException):
-    """Maximum number of attempts was reached."""
-    def __init__(self, max_num):
-        message = f'Maximum number of attempts ({max_num}) reached.'
-        super().__init__(message)
-
-
-class StateError(PlanetException):
-    """Resource is not in the right state for operation."""
-    def __init__(self, state, message=''):
-        self.state = state
-        msg = f'Invalid state ({state}) for operation. {message}'
-        super().__init__(msg)
