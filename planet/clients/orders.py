@@ -25,7 +25,6 @@ from ..constants import PLANET_BASE_URL
 from ..http import Session
 from ..models import Order, Orders, Request, Response, StreamingBody
 
-
 BASE_URL = f'{PLANET_BASE_URL}/compute/ops'
 STATS_PATH = '/stats/orders/v2'
 ORDERS_PATH = '/orders/v2'
@@ -339,7 +338,7 @@ class OrdersClient():
 
         Raises:
             planet.exceptions.APIException: On API error.
-            planet.exceptions.ClientError: If the order is not in a completed
+            planet.exceptions.ClientError: If the order is not in a final
                 state.
         """
         order = await self.get_order(order_id)
@@ -352,23 +351,23 @@ class OrdersClient():
 
         locations = order.locations
         LOGGER.info(
-            f'downloading {len(locations)} assets from order {order_id}'
-        )
-        filenames = [await self.download_asset(location,
-                                               directory=directory,
-                                               overwrite=overwrite,
-                                               progress_bar=progress_bar)
-                     for location in locations]
+            f'downloading {len(locations)} assets from order {order_id}')
+
+        filenames = [
+            await self.download_asset(location,
+                                      directory=directory,
+                                      overwrite=overwrite,
+                                      progress_bar=progress_bar)
+            for location in locations
+        ]
         return filenames
 
-    async def wait(
-        self,
-        order_id: str,
-        state: str = None,
-        delay: int = 5,
-        max_attempts: int = 200,
-        callback: typing.Callable[[str], None] = None
-    ) -> str:
+    async def wait(self,
+                   order_id: str,
+                   state: str = None,
+                   delay: int = 5,
+                   max_attempts: int = 200,
+                   callback: typing.Callable[[str], None] = None) -> str:
         """Wait until order reaches desired state.
 
         Returns the state of the order on the last poll.
@@ -436,7 +435,7 @@ class OrdersClient():
                     (state and OrderStates.reached(state, current_state)):
                 break
 
-            sleep_time = max(delay-(time.time()-t), 0)
+            sleep_time = max(delay - (time.time() - t), 0)
             LOGGER.debug(f'sleeping {sleep_time}s')
             await asyncio.sleep(sleep_time)
 
@@ -449,11 +448,10 @@ class OrdersClient():
         return current_state
 
     async def list_orders(
-        self,
-        state: str = None,
-        limit: int = None,
-        as_json: bool = False
-    ) -> typing.Union[typing.List[Order], dict]:
+            self,
+            state: str = None,
+            limit: int = None,
+            as_json: bool = False) -> typing.Union[typing.List[Order], dict]:
         """Get all order requests.
 
         Parameters:
