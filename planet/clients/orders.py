@@ -414,9 +414,10 @@ class OrdersClient():
             raise exceptions.ClientError(
                 f'{state} must be one of {ORDER_STATE_SEQUENCE}')
 
+        # loop without end if max_attempts is zero
+        # otherwise, loop until num_attempts reaches max_attempts
         num_attempts = 0
-        done = False
-        while not done:
+        while not max_attempts or num_attempts < max_attempts:
             t = time.time()
 
             order = await self.get_order(order_id)
@@ -427,20 +428,20 @@ class OrdersClient():
             if report:
                 report(order.state)
 
-            done = OrderStates.passed('running', current_state) or \
-                (state and OrderStates.reached(state, current_state))
+            if OrderStates.passed('running', current_state) or \
+                    (state and OrderStates.reached(state, current_state)):
+                break
 
-            if not done:
-                if max_attempts:
-                    num_attempts += 1
-                    if num_attempts >= max_attempts:
-                        raise exceptions.ClientError(
-                            f'Maximum number of attempts ({max_attempts}) '
-                            'reached.')
+            sleep_time = max(delay-(time.time()-t), 0)
+            LOGGER.debug(f'sleeping {sleep_time}s')
+            await asyncio.sleep(sleep_time)
 
-                sleep_time = max(delay-(time.time()-t), 0)
-                LOGGER.debug(f'sleeping {sleep_time}s')
-                await asyncio.sleep(sleep_time)
+            num_attempts += 1
+
+        if max_attempts and num_attempts >= max_attempts:
+            raise exceptions.ClientError(
+                f'Maximum number of attempts ({max_attempts}) reached.')
+
         return current_state
 
     async def list_orders(
