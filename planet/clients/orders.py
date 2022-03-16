@@ -341,9 +341,9 @@ class OrdersClient():
         order = await self.get_order(order_id)
         if not OrderStates.passed('running', order.state):
             raise exceptions.ClientError(
-                order.state,
-                'Order cannot be downloaded because the order is not in a '
-                'completed state. Consider using wait functionality before '
+                'Order cannot be downloaded because the order state '
+                f'({order.state}) is not a completed state. '
+                'Consider using wait functionality before '
                 'attempting to download.')
 
         locations = order.locations
@@ -366,6 +366,8 @@ class OrdersClient():
         report: typing.Callable[[str], None] = None
     ) -> str:
         """Wait until order reaches desired state.
+
+        Returns the state of the order on the last poll.
 
         This function polls the Orders API to determine the order state, with
         the specified delay between each polling attempt, until the

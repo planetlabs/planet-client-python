@@ -20,7 +20,6 @@ import click
 
 import planet
 from planet import OrdersClient, Session  # allow mocking
-
 from .cmds import coro, translate_exceptions
 from .io import echo_json
 
@@ -53,9 +52,9 @@ def orders(ctx, base_url):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.option('-s', '--state',
+@click.option('--state',
               help='Filter orders to given state.',
-              type=click.Choice(planet.clients.orders.ORDERS_STATES_ALL,
+              type=click.Choice(planet.clients.orders.ORDER_STATE_SEQUENCE,
                                 case_sensitive=False))
 @click.option('-l', '--limit', help='Filter orders to given limit.',
               default=None, type=int)
@@ -126,19 +125,20 @@ def split_list_arg(ctx, param, value):
               help='Maximum number of polls. Set to zero for no limit.')
 @click.option('--quiet', is_flag=True, default=False,
               help='Disable ANSI control output.')
-@click.option('--states', type=click.STRING, callback=split_list_arg,
-              help=('One or more comma-separated order states that will end '
-                    'polling. Defaults to all completed states.'))
-async def wait(ctx, order_id, delay, max_attempts, quiet, states):
-    """Wait until order reaches one of the specified states.
+@click.option('--state',
+              help='State prior to a completed state that will end polling.',
+              type=click.Choice(planet.clients.orders.ORDER_STATE_SEQUENCE,
+                                case_sensitive=False))
+async def wait(ctx, order_id, delay, max_attempts, quiet, state):
+    """Wait until order reaches desired state.
 
-    Reports the state of the order when waiting is complete.
+    Reports the state of the order on the last poll.
 
     This function polls the Orders API to determine the order state, with
     the specified delay between each polling attempt, until the
-    order reaches one of the set of desired states. If the maximum number
-    of attempts is reached before the order reaches one of the desired
-    states, an exception is raised. Setting --max-attempts to zero will
+    order reaches a completed state, or earlier state, if specified.
+    If the maximum number of attempts is reached before polling is
+    complete, an exception is raised. Setting --max-attempts to zero will
     result in no limit on the number of attempts.
 
     Setting --delay to zero results in no delay between polling attempts.
@@ -147,21 +147,15 @@ async def wait(ctx, order_id, delay, max_attempts, quiet, states):
     polled asynchronously, consider increasing the delay to avoid
     throttling.
 
-    By default, the set of states that result are polled for is the
-    set of completed states. This can be changed to any set of valid
-    order states with --states. It is not recommended to change this to a
-    subset of completed states, as this opens up the possibility of the the
-    specified state never being reached (i.e. if the order completes in
-    a 'partial' state but only the 'success' state was specified).
+    By default, polling completes when the order reaches a completed state.
+    If --state is specified, polling will complete when the specified earlier
+    state is reached or passed.
     """
-    if not states:
-        states = planet.clients.orders.ORDERS_STATES_COMPLETE
-
     async with orders_client(ctx) as cl:
         with planet.reporting.StateBar(order_id=order_id,
                                        disable=quiet) as bar:
             state = await cl.wait(str(order_id),
-                                  states=states,
+                                  state=state,
                                   delay=delay,
                                   max_attempts=max_attempts,
                                   report=bar.update_state)

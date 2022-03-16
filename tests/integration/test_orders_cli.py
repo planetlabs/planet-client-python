@@ -378,7 +378,7 @@ def test_cli_orders_download_state(invoke, order_description, oid):
     result = invoke(['download', oid], runner=runner)
 
     assert result.exception
-    assert 'Invalid state (running) for operation.' in result.output
+    assert 'order state (running) is not a completed state.' in result.output
 
 
 @pytest.mark.parametrize(
