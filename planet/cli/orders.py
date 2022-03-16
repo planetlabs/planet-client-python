@@ -158,7 +158,7 @@ async def wait(ctx, order_id, delay, max_attempts, quiet, state):
                                   state=state,
                                   delay=delay,
                                   max_attempts=max_attempts,
-                                  report=bar.update_state)
+                                  callback=bar.update_state)
     click.echo(state)
 
 

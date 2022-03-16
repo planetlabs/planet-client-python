@@ -363,7 +363,7 @@ class OrdersClient():
         state: str = None,
         delay: int = 5,
         max_attempts: int = 200,
-        report: typing.Callable[[str], None] = None
+        callback: typing.Callable[[str], None] = None
     ) -> str:
         """Wait until order reaches desired state.
 
@@ -425,8 +425,8 @@ class OrdersClient():
 
             LOGGER.debug(state)
 
-            if report:
-                report(order.state)
+            if callback:
+                callback(order.state)
 
             if OrderStates.passed('running', current_state) or \
                     (state and OrderStates.reached(state, current_state)):

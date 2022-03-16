@@ -459,7 +459,7 @@ async def test_wait_default(oid, order_description, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_wait_reporter(oid, order_description, session):
+async def test_wait_callback(oid, order_description, session):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
 
     order_description2 = copy.deepcopy(order_description)
@@ -475,14 +475,14 @@ async def test_wait_reporter(oid, order_description, session):
     ]
 
     mock_bar = create_autospec(reporting.StateBar)
-    mock_report = mock_bar.update_state
+    mock_callback = mock_bar.update_state
 
     cl = OrdersClient(session, base_url=TEST_URL)
-    await cl.wait(oid, delay=0, report=mock_report)
+    await cl.wait(oid, delay=0, callback=mock_callback)
 
-    # check state was sent to reporter as expected
+    # check state was sent to callback as expected
     expected = [call(s) for s in ['queued', 'running', 'success']]
-    mock_report.assert_has_calls(expected)
+    mock_callback.assert_has_calls(expected)
 
 
 @respx.mock
