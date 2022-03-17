@@ -19,9 +19,9 @@ The principles of the interface design, ordered according to priority, are:
 * Map the API names and endpoints as close as possible
 * Synchronoize the Python API and CLI
 * Adhere to command line design in:
- * Popular SDKs (aws and gcloud)
- * The geospatial toolset (gdal, rasterio)
- * GNU standards
+  * Popular SDKs (aws and gcloud)
+  * The geospatial toolset (gdal, rasterio)
+  * GNU standards
 * Support JSON in stdin/stdout
 
 ### Implementation
