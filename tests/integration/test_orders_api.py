@@ -210,7 +210,7 @@ async def test_create_order_bad_item_type(order_request, session):
         "field": {
             "Products": [{
                 "message":
-                ("Bad item type 'invalid' for bundle type " + "'analytic'")
+                "Bad item type 'invalid' for bundle type 'analytic'"
             }]
         },
         "general": [{
@@ -222,19 +222,13 @@ async def test_create_order_bad_item_type(order_request, session):
     order_request['products'][0]['item_type'] = 'invalid'
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    expected_msg = (
-        "Unable to accept order - Bad item type 'invalid' for bundle type " +
-        "'analytic'")
-
-    with pytest.raises(exceptions.BadQuery, match=expected_msg):
-        _ = await cl.create_order(order_request)
+    with pytest.raises(exceptions.BadQuery):
+        await cl.create_order(order_request)
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_create_order_item_id_does_not_exist(order_request,
-                                                   session,
-                                                   match_pytest_raises):
+async def test_create_order_item_id_does_not_exist(order_request, session):
     resp = {
         "field": {
             "Details": [{
@@ -252,12 +246,8 @@ async def test_create_order_item_id_does_not_exist(order_request,
         '4500474_2133707_2021-05-20_2419'
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    expected_msg = (
-        "Unable to accept order - Item ID 4500474_2133707_2021-05-20_2419 " +
-        "/ Item Type PSScene3Band doesn't exist")
-
-    with match_pytest_raises(exceptions.BadQuery, expected_msg):
-        _ = await cl.create_order(order_request)
+    with pytest.raises(exceptions.BadQuery):
+        await cl.create_order(order_request)
 
 
 @respx.mock
@@ -282,18 +272,17 @@ async def test_get_order_invalid_id(session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_get_order_id_doesnt_exist(oid, session, match_pytest_raises):
+async def test_get_order_id_doesnt_exist(oid, session):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
 
-    msg = f'Could not load order ID: {oid}.'
-    resp = {"message": msg}
+    resp = {"message": f'Could not load order ID: {oid}'}
     mock_resp = httpx.Response(404, json=resp)
     respx.get(get_url).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    with match_pytest_raises(exceptions.MissingResource, msg):
-        _ = await cl.get_order(oid)
+    with pytest.raises(exceptions.MissingResource):
+        await cl.get_order(oid)
 
 
 @respx.mock
@@ -319,36 +308,32 @@ async def test_cancel_order_invalid_id(session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_cancel_order_id_doesnt_exist(oid, session, match_pytest_raises):
+async def test_cancel_order_id_doesnt_exist(oid, session):
     cancel_url = f'{TEST_ORDERS_URL}/{oid}'
 
-    msg = f'No such order ID: {oid}.'
-    resp = {"message": msg}
+    resp = {"message": f'No such order ID: {oid}.'}
     mock_resp = httpx.Response(404, json=resp)
     respx.put(cancel_url).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    with match_pytest_raises(exceptions.MissingResource, msg):
-        _ = await cl.cancel_order(oid)
+    with pytest.raises(exceptions.MissingResource):
+        await cl.cancel_order(oid)
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_cancel_order_id_cannot_be_cancelled(oid,
-                                                   session,
-                                                   match_pytest_raises):
+async def test_cancel_order_id_cannot_be_cancelled(oid, session):
     cancel_url = f'{TEST_ORDERS_URL}/{oid}'
 
-    msg = 'Order not in a cancellable state'
-    resp = {"message": msg}
+    resp = {"message": 'Order not in a cancellable state'}
     mock_resp = httpx.Response(409, json=resp)
     respx.put(cancel_url).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    with match_pytest_raises(exceptions.Conflict, msg):
-        _ = await cl.cancel_order(oid)
+    with pytest.raises(exceptions.Conflict):
+        await cl.cancel_order(oid)
 
 
 @respx.mock
@@ -701,7 +686,7 @@ async def test_download_order_overwrite_true_preexisting_data(
 
     create_download_mock()
     cl = OrdersClient(session, base_url=TEST_URL)
-    _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=True)
+    await cl.download_order(oid, directory=str(tmpdir), overwrite=True)
 
     # Check that the data downloaded has overwritten the original data
     assert json.load(open(Path(tmpdir, 'file.json'))) == downloaded_content
@@ -722,7 +707,7 @@ async def test_download_order_overwrite_false_preexisting_data(
 
     create_download_mock()
     cl = OrdersClient(session, base_url=TEST_URL)
-    _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
+    await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
 
     # Check that the original data has not been overwritten
     assert json.load(open(Path(tmpdir, 'file.json'))) == original_content
@@ -739,7 +724,7 @@ async def test_download_order_overwrite_true_nonexisting_data(
 
     create_download_mock()
     cl = OrdersClient(session, base_url=TEST_URL)
-    _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=True)
+    await cl.download_order(oid, directory=str(tmpdir), overwrite=True)
 
     # Check that the was data downloaded and has the correct contents
     assert json.load(open(Path(tmpdir, 'file.json'))) == downloaded_content
@@ -756,7 +741,7 @@ async def test_download_order_overwrite_false_nonexisting_data(
 
     create_download_mock()
     cl = OrdersClient(session, base_url=TEST_URL)
-    _ = await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
+    await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
 
     # Check that the was data downloaded and has the correct contents
     assert json.load(open(Path(tmpdir, 'file.json'))) == downloaded_content

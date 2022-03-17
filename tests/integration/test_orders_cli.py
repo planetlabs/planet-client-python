@@ -159,13 +159,13 @@ def test_cli_orders_get(invoke, oid, order_description):
 @respx.mock
 def test_cli_orders_get_id_not_found(invoke, oid):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
-    error_json = {'message': 'A descriptive error message'}
+    error_json = {"message": "Error message"}
     mock_resp = httpx.Response(404, json=error_json)
     respx.get(get_url).return_value = mock_resp
 
     result = invoke(['get', oid])
     assert result.exception
-    assert 'Error: A descriptive error message\n' == result.output
+    assert 'Error: {"message": "Error message"}\n' == result.output
 
 
 @respx.mock
@@ -183,13 +183,13 @@ def test_cli_orders_cancel(invoke, oid, order_description):
 @respx.mock
 def test_cli_orders_cancel_id_not_found(invoke, oid):
     cancel_url = f'{TEST_ORDERS_URL}/{oid}'
-    error_json = {'message': 'A descriptive error message'}
+    error_json = {"message": "Error message"}
     mock_resp = httpx.Response(404, json=error_json)
     respx.put(cancel_url).return_value = mock_resp
 
     result = invoke(['cancel', oid])
     assert result.exception
-    assert 'Error: A descriptive error message\n' == result.output
+    assert 'Error: {"message": "Error message"}\n' == result.output
 
 
 @respx.mock
