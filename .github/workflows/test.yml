@@ -67,7 +67,7 @@ jobs:
         key: ${{ runner.os }}-pip
         restore-keys: |
           ${{ runner.os }}-pip
-    - name: Lint
+    - name: Build Docs
       run: |
         pip install --upgrade nox
         nox -s docs
