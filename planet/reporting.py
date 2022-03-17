@@ -83,17 +83,22 @@ class StateBar(ProgressBar):
     def desc(self):
         return f'order {self.order_id}'
 
+    def update_state(self, state: str):
+        """Simple function to be used as a callback for state reporting"""
+        self.update(state=state)
+
     def update(self, state: str = None, order_id: str = None):
         if state:
-            if state != self.state:
-                LOGGER.info('{order_id} state: {state}')
             self.state = state
-            self.bar.postfix[1] = self.state
+            try:
+                self.bar.postfix[1] = self.state
+            except AttributeError:
+                # If the bar is disabled, attempting to access self.bar.postfix
+                # will result in an error. In this case, just skip it.
+                pass
 
         if order_id:
             self.order_id = order_id
             self.bar.set_description_str(self.desc, refresh=False)
 
         self.bar.refresh()
-
-        LOGGER.debug(str(self.bar))

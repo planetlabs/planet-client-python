@@ -71,11 +71,16 @@ class InvalidIdentity(APIException):
     pass
 
 
-class RequestCancelled(PlanetException):
-    '''Internal exception when a request is cancelled'''
+class ClientError(PlanetException):
+    """Exceptions thrown client-side"""
     pass
 
 
-class AuthException(PlanetException):
+class AuthException(ClientError):
     '''Exceptions encountered during authentication'''
+    pass
+
+
+class RequestCancelled(ClientError):
+    '''Internal exception when a request is cancelled'''
     pass

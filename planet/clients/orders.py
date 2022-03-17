@@ -31,16 +31,31 @@ ORDERS_PATH = '/orders/v2'
 BULK_PATH = '/bulk/orders/v2'
 
 # Order states https://developers.planet.com/docs/orders/ordering/#order-states
-ORDERS_STATES_COMPLETE = ['success', 'partial', 'cancelled', 'failed']
-ORDERS_STATES_IN_PROGRESS = ['queued', 'running']
-ORDERS_STATES = ORDERS_STATES_IN_PROGRESS + ORDERS_STATES_COMPLETE
+# this is in order of state progression except for final states
+ORDER_STATE_SEQUENCE = \
+    ('queued', 'running', 'failed', 'success', 'partial', 'cancelled')
 
 LOGGER = logging.getLogger(__name__)
 
 
-class OrdersClientException(Exception):
-    """Exceptions thrown by OrdersClient"""
-    pass
+class OrderStates():
+    SEQUENCE = ORDER_STATE_SEQUENCE
+
+    @classmethod
+    def _get_position(cls, state):
+        return cls.SEQUENCE.index(state)
+
+    @classmethod
+    def reached(cls, state, test):
+        return cls._get_position(test) >= cls._get_position(state)
+
+    @classmethod
+    def passed(cls, state, test):
+        return cls._get_position(test) > cls._get_position(state)
+
+    @classmethod
+    def is_final(cls, test):
+        return cls.passed('running', test)
 
 
 class OrdersClient():
@@ -76,14 +91,12 @@ class OrdersClient():
 
     @staticmethod
     def _check_order_id(oid):
-        msg = f'Order id ({oid}) must be a valid UUID string.'
-        if not isinstance(oid, str):
-            raise OrdersClientException(msg)
-
+        """Raises planet.exceptions.ClientError if oid is not a valid UUID"""
         try:
-            uuid.UUID(oid)
-        except ValueError:
-            raise OrdersClientException(msg)
+            uuid.UUID(hex=oid)
+        except (ValueError, AttributeError):
+            msg = f'Order id ({oid}) is not a valid UUID hexadecimal string.'
+            raise exceptions.ClientError(msg)
 
     def _orders_url(self):
         return f'{self._base_url}{ORDERS_PATH}'
@@ -165,7 +178,7 @@ class OrdersClient():
             Order information
 
         Raises:
-            OrdersClientException: If order_id is not valid UUID.
+            planet.exceptions.ClientError: If order_id is not a valid UUID.
             planet.exceptions.APIException: On API error.
         '''
         self._check_order_id(order_id)
@@ -197,7 +210,7 @@ class OrdersClient():
             Empty response
 
         Raises:
-            OrdersClientException: If order_id is not valid UUID.
+            planet.exceptions.ClientError: If order_id is not a valid UUID.
             planet.exceptions.APIException: On API error.
         '''
         self._check_order_id(order_id)
@@ -225,6 +238,8 @@ class OrdersClient():
             Results of the bulk cancel request
 
         Raises:
+            planet.exceptions.ClientError: If an entry in order_ids is not a
+                valid UUID.
             planet.exceptions.APIException: On API error.
         '''
         url = f'{self._base_url}{BULK_PATH}/cancel'
@@ -301,11 +316,21 @@ class OrdersClient():
 
         Raises:
             planet.exceptions.APIException: On API error.
+            planet.exceptions.ClientError: If the order is not in a final
+                state.
         """
         order = await self.get_order(order_id)
+        if not OrderStates.is_final(order.state):
+            raise exceptions.ClientError(
+                'Order cannot be downloaded because the order state '
+                f'({order.state}) is not a final state. '
+                'Consider using wait functionality before '
+                'attempting to download.')
+
         locations = order.locations
         LOGGER.info(
             f'downloading {len(locations)} assets from order {order_id}')
+
         filenames = [
             await self.download_asset(location,
                                       directory=directory,
@@ -315,71 +340,90 @@ class OrdersClient():
         ]
         return filenames
 
-    async def poll(self,
+    async def wait(self,
                    order_id: str,
                    state: str = None,
-                   wait: int = 1,
-                   report=None) -> str:
-        """Poll for order status until order reaches desired state, optionally
-        reporting status.
+                   delay: int = 5,
+                   max_attempts: int = 200,
+                   callback: typing.Callable[[str], None] = None) -> str:
+        """Wait until order reaches desired state.
 
-        By default, the Orders API is polled every 1 second for status updates.
-        The API rate limit for this endpoint is 10 requests per second.
-        If many orders are being polled asynchronously, consider
-        increasing the wait to avoid throttling.
+        Returns the state of the order on the last poll.
+
+        This function polls the Orders API to determine the order state, with
+        the specified delay between each polling attempt, until the
+        order reaches a final state, or earlier state, if specified.
+        If the maximum number of attempts is reached before polling is
+        complete, an exception is raised. Setting 'max_attempts' to zero will
+        result in no limit on the number of attempts.
+
+        Setting 'delay' to zero results in no delay between polling attempts.
+        This will likely result in throttling by the Orders API, which has
+        a rate limit of 10 requests per second. If many orders are being
+        polled asynchronously, consider increasing the delay to avoid
+        throttling.
+
+        By default, polling completes when the order reaches a final state.
+        If 'state' is given, polling will complete when the specified earlier
+        state is reached or passed.
 
         Example:
             ```python
             from planet.reporting import StateBar
 
             with StateBar() as bar:
-                await poll(order_id, report=bar.update)
+                await wait(order_id, callback=bar.update_state)
             ```
 
         Parameters:
-            order_id: The ID of the order
-            state: State to poll until. If multiple, use list. Defaults to
-                any completed state.
-            wait: Time (in seconds) between polls.
-            report: Callback function for progress updates. Invoked with
-                keyword arguments `state` (poll state) and `logger`
-                (callback for logging progress bar status). Recommended
-                value is `reporting.StateBar.update`.
+            order_id: The ID of the order.
+            state: State prior to a final state that will end polling.
+            delay: Time (in seconds) between polls.
+            max_attempts: Maximum number of polls. Set to zero for no limit.
+            callback: Function that handles state progress updates.
 
         Returns
-            Completed state of the order.
+            State of the order.
 
         Raises:
             planet.exceptions.APIException: On API error.
-            OrdersClientException: If order_id is not valid or state is not
-                supported.
+            planet.exceptions.ClientError: If order_id or state is not valid or
+                if the maximum number of attempts is reached before the
+                specified state or a final state is reached.
         """
-        if state:
-            if state not in ORDERS_STATES:
-                raise OrdersClientException(
-                    f'{state} should be one of: {ORDERS_STATES}')
-            states = [state]
-        else:
-            states = ORDERS_STATES_COMPLETE
+        if state and state not in ORDER_STATE_SEQUENCE:
+            raise exceptions.ClientError(
+                f'{state} must be one of {ORDER_STATE_SEQUENCE}')
 
-        completed = False
-        while not completed:
+        # loop without end if max_attempts is zero
+        # otherwise, loop until num_attempts reaches max_attempts
+        num_attempts = 0
+        while not max_attempts or num_attempts < max_attempts:
             t = time.time()
 
             order = await self.get_order(order_id)
-            state = order.state
+            current_state = order.state
 
-            if report:
-                report(state=order.state)
-            else:
-                LOGGER.debug(state)
+            LOGGER.debug(state)
 
-            completed = state in states
-            if not completed:
-                sleep_time = max(wait - (time.time() - t), 0)
-                LOGGER.debug(f'sleeping {sleep_time}s')
-                await asyncio.sleep(sleep_time)
-        return state
+            if callback:
+                callback(order.state)
+
+            if OrderStates.is_final(current_state) or \
+                    (state and OrderStates.reached(state, current_state)):
+                break
+
+            sleep_time = max(delay - (time.time() - t), 0)
+            LOGGER.debug(f'sleeping {sleep_time}s')
+            await asyncio.sleep(sleep_time)
+
+            num_attempts += 1
+
+        if max_attempts and num_attempts >= max_attempts:
+            raise exceptions.ClientError(
+                f'Maximum number of attempts ({max_attempts}) reached.')
+
+        return current_state
 
     async def list_orders(
             self,
@@ -398,10 +442,15 @@ class OrdersClient():
 
         Raises:
             planet.exceptions.APIException: On API error.
+            planet.exceptions.ClientError: If state is not valid.
         """
         url = self._orders_url()
+
         if state:
-            self._check_state(state)
+            if state not in ORDER_STATE_SEQUENCE:
+                raise exceptions.ClientError(
+                    f'Order state ({state}) is not a valid state. '
+                    f'Valid states are {ORDER_STATE_SEQUENCE}')
             params = {"state": state}
         else:
             params = None
@@ -418,10 +467,3 @@ class OrdersClient():
         request = self._request(url, 'GET', params=params)
 
         return Orders(request, self._do_request, limit=limit)
-
-    @staticmethod
-    def _check_state(state):
-        if state not in ORDERS_STATES:
-            raise OrdersClientException(
-                f'Order state (\'{state}\') should be one of: '
-                f'{ORDERS_STATES}')

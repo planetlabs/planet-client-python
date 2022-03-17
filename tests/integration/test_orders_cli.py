@@ -12,11 +12,13 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 '''Test Orders CLI'''
+import copy
 from http import HTTPStatus
 import json
 from pathlib import Path
 from unittest.mock import Mock
 
+import click
 from click.testing import CliRunner
 import httpx
 import pytest
@@ -40,6 +42,15 @@ def invoke():
         return runner.invoke(cli.main, args=args)
 
     return _invoke
+
+
+def test_split_list_arg_empty_string():
+    with pytest.raises(click.exceptions.BadParameter):
+        cli.orders.split_list_arg(None, None, '')
+
+
+def test_split_list_arg_None():
+    assert cli.orders.split_list_arg(None, None, None) is None
 
 
 @respx.mock
@@ -181,11 +192,65 @@ def test_cli_orders_cancel_id_not_found(invoke, oid):
     assert 'Error: A descriptive error message\n' == result.output
 
 
+@respx.mock
+def test_cli_orders_wait_default(invoke, order_description, oid):
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+
+    order_description2 = copy.deepcopy(order_description)
+    order_description2['state'] = 'success'
+
+    route = respx.get(get_url)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.OK, json=order_description),
+        httpx.Response(HTTPStatus.OK, json=order_description2)
+    ]
+
+    runner = CliRunner()
+    result = invoke(['wait', '--delay', '0', oid], runner=runner)
+    assert not result.exception
+    assert result.output.endswith('success\n')
+
+
+@respx.mock
+def test_cli_orders_wait_max_attempts(invoke, order_description, oid):
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+
+    order_description2 = copy.deepcopy(order_description)
+    order_description2['state'] = 'running'
+    order_description3 = copy.deepcopy(order_description)
+    order_description3['state'] = 'success'
+
+    route = respx.get(get_url)
+    route.side_effect = [httpx.Response(HTTPStatus.OK, json=order_description)]
+
+    runner = CliRunner()
+    result = invoke(['wait', '--delay', '0', '--max-attempts', '1', oid],
+                    runner=runner)
+    assert result.exception
+    assert result.output.endswith(
+        'Error: Maximum number of attempts (1) reached.\n')
+
+
+@respx.mock
+def test_cli_orders_wait_quiet(invoke, order_description, oid):
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+
+    order_description['state'] = 'success'
+
+    route = respx.get(get_url)
+    route.side_effect = [httpx.Response(HTTPStatus.OK, json=order_description)]
+
+    runner = CliRunner()
+    result = invoke(['wait', '--delay', '0', '--quiet', oid], runner=runner)
+    assert not result.exception
+    assert result.output == 'success\n'
+
+
 @pytest.fixture
 def mock_download_response(oid, order_description):
 
     def _func():
-        # Mock an HTTP response for polling and download
+        # Mock an HTTP response for download
         order_description['state'] = 'success'
         dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
         dl_url2 = TEST_DOWNLOAD_URL + '/2?token=IAmAnotherToken'
@@ -223,7 +288,7 @@ def mock_download_response(oid, order_description):
 
 
 @respx.mock
-def test_cli_orders_download(invoke, mock_download_response, oid):
+def test_cli_orders_download_default(invoke, mock_download_response, oid):
     mock_download_response()
 
     runner = CliRunner()
@@ -231,8 +296,8 @@ def test_cli_orders_download(invoke, mock_download_response, oid):
         result = invoke(['download', oid], runner=runner)
         assert not result.exception
 
-        # no message, output is only progress reporting
-        assert result.output.startswith('\r00:00 - order')
+        # basic check of progress reporting
+        assert 'm1.json' in result.output
 
         # Check that the files were downloaded and have the correct contents
         f1_path = Path(folder) / 'm1.json'
@@ -282,20 +347,29 @@ def test_cli_orders_download_overwrite(invoke,
         assert json.load(open(filepath)) == {'key': 'value'}
 
 
-@pytest.mark.skip(
-    'https://github.com/planetlabs/planet-client-python/issues/352')  # noqa
 @respx.mock
 def test_cli_orders_download_quiet(invoke, mock_download_response, oid):
     mock_download_response()
 
     runner = CliRunner()
     with runner.isolated_filesystem():
-        result = invoke(['download', '-q', oid], runner=runner)
+        result = invoke(['download', '--quiet', oid], runner=runner)
         assert not result.exception
 
-        # no progress reporting, just the message
-        message = 'Downloaded 2 files.\n'
-        assert message == result.output
+
+@respx.mock
+def test_cli_orders_download_state(invoke, order_description, oid):
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+
+    order_description['state'] = 'running'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.get(get_url).return_value = mock_resp
+
+    runner = CliRunner()
+    result = invoke(['download', oid], runner=runner)
+
+    assert result.exception
+    assert 'order state (running) is not a final state.' in result.output
 
 
 @pytest.mark.parametrize(
@@ -356,10 +430,10 @@ def test_cli_orders_create_id_empty(invoke):
         '--bundle',
         'analytic',
         '--item-type',
-        'invalid'
+        'PSOrthoTile'
     ])
     assert result.exit_code
-    assert 'id cannot be empty string.' in result.output
+    assert 'Entry cannot be an empty string.' in result.output
 
 
 @respx.mock

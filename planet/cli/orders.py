@@ -20,7 +20,6 @@ import click
 
 import planet
 from planet import OrdersClient, Session  # allow mocking
-
 from .cmds import coro, translate_exceptions
 from .io import echo_json
 
@@ -54,10 +53,9 @@ def orders(ctx, base_url):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.option('-s',
-              '--state',
+@click.option('--state',
               help='Filter orders to given state.',
-              type=click.Choice(planet.clients.orders.ORDERS_STATES,
+              type=click.Choice(planet.clients.orders.ORDER_STATE_SEQUENCE,
                                 case_sensitive=False))
 @click.option('-l',
               '--limit',
@@ -103,6 +101,77 @@ async def cancel(ctx, order_id):
     click.echo('Cancelled')
 
 
+def split_list_arg(ctx, param, value):
+    if value is None:
+        return None
+    elif value == '':
+        # note, this is specifically checking for an empty string
+        click.BadParameter('Entry cannot be an empty string.')
+
+    # split list by ',' and remove whitespace
+    entries = [i.strip() for i in value.split(',')]
+
+    # validate passed entries
+    for e in entries:
+        if not e:
+            raise click.BadParameter('Entry cannot be an empty string.')
+    return entries
+
+
+@orders.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument('order_id', type=click.UUID)
+@click.option('--delay',
+              type=int,
+              default=5,
+              help='Time (in seconds) between polls.')
+@click.option('--max-attempts',
+              type=int,
+              default=5,
+              help='Maximum number of polls. Set to zero for no limit.')
+@click.option('--quiet',
+              is_flag=True,
+              default=False,
+              help='Disable ANSI control output.')
+@click.option('--state',
+              help='State prior to a final state that will end polling.',
+              type=click.Choice(planet.clients.orders.ORDER_STATE_SEQUENCE,
+                                case_sensitive=False))
+async def wait(ctx, order_id, delay, max_attempts, quiet, state):
+    """Wait until order reaches desired state.
+
+    Reports the state of the order on the last poll.
+
+    This function polls the Orders API to determine the order state, with
+    the specified delay between each polling attempt, until the
+    order reaches a final state or earlier state, if specified.
+    If the maximum number of attempts is reached before polling is
+    complete, an exception is raised. Setting --max-attempts to zero will
+    result in no limit on the number of attempts.
+
+    Setting --delay to zero results in no delay between polling attempts.
+    This will likely result in throttling by the Orders API, which has
+    a rate limit of 10 requests per second. If many orders are being
+    polled asynchronously, consider increasing the delay to avoid
+    throttling.
+
+    By default, polling completes when the order reaches a final state.
+    If --state is specified, polling will complete when the specified earlier
+    state is reached or passed.
+    """
+    async with orders_client(ctx) as cl:
+        with planet.reporting.StateBar(order_id=order_id,
+                                       disable=quiet) as bar:
+            state = await cl.wait(str(order_id),
+                                  state=state,
+                                  delay=delay,
+                                  max_attempts=max_attempts,
+                                  callback=bar.update_state)
+    click.echo(state)
+
+
 @orders.command()
 @click.pass_context
 @translate_exceptions
@@ -112,7 +181,7 @@ async def cancel(ctx, order_id):
               '--quiet',
               is_flag=True,
               default=False,
-              help=('Disable ANSI control output.'))
+              help='Disable ANSI control output.')
 @click.option('-o',
               '--overwrite',
               is_flag=True,
@@ -126,29 +195,12 @@ async def cancel(ctx, order_id):
                               writable=True,
                               file_okay=False))
 async def download(ctx, order_id, quiet, overwrite, dest):
-    '''Download order by order ID.'''
-
-    # Download the user's order
+    """Download order by order ID."""
     async with orders_client(ctx) as cl:
-        with planet.reporting.StateBar(order_id=order_id,
-                                       disable=quiet) as bar:
-            await cl.poll(str(order_id), report=bar.update)
-            _ = await cl.download_order(str(order_id),
-                                        directory=dest,
-                                        overwrite=overwrite,
-                                        progress_bar=not quiet)
-
-
-def split_id_list(ctx, param, value):
-    # split list by ',' and remove whitespace
-    ids = [i.strip() for i in value.split(',')]
-
-    # validate passed ids
-    for iid in ids:
-        if not iid:
-            raise click.BadParameter('id cannot be empty string.')
-
-    return ids
+        await cl.download_order(str(order_id),
+                                directory=dest,
+                                overwrite=overwrite,
+                                progress_bar=not quiet)
 
 
 def read_file_geojson(ctx, param, value):
@@ -184,7 +236,7 @@ def read_file_json(ctx, param, value):
               'ids',
               help='One or more comma-separated item IDs',
               type=click.STRING,
-              callback=split_id_list,
+              callback=split_list_arg,
               required=True)
 # @click.option('--ids_from_search',
 #               help='Embedded data search')
