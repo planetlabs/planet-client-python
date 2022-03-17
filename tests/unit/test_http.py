@@ -1,4 +1,4 @@
-# Copyright 2020 Planet Labs, Inc.
+# Copyright 2020 Planet Labs, PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -65,7 +65,7 @@ def test_basesession__raise_for_status(mock_response):
                           text='exceeded QUOTA"',
                           json={}))
 
-    with pytest.raises(exceptions.APIException):
+    with pytest.raises(exceptions.APIError):
         http.BaseSession._raise_for_status(
             mock_response(HTTPStatus.METHOD_NOT_ALLOWED, json={}))
 
@@ -125,7 +125,7 @@ async def test_session_retry(mock_request):
             raise exceptions.TooManyRequests
 
         ps.retry_wait_time = 0
-        with pytest.raises(http.SessionException):
+        with pytest.raises(exceptions.TooManyRequests):
             await ps._retry(test_func)
 
 
@@ -141,10 +141,10 @@ async def test_authsession_request(mock_request):
 
 
 def test_authsession__raise_for_status(mock_response):
-    with pytest.raises(exceptions.APIException):
+    with pytest.raises(exceptions.APIError):
         http.AuthSession._raise_for_status(
             mock_response(HTTPStatus.BAD_REQUEST, json={}))
 
-    with pytest.raises(exceptions.APIException):
+    with pytest.raises(exceptions.APIError):
         http.AuthSession._raise_for_status(
             mock_response(HTTPStatus.UNAUTHORIZED, json={}))

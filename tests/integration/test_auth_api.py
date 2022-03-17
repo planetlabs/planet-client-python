@@ -55,7 +55,7 @@ def test_AuthClient_invalid_email():
     respx.post(TEST_LOGIN_URL).return_value = mock_resp
 
     cl = AuthClient(base_url=TEST_URL)
-    with pytest.raises(exceptions.APIException,
+    with pytest.raises(exceptions.APIError,
                        match='Not a valid email address.'):
         _ = cl.login('email', 'password')
 
@@ -72,6 +72,6 @@ def test_AuthClient_invalid_password():
     respx.post(TEST_LOGIN_URL).return_value = mock_resp
 
     cl = AuthClient(base_url=TEST_URL)
-    with pytest.raises(exceptions.APIException,
+    with pytest.raises(exceptions.APIError,
                        match='Incorrect email or password.'):
         _ = cl.login('email', 'password')

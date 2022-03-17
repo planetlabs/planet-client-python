@@ -59,7 +59,7 @@ def translate_exceptions(func):
             raise click.ClickException(
                 'Auth information does not exist or is corrupted. Initialize '
                 'with `planet auth init`.')
-        except exceptions.PlanetException as ex:
+        except exceptions.PlanetError as ex:
             raise click.ClickException(ex)
 
     return wrapper
