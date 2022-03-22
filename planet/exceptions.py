@@ -13,65 +13,68 @@
 # limitations under the License.
 
 
-class PlanetError(Exception):
+class PlanetException(Exception):
     """Root for all exceptions thrown by the SDK"""
     pass
 
 
-class APIError(PlanetError):
+class APIException(PlanetException):
     '''General unexpected API response'''
+    @property
+    def message(self):
+        return self.args[0]
 
 
-class BadQuery(APIError):
+class BadQuery(APIException):
     '''Invalid inputs, HTTP 400'''
     pass
 
 
-class InvalidAPIKey(APIError):
+class InvalidAPIKey(APIException):
     '''Invalid key, HTTP 401'''
     pass
 
 
-class NoPermission(APIError):
+class NoPermission(APIException):
     '''Insufficient permissions, HTTP 403'''
     pass
 
 
-class MissingResource(APIError):
+class MissingResource(APIException):
     '''Request for non existing resource, HTTP 404'''
     pass
 
 
-class Conflict(APIError):
+class Conflict(APIException):
     '''Request conflict with current state of the target resource, HTTP 409'''
     pass
 
 
-class TooManyRequests(APIError):
+class TooManyRequests(APIException):
     '''Too many requests, HTTP 429'''
     pass
 
 
-class OverQuota(APIError):
+class OverQuota(APIException):
     '''Quota exceeded, HTTP 429'''
     pass
 
 
-class ServerError(APIError):
+class ServerError(APIException):
     '''Unexpected internal server error, HTTP 500'''
     pass
 
 
-class InvalidIdentity(APIError):
+class InvalidIdentity(APIException):
     '''Raised when logging in with invalid credentials'''
     pass
 
 
-class ClientError(PlanetError):
-    """Exceptions thrown client-side"""
+class RequestCancelled(PlanetException):
+    '''Internal exception when a request is cancelled'''
     pass
 
 
-class AuthException(ClientError):
+class AuthException(PlanetException):
     '''Exceptions encountered during authentication'''
     pass

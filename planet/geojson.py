@@ -16,6 +16,7 @@ import logging
 
 import shapely.geometry as sgeom
 
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -107,9 +108,11 @@ def validate_geom(data: dict):
         GeoJSONException: If data is not a valid GeoJSON geometry.
     """
     if 'type' not in data:
-        raise GeoJSONException('Missing \'type\' key.')
+        raise GeoJSONException(
+            'Missing \'type\' key.')
     elif 'coordinates' not in data:
-        raise GeoJSONException('Missing \'coordinates\' key.')
+        raise GeoJSONException(
+            'Missing \'coordinates\' key.')
 
     try:
         sgeom.shape(data)

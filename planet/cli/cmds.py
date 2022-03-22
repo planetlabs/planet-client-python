@@ -30,11 +30,9 @@ def coro(func):
     Returns:
         wrapper function
     """
-
     @wraps(func)
     def wrapper(*args, **kwargs):
         return asyncio.run(func(*args, **kwargs))
-
     return wrapper
 
 
@@ -50,16 +48,14 @@ def translate_exceptions(func):
     Raises:
         ClickException
     """
-
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
             func(*args, **kwargs)
+        except exceptions.APIException as ex:
+            raise click.ClickException(ex)
         except exceptions.AuthException:
             raise click.ClickException(
                 'Auth information does not exist or is corrupted. Initialize '
                 'with `planet auth init`.')
-        except exceptions.PlanetError as ex:
-            raise click.ClickException(ex)
-
     return wrapper

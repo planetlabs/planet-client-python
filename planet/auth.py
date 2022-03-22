@@ -33,9 +33,10 @@ ENV_API_KEY = 'PL_API_KEY'
 
 class Auth(metaclass=abc.ABCMeta):
     '''Handle authentication information for use with Planet APIs.'''
-
     @staticmethod
-    def from_key(key: str) -> Auth:
+    def from_key(
+        key: str
+    ) -> Auth:
         '''Obtain authentication from api key.
 
         Parameters:
@@ -46,7 +47,9 @@ class Auth(metaclass=abc.ABCMeta):
         return auth
 
     @staticmethod
-    def from_file(filename: str = None) -> Auth:
+    def from_file(
+        filename: str = None
+    ) -> Auth:
         '''Create authentication from secret file.
 
         The secret file is named `.planet.json` and is stored in the user
@@ -71,7 +74,9 @@ class Auth(metaclass=abc.ABCMeta):
         return auth
 
     @staticmethod
-    def from_env(variable_name: str = None) -> Auth:
+    def from_env(
+        variable_name: str = None
+    ) -> Auth:
         '''Create authentication from environment variable.
 
         Reads the `PL_API_KEY` environment variable
@@ -91,7 +96,11 @@ class Auth(metaclass=abc.ABCMeta):
         return auth
 
     @staticmethod
-    def from_login(email: str, password: str, base_url: str = None) -> Auth:
+    def from_login(
+        email: str,
+        password: str,
+        base_url: str = None
+    ) -> Auth:
         '''Create authentication from login email and password.
 
         Note: To keep your password secure, the use of `getpass` is
@@ -113,7 +122,10 @@ class Auth(metaclass=abc.ABCMeta):
 
     @classmethod
     @abc.abstractmethod
-    def from_dict(cls, data: dict) -> Auth:
+    def from_dict(
+        cls,
+        data: dict
+    ) -> Auth:
         pass
 
     @property
@@ -121,7 +133,10 @@ class Auth(metaclass=abc.ABCMeta):
     def value(self):
         pass
 
-    def write(self, filename: str = None):
+    def write(
+        self,
+        filename: str = None
+    ):
         '''Write authentication information.
 
         Parameters:
@@ -133,8 +148,10 @@ class Auth(metaclass=abc.ABCMeta):
 
 
 class AuthClient():
-
-    def __init__(self, base_url: str = None):
+    def __init__(
+        self,
+        base_url: str = None
+    ):
         """
         Parameters:
             base_url: The base URL to use. Defaults to production
@@ -144,7 +161,11 @@ class AuthClient():
         if self._base_url.endswith('/'):
             self._base_url = self._base_url[:-1]
 
-    def login(self, email: str, password: str) -> dict:
+    def login(
+        self,
+        email: str,
+        password: str
+    ) -> dict:
         '''Login using email identity and credentials.
 
         Note: To keep your password secure, the use of `getpass` is
@@ -159,7 +180,9 @@ class AuthClient():
         API_KEY.
         '''
         url = f'{self._base_url}/login'
-        data = {'email': email, 'password': password}
+        data = {'email': email,
+                'password': password
+                }
 
         sess = http.AuthSession()
         req = models.Request(url, method='POST', json=data)
@@ -183,7 +206,10 @@ class APIKeyAuth(httpx.BasicAuth, Auth):
     '''Planet API Key authentication.'''
     DICT_KEY = 'key'
 
-    def __init__(self, key: str):
+    def __init__(
+        self,
+        key: str
+    ):
         '''Initialize APIKeyAuth.
 
         Parameters:
@@ -198,7 +224,10 @@ class APIKeyAuth(httpx.BasicAuth, Auth):
         super().__init__(self._key, '')
 
     @classmethod
-    def from_dict(cls, data: dict) -> APIKeyAuth:
+    def from_dict(
+        cls,
+        data: dict
+    ) -> APIKeyAuth:
         '''Instantiate APIKeyAuth from a dict.'''
         api_key = data[cls.DICT_KEY]
         return cls(api_key)
@@ -213,11 +242,13 @@ class APIKeyAuth(httpx.BasicAuth, Auth):
 
 
 class _SecretFile():
-
     def __init__(self, path):
         self.path = path
 
-    def write(self, contents: dict):
+    def write(
+        self,
+        contents: dict
+    ):
         try:
             secrets_to_write = self.read()
             secrets_to_write.update(contents)
@@ -226,7 +257,10 @@ class _SecretFile():
 
         self._write(secrets_to_write)
 
-    def _write(self, contents: dict):
+    def _write(
+        self,
+        contents: dict
+    ):
         LOGGER.debug(f'Writing to {self.path}')
         with open(self.path, 'w') as fp:
             fp.write(json.dumps(contents))

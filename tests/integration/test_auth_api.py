@@ -22,6 +22,7 @@ import respx
 from planet import exceptions
 from planet.auth import AuthClient
 
+
 TEST_URL = 'http://MockNotRealURL/api/path'
 TEST_LOGIN_URL = f'{TEST_URL}/login'
 
@@ -45,7 +46,9 @@ def test_AuthClient_success():
 def test_AuthClient_invalid_email():
     resp = {
         "errors": {
-            "email": ["Not a valid email address."]
+            "email": [
+                "Not a valid email address."
+            ]
         },
         "message": "error validating request against UserAuthenticationSchema",
         "status": 400,
@@ -55,7 +58,7 @@ def test_AuthClient_invalid_email():
     respx.post(TEST_LOGIN_URL).return_value = mock_resp
 
     cl = AuthClient(base_url=TEST_URL)
-    with pytest.raises(exceptions.APIError,
+    with pytest.raises(exceptions.APIException,
                        match='Not a valid email address.'):
         _ = cl.login('email', 'password')
 
@@ -72,6 +75,6 @@ def test_AuthClient_invalid_password():
     respx.post(TEST_LOGIN_URL).return_value = mock_resp
 
     cl = AuthClient(base_url=TEST_URL)
-    with pytest.raises(exceptions.APIError,
+    with pytest.raises(exceptions.APIException,
                        match='Incorrect email or password.'):
         _ = cl.login('email', 'password')

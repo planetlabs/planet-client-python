@@ -1,4 +1,4 @@
-# Copyright 2020 Planet Labs, PBC.
+# Copyright 2020 Planet Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,19 +17,11 @@ import logging
 import os
 from pathlib import Path
 
+
 DATA_DIR = 'data'
-PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2022_02_02.json'
-SUPPORTED_TOOLS = [
-    'band_math',
-    'clip',
-    'composite',
-    'coregister',
-    'file_format',
-    'reproject',
-    'tile',
-    'toar',
-    'harmonize'
-]
+PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2020_03_10.json'
+SUPPORTED_TOOLS = ['band_math', 'clip', 'composite', 'coregister',
+                   'file_format', 'reproject', 'tile', 'toar', 'harmonize']
 SUPPORTED_ORDER_TYPES = ['full', 'partial']
 SUPPORTED_ARCHIVE_TYPES = ['zip']
 SUPPORTED_FILE_FORMATS = ['COG', 'PL_NITF']
@@ -47,10 +39,11 @@ def validate_bundle(bundle):
     return _validate_field(bundle, supported, 'product_bundle')
 
 
-def validate_item_type(item_type, bundle):
+def validate_item_type(item_type, bundle, report_field_name=True):
     bundle = validate_bundle(bundle)
     supported = get_item_types(bundle)
-    return _validate_field(item_type, supported, 'item_type')
+    field_name = 'item_type' if report_field_name else None
+    return _validate_field(item_type, supported, field_name)
 
 
 def validate_order_type(order_type):
@@ -58,9 +51,8 @@ def validate_order_type(order_type):
 
 
 def validate_archive_type(archive_type):
-    return _validate_field(archive_type,
-                           SUPPORTED_ARCHIVE_TYPES,
-                           'archive_type')
+    return _validate_field(
+        archive_type, SUPPORTED_ARCHIVE_TYPES, 'archive_type')
 
 
 def validate_tool(tool):
@@ -71,12 +63,14 @@ def validate_file_format(file_format):
     return _validate_field(file_format, SUPPORTED_FILE_FORMATS, 'file_format')
 
 
-def _validate_field(value, supported, field_name):
+def _validate_field(value, supported, field_name=None):
     try:
         value = get_match(value, supported)
-    except (NoMatchException):
-        opts = ', '.join(["'" + s + "'" for s in supported])
-        msg = f'{field_name} - \'{value}\' is not one of {opts}.'
+    except(NoMatchException):
+        opts = ', '.join(["'"+s+"'" for s in supported])
+        msg = f'\'{value}\' is not one of {opts}.'
+        if field_name:
+            msg = f'{field_name} - ' + msg
         raise SpecificationException(msg)
     return value
 
@@ -95,7 +89,7 @@ def get_match(test_entry, spec_entries):
     try:
         match = next(t for t in spec_entries
                      if t.lower() == test_entry.lower())
-    except (StopIteration):
+    except(StopIteration):
         raise NoMatchException
 
     return match

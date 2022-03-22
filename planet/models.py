@@ -48,19 +48,19 @@ class Request():
     :raises RequestException: When provided `body_type` is not a subclass of
         :py:class:`planet.api.models.Body`
     '''
-
     def __init__(self, url, params=None, data=None, json=None, method='GET'):
         if data or json:
             headers = {'Content-Type': 'application/json'}
         else:
             headers = None
 
-        self.http_request = httpx.Request(method,
-                                          url,
-                                          params=params,
-                                          data=data,
-                                          json=json,
-                                          headers=headers)
+        self.http_request = httpx.Request(
+            method,
+            url,
+            params=params,
+            data=data,
+            json=json,
+            headers=headers)
 
     @property
     def url(self):
@@ -84,7 +84,6 @@ class Response():
     :param http_response: Response that was received from the server
     :type http_response: :py:Class:`requests.models.Response`
     '''
-
     def __init__(self, request, http_response):
         self.request = request
         self.http_response = http_response
@@ -119,7 +118,6 @@ class StreamingBody():
     :param response: Response that was received from the server
     :type response: :py:Class:`requests.models.Response`
         '''
-
     def __init__(self, response):
         self.response = response.http_response
         self.url = response.request.url
@@ -134,8 +132,9 @@ class StreamingBody():
         :returns: name of this resource
         :rtype: str
         '''
-        name = (_get_filename_from_headers(self.response.headers)
-                or _get_filename_from_url(self.url) or _get_random_filename(
+        name = (_get_filename_from_headers(self.response.headers) or
+                _get_filename_from_url(self.url) or
+                _get_random_filename(
                     self.response.headers.get('content-type')))
         return name
 
@@ -182,9 +181,7 @@ class StreamingBody():
             True.
         :type progress_bar: boolean, optional
         '''
-
         class _LOG():
-
             def __init__(self, total, unit, filename, disable):
                 self.total = total
                 self.unit = unit
@@ -196,34 +193,28 @@ class StreamingBody():
                     LOGGER.debug(f'writing to {self.filename}')
 
             def update(self, new):
-                if new - self.previous > self.unit and not self.disable:
+                if new-self.previous > self.unit and not self.disable:
                     # LOGGER.debug(f'{new-self.previous}')
                     perc = int(100 * new / self.total)
                     LOGGER.debug(f'{self.filename}: '
                                  f'wrote {perc}% of {self.total}')
                     self.previous = new
 
-        unit = 1024 * 1024
+        unit = 1024*1024
 
         mode = 'wb' if overwrite else 'xb'
         try:
             with open(filename, mode) as fp:
-                _log = _LOG(self.size,
-                            16 * unit,
-                            filename,
-                            disable=progress_bar)
-                with tqdm(total=self.size,
-                          unit_scale=True,
-                          unit_divisor=unit,
-                          unit='B',
-                          desc=filename,
-                          disable=not progress_bar) as progress:
+                _log = _LOG(self.size, 16*unit, filename, disable=progress_bar)
+                with tqdm(total=self.size, unit_scale=True,
+                          unit_divisor=unit, unit='B',
+                          desc=filename, disable=not progress_bar) as progress:
                     previous = self.num_bytes_downloaded
                     async for chunk in self.aiter_bytes():
                         fp.write(chunk)
                         new = self.num_bytes_downloaded
                         _log.update(new)
-                        progress.update(new - previous)
+                        progress.update(new-previous)
                         previous = new
         except FileExistsError:
             LOGGER.info(f'File {filename} exists, not overwriting')
@@ -248,7 +239,7 @@ def _get_filename_from_url(url):
     :rtype: str or None
     """
     path = url.path
-    name = path[path.rfind('/') + 1:]
+    name = path[path.rfind('/')+1:]
     return name or None
 
 
@@ -331,7 +322,7 @@ class Paged():
         yield page
 
         next_url = self._next_link(page)
-        while (next_url):
+        while(next_url):
             LOGGER.debug('getting next page')
             request.url = next_url
             resp = await self._do_request(request)

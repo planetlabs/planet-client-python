@@ -3,7 +3,7 @@ import nox
 nox.options.stop_on_first_error = True
 nox.options.reuse_existing_virtualenvs = False
 
-nox.options.sessions = ['test', 'lint', 'docs']
+nox.options.sessions = ['test', 'lint']
 
 source_files = ("planet", "examples", "tests", "setup.py", "noxfile.py")
 
@@ -23,7 +23,6 @@ def lint(session):
     session.install("-e", ".[lint]")
 
     session.run("flake8", *source_files)
-    session.run('yapf', '--diff', '-r', *source_files)
 
 
 @nox.session
@@ -34,16 +33,10 @@ def docs_test(session):
 
     # Because these doc examples can be long-running, output
     # the INFO and above log messages so we know what's happening
-    session.run('pytest',
-                '--doctest-glob',
-                '*.md',
-                '--no-cov',
-                '--ignore',
-                'examples/',
-                '--ignore',
-                'tests/',
-                '--log-cli-level=INFO',
-                *options)
+    session.run('pytest', '--doctest-glob', '*.md', '--no-cov',
+                '--ignore', 'examples/',
+                '--ignore', 'tests/',
+                '--log-cli-level=INFO', *options)
 
 
 @nox.session

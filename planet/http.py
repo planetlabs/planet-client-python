@@ -1,4 +1,4 @@
-# Copyright 2020 Planet Labs, PBC.
+# Copyright 2020 Planet Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
+
 """Functionality to perform HTTP requests"""
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import asyncio
@@ -29,8 +30,12 @@ RETRY_WAIT_TIME = 1  # seconds
 LOGGER = logging.getLogger(__name__)
 
 
-class BaseSession():
+class SessionException(Exception):
+    '''exceptions thrown by Session'''
+    pass
 
+
+class BaseSession():
     @staticmethod
     def _get_user_agent():
         return 'planet-client-python/' + __version__
@@ -42,8 +47,9 @@ class BaseSession():
     @staticmethod
     def _log_response(response):
         request = response.request
-        LOGGER.info(f'{request.method} {request.url} - '
-                    f'Status {response.status_code}')
+        LOGGER.info(
+            f'{request.method} {request.url} - '
+            f'Status {response.status_code}')
 
     @classmethod
     def _raise_for_status(cls, response):
@@ -61,7 +67,7 @@ class BaseSession():
             HTTPStatus.CONFLICT: exceptions.Conflict,
             HTTPStatus.TOO_MANY_REQUESTS: exceptions.TooManyRequests,
             HTTPStatus.INTERNAL_SERVER_ERROR: exceptions.ServerError
-        }.get(status, exceptions.APIError)
+        }.get(status, exceptions.APIException)
         LOGGER.debug(f"Exception type: {exception}")
 
         msg = response.text
@@ -112,7 +118,10 @@ class Session(BaseSession):
     ```
     '''
 
-    def __init__(self, auth: Auth = None):
+    def __init__(
+        self,
+        auth: Auth = None
+    ):
         """Initialize a Session.
 
         Parameters:
@@ -134,7 +143,8 @@ class Session(BaseSession):
 
         self._client.event_hooks['request'] = [alog_request]
         self._client.event_hooks['response'] = [
-            alog_response, araise_for_status
+            alog_response,
+            araise_for_status
         ]
         self.retry_wait_time = RETRY_WAIT_TIME
         self.retry_count = RETRY_COUNT
@@ -149,11 +159,7 @@ class Session(BaseSession):
         await self._client.aclose()
 
     async def _retry(self, func, *a, **kw):
-        """Run an asynchronous request function with retry.
-
-        Raises:
-            planet.exceptions.TooManyRequests: When retry limit is exceeded.
-        """
+        '''Run an asynchronous request function with retry.'''
         # TODO: retry will be provided in httpx v1 [1] with usage [2]
         # 1. https://github.com/encode/httpcore/pull/221
         # 2. https://github.com/encode/httpx/blob/
@@ -163,39 +169,32 @@ class Session(BaseSession):
         retry_count = self.retry_count
         wait_time = self.retry_wait_time
 
-        num_tries = 0
-        while True:
-            num_tries += 1
+        max_retry = retry_count + 1
+        for i in range(max_retry):
             try:
-                resp = await func(*a, **kw)
-                break
-            except exceptions.TooManyRequests as e:
-                if num_tries > retry_count:
-                    raise e
-                else:
-                    LOGGER.debug(f'Try {num_tries}')
+                return await func(*a, **kw)
+            except exceptions.TooManyRequests:
+                if i < max_retry:
+                    LOGGER.debug(f'Try {i}')
                     LOGGER.info(f'Too Many Requests: sleeping {wait_time}s')
                     # TODO: consider exponential backoff
                     # https://developers.planet.com/docs/data/api-mechanics/
                     await asyncio.sleep(wait_time)
-        return resp
+        raise SessionException('Too many throttles, giving up.')
 
-    async def request(self,
-                      request: models.Request,
-                      stream: bool = False) -> models.Response:
-        """Submit a request with retry.
+    async def request(
+        self,
+        request: models.Request,
+        stream: bool = False
+    ) -> models.Response:
+        '''Submit a request with retry.
 
         Parameters:
             request: Request to submit.
             stream: Get the body as a stream.
-
         Returns:
-            Server response.
-
-        Raises:
-            planet.exceptions.APIException: On API error.
-            planet.exceptions.ClientError: When retry limit is exceeded.
-        """
+            Response.
+        '''
         # TODO: retry will be provided in httpx v1 [1] with usage [2]
         # 1. https://github.com/encode/httpcore/pull/221
         # 2. https://github.com/encode/httpx/blob/
@@ -205,26 +204,30 @@ class Session(BaseSession):
         return await self._retry(self._request, request, stream=stream)
 
     async def _request(self, request, stream=False):
-        """Submit a request"""
+        '''Submit a request'''
         http_resp = await self._client.send(request.http_request,
                                             stream=stream)
         return models.Response(request, http_resp)
 
-    def stream(self, request: models.Request) -> Stream:
-        """Submit a request and get the response as a stream context manager.
+    def stream(
+        self,
+        request: models.Request
+    ) -> Stream:
+        '''Submit a request and get the response as a stream context manager.
 
         Parameters:
             request: Request to submit
-
         Returns:
             Context manager providing the body as a stream.
-        """
-        return Stream(session=self, request=request)
+        '''
+        return Stream(
+            session=self,
+            request=request
+        )
 
 
 class AuthSession(BaseSession):
-    """Synchronous connection to the Planet Auth service."""
-
+    '''Synchronous connection to the Planet Auth service.'''
     def __init__(self):
         """Initialize an AuthSession.
         """
@@ -232,22 +235,12 @@ class AuthSession(BaseSession):
         self._client.headers.update({'User-Agent': self._get_user_agent()})
         self._client.event_hooks['request'] = [self._log_request]
         self._client.event_hooks['response'] = [
-            self._log_response, self._raise_for_status
+            self._log_response,
+            self._raise_for_status
         ]
 
     def request(self, request):
-        """Submit a request
-
-        Parameters:
-            request: Request to submit.
-
-        Returns:
-            Server response.
-
-        Raises:
-            planet.exceptions.APIException: On API error.
-        """
-
+        '''Submit a request'''
         http_resp = self._client.send(request.http_request)
         return models.Response(request, http_resp)
 
@@ -256,15 +249,18 @@ class AuthSession(BaseSession):
         try:
             super()._raise_for_status(response)
         except exceptions.BadQuery:
-            raise exceptions.APIError('Not a valid email address.')
+            raise exceptions.APIException('Not a valid email address.')
         except exceptions.InvalidAPIKey:
-            raise exceptions.APIError('Incorrect email or password.')
+            raise exceptions.APIException('Incorrect email or password.')
 
 
 class Stream():
     '''Context manager for asynchronous response stream from Planet server.'''
-
-    def __init__(self, session: Session, request: models.Request):
+    def __init__(
+        self,
+        session: Session,
+        request: models.Request
+    ):
         """
         Parameters:
             session: Open session to Planet server.

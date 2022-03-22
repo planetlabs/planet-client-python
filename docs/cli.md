@@ -3,7 +3,7 @@
 This page provides documentation for our command line tools.
 
 ::: mkdocs-click
-    :module: planet.cli.cli
-    :command: main 
+    :module: planet.scripts.cli
+    :command: cli
     :prog_name: planet
     :depth: 1

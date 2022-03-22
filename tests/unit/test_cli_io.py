@@ -18,9 +18,9 @@ import pytest
 from planet.cli import io
 
 
-@pytest.mark.parametrize("pretty,expected",
-                         [(False, '{"key": "val"}'),
-                          (True, '{\n  "key": "val"\n}')])
+@pytest.mark.parametrize(
+    "pretty,expected",
+    [(False, '{"key": "val"}'), (True, '{\n  "key": "val"\n}')])
 @patch('planet.cli.io.click.echo')
 def test_cli_echo_json(mock_echo, pretty, expected):
     obj = {'key': 'val'}

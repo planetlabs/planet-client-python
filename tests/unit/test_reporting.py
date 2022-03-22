@@ -19,39 +19,16 @@ from planet import reporting
 LOGGER = logging.getLogger(__name__)
 
 
-def test_StateBar___init___default():
+def test_StateBar_enabled():
     with reporting.StateBar() as bar:
         expected_init = '..:.. - order  - state: '
-        assert (re.fullmatch(expected_init, str(bar)))
+        assert(re.fullmatch(expected_init, str(bar)))
 
         expected_update = '..:.. - order 1 - state: init'
         bar.update(order_id='1', state='init')
-        assert (re.fullmatch(expected_update, str(bar)))
+        assert(re.fullmatch(expected_update, str(bar)))
 
 
-def test_StateBar___init___stateandorder():
-    with reporting.StateBar(order_id='1', state='init') as bar:
-        expected_init = '..:.. - order 1 - state: init'
-        assert (re.fullmatch(expected_init, str(bar)))
-
-
-def test_StateBar___init___disabled():
+def test_StateBar_disabled():
     with reporting.StateBar(disable=True) as bar:
         assert bar.bar.disable
-
-        # just make sure this doesn't error out
-        bar.update(order_id='1', state='init')
-
-
-def test_StateBar_update():
-    with reporting.StateBar() as bar:
-        expected_update = '..:.. - order 1 - state: init'
-        bar.update(order_id='1', state='init')
-        assert (re.fullmatch(expected_update, str(bar)))
-
-
-def test_StateBar_update_state():
-    with reporting.StateBar() as bar:
-        expected_update = '..:.. - order  - state: init'
-        bar.update_state('init')
-        assert (re.fullmatch(expected_update, str(bar)))

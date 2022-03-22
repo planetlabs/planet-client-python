@@ -19,6 +19,7 @@ import pytest
 
 from planet.auth import _SecretFile
 
+
 _here = Path(os.path.abspath(os.path.dirname(__file__)))
 _test_data_path = _here / 'data'
 
@@ -26,7 +27,6 @@ _test_data_path = _here / 'data'
 @pytest.fixture(autouse=True, scope='module')
 def test_secretfile_read():
     '''Returns valid auth results as if reading a secret file'''
-
     def mockreturn(self):
         return {'key': 'testkey'}
 
@@ -74,13 +74,11 @@ def oid():
 
 @pytest.fixture
 def write_to_tmp_json_file(tmp_path):
-
     def write(data, filename):
         cc = tmp_path / filename
         with open(cc, 'w') as fp:
             json.dump(data, fp)
         return cc
-
     return write
 
 
@@ -89,30 +87,54 @@ def geom_geojson():
     # these need to be tuples, not list, or they will be changed
     # by shapely
     return {
-        "type":
-        "Polygon",
-        "coordinates":
-        [[[37.791595458984375, 14.84923123791421],
-          [37.90214538574219, 14.84923123791421],
-          [37.90214538574219, 14.945448293647944],
-          [37.791595458984375, 14.945448293647944],
-          [37.791595458984375, 14.84923123791421]]]
-    }  # yapf: disable
+        "type": "Polygon",
+        "coordinates": [[
+            [
+                37.791595458984375,
+                14.84923123791421
+                ],
+            [
+                37.90214538574219,
+                14.84923123791421
+                ],
+            [
+                37.90214538574219,
+                14.945448293647944
+                ],
+            [
+                37.791595458984375,
+                14.945448293647944
+                ],
+            [
+                37.791595458984375,
+                14.84923123791421
+                ]
+        ]]
+      }
 
 
 @pytest.fixture
 def feature_geojson(geom_geojson):
-    return {"type": "Feature", "properties": {}, "geometry": geom_geojson}
+    return {
+      "type": "Feature",
+      "properties": {},
+      "geometry": geom_geojson}
 
 
 @pytest.fixture
 def featureclass_geojson(feature_geojson):
-    return {"type": "FeatureCollection", "features": [feature_geojson]}
+    return {
+          "type": "FeatureCollection",
+          "features": [feature_geojson]
+        }
 
 
 @pytest.fixture
 def point_geom_geojson():
     return {
         "type": "Point",
-        "coordinates": [37.791595458984375, 14.84923123791421]
-    }
+        "coordinates": [
+                37.791595458984375,
+                14.84923123791421
+                ]
+        }
