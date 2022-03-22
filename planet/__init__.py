@@ -18,7 +18,6 @@ from .__version__ import __version__  # NOQA
 from .auth import Auth
 from .clients import OrdersClient
 
-
 __all__ = [
     Session,
     OrdersClient,
