@@ -26,8 +26,8 @@ LOGGER = logging.getLogger(__name__)
 
 @click.group()
 @click.pass_context
-@click.option('--verbosity', default="warning",
-              help=("Optional: set verbosity level to warning, info, or debug. Defaults to warning."))
+@click.option('--verbosity', default="warning", help=(
+    "Optional: set verbosity level to warning, info, or debug. Defaults to warning."))
 @click.version_option(version=planet.__version__)
 def main(ctx, verbosity):
     '''Planet API Client
