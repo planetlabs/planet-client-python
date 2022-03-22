@@ -29,11 +29,13 @@ def test_cli_info_verbosity(monkeypatch):
     @click.command()
     def test():
         pass
+
     cli.main.add_command(test)
 
     def configtest(stream, level, format):
         nonlocal log_level
         log_level = level
+
     monkeypatch.setattr(cli.logging, 'basicConfig', configtest)
 
     def test_loggingoutput_normal(capfd):

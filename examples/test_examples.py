@@ -29,11 +29,12 @@ import pytest
 
 LOGGER = logging.getLogger(__name__)
 
-
 # All python files in the current directory except this one
 # ref: https://stackoverflow.com/a/56813896
-SCRIPTS = [s for s in Path(__file__).parent.resolve().glob('*.py')
-           if s.name != Path(__file__).name]
+SCRIPTS = [
+    s for s in Path(__file__).parent.resolve().glob('*.py')
+    if s.name != Path(__file__).name
+]
 
 
 # use the script name in the test name
@@ -47,9 +48,10 @@ def idfn(script_path):
 def test_example_script_execution(script, tmpdir):
     completed = subprocess.run(
         [sys.executable, str(script)],
-        env={'TEST_DOWNLOAD_DIR': str(tmpdir),
-             'PL_API_KEY':  os.getenv('PL_API_KEY')
-             },
+        env={
+            'TEST_DOWNLOAD_DIR': str(tmpdir),
+            'PL_API_KEY': os.getenv('PL_API_KEY')
+        },
         stderr=subprocess.PIPE  # capture stdout for reporting
     )
 

@@ -21,10 +21,8 @@ LOGGER = logging.getLogger(__name__)
 
 class ProgressBar():
     """Abstract base class for progress bar reporters."""
-    def __init__(
-        self,
-        disable: bool = False
-    ):
+
+    def __init__(self, disable: bool = False):
         self.bar = None
         self.disable = disable
 
@@ -55,6 +53,7 @@ class StateBar(ProgressBar):
             ...
         ```
     """
+
     def __init__(
         self,
         order_id: str = None,
@@ -76,28 +75,30 @@ class StateBar(ProgressBar):
         """Initialize and start the progress bar."""
         self.bar = tqdm(
             bar_format="{elapsed} - {desc} - {postfix[0]}: {postfix[1]}",
-            desc=self.desc, postfix=["state", self.state],
+            desc=self.desc,
+            postfix=["state", self.state],
             disable=self.disable)
 
     @property
     def desc(self):
         return f'order {self.order_id}'
 
-    def update(
-        self,
-        state: str = None,
-        order_id: str = None
-    ):
+    def update_state(self, state: str):
+        """Simple function to be used as a callback for state reporting"""
+        self.update(state=state)
+
+    def update(self, state: str = None, order_id: str = None):
         if state:
-            if state != self.state:
-                LOGGER.info('{order_id} state: {state}')
             self.state = state
-            self.bar.postfix[1] = self.state
+            try:
+                self.bar.postfix[1] = self.state
+            except AttributeError:
+                # If the bar is disabled, attempting to access self.bar.postfix
+                # will result in an error. In this case, just skip it.
+                pass
 
         if order_id:
             self.order_id = order_id
             self.bar.set_description_str(self.desc, refresh=False)
 
         self.bar.refresh()
-
-        LOGGER.debug(str(self.bar))

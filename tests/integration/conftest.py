@@ -1,4 +1,4 @@
-# Copyright 2020 Planet Labs, Inc.
+# Copyright 2020 Planet Labs, PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import contextlib
 import copy
 
 import pytest
@@ -24,16 +23,6 @@ from planet import Session
 async def session():
     async with Session() as ps:
         yield ps
-
-
-@pytest.fixture
-def match_pytest_raises():
-    '''this is like pytest.raises but does a full string match'''
-    @contextlib.contextmanager
-    def cm(ex, msg):
-        with pytest.raises(ex, match=f'^{msg}$') as pt:
-            yield pt
-    return cm
 
 
 @pytest.fixture

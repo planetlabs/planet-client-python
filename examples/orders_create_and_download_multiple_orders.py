@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-
 """Example of creating and downloading multiple orders.
 
 This is an example of submitting two orders, waiting for them to complete, and
@@ -29,44 +28,32 @@ import planet
 DOWNLOAD_DIR = os.getenv('TEST_DOWNLOAD_DIR', '.')
 
 iowa_aoi = {
-    "type": "Polygon",
-    "coordinates": [[
-        [-91.198465, 42.893071],
-        [-91.121931, 42.893071],
-        [-91.121931, 42.946205],
-        [-91.198465, 42.946205],
-        [-91.198465, 42.893071]]]
+    "type":
+    "Polygon",
+    "coordinates": [[[-91.198465, 42.893071], [-91.121931, 42.893071],
+                     [-91.121931, 42.946205], [-91.198465, 42.946205],
+                     [-91.198465, 42.893071]]]
 }
 
-iowa_images = [
-    '20200925_161029_69_2223',
-    '20200925_161027_48_2223'
-]
+iowa_images = ['20200925_161029_69_2223', '20200925_161027_48_2223']
 iowa_order = planet.order_request.build_request(
     'iowa_order',
     [planet.order_request.product(iowa_images, 'analytic', 'PSScene4Band')],
-    tools=[planet.order_request.clip_tool(iowa_aoi)]
-)
+    tools=[planet.order_request.clip_tool(iowa_aoi)])
 
 oregon_aoi = {
-    "type": "Polygon",
-    "coordinates": [[
-        [-117.558734, 45.229745],
-        [-117.452447, 45.229745],
-        [-117.452447, 45.301865],
-        [-117.558734, 45.301865],
-        [-117.558734, 45.229745]]]
+    "type":
+    "Polygon",
+    "coordinates": [[[-117.558734, 45.229745], [-117.452447, 45.229745],
+                     [-117.452447, 45.301865], [-117.558734, 45.301865],
+                     [-117.558734, 45.229745]]]
 }
 
-oregon_images = [
-    '20200909_182525_1014',
-    '20200909_182524_1014'
-]
+oregon_images = ['20200909_182525_1014', '20200909_182524_1014']
 oregon_order = planet.order_request.build_request(
     'oregon_order',
     [planet.order_request.product(oregon_images, 'analytic', 'PSScene4Band')],
-    tools=[planet.order_request.clip_tool(oregon_aoi)]
-)
+    tools=[planet.order_request.clip_tool(oregon_aoi)])
 
 
 async def create_and_download(order_detail, directory, client):
@@ -75,8 +62,8 @@ async def create_and_download(order_detail, directory, client):
         order = await client.create_order(order_detail)
         reporter.update(state='created', order_id=order.id)
 
-        # poll
-        await client.poll(order.id, report=reporter.update)
+        # wait for completion
+        await client.wait(order.id, report=reporter.update_state)
 
     # download
     await client.download_order(order.id, progress_bar=True)
