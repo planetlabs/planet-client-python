@@ -42,6 +42,7 @@ def test_cli_info_verbosity(monkeypatch):
         result = runner.invoke(cli.main,
                                args=['--verbosity', 'debug', 'orders'],
                                catch_exceptions=True)
+        assert log_level == logging.DEBUG
         assert "Commands for interacting with the Orders API" in result.output
 
     def test_loggingoutput_space(capfd):
@@ -50,6 +51,7 @@ def test_cli_info_verbosity(monkeypatch):
         result = runner.invoke(cli.main,
                                args=['--verbosity', ' debug ', 'orders'],
                                catch_exceptions=True)
+        assert log_level == logging.DEBUG
         assert "Commands for interacting with the Orders API" in result.output
 
     def test_loggingoutput_misspell(capfd):
