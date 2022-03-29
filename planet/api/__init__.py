@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
+
 from .exceptions import (APIException, BadQuery, InvalidAPIKey)
 from .exceptions import (NoPermission, MissingResource, OverQuota)
 from .exceptions import (ServerError, RequestCancelled, TooManyRequests)
@@ -27,3 +29,15 @@ __all__ = [
     write_to_file,
     filters
 ]
+
+
+class ClientV1DeprecationWarning(FutureWarning):
+    """Warn about deprecation of ClientV1."""
+
+
+warnings.warn(
+    "The planet.api module is deprecated and will be removed in version 2.0.0. "
+    "For more details please see the discussion at "
+    "https://github.com/planetlabs/planet-client-python/discussions.",
+    ClientV1DeprecationWarning,
+)

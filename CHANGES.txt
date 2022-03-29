@@ -1,5 +1,11 @@
 # Changes.txt
 
+1.5.0 (TBD)
+
+Deprecations:
+
+- The planet.api module is deprecated and will be removed in version 2.0.0.
+
 Next (TBD)
 
 - Fix: handle FeedSource array in analytics API.
