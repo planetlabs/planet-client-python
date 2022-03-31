@@ -42,3 +42,29 @@ def test_cli_info_verbosity(monkeypatch):
     result = runner.invoke(cli.main, args=['test'])
     assert result.exit_code == 0
     assert log_level == logging.WARNING
+    
+    #TODO: Parametrize below tests
+    #TODO: Check for writing to stderr
+    
+    runner = CliRunner()
+    result = runner.invoke(cli.main, args=['--verbosity', 'debug','test'])
+    # Testing to ensure command was run succesfully and log_level set to debug
+    assert result.exit_code == 0
+    assert log_level == logging.DEBUG
+    
+    runner = CliRunner()
+    result = runner.invoke(cli.main, args=['--verbosity', ' debug ','test'])
+    # test a case with extra spaces (should still work)
+    assert result.exit_code == 0
+    assert log_level == logging.DEBUG
+    
+    runner = CliRunner()
+    result = runner.invoke(cli.main, args=['--verbosity', 'debu','test'])
+    # test a case where argument is mis-spelled
+    assert result.exit_code == 2
+    
+    runner = CliRunner()
+    result = runner.invoke(cli.main, args=['--verbosity', 45,'test'])
+    # test a case when input includes number instead of string
+    assert result.exit_code == 2
+

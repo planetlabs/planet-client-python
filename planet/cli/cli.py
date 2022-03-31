@@ -26,15 +26,17 @@ LOGGER = logging.getLogger(__name__)
 
 @click.group()
 @click.pass_context
-@click.option('-v',
-              '--verbose',
-              count=True,
-              help=('Specify verbosity level of between 0 and 2 corresponding '
-                    'to log levels warning, info, and debug respectively.'))
+@click.option('--verbosity',
+              default="warning",
+              help=("Optional: set verbosity level to warning, info, or debug.\
+                  Defaults to warning."))
 @click.version_option(version=planet.__version__)
-def main(ctx, verbose):
-    '''Planet API Client'''
-    _configure_logging(verbose)
+def main(ctx, verbosity):
+    """Planet API Client
+    Parameters:
+        ctx -- context object
+        verbosity -- user input for verbosity."""
+    _configure_logging(verbosity)
 
     # ensure that ctx.obj exists and is a dict (in case `cli()` is called
     # by means other than the `if` block below)
@@ -42,13 +44,29 @@ def main(ctx, verbose):
 
 
 def _configure_logging(verbosity):
-    '''configure logging via verbosity level of between 0 and 2 corresponding
-    to log levels warning, info and debug respectfully.'''
-    log_level = max(logging.DEBUG, logging.WARNING - logging.DEBUG * verbosity)
+    """configure logging via verbosity level, corresponding
+    to log levels warning, info and debug respectfully.
+
+    Parameters:
+        verbosity -- user input for verbosity.
+    Raises:
+        click.BadParameter: on unexpected parameter input """
+    # make the user input string lowercase & strip leading/trailing spaces
+    verbosity_input = verbosity.lower()
+    verbosity_input = verbosity_input.strip()
+
+    if verbosity_input == 'warning':
+        log_level = logging.WARNING
+    elif verbosity_input == 'info':
+        log_level = logging.INFO
+    elif verbosity_input == 'debug':
+        log_level = logging.DEBUG
+    else:
+        raise click.BadParameter("please set verbosity to warning, info, or debug.")
     logging.basicConfig(
-        stream=sys.stderr,
-        level=log_level,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        stream=sys.stderr, level=log_level,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
 
 
 main.add_command(auth.auth)
