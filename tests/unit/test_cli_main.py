@@ -22,12 +22,11 @@ from planet.cli import cli
 
 LOGGER = logging.getLogger(__name__)
 
-@pytest.fixture
 
+@pytest.fixture
 def debug_input():
     return ['debug', ' debug ', 'debu', 45]
 
-# TODO: when testing multiple values for verbosity, use test parameterization
 
 def test_cli_info_verbosity(monkeypatch):
     log_level = None
@@ -52,8 +51,8 @@ def test_cli_info_verbosity(monkeypatch):
 
     def paramaterized_tests(debug_input):
         runner = CliRunner()
-        result = runner.invoke(cli.main, \
-            args=['--verbosity', debug_input, 'orders'])
+        result = runner.invoke(cli.main,
+                               args=['--verbosity', debug_input, 'orders'])
         # Testing to ensure command was run succesfully and
         # \log_level set to debug
         if debug_input not in ['debug', ' debug ']:
