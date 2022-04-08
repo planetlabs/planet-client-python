@@ -65,9 +65,9 @@ def _configure_logging(verbosity):
         raise click.BadParameter("please set verbosity to \
             warning, info, or debug.")
     logging.basicConfig(
-        stream=sys.stderr, level=log_level,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+        stream=sys.stderr,
+        level=log_level,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
 main.add_command(auth.auth)
