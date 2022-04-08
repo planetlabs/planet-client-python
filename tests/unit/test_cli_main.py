@@ -13,6 +13,8 @@
 # the License.
 import logging
 
+import pytest
+
 import click
 from click.testing import CliRunner
 
@@ -20,6 +22,9 @@ from planet.cli import cli
 
 LOGGER = logging.getLogger(__name__)
 
+@pytest.fixture
+def debug_input():
+    return ['debug', ' debug ', 'debu', 45]
 
 # TODO: when testing multiple values for verbosity, use test parameterization
 def test_cli_info_verbosity(monkeypatch):
@@ -43,27 +48,14 @@ def test_cli_info_verbosity(monkeypatch):
     assert result.exit_code == 0
     assert log_level == logging.WARNING
     
-    #TODO: Parametrize below tests
-    #TODO: Check for writing to stderr
+    def paramaterized_tests(debug_input):
+        runner = CliRunner()
+        result = runner.invoke(cli.main, args=['--verbosity', debug_input, 'orders'])
+        # Testing to ensure command was run succesfully and log_level set to debug
+        if debug_input not in ['debug', ' debug ']:
+            assert result.exit_code == 2
+        else:
+            assert result.exit_code == 0
+            assert log_level == logging.DEBUG
 
-    runner = CliRunner()
-    result = runner.invoke(cli.main, args=['--verbosity', 'debug', 'test'])
-    # Testing to ensure command was run succesfully and log_level set to debug
-    assert result.exit_code == 0
-    assert log_level == logging.DEBUG
-
-    runner = CliRunner()
-    result = runner.invoke(cli.main, args=['--verbosity', ' debug ', 'test'])
-    # test a case with extra spaces (should still work)
-    assert result.exit_code == 0
-    assert log_level == logging.DEBUG
-
-    runner = CliRunner()
-    result = runner.invoke(cli.main, args=['--verbosity', 'debu', 'test'])
-    # test a case where argument is mis-spelled
-    assert result.exit_code == 2
-
-    runner = CliRunner()
-    result = runner.invoke(cli.main, args=['--verbosity', 45, 'test'])
-    # test a case when input includes number instead of string
-    assert result.exit_code == 2
+    paramaterized_tests(debug_input)
