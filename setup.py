@@ -22,13 +22,8 @@ with open('planet/__version__.py') as f:
             version = version.strip("'")
             continue
 
-install_requires = [
-    'click>=8.0.0',
-    'httpx==0.16.1',
-    'shapely>=1.7.1',
-    'pyjwt>=2.1',
-    'tqdm>=4.56',
-]
+with open('requirements.txt.frozen') as f:
+    install_requires = f.read().splitlines()
 
 test_requires = [
     'pytest', 'pytest-asyncio==0.16', 'pytest-cov', 'respx==0.16.3'
