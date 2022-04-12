@@ -19,7 +19,7 @@ import click
 
 import planet
 
-from . import auth, orders
+from planet.cli import auth, orders
 
 LOGGER = logging.getLogger(__name__)
 
@@ -53,3 +53,6 @@ def _configure_logging(verbosity):
 
 main.add_command(auth.auth)
 main.add_command(orders.orders)
+
+if __name__ == '__main__':
+    main()
