@@ -15,14 +15,14 @@ from unittest.mock import patch
 
 import pytest
 
-from planet.cli import io
+from planet.cli import io_helper
 
 
 @pytest.mark.parametrize("pretty,expected",
                          [(False, '{"key": "val"}'),
                           (True, '{\n  "key": "val"\n}')])
-@patch('planet.cli.io.click.echo')
+@patch('planet.cli.io_helper.click.echo')
 def test_cli_echo_json(mock_echo, pretty, expected):
     obj = {'key': 'val'}
-    io.echo_json(obj, pretty)
+    io_helper.echo_json(obj, pretty)
     mock_echo.assert_called_once_with(expected)

@@ -21,7 +21,7 @@ import click
 import planet
 from planet import OrdersClient, Session  # allow mocking
 from .cmds import coro, translate_exceptions
-from .io import echo_json
+from .io_helper import echo_json
 
 LOGGER = logging.getLogger(__name__)
 
