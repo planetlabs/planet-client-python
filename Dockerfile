@@ -2,7 +2,11 @@
 ## Base image
 ##############################################################################
 FROM python:3.9.12-alpine as base
-RUN adduser -D -h /app appuser
+RUN adduser -D -h /appuser appuser
+RUN mkdir /data
+RUN chown appuser /data
+RUN chgrp appuser /data
+
 
 ##############################################################################
 ## Builder images
@@ -71,8 +75,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 #        Note: paths relative to $HOME change with USER, so check wrapper scripts
 #        for bind mounts when enabling the USER directive.
 # USER appuser
-# WORKDIR /app
-WORKDIR /root
+WORKDIR /data
 ENTRYPOINT ["/venv/bin/planet"]
 
 ##############################################################################
