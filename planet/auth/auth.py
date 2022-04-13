@@ -21,9 +21,9 @@ import os
 import httpx
 import jwt
 
-from . import http, models
-from .constants import PLANET_BASE_URL, SECRET_FILE_PATH
-from .exceptions import AuthException
+from planet import http, models
+from planet.constants import PLANET_BASE_URL, SECRET_FILE_PATH
+from planet.exceptions import AuthException
 
 LOGGER = logging.getLogger(__name__)
 

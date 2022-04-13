@@ -16,7 +16,7 @@ import logging
 
 import pytest
 
-from planet import auth
+from planet.auth import auth
 
 LOGGER = logging.getLogger(__name__)
 

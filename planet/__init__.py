@@ -15,7 +15,7 @@ from .http import Session
 from .models import Order
 from . import order_request, reporting
 from .__version__ import __version__  # NOQA
-from .auth import Auth
+from planet.auth.auth import Auth
 from .clients import OrdersClient
 
 __all__ = [

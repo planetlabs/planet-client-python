@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pytest
 
-from planet.auth import _SecretFile
+from planet.auth.auth import _SecretFile
 
 _here = Path(os.path.abspath(os.path.dirname(__file__)))
 _test_data_path = _here / 'data'
