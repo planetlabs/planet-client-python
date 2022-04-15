@@ -22,13 +22,12 @@ import httpx
 import jwt
 
 from planet import http, models
-from planet.constants import PLANET_BASE_URL, SECRET_FILE_PATH
+from planet.constants import PLANET_BASE_URL, SECRET_FILE_PATH, ENV_API_KEY
 from planet.exceptions import AuthException
 
 LOGGER = logging.getLogger(__name__)
 
 BASE_URL = f'{PLANET_BASE_URL}/v0/auth'
-ENV_API_KEY = 'PL_API_KEY'
 
 
 class Auth(metaclass=abc.ABCMeta):
