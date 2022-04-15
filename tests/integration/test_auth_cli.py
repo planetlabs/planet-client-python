@@ -42,7 +42,7 @@ def redirect_secretfile(tmp_path):
     secretfile_path = tmp_path / 'secret.json'
 
     with pytest.MonkeyPatch.context() as mp:
-        mp.setattr(cli.auth.planet.auth.auth,
+        mp.setattr(cli.auth.planet.auth.planet_legacy.auth,
                    'SECRET_FILE_PATH',
                    secretfile_path)
         yield secretfile_path
