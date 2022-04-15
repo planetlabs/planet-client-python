@@ -25,8 +25,6 @@ class AuthClientConfig(ABC):
         # TODO: make data static rather than rebuild every invocation.
         from planet.auth.oidc.auth_clients.auth_code_flow import \
             AuthCodePKCEClientConfig
-        from planet.auth.oidc.auth_clients.implicit_flow import \
-            ImplicitClientConfig
         from planet.auth.oidc.auth_clients.client_credentials_flow import \
             ClientCredentialsPubKeyClientConfig
         from planet.auth.oidc.auth_clients.client_credentials_flow import \
@@ -41,8 +39,6 @@ class AuthClientConfig(ABC):
             'oidc_client_credentials_secret': ClientCredentialsClientSecretClientConfig,
             'oidc_client_credentials_pubkey': ClientCredentialsPubKeyClientConfig,
             'oidc_client_credentials_sharedkey': ClientCredentialsSharedKeyClientConfig,
-            # TODO: remove implicit. It was a study
-            'oidc_implicit': ImplicitClientConfig,
             'oidc_resource_owner': ResourceOwnerClientConfig,
             # TODO:
             #  'planet_legacy': PlanetLegacyAuthClientConfig,
@@ -84,9 +80,6 @@ class AuthClient(ABC):
         from planet.auth.oidc.auth_clients.auth_code_flow import \
             AuthCodePKCEAuthClient, \
             AuthCodePKCEClientConfig
-        from planet.auth.oidc.auth_clients.implicit_flow import\
-            ImplicitAuthClient, \
-            ImplicitClientConfig
         from planet.auth.oidc.auth_clients.client_credentials_flow import \
             ClientCredentialsPubKeyAuthClient, \
             ClientCredentialsPubKeyClientConfig
@@ -107,7 +100,6 @@ class AuthClient(ABC):
             ClientCredentialsClientSecretClientConfig: ClientCredentialsClientSecretAuthClient,
             ClientCredentialsPubKeyClientConfig: ClientCredentialsPubKeyAuthClient,
             ClientCredentialsSharedKeyClientConfig: ClientCredentialsSharedKeyAuthClient,
-            ImplicitClientConfig: ImplicitAuthClient,
             ResourceOwnerClientConfig: ResourceOwnerAuthClient
         }
         return type_map

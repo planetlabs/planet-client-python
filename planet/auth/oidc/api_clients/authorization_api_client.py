@@ -105,25 +105,6 @@ class AuthorizationAPIClient():
 
         return data
 
-    @staticmethod
-    def _prep_implicit_auth_payload(client_id, redirect_uri, requested_scopes,
-                                    request_access_token, request_id_token):
-        response_types = []
-        if request_access_token:
-            response_types.append('token')
-        if request_id_token:
-            response_types.append('id_token')
-        data = {
-            'client_id': client_id,
-            'response_type': ' '.join(response_types),
-            'redirect_uri': redirect_uri,
-            'state': generate_nonce(8),
-            'nonce': generate_nonce(32),
-        }
-        if requested_scopes:
-            data['scope'] = ' '.join(requested_scopes)
-
-        return data
 
     def authcode_from_pkce_flow_with_browser_with_callback_listener(
             self, client_id, redirect_uri, requested_scopes, pkce_code_challenge):
@@ -167,46 +148,3 @@ class AuthorizationAPIClient():
         auth_request_uri = self._authorization_uri + '?' + urlencode(data)
         print("Please go to the following URL to proceed with login:\n\n\t{}\n\n".format(auth_request_uri))
         return getpass.getpass(prompt='Authentication code: ')
-
-    # Implicit flow is really intended for browser flows. Supporting it here may not be all
-    # that useful except for demonstration purposes.
-    #
-    # Unlike the PKCE flow above, we do not support having a local callback listener
-    # for the implicit flow. The callback in the browser puts the token in a fragment (#anchor).
-    # This means the browser does not include in request we would catch from a callback,
-    # and cannot parse it out.  We are dependent on a helper SPA app to parse the callback.
-    @staticmethod
-    def _get_implicit_flow_response_from_user():
-        # FIXME : hanging on input over 1k on MacOS. See
-        #  https://superuser.com/questions/219225/command-limits-when-pasting-into-tcsh-mac-os-x/219304#219304
-        id_token = getpass.getpass(prompt='ID token: ')
-        access_token = getpass.getpass(prompt='Access token: ')
-        token_response = {}
-        if id_token:
-            token_response['id_token'] = id_token
-        if access_token:
-            token_response['access_token'] = access_token
-        return token_response
-
-    def token_from_implicit_flow_with_browser_without_callback_listener(
-            self, client_id, redirect_uri, requested_scopes, request_access_token, request_id_token):
-        # 1) Launch browser with auth request
-        # 2) Wait for copy-paste the tokens from an out of bound callback handler.
-        data = self._prep_implicit_auth_payload(
-            client_id, redirect_uri, requested_scopes, request_access_token, request_id_token)
-        auth_request_uri = self._authorization_uri + '?' + urlencode(data)
-        logger.debug("Opening browser with authorization URL : " + auth_request_uri)
-        print("Opening browser to proceed with login.  Please provide the following results:\n\n")
-        open_new(auth_request_uri)
-        return self._get_implicit_flow_response_from_user()
-
-    def token_from_implicit_flow_without_browser_without_callback_listener(
-            self, client_id, redirect_uri, requested_scopes, request_access_token, request_id_token):
-        # 1) Display URL for user to paste into browser.
-        # 2) Wait for copy-paste the tokens from an out of bound callback handler.
-        data = self._prep_implicit_auth_payload(
-            client_id, redirect_uri, requested_scopes, request_access_token, request_id_token)
-        auth_request_uri = self._authorization_uri + '?' + urlencode(data)
-        print("Please go to the following URL to proceed with login and provide the results:\n\n\t{}\n\n"
-              .format(auth_request_uri))
-        return self._get_implicit_flow_response_from_user()
