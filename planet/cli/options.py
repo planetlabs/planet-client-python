@@ -33,38 +33,6 @@ def opt_auth_client_config_file(function):
     return function
 
 
-def opt_foo_id_required(function):
-    function = click.option(
-        '--foo-id',
-        type=str, envvar='PL_FOO_ID',
-        help='Specify the id of a foo.',
-        required=True)(function)
-    return function
-
-
-def opt_foo_service_url(function):
-    function = click.option(
-        '--foo-service-url',
-        type=str,
-        envvar='PL_FOO_SERVICE_URL',
-        help='Specify the URL for the foo service endpoint.'
-             '\nEnvironment variable: PL_FOO_SERVICE_URL',
-        default='http://localhost:8081',
-        show_default=True)(function)
-    return function
-
-
-def opt_loglevel(function):
-    function = click.option(
-        '-l', '--loglevel',
-        envvar='PL_LOGLEVEL',
-        help='Set the log level.\nEnvironment variable: PL_LOGLEVEL',
-        type=click.Choice(['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG'], case_sensitive=False),
-        default='INFO',
-        show_default=True)(function)
-    return function
-
-
 def opt_open_browser(function):
     function = click.option(
         '--open-browser/--no-open-browser',

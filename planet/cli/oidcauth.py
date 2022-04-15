@@ -4,13 +4,13 @@ import sys
 from planet.auth.oidc.api_clients.api_client import OIDCAPIClientException
 from planet.auth.oidc.oidc_token import FileBackedOidcToken
 
-from planet.cx.commands.cli.options import \
+from planet.cli.options import \
     opt_auth_profile, \
     opt_auth_client_config_file, \
     opt_open_browser, \
     opt_token_file, \
     opt_token_scope
-from planet.cx.commands.cli.util import get_auth_client, recast_exceptions_to_click
+from planet.cli.util import get_auth_client, recast_exceptions_to_click
 
 # TODO: per erik, tell the user we are going to launch a browser.
 #       tell them "if there no browser works, tell them alternatives".
