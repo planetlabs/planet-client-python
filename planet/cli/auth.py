@@ -29,7 +29,9 @@ LOGGER = logging.getLogger(__name__)
               default=None,
               help='Assign custom base Auth API URL.')
 def auth(ctx, base_url):
-    '''Commands for working with Planet authentication'''
+    '''Commands for working with Planet's legacy authentication mechanisms
+    that use simple API keys.  Use of newer OAuth2 / OpenID Connect
+    authentication is encouraged.'''
     ctx.obj['BASE_URL'] = base_url
 
 
