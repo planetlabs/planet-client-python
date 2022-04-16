@@ -138,11 +138,21 @@ class OidcAuthClient(AuthClient):
         Args:
             refresh_token: the refresh token to use.
             requested_scopes: a list of strings specifying the scopes to request during the token refresh.
+            If not specified, server default behavior will apply.
         Returns:
             A FileBackedOidcToken object
         """
-        if not requested_scopes:
-            requested_scopes = self._oidc_client_config.default_request_scopes
+        # Disabled scope fallback for now.
+        # The client config default may have more than the user consented to,
+        # which will result in a failure.  Introspection could be used, but
+        # if this approach is taken, the access token should be inspected.
+        # Inspecting refresh tokens shows its full power, whereas inspecting
+        # the access token reveals if it was down-scoped for some reason.
+        # However, access tokes live a short time, and inspection fails after
+        # expiration, whereas refresh tokens may live much longer lives.
+        #
+        # if not requested_scopes:
+        #    requested_scopes = self._oidc_client_config.default_request_scopes
         return FileBackedOidcToken(
             self._token_client().get_token_from_refresh(
                 self._oidc_client_config.client_id, refresh_token, requested_scopes))

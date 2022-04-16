@@ -78,7 +78,10 @@ def do_print_access_token(token_file, auth_profile):
 
 @oidc_token_group.command(
     'refresh',
-    help='Obtain a new token using the saved refresh token')
+    help='Obtain a new token using the saved refresh token. It is possible'
+         ' to request a refresh token with scopes that are different than'
+         ' what is currently possessed, but you will never be granted'
+         ' more scopes than what the user has authorized.')
 @opt_token_file
 @opt_token_scope
 @opt_auth_client_config_file
