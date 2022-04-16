@@ -21,7 +21,7 @@ class ClientCredentialsClientSecretAuthClient(OidcAuthClient):
         super().__init__(client_config)
         self._ccauth_client_config = client_config
 
-    def client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
+    def _client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
         # FIXME: how to decide when to use client_secret basic auth vs client secret post?
         # FIXME: test, is putting the client id in the auth header and the payload overconstrained?
         #        Is that the job of this class, or the helper to fix?
@@ -95,7 +95,7 @@ class ClientCredentialsPubKeyAuthClient(OidcAuthClient):
             self._load_private_key()
         return self._private_key_data
 
-    def client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
+    def _client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
         # FIXME: test, is putting the client id in the auth header and the payload overconstrained?
         #        Is that the job of this class, or the helper to fix?
         #        So ugly we are getting into the business of the api clients.
@@ -136,7 +136,7 @@ class ClientCredentialsSharedKeyAuthClient(OidcAuthClient):
         super().__init__(client_config)
         self._sharedkey_client_config = client_config
 
-    def client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
+    def _client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
         raise Exception('No implementation')
 
     def login(self, requested_scopes=None, allow_open_browser=False):
