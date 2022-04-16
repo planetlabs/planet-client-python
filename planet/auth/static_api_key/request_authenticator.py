@@ -1,4 +1,4 @@
-from planet.auth.request_auth import BearerTokenAuth
+from planet.auth.request_authenticator import BearerTokenAuth
 from planet.auth.static_api_key.static_api_key import FileBackedAPIKey
 
 

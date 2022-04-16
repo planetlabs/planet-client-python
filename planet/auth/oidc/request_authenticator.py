@@ -2,7 +2,7 @@ import logging
 import jwt
 import time
 
-from planet.auth.request_auth import BearerTokenAuth
+from planet.auth.request_authenticator import BearerTokenAuth
 from planet.auth.auth_client import AuthClient
 
 from planet.auth.oidc.api_clients.api_client import OIDCAPIClientException
