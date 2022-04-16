@@ -15,5 +15,10 @@
 import os
 
 ENV_API_KEY = 'PL_API_KEY'
+ENV_AUTH_CLIENT_CONFIG_FILE = 'PL_AUTH_CLIENT_CONFIG_FILE'
+ENV_AUTH_PROFILE = 'PL_AUTH_PROFILE'
+ENV_AUTH_SCOPES = 'PL_AUTH_SCOPES'
+ENV_AUTH_TOKEN_FILE = 'PL_AUTH_TOKEN_FILE'
+
 PLANET_BASE_URL = 'https://api.planet.com'
 SECRET_FILE_PATH = os.path.join(os.path.expanduser('~'), '.planet.json')

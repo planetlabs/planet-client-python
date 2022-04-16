@@ -4,7 +4,7 @@ import pathlib
 from typing import Union
 
 from planet.auth.auth_client import AuthClient, AuthClientConfig
-from planet.cli.config import DEFAULT_OIDC_CLIENT_CONFIG
+from planet.cli.constants import DEFAULT_OIDC_CLIENT_CONFIG
 
 
 def recast_exceptions_to_click(*exceptions, **params):
