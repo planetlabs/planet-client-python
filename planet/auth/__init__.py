@@ -20,5 +20,4 @@ are encapsulated in implementation subclasses that implement the primary
       use a credential.
 - RequestAuthenticator - Responsible for decorating API requests with a
       credential.
-
 """
