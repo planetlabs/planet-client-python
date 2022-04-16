@@ -3,8 +3,7 @@ import jwt
 import time
 
 from planet.auth.request_authenticator import BearerTokenAuth
-from planet.auth.auth_client import AuthClient
-
+from planet.auth.oidc.auth_client import OidcAuthClient
 from planet.auth.oidc.api_clients.api_client import OIDCAPIClientException
 from planet.auth.oidc.oidc_token import FileBackedOidcToken
 
@@ -23,7 +22,7 @@ class RefreshingOidcTokenAuth(BearerTokenAuth):
     JWT access tokens that comply with RFC 9068 can be checked for expiration timing
     without hitting the network token introspection endpoint.
     """
-    def __init__(self, token_file: FileBackedOidcToken, auth_client: AuthClient = None):
+    def __init__(self, token_file: FileBackedOidcToken, auth_client: OidcAuthClient = None):
         super().__init__(token_body='')
         self._token = token_file
         self._auth_client = auth_client
@@ -82,7 +81,7 @@ class RefreshOrReloginOidcTokenAuth(RefreshingOidcTokenAuth):
     interactive, and would not be appropriate for headless use cases. Refresh should always
     be silent.
     """
-    def __init__(self, token_file: FileBackedOidcToken, auth_client: AuthClient = None):
+    def __init__(self, token_file: FileBackedOidcToken, auth_client: OidcAuthClient = None):
         super().__init__(token_file=token_file, auth_client=auth_client)
 
     def _refresh(self):

@@ -15,7 +15,7 @@ class ResourceOwnerAuthClient(OidcAuthClient):
         super().__init__(client_config)
         self._resource_owner_client_config = client_config
 
-    def client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
+    def _client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
         raise Exception('No implementation')
 
     def login(self, requested_scopes=None, allow_open_browser=False):

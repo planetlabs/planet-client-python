@@ -95,10 +95,12 @@ class OidcAuthClient(AuthClient):
             self.__token_client = TokenAPIClient(token_endpoint)
         return self.__token_client
 
-    # FIXME: I don't really like that auth_client knows about the HTTP-ness, that's the job
-    #        of the API client classes to abstract.
+    # Note: I don't really like that auth_client knows about the HTTP-ness, that's the job
+    #       of the API client classes to abstract.  It's difficult to entirely separate
+    #       these concerns, since the high level concept of "OIDC client type" imposes
+    #       itself on some of the low level protocol interactions.
     @abstractmethod
-    def client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
+    def _client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
         """
         Some OIDC endpoints require client auth, and how auth is done can very depending
         on how the OIDC provider is configured to handle the particular client and the
@@ -106,7 +108,8 @@ class OidcAuthClient(AuthClient):
 
         Auth clients implementation classes must implement a method to enrich requests with
         appropriate authentication either by modifying the payload, or providing an AuthBase
-        for the request.
+        for the request, which will be used where needed before sending requests to the
+        authorization servers.
 
         If no enrichment is needed or appropriate, implementations should return the
         raw payload unmodified, and None for the AuthBase.
@@ -152,7 +155,7 @@ class OidcAuthClient(AuthClient):
         :return:
             The raw validate json payload (TODO: object model this as a IntrospectionResult, like we do tokens?)
         """
-        return self._introspection_client().validate_access_token(access_token, self.client_auth_enricher)
+        return self._introspection_client().validate_access_token(access_token, self._client_auth_enricher)
 
     def validate_id_token(self, id_token):
         """
@@ -161,7 +164,7 @@ class OidcAuthClient(AuthClient):
         :return:
             The raw validate json payload (TODO: object model this as a IntrospectionResult, like we do tokens?)
         """
-        return self._introspection_client().validate_id_token(id_token, self.client_auth_enricher)
+        return self._introspection_client().validate_id_token(id_token, self._client_auth_enricher)
 
     def validate_refresh_token(self, refresh_token):
         """
@@ -170,21 +173,21 @@ class OidcAuthClient(AuthClient):
         :return:
             The raw validate json payload (TODO: object model this as a IntrospectionResult, like we do tokens?)
         """
-        return self._introspection_client().validate_refresh_token(refresh_token, self.client_auth_enricher)
+        return self._introspection_client().validate_refresh_token(refresh_token, self._client_auth_enricher)
 
     def revoke_access_token(self, access_token) -> None:
         """
         Revoke the access token with the OIDC provider.
         :param access_token
         """
-        self._revocation_client().revoke_access_token(access_token, self.client_auth_enricher)
+        self._revocation_client().revoke_access_token(access_token, self._client_auth_enricher)
 
     def revoke_refresh_token(self, refresh_token) -> None:
         """
         Revoke the refresh token with the OIDC provider.
         :param refresh_token
         """
-        self._revocation_client().revoke_refresh_token(refresh_token, self.client_auth_enricher)
+        self._revocation_client().revoke_refresh_token(refresh_token, self._client_auth_enricher)
 
     def get_scopes(self):
         return self._discovery()['scopes_supported']
