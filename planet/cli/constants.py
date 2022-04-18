@@ -1,5 +1,5 @@
 from planet.auth.oidc.auth_clients.auth_code_flow import AuthCodePKCEClientConfig
-
+from planet.auth.planet_legacy.auth_client import PlanetLegacyAuthClientConfig
 
 ENV_AUTH_CLIENT_CONFIG_FILE = 'PL_AUTH_CLIENT_CONFIG_FILE'
 ENV_AUTH_PASSWORD='PL_AUTH_PASSWORD'
@@ -11,7 +11,7 @@ ENV_FOO_ID = 'PL_FOO_ID'
 ENV_FOO_SERVICE_URL = 'PL_FOO_SERVICE_URL'
 ENV_LOGLEVEL = 'PL_LOGLEVEL'
 
-DEFAULT_OIDC_CLIENT_CONFIG = AuthCodePKCEClientConfig(
+DEFAULT_OIDC_AUTH_CLIENT_CONFIG = AuthCodePKCEClientConfig(
     # The well known OIDC client that is the Planet Python CLI.
     # Developers should register their own clients so that users may
     # manage grants for different applications.  Registering applications
@@ -24,3 +24,7 @@ DEFAULT_OIDC_CLIENT_CONFIG = AuthCodePKCEClientConfig(
 )
 
 DEFAULT_LEGACY_PLANET_AUTH_ENDPOINT = 'https://api.planet.com/v0/auth/login'
+
+LEGACY_AUTH_CLIENT_CONFIG = PlanetLegacyAuthClientConfig(
+    legacy_auth_endpoint=DEFAULT_LEGACY_PLANET_AUTH_ENDPOINT
+)
