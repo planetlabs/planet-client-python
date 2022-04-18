@@ -4,12 +4,11 @@ import requests
 
 from planet.auth.auth_client import AuthClientConfig, AuthClient, AuthClientException
 from planet.auth.planet_legacy.legacy_api_key import FileBackedPlanetLegacyAPIKey
-from planet.constants import DEFAULT_LEGACY_PLANET_AUTH_ENDPOINT
 
 
 class PlanetLegacyAuthClientConfig(AuthClientConfig):
     def __init__(self,
-                 legacy_auth_endpoint=DEFAULT_LEGACY_PLANET_AUTH_ENDPOINT,
+                 legacy_auth_endpoint,
                  **kwargs):
         super().__init__(**kwargs)
         self.legacy_auth_endpoint = legacy_auth_endpoint
