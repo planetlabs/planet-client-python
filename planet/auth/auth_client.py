@@ -1,6 +1,6 @@
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 
-from abc import ABC
+from abc import ABC, abstractmethod
 import logging
 
 from planet.auth.util import FileBackedJsonObject
@@ -14,9 +14,14 @@ class AuthClientException(Exception):
         super().__init__(message)
 
 
-class AuthClientConfigException(Exception):
+class AuthClientConfigException(AuthClientException):
     def __init__(self, message=None):
         super().__init__(message)
+
+
+class Credential(FileBackedJsonObject):
+    def __init__(self, **kwargs):
+        super().__init__(kwargs)
 
 
 class AuthClientConfig(ABC):
@@ -35,6 +40,8 @@ class AuthClientConfig(ABC):
             ClientCredentialsSharedKeyClientConfig
         from planet.auth.oidc.auth_clients.resource_owner_flow import \
             ResourceOwnerClientConfig
+        from planet.auth.planet_legacy.auth_client import \
+            PlanetLegacyAuthClientConfig
 
         typename_map = {
             'oidc_auth_code': AuthCodePKCEClientConfig,
@@ -44,8 +51,8 @@ class AuthClientConfig(ABC):
             # TODO: remove implicit. It was a study
             'oidc_implicit': ImplicitClientConfig,
             'oidc_resource_owner': ResourceOwnerClientConfig,
+            'planet_legacy': PlanetLegacyAuthClientConfig
             # TODO:
-            #  'planet_legacy': PlanetLegacyAuthClientConfig,
             #  'static_apikey': StaticApiKeyAuthClientConfig
 
         }
@@ -76,7 +83,6 @@ class AuthClientConfig(ABC):
                 logger.debug('Ignoring unknown keyword argument: "{}"'.format(str(key)))
 
 
-# TODO: revisit the methods that are known to the base class.  We should have some more plumbed up here? Login? init?
 class AuthClient(ABC):
     @staticmethod
     def _type_map():
@@ -99,16 +105,18 @@ class AuthClient(ABC):
         from planet.auth.oidc.auth_clients.resource_owner_flow import\
             ResourceOwnerAuthClient, \
             ResourceOwnerClientConfig
+        from planet.auth.planet_legacy.auth_client import \
+            PlanetLagacyAuthClient, \
+            PlanetLegacyAuthClientConfig
 
         type_map = {
-            # TODO: AuthCodeClientConfig: AuthCodeAuthClient
-            # TODO: Client Secret and PKCE?
             AuthCodePKCEClientConfig: AuthCodePKCEAuthClient,
             ClientCredentialsClientSecretClientConfig: ClientCredentialsClientSecretAuthClient,
             ClientCredentialsPubKeyClientConfig: ClientCredentialsPubKeyAuthClient,
             ClientCredentialsSharedKeyClientConfig: ClientCredentialsSharedKeyAuthClient,
             ImplicitClientConfig: ImplicitAuthClient,
-            ResourceOwnerClientConfig: ResourceOwnerAuthClient
+            ResourceOwnerClientConfig: ResourceOwnerAuthClient,
+            PlanetLegacyAuthClientConfig: PlanetLagacyAuthClient
         }
         return type_map
 
@@ -122,3 +130,18 @@ class AuthClient(ABC):
 
     def __init__(self, auth_client_config: AuthClientConfig):
         self._auth_client_config = auth_client_config
+
+    @abstractmethod
+    def login(self, **kwargs) -> Credential:
+        """
+        Perform a login using the authentication mechanism implemented by the
+        AuthClient instance.  The results of a successful login is
+        FileBackedJsonObject containing credentials that may be used for
+        subsequent service API requests.  How these credentials are used
+        for this purpose is outside the scope of either the AuthClient or
+        the Credential.  This is the job of a RequestAuthenticator
+
+        :param kwargs:
+        :return:
+        """
+        pass

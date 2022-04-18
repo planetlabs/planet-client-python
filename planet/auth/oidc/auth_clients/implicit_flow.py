@@ -39,7 +39,7 @@ class ImplicitAuthClient(OidcAuthClient):
         enriched_payload = {**raw_payload, **auth_payload}  # Python >= 3.5
         return enriched_payload, None
 
-    def login(self, requested_scopes=None, allow_open_browser=True):
+    def login(self, requested_scopes=None, allow_open_browser=True, **kwargs):
         if not requested_scopes:
             requested_scopes = self._implicit_client_config.default_request_scopes
 

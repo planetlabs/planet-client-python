@@ -18,7 +18,7 @@ class ResourceOwnerAuthClient(OidcAuthClient):
     def _client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
         raise Exception('No implementation')
 
-    def login(self, requested_scopes=None, allow_open_browser=False):
+    def login(self, requested_scopes=None, allow_open_browser=False, **kwargs):
         # if not requested_scopes:
         #     requested_scopes = self._resource_owner_client_config.default_request_scopes
         raise Exception('No implementation')
