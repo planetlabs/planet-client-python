@@ -110,7 +110,7 @@ class ClientCredentialsPubKeyAuthClient(OidcAuthClient):
         enriched_payload = {**raw_payload, **auth_assertion_payload}  # Python >= 3.5
         return enriched_payload, None
 
-    def login(self, requested_scopes=None, allow_open_browser=False):
+    def login(self, requested_scopes=None, allow_open_browser=False, **kwargs):
         if not requested_scopes:
             requested_scopes = self._pubkey_client_config.default_request_scopes
 

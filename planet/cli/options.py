@@ -4,9 +4,11 @@ import pathlib
 
 from planet.constants import \
     ENV_AUTH_CLIENT_CONFIG_FILE, \
+    ENV_AUTH_PASSWORD, \
     ENV_AUTH_PROFILE, \
     ENV_AUTH_SCOPES, \
-    ENV_AUTH_TOKEN_FILE
+    ENV_AUTH_TOKEN_FILE, \
+    ENV_AUTH_USERNAME
 
 
 # TODO: rename simply profile, since it could be used for non-auth reasons?
@@ -15,12 +17,13 @@ def opt_auth_profile(function):
         '--auth-profile',
         # TODO: Present a choice based on scanned directories?
         #       We could look for ~/.planet/<profile>/
-        #       To do this properly, we should probably have a planet.profile
-        #       package or the like.
+        # TODO: we need a notion of built-in profiles. "default" and "legacy" are needed for the CLI.
         # type=click.Choice(...),
         type=str,
         envvar=ENV_AUTH_PROFILE,
-        help='Select the client profile to use.\nEnvironment variable: ' + ENV_AUTH_PROFILE,
+        help='Select the client profile to use. Profiles are defined by creating a subdirectory'
+             ' ~/.planet/. Additionally, the built in profiles "default" and "legacy" are understood.'
+             '\nEnvironment variable: ' + ENV_AUTH_PROFILE,
         default='',  # 'default', # just construct our default paths inside ~/.planet, not ~/.planet/<profile>
         show_default=True,
         is_eager=True)(function)
@@ -37,6 +40,30 @@ def opt_auth_client_config_file(function):
         default=None,
         show_default=True,
         callback=lambda ctx, param, value: pathlib.Path(value) if value else pathlib.Path.home().joinpath(".planet/{}/auth_client.json".format(ctx.params['auth_profile'])))(function) # noqa
+    return function
+
+
+def opt_auth_password(function):
+    function = click.option(
+        '--password',
+        type=str,
+        envvar=ENV_AUTH_PASSWORD,
+        help='Password used for authentication. May not be used by all authentication mechanisms.'
+             '\nEnvironment variable: ' + ENV_AUTH_PASSWORD,
+        default=None,
+        show_default=True)(function)
+    return function
+
+
+def opt_auth_username(function):
+    function = click.option(
+        '--username', '--email',
+        type=str,
+        envvar=ENV_AUTH_USERNAME,
+        help='Username used for authentication.  May not be used by all authentication mechanisms.'
+             '\nEnvironment variable: ' + ENV_AUTH_USERNAME,
+        default=None,
+        show_default=True)(function)
     return function
 
 

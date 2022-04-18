@@ -120,7 +120,7 @@ class OidcAuthClient(AuthClient):
     # FIXME: we should validate tokens (especially the ID token) prior to acceptance as per
     #  https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
     @abstractmethod
-    def login(self, requested_scopes=None, allow_open_browser=True) -> FileBackedOidcToken:
+    def login(self, requested_scopes=None, allow_open_browser=True, **kwargs) -> FileBackedOidcToken:
         """
          Obtain tokens from the OIDC auth server using an appropriate login flow.
          concrete subclasses should implement a single login flow.

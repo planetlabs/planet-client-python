@@ -1,12 +1,14 @@
 import click
 import sys
 
-from planet.auth.oidc.api_clients.api_client import OIDCAPIClientException
+from planet.auth.auth_client import AuthClientException
 from planet.auth.oidc.oidc_token import FileBackedOidcToken
 
 from planet.cli.options import \
-    opt_auth_profile, \
     opt_auth_client_config_file, \
+    opt_auth_password, \
+    opt_auth_profile, \
+    opt_auth_username, \
     opt_open_browser, \
     opt_token_file, \
     opt_token_scope
@@ -34,7 +36,7 @@ def oidc_token_group(context):
     help='List well known token scopes that may be requested')
 @opt_auth_client_config_file
 @opt_auth_profile
-@recast_exceptions_to_click(OIDCAPIClientException)
+@recast_exceptions_to_click(AuthClientException)
 def do_list_scopes(auth_profile, auth_client_config_file):
     auth_client = get_auth_client(auth_profile, auth_client_config_file)
     available_scopes = auth_client.get_scopes()
@@ -57,11 +59,14 @@ def do_list_scopes(auth_profile, auth_client_config_file):
 @opt_token_scope
 @opt_open_browser
 @opt_auth_client_config_file
+@opt_auth_password
 @opt_auth_profile
-@recast_exceptions_to_click(OIDCAPIClientException)
-def do_token_login(token_file, auth_client_config_file, scope, auth_profile, open_browser):
+@opt_auth_username
+@recast_exceptions_to_click(AuthClientException)
+def do_token_login(token_file, auth_client_config_file, scope, auth_profile, open_browser, username, password):
     auth_client = get_auth_client(auth_profile, auth_client_config_file)
-    token = auth_client.login(requested_scopes=scope, allow_open_browser=open_browser)
+    token = auth_client.login(requested_scopes=scope, allow_open_browser=open_browser,
+                              username=username, password=password)
     token.set_path(token_file)
     token.save()
 
@@ -86,7 +91,7 @@ def do_print_access_token(token_file, auth_profile):
 @opt_token_scope
 @opt_auth_client_config_file
 @opt_auth_profile
-@recast_exceptions_to_click(OIDCAPIClientException)
+@recast_exceptions_to_click(AuthClientException)
 def do_token_refresh(token_file, auth_client_config_file, scope, auth_profile):
     saved_token = FileBackedOidcToken(None, token_file)
     saved_token.load()
@@ -104,7 +109,7 @@ def do_token_refresh(token_file, auth_client_config_file, scope, auth_profile):
 @opt_token_file
 @opt_auth_client_config_file
 @opt_auth_profile
-@recast_exceptions_to_click(OIDCAPIClientException)
+@recast_exceptions_to_click(AuthClientException)
 def do_validate_access_token(token_file, auth_client_config_file, auth_profile):
     saved_token = FileBackedOidcToken(None, token_file)
     saved_token.load()
@@ -124,7 +129,7 @@ def do_validate_access_token(token_file, auth_client_config_file, auth_profile):
 @opt_token_file
 @opt_auth_client_config_file
 @opt_auth_profile
-@recast_exceptions_to_click(OIDCAPIClientException)
+@recast_exceptions_to_click(AuthClientException)
 def do_validate_id_token(token_file, auth_client_config_file, auth_profile):
     saved_token = FileBackedOidcToken(None, token_file)
     saved_token.load()
@@ -144,7 +149,7 @@ def do_validate_id_token(token_file, auth_client_config_file, auth_profile):
 @opt_token_file
 @opt_auth_client_config_file
 @opt_auth_profile
-@recast_exceptions_to_click(OIDCAPIClientException)
+@recast_exceptions_to_click(AuthClientException)
 def do_validate_refresh_token(token_file, auth_client_config_file, auth_profile):
     saved_token = FileBackedOidcToken(None, token_file)
     saved_token.load()
@@ -164,7 +169,7 @@ def do_validate_refresh_token(token_file, auth_client_config_file, auth_profile)
 @opt_token_file
 @opt_auth_client_config_file
 @opt_auth_profile
-@recast_exceptions_to_click(OIDCAPIClientException)
+@recast_exceptions_to_click(AuthClientException)
 def do_revoke_access_token(token_file, auth_client_config_file, auth_profile):
     saved_token = FileBackedOidcToken(None, token_file)
     saved_token.load()
@@ -178,7 +183,7 @@ def do_revoke_access_token(token_file, auth_client_config_file, auth_profile):
 @opt_token_file
 @opt_auth_client_config_file
 @opt_auth_profile
-@recast_exceptions_to_click(OIDCAPIClientException)
+@recast_exceptions_to_click(AuthClientException)
 def do_revoke_refresh_token(token_file, auth_client_config_file, auth_profile):
     saved_token = FileBackedOidcToken(None, token_file)
     saved_token.load()

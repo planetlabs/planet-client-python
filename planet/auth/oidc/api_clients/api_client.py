@@ -2,6 +2,8 @@ import requests
 
 from abc import ABC
 
+from planet.auth.auth_client import AuthClientException
+
 
 class OIDCAPIClient(ABC):
     """
@@ -12,11 +14,13 @@ class OIDCAPIClient(ABC):
 
     def __check_http_error(self, response):
         if not response.ok:
-            raise OIDCAPIClientException(message="HTTP error from OIDC endpoint at {}: {}"
-                                         .format(self._endpoint_uri, response.status_code),
+            raise OIDCAPIClientException(message="HTTP error from OIDC endpoint at {}: {}: {}"
+                                         .format(self._endpoint_uri,
+                                                 response.status_code,
+                                                 response.reason),
                                          raw_response=response)
 
-    def __check_payload_json_error(self, response):
+    def __check_oidc_payload_json_error(self, response):
         if response.content:
             if not response.headers.get('content-type') == 'application/json':
                 return
@@ -57,7 +61,7 @@ class OIDCAPIClient(ABC):
     def __check_response(self, response):
         # Check for the json error first so we throw a more specific parsed error if we understand it,
         # regardless of HTTP status code.
-        self.__check_payload_json_error(response)
+        self.__check_oidc_payload_json_error(response)
         self.__check_http_error(response)
 
     def _checked_get(self, params, request_auth):
@@ -78,7 +82,7 @@ class OIDCAPIClient(ABC):
         return self.__checked_json_response(self._checked_get(params, request_auth))
 
 
-class OIDCAPIClientException(Exception):
+class OIDCAPIClientException(AuthClientException):
     def __init__(self, message=None, raw_response=None):
         super().__init__(message)
         self.raw_response = raw_response
