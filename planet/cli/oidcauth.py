@@ -24,9 +24,9 @@ from planet.cli.util import get_auth_client, recast_exceptions_to_click
     invoke_without_command=True,
     help='Commands to manage Planet OIDC auth tokens')
 @click.pass_context
-def oidc_token_group(context):
-    if context.invoked_subcommand is None:
-        click.echo(context.get_help())
+def oidc_token_group(ctx):
+    if ctx.invoked_subcommand is None:
+        click.echo(ctx.get_help())
         sys.exit(0)
 
 
