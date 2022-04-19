@@ -3,6 +3,7 @@ from __future__ import annotations  # https://stackoverflow.com/a/33533514
 from abc import ABC, abstractmethod
 import logging
 
+from planet.auth.credential import Credential
 from planet.auth.util import FileBackedJsonObject
 
 
@@ -17,11 +18,6 @@ class AuthClientException(Exception):
 class AuthClientConfigException(AuthClientException):
     def __init__(self, message=None):
         super().__init__(message)
-
-
-class Credential(FileBackedJsonObject):
-    def __init__(self, **kwargs):
-        super().__init__(kwargs)
 
 
 class AuthClientConfig(ABC):
@@ -128,10 +124,10 @@ class AuthClient(ABC):
         """
         Perform a login using the authentication mechanism implemented by the
         AuthClient instance.  The results of a successful login is
-        FileBackedJsonObject containing credentials that may be used for
-        subsequent service API requests.  How these credentials are used
-        for this purpose is outside the scope of either the AuthClient or
-        the Credential.  This is the job of a RequestAuthenticator
+        FileBackedJsonObject Credential containing credentials that may be
+        used for subsequent service API requests.  How these credentials are
+        used for this purpose is outside the scope of either the AuthClient
+        or the Credential.  This is the job of a RequestAuthenticator
 
         :param kwargs:
         :return:
