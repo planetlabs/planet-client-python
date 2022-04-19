@@ -1,9 +1,12 @@
-from planet.auth.util import FileBackedJsonObjectException, FileBackedJsonObject
+from planet.auth.credential import Credential
+from planet.auth.util import FileBackedJsonObjectException
 
 
-class FileBackedAPIKey(FileBackedJsonObject):
-    def __init__(self, api_key=None, api_key_file=None):
-        super().__init__(data=api_key, file_path=api_key_file)
+class FileBackedAPIKey(Credential):
+    def __init__(self, api_key=None, prefix=None, api_key_file=None):
+        super().__init__(data={'api_key': api_key,
+                               'bearer_token_prefix': prefix},
+                         file_path=api_key_file)
 
     def assert_valid(self):
         super().assert_valid()
