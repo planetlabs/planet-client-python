@@ -86,10 +86,10 @@ class FileBackedJsonObject:
             return self._data.get(field)
         return None
 
-    # Commented out for now. Load JIT, but only reload explicitly.
     # We may not want to reload in the middle of a transaction that needs to get multiple fields.
-    # def lazy_reload_get(self, field):
-    #     self.lazy_reload()
-    #     if self._data:
-    #         return self._data.get(field)
-    #     return None
+    # It's up to the user to know when to user a lazy load vs lazy reload.
+    def lazy_reload_get(self, field):
+        self.lazy_reload()
+        if self._data:
+            return self._data.get(field)
+        return None

@@ -12,4 +12,5 @@ class FileBackedPlanetLegacyAPIKey(Credential):
             raise FileBackedJsonObjectException("'key' not found in file " + str(self._file_path))
 
     def legacy_api_key(self):
-        return self.lazy_load_get('key')
+        # return self.lazy_load_get('key')
+        return self.lazy_reload_get('key')
