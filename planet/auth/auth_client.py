@@ -21,6 +21,13 @@ class AuthClientConfigException(AuthClientException):
 
 
 class AuthClientConfig(ABC):
+    def __init__(self, **kwargs):
+        if len(kwargs.keys()) > 0:
+            # raise AuthClientConfigException('Unexpected config arguments in client configuration: {}'
+            #                                .format(', '.join(kwargs.keys())))
+            for key in kwargs.keys():
+                logger.debug('Ignoring unknown keyword argument: "{}"'.format(str(key)))
+
     @staticmethod
     def _typename_map():
         # TODO: make data static rather than rebuild every invocation.
@@ -67,15 +74,11 @@ class AuthClientConfig(ABC):
 
         return cls(**config_file.data())
 
-    def __init__(self, **kwargs):
-        if len(kwargs.keys()) > 0:
-            # raise AuthClientConfigException('Unexpected config arguments in client configuration: {}'
-            #                                .format(', '.join(kwargs.keys())))
-            for key in kwargs.keys():
-                logger.debug('Ignoring unknown keyword argument: "{}"'.format(str(key)))
-
 
 class AuthClient(ABC):
+    def __init__(self, auth_client_config: AuthClientConfig):
+        self._auth_client_config = auth_client_config
+
     @staticmethod
     def _type_map():
         # TODO: make data static rather than rebuild every invocation.
@@ -115,9 +118,6 @@ class AuthClient(ABC):
             raise AuthClientException('Error: Auth client config class is not understood by the factory.')
 
         return cls(config)
-
-    def __init__(self, auth_client_config: AuthClientConfig):
-        self._auth_client_config = auth_client_config
 
     @abstractmethod
     def login(self, **kwargs) -> Credential:
