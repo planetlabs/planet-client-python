@@ -177,7 +177,7 @@ class OrdersClient():
         order = Order(resp.json())
         return order
 
-    async def cancel_order(self, order_id: str) -> Response:
+    async def cancel_order(self, order_id: str) -> dict:
         '''Cancel a queued order.
 
         **Note:** According to the API docs, cancel order should return the
@@ -198,8 +198,8 @@ class OrdersClient():
         url = f'{self._orders_url()}/{order_id}'
 
         req = self._request(url, method='PUT')
-
-        await self._do_request(req)
+        resp = await self._do_request(req)
+        return resp.json()
 
     async def cancel_orders(self, order_ids: typing.List[str] = None) -> dict:
         '''Cancel queued orders in bulk.

@@ -96,9 +96,9 @@ async def get(ctx, order_id, pretty):
 async def cancel(ctx, order_id):
     '''Cancel order by order ID.'''
     async with orders_client(ctx) as cl:
-        await cl.cancel_order(str(order_id))
+        json_resp = await cl.cancel_order(str(order_id))
 
-    click.echo('Cancelled')
+    click.echo(json_resp)
 
 
 def split_list_arg(ctx, param, value):
