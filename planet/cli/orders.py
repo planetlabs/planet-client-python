@@ -94,7 +94,11 @@ async def get(ctx, order_id, pretty):
 @coro
 @click.argument('order_id', type=click.UUID)
 async def cancel(ctx, order_id):
-    '''Cancel order by order ID.'''
+    '''Cancel order by order ID.
+
+    This command cancels a queued order and outputs the cancelled order
+    details.
+    '''
     async with orders_client(ctx) as cl:
         json_resp = await cl.cancel_order(str(order_id))
 
