@@ -180,15 +180,11 @@ class OrdersClient():
     async def cancel_order(self, order_id: str) -> dict:
         '''Cancel a queued order.
 
-        **Note:** According to the API docs, cancel order should return the
-        cancelled order details. But testing reveals that an empty response is
-        returned upon success.
-
         Parameters:
             order_id: The ID of the order
 
         Returns:
-            Empty response
+            Results of the cancel request
 
         Raises:
             planet.exceptions.ClientError: If order_id is not a valid UUID.
