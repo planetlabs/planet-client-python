@@ -5,18 +5,20 @@ from planet.auth.auth_client import AuthClientException
 from planet.auth.oidc.oidc_token import FileBackedOidcToken
 
 from planet.cli.options import \
-    opt_auth_client_config_file, \
     opt_auth_password, \
-    opt_auth_profile, \
     opt_auth_username, \
     opt_open_browser, \
-    opt_token_file, \
     opt_token_scope
-from planet.cli.util import get_auth_client, recast_exceptions_to_click
+from planet.cli.util import recast_exceptions_to_click
 
 # TODO: per erik, tell the user we are going to launch a browser.
 #       tell them "if there no browser works, tell them alternatives".
 #       provide feedback on success / Failure of auth.
+
+# FIXME: Rename? This isn't strictly only an "OIDC" Auth CLI interface
+#        anymore. It works with any auth provider that provided an
+#        AuthClient interface. But, this is a heavily OIDC influenced
+#        interface.
 
 
 @click.group(
@@ -30,18 +32,16 @@ def oidc_token_group(ctx):
         sys.exit(0)
 
 
-# TODO: is it better to have these auth arguments on each command, or on the parent?
 @oidc_token_group.command(
     'list-scopes',
-    help='List well known token scopes that may be requested')
-@opt_auth_client_config_file
-@opt_auth_profile
-@recast_exceptions_to_click(AuthClientException)
-def do_list_scopes(auth_profile, auth_client_config_file):
-    auth_client = get_auth_client(auth_profile, auth_client_config_file)
+    help='List well known scopes that may be requested')
+@click.pass_context
+@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+def do_list_scopes(ctx):
+    auth_client = ctx.obj['AUTH_CLIENT']
     available_scopes = auth_client.get_scopes()
     available_scopes.sort()
-    print('Available token scopes:')
+    print('Available scopes:')
     if available_scopes:
         print('\t' + '\n\t'.join(available_scopes))
     else:
@@ -54,30 +54,30 @@ def do_list_scopes(auth_profile, auth_client_config_file):
 #       need to understand what and why, and what a solution is.
 @oidc_token_group.command(
     'login',
-    help='Perform a new login and save the tokens')
-@opt_token_file
+    help='Perform a new login and save the tokens. Not all authentication mechanisms'
+         ' support all options.')
 @opt_token_scope
 @opt_open_browser
-@opt_auth_client_config_file
 @opt_auth_password
-@opt_auth_profile
 @opt_auth_username
-@recast_exceptions_to_click(AuthClientException)
-def do_token_login(token_file, auth_client_config_file, scope, auth_profile, open_browser, username, password):
-    auth_client = get_auth_client(auth_profile, auth_client_config_file)
+@click.pass_context
+@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+def do_token_login(ctx, scope, open_browser, username, password):
+    auth_client = ctx.obj['AUTH_CLIENT']
     token = auth_client.login(requested_scopes=scope, allow_open_browser=open_browser,
                               username=username, password=password)
-    token.set_path(token_file)
+    token.set_path(ctx.obj['AUTH_TOKEN_FILE_PATH'])
     token.save()
 
 
 @oidc_token_group.command(
     'print-access-token',
-    help='Print the current access token')
-@opt_token_file
-@opt_auth_profile
-def do_print_access_token(token_file, auth_profile):
-    saved_token = FileBackedOidcToken(None, token_file)
+    help='Print the current access token.')
+@click.pass_context
+@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+def do_print_access_token(ctx):
+    # FIXME: this will only work for OIDC auth mechanisms. Maybe that's OK.
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
     print(saved_token.access_token())
 
 
@@ -86,34 +86,33 @@ def do_print_access_token(token_file, auth_profile):
     help='Obtain a new token using the saved refresh token. It is possible'
          ' to request a refresh token with scopes that are different than'
          ' what is currently possessed, but you will never be granted'
-         ' more scopes than what the user has authorized.')
-@opt_token_file
+         ' more scopes than what the user has authorized.  This functionality'
+         ' is only supported for authentication mechanisms that support'
+         ' the concepts of separate (short lived) access tokens and '
+         ' (long lived) refresh tokens.')
 @opt_token_scope
-@opt_auth_client_config_file
-@opt_auth_profile
-@recast_exceptions_to_click(AuthClientException)
-def do_token_refresh(token_file, auth_client_config_file, scope, auth_profile):
-    saved_token = FileBackedOidcToken(None, token_file)
+@click.pass_context
+@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+def do_token_refresh(ctx, scope):
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
+    auth_client = ctx.obj['AUTH_CLIENT']
     saved_token.load()
     if not saved_token.refresh_token():
         raise Exception('No refresh_token found in ' + str(saved_token.path()))
 
-    auth_client = get_auth_client(auth_profile, auth_client_config_file)
     saved_token.set_data(auth_client.refresh(saved_token.refresh_token(), scope).data())
     saved_token.save()
 
 
 @oidc_token_group.command(
     'validate-access-token',
-    help='Validate the access token associated with the current auth profile')
-@opt_token_file
-@opt_auth_client_config_file
-@opt_auth_profile
-@recast_exceptions_to_click(AuthClientException)
-def do_validate_access_token(token_file, auth_client_config_file, auth_profile):
-    saved_token = FileBackedOidcToken(None, token_file)
+    help='Validate the access token associated with the current profile')
+@click.pass_context
+@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+def do_validate_access_token(ctx):
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
+    auth_client = ctx.obj['AUTH_CLIENT']
     saved_token.load()
-    auth_client = get_auth_client(auth_profile, auth_client_config_file)
     validation_json = auth_client.validate_access_token(saved_token.access_token())
 
     if not validation_json or not validation_json.get('active'):
@@ -125,15 +124,13 @@ def do_validate_access_token(token_file, auth_client_config_file, auth_profile):
 
 @oidc_token_group.command(
     'validate-id-token',
-    help='Validate the ID token associated with the current auth profile')
-@opt_token_file
-@opt_auth_client_config_file
-@opt_auth_profile
-@recast_exceptions_to_click(AuthClientException)
-def do_validate_id_token(token_file, auth_client_config_file, auth_profile):
-    saved_token = FileBackedOidcToken(None, token_file)
+    help='Validate the ID token associated with the current profile')
+@click.pass_context
+@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+def do_validate_id_token(ctx):
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
+    auth_client = ctx.obj['AUTH_CLIENT']
     saved_token.load()
-    auth_client = get_auth_client(auth_profile, auth_client_config_file)
     validation_json = auth_client.validate_id_token(saved_token.id_token())
 
     if not validation_json or not validation_json.get('active'):
@@ -145,15 +142,13 @@ def do_validate_id_token(token_file, auth_client_config_file, auth_profile):
 
 @oidc_token_group.command(
     'validate-refresh-token',
-    help='Validate the refresh token associated with the current auth profile')
-@opt_token_file
-@opt_auth_client_config_file
-@opt_auth_profile
-@recast_exceptions_to_click(AuthClientException)
-def do_validate_refresh_token(token_file, auth_client_config_file, auth_profile):
-    saved_token = FileBackedOidcToken(None, token_file)
+    help='Validate the refresh token associated with the current profile')
+@click.pass_context
+@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+def do_validate_refresh_token(ctx):
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
+    auth_client = ctx.obj['AUTH_CLIENT']
     saved_token.load()
-    auth_client = get_auth_client(auth_profile, auth_client_config_file)
     validation_json = auth_client.validate_refresh_token(saved_token.refresh_token())
 
     if not validation_json or not validation_json.get('active'):
@@ -165,27 +160,23 @@ def do_validate_refresh_token(token_file, auth_client_config_file, auth_profile)
 
 @oidc_token_group.command(
     'revoke-access-token',
-    help='Revoke the access token associated with the current auth profile')
-@opt_token_file
-@opt_auth_client_config_file
-@opt_auth_profile
-@recast_exceptions_to_click(AuthClientException)
-def do_revoke_access_token(token_file, auth_client_config_file, auth_profile):
-    saved_token = FileBackedOidcToken(None, token_file)
+    help='Revoke the access token associated with the current profile')
+@click.pass_context
+@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+def do_revoke_access_token(ctx):
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
+    auth_client = ctx.obj['AUTH_CLIENT']
     saved_token.load()
-    auth_client = get_auth_client(auth_profile, auth_client_config_file)
     auth_client.revoke_access_token(saved_token.access_token())
 
 
 @oidc_token_group.command(
     'revoke-refresh-token',
-    help='Revoke the refresh token associated with the current auth profile')
-@opt_token_file
-@opt_auth_client_config_file
-@opt_auth_profile
-@recast_exceptions_to_click(AuthClientException)
-def do_revoke_refresh_token(token_file, auth_client_config_file, auth_profile):
-    saved_token = FileBackedOidcToken(None, token_file)
+    help='Revoke the refresh token associated with the current profile')
+@click.pass_context
+@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+def do_revoke_refresh_token(ctx):
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
+    auth_client = ctx.obj['AUTH_CLIENT']
     saved_token.load()
-    auth_client = get_auth_client(auth_profile, auth_client_config_file)
     auth_client.revoke_refresh_token(saved_token.refresh_token())

@@ -2,8 +2,10 @@ from __future__ import annotations  # https://stackoverflow.com/a/33533514
 
 from abc import ABC, abstractmethod
 import logging
+import pathlib
 
 from planet.auth.credential import Credential
+from planet.auth.request_authenticator import RequestAuthenticator
 from planet.auth.util import FileBackedJsonObject
 
 
@@ -130,6 +132,64 @@ class AuthClient(ABC):
         or the Credential.  This is the job of a RequestAuthenticator
 
         :param kwargs:
+        :return:
+        """
+        pass
+
+    def refresh(self, refresh_token, requested_scopes):
+        raise AuthClientException(
+            'Refresh not implemented for the current authentication mechanism')
+
+    def validate_access_token(self, access_token):
+        raise AuthClientException(
+            'Access token validation is not implemented for the current authentication mechanism')
+
+    def validate_id_token(self, id_token):
+        raise AuthClientException(
+            'ID token validation is not implemented for the current authentication mechanism')
+
+    def validate_refresh_token(self, refresh_token):
+        raise AuthClientException(
+            'Refresh token validation is not implemented for the current authentication mechanism')
+
+    def revoke_access_token(self, access_token):
+        raise AuthClientException(
+            'Access token revocation is not implemented for the current authentication mechanism')
+
+    def revoke_refresh_token(self, refresh_token):
+        raise AuthClientException(
+            'Refresh token revocation is not implemented for the current authentication mechanism')
+
+    def get_scopes(self):
+        raise AuthClientException(
+            'Listing scopes is not implemented for the current authentication mechanism.')
+
+    @abstractmethod
+    def default_request_authenticator(self, token_file_path: pathlib.Path) -> RequestAuthenticator:
+        """
+        Return an instance of the default request authenticator to use for
+        the specific AuthClient type and configured to use the provided
+        token file for token persistence.
+
+        It's not automatic that the default is always the right choice.
+        Some authenticators may initiate logins, which may be interactive
+        or not depending on the specifics of the AuthClient configuration
+        and implementation type. Whether or not interactivity can be
+        tolerated depends on the specifics of the surrounding application.
+
+        In the simplest cases, there really is no relationship between
+        the AuthClient and the request authenticator (see static key
+        implementations). This relationship emerges when the mechanisms
+        of an AuthClient requires frequent refreshing of the Credential.
+        In these cases, it is convenient for the RequestAuthenticator
+        to also have an AuthClient that is capable of performing this
+        refresh transparently as needed.
+
+        AuthClient implementors should favor defaults that do not require
+        user interaction after an initial Credential has been obtained from
+        an initial call to login()
+
+        :param token_file_path:
         :return:
         """
         pass

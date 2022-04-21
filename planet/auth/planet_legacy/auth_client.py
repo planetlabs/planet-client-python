@@ -1,9 +1,11 @@
 import getpass
+import pathlib
 import jwt
 import requests
 
 from planet.auth.auth_client import AuthClientConfig, AuthClient, AuthClientException
 from planet.auth.planet_legacy.legacy_api_key import FileBackedPlanetLegacyAPIKey
+from planet.auth.planet_legacy.request_authenticator import PlanetLegacyRequestAuthenticator
 
 
 class PlanetLegacyAuthClientConfig(AuthClientConfig):
@@ -65,7 +67,7 @@ class PlanetLagacyAuthClient(AuthClient):
                 message='Authorization response did not include expected field "token"',
                 raw_response=response)
 
-        # XXX - The token is signed with a symmetric key.  The client does not
+        # The token is signed with a symmetric key.  The client does not
         # posses this key, and cannot verify the JWT.
         decoded_jwt = jwt.decode(token_jwt, options={'verify_signature': False})
         api_key = decoded_jwt.get('api_key')
@@ -87,6 +89,9 @@ class PlanetLagacyAuthClient(AuthClient):
         return api_key
 
     def login(self, username=None, password=None, **kwargs):
+        # Should this user interactivity be here down in the library?
+        # This is a parallel construction to OIDC auth mechanisms, that
+        # may need to spawn a browser, which is inherently user interactive.
         if not username:
             username = input('Email: ')
         if not password:
@@ -95,3 +100,7 @@ class PlanetLagacyAuthClient(AuthClient):
         api_key = self._checked_auth_request(auth_payload)
         return FileBackedPlanetLegacyAPIKey(api_key=api_key)
 
+    def default_request_authenticator(self, token_file_path: pathlib.Path) -> PlanetLegacyRequestAuthenticator:
+        return PlanetLegacyRequestAuthenticator(
+            api_key_file=FileBackedPlanetLegacyAPIKey(
+                api_key_file=token_file_path))

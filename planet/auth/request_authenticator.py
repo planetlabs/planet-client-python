@@ -7,7 +7,8 @@ import requests.auth
 logger = logging.getLogger(__name__)
 
 
-class BearerTokenRequestAuthenticator(requests.auth.AuthBase, httpx.Auth):
+# TODO: We need a RequestAuthenticator base class.
+class RequestAuthenticator(requests.auth.AuthBase, httpx.Auth):
     """
     Decorate a http request with a bearer auth token.
     """
@@ -40,10 +41,10 @@ class BearerTokenRequestAuthenticator(requests.auth.AuthBase, httpx.Auth):
         r.headers[self._auth_header] = self._build_auth_header_payload()
         return r
 
-    def auth_flow(self, r):
+    def auth_flow(self, r: httpx._models.Request):
         """
         Decorate a "httpx" library based request with authentication
         """
         self.pre_request_hook()
         r.headers[self._auth_header] = self._build_auth_header_payload()
-        return r
+        yield r
