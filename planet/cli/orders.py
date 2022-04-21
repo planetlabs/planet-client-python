@@ -30,7 +30,7 @@ pretty = click.option('--pretty', is_flag=True, help='Format JSON output')
 
 @asynccontextmanager
 async def orders_client(ctx):
-    auth = ctx.obj['AUTH']
+    auth = ctx.obj['AUTH_REQUEST_AUTHENTICATOR']
     base_url = ctx.obj['BASE_URL']
     async with Session(auth=auth) as sess:
         cl = OrdersClient(sess, base_url=base_url)
@@ -45,7 +45,6 @@ async def orders_client(ctx):
               help='Assign custom base Orders API URL.')
 def orders(ctx, base_url):
     '''Commands for interacting with the Orders API'''
-    ctx.obj['AUTH'] = planet.Auth.from_file()
     ctx.obj['BASE_URL'] = base_url
 
 

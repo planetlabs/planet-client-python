@@ -18,28 +18,44 @@ import sys
 import click
 
 import planet
+from planet.auth.auth import Auth
 
 from planet.cli import auth, orders
 from planet.cli.oidcauth import oidc_token_group
+from planet.cli.options import \
+    opt_auth_client_config_file, \
+    opt_auth_profile, \
+    opt_token_file
+
 
 LOGGER = logging.getLogger(__name__)
 
 
 @click.group()
 @click.pass_context
+@opt_auth_profile
+@opt_auth_client_config_file
+@opt_token_file
 @click.option('-v',
               '--verbose',
               count=True,
               help=('Specify verbosity level of between 0 and 2 corresponding '
                     'to log levels warning, info, and debug respectively.'))
 @click.version_option(version=planet.__version__)
-def main(ctx, verbose):
+def main(ctx, verbose, auth_profile, auth_client_config_file, token_file):
     '''Planet API Client'''
     _configure_logging(verbose)
 
     # ensure that ctx.obj exists and is a dict (in case `cli()` is called
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
+
+    auth_client, request_authenticator, token_file_path = Auth.initialize(
+        auth_profile, auth_client_config_file, token_file)
+    ctx.obj['AUTH_PROFILE'] = auth_profile
+    ctx.obj['AUTH_CLIENT'] = auth_client
+    ctx.obj['AUTH_REQUEST_AUTHENTICATOR'] = request_authenticator
+    ctx.obj['AUTH_TOKEN_FILE_PATH'] = token_file_path
 
 
 def _configure_logging(verbosity):

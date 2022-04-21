@@ -3,10 +3,10 @@ import os
 import pathlib
 from typing import Tuple, Union
 
-from planet.cx.commands.cli.constants import \
+from planet.cli.constants import \
     DEFAULT_OIDC_AUTH_CLIENT_CONFIG, \
     LEGACY_AUTH_CLIENT_CONFIG
-from planet.cx.commands.cli.constants import \
+from planet.constants import \
     ENV_AUTH_CLIENT_CONFIG_FILE, \
     ENV_AUTH_PROFILE, \
     ENV_AUTH_TOKEN_FILE
