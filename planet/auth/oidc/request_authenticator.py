@@ -2,7 +2,7 @@ import logging
 import jwt
 import time
 
-from planet.auth.request_authenticator import BearerTokenRequestAuthenticator
+from planet.auth.request_authenticator import RequestAuthenticator
 from planet.auth.oidc.auth_client import OidcAuthClient
 from planet.auth.oidc.api_clients.api_client import OIDCAPIClientException
 from planet.auth.oidc.oidc_token import FileBackedOidcToken
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 # Note: Auth client can be passed override scopes for token refresh, but we
 #       haven't plumbed our auth helpers to do this. This is probably an
 #       acceptable limitation for this use case.
-class RefreshingOidcTokenRequestAuthenticator(BearerTokenRequestAuthenticator):
+class RefreshingOidcTokenRequestAuthenticator(RequestAuthenticator):
     """
     Decorate a http request with a bearer auth token. Automatically initiate a
     refresh request if we know the access token to be close to expiration.

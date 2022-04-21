@@ -1,9 +1,11 @@
+import pathlib
 from requests.auth import AuthBase
 from typing import Tuple, Optional
 
 from planet.auth.oidc.api_clients.oidc_request_auth import prepare_client_noauth_auth_payload
 from planet.auth.oidc.auth_client import OidcAuthClientConfig, OidcAuthClient
 from planet.auth.oidc.oidc_token import FileBackedOidcToken
+from planet.auth.oidc.request_authenticator import RefreshingOidcTokenRequestAuthenticator
 from planet.auth.oidc.util import create_pkce_challenge_verifier_pair
 
 
@@ -31,7 +33,7 @@ class AuthCodePKCEAuthClient(OidcAuthClient):
         self._authcode_client_config = client_config
 
     def _client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
-        # FIXME: test, is putting the client id in the auth header and the payload overconstrained?
+        # FIXME: Is putting the client id in the auth header and the payload overconstrained?
         #        Is that the job of this class, or the helper to fix?
         #        So ugly we are getting into the business of the api clients.
         # FIXME: should removing a redundant client_id be the job of the helper?
@@ -65,3 +67,8 @@ class AuthCodePKCEAuthClient(OidcAuthClient):
             self._authcode_client_config.client_id,
             authcode, pkce_code_verifier)
         return FileBackedOidcToken(token_json)
+
+    def default_request_authenticator(self, token_file_path: pathlib.Path) -> RefreshingOidcTokenRequestAuthenticator:
+        return RefreshingOidcTokenRequestAuthenticator(
+            token_file=FileBackedOidcToken(token_file=token_file_path),
+            auth_client=self)

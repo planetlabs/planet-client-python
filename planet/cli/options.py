@@ -1,7 +1,6 @@
 import click
-import pathlib
 
-
+from planet.auth.auth import Profile
 from planet.cx.commands.cli.constants import \
     ENV_AUTH_CLIENT_CONFIG_FILE, \
     ENV_AUTH_PASSWORD, \
@@ -20,14 +19,13 @@ def opt_auth_profile(function):
         '--auth-profile',
         # TODO: Present a choice based on scanned directories?
         #       We could look for ~/.planet/<profile>/
-        # TODO: we need a notion of built-in profiles. "default" and "legacy" are needed for the CLI.
         # type=click.Choice(...),
         type=str,
         envvar=ENV_AUTH_PROFILE,
         help='Select the client profile to use. Profiles are defined by creating a subdirectory'
              ' ~/.planet/. Additionally, the built in profiles "default" and "legacy" are understood.'
              '\nEnvironment variable: ' + ENV_AUTH_PROFILE,
-        default='',  # 'default', # just construct our default paths inside ~/.planet, not ~/.planet/<profile>
+        default='',
         show_default=True,
         is_eager=True)(function)
     return function
@@ -42,7 +40,8 @@ def opt_auth_client_config_file(function):
              '~/.planet/<auth_profile>/auth_client.json\nEnvironment variable: ' + ENV_AUTH_CLIENT_CONFIG_FILE,
         default=None,
         show_default=True,
-        callback=lambda ctx, param, value: pathlib.Path(value) if value else pathlib.Path.home().joinpath(".planet/{}/auth_client.json".format(ctx.params['auth_profile'])))(function) # noqa
+        callback=lambda ctx, param, value: Profile.get_profile_file_path('auth_client.json', ctx.params['auth_profile'], value)
+    )(function)
     return function
 
 
@@ -120,7 +119,7 @@ def opt_token_file(function):
              '~/.planet/<auth_profile>/token.json\nEnvironment variable: ' + ENV_AUTH_TOKEN_FILE,
         default=None,
         show_default=True,
-        callback=lambda ctx, param, value: pathlib.Path(value) if value else pathlib.Path.home().joinpath(".planet/{}/token.json".format(ctx.params['auth_profile'])))(function) # noqa
+        callback=lambda ctx, param, value: Profile.get_profile_file_path('token.json', ctx.params['auth_profile'], value))(function) # noqa
     return function
 
 

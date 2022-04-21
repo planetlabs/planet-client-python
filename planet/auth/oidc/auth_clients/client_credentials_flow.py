@@ -1,13 +1,14 @@
+import pathlib
+from cryptography.hazmat.primitives import serialization
 from requests.auth import AuthBase
 from typing import Tuple, Optional
-
-from cryptography.hazmat.primitives import serialization
 
 from planet.auth.auth_client import AuthClientException
 from planet.auth.oidc.api_clients.oidc_request_auth import prepare_client_secret_request_auth, \
     prepare_private_key_assertion_auth_payload
 from planet.auth.oidc.auth_client import OidcAuthClientConfig, OidcAuthClient
 from planet.auth.oidc.oidc_token import FileBackedOidcToken
+from planet.auth.oidc.request_authenticator import RefreshOrReloginOidcTokenRequestAuthenticator
 
 
 class ClientCredentialsClientSecretClientConfig(OidcAuthClientConfig):
@@ -31,7 +32,7 @@ class ClientCredentialsClientSecretAuthClient(OidcAuthClient):
         return raw_payload, prepare_client_secret_request_auth(self._ccauth_client_config.client_id,
                                                                self._ccauth_client_config.client_secret)
 
-    def login(self, requested_scopes=None, allow_open_browser=False):
+    def login(self, requested_scopes=None, allow_open_browser=False, **kwargs):
         if not requested_scopes:
             requested_scopes = self._ccauth_client_config.default_request_scopes
 
@@ -41,6 +42,11 @@ class ClientCredentialsClientSecretAuthClient(OidcAuthClient):
                 self._ccauth_client_config.client_secret,
                 requested_scopes)
         )
+
+    def default_request_authenticator(self, token_file_path: pathlib.Path) -> RefreshOrReloginOidcTokenRequestAuthenticator:
+        return RefreshOrReloginOidcTokenRequestAuthenticator(
+            token_file=FileBackedOidcToken(token_file=token_file_path),
+            auth_client=self)
 
 
 class ClientCredentialsPubKeyClientConfig(OidcAuthClientConfig):
@@ -122,6 +128,11 @@ class ClientCredentialsPubKeyAuthClient(OidcAuthClient):
                 requested_scopes)
         )
 
+    def default_request_authenticator(self, token_file_path: pathlib.Path) -> RefreshOrReloginOidcTokenRequestAuthenticator:
+        return RefreshOrReloginOidcTokenRequestAuthenticator(
+            token_file=FileBackedOidcToken(token_file=token_file_path),
+            auth_client=self)
+
 
 # TODO: No implementation yet.
 class ClientCredentialsSharedKeyClientConfig(OidcAuthClientConfig):
@@ -139,5 +150,10 @@ class ClientCredentialsSharedKeyAuthClient(OidcAuthClient):
     def _client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
         raise Exception('No implementation')
 
-    def login(self, requested_scopes=None, allow_open_browser=False):
+    def login(self, requested_scopes=None, allow_open_browser=False, **kwargs):
         raise Exception('No implementation')
+
+    def default_request_authenticator(self, token_file_path: pathlib.Path) -> RefreshOrReloginOidcTokenRequestAuthenticator:
+        return RefreshOrReloginOidcTokenRequestAuthenticator(
+            token_file=FileBackedOidcToken(token_file=token_file_path),
+            auth_client=self)

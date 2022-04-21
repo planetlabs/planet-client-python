@@ -1,9 +1,11 @@
+import pathlib
 from requests.auth import AuthBase
 from typing import Tuple, Optional
 
 from planet.auth.oidc.api_clients.oidc_request_auth import prepare_client_noauth_auth_payload
 from planet.auth.oidc.auth_client import OidcAuthClientConfig, OidcAuthClient
 from planet.auth.oidc.oidc_token import FileBackedOidcToken
+from planet.auth.oidc.request_authenticator import RefreshingOidcTokenRequestAuthenticator
 
 
 # XXX Cleanly, this should probably share a base class with
@@ -61,3 +63,8 @@ class ImplicitAuthClient(OidcAuthClient):
                     self._implicit_client_config.request_access_token,
                     self._implicit_client_config.request_id_token
                 ))
+
+    def default_request_authenticator(self, token_file_path: pathlib.Path) -> RefreshingOidcTokenRequestAuthenticator:
+        return RefreshingOidcTokenRequestAuthenticator(
+            token_file=FileBackedOidcToken(token_file=token_file_path),
+            auth_client=self)
