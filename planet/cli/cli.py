@@ -31,14 +31,21 @@ LOGGER = logging.getLogger(__name__)
               count=True,
               help=('Specify verbosity level of between 0 and 2 corresponding '
                     'to log levels warning, info, and debug respectively.'))
+@click.option('--quiet',
+              is_flag=True,
+              default=False,
+              help='Disable ANSI control output.')
 @click.version_option(version=planet.__version__)
-def main(ctx, verbose):
+def main(ctx, verbose, quiet):
     '''Planet API Client'''
     _configure_logging(verbose)
 
     # ensure that ctx.obj exists and is a dict (in case `cli()` is called
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
+    ctx.obj['QUIET'] = quiet
+    from pprint import pprint
+    pprint(vars(ctx))
 
 
 def _configure_logging(verbosity):
