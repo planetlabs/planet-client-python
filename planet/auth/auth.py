@@ -1,3 +1,4 @@
+from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import logging
 import os
 import pathlib
@@ -33,6 +34,24 @@ class Profile:
 
 
 class Auth:
+    def __init__(self,
+                 auth_client: AuthClient = None,
+                 request_authenticator: RequestAuthenticator = None,
+                 token_file_path: pathlib.Path = None):
+        self._auth_client = auth_client
+        self._request_authenticator = request_authenticator
+        self._token_file_path = token_file_path
+        # self._credential = credential
+
+    def auth_client(self) -> AuthClient:
+        return self._auth_client
+
+    def request_authenticator(self) -> RequestAuthenticator:
+        return self._request_authenticator
+
+    def token_file_path(self) -> pathlib.Path:
+        return self._token_file_path
+
     @staticmethod
     def _initialize_auth_client(
             profile: str,
@@ -63,11 +82,10 @@ class Auth:
             profile: str = os.getenv(ENV_AUTH_PROFILE),
             auth_client_config_file: Union[str, pathlib.PurePath] = os.getenv(ENV_AUTH_CLIENT_CONFIG_FILE),
             token_file: Union[str, pathlib.PurePath] = os.getenv(ENV_AUTH_TOKEN_FILE)
-    ) -> Tuple[AuthClient, RequestAuthenticator, pathlib.Path]:
+    ) -> Auth:
 
         auth_client = Auth._initialize_auth_client(profile, auth_client_config_file)
         token_file_path = Profile.get_profile_file_path('token.json', profile, token_file)
         request_authenticator = auth_client.default_request_authenticator(token_file_path)
 
-        # TODO: store these in global or class variables?
-        return auth_client, request_authenticator, token_file_path
+        return Auth(auth_client, request_authenticator, token_file_path)

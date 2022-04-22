@@ -60,6 +60,17 @@ class AuthClientConfig(ABC):
         return typename_map
 
     @staticmethod
+    def from_dict(config_data: dict):
+        config_data.get('client_type')
+        config_type = config_data.get('client_type')
+        cls = AuthClientConfig._typename_map().get(config_type)
+        if not cls:
+            raise AuthClientException('Error: Auth client config type "{}" is not understood by the factory.'
+                                      .format(config_type))
+
+        return cls(**config_data)
+
+    @staticmethod
     def from_file(file_path) -> AuthClientConfig:
         # TODO: do we want to make file backing an intrinsic part of the base class?
         #       It would be nice for saving configs, but I don't think creating a new
@@ -67,14 +78,7 @@ class AuthClientConfig(ABC):
         #       is a high priority.
         config_file = FileBackedJsonObject(file_path=file_path)
         config_file.load()
-        config_file.data().get('client_type')
-        config_type = config_file.data().get('client_type')
-        cls = AuthClientConfig._typename_map().get(config_type)
-        if not cls:
-            raise AuthClientException('Error: Auth client config type "{}" is not understood by the factory.'
-                                      .format(config_type))
-
-        return cls(**config_file.data())
+        return AuthClientConfig.from_dict(config_file.data())
 
 
 class AuthClient(ABC):

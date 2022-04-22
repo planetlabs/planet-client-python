@@ -20,7 +20,7 @@ import click
 import planet
 from planet.auth.auth import Auth
 
-from planet.cli import auth, orders
+from planet.cli import orders
 from planet.cli.oidcauth import oidc_token_group
 from planet.cli.options import \
     opt_auth_client_config_file, \
@@ -50,12 +50,12 @@ def main(ctx, verbose, auth_profile, auth_client_config_file, token_file):
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
 
-    auth_client, request_authenticator, token_file_path = Auth.initialize(
-        auth_profile, auth_client_config_file, token_file)
+    auth = Auth.initialize(auth_profile, auth_client_config_file, token_file)
+    ctx.obj['AUTH'] = auth
     ctx.obj['AUTH_PROFILE'] = auth_profile
-    ctx.obj['AUTH_CLIENT'] = auth_client
-    ctx.obj['AUTH_REQUEST_AUTHENTICATOR'] = request_authenticator
-    ctx.obj['AUTH_TOKEN_FILE_PATH'] = token_file_path
+    ctx.obj['AUTH_CLIENT'] = auth.auth_client()
+    ctx.obj['AUTH_REQUEST_AUTHENTICATOR'] = auth.request_authenticator()
+    ctx.obj['AUTH_TOKEN_FILE_PATH'] = auth.token_file_path()
 
 
 def _configure_logging(verbosity):
@@ -68,7 +68,6 @@ def _configure_logging(verbosity):
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
-main.add_command(auth.auth)
 main.add_command(orders.orders)
 main.add_command(oidc_token_group)
 
