@@ -30,7 +30,7 @@ pretty = click.option('--pretty', is_flag=True, help='Format JSON output')
 
 @asynccontextmanager
 async def orders_client(ctx):
-    auth = ctx.obj['AUTH_REQUEST_AUTHENTICATOR']
+    auth = ctx.obj['AUTH']
     base_url = ctx.obj['BASE_URL']
     async with Session(auth=auth) as sess:
         cl = OrdersClient(sess, base_url=base_url)

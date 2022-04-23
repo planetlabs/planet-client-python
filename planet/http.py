@@ -19,7 +19,7 @@ import logging
 
 import httpx
 
-from planet.auth.planet_legacy.auth import Auth
+from planet.auth.auth import Auth
 from . import exceptions, models
 from .__version__ import __version__
 
@@ -118,9 +118,9 @@ class Session(BaseSession):
         Parameters:
             auth: Planet server authentication.
         """
-        auth = auth or Auth.from_file()
+        auth = auth or Auth.initialize()
 
-        self._client = httpx.AsyncClient(auth=auth)
+        self._client = httpx.AsyncClient(auth=auth.request_authenticator())
         self._client.headers.update({'User-Agent': self._get_user_agent()})
 
         async def alog_request(*args, **kwargs):
@@ -222,6 +222,7 @@ class Session(BaseSession):
         return Stream(session=self, request=request)
 
 
+# TODO: Delete?  This isn't used with the refactored AuthClient
 class AuthSession(BaseSession):
     """Synchronous connection to the Planet Auth service."""
 
