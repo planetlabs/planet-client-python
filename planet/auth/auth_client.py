@@ -23,6 +23,8 @@ class AuthClientConfigException(AuthClientException):
 
 
 class AuthClientConfig(ABC):
+    _typename_map = {}
+
     def __init__(self, **kwargs):
         if len(kwargs.keys()) > 0:
             # raise AuthClientConfigException('Unexpected config arguments in client configuration: {}'
@@ -30,45 +32,45 @@ class AuthClientConfig(ABC):
             for key in kwargs.keys():
                 logger.debug('Ignoring unknown keyword argument: "{}"'.format(str(key)))
 
-    @staticmethod
-    def _typename_map():
-        # TODO: make data static rather than rebuild every invocation.
-        from planet.auth.oidc.auth_clients.auth_code_flow import \
-            AuthCodePKCEClientConfig
-        from planet.auth.oidc.auth_clients.client_credentials_flow import \
-            ClientCredentialsPubKeyClientConfig
-        from planet.auth.oidc.auth_clients.client_credentials_flow import \
-            ClientCredentialsClientSecretClientConfig
-        from planet.auth.oidc.auth_clients.client_credentials_flow import \
-            ClientCredentialsSharedKeyClientConfig
-        from planet.auth.oidc.auth_clients.resource_owner_flow import \
-            ResourceOwnerClientConfig
-        from planet.auth.planet_legacy.auth_client import \
-            PlanetLegacyAuthClientConfig
+    @classmethod
+    def _get_typename_map(cls):
+        if not cls._typename_map:
+            from planet.auth.oidc.auth_clients.auth_code_flow import \
+                AuthCodePKCEClientConfig
+            from planet.auth.oidc.auth_clients.client_credentials_flow import \
+                ClientCredentialsPubKeyClientConfig
+            from planet.auth.oidc.auth_clients.client_credentials_flow import \
+                ClientCredentialsClientSecretClientConfig
+            from planet.auth.oidc.auth_clients.client_credentials_flow import \
+                ClientCredentialsSharedKeyClientConfig
+            from planet.auth.oidc.auth_clients.resource_owner_flow import \
+                ResourceOwnerClientConfig
+            from planet.auth.planet_legacy.auth_client import \
+                PlanetLegacyAuthClientConfig
 
-        typename_map = {
-            'oidc_auth_code': AuthCodePKCEClientConfig,
-            'oidc_client_credentials_secret': ClientCredentialsClientSecretClientConfig,
-            'oidc_client_credentials_pubkey': ClientCredentialsPubKeyClientConfig,
-            'oidc_client_credentials_sharedkey': ClientCredentialsSharedKeyClientConfig,
-            'oidc_resource_owner': ResourceOwnerClientConfig,
-            'planet_legacy': PlanetLegacyAuthClientConfig
-            # TODO:
-            #  'static_apikey': StaticApiKeyAuthClientConfig
+            cls._typename_map = {
+                'oidc_auth_code': AuthCodePKCEClientConfig,
+                'oidc_client_credentials_secret': ClientCredentialsClientSecretClientConfig,
+                'oidc_client_credentials_pubkey': ClientCredentialsPubKeyClientConfig,
+                'oidc_client_credentials_sharedkey': ClientCredentialsSharedKeyClientConfig,
+                'oidc_resource_owner': ResourceOwnerClientConfig,
+                'planet_legacy': PlanetLegacyAuthClientConfig
+                # TODO:
+                #  'static_apikey': StaticApiKeyAuthClientConfig
+            }
 
-        }
-        return typename_map
+        return cls._typename_map
 
-    @staticmethod
-    def from_dict(config_data: dict):
+    @classmethod
+    def from_dict(cls, config_data: dict):
         config_data.get('client_type')
         config_type = config_data.get('client_type')
-        cls = AuthClientConfig._typename_map().get(config_type)
-        if not cls:
+        config_cls = AuthClientConfig._get_typename_map().get(config_type)
+        if not config_cls:
             raise AuthClientException('Error: Auth client config type "{}" is not understood by the factory.'
                                       .format(config_type))
 
-        return cls(**config_data)
+        return config_cls(**config_data)
 
     @staticmethod
     def from_file(file_path) -> AuthClientConfig:
@@ -82,48 +84,51 @@ class AuthClientConfig(ABC):
 
 
 class AuthClient(ABC):
+    _type_map = {}
+
     def __init__(self, auth_client_config: AuthClientConfig):
         self._auth_client_config = auth_client_config
 
-    @staticmethod
-    def _type_map():
-        # TODO: make data static rather than rebuild every invocation.
-        from planet.auth.oidc.auth_clients.auth_code_flow import \
-            AuthCodePKCEAuthClient, \
-            AuthCodePKCEClientConfig
-        from planet.auth.oidc.auth_clients.client_credentials_flow import \
-            ClientCredentialsPubKeyAuthClient, \
-            ClientCredentialsPubKeyClientConfig
-        from planet.auth.oidc.auth_clients.client_credentials_flow import\
-            ClientCredentialsClientSecretAuthClient, \
-            ClientCredentialsClientSecretClientConfig
-        from planet.auth.oidc.auth_clients.client_credentials_flow import\
-            ClientCredentialsSharedKeyAuthClient, \
-            ClientCredentialsSharedKeyClientConfig
-        from planet.auth.oidc.auth_clients.resource_owner_flow import\
-            ResourceOwnerAuthClient, \
-            ResourceOwnerClientConfig
-        from planet.auth.planet_legacy.auth_client import \
-            PlanetLagacyAuthClient, \
-            PlanetLegacyAuthClientConfig
+    @classmethod
+    def _get_type_map(cls):
+        if not cls._type_map:
+            from planet.auth.oidc.auth_clients.auth_code_flow import \
+                AuthCodePKCEAuthClient, \
+                AuthCodePKCEClientConfig
+            from planet.auth.oidc.auth_clients.client_credentials_flow import \
+                ClientCredentialsPubKeyAuthClient, \
+                ClientCredentialsPubKeyClientConfig
+            from planet.auth.oidc.auth_clients.client_credentials_flow import\
+                ClientCredentialsClientSecretAuthClient, \
+                ClientCredentialsClientSecretClientConfig
+            from planet.auth.oidc.auth_clients.client_credentials_flow import\
+                ClientCredentialsSharedKeyAuthClient, \
+                ClientCredentialsSharedKeyClientConfig
+            from planet.auth.oidc.auth_clients.resource_owner_flow import\
+                ResourceOwnerAuthClient, \
+                ResourceOwnerClientConfig
+            from planet.auth.planet_legacy.auth_client import \
+                PlanetLagacyAuthClient, \
+                PlanetLegacyAuthClientConfig
 
-        type_map = {
-            AuthCodePKCEClientConfig: AuthCodePKCEAuthClient,
-            ClientCredentialsClientSecretClientConfig: ClientCredentialsClientSecretAuthClient,
-            ClientCredentialsPubKeyClientConfig: ClientCredentialsPubKeyAuthClient,
-            ClientCredentialsSharedKeyClientConfig: ClientCredentialsSharedKeyAuthClient,
-            ResourceOwnerClientConfig: ResourceOwnerAuthClient,
-            PlanetLegacyAuthClientConfig: PlanetLagacyAuthClient
-        }
-        return type_map
+            cls._type_map = {
+                AuthCodePKCEClientConfig: AuthCodePKCEAuthClient,
+                ClientCredentialsClientSecretClientConfig: ClientCredentialsClientSecretAuthClient,
+                ClientCredentialsPubKeyClientConfig: ClientCredentialsPubKeyAuthClient,
+                ClientCredentialsSharedKeyClientConfig: ClientCredentialsSharedKeyAuthClient,
+                ResourceOwnerClientConfig: ResourceOwnerAuthClient,
+                PlanetLegacyAuthClientConfig: PlanetLagacyAuthClient
+            }
 
-    @staticmethod
-    def from_config(config: AuthClientConfig) -> AuthClient:
-        cls = AuthClient._type_map().get(type(config))
-        if not cls:
+        return cls._type_map
+
+    @classmethod
+    def from_config(cls, config: AuthClientConfig) -> AuthClient:
+        client_cls = cls._get_type_map().get(type(config))
+        if not client_cls:
             raise AuthClientException('Error: Auth client config class is not understood by the factory.')
 
-        return cls(config)
+        return client_cls(config)
 
     @abstractmethod
     def login(self, **kwargs) -> Credential:
