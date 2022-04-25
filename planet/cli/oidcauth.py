@@ -1,3 +1,7 @@
+# FIXME: Rename? This isn't strictly only an "OIDC" Auth CLI interface
+#        anymore. It works with any auth provider that provided an
+#        AuthClient interface. But, this is a heavily OIDC influenced
+#        interface.
 import click
 import sys
 
@@ -11,20 +15,11 @@ from planet.cx.commands.cli.options import \
     opt_token_scope
 from planet.cx.commands.cli.util import recast_exceptions_to_click
 
-# TODO: per erik, tell the user we are going to launch a browser.
-#       tell them "if there no browser works, tell them alternatives".
-#       provide feedback on success / Failure of auth.
-
-# FIXME: Rename? This isn't strictly only an "OIDC" Auth CLI interface
-#        anymore. It works with any auth provider that provided an
-#        AuthClient interface. But, this is a heavily OIDC influenced
-#        interface.
-
 
 @click.group(
     'token',
     invoke_without_command=True,
-    help='Commands to manage Planet OIDC auth tokens')
+    help='Commands to manage Planet auth tokens')
 @click.pass_context
 def oidc_token_group(ctx):
     if ctx.invoked_subcommand is None:

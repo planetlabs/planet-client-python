@@ -79,7 +79,6 @@ class AuthClientConfig(ABC):
                 'planet_legacy': PlanetLegacyAuthClientConfig
                 # TODO:
                 #  'static_apikey': StaticApiKeyAuthClientConfig
-
             }
 
         return cls._typename_map
@@ -92,7 +91,6 @@ class AuthClientConfig(ABC):
         if not config_cls:
             raise AuthClientException('Error: Auth client config type "{}" is not understood by the factory.'
                                       .format(config_type))
-
         return config_cls(**config_data)
 
     @staticmethod
