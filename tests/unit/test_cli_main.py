@@ -13,6 +13,8 @@
 # the License.
 import logging
 
+import pytest
+
 import click
 from click.testing import CliRunner
 
@@ -21,7 +23,11 @@ from planet.cli import cli
 LOGGER = logging.getLogger(__name__)
 
 
-# TODO: when testing multiple values for verbosity, use test parameterization
+@pytest.fixture
+def debug_input():
+    return ['debug', ' debug ', 'debu', 45]
+
+
 def test_cli_info_verbosity(monkeypatch):
     log_level = None
 
@@ -42,3 +48,17 @@ def test_cli_info_verbosity(monkeypatch):
     result = runner.invoke(cli.main, args=['test'])
     assert result.exit_code == 0
     assert log_level == logging.WARNING
+
+    def paramaterized_tests(debug_input):
+        runner = CliRunner()
+        result = runner.invoke(cli.main,
+                               args=['--verbosity', debug_input, 'orders'])
+        # Testing to ensure command was run succesfully and
+        # \log_level set to debug
+        if debug_input not in ['debug', ' debug ']:
+            assert result.exit_code == 2
+        else:
+            assert result.exit_code == 0
+            assert log_level == logging.DEBUG
+
+    paramaterized_tests(debug_input)
