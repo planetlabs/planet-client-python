@@ -10,7 +10,10 @@ DEFAULT_OIDC_AUTH_CLIENT_CONFIG = AuthCodePKCEClientConfig(
     # FIXME: a better URL for production
     auth_server='https://account.planet.com/oauth2/aus2enhwueFYRb50S4x7',
     client_id='0oa2scq915nekGLum4x7',
-    redirect_uri='http://localhost:8080',
+    # FIXME: we need a public URL configured in the client ID in our Auth Provider
+    #   for 'recirect_uri' that can catch the redirect for --no-open-browser use cases.
+    redirect_uri='http://localhost:8080/login/callback_code',
+    local_redirect_uri='http://localhost:8080',
     default_request_scopes=['planet', 'profile', 'openid', 'offline_access']
 )
 
