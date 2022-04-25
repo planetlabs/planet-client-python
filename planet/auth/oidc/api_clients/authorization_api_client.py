@@ -127,10 +127,13 @@ class AuthorizationAPIClient():
         http_server.timeout = AUTH_TIMEOUT
 
         # Don't kick off the browser until we are satisfied that the callback handler is up and listening.
-        logger.debug("Opening browser with authorization URL : " + auth_request_uri)
+        # UX team wanted this on the console
+        print('Opening browser for authorization and listening locally for callback.\n'
+              'If this fails, retry with "no browser" option enabled.\n')
+        logger.debug('Opening browser with authorization URL : "{}"\n'.format(auth_request_uri))
         open_new(auth_request_uri)
 
-        # Do we ever need to loop for multiple callbacks?
+        # Do we ever need to loop for multiple callbacks? (No, this should never be needed.)
         http_server.handle_request()
 
         if hasattr(http_server, 'callback_raw_request_path'):
@@ -146,5 +149,7 @@ class AuthorizationAPIClient():
         #    is out of band of this code.
         data = self._prep_pkce_auth_payload(client_id, redirect_uri, requested_scopes, pkce_code_challenge)
         auth_request_uri = self._authorization_uri + '?' + urlencode(data)
-        print("Please go to the following URL to proceed with login:\n\n\t{}\n\n".format(auth_request_uri))
+        print("Please go to the following URL to proceed with login.\n"
+              "After successful login, please provide the resulting authentication code.\n"
+              "\n\t{}\n\n".format(auth_request_uri))
         return getpass.getpass(prompt='Authentication code: ')
