@@ -31,11 +31,6 @@ class ImplicitAuthClient(OidcAuthClient):
         self._implicit_client_config = client_config
 
     def _client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
-        # FIXME: test, is putting the client id in the auth header and the payload overconstrained?
-        #        Is that the job of this class, or the helper to fix?
-        #        So ugly we are getting into the business of the api clients.
-        # FIXME: should removing a redundant client_id be the job of the helper?
-        # FIXME: make the payload union part of the helper?
         auth_payload = prepare_client_noauth_auth_payload(client_id=self._implicit_client_config.client_id)
         # enriched_payload = raw_payload | auth_payload  # Python >= 3.9
         enriched_payload = {**raw_payload, **auth_payload}  # Python >= 3.5

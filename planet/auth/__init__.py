@@ -19,5 +19,7 @@ are encapsulated in implementation subclasses that implement the primary
       validation.  Knows nothing about how to get a credential, or how to
       use a credential.
 - RequestAuthenticator - Responsible for decorating API requests with a
-      credential.
+      credential. Compatible with httpx and requests libraries.
+- Auth - A container class for initializing and grouping a working set
+      of the above.
 """

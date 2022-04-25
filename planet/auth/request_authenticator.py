@@ -7,7 +7,6 @@ import requests.auth
 logger = logging.getLogger(__name__)
 
 
-# TODO: We need a RequestAuthenticator base class.
 class RequestAuthenticator(requests.auth.AuthBase, httpx.Auth):
     """
     Decorate a http request with a bearer auth token.
