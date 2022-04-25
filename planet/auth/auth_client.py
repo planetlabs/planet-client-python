@@ -73,8 +73,6 @@ class AuthClientConfig(ABC):
                 'oidc_client_credentials_sharedkey': ClientCredentialsSharedKeyClientConfig,
                 'oidc_resource_owner': ResourceOwnerClientConfig,
                 'planet_legacy': PlanetLegacyAuthClientConfig
-                # TODO:
-                #  'static_apikey': StaticApiKeyAuthClientConfig
             }
 
         return cls._typename_map
