@@ -17,7 +17,7 @@ from planet.cli.util import recast_exceptions_to_click
 
 
 @click.group(
-    'token',
+    'auth',
     invoke_without_command=True,
     help='Commands to manage Planet auth tokens')
 @click.pass_context
