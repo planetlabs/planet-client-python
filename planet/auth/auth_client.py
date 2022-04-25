@@ -1,6 +1,7 @@
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 
 from abc import ABC, abstractmethod
+import functools
 import logging
 import pathlib
 
@@ -13,8 +14,25 @@ logger = logging.getLogger(__name__)
 
 
 class AuthClientException(Exception):
-    def __init__(self, message=None):
+    def __init__(self, message=None, inner_exception=None):
         super().__init__(message)
+        self._inner_exception = inner_exception
+
+    @staticmethod
+    def recast(*exceptions, **params):
+        if not exceptions:
+            exceptions = (Exception,)
+        # params.get('some_arg', 'default')
+
+        def decorator(func):
+            @functools.wraps(func)
+            def wrapper(*args, **kwargs):
+                try:
+                    return func(*args, **kwargs)
+                except exceptions as e:
+                    raise AuthClientException(str(e), e)
+            return wrapper
+        return decorator
 
 
 class AuthClientConfigException(AuthClientException):
@@ -69,7 +87,6 @@ class AuthClientConfig(ABC):
         if not config_cls:
             raise AuthClientException('Error: Auth client config type "{}" is not understood by the factory.'
                                       .format(config_type))
-
         return config_cls(**config_data)
 
     @staticmethod
@@ -124,7 +141,7 @@ class AuthClient(ABC):
 
     @classmethod
     def from_config(cls, config: AuthClientConfig) -> AuthClient:
-        client_cls = cls._get_type_map().get(type(config))
+        client_cls = AuthClient._get_type_map().get(type(config))
         if not client_cls:
             raise AuthClientException('Error: Auth client config class is not understood by the factory.')
 
@@ -154,6 +171,10 @@ class AuthClient(ABC):
             'Access token validation is not implemented for the current authentication mechanism')
 
     def validate_id_token(self, id_token):
+        raise AuthClientException(
+            'ID token validation is not implemented for the current authentication mechanism')
+
+    def validate_id_token_local(self, id_token):
         raise AuthClientException(
             'ID token validation is not implemented for the current authentication mechanism')
 

@@ -8,6 +8,7 @@ from planet.auth.oidc.api_clients.authorization_api_client import AuthorizationA
 from planet.auth.oidc.api_clients.discovery_api_client import DiscoveryAPIClient
 from planet.auth.oidc.api_clients.introspect_api_client import IntrospectionAPIClient
 from planet.auth.oidc.api_clients.jwks_api_client import JwksAPIClient
+from planet.auth.oidc.token_validator import TokenValidator
 from planet.auth.oidc.api_clients.revocation_api_client import RevocationAPIClient
 from planet.auth.oidc.api_clients.token_api_client import TokenAPIClient
 from planet.auth.oidc.oidc_token import FileBackedOidcToken
@@ -45,10 +46,16 @@ class OidcAuthClient(AuthClient):
         self.__introspection_client = None
         self.__revocation_client = None
         self.__jwks_client = None
+        self.__token_validator = None
 
     def _discovery(self):
         # We know the internals of the discovery client fetch this JIT and cache
         return self.__discovery_client.discovery()
+
+    def _token_validator(self):
+        if not self.__token_validator:
+            self.__token_validator = TokenValidator(self._jwks_client())
+        return self.__token_validator
 
     def _authorization_client(self):
         if not self.__authorization_client:
@@ -117,8 +124,6 @@ class OidcAuthClient(AuthClient):
         See https://developer.okta.com/docs/reference/api/oidc/#client-authentication-methods
         """
 
-    # FIXME: we should validate tokens (especially the ID token) prior to acceptance as per
-    #  https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
     @abstractmethod
     def login(self, requested_scopes=None, allow_open_browser=True, **kwargs) -> FileBackedOidcToken:
         """
@@ -157,7 +162,6 @@ class OidcAuthClient(AuthClient):
             self._token_client().get_token_from_refresh(
                 self._oidc_client_config.client_id, refresh_token, requested_scopes))
 
-    # TODO: local introspection commands.
     def validate_access_token(self, access_token):
         """
         Validate the access token against the OIDC token introspection endpoint
@@ -167,6 +171,14 @@ class OidcAuthClient(AuthClient):
         """
         return self._introspection_client().validate_access_token(access_token, self._client_auth_enricher)
 
+    def validate_access_token_local(self, access_token, audience):
+        # The client doesn't know resource server's expected audience,
+        # so this perhaps doesn't belong in "AuthClient"
+        return self._token_validator().validate_token(
+            token_str=access_token,
+            issuer=self._oidc_client_config.auth_server,
+            audience=audience)
+
     def validate_id_token(self, id_token):
         """
         Validate the ID token against the OIDC token introspection endpoint
@@ -175,6 +187,22 @@ class OidcAuthClient(AuthClient):
             The raw validate json payload (TODO: object model this as a IntrospectionResult, like we do tokens?)
         """
         return self._introspection_client().validate_id_token(id_token, self._client_auth_enricher)
+
+    def validate_id_token_local(self, id_token):
+        """
+        Validate the ID token locally. A remote connection may still be made to obtain signing keys.
+        :param id_token:
+        :return:
+            Upon success, the validated token claims are returned
+        """
+        #return self._token_validator().validate_token(
+        #    token_str=id_token,
+        #    issuer=self._oidc_client_config.auth_server,
+        #    audience=self._oidc_client_config.client_id)
+        return self._token_validator().validate_id_token(
+            token_str=id_token,
+            issuer=self._oidc_client_config.auth_server,
+            client_id=self._oidc_client_config.client_id)
 
     def validate_refresh_token(self, refresh_token):
         """

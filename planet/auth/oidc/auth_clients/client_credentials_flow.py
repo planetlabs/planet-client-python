@@ -23,12 +23,6 @@ class ClientCredentialsClientSecretAuthClient(OidcAuthClient):
         self._ccauth_client_config = client_config
 
     def _client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
-        # FIXME: how to decide when to use client_secret basic auth vs client secret post?
-        # FIXME: test, is putting the client id in the auth header and the payload overconstrained?
-        #        Is that the job of this class, or the helper to fix?
-        #        So ugly we are getting into the business of the api clients.
-        # FIXME: should removing a redundant client_id be the job of the helper?
-        # FIXME: clean up the calling conventions of the helper functions to match their actual use.
         return raw_payload, prepare_client_secret_request_auth(self._ccauth_client_config.client_id,
                                                                self._ccauth_client_config.client_secret)
 
@@ -102,11 +96,6 @@ class ClientCredentialsPubKeyAuthClient(OidcAuthClient):
         return self._private_key_data
 
     def _client_auth_enricher(self, raw_payload: dict, audience: str) -> Tuple[dict, Optional[AuthBase]]:
-        # FIXME: test, is putting the client id in the auth header and the payload overconstrained?
-        #        Is that the job of this class, or the helper to fix?
-        #        So ugly we are getting into the business of the api clients.
-        # FIXME: should removing a redundant client_id be the job of the helper?
-        # FIXME: make the payload union part of the helper?
         auth_assertion_payload = prepare_private_key_assertion_auth_payload(
             audience=audience,
             client_id=self._pubkey_client_config.client_id,

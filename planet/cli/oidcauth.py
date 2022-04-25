@@ -141,6 +141,23 @@ def do_validate_id_token(ctx):
 
 
 @oidc_token_group.command(
+    'validate-id-token-local',
+    help='Validate the ID token associated with the current profile locally.'
+)
+@click.pass_context
+@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+def do_validate_id_token_local(ctx):
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
+    auth_client = ctx.obj['AUTH_CLIENT']
+    saved_token.load()
+    # Throws on error.
+    validation_json = auth_client.validate_id_token_local(
+        saved_token.id_token())
+    # print("OK")
+    print(validation_json)
+
+
+@oidc_token_group.command(
     'validate-refresh-token',
     help='Validate the refresh token associated with the current profile')
 @click.pass_context
