@@ -406,14 +406,3 @@ class Order():
     @property
     def json(self):
         return self.data
-
-
-class Orders(Paged):
-    '''Asynchronous iterator over Orders from a paged response describing
-    orders.'''
-    LINKS_KEY = '_links'
-    NEXT_KEY = 'next'
-    ITEMS_KEY = 'orders'
-
-    async def __anext__(self):
-        return Order(await super().__anext__())
