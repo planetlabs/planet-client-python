@@ -32,19 +32,27 @@ def parse_filter(ctx, param, value) -> dict:
 def data(ctx):
     """A group of commands for interacting with the Data API."""
 
+
 # TODO: filter().
 
 
 @data.command()
+# Our CLI command functions are async functions. They need an event
+# loop to be executed. The coro decorator provides that event loop.
 @coro
+# The command has two positional arguments. ITEM_TYPES comes first.
 @click.argument("item_types", callback=parse_item_types)
 @click.argument("filter", callback=parse_filter)
+# The command has three options.
 @click.option("--limit",
               type=int,
               default=100,
               help="Maximum number of results to return.")
 @click.option("--name", help="Name for the saved search.")
 @click.option("--pretty", is_flag=True, help="Pretty print output.")
+# This decorator gives our function a context (named "ctx") that may
+# contain parameters set by the "planet data" command group, like
+# "planet data --quiet" or "planet data -vvv".
 @click.pass_context
 async def search_quick(ctx,
                        item_types: List[str],

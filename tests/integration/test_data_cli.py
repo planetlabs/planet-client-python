@@ -17,10 +17,12 @@ def test_data_command_registered():
 
 # TODO: basic test for "planet data filter".
 
-
+# We expect this test to fail now. When the Data API client is
+# available, we will remove the xfail marker and work to get this test,
+# or a better version, to pass.
 @pytest.mark.xfail(reason="Data client not yet implemented")
 def test_search_quick():
-    """planet-data-search-quick prints 1 GeoJSON Feature."""
+    """planet data search-quick prints 1 GeoJSON Feature."""
     result = CliRunner().invoke(
         cli.main,
         # When testing, we "explode" our command and its parameters
