@@ -277,8 +277,8 @@ class OrdersClient():
 
         Parameters:
             order_id: The ID of the order
-            directory: Write to given directory instead of current directory.
-            overwrite: Overwrite any existing files.
+            directory: Root directory for file download.
+            overwrite: Overwrite files if they already exist.
             progress_bar: Show progress bar during download.
 
         Returns:
