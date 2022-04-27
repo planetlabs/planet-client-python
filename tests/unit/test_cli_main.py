@@ -12,126 +12,33 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 import logging
-from http import HTTPStatus
 
 import click
 from click.testing import CliRunner
-import pytest
-import respx
-import httpx
 
 from planet.cli import cli
 
 LOGGER = logging.getLogger(__name__)
 
 
-@pytest.fixture
-def invoke():
-
-    def _invoke(extra_args, runner=None):
-        runner = runner or CliRunner()
-        args = ['orders', '--base-url', TEST_URL] + extra_args
-        return runner.invoke(cli.main, args=args)
-
-    return _invoke
-
-
-TEST_URL = 'http://MockNotRealURL/api/path'
-TEST_DOWNLOAD_URL = f'{TEST_URL}/download'
-TEST_ORDERS_URL = f'{TEST_URL}/orders/v2'
-
-
-@pytest.fixture
-def mock_download_response(oid, order_description):
-
-    def _func():
-        # Mock an HTTP response for download
-        order_description['state'] = 'success'
-        dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
-        dl_url2 = TEST_DOWNLOAD_URL + '/2?token=IAmAnotherToken'
-        order_description['_links']['results'] = [{
-            'location': dl_url1
-        }, {
-            'location': dl_url2
-        }]
-
-        get_url = f'{TEST_ORDERS_URL}/{oid}'
-        mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-        respx.get(get_url).return_value = mock_resp
-
-        mock_resp1 = httpx.Response(HTTPStatus.OK,
-                                    json={'key': 'value'},
-                                    headers={
-                                        'Content-Type':
-                                        'application/json',
-                                        'Content-Disposition':
-                                        'attachment; filename="m1.json"'
-                                    })
-        respx.get(dl_url1).return_value = mock_resp1
-
-        mock_resp2 = httpx.Response(HTTPStatus.OK,
-                                    json={'key2': 'value2'},
-                                    headers={
-                                        'Content-Type':
-                                        'application/json',
-                                        'Content-Disposition':
-                                        'attachment; filename="m2.json"'
-                                    })
-        respx.get(dl_url2).return_value = mock_resp2
-
-    return _func
-
-
-@respx.mock
-def test_cli_orders_download_quiet(invoke, mock_download_response, oid):
-    mock_download_response()
+def test_cli_orders_quiet():
 
     runner = CliRunner()
-    result = runner.invoke(cli.main, args=['orders', 'download', '--base-url', TEST_URL])
-            # args = ['orders', '--base-url', TEST_URL] + extra_args
-    # return runner.invoke(cli.main, args=args)
 
-    # # quiet_inputs = ['-q', ' --quiet ']
-    # runner = CliRunner()
-    # # runner = runner or CliRunner()
-    # result = invoke(['-q', 'orders', 'download', '--base-url', TEST_URL, oid], runner=runner)
-    assert not result.exception
-    assert result.output == 'success\n'
+    # Dummy valid and invalid inputs for the "quiet" flag
+    valid_quiet_inputs = ['-q', ' --quiet ']
+    invalid_quiet_inputs = ['--not_a_valid_input', 123]
 
-#     runner = CliRunner()
-#     result = invoke(['wait', '--delay', '0', '--quiet', oid], runner=runner)
-
-    # return runner.invoke(cli.main, args=args)
-
-    # with runner.isolated_filesystem():
-    #     for quiet_input in quiet_inputs:
-    #         result = invoke([quiet_input, 'orders', 'download', oid], runner=runner)
-    #         assert not result.exception
-
-
-# @respx.mock
-# def test_cli_orders_download_quiet(invoke, mock_download_response, oid):
-#     mock_download_response()
-
-#     runner = CliRunner()
-#     with runner.isolated_filesystem():
-#         result = invoke(['download', '--quiet', oid], runner=runner)
-#         assert not result.exception
-
-
-# @respx.mock
-# def test_cli_orders_wait_quiet(invoke, order_description, oid):
-#     get_url = f'{TEST_ORDERS_URL}/{oid}'
-
-#     order_description['state'] = 'success'
-
-#     route = respx.get(get_url)
-#     route.side_effect = [httpx.Response(HTTPStatus.OK, json=order_description)]
-
-#     runner = CliRunner()
-#     result = invoke(['wait', '--delay', '0', '--quiet', oid], runner=runner)
-#     assert not result.exception
-#     assert result.output == 'success\n'
+    # Test the valid quiet inputs
+    for quiet_input in valid_quiet_inputs:
+        valid_result = runner.invoke(cli.main, args=[quiet_input, 'orders'])
+        assert not valid_result.exception
+        assert valid_result.exit_code == 0
+    # Test the invalid quiet inputs
+    for quiet_input in invalid_quiet_inputs:
+        invalid_result = runner.invoke(cli.main, args=[quiet_input, 'orders'])
+        assert invalid_result.exception
+        assert invalid_result.exit_code != 0
 
 
 # TODO: when testing multiple values for verbosity, use test parameterization
