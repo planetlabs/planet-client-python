@@ -1,14 +1,18 @@
-from planet.auth.oidc.api_clients.api_client import OIDCAPIClient, OIDCAPIClientException
+from planet.auth.oidc.api_clients.api_client import \
+    OIDCAPIClient, OIDCAPIClientException
 
 
 class DiscoveryAPIException(OIDCAPIClientException):
+
     def __init__(self, message=None, raw_response=None):
         super().__init__(message, raw_response)
 
 
 class DiscoveryAPIClient(OIDCAPIClient):
+
     def __init__(self, discovery_uri=None, auth_server=None):
-        super().__init__(discovery_uri if discovery_uri else auth_server + '/.well-known/openid-configuration')
+        super().__init__(discovery_uri if discovery_uri else auth_server +
+                         '/.well-known/openid-configuration')
         self._oidc_discovery = None
 
     def do_discovery(self):

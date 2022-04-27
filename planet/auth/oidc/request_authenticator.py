@@ -23,7 +23,10 @@ class RefreshingOidcTokenRequestAuthenticator(RequestAuthenticator):
     RFC 9068 can be checked for expiration timing without hitting the network
     token introspection endpoint.
     """
-    def __init__(self, token_file: FileBackedOidcToken, auth_client: OidcAuthClient = None):
+
+    def __init__(self,
+                 token_file: FileBackedOidcToken,
+                 auth_client: OidcAuthClient = None):
         super().__init__(token_body='')
         self._token = token_file
         self._auth_client = auth_client
@@ -39,7 +42,8 @@ class RefreshingOidcTokenRequestAuthenticator(RequestAuthenticator):
         self._token.load()
         # self._token.assert_valid()
         access_token_str = self._token.access_token()
-        unverified_decoded_atoken = jwt.decode(access_token_str, options={"verify_signature": False})
+        unverified_decoded_atoken = jwt.decode(
+            access_token_str, options={"verify_signature": False})
         iat = unverified_decoded_atoken.get('iat') or 0
         exp = unverified_decoded_atoken.get('exp') or 0
         # refresh at the 3/4 life
@@ -69,12 +73,14 @@ class RefreshingOidcTokenRequestAuthenticator(RequestAuthenticator):
                 # we continue with the old auth token to try and be resilient.
                 # Refresh failures could be transient.
                 logger.warning(
-                    "Error refreshing auth token. Continuing with old auth token. Refresh error: " + str(e))
+                    "Error refreshing auth token. Continuing with old auth'"
+                    "' token. Refresh error: " + str(e))
 
         super().pre_request_hook()
 
 
-class RefreshOrReloginOidcTokenRequestAuthenticator(RefreshingOidcTokenRequestAuthenticator):
+class RefreshOrReloginOidcTokenRequestAuthenticator(
+        RefreshingOidcTokenRequestAuthenticator):
     """
     Decorate a http request with a bearer auth token. Automatically initiate
     a refresh request using the refresh token if we know the access token to
@@ -86,13 +92,17 @@ class RefreshOrReloginOidcTokenRequestAuthenticator(RefreshingOidcTokenRequestAu
     is interactive, and would not be appropriate for headless use cases.
     Refresh should always be silent.
     """
-    def __init__(self, token_file: FileBackedOidcToken, auth_client: OidcAuthClient = None):
+
+    def __init__(self,
+                 token_file: FileBackedOidcToken,
+                 auth_client: OidcAuthClient = None):
         super().__init__(token_file=token_file, auth_client=auth_client)
 
     def _refresh(self):
         if self._auth_client:
             if self._token.refresh_token():
-                new_token = self._auth_client.refresh(self._token.refresh_token())
+                new_token = self._auth_client.refresh(
+                    self._token.refresh_token())
             else:
                 new_token = self._auth_client.login()
 

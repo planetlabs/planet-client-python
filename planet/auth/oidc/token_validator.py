@@ -35,26 +35,34 @@ class TokenValidator():
 
     def get_signing_key_by_id(self, key_id):
         key = self._keys_by_id.get(key_id)
-        if (not key) and ((self._load_time + self.min_jwks_fetch_interval) < int(time.time())):
+        if (not key) and ((self._load_time + self.min_jwks_fetch_interval) <
+                          int(time.time())):
             self._update()
             key = self._keys_by_id.get(key_id)
         if not key:
-            raise AuthClientException("Could not find signing key for key ID {}".format(key_id))
+            raise AuthClientException(
+                "Could not find signing key for key ID {}".format(key_id))
 
         return key
 
     @staticmethod
     def _get_trusted_algorithm(unverified_header):
         algorithm = unverified_header.get('alg')
-        # Don't trust straight pass-through, since "none" is a valid algorithm.
-        # Only trust specific algorithms.
+        # Don't trust straight pass-through, since "none" is a valid
+        # algorithm. Only trust specific algorithms.
         if not (algorithm and (algorithm.lower() == "rs256"
                                or algorithm.lower() == "rs512")):
-            raise AuthClientException("Unknown or unsupported token algorithm {}".format(algorithm))
+            raise AuthClientException(
+                "Unknown or unsupported token algorithm {}".format(algorithm))
         return algorithm
 
     @AuthClientException.recast(PyJWTError)
-    def validate_token(self, token_str, issuer, audience, required_claims=None, nonce=None):
+    def validate_token(self,
+                       token_str,
+                       issuer,
+                       audience,
+                       required_claims=None,
+                       nonce=None):
         unverified_header = jwt.get_unverified_header(token_str)
         algorithm = self._get_trusted_algorithm(unverified_header)
         key_id = unverified_header.get('kid')
@@ -75,30 +83,41 @@ class TokenValidator():
         )
         if nonce:
             if nonce != validated_claims.get('nonce'):
-                raise AuthClientException('Token nonce did not match expected value')
+                raise AuthClientException(
+                    'Token nonce did not match expected value')
         return validated_claims
 
-    def validate_id_token(self, token_str, issuer, client_id, required_claims=None, nonce=None):
+    def validate_id_token(self,
+                          token_str,
+                          issuer,
+                          client_id,
+                          required_claims=None,
+                          nonce=None):
         """
         Validate a JWT this is a OIDC ID token. Steps over and
         above basic token validation are performed, as described in
         https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
         """
-        validated_claims = self.validate_token(
-            token_str=token_str, issuer=issuer, audience=client_id, required_claims=required_claims, nonce=nonce)
+        validated_claims = self.validate_token(token_str=token_str,
+                                               issuer=issuer,
+                                               audience=client_id,
+                                               required_claims=required_claims,
+                                               nonce=nonce)
 
         # If the aud contains multiple values, azp must be present.
         validated_azp = None
         if isinstance(validated_claims.get('aud'), list):
             validated_azp = validated_claims.get('azp')
             if not validated_azp:
-                raise AuthClientException('"azp" claim mut be present when ID token contains multiple audiences.')
+                raise AuthClientException(
+                    '"azp" claim mut be present when ID token contains'
+                    ' multiple audiences.')
 
         # if the azp claim is present, it must equal the client ID.
         if validated_azp:
             if validated_azp != client_id:
                 raise AuthClientException(
-                    'ID token "azp" claim expected to match the client ID "{}", but was "{}"'
-                    .format(client_id, validated_azp))
+                    'ID token "azp" claim expected to match the client'
+                    ' ID "{}", but was "{}"'.format(client_id, validated_azp))
 
         return validated_claims
