@@ -31,7 +31,8 @@ LOGGER = logging.getLogger(__name__)
               count=True,
               help=('Specify verbosity level of between 0 and 2 corresponding '
                     'to log levels warning, info, and debug respectively.'))
-@click.option('--quiet',
+@click.option('-q',
+              '--quiet',
               is_flag=True,
               default=False,
               help='Disable ANSI control output.')
@@ -44,8 +45,6 @@ def main(ctx, verbose, quiet):
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
     ctx.obj['QUIET'] = quiet
-    from pprint import pprint
-    pprint(vars(ctx))
 
 
 def _configure_logging(verbosity):
