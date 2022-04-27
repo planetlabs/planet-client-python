@@ -53,7 +53,7 @@ def data(ctx):
 @click.option("--pretty", is_flag=True, help="Pretty print output.")
 # This decorator gives our function a context (named "ctx") that may
 # contain parameters set by the "planet data" command group, like
-# "planet data --quiet" or "planet data -vvv".
+# "planet --quiet data" or "planet --verbosity=debug data".
 @click.pass_context
 async def search_quick(ctx,
                        item_types: List[str],
