@@ -231,21 +231,6 @@ def test_cli_orders_wait_max_attempts(invoke, order_description, oid):
         'Error: Maximum number of attempts (1) reached.\n')
 
 
-# @respx.mock
-# def test_cli_orders_wait_quiet(invoke, order_description, oid):
-#     get_url = f'{TEST_ORDERS_URL}/{oid}'
-
-#     order_description['state'] = 'success'
-
-#     route = respx.get(get_url)
-#     route.side_effect = [httpx.Response(HTTPStatus.OK, json=order_description)]
-
-#     runner = CliRunner()
-#     result = invoke(['wait', '--delay', '0', '--quiet', oid], runner=runner)
-#     assert not result.exception
-#     assert result.output == 'success\n'
-
-
 @pytest.fixture
 def mock_download_response(oid, order_description):
 
@@ -345,16 +330,6 @@ def test_cli_orders_download_overwrite(invoke,
         result = invoke(['download', '--overwrite', oid], runner=runner)
         assert not result.exception
         assert json.load(open(filepath)) == {'key': 'value'}
-
-
-# @respx.mock
-# def test_cli_orders_download_quiet(invoke, mock_download_response, oid):
-#     mock_download_response()
-
-#     runner = CliRunner()
-#     with runner.isolated_filesystem():
-#         result = invoke(['download', '--quiet', oid], runner=runner)
-#         assert not result.exception
 
 
 @respx.mock
