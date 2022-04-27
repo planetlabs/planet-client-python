@@ -5,8 +5,8 @@ from typing import AsyncIterator, List
 
 import click
 
-from ..exceptions import PlanetError
-from .cmds import coro
+from .cmds import coro, translate_exceptions
+from .io import echo_json
 
 # Parameter callbacks are what we use to validate and transform the
 # values of arguments and options. On the command line, everything is
@@ -37,6 +37,7 @@ def data(ctx):
 
 
 @data.command()
+@translate_exceptions
 # Our CLI command functions are async functions. They need an event
 # loop to be executed. The coro decorator provides that event loop.
 @coro
@@ -90,20 +91,15 @@ async def search_quick(ctx,
 
         yield dict(filter=filter)
 
-    indent = 2 if pretty else None
-
     # CLI functions raise ClickException when any kind of intentionally
     # raised PlanetError occurs. We *don't* handle other errors now
     # because those will be caused by bugs in our code and we want them
     # raw and unfiltered.
-    try:
-        async for feature in example_client(item_types,
-                                            filter,
-                                            limit=limit,
-                                            name=name):
-            click.echo(json.dumps(feature, indent=indent))
-    except PlanetError as err:
-        raise click.ClickException() from err
+    async for feature in example_client(item_types,
+                                        filter,
+                                        limit=limit,
+                                        name=name):
+        echo_json(feature, pretty=pretty)
 
 
 # TODO: search_create()".
