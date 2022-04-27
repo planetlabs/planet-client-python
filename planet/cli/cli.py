@@ -26,11 +26,10 @@ LOGGER = logging.getLogger(__name__)
 
 @click.group()
 @click.pass_context
-@click.option('-v',
-              '--verbose',
-              count=True,
-              help=('Specify verbosity level of between 0 and 2 corresponding '
-                    'to log levels warning, info, and debug respectively.'))
+@click.option('--verbosity',
+              default="warning",
+              help=("Optional: set verbosity level to warning, info, or debug.\
+                  Defaults to warning."))
 @click.option('-q',
               '--quiet',
               is_flag=True,
