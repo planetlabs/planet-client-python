@@ -1,20 +1,26 @@
-from planet.auth.oidc.api_clients.api_client import OIDCAPIClient, OIDCAPIClientException
+from planet.auth.oidc.api_clients.api_client import \
+    OIDCAPIClient, OIDCAPIClientException
 
 
 class RevocationAPIException(OIDCAPIClientException):
+
     def __init__(self, message=None, raw_response=None):
         super().__init__(message, raw_response)
 
 
 class RevocationAPIClient(OIDCAPIClient):
+
     def __init__(self, revocation_uri):
         super().__init__(revocation_uri)
 
     def _checked_revocation_call(self, params, request_auth):
         self._checked_post(params, request_auth)
         # if response.content:
-        #    # No payload expected on success. All HTTP and known json error checks in base class.
-        #    raise RevocationAPIException('Unexpected response from OIDC Revocation endpoint', response)
+        #    # No payload expected on success. All HTTP and known json error
+        #    # checks in base class.
+        #    raise RevocationAPIException(
+        #        'Unexpected response from OIDC Revocation endpoint',
+        #        response)
 
     def _revoke_token(self, token, token_hint, auth_enricher=None):
         params = {
@@ -31,4 +37,6 @@ class RevocationAPIClient(OIDCAPIClient):
         self._revoke_token(access_token, 'access_token', auth_enricher)
 
     def revoke_refresh_token(self, refresh_token, auth_enricher=None) -> None:
-        return self._revoke_token(refresh_token, 'refresh_token', auth_enricher)
+        return self._revoke_token(refresh_token,
+                                  'refresh_token',
+                                  auth_enricher)

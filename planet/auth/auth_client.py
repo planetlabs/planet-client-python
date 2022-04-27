@@ -9,11 +9,11 @@ from planet.auth.credential import Credential
 from planet.auth.request_authenticator import RequestAuthenticator
 from planet.auth.util import FileBackedJsonObject
 
-
 logger = logging.getLogger(__name__)
 
 
 class AuthClientException(Exception):
+
     def __init__(self, message=None, inner_exception=None):
         super().__init__(message)
         self._inner_exception = inner_exception
@@ -21,21 +21,25 @@ class AuthClientException(Exception):
     @staticmethod
     def recast(*exceptions, **params):
         if not exceptions:
-            exceptions = (Exception,)
+            exceptions = (Exception, )
         # params.get('some_arg', 'default')
 
         def decorator(func):
+
             @functools.wraps(func)
             def wrapper(*args, **kwargs):
                 try:
                     return func(*args, **kwargs)
                 except exceptions as e:
                     raise AuthClientException(str(e), e)
+
             return wrapper
+
         return decorator
 
 
 class AuthClientConfigException(AuthClientException):
+
     def __init__(self, message=None):
         super().__init__(message)
 
@@ -45,10 +49,12 @@ class AuthClientConfig(ABC):
 
     def __init__(self, **kwargs):
         if len(kwargs.keys()) > 0:
-            # raise AuthClientConfigException('Unexpected config arguments in client configuration: {}'
-            #                                .format(', '.join(kwargs.keys())))
+            # raise AuthClientConfigException(
+            # 'Unexpected config arguments in client configuration: {}'
+            # .format(', '.join(kwargs.keys())))
             for key in kwargs.keys():
-                logger.debug('Ignoring unknown keyword argument: "{}"'.format(str(key)))
+                logger.debug('Ignoring unknown keyword argument: "{}"'.format(
+                    str(key)))
 
     @classmethod
     def _get_typename_map(cls):
@@ -70,9 +76,12 @@ class AuthClientConfig(ABC):
 
             cls._typename_map = {
                 'oidc_auth_code': AuthCodePKCEClientConfig,
-                'oidc_client_credentials_secret': ClientCredentialsClientSecretClientConfig,
-                'oidc_client_credentials_pubkey': ClientCredentialsPubKeyClientConfig,
-                'oidc_client_credentials_sharedkey': ClientCredentialsSharedKeyClientConfig,
+                'oidc_client_credentials_secret':
+                ClientCredentialsClientSecretClientConfig,
+                'oidc_client_credentials_pubkey':
+                ClientCredentialsPubKeyClientConfig,
+                'oidc_client_credentials_sharedkey':
+                ClientCredentialsSharedKeyClientConfig,
                 # TODO: remove implicit. It was a study
                 'oidc_implicit': ImplicitClientConfig,
                 'oidc_resource_owner': ResourceOwnerClientConfig,
@@ -89,16 +98,17 @@ class AuthClientConfig(ABC):
         config_type = config_data.get('client_type')
         config_cls = AuthClientConfig._get_typename_map().get(config_type)
         if not config_cls:
-            raise AuthClientException('Error: Auth client config type "{}" is not understood by the factory.'
-                                      .format(config_type))
+            raise AuthClientException(
+                'Error: Auth client config type "{}" is not understood by'
+                ' the factory.'.format(config_type))
         return config_cls(**config_data)
 
     @staticmethod
     def from_file(file_path) -> AuthClientConfig:
-        # TODO: do we want to make file backing an intrinsic part of the base class?
-        #       It would be nice for saving configs, but I don't think creating a new
-        #       object for the purpose of writing a config file is really a use case that
-        #       is a high priority.
+        # TODO: do we want to make file backing an intrinsic part of the base
+        #       class? It would be nice for saving configs, but I don't think
+        #       creating a new object for the purpose of writing a config file
+        #       is really a use case that is a high priority.
         config_file = FileBackedJsonObject(file_path=file_path)
         config_file.load()
         return AuthClientConfig.from_dict(config_file.data())
@@ -137,9 +147,12 @@ class AuthClient(ABC):
 
             cls._type_map = {
                 AuthCodePKCEClientConfig: AuthCodePKCEAuthClient,
-                ClientCredentialsClientSecretClientConfig: ClientCredentialsClientSecretAuthClient,
-                ClientCredentialsPubKeyClientConfig: ClientCredentialsPubKeyAuthClient,
-                ClientCredentialsSharedKeyClientConfig: ClientCredentialsSharedKeyAuthClient,
+                ClientCredentialsClientSecretClientConfig:
+                ClientCredentialsClientSecretAuthClient,
+                ClientCredentialsPubKeyClientConfig:
+                ClientCredentialsPubKeyAuthClient,
+                ClientCredentialsSharedKeyClientConfig:
+                ClientCredentialsSharedKeyAuthClient,
                 ImplicitClientConfig: ImplicitAuthClient,
                 ResourceOwnerClientConfig: ResourceOwnerAuthClient,
                 PlanetLegacyAuthClientConfig: PlanetLagacyAuthClient
@@ -151,7 +164,9 @@ class AuthClient(ABC):
     def from_config(cls, config: AuthClientConfig) -> AuthClient:
         client_cls = AuthClient._get_type_map().get(type(config))
         if not client_cls:
-            raise AuthClientException('Error: Auth client config class is not understood by the factory.')
+            raise AuthClientException(
+                'Error: Auth client config class is not understood by'
+                ' the factory.')
 
         return client_cls(config)
 
@@ -176,34 +191,42 @@ class AuthClient(ABC):
 
     def validate_access_token(self, access_token):
         raise AuthClientException(
-            'Access token validation is not implemented for the current authentication mechanism')
+            'Access token validation is not implemented for the current'
+            ' authentication mechanism')
 
     def validate_id_token(self, id_token):
         raise AuthClientException(
-            'ID token validation is not implemented for the current authentication mechanism')
+            'ID token validation is not implemented for the current'
+            ' authentication mechanism')
 
     def validate_id_token_local(self, id_token):
         raise AuthClientException(
-            'ID token validation is not implemented for the current authentication mechanism')
+            'ID token validation is not implemented for the current'
+            ' authentication mechanism')
 
     def validate_refresh_token(self, refresh_token):
         raise AuthClientException(
-            'Refresh token validation is not implemented for the current authentication mechanism')
+            'Refresh token validation is not implemented for the current'
+            ' authentication mechanism')
 
     def revoke_access_token(self, access_token):
         raise AuthClientException(
-            'Access token revocation is not implemented for the current authentication mechanism')
+            'Access token revocation is not implemented for the current'
+            ' authentication mechanism')
 
     def revoke_refresh_token(self, refresh_token):
         raise AuthClientException(
-            'Refresh token revocation is not implemented for the current authentication mechanism')
+            'Refresh token revocation is not implemented for the current'
+            ' authentication mechanism')
 
     def get_scopes(self):
         raise AuthClientException(
-            'Listing scopes is not implemented for the current authentication mechanism.')
+            'Listing scopes is not implemented for the current'
+            ' authentication mechanism.')
 
     @abstractmethod
-    def default_request_authenticator(self, token_file_path: pathlib.Path) -> RequestAuthenticator:
+    def default_request_authenticator(
+            self, token_file_path: pathlib.Path) -> RequestAuthenticator:
         """
         Return an instance of the default request authenticator to use for
         the specific AuthClient type and configured to use the provided

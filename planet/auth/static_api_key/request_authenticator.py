@@ -8,6 +8,7 @@ class FileBackedAPIKeyRequestAuthenticator(RequestAuthenticator):
     Perform local checks on the validity of the token and throw
     if we think it will fail.
     """
+
     def __init__(self, auth_file: FileBackedAPIKey):
         super().__init__(token_body='')
         self._auth_file = auth_file

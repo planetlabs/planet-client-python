@@ -16,10 +16,9 @@ from planet.cx.commands.cli.options import \
 from planet.cx.commands.cli.util import recast_exceptions_to_click
 
 
-@click.group(
-    'token',
-    invoke_without_command=True,
-    help='Commands to manage Planet auth tokens')
+@click.group('auth',
+             invoke_without_command=True,
+             help='Commands to manage Planet auth tokens')
 @click.pass_context
 def oidc_token_group(ctx):
     if ctx.invoked_subcommand is None:
@@ -27,9 +26,8 @@ def oidc_token_group(ctx):
         sys.exit(0)
 
 
-@oidc_token_group.command(
-    'list-scopes',
-    help='List well known scopes that may be requested')
+@oidc_token_group.command('list-scopes',
+                          help='List well known scopes that may be requested')
 @click.pass_context
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_list_scopes(ctx):
@@ -44,13 +42,14 @@ def do_list_scopes(ctx):
         sys.exit(1)
 
 
-# TODO: Google deprecated the behavior of --no-launch-browser in their gcloud cli,
-#       which is what we patterned our flag after.  This was for security reasons. We
-#       need to understand what and why, and what a solution is.
+# TODO: Google deprecated the behavior of --no-launch-browser in their
+#       gcloud cli, which is what we patterned our flag after. This was for
+#       "security reasons". We need to understand what and why, and what a
+#       solution is.
 @oidc_token_group.command(
     'login',
-    help='Perform a new login and save the tokens. Not all authentication mechanisms'
-         ' support all options.')
+    help='Perform a new login and save the tokens. Not all authentication'
+    ' mechanisms support all options.')
 @opt_token_scope
 @opt_open_browser
 @opt_auth_password
@@ -59,15 +58,16 @@ def do_list_scopes(ctx):
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_token_login(ctx, scope, open_browser, username, password):
     auth_client = ctx.obj['AUTH_CLIENT']
-    token = auth_client.login(requested_scopes=scope, allow_open_browser=open_browser,
-                              username=username, password=password)
+    token = auth_client.login(requested_scopes=scope,
+                              allow_open_browser=open_browser,
+                              username=username,
+                              password=password)
     token.set_path(ctx.obj['AUTH_TOKEN_FILE_PATH'])
     token.save()
 
 
-@oidc_token_group.command(
-    'print-access-token',
-    help='Print the current access token.')
+@oidc_token_group.command('print-access-token',
+                          help='Print the current access token.')
 @click.pass_context
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_print_access_token(ctx):
@@ -79,12 +79,12 @@ def do_print_access_token(ctx):
 @oidc_token_group.command(
     'refresh',
     help='Obtain a new token using the saved refresh token. It is possible'
-         ' to request a refresh token with scopes that are different than'
-         ' what is currently possessed, but you will never be granted'
-         ' more scopes than what the user has authorized.  This functionality'
-         ' is only supported for authentication mechanisms that support'
-         ' the concepts of separate (short lived) access tokens and '
-         ' (long lived) refresh tokens.')
+    ' to request a refresh token with scopes that are different than'
+    ' what is currently possessed, but you will never be granted'
+    ' more scopes than what the user has authorized.  This functionality'
+    ' is only supported for authentication mechanisms that support'
+    ' the concepts of separate (short lived) access tokens and '
+    ' (long lived) refresh tokens.')
 @opt_token_scope
 @click.pass_context
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
@@ -95,7 +95,8 @@ def do_token_refresh(ctx, scope):
     if not saved_token.refresh_token():
         raise Exception('No refresh_token found in ' + str(saved_token.path()))
 
-    saved_token.set_data(auth_client.refresh(saved_token.refresh_token(), scope).data())
+    saved_token.set_data(
+        auth_client.refresh(saved_token.refresh_token(), scope).data())
     saved_token.save()
 
 
@@ -108,7 +109,8 @@ def do_validate_access_token(ctx):
     saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
     auth_client = ctx.obj['AUTH_CLIENT']
     saved_token.load()
-    validation_json = auth_client.validate_access_token(saved_token.access_token())
+    validation_json = auth_client.validate_access_token(
+        saved_token.access_token())
 
     if not validation_json or not validation_json.get('active'):
         print("INVALID")
@@ -137,8 +139,7 @@ def do_validate_id_token(ctx):
 
 @oidc_token_group.command(
     'validate-id-token-local',
-    help='Validate the ID token associated with the current profile locally.'
-)
+    help='Validate the ID token associated with the current profile locally.')
 @click.pass_context
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_validate_id_token_local(ctx):
@@ -161,7 +162,8 @@ def do_validate_refresh_token(ctx):
     saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
     auth_client = ctx.obj['AUTH_CLIENT']
     saved_token.load()
-    validation_json = auth_client.validate_refresh_token(saved_token.refresh_token())
+    validation_json = auth_client.validate_refresh_token(
+        saved_token.refresh_token())
 
     if not validation_json or not validation_json.get('active'):
         print("INVALID")

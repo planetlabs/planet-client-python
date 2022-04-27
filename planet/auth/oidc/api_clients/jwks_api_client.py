@@ -4,11 +4,13 @@ from planet.auth.oidc.api_clients.api_client import \
 
 
 class JwksAPIException(OIDCAPIClientException):
+
     def __init__(self, message=None, raw_response=None):
         super().__init__(message, raw_response)
 
 
 class JwksAPIClient(OIDCAPIClient):
+
     def __init__(self, jwks_uri):
         super().__init__(jwks_uri)
 
@@ -22,5 +24,6 @@ class JwksAPIClient(OIDCAPIClient):
         jwks_response = self.jwks()
         jwks_keys = jwks_response.get('keys')
         if not jwks_keys:
-            raise JwksAPIException(message='JWKS endpoint response did not include "keys" data')
+            raise JwksAPIException(
+                message='JWKS endpoint response did not include "keys" data')
         return jwks_keys
