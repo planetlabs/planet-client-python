@@ -291,12 +291,12 @@ async def test_cancel_order(oid, order_description, session):
     cancel_url = f'{TEST_ORDERS_URL}/{oid}'
     order_description['state'] = 'cancelled'
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    example_resp = mock_resp.json()
     respx.put(cancel_url).return_value = mock_resp
 
-    # TODO: the api says cancel order returns the order details but as
-    # far as I can test thus far, it returns nothing. follow up on this
     cl = OrdersClient(session, base_url=TEST_URL)
-    await cl.cancel_order(oid)
+    json_resp = await cl.cancel_order(oid)
+    assert json_resp == example_resp
 
 
 @pytest.mark.asyncio

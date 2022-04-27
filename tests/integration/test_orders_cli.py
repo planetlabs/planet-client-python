@@ -177,7 +177,7 @@ def test_cli_orders_cancel(invoke, oid, order_description):
 
     result = invoke(['cancel', oid])
     assert not result.exception
-    assert 'Cancelled\n' == result.output
+    assert str(mock_resp.json()) + '\n' == result.output
 
 
 @respx.mock

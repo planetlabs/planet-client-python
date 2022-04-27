@@ -94,11 +94,15 @@ async def get(ctx, order_id, pretty):
 @coro
 @click.argument('order_id', type=click.UUID)
 async def cancel(ctx, order_id):
-    '''Cancel order by order ID.'''
-    async with orders_client(ctx) as cl:
-        await cl.cancel_order(str(order_id))
+    '''Cancel order by order ID.
 
-    click.echo('Cancelled')
+    This command cancels a queued order and outputs the cancelled order
+    details.
+    '''
+    async with orders_client(ctx) as cl:
+        json_resp = await cl.cancel_order(str(order_id))
+
+    click.echo(json_resp)
 
 
 def split_list_arg(ctx, param, value):
