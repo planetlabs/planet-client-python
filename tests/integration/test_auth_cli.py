@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+
 def test_placeholder():
     """
     Placeholder.  We haven't written tests yet for the refactored oidc auth CLI
