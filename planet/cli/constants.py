@@ -5,7 +5,6 @@ from planet.auth.planet_legacy.auth_client import \
 from planet.constants import \
     DEFAULT_LEGACY_PLANET_AUTH_ENDPOINT
 
-
 DEFAULT_OIDC_AUTH_CLIENT_CONFIG = AuthCodePKCEClientConfig(
     # The well known OIDC client that is the Planet Python CLI.
     # Developers should register their own clients so that users may
@@ -19,8 +18,7 @@ DEFAULT_OIDC_AUTH_CLIENT_CONFIG = AuthCodePKCEClientConfig(
     #      --no-open-browser use cases.
     redirect_uri='http://localhost:8080/login/callback_code',
     local_redirect_uri='http://localhost:8080',
-    default_request_scopes=['planet', 'profile', 'openid', 'offline_access']
-)
+    default_request_scopes=['planet', 'profile', 'openid', 'offline_access'])
 
 LEGACY_AUTH_CLIENT_CONFIG = PlanetLegacyAuthClientConfig(
     legacy_auth_endpoint=DEFAULT_LEGACY_PLANET_AUTH_ENDPOINT)

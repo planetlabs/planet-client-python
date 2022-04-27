@@ -123,7 +123,6 @@ class AuthorizationAPIClient():
 
         return data
 
-
     def authcode_from_pkce_flow_with_browser_with_callback_listener(
             self, client_id, redirect_uri, requested_scopes,
             pkce_code_challenge):

@@ -27,7 +27,6 @@ from planet.cli.options import \
     opt_auth_profile, \
     opt_token_file
 
-
 LOGGER = logging.getLogger(__name__)
 
 
