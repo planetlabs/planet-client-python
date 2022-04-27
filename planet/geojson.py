@@ -11,10 +11,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
+
 """Functionality for interacting with GeoJSON."""
+
 import logging
 
-import shapely.geometry as sgeom
+import geojson as gj
 
 LOGGER = logging.getLogger(__name__)
 
@@ -107,15 +109,18 @@ def validate_geom(data: dict):
         GeoJSONException: If data is not a valid GeoJSON geometry.
     """
     if 'type' not in data:
-        raise GeoJSONException('Missing \'type\' key.')
-    elif 'coordinates' not in data:
-        raise GeoJSONException('Missing \'coordinates\' key.')
+        raise GeoJSONException("Missing 'type' key.")
+    if 'coordinates' not in data:
+        raise GeoJSONException("Missing 'coordinates' key.")
 
     try:
-        sgeom.shape(data)
-    except ValueError as e:
-        # invalid type or coordinates
-        raise GeoJSONException(e)
-    except TypeError:
-        # wrong type
-        raise GeoJSONException('Geometry coordinates do not fit type')
+        cls = getattr(gj, data["type"])
+        obj = cls(data["coordinates"])
+        if not obj.is_valid:
+            raise GeoJSONException(obj.errors())
+    except AttributeError as err:
+        raise GeoJSONException("Not a GeoJSON geometry type") from err
+    except ValueError as err:
+        raise GeoJSONException("Not a GeoJSON coordinate value") from err
+
+    return
