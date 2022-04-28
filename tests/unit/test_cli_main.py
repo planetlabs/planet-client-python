@@ -28,6 +28,26 @@ def debug_input():
     return ['debug', ' debug ', 'debu', 45]
 
 
+def test_cli_orders_quiet():
+
+    runner = CliRunner()
+
+    # Valid and invalid inputs for the "quiet" flag
+    valid_quiet_inputs = ['--quiet', ' --quiet', ' --quiet ']
+    invalid_quiet_inputs = ['--quiet ', '-q', '--not_a_valid_input', 123]
+
+    # Test the valid quiet inputs
+    for quiet_input in valid_quiet_inputs:
+        valid_result = runner.invoke(cli.main, args=[quiet_input, 'orders'])
+        assert not valid_result.exception
+        assert valid_result.exit_code == 0
+    # Test the invalid quiet inputs
+    for quiet_input in invalid_quiet_inputs:
+        invalid_result = runner.invoke(cli.main, args=[quiet_input, 'orders'])
+        assert invalid_result.exception
+        assert invalid_result.exit_code != 0
+
+
 def test_cli_info_verbosity(monkeypatch):
     log_level = None
 
