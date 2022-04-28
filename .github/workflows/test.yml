@@ -71,4 +71,25 @@ jobs:
       run: |
         pip install --upgrade nox
         nox -s docs
+  install:
+    name: Check package install
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code 
+      uses: actions/checkout@v2
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Pip cache
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip
+        restore-keys: |
+          ${{ runner.os }}-pip
+    - name: Build Docs
+      run: |
+        pip install --upgrade nox
+        nox -s install
 
