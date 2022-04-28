@@ -115,7 +115,7 @@ def get_item_types(product_bundle):
 
 def _get_product_bundle_spec_path():
     curr_path = Path(os.path.dirname(__file__))
-    data_dir = curr_path.parents[0] / DATA_DIR
+    data_dir = curr_path / DATA_DIR
     return data_dir / PRODUCT_BUNDLE_SPEC_NAME
 
 
