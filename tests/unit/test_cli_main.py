@@ -32,9 +32,9 @@ def test_cli_orders_quiet():
 
     runner = CliRunner()
 
-    # Dummy valid and invalid inputs for the "quiet" flag
-    valid_quiet_inputs = ['-q', ' --quiet ']
-    invalid_quiet_inputs = ['--not_a_valid_input', 123]
+    # Valid and invalid inputs for the "quiet" flag
+    valid_quiet_inputs = ['--quiet', ' --quiet', ' --quiet ']
+    invalid_quiet_inputs = ['--quiet ', '-q', '--not_a_valid_input', 123]
 
     # Test the valid quiet inputs
     for quiet_input in valid_quiet_inputs:
