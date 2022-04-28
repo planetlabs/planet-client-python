@@ -299,7 +299,8 @@ def test_cli_orders_download_dest(invoke, mock_download_response, oid):
     with runner.isolated_filesystem() as folder:
         dest_dir = Path(folder) / 'foobar'
         dest_dir.mkdir()
-        result = invoke(['download', '--dest', 'foobar', oid], runner=runner)
+        result = invoke(['download', '--directory', 'foobar', oid],
+                        runner=runner)
         assert not result.exception
 
         # Check that the files were downloaded to the custom directory
