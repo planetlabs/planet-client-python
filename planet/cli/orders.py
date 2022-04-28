@@ -179,35 +179,19 @@ async def wait(ctx, order_id, delay, max_attempts, state):
 @translate_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
-<<<<<<< HEAD
-@click.option('--quiet',
-              is_flag=True,
-              default=False,
-              help='Disable ANSI control output.')
-@click.option('--directory',
-=======
 @click.option('-o',
               '--overwrite',
               is_flag=True,
               default=False,
               help=('Overwrite files if they already exist.'))
 @click.option('--dest',
->>>>>>> v2
               default='.',
               help=('Root directory for file download'),
               type=click.Path(exists=True,
                               resolve_path=True,
                               writable=True,
                               file_okay=False))
-<<<<<<< HEAD
-@click.option('--overwrite',
-              is_flag=True,
-              default=False,
-              help=('Overwrite files if they already exist.'))
-async def download(ctx, order_id, quiet, overwrite, directory):
-=======
 async def download(ctx, order_id, overwrite, dest):
->>>>>>> v2
     """Download order by order ID."""
     quiet = ctx.obj['QUIET']
     async with orders_client(ctx) as cl:
