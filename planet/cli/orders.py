@@ -181,7 +181,7 @@ async def wait(ctx, order_id, delay, max_attempts, state):
 @click.argument('order_id', type=click.UUID)
 @click.option('--directory',
               default='.',
-              help=('Root directory for file download'),
+              help=('Base directory for file download.'),
               type=click.Path(exists=True,
                               resolve_path=True,
                               writable=True,
