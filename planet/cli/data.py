@@ -14,14 +14,14 @@ from .io import echo_json
 # possible.
 
 
-def parse_item_types(ctx, param, value) -> list:
+def parse_item_types(ctx, param, value: str) -> List[str]:
     """Turn a string of comma-separated names into a list of names."""
     # Note: we could also normalize case and validate the names against
     # our schema here.
-    return [part.strip() for part in (value or "").split(",")]
+    return [part.strip() for part in value.split(",")]
 
 
-def parse_filter(ctx, param, value) -> dict:
+def parse_filter(ctx, param, value: str) -> dict:
     """Turn filter JSON into a dict."""
     return json.loads(value)
 
@@ -41,6 +41,7 @@ def data(ctx):
 # loop to be executed. The coro decorator provides that event loop.
 @coro
 # The command has two positional arguments. ITEM_TYPES comes first.
+# By default these are required and will evaluate to str type.
 @click.argument("item_types", callback=parse_item_types)
 @click.argument("filter", callback=parse_filter)
 # The command has three options.
