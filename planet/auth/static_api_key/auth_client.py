@@ -11,7 +11,7 @@ from planet.auth.static_api_key.static_api_key import \
     FileBackedAPIKey
 
 
-class StaticApiKeyAuthConfig(AuthClientConfig):
+class StaticApiKeyAuthClientConfig(AuthClientConfig):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -19,7 +19,7 @@ class StaticApiKeyAuthConfig(AuthClientConfig):
 
 class StaticApiKeyAuthClient(AuthClient):
 
-    def __init__(self, client_config: StaticApiKeyAuthConfig):
+    def __init__(self, client_config: StaticApiKeyAuthClientConfig):
         super().__init__(client_config)
 
     def login(self, **kwargs) -> Credential:
