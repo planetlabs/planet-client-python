@@ -37,10 +37,10 @@ test_requires = [
 lint_requires = ['flake8', 'yapf']
 
 doc_requires = [
-    'mkdocs==1.1',
-    'mkdocs-click==0.4.0',
-    'mkdocs-material',
-    'mkdocstrings==0.15.0'
+    'mkdocs==1.3',
+    'mkdocs-click==0.7.0',
+    'mkdocs-material==8.2.11',
+    'mkdocstrings==0.18.1'
 ]
 
 setup(

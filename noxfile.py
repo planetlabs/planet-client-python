@@ -10,7 +10,7 @@ source_files = ("planet", "examples", "tests", "setup.py", "noxfile.py")
 
 @nox.session(python=["3.7", "3.8", "3.9"])
 def test(session):
-    session.install("-e", ".[test]")
+    session.install("--upgrade", "-e", ".[test]")
 
     options = session.posargs
     if '-k' in options:
@@ -20,7 +20,7 @@ def test(session):
 
 @nox.session
 def lint(session):
-    session.install("-e", ".[lint]")
+    session.install("--upgrade", "-e", ".[lint]")
 
     session.run("flake8", *source_files)
     session.run('yapf', '--diff', '-r', *source_files)
@@ -28,7 +28,7 @@ def lint(session):
 
 @nox.session
 def docs_test(session):
-    session.install("-e", ".[docs]")
+    session.install("--upgrade", "-e", ".[docs]")
 
     options = session.posargs
 
@@ -48,7 +48,7 @@ def docs_test(session):
 
 @nox.session
 def docs(session):
-    session.install("-e", ".[docs]")
+    session.install("--upgrade", "-e", ".[docs]")
 
     session.run("mkdocs", "build")
 
@@ -62,7 +62,7 @@ def watch(session):
 
 @nox.session
 def examples(session):
-    session.install("-e", ".[test]")
+    session.install("--upgrade", "-e", ".[test]")
 
     options = session.posargs
 
