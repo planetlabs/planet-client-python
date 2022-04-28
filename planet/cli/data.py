@@ -18,8 +18,7 @@ def parse_item_types(ctx, param, value) -> list:
     """Turn a string of comma-separated names into a list of names."""
     # Note: we could also normalize case and validate the names against
     # our schema here.
-    if value is not None:
-        return [part.strip() for part in value.split(",")]
+    return [part.strip() for part in (value or "").split(",")]
 
 
 def parse_filter(ctx, param, value) -> dict:
