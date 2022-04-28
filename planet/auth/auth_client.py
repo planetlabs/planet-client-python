@@ -71,6 +71,8 @@ class AuthClientConfig(ABC):
                 ResourceOwnerClientConfig
             from planet.auth.planet_legacy.auth_client import \
                 PlanetLegacyAuthClientConfig
+            from planet.auth.static_api_key.auth_client import \
+                StaticApiKeyAuthClientConfig
 
             cls._typename_map = {
                 'oidc_auth_code': AuthCodePKCEClientConfig,
@@ -81,7 +83,8 @@ class AuthClientConfig(ABC):
                 'oidc_client_credentials_sharedkey':
                 ClientCredentialsSharedKeyClientConfig,
                 'oidc_resource_owner': ResourceOwnerClientConfig,
-                'planet_legacy': PlanetLegacyAuthClientConfig
+                'planet_legacy': PlanetLegacyAuthClientConfig,
+                'static_apikey': StaticApiKeyAuthClientConfig
             }
 
         return cls._typename_map
@@ -135,6 +138,9 @@ class AuthClient(ABC):
             from planet.auth.planet_legacy.auth_client import \
                 PlanetLagacyAuthClient, \
                 PlanetLegacyAuthClientConfig
+            from planet.auth.static_api_key.auth_client import \
+                StaticApiKeyAuthClient, \
+                StaticApiKeyAuthClientConfig
 
             cls._type_map = {
                 AuthCodePKCEClientConfig: AuthCodePKCEAuthClient,
@@ -145,7 +151,8 @@ class AuthClient(ABC):
                 ClientCredentialsSharedKeyClientConfig:
                 ClientCredentialsSharedKeyAuthClient,
                 ResourceOwnerClientConfig: ResourceOwnerAuthClient,
-                PlanetLegacyAuthClientConfig: PlanetLagacyAuthClient
+                PlanetLegacyAuthClientConfig: PlanetLagacyAuthClient,
+                StaticApiKeyAuthClientConfig: StaticApiKeyAuthClient
             }
 
         return cls._type_map
