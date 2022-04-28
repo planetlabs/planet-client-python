@@ -251,7 +251,7 @@ class OrdersClient():
         Parameters:
             location: Download location url including download token.
             filename: Custom name to assign to downloaded file.
-            directory: Write to given directory instead of current directory.
+            directory: Base directory for file download.
             overwrite: Overwrite any existing files.
             progress_bar: Show progress bar during download.
 
@@ -280,8 +280,8 @@ class OrdersClient():
 
         Parameters:
             order_id: The ID of the order
-            directory: Write to given directory instead of current directory.
-            overwrite: Overwrite any existing files.
+            directory: Root directory for file download.
+            overwrite: Overwrite files if they already exist.
             progress_bar: Show progress bar during download.
 
         Returns:
