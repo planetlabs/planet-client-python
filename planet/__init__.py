@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from .http import Session
-from .models import Order
 from . import order_request, reporting
 from .__version__ import __version__  # NOQA
 from .clients import OrdersClient
@@ -20,7 +19,6 @@ from .clients import OrdersClient
 __all__ = [
     Session,
     OrdersClient,
-    Order,
     order_request,
     reporting,
 ]

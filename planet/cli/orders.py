@@ -65,9 +65,10 @@ def orders(ctx, base_url):
 async def list(ctx, state, limit, pretty):
     '''List orders'''
     async with orders_client(ctx) as cl:
-        orders = await cl.list_orders(state=state, limit=limit, as_json=True)
+        orders = await cl.list_orders(state=state, limit=limit)
+        orders_list = [o async for o in orders]
 
-    echo_json(orders, pretty)
+    echo_json(orders_list, pretty)
 
 
 @orders.command()
@@ -84,7 +85,7 @@ async def get(ctx, order_id, pretty):
     async with orders_client(ctx) as cl:
         order = await cl.get_order(str(order_id))
 
-    echo_json(order.json, pretty)
+    echo_json(order, pretty)
 
 
 @orders.command()
@@ -134,15 +135,11 @@ def split_list_arg(ctx, param, value):
               type=int,
               default=5,
               help='Maximum number of polls. Set to zero for no limit.')
-@click.option('--quiet',
-              is_flag=True,
-              default=False,
-              help='Disable ANSI control output.')
 @click.option('--state',
               help='State prior to a final state that will end polling.',
               type=click.Choice(planet.clients.orders.ORDER_STATE_SEQUENCE,
                                 case_sensitive=False))
-async def wait(ctx, order_id, delay, max_attempts, quiet, state):
+async def wait(ctx, order_id, delay, max_attempts, state):
     """Wait until order reaches desired state.
 
     Reports the state of the order on the last poll.
@@ -164,6 +161,7 @@ async def wait(ctx, order_id, delay, max_attempts, quiet, state):
     If --state is specified, polling will complete when the specified earlier
     state is reached or passed.
     """
+    quiet = ctx.obj['QUIET']
     async with orders_client(ctx) as cl:
         with planet.reporting.StateBar(order_id=order_id,
                                        disable=quiet) as bar:
@@ -180,28 +178,23 @@ async def wait(ctx, order_id, delay, max_attempts, quiet, state):
 @translate_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
-@click.option('-q',
-              '--quiet',
-              is_flag=True,
-              default=False,
-              help='Disable ANSI control output.')
-@click.option('-o',
-              '--overwrite',
-              is_flag=True,
-              default=False,
-              help=('Overwrite files if they already exist.'))
-@click.option('--dest',
+@click.option('--directory',
               default='.',
-              help=('Directory to download files to.'),
+              help=('Base directory for file download.'),
               type=click.Path(exists=True,
                               resolve_path=True,
                               writable=True,
                               file_okay=False))
-async def download(ctx, order_id, quiet, overwrite, dest):
+@click.option('--overwrite',
+              is_flag=True,
+              default=False,
+              help=('Overwrite files if they already exist.'))
+async def download(ctx, order_id, overwrite, directory):
     """Download order by order ID."""
+    quiet = ctx.obj['QUIET']
     async with orders_client(ctx) as cl:
         await cl.download_order(str(order_id),
-                                directory=dest,
+                                directory=directory,
                                 overwrite=overwrite,
                                 progress_bar=not quiet)
 
@@ -318,4 +311,4 @@ async def create(ctx,
     async with orders_client(ctx) as cl:
         order = await cl.create_order(request)
 
-    echo_json(order.json, pretty)
+    echo_json(order, pretty)

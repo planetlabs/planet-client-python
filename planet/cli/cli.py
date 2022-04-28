@@ -39,8 +39,17 @@ LOGGER = logging.getLogger(__name__)
               default="warning",
               help=("Optional: set verbosity level to warning, info, or debug.\
                   Defaults to warning."))
+@click.option('--quiet',
+              is_flag=True,
+              default=False,
+              help='Disable ANSI control output.')
 @click.version_option(version=planet.__version__)
-def main(ctx, verbosity, auth_profile, auth_client_config_file, token_file):
+def main(ctx,
+         verbosity,
+         quiet,
+         auth_profile,
+         auth_client_config_file,
+         token_file):
     """Planet API Client
     Parameters:
         ctx -- context object
@@ -50,6 +59,7 @@ def main(ctx, verbosity, auth_profile, auth_client_config_file, token_file):
     # ensure that ctx.obj exists and is a dict (in case `cli()` is called
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
+    ctx.obj['QUIET'] = quiet
 
     auth = Auth.initialize(auth_profile, auth_client_config_file, token_file)
     ctx.obj['AUTH'] = auth

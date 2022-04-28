@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import copy
 import logging
 import math
 from unittest.mock import MagicMock
@@ -179,59 +178,7 @@ def get_pages():
     return do_get
 
 
-@pytest.mark.asyncio
-async def test_Paged_iterator(get_pages):
-    req = MagicMock()
-    paged = models.Paged(req, get_pages)
-    assert [1, 2, 3, 4] == [i async for i in paged]
-
-
-@pytest.mark.asyncio
-async def test_Paged_limit(get_pages):
-    req = MagicMock()
-    paged = models.Paged(req, get_pages, limit=3)
-    assert [1, 2, 3] == [i async for i in paged]
-
-
-@pytest.fixture
-def get_orders_pages(orders_page):
-    page2 = copy.deepcopy(orders_page)
-    del page2['_links']['next']
-    responses = [
-        mock_http_response(json=orders_page), mock_http_response(json=page2)
-    ]
-
-    async def do_get(req):
-        return responses.pop(0)
-
-    return do_get
-
-
-@pytest.mark.asyncio
-async def test_Orders(get_orders_pages):
-    req = MagicMock()
-    orders = models.Orders(req, get_orders_pages)
-    expected_ids = [
-        'f05b1ed7-11f0-43da-960c-a624f7c355c8',
-        '8d4799c4-5291-40c0-a7f5-adb9a974455d',
-        'f05b1ed7-11f0-43da-960c-a624f7c355c8',
-        '8d4799c4-5291-40c0-a7f5-adb9a974455d'
-    ]
-    assert expected_ids == [o.id async for o in orders]
-
-
-def test_Order_results(order_description):
-    order = models.Order(order_description)
-    assert len(order.results) == 3
-
-
-def test_Order_locations(order_description):
-    order = models.Order(order_description)
-    expected_locations = ['location1', 'location2', 'location3']
-    assert order.locations == expected_locations
-
-
-def test_last_modified_emptyheader():
+def test_StreamingBody_last_modified_emptyheader():
     '''This function tests the last_modified function for an empty header, by
     seeing if the last_modified is None.
     '''
@@ -252,7 +199,7 @@ def test_last_modified_emptyheader():
     assert output == expected
 
 
-def test_last_modified_completeheader():
+def test_StreamingBody_last_modified_completeheader():
     '''This function tests the last_modified function for an existing header,
     by comparing the last_modified date to
     an expected output.
@@ -274,3 +221,17 @@ def test_last_modified_completeheader():
     expected = datetime.strptime(hr.headers['last-modified'],
                                  '%a, %d %b %Y %H:%M:%S GMT')
     assert output == expected
+
+
+@pytest.mark.asyncio
+async def test_Paged_iterator(get_pages):
+    req = MagicMock()
+    paged = models.Paged(req, get_pages)
+    assert [1, 2, 3, 4] == [i async for i in paged]
+
+
+@pytest.mark.asyncio
+async def test_Paged_limit(get_pages):
+    req = MagicMock()
+    paged = models.Paged(req, get_pages, limit=3)
+    assert [1, 2, 3] == [i async for i in paged]

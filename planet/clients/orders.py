@@ -22,7 +22,7 @@ import uuid
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
-from ..models import Order, Orders, Request, Response, StreamingBody
+from ..models import Paged, Request, Response, StreamingBody
 
 BASE_URL = f'{PLANET_BASE_URL}/compute/ops'
 STATS_PATH = '/stats/orders/v2'
@@ -35,6 +35,14 @@ ORDER_STATE_SEQUENCE = \
     ('queued', 'running', 'failed', 'success', 'partial', 'cancelled')
 
 LOGGER = logging.getLogger(__name__)
+
+
+class Orders(Paged):
+    '''Asynchronous iterator over Orders from a paged response describing
+    orders.'''
+    LINKS_KEY = '_links'
+    NEXT_KEY = 'next'
+    ITEMS_KEY = 'orders'
 
 
 class OrderStates():
@@ -114,7 +122,7 @@ class OrdersClient():
         '''
         return await self._session.request(request)
 
-    async def create_order(self, request: dict) -> str:
+    async def create_order(self, request: dict) -> dict:
         '''Create an order request.
 
         Example:
@@ -132,17 +140,16 @@ class OrdersClient():
         ...     )
         ...     async with Session() as sess:
         ...         cl = OrdersClient(sess)
-        ...         order_id = await cl.create_order(request)
+        ...         order = await cl.create_order(request)
         ...
         >>> asyncio.run(main())
-
         ```
 
         Parameters:
             request: order request definition
 
         Returns:
-            The ID of the order
+            JSON description of the created order
 
         Raises:
             planet.exceptions.APIError: On API error.
@@ -151,18 +158,16 @@ class OrdersClient():
 
         req = self._request(url, method='POST', json=request)
         resp = await self._do_request(req)
+        return resp.json()
 
-        order = Order(resp.json())
-        return order
-
-    async def get_order(self, order_id: str) -> Order:
+    async def get_order(self, order_id: str) -> dict:
         '''Get order details by Order ID.
 
         Parameters:
             order_id: The ID of the order
 
         Returns:
-            Order information
+            JSON description of the order
 
         Raises:
             planet.exceptions.ClientError: If order_id is not a valid UUID.
@@ -173,9 +178,7 @@ class OrdersClient():
 
         req = self._request(url, method='GET')
         resp = await self._do_request(req)
-
-        order = Order(resp.json())
-        return order
+        return resp.json()
 
     async def cancel_order(self, order_id: str) -> dict:
         '''Cancel a queued order.
@@ -248,7 +251,7 @@ class OrdersClient():
         Parameters:
             location: Download location url including download token.
             filename: Custom name to assign to downloaded file.
-            directory: Write to given directory instead of current directory.
+            directory: Base directory for file download.
             overwrite: Overwrite any existing files.
             progress_bar: Show progress bar during download.
 
@@ -277,8 +280,8 @@ class OrdersClient():
 
         Parameters:
             order_id: The ID of the order
-            directory: Write to given directory instead of current directory.
-            overwrite: Overwrite any existing files.
+            directory: Root directory for file download.
+            overwrite: Overwrite files if they already exist.
             progress_bar: Show progress bar during download.
 
         Returns:
@@ -290,14 +293,16 @@ class OrdersClient():
                 state.
         """
         order = await self.get_order(order_id)
-        if not OrderStates.is_final(order.state):
+
+        order_state = order['state']
+        if not OrderStates.is_final(order_state):
             raise exceptions.ClientError(
                 'Order cannot be downloaded because the order state '
-                f'({order.state}) is not a final state. '
+                f'({order_state}) is not a final state. '
                 'Consider using wait functionality before '
                 'attempting to download.')
 
-        locations = order.locations
+        locations = self._get_order_locations(order)
         LOGGER.info(
             f'downloading {len(locations)} assets from order {order_id}')
 
@@ -309,6 +314,12 @@ class OrdersClient():
             for location in locations
         ]
         return filenames
+
+    @staticmethod
+    def _get_order_locations(order):
+        links = order['_links']
+        results = links.get('results', None)
+        return list(r['location'] for r in results if r)
 
     async def wait(self,
                    order_id: str,
@@ -372,12 +383,12 @@ class OrdersClient():
             t = time.time()
 
             order = await self.get_order(order_id)
-            current_state = order.state
+            current_state = order['state']
 
-            LOGGER.debug(state)
+            LOGGER.debug(current_state)
 
             if callback:
-                callback(order.state)
+                callback(current_state)
 
             if OrderStates.is_final(current_state) or \
                     (state and OrderStates.reached(state, current_state)):
@@ -395,17 +406,12 @@ class OrdersClient():
 
         return current_state
 
-    async def list_orders(
-            self,
-            state: str = None,
-            limit: int = None,
-            as_json: bool = False) -> typing.Union[typing.List[Order], dict]:
+    async def list_orders(self, state: str = None, limit: int = None):
         """Get all order requests.
 
         Parameters:
             state: Filter orders to given state.
             limit: Limit orders to given limit.
-            as_json: Return orders as a json dict.
 
         Returns:
             User orders that match the query
@@ -425,15 +431,5 @@ class OrdersClient():
         else:
             params = None
 
-        orders = await self._get_orders(url, params=params, limit=limit)
-
-        if as_json:
-            ret = [o.json async for o in orders]
-        else:
-            ret = [o async for o in orders]
-        return ret
-
-    async def _get_orders(self, url, params=None, limit=None):
         request = self._request(url, 'GET', params=params)
-
         return Orders(request, self._do_request, limit=limit)
