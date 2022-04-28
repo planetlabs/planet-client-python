@@ -135,15 +135,11 @@ def split_list_arg(ctx, param, value):
               type=int,
               default=5,
               help='Maximum number of polls. Set to zero for no limit.')
-@click.option('--quiet',
-              is_flag=True,
-              default=False,
-              help='Disable ANSI control output.')
 @click.option('--state',
               help='State prior to a final state that will end polling.',
               type=click.Choice(planet.clients.orders.ORDER_STATE_SEQUENCE,
                                 case_sensitive=False))
-async def wait(ctx, order_id, delay, max_attempts, quiet, state):
+async def wait(ctx, order_id, delay, max_attempts, state):
     """Wait until order reaches desired state.
 
     Reports the state of the order on the last poll.
@@ -165,6 +161,7 @@ async def wait(ctx, order_id, delay, max_attempts, quiet, state):
     If --state is specified, polling will complete when the specified earlier
     state is reached or passed.
     """
+    quiet = ctx.obj['QUIET']
     async with orders_client(ctx) as cl:
         with planet.reporting.StateBar(order_id=order_id,
                                        disable=quiet) as bar:
@@ -181,11 +178,6 @@ async def wait(ctx, order_id, delay, max_attempts, quiet, state):
 @translate_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
-@click.option('-q',
-              '--quiet',
-              is_flag=True,
-              default=False,
-              help='Disable ANSI control output.')
 @click.option('-o',
               '--overwrite',
               is_flag=True,
@@ -198,8 +190,9 @@ async def wait(ctx, order_id, delay, max_attempts, quiet, state):
                               resolve_path=True,
                               writable=True,
                               file_okay=False))
-async def download(ctx, order_id, quiet, overwrite, dest):
+async def download(ctx, order_id, overwrite, dest):
     """Download order by order ID."""
+    quiet = ctx.obj['QUIET']
     async with orders_client(ctx) as cl:
         await cl.download_order(str(order_id),
                                 directory=dest,
