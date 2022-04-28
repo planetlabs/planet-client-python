@@ -30,8 +30,7 @@ LOGGER = logging.getLogger(__name__)
               default="warning",
               help=("Optional: set verbosity level to warning, info, or debug.\
                   Defaults to warning."))
-@click.option('-q',
-              '--quiet',
+@click.option('--quiet',
               is_flag=True,
               default=False,
               help='Disable ANSI control output.')
