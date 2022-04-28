@@ -11,7 +11,7 @@ Python](https://github.com/planetlabs/planet-client-python/projects/2),
 a complete rewrite and upgrade from the original [Planet Python 
 Client](https://developers.planet.com/docs/pythonclient/). If you 
 are looking for the source code to that library see the 
-`[v1](https://github.com/planetlabs/planet-client-python/tree/v1)` branch.
+[v1](https://github.com/planetlabs/planet-client-python/tree/v1) branch.
 
 The Planet SDK for Python is in 'pre-release' stages, working towards an 
 initial release around July. Active development is tracked in the [Planet SDK 
@@ -22,7 +22,7 @@ milestones to be released in some form for each of the API's. After the
 initial July release there will be additional work to support the remaining 
 Planet API's ([analytics](https://developers.planet.com/docs/analytics/), 
 [basemaps](https://developers.planet.com/docs/basemaps/) and 
-[tasking](https://developers.planet.com/docs/tasking/).
+[tasking](https://developers.planet.com/docs/tasking/)).
 
 ## Documentation
 
@@ -99,7 +99,7 @@ only be called once.*"
 
 Do you have a use case where native synchronous support is essential? If so,
 please contribute to this
-[issue](https://github.com/planetlabs/planet-client-python/issues/251).
+[discussion](https://github.com/planetlabs/planet-client-python/issues/251).
 
 Why async? Because things get *really cool* when you want to work with multiple
 orders. See [orders_create_and_download_multiple_orders.py](examples/orders_create_and_download_multiple_orders.py) for
@@ -114,7 +114,7 @@ the AOIs and get the image ids.)
 Install with [pip](https://pip.pypa.io):
 
 ```console
-$ pip install planet
+$ pip install -e .
 ```
 
 The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs)
