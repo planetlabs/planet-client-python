@@ -183,7 +183,7 @@ the context of a `Session` with the `OrdersClient`:
 >>> async def main():
 ...     async with Session() as sess:
 ...         cl = OrdersClient(sess)
-...         order_id = await cl.create_order(request)
+...         order = await cl.create_order(request)
 ...
 >>> asyncio.run(main())
 
@@ -210,13 +210,13 @@ from planet import reporting
 ...         with reporting.StateBar(state='creating') as bar:
 ...             # create order
 ...             order = await cl.create_order(request)
-...             bar.update(state='created', order_id=order.id)
+...             bar.update(state='created', order_id=order['id'])
 ...
 ...             # poll
-...             await cl.poll(order.id, report=bar.update)
+...             await cl.poll(order['id'], report=bar.update)
 ...
 ...         # download
-...         await cl.download_order(order.id)
+...         await cl.download_order(order['id'])
 ...
 >>> asyncio.run(create_poll_and_download())
 ```
