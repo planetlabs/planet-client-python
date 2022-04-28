@@ -38,7 +38,8 @@ def invoke():
 
     def _invoke(extra_args, runner=None):
         runner = runner or CliRunner()
-        args = ['orders', '--base-url', TEST_URL] + extra_args
+        args = ['--auth-profile', 'none', 'orders', '--base-url', TEST_URL
+                ] + extra_args
         return runner.invoke(cli.main, args=args)
 
     return _invoke

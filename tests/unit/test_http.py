@@ -21,6 +21,7 @@ import respx
 import pytest
 
 from planet import exceptions, http
+from planet.auth.auth import Auth
 
 TEST_URL = 'mock://fantastic.com'
 
@@ -80,7 +81,7 @@ async def test_session_contextmanager():
 @pytest.mark.asyncio
 async def test_session_request(mock_request):
 
-    async with http.Session() as ps:
+    async with http.Session(auth=Auth.initialize(profile='none')) as ps:
         mock_resp = httpx.Response(HTTPStatus.OK, text='bubba')
         respx.get(TEST_URL).return_value = mock_resp
 
@@ -91,7 +92,7 @@ async def test_session_request(mock_request):
 @respx.mock
 @pytest.mark.asyncio
 async def test_session_stream(mock_request):
-    async with http.Session() as ps:
+    async with http.Session(auth=Auth.initialize(profile='none')) as ps:
         mock_resp = httpx.Response(HTTPStatus.OK, text='bubba')
         respx.get(TEST_URL).return_value = mock_resp
 
@@ -103,7 +104,7 @@ async def test_session_stream(mock_request):
 @respx.mock
 @pytest.mark.asyncio
 async def test_session_request_retry(mock_request, mock_response):
-    async with http.Session() as ps:
+    async with http.Session(auth=Auth.initialize(profile='none')) as ps:
         route = respx.get(TEST_URL)
         route.side_effect = [
             httpx.Response(HTTPStatus.TOO_MANY_REQUESTS, json={}),

@@ -16,12 +16,13 @@ import copy
 import pytest
 
 from planet import Session
+from planet.auth.auth import Auth
 
 
 @pytest.fixture
 @pytest.mark.asyncio
 async def session():
-    async with Session() as ps:
+    async with Session(auth=Auth.initialize(profile='none')) as ps:
         yield ps
 
 
