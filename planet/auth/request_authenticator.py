@@ -42,7 +42,8 @@ class RequestAuthenticator(requests.auth.AuthBase, httpx.Auth):
         Decorate a "requests" library based request with authentication
         """
         self.pre_request_hook()
-        r.headers[self._auth_header] = self._build_auth_header_payload()
+        if self._token_body:
+            r.headers[self._auth_header] = self._build_auth_header_payload()
         return r
 
     def auth_flow(self, r: httpx._models.Request):
@@ -50,5 +51,12 @@ class RequestAuthenticator(requests.auth.AuthBase, httpx.Auth):
         Decorate a "httpx" library based request with authentication
         """
         self.pre_request_hook()
-        r.headers[self._auth_header] = self._build_auth_header_payload()
+        if self._token_body:
+            r.headers[self._auth_header] = self._build_auth_header_payload()
         yield r
+
+
+class SimpleInMemoryRequestAuthenticator(RequestAuthenticator):
+
+    def pre_request_hook(self):
+        pass

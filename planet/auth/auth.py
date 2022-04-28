@@ -12,9 +12,15 @@ from planet.constants import \
     ENV_AUTH_PROFILE, \
     ENV_AUTH_TOKEN_FILE
 from planet.auth.auth_client import AuthClient, AuthClientConfig
-from planet.auth.request_authenticator import RequestAuthenticator
+from planet.auth.request_authenticator import \
+    RequestAuthenticator, \
+    SimpleInMemoryRequestAuthenticator
 
 logger = logging.getLogger(__name__)
+
+BUILTIN_PROFILE_NAME_DEFAULT = 'default'
+BUILTIN_PROFILE_NAME_LEGACY = 'legacy'
+BUILTIN_PROFILE_NAME_NONE = 'none'
 
 
 class Profile:
@@ -26,7 +32,9 @@ class Profile:
             override_path: Union[str, pathlib.PurePath, None]) -> pathlib.Path:
         if override_path:
             return pathlib.Path(override_path)
-        if not profile or profile == '' or profile.lower() == 'default':
+        if not profile \
+                or profile == '' \
+                or profile.lower() == BUILTIN_PROFILE_NAME_DEFAULT:
             return pathlib.Path.home().joinpath(".planet/{}".format(filename))
         else:
             return pathlib.Path.home().joinpath(".planet/{}/{}".format(
@@ -58,12 +66,18 @@ class Auth:
             profile: str,
             auth_client_config_file: Union[str,
                                            pathlib.PurePath]) -> AuthClient:
-        if not profile or profile == '' or profile.lower() == 'default':
-            logger.debug('Using built-in "default" auth client configuration')
+        if not profile \
+                or profile == '' \
+                or profile.lower() == BUILTIN_PROFILE_NAME_DEFAULT:
+            logger.debug(
+                'Using built-in "{}" auth client configuration'.format(
+                    BUILTIN_PROFILE_NAME_DEFAULT))
             auth_client = AuthClient.from_config(
                 DEFAULT_OIDC_AUTH_CLIENT_CONFIG)
-        elif profile.lower() == 'legacy':
-            logger.debug('Using built-in "legacy" auth client configuration')
+        elif profile.lower() == BUILTIN_PROFILE_NAME_LEGACY:
+            logger.debug(
+                'Using built-in "{}" auth client configuration'.format(
+                    BUILTIN_PROFILE_NAME_LEGACY))
             auth_client = AuthClient.from_config(LEGACY_AUTH_CLIENT_CONFIG)
         else:
             auth_config_path = Profile.get_profile_file_path(
@@ -85,17 +99,35 @@ class Auth:
         return auth_client
 
     @staticmethod
+    def _initialize_token_file_path(profile: str,
+                                    token_file_override) -> pathlib.Path:
+        return Profile.get_profile_file_path('token.json',
+                                             profile,
+                                             token_file_override)
+
+    @staticmethod
+    def _initialize_request_authenticator(
+            profile: str, auth_client: AuthClient,
+            token_file_path: pathlib.Path) -> RequestAuthenticator:
+        return auth_client.default_request_authenticator(token_file_path)
+
+    @staticmethod
     def initialize(profile: str = os.getenv(ENV_AUTH_PROFILE),
                    auth_client_config_file: Union[str, pathlib.PurePath] = os.
                    getenv(ENV_AUTH_CLIENT_CONFIG_FILE),
                    token_file: Union[str, pathlib.PurePath] = os.getenv(
                        ENV_AUTH_TOKEN_FILE)) -> Auth:
-
-        auth_client = Auth._initialize_auth_client(profile,
-                                                   auth_client_config_file)
-        token_file_path = Profile.get_profile_file_path(
-            'token.json', profile, token_file)
-        request_authenticator = auth_client.default_request_authenticator(
-            token_file_path)
+        if profile == BUILTIN_PROFILE_NAME_NONE:
+            auth_client = None
+            token_file_path = None
+            request_authenticator = SimpleInMemoryRequestAuthenticator(
+                token_body=None)
+        else:
+            auth_client = Auth._initialize_auth_client(
+                profile, auth_client_config_file)
+            token_file_path = Auth._initialize_token_file_path(
+                profile, token_file)
+            request_authenticator = Auth._initialize_request_authenticator(
+                profile, auth_client, token_file_path)
 
         return Auth(auth_client, request_authenticator, token_file_path)
