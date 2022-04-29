@@ -94,7 +94,7 @@ the AOIs and get the image ids.)
 Install with [pip](https://pip.pypa.io):
 
 ```console
-$ pip install planet
+$ python -m pip install . 
 ```
 
 The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs)
