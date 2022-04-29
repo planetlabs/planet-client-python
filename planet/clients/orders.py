@@ -18,6 +18,8 @@ import os
 import time
 import typing
 import uuid
+import json
+import hashlib
 
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
@@ -245,7 +247,8 @@ class OrdersClient():
                              filename: str = None,
                              directory: str = None,
                              overwrite: bool = False,
-                             progress_bar: bool = True) -> str:
+                             progress_bar: bool = True,
+                             checksum: str = None) -> str:
         """Download ordered asset.
 
         Parameters:
@@ -254,6 +257,7 @@ class OrdersClient():
             directory: Base directory for file download.
             overwrite: Overwrite any existing files.
             progress_bar: Show progress bar during download.
+            checksum: Verify that checksums match.
 
         Returns:
             Path to downloaded file.
@@ -275,14 +279,16 @@ class OrdersClient():
                              order_id: str,
                              directory: str = None,
                              overwrite: bool = False,
-                             progress_bar: bool = False) -> typing.List[str]:
+                             progress_bar: bool = False,
+                             checksum: str = None) -> typing.List[str]:
         """Download all assets in an order.
 
         Parameters:
-            order_id: The ID of the order
-            directory: Root directory for file download.
+            order_id: The ID of the order.
+            directory: Base directory for file download.
             overwrite: Overwrite files if they already exist.
             progress_bar: Show progress bar during download.
+            checksum: Verify that checksums match.
 
         Returns:
             Paths to downloaded files.
@@ -291,8 +297,16 @@ class OrdersClient():
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If the order is not in a final
                 state.
+            planet.exceptions.ClientError: If the checksum fails.
         """
         order = await self.get_order(order_id)
+        
+        # Capture hashkey for the json object
+        json_str = json.dumps(order, sort_keys=True, indent=2)
+        if checksum == 'sha1':
+            origin_hash = hashlib.sha1(json_str.encode("utf-8")).hexdigest()
+        elif checksum == 'md5':
+            origin_hash = hashlib.md5(json_str.encode("utf-8")).hexdigest()
 
         order_state = order['state']
         if not OrderStates.is_final(order_state):
@@ -310,9 +324,22 @@ class OrdersClient():
             await self.download_asset(location,
                                       directory=directory,
                                       overwrite=overwrite,
-                                      progress_bar=progress_bar)
+                                      progress_bar=progress_bar,
+                                      checksum=checksum)
             for location in locations
         ]
+        for filename in filenames:
+            # Open, close, read file & calculate hash on its contents
+            with open(filename, 'rb') as file_to_check:
+                file_data = file_to_check.read()
+                if checksum == 'sha1':
+                    returned_hash = hashlib.sha1(file_data).hexdigest()
+                elif checksum == 'md5':
+                    returned_hash = hashlib.md5(file_data).hexdigest()
+                # Compare original hashkey with calculated
+                if origin_hash != returned_hash:
+                    raise exceptions.ClientError(
+                        'Checksum failed. File not correctly downloaded.')
         return filenames
 
     @staticmethod
