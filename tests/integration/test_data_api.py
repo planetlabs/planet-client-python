@@ -12,16 +12,17 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 from http import HTTPStatus
+import json
 import logging
 
 import httpx
 import pytest
 import respx
 
-from planet import DataClient
+from planet import exceptions, DataClient
 
 TEST_URL = 'http://www.MockNotRealURL.com/api/path'
-TEST_SEARCH_URL = f'{TEST_URL}/searches'
+TEST_SEARCHES_URL = f'{TEST_URL}/searches'
 TEST_STATS_URL = f'{TEST_URL}/stats'
 
 LOGGER = logging.getLogger(__name__)
@@ -29,13 +30,8 @@ LOGGER = logging.getLogger(__name__)
 
 @pytest.fixture
 def search_filter(get_test_file_json):
-    filename = 'search_filter_2022_01.json'
+    filename = 'data_search_filter_2022-01.json'
     return get_test_file_json(filename)
-
-
-@pytest.fixture
-def quick_search_request(search_filter):
-    return {"item_types": ["PSScene"], "filter": search_filter}
 
 
 @pytest.fixture
@@ -66,18 +62,203 @@ def search_response(item_descriptions):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_quick_search_success(item_descriptions,
-                                    quick_search_filter,
-                                    quick_search_request,
-                                    search_response,
-                                    session):
+async def test_quick_search_basic(item_descriptions,
+                                  search_filter,
+                                  search_response,
+                                  session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
-    mock_resp = httpx.Response(HTTPStatus.OK, json=search_response)
+    next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
+
+    item1, item2, item3 = item_descriptions
+    page1_response = {
+        "_links": {
+            "_next": next_page_url
+        }, "features": [item1, item2]
+    }
+    mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.post(quick_search_url).return_value = mock_resp1
+
+    page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    cl = DataClient(session, base_url=TEST_URL)
+    items = await cl.quick_search(['PSScene'],
+                                  search_filter,
+                                  name='quick_search')
+    items_list = [i async for i in items]
+
+    # check that request is correct
+    expected_request = {
+        "item_types": ["PSScene"],
+        "filter": search_filter,
+        "name": "quick_search"
+    }
+    actual_body = json.loads(respx.calls[0].request.content)
+    assert actual_body == expected_request
+
+    # check that all of the items were returned unchanged
+    assert items_list == item_descriptions
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_quick_search_sort(item_descriptions,
+                                 search_filter,
+                                 search_response,
+                                 session):
+
+    sort = 'created asc'
+    quick_search_url = f'{TEST_URL}/quick-search?sort={sort}'
+
+    item1, _, _ = item_descriptions
+    page1_response = {"_links": {}, "features": [item1]}
+    mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.post(quick_search_url).return_value = mock_resp1
+
+    # if the sort parameter is not used correctly, the client will not send
+    # the request to the mocked endpoint and this test will fail
+    cl = DataClient(session, base_url=TEST_URL)
+    items = await cl.quick_search(['PSScene'], search_filter, sort=sort)
+
+    # run through the iterator to actually initiate the call
+    [i async for i in items]
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_quick_search_limit(item_descriptions,
+                                  search_filter,
+                                  search_response,
+                                  session):
+
+    quick_search_url = f'{TEST_URL}/quick-search'
+
+    page_response = {
+        "_links": {},
+        "features": item_descriptions  # three items
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.post(quick_search_url).return_value = mock_resp
 
     cl = DataClient(session, base_url=TEST_URL)
-    items = list(await cl.quick_search('PSScene', quick_search_filter))
+    items = await cl.quick_search(['PSScene'], search_filter, limit=2)
+    items_list = [i async for i in items]
 
-    assert mock_resp.called_once_with(quick_search_request)
-    assert items == item_descriptions
+    # check only the first two results were returned
+    assert items_list == item_descriptions[:2]
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_create_search_basic(search_filter, session):
+
+    page_response = {
+        "__daily_email_enabled": False,
+        "_links": {
+            "_self": "string", "thumbnail": "string"
+        },
+        "created": "2019-08-24T14:15:22Z",
+        "filter": search_filter,
+        "id": "string",
+        "last_executed": "2019-08-24T14:15:22Z",
+        "name": "test",
+        "updated": "2019-08-24T14:15:22Z"
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.post(TEST_SEARCHES_URL).return_value = mock_resp
+
+    cl = DataClient(session, base_url=TEST_URL)
+    search = await cl.create_search('test', ['PSScene'], search_filter)
+
+    # check that request is correct
+    expected_request = {
+        "item_types": ["PSScene"], "filter": search_filter, "name": "test"
+    }
+    actual_body = json.loads(respx.calls[0].request.content)
+    assert actual_body == expected_request
+
+    # check the response is returned unaltered
+    assert search == page_response
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_create_search_email(search_filter, session):
+
+    page_response = {
+        "__daily_email_enabled": True,
+        "_links": {
+            "_self": "string", "thumbnail": "string"
+        },
+        "created": "2019-08-24T14:15:22Z",
+        "filter": search_filter,
+        "id": "string",
+        "last_executed": "2019-08-24T14:15:22Z",
+        "name": "test",
+        "updated": "2019-08-24T14:15:22Z"
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.post(TEST_SEARCHES_URL).return_value = mock_resp
+
+    cl = DataClient(session, base_url=TEST_URL)
+    search = await cl.create_search('test', ['PSScene'],
+                                    search_filter,
+                                    enable_email=True)
+
+    # check that request is correct
+    expected_request = {
+        "item_types": ["PSScene"],
+        "filter": search_filter,
+        "name": "test",
+        "__daily_email_enabled": True
+    }
+    actual_body = json.loads(respx.calls[0].request.content)
+    assert actual_body == expected_request
+
+    # check the response is returned unaltered
+    assert search == page_response
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_get_stats_success(search_filter, session):
+
+    page_response = {
+        "buckets": [{
+            "count": 433638, "start_time": "2022-01-01T00:00:00.000000Z"
+        },
+                    {
+                        "count": 431924,
+                        "start_time": "2022-01-02T00:00:00.000000Z"
+                    },
+                    {
+                        "count": 417138,
+                        "start_time": "2022-01-03T00:00:00.000000Z"
+                    }]
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.post(TEST_STATS_URL).return_value = mock_resp
+
+    cl = DataClient(session, base_url=TEST_URL)
+    stats = await cl.get_stats(['PSScene'], search_filter, 'day')
+
+    # check that request is correct
+    expected_request = {
+        "item_types": ["PSScene"], "filter": search_filter, "interval": "day"
+    }
+    actual_body = json.loads(respx.calls[0].request.content)
+    assert actual_body == expected_request
+
+    # check the response is returned unaltered
+    assert stats == page_response
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_get_stats_invalid_interval(search_filter, session):
+    cl = DataClient(session, base_url=TEST_URL)
+
+    with pytest.raises(exceptions.ClientError):
+        await cl.get_stats(['PSScene'], search_filter, 'invalid')
