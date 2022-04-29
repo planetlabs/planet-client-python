@@ -57,14 +57,23 @@ def orders(ctx, base_url):
               help='Filter orders to given state.',
               type=click.Choice(planet.clients.orders.ORDER_STATE_SEQUENCE,
                                 case_sensitive=False))
-@click.option('-l',
-              '--limit',
+@click.option('--limit',
               help='Filter orders to given limit.',
               default=None,
               type=int)
 @pretty
 async def list(ctx, state, limit, pretty):
-    '''List orders'''
+    '''List orders
+
+    This command outputs a sequence of the returned order descriptions.
+    If --pretty is specified, each order description is pretty-printed.
+    '''
+    # Set default limit to 100
+    if limit is None:
+        limit = 100
+    # If limit is set to 0, do not limit results
+    elif limit == 0:
+        limit = None
     async with orders_client(ctx) as cl:
         orders = await cl.list_orders(state=state, limit=limit)
         orders_list = [o async for o in orders]
