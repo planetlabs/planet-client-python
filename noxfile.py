@@ -8,7 +8,7 @@ nox.options.sessions = ['lint', 'test', 'coverage', 'docs']
 source_files = ("planet", "examples", "tests", "setup.py", "noxfile.py")
 
 
-@nox.session(python=["3.9"])
+@nox.session
 def coverage(session):
     session.install("-e", ".[test]")
     session.run('coverage',
