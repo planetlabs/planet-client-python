@@ -26,13 +26,13 @@ This repository uses two primary tools for development:
 Install Nox in your local dev environment:
 
 ```console
-    $ pip install nox
+pip install nox
 ```
 
 Install YAPF in your local dev environment:
 
 ```console
-    $ pip install yapf
+pip install yapf
 ```
 
 ### Nox
@@ -69,7 +69,7 @@ of the Planet SDK for Python and required development packages into the virtual
 environment use:
 
 ```console
-    $ pip install -e .[dev]
+pip install -e .[dev]
 ```
 
 ### YAPF
