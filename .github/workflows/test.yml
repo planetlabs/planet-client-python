@@ -29,6 +29,7 @@ jobs:
       run: |
         pip install --upgrade nox
         nox -s test-${{ matrix.python-version }}
+
   lint:
     name: Check Linting
     runs-on: ubuntu-latest
@@ -50,6 +51,7 @@ jobs:
       run: |
         pip install --upgrade nox
         nox -s lint
+
   docs:
     name: Check Docs build
     runs-on: ubuntu-latest
@@ -71,6 +73,7 @@ jobs:
       run: |
         pip install --upgrade nox
         nox -s docs
+
   coverage:
     name: Check code coverage
     runs-on: ubuntu-latest
@@ -88,7 +91,7 @@ jobs:
         key: ${{ runner.os }}-pip
         restore-keys: |
           ${{ runner.os }}-pip
-    - name: Build Docs
+    - name: Coverage run and report
       run: |
         pip install --upgrade nox
         nox -s coverage
