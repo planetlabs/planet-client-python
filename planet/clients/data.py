@@ -184,9 +184,7 @@ class DataClient():
         if enable_email:
             request_json['__daily_email_enabled'] = True
 
-        request = self._request(url,
-                                method='POST',
-                                json=request_json)
+        request = self._request(url, method='POST', json=request_json)
         response = await self._do_request(request)
         return response.json()
 
