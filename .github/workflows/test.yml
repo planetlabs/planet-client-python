@@ -12,7 +12,7 @@ jobs:
         python-version: [3.7, 3.8, 3.9]
 
     steps:
-    - name: Checkout code 
+    - name: Checkout code
       uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
@@ -33,9 +33,9 @@ jobs:
     name: Check Linting
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code 
+    - name: Checkout code
       uses: actions/checkout@v2
-    - name: Set up Python 
+    - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: 3.7
@@ -51,12 +51,12 @@ jobs:
         pip install --upgrade nox
         nox -s lint
   docs:
-    name: Check Docs build 
+    name: Check Docs build
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code 
+    - name: Checkout code
       uses: actions/checkout@v2
-    - name: Set up Python 
+    - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: 3.7
@@ -71,13 +71,13 @@ jobs:
       run: |
         pip install --upgrade nox
         nox -s docs
-  install:
-    name: Check package install
+  coverage:
+    name: Check code coverage
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code 
+    - name: Checkout code
       uses: actions/checkout@v2
-    - name: Set up Python 
+    - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: 3.7
@@ -91,5 +91,5 @@ jobs:
     - name: Build Docs
       run: |
         pip install --upgrade nox
-        nox -s install
+        nox -s coverage
 
