@@ -19,7 +19,7 @@ import click
 
 import planet
 
-from . import auth, orders
+from . import auth, data, orders
 
 LOGGER = logging.getLogger(__name__)
 
@@ -77,4 +77,5 @@ def _configure_logging(verbosity):
 
 
 main.add_command(auth.auth)
+main.add_command(data.data)
 main.add_command(orders.orders)
