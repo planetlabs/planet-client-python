@@ -68,17 +68,13 @@ async def list(ctx, state, limit, pretty):
     This command outputs a sequence of the returned order descriptions.
     If --pretty is specified, each order description is pretty-printed.
     '''
-    # Set default limit to 100
-    if limit is None:
-        limit = 100
-    # If limit is set to 0, do not limit results
-    elif limit == 0:
-        limit = None
     async with orders_client(ctx) as cl:
         orders = await cl.list_orders(state=state, limit=limit)
         orders_list = [o async for o in orders]
 
-    echo_json(orders_list, pretty)
+    print(limit)
+    print(len(orders_list))
+    # echo_json(orders_list, pretty)
 
 
 @orders.command()

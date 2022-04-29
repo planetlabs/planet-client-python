@@ -422,6 +422,13 @@ class OrdersClient():
         """
         url = self._orders_url()
 
+        # Set default limit to 100
+        if limit is None:
+            limit = 100
+        # Set no limit
+        elif limit == 0:
+            limit = None
+
         if state:
             if state not in ORDER_STATE_SEQUENCE:
                 raise exceptions.ClientError(
