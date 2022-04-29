@@ -84,13 +84,13 @@ don't have to worry about formatting issues. WIN!
 To see how YAPF would reformat a file:
 
 ```console
-    $ yapf --diff [file]
+yapf --diff [file]
 ```
 
 To reformat the file:
 
 ```console
-    $ yapf --in-place [file]
+yapf --in-place [file]
 ```
 
 The configuration for YAPF is given in `setup.cfg` and `.yapfignore`.
