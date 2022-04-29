@@ -3,40 +3,43 @@ import nox
 nox.options.stop_on_first_error = True
 nox.options.reuse_existing_virtualenvs = False
 
-nox.options.sessions = ['test', 'lint', 'docs', 'install']
+nox.options.sessions = ['lint', 'test', 'coverage', 'docs']
 
 source_files = ("planet", "examples", "tests", "setup.py", "noxfile.py")
 
 
+@nox.session(python=["3.9"])
+def coverage(session):
+    session.install("-e", ".[test]")
+    session.run('coverage',
+                'run',
+                '-m',
+                'pytest',
+                '-qq',
+                '--no-header',
+                '--no-summary',
+                '--no-cov',
+                '--ignore',
+                'examples/')
+    session.run('coverage', 'report')
+
+
 @nox.session(python=["3.7", "3.8", "3.9"])
 def test(session):
-    # must include -e to allow coverage file update
-    session.install("-e", ".[test]")
-
-    options = session.posargs
-    if '-k' in options:
-        options.append('--no-cov')
-    session.run('pytest', '--ignore', 'examples/', '-v', *options)
+    session.install(".[test]")
+    session.run('pytest', '--ignore', 'examples/', '-v')
 
 
 @nox.session
 def lint(session):
     session.install("-e", ".[lint]")
-
     session.run("flake8", *source_files)
     session.run('yapf', '--diff', '-r', *source_files)
 
 
 @nox.session
-def install(session):
-    # just make sure it can be installed
-    session.install(".")
-
-
-@nox.session
 def docs_test(session):
     session.install("-e", ".[docs]")
-
     options = session.posargs
 
     # Because these doc examples can be long-running, output
@@ -56,21 +59,18 @@ def docs_test(session):
 @nox.session
 def docs(session):
     session.install("-e", ".[docs]")
-
     session.run("mkdocs", "build")
 
 
 @nox.session
 def watch(session):
     session.install("-e", ".[docs]")
-
     session.run("mkdocs", "serve")
 
 
 @nox.session
 def examples(session):
     session.install("-e", ".[test]")
-
     options = session.posargs
 
     # Because these example scripts can be long-running, output the
