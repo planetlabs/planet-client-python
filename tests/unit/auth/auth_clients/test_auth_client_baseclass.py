@@ -159,7 +159,7 @@ class ConfigFactoryTest(unittest.TestCase):
 
     def test_pkce_auth_code_config_from_file(self):
         file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/okta_test_pkce_auth_code.json')
+            'data/auth_client_configs/utest/pkce_auth_code.json')
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config, AuthCodePKCEClientConfig)
 
@@ -173,7 +173,7 @@ class ConfigFactoryTest(unittest.TestCase):
 
     def test_client_credentials_pubkey_config_from_file(self):
         file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/okta_test_client_credentials_pubkey_file.json'  # noqa
+            'data/auth_client_configs/utest/client_credentials_pubkey_file.json'  # noqa
         )
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config,
@@ -183,7 +183,7 @@ class ConfigFactoryTest(unittest.TestCase):
         'No implementation for client credentials shared key client')
     def test_client_credentials_shared_secret_config_from_file(self):
         file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/okta_test_client_credentials_sharedkey.json'  # noqa
+            'data/auth_client_configs/utest/client_credentials_sharedkey.json'  # noqa
         )
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config,
@@ -191,26 +191,26 @@ class ConfigFactoryTest(unittest.TestCase):
 
     def test_implicit_config_from_file(self):
         file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/okta_test_implicit.json')
+            'data/auth_client_configs/utest/implicit.json')
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config, ImplicitClientConfig)
 
     @pytest.mark.skip('No implementation for resource owner client')
     def test_resource_owner_config_from_file(self):
         file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/okta_test_resource_owner.json')
+            'data/auth_client_configs/utest/resource_owner.json')
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config, ResourceOwnerClientConfig)
 
     def test_static_config_from_file(self):
         file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/static_api_key.json')
+            'data/auth_client_configs/utest/static_api_key.json')
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config, StaticApiKeyAuthClientConfig)
 
     def test_planet_legacy_config_from_file(self):
         file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/planet_legacy.json')
+            'data/auth_client_configs/utest/planet_legacy.json')
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config, PlanetLegacyAuthClientConfig)
 

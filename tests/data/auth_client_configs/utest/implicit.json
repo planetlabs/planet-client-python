@@ -1,0 +1,7 @@
+{
+    "client_type": "oidc_implicit",
+    "auth_server": "__auth_server__",
+    "client_id": "__client_id__",
+    "redirect_uri": "__redirect_uri__",
+    "default_request_scopes": []
+}
