@@ -66,7 +66,6 @@ def _parse_authcode_from_callback(raw_request_path, expected_state):
 
     error_code = parsed_query_string.get('error')
     if error_code:
-        error_code = parsed_query_string.get('error')
         # TODO: Can we unify this error parsing with that in the
         #       oidc api_client baseclass?
         error_description = parsed_query_string.get('error_description') or [
