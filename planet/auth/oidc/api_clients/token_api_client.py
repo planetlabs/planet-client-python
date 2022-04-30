@@ -59,23 +59,23 @@ class TokenAPIClient(OIDCAPIClient):
     # FIXME: delete? When should we defer auth to the flow enricher vs had a
     #        bespoke methods. Enrichment for auth itself is slightly
     #        different than it is for any call that requires auth.
-    def get_token_from_client_credentials_enrichment(self,
-                                                     client_id,
-                                                     requested_scopes=None,
-                                                     auth_enricher=None):
-        # FIXME: should client id come from enricher? It's a pretty intrinsic
-        #        part of the client credential request.
-        data = {
-            'grant_type': 'client_credentials',
-            'client_id': client_id,
-        }
-        if requested_scopes:
-            data['scope'] = ' '.join(requested_scopes)
-
-        if auth_enricher:
-            data, auth = auth_enricher(data, self._endpoint_uri)
-
-        return self._checked_call(data)
+    # def get_token_from_client_credentials_enrichment(self,
+    #                                                 client_id,
+    #                                                 requested_scopes=None,
+    #                                                 auth_enricher=None):
+    #    # FIXME: should client id come from enricher? It's a pretty intrinsic
+    #    #        part of the client credential request.
+    #    data = {
+    #        'grant_type': 'client_credentials',
+    #        'client_id': client_id,
+    #    }
+    #    if requested_scopes:
+    #        data['scope'] = ' '.join(requested_scopes)#
+    #
+    #    if auth_enricher:
+    #        data, auth = auth_enricher(data, self._endpoint_uri)
+    #
+    #    return self._checked_call(data)
 
     def get_token_from_client_credentials_secret(self,
                                                  client_id,

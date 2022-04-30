@@ -1,15 +1,15 @@
-from planet.auth.oidc.api_clients.api_client import \
-    OIDCAPIClient, OIDCAPIClientException
+from planet.auth.oidc.api_clients.api_client import OIDCAPIClient
 
-
-class DiscoveryAPIException(OIDCAPIClientException):
-
-    def __init__(self, message=None, raw_response=None):
-        super().__init__(message, raw_response)
+# class DiscoveryAPIException(OIDCAPIClientException):
+#
+#    def __init__(self, message=None, raw_response=None):
+#        super().__init__(message, raw_response)
 
 
 class DiscoveryAPIClient(OIDCAPIClient):
 
+    # TODO: Revisit of this is where I should cache. I did work
+    #       on the JWKS client after this, and I think it is more mature.
     def __init__(self, discovery_uri=None, auth_server=None):
         super().__init__(discovery_uri if discovery_uri else auth_server +
                          '/.well-known/openid-configuration')

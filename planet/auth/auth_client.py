@@ -180,7 +180,6 @@ class AuthClient(ABC):
         :param kwargs:
         :return:
         """
-        pass
 
     def refresh(self, refresh_token, requested_scopes):
         raise AuthClientException(
@@ -250,4 +249,3 @@ class AuthClient(ABC):
         :param token_file_path:
         :return:
         """
-        pass
