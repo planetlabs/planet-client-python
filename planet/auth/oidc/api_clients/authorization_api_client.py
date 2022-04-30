@@ -1,15 +1,15 @@
 import getpass
+import http.server
 import importlib.resources as pkg_resources
 import logging
 
 from http import HTTPStatus
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs, urlencode
 from webbrowser import open_new
 
+import planet.auth.oidc.util as oidc_util
 from planet.auth.oidc import resources
 from planet.auth.oidc.api_clients.api_client import OIDCAPIClientException
-from planet.auth.oidc.util import generate_nonce
 
 logger = logging.getLogger(__name__)
 DEFAULT_REDIRECT_LISTEN_PORT = 80
@@ -22,7 +22,7 @@ class AuthorizationAPIException(OIDCAPIClientException):
         super().__init__(message, raw_response)
 
 
-class _OidcPKCESigninCallbackHandler(BaseHTTPRequestHandler):
+class _OidcPKCESigninCallbackHandler(http.server.BaseHTTPRequestHandler):
     """
     HTTP Server callbacks to handle OAuth redirects.
     This handler expects to be invoked as a callback after user
@@ -56,6 +56,9 @@ class _OidcPKCESigninCallbackHandler(BaseHTTPRequestHandler):
 
 
 def _parse_authcode_from_callback(raw_request_path, expected_state):
+    if not raw_request_path:
+        raise AuthorizationAPIException("Authorization callback was empty")
+
     logger.debug("Parsing callback request from authorization server" +
                  raw_request_path)
 
@@ -63,6 +66,9 @@ def _parse_authcode_from_callback(raw_request_path, expected_state):
 
     error_code = parsed_query_string.get('error')
     if error_code:
+        error_code = parsed_query_string.get('error')
+        # TODO: Can we unify this error parsing with that in the
+        #       oidc api_client baseclass?
         error_description = parsed_query_string.get('error_description') or [
             'no error description'
         ]
@@ -113,8 +119,8 @@ class AuthorizationAPIClient():
             'client_id': client_id,
             'response_type': 'code',
             'redirect_uri': redirect_uri,
-            'state': generate_nonce(8),
-            'nonce': generate_nonce(32),
+            'state': oidc_util.generate_nonce(8),
+            'nonce': oidc_util.generate_nonce(32),
             'code_challenge': pkce_code_challenge,
             'code_challenge_method': 'S256'
         }
@@ -138,8 +144,8 @@ class AuthorizationAPIClient():
             'client_id': client_id,
             'response_type': ' '.join(response_types),
             'redirect_uri': redirect_uri,
-            'state': generate_nonce(8),
-            'nonce': generate_nonce(32),
+            'state': oidc_util.generate_nonce(8),
+            'nonce': oidc_util.generate_nonce(32),
         }
         if requested_scopes:
             data['scope'] = ' '.join(requested_scopes)
@@ -170,7 +176,7 @@ class AuthorizationAPIClient():
 
         # Only bind to loopback! See
         # https://datatracker.ietf.org/doc/html/rfc8252#section-8.3
-        http_server = HTTPServer(
+        http_server = http.server.HTTPServer(
             ('localhost', listen_port),
             lambda request,
             address,

@@ -57,8 +57,8 @@ class OIDCAPIClient(ABC):
             json_response = response.json()
         if not json_response:
             raise OIDCAPIClientException(
-                'Response from validation endpoint was not understood. '
-                'Expected JSON response payload, but none was found.',
+                'Response was not understood. Expected JSON response payload,'
+                ' but none was found.',
                 response)
         return json_response
 
@@ -78,6 +78,9 @@ class OIDCAPIClient(ABC):
     def _checked_post(self, params, request_auth):
         response = requests.post(
             self._endpoint_uri,
+            # Note: is the data/params crossing confusing? This was born out
+            #       of some OIDC services accepting either in some cases,
+            #       and others not doing so.
             data=params,
             auth=request_auth,
             headers={'Content-Type': 'application/x-www-form-urlencoded'})

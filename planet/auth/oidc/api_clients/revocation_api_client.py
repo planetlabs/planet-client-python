@@ -1,11 +1,9 @@
-from planet.auth.oidc.api_clients.api_client import \
-    OIDCAPIClient, OIDCAPIClientException
+from planet.auth.oidc.api_clients.api_client import OIDCAPIClient
 
-
-class RevocationAPIException(OIDCAPIClientException):
-
-    def __init__(self, message=None, raw_response=None):
-        super().__init__(message, raw_response)
+# class RevocationAPIException(OIDCAPIClientException):
+#
+#   def __init__(self, message=None, raw_response=None):
+#        super().__init__(message, raw_response)
 
 
 class RevocationAPIClient(OIDCAPIClient):

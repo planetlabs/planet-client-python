@@ -120,6 +120,7 @@ class Auth:
         if profile == BUILTIN_PROFILE_NAME_NONE:
             auth_client = None
             token_file_path = None
+            # TODO: can I set this to None?
             request_authenticator = SimpleInMemoryRequestAuthenticator(
                 token_body=None)
         else:
