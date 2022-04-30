@@ -1,4 +1,3 @@
-import importlib.resources
 import pathlib
 import unittest
 
@@ -22,6 +21,7 @@ from planet.auth.request_authenticator import \
     SimpleInMemoryRequestAuthenticator
 from planet.auth.static_api_key.auth_client import \
     StaticApiKeyAuthClientConfig
+from tests.util import tdata_resource_file_path
 
 
 class AuthClientConfigTestImpl(AuthClientConfig):
@@ -149,23 +149,22 @@ class ClientFactoryTest(unittest.TestCase):
 class ConfigFactoryTest(unittest.TestCase):
 
     def test_pkce_auth_code_config_from_file(self):
-        file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/utest/pkce_auth_code.json')
+        file_path = tdata_resource_file_path(
+            'auth_client_configs/utest/pkce_auth_code.json')
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config, AuthCodePKCEClientConfig)
 
     def test_client_credentials_client_secret_config_from_file(self):
-        file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/okta_test_client_credentials_client_secret.json'  # noqa
+        file_path = tdata_resource_file_path(
+            'auth_client_configs/utest/client_credentials_client_secret.json'  # noqa
         )
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config,
                               ClientCredentialsClientSecretClientConfig)
 
     def test_client_credentials_pubkey_config_from_file(self):
-        file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/utest/client_credentials_pubkey_file.json'  # noqa
-        )
+        file_path = tdata_resource_file_path(
+            'auth_client_configs/utest/client_credentials_pubkey_file.json')
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config,
                               ClientCredentialsPubKeyClientConfig)
@@ -173,29 +172,28 @@ class ConfigFactoryTest(unittest.TestCase):
     @pytest.mark.skip(
         'No implementation for client credentials shared key client')
     def test_client_credentials_shared_secret_config_from_file(self):
-        file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/utest/client_credentials_sharedkey.json'  # noqa
-        )
+        file_path = tdata_resource_file_path(
+            'auth_client_configs/utest/client_credentials_sharedkey.json')
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config,
                               ClientCredentialsSharedKeyClientConfig)
 
     @pytest.mark.skip('No implementation for resource owner client')
     def test_resource_owner_config_from_file(self):
-        file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/utest/resource_owner.json')
+        file_path = tdata_resource_file_path(
+            'auth_client_configs/utest/resource_owner.json')
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config, ResourceOwnerClientConfig)
 
     def test_static_config_from_file(self):
-        file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/utest/static_api_key.json')
+        file_path = tdata_resource_file_path(
+            'auth_client_configs/utest/static_api_key.json')
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config, StaticApiKeyAuthClientConfig)
 
     def test_planet_legacy_config_from_file(self):
-        file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/utest/planet_legacy.json')
+        file_path = tdata_resource_file_path(
+            'auth_client_configs/utest/planet_legacy.json')
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config, PlanetLegacyAuthClientConfig)
 
