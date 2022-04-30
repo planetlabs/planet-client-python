@@ -58,7 +58,7 @@ class AuthTest(unittest.TestCase):
         under_test = Auth.initialize(
             profile='test_profile',
             auth_client_config_file=tdata_resource_file_path(
-                'auth_client_configs/static_api_key.json'))
+                'auth_client_configs/utest/static_api_key.json'))
         self.assertIsInstance(under_test.auth_client(), StaticApiKeyAuthClient)
         self.assertIsInstance(under_test.request_authenticator(),
                               FileBackedAPIKeyRequestAuthenticator)
@@ -85,7 +85,7 @@ class AuthTest(unittest.TestCase):
         under_test = Auth.initialize(
             profile='default',
             auth_client_config_file=tdata_resource_file_path(
-                'auth_client_configs/static_api_key.json'))
+                'auth_client_configs/utest/static_api_key.json'))
         self.assertIsInstance(under_test.auth_client(), AuthCodePKCEAuthClient)
         self.assertIsInstance(under_test.request_authenticator(),
                               RefreshingOidcTokenRequestAuthenticator)
@@ -97,7 +97,7 @@ class AuthTest(unittest.TestCase):
         under_test = Auth.initialize(
             profile='legacy',
             auth_client_config_file=tdata_resource_file_path(
-                'auth_client_configs/static_api_key.json'))
+                'auth_client_configs/utest/static_api_key.json'))
         self.assertIsInstance(under_test.auth_client(), PlanetLagacyAuthClient)
         self.assertIsInstance(under_test.request_authenticator(),
                               PlanetLegacyRequestAuthenticator)
