@@ -14,7 +14,6 @@ from planet.auth.oidc.auth_clients.client_credentials_flow import \
     ClientCredentialsClientSecretClientConfig, \
     ClientCredentialsPubKeyClientConfig, \
     ClientCredentialsSharedKeyClientConfig
-from planet.auth.oidc.auth_clients.implicit_flow import ImplicitClientConfig
 from planet.auth.oidc.auth_clients.resource_owner_flow import \
     ResourceOwnerClientConfig
 from planet.auth.planet_legacy.auth_client import PlanetLegacyAuthClientConfig
@@ -121,14 +120,6 @@ class ClientFactoryTest(unittest.TestCase):
             planet.auth.oidc.auth_clients.client_credentials_flow.
             ClientCredentialsSharedKeyAuthClient)
 
-    def test_create_implicit_client(self):
-        self.assertIsInstance(
-            AuthClient.from_config(
-                ImplicitClientConfig(auth_server='dummy',
-                                     client_id='dummy',
-                                     redirect_uri='dummy')),
-            planet.auth.oidc.auth_clients.implicit_flow.ImplicitAuthClient)
-
     @pytest.mark.skip('No implementation for resource owner client')
     def test_create_resource_owner_client(self):
         self.assertIsInstance(
@@ -188,12 +179,6 @@ class ConfigFactoryTest(unittest.TestCase):
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config,
                               ClientCredentialsSharedKeyClientConfig)
-
-    def test_implicit_config_from_file(self):
-        file_path = importlib.resources.files('tests').joinpath(
-            'data/auth_client_configs/utest/implicit.json')
-        auth_client_config = AuthClientConfig.from_file(file_path)
-        self.assertIsInstance(auth_client_config, ImplicitClientConfig)
 
     @pytest.mark.skip('No implementation for resource owner client')
     def test_resource_owner_config_from_file(self):
