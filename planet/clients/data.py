@@ -70,9 +70,6 @@ class DataClient():
     def _searches_url(self):
         return f'{self._base_url}{SEARCHES_PATH}'
 
-    def _stats_url(self):
-        return f'{self._base_url}{STATS_PATH}'
-
     def _request(self, url, method, data=None, params=None, json=None):
         return Request(url, method=method, data=data, params=params, json=json)
 
@@ -210,7 +207,7 @@ class DataClient():
             raise exceptions.ClientError(
                 f'{interval} must be one of {STATS_INTERVAL}')
 
-        url = self._stats_url()
+        url = f'{self._base_url}{STATS_PATH}'
         request_json = {
             'interval': interval,
             'filter': search_filter,
