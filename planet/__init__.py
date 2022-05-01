@@ -15,12 +15,6 @@ from .http import Session
 from . import order_request, reporting
 from .__version__ import __version__  # NOQA
 from .auth import Auth
-from .clients import OrdersClient
+from .clients import DataClient, OrdersClient
 
-__all__ = [
-    Session,
-    OrdersClient,
-    order_request,
-    reporting,
-    Auth,
-]
+__all__ = [Session, OrdersClient, order_request, reporting, Auth, DataClient]
