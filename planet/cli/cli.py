@@ -60,13 +60,9 @@ def main(ctx,
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
     ctx.obj['QUIET'] = quiet
-
-    auth = Auth.initialize(auth_profile, auth_client_config_file, token_file)
-    ctx.obj['AUTH'] = auth
-    ctx.obj['AUTH_PROFILE'] = auth_profile
-    ctx.obj['AUTH_CLIENT'] = auth.auth_client()
-    ctx.obj['AUTH_REQUEST_AUTHENTICATOR'] = auth.request_authenticator()
-    ctx.obj['AUTH_TOKEN_FILE_PATH'] = auth.token_file_path()
+    ctx.obj['AUTH'] = Auth.initialize(auth_profile,
+                                      auth_client_config_file,
+                                      token_file)
 
 
 def _configure_logging(verbosity):
