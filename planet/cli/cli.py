@@ -20,7 +20,7 @@ import click
 import planet
 from planet.auth.auth import Auth
 
-from planet.cli import orders
+from planet.cli import data, orders
 from planet.cli.oidcauth import oidc_token_group
 from planet.cli.options import \
     opt_auth_client_config_file, \
@@ -96,6 +96,7 @@ def _configure_logging(verbosity):
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
+main.add_command(data.data)
 main.add_command(orders.orders)
 main.add_command(oidc_token_group)
 

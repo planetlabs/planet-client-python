@@ -32,10 +32,10 @@ test_requires = [
 lint_requires = ['flake8', 'yapf']
 
 doc_requires = [
-    'mkdocs==1.1',
-    'mkdocs-click==0.4.0',
-    'mkdocs-material',
-    'mkdocstrings==0.15.0'
+    'mkdocs==1.3',
+    'mkdocs-click==0.7.0',
+    'mkdocs-material==8.2.11',
+    'mkdocstrings==0.18.1'
 ]
 
 setup(
@@ -60,7 +60,10 @@ setup(
     url='https://github.com/planetlabs/planet-client-python',
     license='Apache 2.0',
     packages=find_packages(exclude=['examples', 'tests']),
-    data_files=[('', ['LICENSE'])],
+    package_data={
+        "": ["LICENSE", "CONTRIBUTING.md"],
+        "planet": ["data/*"],
+    },
     include_package_data=True,
     zip_safe=False,
     python_requires='>=3.7',

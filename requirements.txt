@@ -1,6 +1,7 @@
 click>=8.0.0
+geojson
 httpx==0.16.1
-shapely>=1.7.1
 pyjwt[crypto]>=2.1
 requests
+shapely>=1.7.1
 tqdm>=4.56

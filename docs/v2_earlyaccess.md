@@ -14,9 +14,9 @@ to as the Planet API client ("V1"). For more information, see
 
   1) Clone the repository [https://github.com/planetlabs/planet-client-python/](https://github.com/planetlabs/planet-client-python/)
 
-  2) Checkout the development branch: `git checkout v2`
+  2) Checkout the development branch: `git checkout main`
 
-  3) Install the v2 branch as a Python package for development:
+  3) Install the main branch as a Python package for development:
         `pip install -e .`
 
 ## How to Get Help
