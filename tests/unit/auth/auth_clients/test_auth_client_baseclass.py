@@ -165,7 +165,7 @@ class ConfigFactoryTest(unittest.TestCase):
 
     def test_client_credentials_client_secret_config_from_file(self):
         file_path = tdata_resource_file_path(
-            'auth_client_configs/okta_test_client_credentials_client_secret.json'  # noqa
+            'auth_client_configs/utest/client_credentials_client_secret.json'  # noqa
         )
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config,
