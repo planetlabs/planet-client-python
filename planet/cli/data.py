@@ -6,7 +6,7 @@ from typing import AsyncIterator, List
 import click
 
 from .cmds import coro, translate_exceptions
-from .io import echo_json
+from .io_helper import echo_json
 
 # Parameter callbacks are what we use to validate and transform the
 # values of arguments and options. On the command line, everything is
