@@ -11,7 +11,7 @@ def is_interactive_shell():
 
 def tdata_resource_file_path(resource_file: str):
     # Why is this blowing up here but not in my other project?
-    #file_path = importlib.resources.files('tests').joinpath("data/" +
+    # file_path = importlib.resources.files('tests').joinpath("data/" +
     #                                                        resource_file)
     here = Path(os.path.abspath(os.path.dirname(__file__)))
     test_data_path = here / 'data'
