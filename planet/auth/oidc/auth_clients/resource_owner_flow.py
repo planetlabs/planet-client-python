@@ -12,7 +12,6 @@ class ResourceOwnerClientConfig(OidcAuthClientConfig):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        raise Exception('No implementation')
 
 
 class ResourceOwnerAuthClient(OidcAuthClient):

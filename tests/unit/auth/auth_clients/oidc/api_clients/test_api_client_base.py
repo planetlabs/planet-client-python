@@ -7,7 +7,7 @@ from unittest import mock
 from planet.auth.oidc.api_clients.api_client import OIDCAPIClient, \
     OIDCAPIClientException
 
-TEST_API_ENDPOINT = 'http://blackhole.unittest.planet.com/api'
+TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
 TEST_DATA1 = {"key1": "value1"}
 
 

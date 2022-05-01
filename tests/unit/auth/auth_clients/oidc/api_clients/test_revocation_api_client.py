@@ -9,7 +9,7 @@ from unittest import mock
 from planet.auth.oidc.api_clients.revocation_api_client import \
     RevocationAPIClient
 
-TEST_API_ENDPOINT = 'http://blackhole.unittest.planet.com/api'
+TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
 TEST_ACCESS_TOKEN = "__test_access_token__"
 TEST_REFRESH_TOKEN = "__test_refresh_token__"
 API_RESPONSE_VALID = {}

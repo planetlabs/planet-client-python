@@ -2,6 +2,7 @@ import pathlib
 from requests.auth import AuthBase
 from typing import Tuple, Optional
 
+from planet.auth.auth_client import AuthClientException
 from planet.auth.oidc.api_clients.oidc_request_auth import \
     prepare_client_noauth_auth_payload
 from planet.auth.oidc.auth_client import OidcAuthClientConfig, OidcAuthClient
@@ -27,6 +28,10 @@ class AuthCodePKCEClientConfig(OidcAuthClientConfig):
         if local_redirect_uri and not redirect_uri:
             self.redirect_uri = local_redirect_uri
 
+        if not self.redirect_uri:
+            raise AuthClientException(
+                'A redirect_uri or local_redirect_uri is required.')
+
 
 class AuthCodePKCEAuthClient(OidcAuthClient):
 
@@ -39,7 +44,6 @@ class AuthCodePKCEAuthClient(OidcAuthClient):
             audience: str) -> Tuple[dict, Optional[AuthBase]]:
         auth_payload = prepare_client_noauth_auth_payload(
             client_id=self._authcode_client_config.client_id)
-        # enriched_payload = raw_payload | auth_payload  # Python >= 3.9
         enriched_payload = {**raw_payload, **auth_payload}  # Python >= 3.5
         return enriched_payload, None
 

@@ -7,7 +7,7 @@ from unittest import mock
 from planet.auth.oidc.api_clients.discovery_api_client import \
     DiscoveryAPIClient
 
-TEST_API_ENDPOINT = 'http://blackhole.unittest.planet.com/api'
+TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
 API_RESPONSE_VALID = {
     "issuer":
     "https://account.planet.com/oauth2/aus2enhwueFYRb50S4x7",

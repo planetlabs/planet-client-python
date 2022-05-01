@@ -9,7 +9,7 @@ from unittest import mock
 from planet.auth.oidc.api_clients.introspect_api_client import \
     IntrospectionAPIClient, IntrospectionAPIException
 
-TEST_API_ENDPOINT = "http://blackhole.unittest.planet.com/introspect"
+TEST_API_ENDPOINT = "https://blackhole.unittest.planet.com/introspect"
 TEST_ACCESS_TOKEN = "__test_access_token__"
 TEST_ID_TOKEN = "__test_id_token__"
 TEST_REFRESH_TOKEN = "__test_refresh_token__"

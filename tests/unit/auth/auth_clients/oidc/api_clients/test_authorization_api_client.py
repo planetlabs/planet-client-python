@@ -18,7 +18,7 @@ from planet.auth.oidc.api_clients.authorization_api_client import \
     _parse_authcode_from_callback
 from planet.auth.oidc.util import create_pkce_challenge_verifier_pair
 
-TEST_API_ENDPOINT = 'http://blackhole.unittest.planet.com/api'
+TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
 TEST_CLIENT_ID = '_client_id_'
 TEST_REDIRECT_URI_TEMPLATE = 'http://localhost:{}/utest_callback_uri'
 TEST_REQUESTED_SCOPES = ['scope1', 'scope2']
