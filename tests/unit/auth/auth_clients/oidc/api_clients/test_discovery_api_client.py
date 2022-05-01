@@ -10,17 +10,17 @@ from planet.auth.oidc.api_clients.discovery_api_client import \
 TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
 API_RESPONSE_VALID = {
     "issuer":
-    "https://account.planet.com/oauth2/aus2enhwueFYRb50S4x7",
+    "https://blackhole.unittest.planet.com/oauth2",
     "authorization_endpoint":
-    "https://account.planet.com/oauth2/aus2enhwueFYRb50S4x7/v1/authorize",
+    "https://blackhole.unittest.planet.com/oauth2/v1/authorize",
     "token_endpoint":
-    "https://account.planet.com/oauth2/aus2enhwueFYRb50S4x7/v1/token",
+    "https://blackhole.unittest.planet.com/oauth2/v1/token",
     "userinfo_endpoint":
-    "https://account.planet.com/oauth2/aus2enhwueFYRb50S4x7/v1/userinfo",
+    "https://blackhole.unittest.planet.com/oauth2/v1/userinfo",
     "registration_endpoint":
     "https://account.planet.com/oauth2/v1/clients",
     "jwks_uri":
-    "https://account.planet.com/oauth2/aus2enhwueFYRb50S4x7/v1/keys",
+    "https://blackhole.unittest.planet.com/oauth2/v1/keys",
     "response_types_supported": [
         "code",
         "id_token",
@@ -91,7 +91,7 @@ API_RESPONSE_VALID = {
     ],
     "code_challenge_methods_supported": ["S256"],
     "introspection_endpoint":
-    "https://account.planet.com/oauth2/aus2enhwueFYRb50S4x7/v1/introspect",
+    "https://blackhole.unittest.planet.com/oauth2/v1/introspect",
     "introspection_endpoint_auth_methods_supported": [
         "client_secret_basic",
         "client_secret_post",
@@ -100,7 +100,7 @@ API_RESPONSE_VALID = {
         "none"
     ],
     "revocation_endpoint":
-    "https://account.planet.com/oauth2/aus2enhwueFYRb50S4x7/v1/revoke",
+    "https://blackhole.unittest.planet.com/oauth2/v1/revoke",
     "revocation_endpoint_auth_methods_supported": [
         "client_secret_basic",
         "client_secret_post",
@@ -109,7 +109,7 @@ API_RESPONSE_VALID = {
         "none"
     ],
     "end_session_endpoint":
-    "https://account.planet.com/oauth2/aus2enhwueFYRb50S4x7/v1/logout",
+    "https://blackhole.unittest.planet.com/oauth2/v1/logout",
     "request_parameter_supported":
     True,
     "request_object_signing_alg_values_supported": [
@@ -124,7 +124,7 @@ API_RESPONSE_VALID = {
         "ES512"
     ],
     "device_authorization_endpoint":
-    "https://account.planet.com/oauth2/aus2enhwueFYRb50S4x7/v1/device/authorize"  # noqa
+    "https://blackhole.unittest.planet.com/oauth2/v1/device/authorize"  # noqa
 }
 # API_RESPONSE_FAILED = {}
 

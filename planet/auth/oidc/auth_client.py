@@ -161,7 +161,6 @@ class OidcAuthClient(AuthClient):
           Returns:
               A FileBackedOidcToken object
         """
-        pass
 
     def refresh(self, refresh_token, requested_scopes=None):
         """
