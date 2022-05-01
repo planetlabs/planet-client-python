@@ -37,7 +37,7 @@ class Items(Paged):
 
 
 class DataClient():
-    """High-level asynchronous access to Planet's data API.
+    """Low-level asynchronous access to Planet's data API.
 
     Example:
         ```python
