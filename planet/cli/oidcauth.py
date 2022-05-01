@@ -31,7 +31,7 @@ def oidc_token_group(ctx):
 @click.pass_context
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_list_scopes(ctx):
-    auth_client = ctx.obj['AUTH_CLIENT']
+    auth_client = ctx.obj['AUTH'].auth_client()
     available_scopes = auth_client.get_scopes()
     available_scopes.sort()
     print('Available scopes:')
@@ -57,12 +57,12 @@ def do_list_scopes(ctx):
 @click.pass_context
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_token_login(ctx, scope, open_browser, username, password):
-    auth_client = ctx.obj['AUTH_CLIENT']
+    auth_client = ctx.obj['AUTH'].auth_client()
     token = auth_client.login(requested_scopes=scope,
                               allow_open_browser=open_browser,
                               username=username,
                               password=password)
-    token.set_path(ctx.obj['AUTH_TOKEN_FILE_PATH'])
+    token.set_path(ctx.obj['AUTH'].token_file_path())
     token.save()
 
 
@@ -72,7 +72,7 @@ def do_token_login(ctx, scope, open_browser, username, password):
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_print_access_token(ctx):
     # FIXME: this will only work for OIDC auth mechanisms. Maybe that's OK.
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
     print(saved_token.access_token())
 
 
@@ -89,8 +89,8 @@ def do_print_access_token(ctx):
 @click.pass_context
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_token_refresh(ctx, scope):
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
-    auth_client = ctx.obj['AUTH_CLIENT']
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     if not saved_token.refresh_token():
         raise Exception('No refresh_token found in ' + str(saved_token.path()))
@@ -106,8 +106,8 @@ def do_token_refresh(ctx, scope):
 @click.pass_context
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_validate_access_token(ctx):
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
-    auth_client = ctx.obj['AUTH_CLIENT']
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     validation_json = auth_client.validate_access_token(
         saved_token.access_token())
@@ -125,8 +125,8 @@ def do_validate_access_token(ctx):
 @click.pass_context
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_validate_id_token(ctx):
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
-    auth_client = ctx.obj['AUTH_CLIENT']
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     validation_json = auth_client.validate_id_token(saved_token.id_token())
 
@@ -143,8 +143,8 @@ def do_validate_id_token(ctx):
 @click.pass_context
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_validate_id_token_local(ctx):
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
-    auth_client = ctx.obj['AUTH_CLIENT']
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     # Throws on error.
     validation_json = auth_client.validate_id_token_local(
@@ -159,8 +159,8 @@ def do_validate_id_token_local(ctx):
 @click.pass_context
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_validate_refresh_token(ctx):
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
-    auth_client = ctx.obj['AUTH_CLIENT']
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     validation_json = auth_client.validate_refresh_token(
         saved_token.refresh_token())
@@ -178,8 +178,8 @@ def do_validate_refresh_token(ctx):
 @click.pass_context
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_revoke_access_token(ctx):
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
-    auth_client = ctx.obj['AUTH_CLIENT']
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     auth_client.revoke_access_token(saved_token.access_token())
 
@@ -190,7 +190,7 @@ def do_revoke_access_token(ctx):
 @click.pass_context
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_revoke_refresh_token(ctx):
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH_TOKEN_FILE_PATH'])
-    auth_client = ctx.obj['AUTH_CLIENT']
+    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     auth_client.revoke_refresh_token(saved_token.refresh_token())
