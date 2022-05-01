@@ -55,7 +55,6 @@ COPY MANIFEST.in .
 COPY setup.py .
 COPY setup.cfg .
 COPY ./planet ./planet
-COPY ./data ./data
 
 RUN python -m pip install .
 
