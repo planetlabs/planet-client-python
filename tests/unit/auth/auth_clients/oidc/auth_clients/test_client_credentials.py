@@ -20,20 +20,24 @@ TEST_CLIENT_ID = 'fake_test_client_id'
 TEST_CLIENT_SECRET = 'fake_test_client_secret'
 TEST_TOKEN_SAVE_FILE_PATH = pathlib.Path('/test/token.json')
 MOCK_TOKEN = {
-  "token_type": "Bearer",
-  "expires_in": 3600,
-  "access_token": "__mock_access_token__",
-  "scope": "planet"
+    "token_type": "Bearer",
+    "expires_in": 3600,
+    "access_token": "__mock_access_token__",
+    "scope": "planet"
 }
 
 
-def mocked_tokenapi_ccred_client_secret(
-        obj_self, client_id, client_secret, requested_scopes):
+def mocked_tokenapi_ccred_client_secret(obj_self,
+                                        client_id,
+                                        client_secret,
+                                        requested_scopes):
     return MOCK_TOKEN
 
 
-def mocked_tokenapi_ccred_pubkey(
-        obj_self, client_id, private_key, requested_scopes):
+def mocked_tokenapi_ccred_pubkey(obj_self,
+                                 client_id,
+                                 private_key,
+                                 requested_scopes):
     return MOCK_TOKEN
 
 
@@ -47,7 +51,9 @@ class ClientCredentialsClientSecretFlowTest(unittest.TestCase):
                 client_id=TEST_CLIENT_ID,
                 client_secret=TEST_CLIENT_SECRET))
 
-    @mock.patch('planet.auth.oidc.api_clients.token_api_client.TokenAPIClient.get_token_from_client_credentials_secret', mocked_tokenapi_ccred_client_secret)  # noqa
+    @mock.patch(
+        'planet.auth.oidc.api_clients.token_api_client.TokenAPIClient.get_token_from_client_credentials_secret',  # noqa
+        mocked_tokenapi_ccred_client_secret)
     def test_login(self):
         test_result = self.under_test.login()
         self.assertIsInstance(test_result, FileBackedOidcToken)
@@ -62,8 +68,8 @@ class ClientCredentialsClientSecretFlowTest(unittest.TestCase):
     def test_default_request_authenticator_type(self):
         test_result = self.under_test.default_request_authenticator(
             token_file_path=TEST_TOKEN_SAVE_FILE_PATH)
-        self.assertIsInstance(
-            test_result, RefreshOrReloginOidcTokenRequestAuthenticator)
+        self.assertIsInstance(test_result,
+                              RefreshOrReloginOidcTokenRequestAuthenticator)
 
     def test_auth_enricher(self):
         # The correctness of what enrichment does is determined by the token
@@ -129,8 +135,7 @@ class ClientCredentialsPubKeyConfigTest(unittest.TestCase):
             auth_server=TEST_AUTH_SERVER,
             client_id=TEST_CLIENT_ID,
             client_privkey=self.privkey_literal_str,
-            client_privkey_password=self.privkey_password
-        )
+            client_privkey_password=self.privkey_password)
         key_nopw = under_test_nopw.private_key_data()
         key_pw = under_test_pw.private_key_data()
         self._assert_rsa_keys_equal(key_pw, key_nopw)
@@ -144,8 +149,7 @@ class ClientCredentialsPubKeyConfigTest(unittest.TestCase):
             auth_server=TEST_AUTH_SERVER,
             client_id=TEST_CLIENT_ID,
             client_privkey_file=self.privkey_file_path,
-            client_privkey_password=self.privkey_password
-        )
+            client_privkey_password=self.privkey_password)
         key_nopw = under_test_nopw.private_key_data()
         key_pw = under_test_pw.private_key_data()
         self._assert_rsa_keys_equal(key_pw, key_nopw)
@@ -183,7 +187,9 @@ class ClientCredentialsPubKeyConfigTest(unittest.TestCase):
         with self.assertRaises(AuthClientException):
             under_test.private_key_data()
 
-    @mock.patch('cryptography.hazmat.primitives.serialization.load_pem_private_key', mocked_pem_load_error)  # noqa
+    @mock.patch(
+        'cryptography.hazmat.primitives.serialization.load_pem_private_key',
+        mocked_pem_load_error)  # noqa
     def test_unexpected_keyload_restult(self):
         under_test = ClientCredentialsPubKeyClientConfig(
             auth_server=TEST_AUTH_SERVER,
@@ -205,8 +211,7 @@ class ClientCredentialsPubKeyConfigTest(unittest.TestCase):
             client_id=TEST_CLIENT_ID,
             client_privkey=None,
             client_privkey_file=None,
-            client_privkey_password=None
-        )
+            client_privkey_password=None)
         with self.assertRaises(AuthClientException):
             under_test.private_key_data()
 
@@ -230,10 +235,11 @@ class ClientCredentialsPubKeyFlowTest(unittest.TestCase):
                 token_endpoint=TEST_AUTH_SERVER + '/token',
                 client_id=TEST_CLIENT_ID,
                 client_privkey_password=self.privkey_password,
-                client_privkey_file=self.privkey_file_path
-            ))
+                client_privkey_file=self.privkey_file_path))
 
-    @mock.patch('planet.auth.oidc.api_clients.token_api_client.TokenAPIClient.get_token_from_client_credentials_pubkey', mocked_tokenapi_ccred_pubkey)  # noqa
+    @mock.patch(
+        'planet.auth.oidc.api_clients.token_api_client.TokenAPIClient.get_token_from_client_credentials_pubkey',  # noqa
+        mocked_tokenapi_ccred_pubkey)
     def test_login(self):
         test_result = self.under_test.login()
         self.assertIsInstance(test_result, FileBackedOidcToken)
@@ -248,8 +254,8 @@ class ClientCredentialsPubKeyFlowTest(unittest.TestCase):
     def test_default_request_authenticator_type(self):
         test_result = self.under_test.default_request_authenticator(
             token_file_path=TEST_TOKEN_SAVE_FILE_PATH)
-        self.assertIsInstance(
-            test_result, RefreshOrReloginOidcTokenRequestAuthenticator)
+        self.assertIsInstance(test_result,
+                              RefreshOrReloginOidcTokenRequestAuthenticator)
 
     def test_auth_enricher(self):
         # The correctness of what enrichment does is determined by the token
@@ -291,8 +297,8 @@ class ClientCredentialsSharedKeyFlowTest(unittest.TestCase):
     def test_default_request_authenticator_type(self):
         test_result = self.under_test.default_request_authenticator(
             token_file_path=TEST_TOKEN_SAVE_FILE_PATH)
-        self.assertIsInstance(
-            test_result, RefreshOrReloginOidcTokenRequestAuthenticator)
+        self.assertIsInstance(test_result,
+                              RefreshOrReloginOidcTokenRequestAuthenticator)
 
     def test_auth_enricher(self):
         # Dummy fake test since there is no real implementation yet.

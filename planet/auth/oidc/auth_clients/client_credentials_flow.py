@@ -74,7 +74,8 @@ class ClientCredentialsPubKeyClientConfig(OidcAuthClientConfig):
         else:
             self.client_privkey_password = client_privkey_password
 
-    @AuthClientException.recast(TypeError, ValueError) # Catches bad passwords. Too broad? # noqa
+    # Catches bad passwords. Too broad? # noqa
+    @AuthClientException.recast(TypeError, ValueError)
     def _load_private_key(self):
         # TODO: also handle loading of JWK keys? Fork based on filename
         #       or detect?
@@ -83,8 +84,7 @@ class ClientCredentialsPubKeyClientConfig(OidcAuthClientConfig):
 
         if self.client_privkey:
             priv_key = crypto_serialization.load_pem_private_key(
-                self.client_privkey,
-                password=self.client_privkey_password)
+                self.client_privkey, password=self.client_privkey_password)
             if not priv_key:
                 raise AuthClientException(
                     'Unable to load private key literal from configuration')
@@ -95,9 +95,7 @@ class ClientCredentialsPubKeyClientConfig(OidcAuthClientConfig):
                     ' client credentials flow.')
             with open(self.client_privkey_file, "rb") as key_file:
                 priv_key = crypto_serialization.load_pem_private_key(
-                    key_file.read(),
-                    password=self.client_privkey_password
-                )
+                    key_file.read(), password=self.client_privkey_password)
                 if not priv_key:
                     raise AuthClientException(
                         'Unable to load private key from file "{}"'.format(
