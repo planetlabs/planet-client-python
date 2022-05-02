@@ -25,7 +25,7 @@ from .io import echo_json
 
 LOGGER = logging.getLogger(__name__)
 
-pretty = click.option('--pretty', is_flag=True, help='Format JSON output')
+pretty = click.option('--pretty', is_flag=True, help='Format JSON output.')
 
 
 @asynccontextmanager
@@ -58,7 +58,8 @@ def orders(ctx, base_url):
               type=click.Choice(planet.clients.orders.ORDER_STATE_SEQUENCE,
                                 case_sensitive=False))
 @click.option('--limit',
-              help='Filter orders to given limit.',
+              help='Maximum number of results to return. Default is 100. A '
+                   'value of 0 means no maximum.',
               default=None,
               type=int)
 @pretty
