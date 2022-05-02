@@ -152,23 +152,36 @@ async def test_list_orders_state_invalid_state(session):
 async def test_list_orders_limit(order_descriptions, session):
     nono_page_url = TEST_ORDERS_URL + '?page_marker=OhNoNo'
 
-    order1, order2, order3 = order_descriptions
+    long_order_descriptions = order_descriptions * 34
+    norders = len(long_order_descriptions)
+    # norders = 101
+    for n in range(1, norders + 1):
+        globals()['order%s' % n] = long_order_descriptions[n-1]
 
     page1_response = {
         "_links": {
             "_self": "string", "next": nono_page_url
         },
-        "orders": [order1, order2]
+        "orders": [globals()['order%s' % n] for n in range(1, norders + 1)]
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    # since nono_page_url is not mocked, an error will occur if the client
-    # attempts to access the next page when the limit is already reached
-    orders = await cl.list_orders(limit=1)
-    assert [order1] == [o async for o in orders]
+    # limit_options = [None, 0, 1]
+    limit_options = [None, 0, 1]
+    for limit in limit_options:
+        orders = await cl.list_orders(limit=limit)
+        # Default, limit to 100 orders
+        if limit is None:
+            assert [globals()['order%s' % n] for n in range(1, 101)] == [o async for o in orders]
+        # No limit, list all orders
+        elif limit == 0:
+            assert [globals()['order%s' % n] for n in range(1, norders + 1)] == [o async for o in orders]
+        # Limit to 1 order
+        elif limit == 1:
+            assert [globals()['order1']] == [o async for o in orders]
 
 
 @respx.mock
