@@ -149,25 +149,28 @@ async def test_list_orders_state_invalid_state(session):
 
 @respx.mock
 @pytest.mark.asyncio
-@pytest.mark.parametrize("limit,limitted_list_length",
-                         [(None, 100),
-                          (0, 102),
-                          (1, 1)])
-async def test_list_orders_limit(order_descriptions, session, limit, limitted_list_length):
+@pytest.mark.parametrize("limit,limitted_list_length", [(None, 100), (0, 102),
+                                                        (1, 1)])
+async def test_list_orders_limit(order_descriptions,
+                                 session,
+                                 limit,
+                                 limitted_list_length):
     nono_page_url = TEST_ORDERS_URL + '?page_marker=OhNoNo'
 
     long_order_descriptions = order_descriptions * 34
-    norders = len(long_order_descriptions)
-    # norders = 101
-    for n in range(1, norders + 1):
-        # use dictionary instead
-        globals()['order%s' % n] = long_order_descriptions[n-1]
+
+    all_orders = {}
+    for x in range(1, len(long_order_descriptions)):
+        all_orders["order{0}".format(x)] = long_order_descriptions[x - 1]
 
     page1_response = {
         "_links": {
             "_self": "string", "next": nono_page_url
         },
-        "orders": [globals()['order%s' % n] for n in range(1, norders + 1)]
+        "orders": [
+            all_orders['order%s' % n]
+            for n in range(1, len(long_order_descriptions))
+        ]
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
