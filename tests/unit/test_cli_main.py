@@ -31,6 +31,7 @@ def debug_input():
 
 @pytest.mark.parametrize("option,quiet", [("", False), ("--quiet", True)])
 def test_cli_orders_quiet(option, quiet):
+    """Check that --quiet is passed in context to subcommands."""
 
     # dummy command so we can invoke cli
     @click.command()
@@ -50,6 +51,7 @@ def test_cli_orders_quiet(option, quiet):
                           ("--verbosity=debug", logging.DEBUG)])
 @mock.patch('planet.cli.cli.logging.basicConfig')
 def test_cli_info_verbosity(mock_config, verbosity, log_level):
+    """Check that main command configures logging with the proper level."""
 
     def configtest(stream, level, format):
         assert level == log_level
@@ -68,6 +70,7 @@ def test_cli_info_verbosity(mock_config, verbosity, log_level):
 
 
 def test_cli_invalid_verbosity():
+    """Get a BadParameter error for invalid --verbosity."""
 
     # dummy command so we can invoke cli
     @click.command()
