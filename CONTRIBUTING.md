@@ -26,13 +26,13 @@ This repository uses two primary tools for development:
 Install Nox in your local dev environment:
 
 ```console
-pip install nox
+    $ pip install nox
 ```
 
 Install YAPF in your local dev environment:
 
 ```console
-pip install yapf
+    $ pip install yapf
 ```
 
 ### Nox
@@ -45,14 +45,14 @@ Python and required development packages.
 Run Nox with the default sessions (same checks as CI):
 
 ```console
-nox
+    $ nox
 ```
 
 If no changes have been made to the Nox environment since it was last run,
 speed up the run by reusing the environment:
 
 ```console
-nox -r
+    $ nox -r
 ```
 
 The configuration for Nox is given in `noxfile.py`. See the Nox link above for
@@ -69,7 +69,7 @@ of the Planet SDK for Python and required development packages into the virtual
 environment use:
 
 ```console
-pip install -e .[dev]
+    $ pip install -e .[dev]
 ```
 
 ### YAPF
@@ -84,13 +84,13 @@ don't have to worry about formatting issues. WIN!
 To see how YAPF would reformat a file:
 
 ```console
-yapf --diff [file]
+    $ yapf --diff [file]
 ```
 
 To reformat the file:
 
 ```console
-yapf --in-place [file]
+    $ yapf --in-place [file]
 ```
 
 The configuration for YAPF is given in `setup.cfg` and `.yapfignore`.
@@ -118,7 +118,7 @@ Command-line arguments can be passed to pytest within Nox. For example, to only
 run the tests on a certain file, use:
 
 ```console
-nox -- [file]
+    $ nox -- [file]
 ```
 
 By default, Nox runs tests on all supported Python versions along with other
@@ -127,7 +127,7 @@ CI checks. However, Nox can run a test on a single Python version.
 To run tests on python 3.7:
 
 ```console
-nox -s test-3.7
+    $ nox -s test-3.7
 ```
 
 ## Code coverage
@@ -135,7 +135,7 @@ nox -s test-3.7
 To measure code coverage and see a report:
 
 ```console
-nox -s coverage
+    $ nox -s coverage
 ```
 
 ## Linting
@@ -147,7 +147,7 @@ all other CI checks. However, Nox can run just the linting check.
 To run lint check:
 
 ```console
-nox -s lint
+    $ nox -s lint
 ```
 
 ## Documentation
@@ -165,13 +165,13 @@ to assist documentation development.
 To build the documentation:
 
 ```console
-nox -s docs
+    $ nox -s docs
 ```
 
 To build and host an automatically-updated local version of the documentation:
 
 ```console
-nox -s watch
+    $ nox -s watch
 ```
 
 In addition to verifying that the documentation renders correctly locally,
@@ -192,14 +192,14 @@ incur usages.
 To test the documentation, run the Nox `docs_test` session:
 
 ```console
-nox -s docs_test
+    $ nox -s docs_test
 ```
 
 This will test all code examples in Markdown documents.
 To only test one document:
 
 ```console
-nox -s docs_test -- <document_name>.md
+    $ nox -s docs_test -- <document_name>.md
 ```
 
 ### Testing Examples
@@ -213,14 +213,14 @@ very slow and also could incur usages.
 To test the examples, run the Nox `examples` session:
 
 ```console
-nox -s examples
+    $ nox -s examples
 ```
 
 This will test all scripts within the `examples` directory.
 To only test one script:
 
 ```console
-nox -s examples -- <script_name>.py
+    $ nox -s examples -- <script_name>.py
 ```
 
 For more information on developing examples, see the examples
