@@ -35,7 +35,6 @@ LOGGER = logging.getLogger(__name__)
               default=False,
               help='Disable ANSI control output.')
 @click.version_option(version=planet.__version__)
-@click.version_option(version=planet.__version__)
 def main(ctx, verbosity, quiet):
     """Planet API Client
     Parameters:
