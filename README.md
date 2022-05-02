@@ -32,82 +32,57 @@ Full documentation is not yet hosted online but can be built and hosted locally
 
 ## Quick Start
 
-The Planet SDK for Python allows Python developers to write software that makes
-use of the following Planet APIs:
+The Planet SDK includes both a Python API and a command-line interface (CLI)
+to make use of the following Planet APIs:
 
 * [orders](https://developers.planet.com/docs/orders/)
 * [data](https://developers.planet.com/docs/data/) (not yet implemented)
 * [subscriptions](https://developers.planet.com/docs/subscriptions/) (not 
  yet implemented)
 
-The client modules within the Python library are asynchronous, which greatly
-speeds up many interactions with Planet's APIs. Support for asynchronous
-development is native to Python 3.6+ via the
-[`asyncio` module](https://docs.python.org/3/library/asyncio.html). A great
-resource for getting started with asynchronous programming in Python is
-https://project-awesome.org/timofurrer/awesome-asyncio. The Writings and Talks
-sections are particularly helpful in getting oriented.
+This quickstart focuses on getting started with the CLI to place an Order.
 
-Let's start with creating an order with the Orders API:
-
-```python
->>> import asyncio
->>> import os
->>> import planet
->>>
->>> request = {
-...   "name": "test_order",
-...   "products": [
-...     {
-...       "item_ids": [
-...         "3949357_1454705_2020-12-01_241c"
-...       ],
-...       "item_type": "PSOrthoTile",
-...       "product_bundle": "analytic"
-...     }
-...   ]
-... }
-...
->>> async def create_order(request):
-...     async with planet.Session() as ps:
-...         client = planet.OrdersClient(ps)
-...         return await client.create_order(request)
-...
->>> oid = asyncio.run(create_order(request))
+After you've install the client, as explained in the [installation](#installation)
+section below, you first you must initialize the client with your Planet 
+username and password:
 
 ```
-
-Not into async? No problem. Just wrap the library and async operations together
-and call from your synchronous code.
-
-```python
->>> def sync_create_order(order_details):
-...     return asyncio.run(create_order(order_details))
->>>
->>> oid = sync_create_order(order_details)
-
+% planet auth init
+Email: <youremail@domain.com>
+Password: 
+Initialized
 ```
 
-When using `asyncio.run` to develop synchronous code with the async library,
-keep in mind this excerpt from the
-[asyncio.run](https://docs.python.org/3/library/asyncio-task.html#asyncio.run)
-documentation:
+The email address and password you use should be the same as your login to 
+[Planet Explorer](https://planet.com/explorer). The `auth init` command
+will automatically get your API key and store it locally.
 
-"*This function always creates a new event loop and closes it at the end. It
-should be used as a main entry point for asyncio programs, and should ideally
-only be called once.*"
+Now that you're initialized let's start with creating an order with the 
+Orders API:
 
-Do you have a use case where native synchronous support is essential? If so,
-please contribute to this
-[discussion](https://github.com/planetlabs/planet-client-python/issues/251).
+```
+% planet orders create --name my-first-order --id <scene ids> \ 
+  --item-type SkySatCollect --bundle visual
+```
 
-Why async? Because things get *really cool* when you want to work with multiple
-orders. See [orders_create_and_download_multiple_orders.py](examples/orders_create_and_download_multiple_orders.py) for
-an example of submitting two orders, waiting for them to complete, and
-downloading them. The orders each clip a set of images to a specific area of
-interest (AOI), so they cannot be combined into one order.
-(hint: [Planet Explorer](https://www.planet.com/explorer/) was used to define
-the AOIs and get the image ids.)
+You should supply a unique name after `--name` for each new order, to help
+you identify what oder. The `--id` is one or more scene ids (separated by
+commas). These can be obtained from the data API, and you can also grab them
+from any search in Planet Explorer. Just be sure the scene id matches the
+[item-type](https://developers.planet.com/docs/apis/data/items-assets/#item-types) 
+to get the right type of image. And then be sure to specify a 
+[bundle](https://developers.planet.com/docs/orders/product-bundles-reference/).
+The most common ones are `visual` and `analytic`. 
+
+This will give you an order response JSON as shown in the 'example response' in
+[the docs](https://developers.planet.com/docs/orders/ordering/#basic-ordering). You can 
+grab the `id` from that response and then use that in a single command to wait for
+the order and download it when you are ready:
+
+```
+% planet orders wait dfdf3088-73a2-478c-a8f6-1bad1c09fa09 && planet orders \
+  download dfdf3088-73a2-478c-a8f6-1bad1c09fa09
+```
 
 ## Installation
 
