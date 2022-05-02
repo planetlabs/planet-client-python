@@ -3,19 +3,33 @@ import nox
 nox.options.stop_on_first_error = True
 nox.options.reuse_existing_virtualenvs = False
 
-nox.options.sessions = ['test', 'lint', 'docs', 'install']
+nox.options.sessions = ['lint', 'test', 'coverage', 'docs']
 
 source_files = ("planet", "examples", "tests", "setup.py", "noxfile.py")
 
 
-@nox.session(python=["3.7", "3.8", "3.9"])
-def test(session):
-    # must include -e to allow coverage file update
+@nox.session
+def coverage(session):
     session.install("-e", ".[test]")
 
+    session.run('coverage',
+                'run',
+                '-m',
+                'pytest',
+                '-qq',
+                '--no-header',
+                '--no-summary',
+                '--no-cov',
+                '--ignore',
+                'examples/')
+    session.run('coverage', 'report')
+
+
+@nox.session(python=["3.7", "3.8", "3.9"])
+def test(session):
+    session.install(".[test]")
+
     options = session.posargs
-    if '-k' in options:
-        options.append('--no-cov')
     session.run('pytest', '--ignore', 'examples/', '-v', *options)
 
 
@@ -25,12 +39,6 @@ def lint(session):
 
     session.run("flake8", *source_files)
     session.run('yapf', '--diff', '-r', *source_files)
-
-
-@nox.session
-def install(session):
-    # just make sure it can be installed
-    session.install(".")
 
 
 @nox.session
