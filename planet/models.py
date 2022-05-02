@@ -22,6 +22,8 @@ import string
 import httpx
 from tqdm.asyncio import tqdm
 
+from .exceptions import PagingError
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -338,7 +340,17 @@ class Paged():
             resp = await self._do_request(request)
             page = resp.json()
             yield page
+
+            # If the next URL is the same as the previous URL we will
+            # get the same response and be stuck in a page cycle. This
+            # has happened in development and could happen in the case
+            # of a bug in the production API.
+            prev_url = next_url
             next_url = self._next_link(page)
+
+            if next_url == prev_url:
+                raise PagingError(
+                    "Page cycle detected at {!r}".format(next_url))
 
     def _next_link(self, page):
         try:
