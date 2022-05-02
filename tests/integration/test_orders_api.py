@@ -149,13 +149,18 @@ async def test_list_orders_state_invalid_state(session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_list_orders_limit(order_descriptions, session):
+@pytest.mark.parametrize("limit,limitted_list_length",
+                         [(None, 100),
+                          (0, 102),
+                          (1, 1)])
+async def test_list_orders_limit(order_descriptions, session, limit, limitted_list_length):
     nono_page_url = TEST_ORDERS_URL + '?page_marker=OhNoNo'
 
     long_order_descriptions = order_descriptions * 34
     norders = len(long_order_descriptions)
     # norders = 101
     for n in range(1, norders + 1):
+        # use dictionary instead
         globals()['order%s' % n] = long_order_descriptions[n-1]
 
     page1_response = {
@@ -169,19 +174,8 @@ async def test_list_orders_limit(order_descriptions, session):
 
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    # limit_options = [None, 0, 1]
-    limit_options = [None, 0, 1]
-    for limit in limit_options:
-        orders = await cl.list_orders(limit=limit)
-        # Default, limit to 100 orders
-        if limit is None:
-            assert [globals()['order%s' % n] for n in range(1, 101)] == [o async for o in orders]
-        # No limit, list all orders
-        elif limit == 0:
-            assert [globals()['order%s' % n] for n in range(1, norders + 1)] == [o async for o in orders]
-        # Limit to 1 order
-        elif limit == 1:
-            assert [globals()['order1']] == [o async for o in orders]
+    orders = await cl.list_orders(limit=limit)
+    assert len([o async for o in orders]) == limitted_list_length
 
 
 @respx.mock
