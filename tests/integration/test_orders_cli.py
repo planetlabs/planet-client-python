@@ -73,7 +73,7 @@ def test_cli_orders_list_basic(invoke, order_descriptions):
 
     result = invoke(['list'])
     assert not result.exception
-    assert [order1, order2, order3] == json.loads(result.output)
+    assert json.dumps([order1, order2, order3]) + '\n' == result.output
 
 
 @respx.mock
