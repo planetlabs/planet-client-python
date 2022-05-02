@@ -1,0 +1,19 @@
+{
+   "type":"AndFilter",
+   "config":[
+      {
+         "type":"DateRangeFilter",
+         "field_name":"acquired",
+         "config":{
+            "gte":"2022-01-01T00:00:00Z",
+            "lte":"2022-01-31T00:00:00Z"
+         }
+      },
+      {
+         "type":"PermissionFilter",
+         "config":[
+            "assets:download"
+         ]
+      }
+   ]
+}
