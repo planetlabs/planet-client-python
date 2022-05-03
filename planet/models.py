@@ -32,7 +32,7 @@ class RequestException(Exception):
     pass
 
 
-class Request():
+class Request:
     '''Handles a HTTP request for the Planet server.
 
     :param url: URL of API endpoint
@@ -76,7 +76,7 @@ class Request():
         self.http_request.url = httpx.URL(url)
 
 
-class Response():
+class Response:
     '''Handles the Planet server's response to a HTTP request.
 
     :param request: Request that was submitted to the server
@@ -113,7 +113,7 @@ class Response():
         await self.http_response.aclose()
 
 
-class StreamingBody():
+class StreamingBody:
     '''A representation of a streaming resource from the API.
 
     :param response: Response that was received from the server
@@ -183,7 +183,7 @@ class StreamingBody():
         :type progress_bar: boolean, optional
         '''
 
-        class _LOG():
+        class _LOG:
 
             def __init__(self, total, unit, filename, disable):
                 self.total = total
@@ -265,7 +265,7 @@ def _get_random_filename(content_type=None):
     return name
 
 
-class Paged():
+class Paged:
     '''Asynchronous iterator over results in a paged resource from the Planet
     server.
     Each returned result is a json dict.
