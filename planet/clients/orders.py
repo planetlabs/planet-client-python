@@ -406,7 +406,7 @@ class OrdersClient():
 
         return current_state
 
-    async def list_orders(self, state: str = None, limit: int = None):
+    async def list_orders(self, state: str = None, limit: int = 100):
         """Get all order requests.
 
         Parameters:
@@ -422,11 +422,8 @@ class OrdersClient():
         """
         url = self._orders_url()
 
-        # Set default limit to 100
-        if limit is None:
-            limit = 100
         # Set no limit
-        elif limit == 0:
+        if limit == 0:
             limit = None
 
         if state:
