@@ -150,7 +150,7 @@ async def test_list_orders_state_invalid_state(session):
 @respx.mock
 @pytest.mark.asyncio
 @pytest.mark.parametrize("limit,limited_list_length", [(None, 100), (0, 102),
-                                                        (1, 1)])
+                                                       (1, 1)])
 async def test_list_orders_limit(order_descriptions,
                                  session,
                                  limit,
