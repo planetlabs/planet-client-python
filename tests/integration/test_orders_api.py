@@ -155,7 +155,7 @@ async def test_list_orders_limit(order_descriptions,
                                  session,
                                  limit,
                                  limitted_list_length):
-    nono_page_url = TEST_ORDERS_URL + '?page_marker=OhNoNo'
+    nono_page_url = None
 
     long_order_descriptions = order_descriptions * 34
 
