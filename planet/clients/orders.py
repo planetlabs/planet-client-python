@@ -296,7 +296,7 @@ class OrdersClient():
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If the order is not in a final
                 state.
-            planet.exceptions.ClientError: If the checksum
+            planet.exceptions.ClientError: If the checksum fails.
         """
         order = await self.get_order(order_id)
         order_state = order['state']
@@ -318,6 +318,7 @@ class OrdersClient():
                                       progress_bar=progress_bar)
             for location in locations
         ]
+        # Checksum Implementation
         # Get manifest filepath
         manifest_json = ' '.join([x for x in filenames if x.endswith('manifest.json')])
         # Save each filename and MD5 hash in a dict as a key-value pair
