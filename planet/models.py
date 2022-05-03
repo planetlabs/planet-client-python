@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Manage data for requests and responses."""
-import copy
 from datetime import datetime
 import logging
 import mimetypes
@@ -22,6 +21,8 @@ import string
 
 import httpx
 from tqdm.asyncio import tqdm
+
+from .exceptions import PagingError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -292,6 +293,10 @@ class Paged():
         self.i = 0
         self.limit = limit
 
+    @staticmethod
+    def _next_page_request(url):
+        return Request(url, 'GET')
+
     def __aiter__(self):
         return self
 
@@ -323,20 +328,29 @@ class Paged():
         return item
 
     async def _get_pages(self):
-        request = copy.deepcopy(self.request)
         LOGGER.debug('getting first page')
-        resp = await self._do_request(request)
+        resp = await self._do_request(self.request)
         page = resp.json()
         yield page
 
         next_url = self._next_link(page)
         while (next_url):
             LOGGER.debug('getting next page')
-            request.url = next_url
+            request = self._next_page_request(next_url)
             resp = await self._do_request(request)
             page = resp.json()
             yield page
+
+            # If the next URL is the same as the previous URL we will
+            # get the same response and be stuck in a page cycle. This
+            # has happened in development and could happen in the case
+            # of a bug in the production API.
+            prev_url = next_url
             next_url = self._next_link(page)
+
+            if next_url == prev_url:
+                raise PagingError(
+                    "Page cycle detected at {!r}".format(next_url))
 
     def _next_link(self, page):
         try:

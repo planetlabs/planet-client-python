@@ -23,6 +23,7 @@ from httpx import URL
 import pytest
 
 from planet import models
+from planet.exceptions import PagingError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -235,3 +236,21 @@ async def test_Paged_limit(get_pages):
     req = MagicMock()
     paged = models.Paged(req, get_pages, limit=3)
     assert [1, 2, 3] == [i async for i in paged]
+
+
+@pytest.mark.asyncio
+async def test_break_page_cycle():
+    """Check that we break out of a page cycle."""
+
+    async def func(req):
+        return mock_http_response(json={
+            'links': {
+                'next': 'blah'
+            }, 'items': [1, 2]
+        })
+
+    req = MagicMock()
+    paged = models.Paged(req, func, limit=None)
+
+    with pytest.raises(PagingError):
+        [item async for item in paged]

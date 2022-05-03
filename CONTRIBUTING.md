@@ -130,6 +130,14 @@ To run tests on python 3.7:
     $ nox -s test-3.7
 ```
 
+## Code coverage
+
+To measure code coverage and see a report:
+
+```console
+    $ nox -s coverage
+```
+
 ## Linting
 
 Linting is performed using [flake8](https://flake8.pycqa.org/)
