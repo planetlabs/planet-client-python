@@ -538,6 +538,37 @@ async def test_download_asset_md(tmpdir, session):
 
 @respx.mock
 @pytest.mark.asyncio
+async def test_checksum_success(tmpdir, order_description, oid, session):
+    # Mock an HTTP response for download
+    order_description['state'] = 'success'
+    dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
+    order_description['_links']['results'] = [{
+        'location': dl_url1
+    }]
+
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.get(get_url).return_value = mock_resp
+
+    mock_resp1 = httpx.Response(HTTPStatus.OK,
+                                json={"name":"","files":[{"path":Path(tmpdir, "manifest.json").name,
+                                                          "digests":{"md5":"22e054aad3e6cb33d31a4c919ccadcb2",
+                                                                     "sha256":"dbcdf77ac7c0e109bb17194271401295ddf21e104dfe5bea52efb585adebc84a"}}]},
+                                headers={
+                                    'Content-Type':
+                                    'application/json',
+                                    'Content-Disposition':
+                                    'attachment; filename="manifest.json"'
+                                })
+    respx.get(dl_url1).return_value = mock_resp1
+    cl = OrdersClient(session, base_url=TEST_URL)
+    filenames = await cl.download_order(oid, directory=str(tmpdir), checksum=True)
+    import pdb; pdb.set_trace()
+    # Check that the checksum passes and doesn't raise an exception
+    assert json.load(open(filenames[0])) == {'md5': '22e054aad3e6cb33d31a4c919ccadcb2'}
+
+@respx.mock
+@pytest.mark.asyncio
 async def test_download_asset_img(tmpdir, open_test_img, session):
     dl_url = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
 

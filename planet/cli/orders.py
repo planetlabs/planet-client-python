@@ -180,7 +180,7 @@ async def wait(ctx, order_id, delay, max_attempts, state):
 @coro
 @click.argument('order_id', type=click.UUID)
 @click.option('--checksum',
-              default='.',
+              default=None,
               type=click.Choice(['MD5', 'SHA1'],
                                 case_sensitive=False),
               help=('Verify that checksums match.'))

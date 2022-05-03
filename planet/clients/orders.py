@@ -279,7 +279,7 @@ class OrdersClient():
                              directory: str = None,
                              overwrite: bool = False,
                              progress_bar: bool = False,
-                             checksum: str = None) -> typing.List[str]:
+                             checksum: bool = False) -> typing.List[str]:
         """Download all assets in an order.
 
         Parameters:
@@ -318,31 +318,33 @@ class OrdersClient():
                                       progress_bar=progress_bar)
             for location in locations
         ]
-        # Checksum Implementation
-        # Get manifest filepath
-        manifest_json = ' '.join([x for x in filenames if x.endswith('manifest.json')])
-        # Save each filename and MD5 hash in a dict as a key-value pair
-        with open(manifest_json, 'rb') as manifest:
-            json_data = json.load(manifest)
-            file_key_pairs = {}
-            for json_entry in json_data['files']:
-                file_name = json_entry['path'].split('/')[-1]
-                origin_md5 = json_entry['digests']['md5']
-                file_key_pairs[file_name] = origin_md5
-        # Get list of files, not including manifest json file
-        file_list = list(file_key_pairs.keys())
-        # For each file, calculate hash on its contents
-        for filename in file_list:
-            with open(filename, 'rb') as file_to_check:
-                downloaded_file_name = filename.split('/')[-1]
-                json_data = file_to_check.read()
-                returned_md5 = hashlib.md5(json_data).hexdigest()
-                # Compare original hashkey in dict with calculated
-                if file_key_pairs[downloaded_file_name] != returned_md5:
-                    print('origin_md5', origin_md5)
-                    print('returned_md5', returned_md5)
-                    raise exceptions.ClientError(
-                        'Checksum failed. File not correctly downloaded.')
+        # import pdb; pdb.set_trace()
+        if checksum:
+            # Checksum Implementation
+            # Get manifest filepath
+            manifest_json = ' '.join([x for x in filenames if x.endswith('manifest.json')])
+            # Save each filename and MD5 hash in a dict as a key-value pair
+            with open(manifest_json, 'rb') as manifest:
+                manifest_data = json.load(manifest)
+                file_key_pairs = {}
+                for json_entry in manifest_data['files']:
+                    file_name = json_entry['path'].split('/')[-1]
+                    origin_md5 = json_entry['digests']['md5']
+                    file_key_pairs[file_name] = origin_md5
+            # Get list of files, not including manifest json file
+            file_list = list(file_key_pairs.keys())
+            # For each file, calculate hash on its contents
+            for filename in file_list:
+                with open(filename, 'rb') as file_to_check:
+                    downloaded_file_name = filename.split('/')[-1]
+                    json_data = file_to_check.read()
+                    returned_md5 = hashlib.md5(json_data).hexdigest()
+                    # Compare original hashkey in dict with calculated
+                    if file_key_pairs[downloaded_file_name] != returned_md5:
+                        print('origin_md5', origin_md5)
+                        print('returned_md5', returned_md5)
+                        raise exceptions.ClientError(
+                            'Checksum failed. File not correctly downloaded.')
         return filenames
 
     @staticmethod
