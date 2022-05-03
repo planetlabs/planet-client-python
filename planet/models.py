@@ -278,7 +278,7 @@ class Paged():
     :param limit: Limit orders to given limit. Defaults to None
     :type limit: int, optional
     '''
-    LINKS_KEY = 'links'
+    LINKS_KEY = '_links'
     NEXT_KEY = 'next'
     ITEMS_KEY = 'items'
     TYPE = None

@@ -169,8 +169,8 @@ async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
 
 @pytest.fixture
 def get_pages():
-    p1 = {'links': {'next': 'blah'}, 'items': [1, 2]}
-    p2 = {'links': {}, 'items': [3, 4]}
+    p1 = {'_links': {'next': 'blah'}, 'items': [1, 2]}
+    p2 = {'_links': {}, 'items': [3, 4]}
     responses = [mock_http_response(json=p1), mock_http_response(json=p2)]
 
     async def do_get(req):
@@ -244,7 +244,7 @@ async def test_break_page_cycle():
 
     async def func(req):
         return mock_http_response(json={
-            'links': {
+            '_links': {
                 'next': 'blah'
             }, 'items': [1, 2]
         })
