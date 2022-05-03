@@ -59,14 +59,15 @@ def orders(ctx, base_url):
                                 case_sensitive=False))
 @click.option('--limit',
               help='Maximum number of results to return. Default is 100. A '
-                   'value of 0 means no limit.',
+              'value of 0 means no limit.',
               default=None,
               type=int)
 @pretty
 async def list(ctx, state, limit, pretty):
     '''List orders
 
-    This command prints a sequence of the returned order descriptions, optionally pretty-printed.
+    This command prints a sequence of the returned order descriptions,
+    optionally pretty-printed.
     '''
     async with orders_client(ctx) as cl:
         orders = await cl.list_orders(state=state, limit=limit)
