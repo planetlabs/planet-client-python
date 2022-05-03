@@ -66,8 +66,7 @@ def orders(ctx, base_url):
 async def list(ctx, state, limit, pretty):
     '''List orders
 
-    This command outputs a sequence of the returned order descriptions.
-    If --pretty is specified, each order description is pretty-printed.
+    This command prints a sequence of the returned order descriptions, optionally pretty-printed.
     '''
     async with orders_client(ctx) as cl:
         orders = await cl.list_orders(state=state, limit=limit)
