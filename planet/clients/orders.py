@@ -247,8 +247,7 @@ class OrdersClient():
                              filename: str = None,
                              directory: str = None,
                              overwrite: bool = False,
-                             progress_bar: bool = True,
-                             checksum: str = None) -> str:
+                             progress_bar: bool = True) -> str:
         """Download ordered asset.
 
         Parameters:
@@ -297,17 +296,9 @@ class OrdersClient():
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If the order is not in a final
                 state.
-            planet.exceptions.ClientError: If the checksum fails.
+            planet.exceptions.ClientError: If the checksum
         """
         order = await self.get_order(order_id)
-        
-        # Capture hashkey for the json object
-        json_str = json.dumps(order, sort_keys=True, indent=2)
-        if checksum == 'sha1':
-            origin_hash = hashlib.sha1(json_str.encode("utf-8")).hexdigest()
-        elif checksum == 'md5':
-            origin_hash = hashlib.md5(json_str.encode("utf-8")).hexdigest()
-
         order_state = order['state']
         if not OrderStates.is_final(order_state):
             raise exceptions.ClientError(
@@ -324,20 +315,31 @@ class OrdersClient():
             await self.download_asset(location,
                                       directory=directory,
                                       overwrite=overwrite,
-                                      progress_bar=progress_bar,
-                                      checksum=checksum)
+                                      progress_bar=progress_bar)
             for location in locations
         ]
-        for filename in filenames:
-            # Open, close, read file & calculate hash on its contents
+        # Get manifest filepath
+        manifest_json = ' '.join([x for x in filenames if x.endswith('manifest.json')])
+        # Save each filename and MD5 hash in a dict as a key-value pair
+        with open(manifest_json, 'rb') as manifest:
+            json_data = json.load(manifest)
+            file_key_pairs = {}
+            for json_entry in json_data['files']:
+                file_name = json_entry['path'].split('/')[-1]
+                origin_md5 = json_entry['digests']['md5']
+                file_key_pairs[file_name] = origin_md5
+        # Get list of files, not including manifest json file
+        file_list = list(file_key_pairs.keys())
+        # For each file, calculate hash on its contents
+        for filename in file_list:
             with open(filename, 'rb') as file_to_check:
-                file_data = file_to_check.read()
-                if checksum == 'sha1':
-                    returned_hash = hashlib.sha1(file_data).hexdigest()
-                elif checksum == 'md5':
-                    returned_hash = hashlib.md5(file_data).hexdigest()
-                # Compare original hashkey with calculated
-                if origin_hash != returned_hash:
+                downloaded_file_name = filename.split('/')[-1]
+                json_data = file_to_check.read()
+                returned_md5 = hashlib.md5(json_data).hexdigest()
+                # Compare original hashkey in dict with calculated
+                if file_key_pairs[downloaded_file_name] != returned_md5:
+                    print('origin_md5', origin_md5)
+                    print('returned_md5', returned_md5)
                     raise exceptions.ClientError(
                         'Checksum failed. File not correctly downloaded.')
         return filenames
