@@ -109,22 +109,35 @@ def test_cli_orders_list_state(invoke, order_descriptions):
 
 
 @respx.mock
-def test_cli_orders_list_limit(invoke, order_descriptions):
-    order1, order2, _ = order_descriptions
+@pytest.mark.parametrize("limit,limitted_list_length", [(None, 100), (0, 102),
+                                                        (1, 1)])
+def test_cli_orders_list_limit(invoke,
+                               order_descriptions,
+                               limit,
+                               limitted_list_length):
+    long_order_descriptions = order_descriptions * 34
+
+    all_orders = {}
+    for x in range(1, len(long_order_descriptions) + 1):
+        all_orders["order{0}".format(x)] = long_order_descriptions[x - 1]
 
     page1_response = {
         "_links": {
             "_self": "string"
-        }, "orders": [order1, order2]
+        },
+        "orders": [
+            all_orders['order%s' % num]
+            for num in range(1, limitted_list_length + 1)
+        ]
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
 
     # limiting is done within the client, no change to api call
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
-    result = invoke(['list', '--limit', '1'])
+    result = invoke(['list', '--limit', limit])
     assert not result.exception
-    assert [order1] == json.loads(result.output)
+    assert len(json.loads(result.output)) == limitted_list_length
 
 
 @respx.mock
