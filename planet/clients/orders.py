@@ -45,7 +45,7 @@ class Orders(Paged):
     ITEMS_KEY = 'orders'
 
 
-class OrderStates():
+class OrderStates:
     SEQUENCE = ORDER_STATE_SEQUENCE
 
     @classmethod
@@ -65,7 +65,7 @@ class OrderStates():
         return cls.passed('running', test)
 
 
-class OrdersClient():
+class OrdersClient:
     """High-level asynchronous access to Planet's orders API.
 
     Example:
