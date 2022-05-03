@@ -149,8 +149,10 @@ async def test_list_orders_state_invalid_state(session):
 
 @respx.mock
 @pytest.mark.asyncio
-@pytest.mark.parametrize("limit,limitted_list_length", [(None, 100), (0, 102),
-                                                        (1, 1)])
+@pytest.mark.parametrize("limit,limitted_list_length",
+                         [(None, 100),
+                          (0, 102),
+                          (1, 1)])
 async def test_list_orders_limit(order_descriptions,
                                  session,
                                  limit,
@@ -160,7 +162,7 @@ async def test_list_orders_limit(order_descriptions,
     long_order_descriptions = order_descriptions * 34
 
     all_orders = {}
-    for x in range(1, len(long_order_descriptions)):
+    for x in range(1, len(long_order_descriptions) + 1):
         all_orders["order{0}".format(x)] = long_order_descriptions[x - 1]
 
     page1_response = {
@@ -168,8 +170,8 @@ async def test_list_orders_limit(order_descriptions,
             "_self": "string", "next": nono_page_url
         },
         "orders": [
-            all_orders['order%s' % n]
-            for n in range(1, len(long_order_descriptions))
+            all_orders['order%s' % num]
+            for num in range(1, limitted_list_length + 1)
         ]
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
