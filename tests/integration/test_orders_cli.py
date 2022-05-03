@@ -110,7 +110,7 @@ def test_cli_orders_list_state(invoke, order_descriptions):
 
 @respx.mock
 @pytest.mark.parametrize("limit,limited_list_length", [(None, 100), (0, 102),
-                                                        (1, 1)])
+                                                       (1, 1)])
 def test_cli_orders_list_limit(invoke,
                                order_descriptions,
                                limit,
