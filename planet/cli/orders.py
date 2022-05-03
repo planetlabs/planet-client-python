@@ -59,7 +59,7 @@ def orders(ctx, base_url):
                                 case_sensitive=False))
 @click.option('--limit',
               help='Maximum number of results to return. Default is 100. A '
-                   'value of 0 means no maximum.',
+                   'value of 0 means no limit.',
               default=None,
               type=int)
 @pretty
