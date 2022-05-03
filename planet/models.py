@@ -281,7 +281,6 @@ class Paged():
     LINKS_KEY = '_links'
     NEXT_KEY = 'next'
     ITEMS_KEY = 'items'
-    TYPE = None
 
     def __init__(self, request, do_request_fcn, limit=None):
         self.request = request

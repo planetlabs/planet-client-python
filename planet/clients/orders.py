@@ -40,8 +40,6 @@ LOGGER = logging.getLogger(__name__)
 class Orders(Paged):
     '''Asynchronous iterator over Orders from a paged response describing
     orders.'''
-    LINKS_KEY = '_links'
-    NEXT_KEY = 'next'
     ITEMS_KEY = 'orders'
 
 
