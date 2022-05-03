@@ -60,7 +60,7 @@ def orders(ctx, base_url):
 @click.option('--limit',
               help='Maximum number of results to return. Default is 100. A '
               'value of 0 means no limit.',
-              default=None,
+              default=100,
               type=int)
 @pretty
 async def list(ctx, state, limit, pretty):
