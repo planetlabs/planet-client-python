@@ -40,7 +40,7 @@ to make use of the following Planet APIs:
 * [subscriptions](https://developers.planet.com/docs/subscriptions/) (not 
  yet implemented)
 
-This quickstart focuses on getting started with the CLI to place an Order.
+This quickstart focuses on getting started with the CLI to place an order.
 
 After you've install the client, as explained in the [installation](#installation)
 section below, you first you must initialize the client with your Planet 
