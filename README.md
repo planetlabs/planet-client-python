@@ -47,7 +47,7 @@ section below, you first you must initialize the client with your Planet
 username and password:
 
 ```
-% planet auth init
+$ planet auth init
 Email: <youremail@domain.com>
 Password: 
 Initialized
