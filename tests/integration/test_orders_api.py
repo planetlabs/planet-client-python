@@ -647,7 +647,7 @@ async def test_download_order_state(tmpdir, order_description, oid, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_download_order_invalid_order_links(tmpdir,
+async def test_download_order_without_order_links(tmpdir,
                                                   order_description,
                                                   oid,
                                                   session):
@@ -672,8 +672,8 @@ async def test_download_order_invalid_order_links(tmpdir,
 
     client = OrdersClient(session, base_url=TEST_URL)
 
-    with pytest.raises(exceptions.ClientError):
-        await client.download_order(oid, directory=str(tmpdir))
+    filenames = await client.download_order(oid, directory=str(tmpdir))
+    assert len(filenames) == 0
 
 
 @respx.mock
