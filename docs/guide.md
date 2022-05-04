@@ -213,7 +213,7 @@ from planet import reporting
 ...             bar.update(state='created', order_id=order['id'])
 ...
 ...             # poll
-...             await cl.poll(order['id'], report=bar.update)
+...             await cl.wait(order['id'], callback=bar.update_state)
 ...
 ...         # download
 ...         await cl.download_order(order['id'])
