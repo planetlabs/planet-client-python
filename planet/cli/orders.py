@@ -134,7 +134,7 @@ def split_list_arg(ctx, param, value):
               help='Time (in seconds) between polls.')
 @click.option('--max-attempts',
               type=int,
-              default=5,
+              default=200,
               help='Maximum number of polls. Set to zero for no limit.')
 @click.option('--state',
               help='State prior to a final state that will end polling.',
