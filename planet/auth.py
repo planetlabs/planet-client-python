@@ -30,12 +30,14 @@ LOGGER = logging.getLogger(__name__)
 BASE_URL = f'{PLANET_BASE_URL}/v0/auth'
 ENV_API_KEY = 'PL_API_KEY'
 
+AuthType = httpx.Auth
+
 
 class Auth(metaclass=abc.ABCMeta):
     '''Handle authentication information for use with Planet APIs.'''
 
     @staticmethod
-    def from_key(key: str) -> Auth:
+    def from_key(key: str) -> AuthType:
         '''Obtain authentication from api key.
 
         Parameters:
@@ -46,7 +48,7 @@ class Auth(metaclass=abc.ABCMeta):
         return auth
 
     @staticmethod
-    def from_file(filename: str = None) -> Auth:
+    def from_file(filename: str = None) -> AuthType:
         '''Create authentication from secret file.
 
         The secret file is named `.planet.json` and is stored in the user
@@ -71,7 +73,7 @@ class Auth(metaclass=abc.ABCMeta):
         return auth
 
     @staticmethod
-    def from_env(variable_name: str = None) -> Auth:
+    def from_env(variable_name: str = None) -> AuthType:
         '''Create authentication from environment variable.
 
         Reads the `PL_API_KEY` environment variable
@@ -80,7 +82,7 @@ class Auth(metaclass=abc.ABCMeta):
             variable_name: Alternate environment variable.
         '''
         variable_name = variable_name or ENV_API_KEY
-        api_key = os.getenv(variable_name)
+        api_key = os.getenv(variable_name, '')
         try:
             auth = APIKeyAuth(api_key)
             LOGGER.debug(f'Auth set from environment variable {variable_name}')
@@ -91,7 +93,7 @@ class Auth(metaclass=abc.ABCMeta):
         return auth
 
     @staticmethod
-    def from_login(email: str, password: str, base_url: str = None) -> Auth:
+    def from_login(email: str, password: str, base_url: str = None) -> AuthType:
         '''Create authentication from login email and password.
 
         Note: To keep your password secure, the use of `getpass` is
@@ -113,12 +115,16 @@ class Auth(metaclass=abc.ABCMeta):
 
     @classmethod
     @abc.abstractmethod
-    def from_dict(cls, data: dict) -> Auth:
+    def from_dict(cls, data: dict) -> AuthType:
         pass
 
     @property
     @abc.abstractmethod
     def value(self):
+        pass
+
+    @abc.abstractmethod
+    def to_dict(self) -> dict:
         pass
 
     def write(self, filename: str = None):

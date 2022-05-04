@@ -19,7 +19,7 @@ import logging
 
 import httpx
 
-from .auth import Auth
+from .auth import Auth, AuthType
 from . import exceptions, models
 from .__version__ import __version__
 
@@ -112,7 +112,7 @@ class Session(BaseSession):
     ```
     '''
 
-    def __init__(self, auth: Auth = None):
+    def __init__(self, auth: AuthType = None):
         """Initialize a Session.
 
         Parameters:
