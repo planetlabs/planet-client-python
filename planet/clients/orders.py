@@ -404,7 +404,7 @@ class OrdersClient:
 
         return current_state
 
-    async def list_orders(self, state: str = None, limit: int = None):
+    async def list_orders(self, state: str = None, limit: int = 100):
         """Get all order requests.
 
         Parameters:
@@ -419,6 +419,10 @@ class OrdersClient:
             planet.exceptions.ClientError: If state is not valid.
         """
         url = self._orders_url()
+
+        # Set no limit
+        if limit == 0:
+            limit = None
 
         if state:
             if state not in ORDER_STATE_SEQUENCE:

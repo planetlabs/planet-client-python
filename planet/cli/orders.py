@@ -25,7 +25,7 @@ from .io import echo_json
 
 LOGGER = logging.getLogger(__name__)
 
-pretty = click.option('--pretty', is_flag=True, help='Format JSON output')
+pretty = click.option('--pretty', is_flag=True, help='Format JSON output.')
 
 
 @asynccontextmanager
@@ -57,18 +57,21 @@ def orders(ctx, base_url):
               help='Filter orders to given state.',
               type=click.Choice(planet.clients.orders.ORDER_STATE_SEQUENCE,
                                 case_sensitive=False))
-@click.option('-l',
-              '--limit',
-              help='Filter orders to given limit.',
-              default=None,
+@click.option('--limit',
+              help='Maximum number of results to return. Default is 100. A '
+              'value of 0 means no limit.',
+              default=100,
               type=int)
 @pretty
 async def list(ctx, state, limit, pretty):
-    '''List orders'''
+    '''List orders
+
+    This command prints a sequence of the returned order descriptions,
+    optionally pretty-printed.
+    '''
     async with orders_client(ctx) as cl:
         orders = await cl.list_orders(state=state, limit=limit)
         orders_list = [o async for o in orders]
-
     echo_json(orders_list, pretty)
 
 
