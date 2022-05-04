@@ -175,11 +175,12 @@ class DataClient:
         url = self._searches_url()
 
         # TODO: validate item_types
-        request_json = {
+        request_json: typing.Dict[str, typing.Any] = {
             'name': name, 'filter': search_filter, 'item_types': item_types
         }
+        # QUESTION: can we just set the value to True or False above?
         if enable_email:
-            request_json['__daily_email_enabled'] = True
+            request_json['__daily_email_enabled'] = enable_email
 
         request = self._request(url, method='POST', json=request_json)
         response = await self._do_request(request)
