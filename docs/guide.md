@@ -131,7 +131,7 @@ An example of creating the request JSON with `build_request`:
 ... ]
 ...
 >>> request = order_request.build_request(
-...     'test_order', products, tools)
+...     'test_order', products=products, tools=tools)
 ...
 
 ```
