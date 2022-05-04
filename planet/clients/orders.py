@@ -319,7 +319,10 @@ class OrdersClient():
     def _get_order_locations(order):
         links = order['_links']
         results = links.get('results', None)
-        return list(r['location'] for r in results if r)
+        try:
+            return list(r['location'] for r in results if r)
+        except TypeError:
+            return []
 
     async def wait(self,
                    order_id: str,
