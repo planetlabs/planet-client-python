@@ -316,7 +316,7 @@ class OrdersClient():
     @staticmethod
     def _get_order_locations(order):
         links = order['_links']
-        results = links.get('results', None)
+        results = links.get('results', [])
         try:
             return list(r['location'] for r in results if r)
         except TypeError:
