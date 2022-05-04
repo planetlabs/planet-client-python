@@ -157,6 +157,7 @@ async def test_list_orders_limit(order_descriptions,
                                  limited_list_length):
     nono_page_url = None
 
+    # Creating 102 (3x34) order descriptions
     long_order_descriptions = order_descriptions * 34
 
     all_orders = {}

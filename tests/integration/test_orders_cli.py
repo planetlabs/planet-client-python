@@ -115,6 +115,7 @@ def test_cli_orders_list_limit(invoke,
                                order_descriptions,
                                limit,
                                limited_list_length):
+    # Creating 102 (3x34) order descriptions
     long_order_descriptions = order_descriptions * 34
 
     all_orders = {}
