@@ -31,7 +31,6 @@ LOGGER = logging.getLogger(__name__)
 
 class Items(Paged):
     '''Asynchronous iterator over items from a paged response.'''
-    LINKS_KEY = '_links'
     NEXT_KEY = '_next'
     ITEMS_KEY = 'features'
 
