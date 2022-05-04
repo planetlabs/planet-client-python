@@ -3,9 +3,16 @@ import nox
 nox.options.stop_on_first_error = True
 nox.options.reuse_existing_virtualenvs = False
 
-nox.options.sessions = ['lint', 'test', 'coverage', 'docs']
+nox.options.sessions = ['lint', 'analyze', 'test', 'coverage', 'docs']
 
 source_files = ("planet", "examples", "tests", "setup.py", "noxfile.py")
+
+
+@nox.session
+def analyze(session):
+    session.install(".[lint]")
+
+    session.run("mypy", "planet")
 
 
 @nox.session
