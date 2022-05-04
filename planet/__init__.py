@@ -18,10 +18,10 @@ from .auth import Auth
 from .clients import DataClient, OrdersClient
 
 __all__ = [
-    "Auth",
-    "DataClient"
-    "order_request",
-    "OrdersClient",
-    "reporting",
-    "Session",
+    'Auth',
+    'DataClient'
+    'OrdersClient',
+    'order_request',
+    'reporting',
+    'Session',
 ]
