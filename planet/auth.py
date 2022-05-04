@@ -93,7 +93,9 @@ class Auth(metaclass=abc.ABCMeta):
         return auth
 
     @staticmethod
-    def from_login(email: str, password: str, base_url: str = None) -> AuthType:
+    def from_login(email: str,
+                   password: str,
+                   base_url: str = None) -> AuthType:
         '''Create authentication from login email and password.
 
         Note: To keep your password secure, the use of `getpass` is
