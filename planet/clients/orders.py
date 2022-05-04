@@ -290,7 +290,7 @@ class OrdersClient():
         Raises:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If the order is not in a final
-                state or if the order's location is not found.
+                state.
         """
         order = await self.get_order(order_id)
         order_state = order['state']
@@ -320,7 +320,10 @@ class OrdersClient():
         try:
             return list(r['location'] for r in results if r)
         except TypeError:
-            raise exceptions.ClientError('Order location not found.')
+            LOGGER.warning(
+                'order does not have any locations, will not download any ' +
+                'files.')
+            return []
 
     async def wait(self,
                    order_id: str,
