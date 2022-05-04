@@ -290,10 +290,9 @@ class OrdersClient():
         Raises:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If the order is not in a final
-                state.
+                state or if the order's location is not found.
         """
         order = await self.get_order(order_id)
-
         order_state = order['state']
         if not OrderStates.is_final(order_state):
             raise exceptions.ClientError(
@@ -301,7 +300,6 @@ class OrdersClient():
                 f'({order_state}) is not a final state. '
                 'Consider using wait functionality before '
                 'attempting to download.')
-
         locations = self._get_order_locations(order)
         LOGGER.info(
             f'downloading {len(locations)} assets from order {order_id}')
@@ -322,7 +320,7 @@ class OrdersClient():
         try:
             return list(r['location'] for r in results if r)
         except TypeError:
-            return []
+            raise exceptions.ClientError('Order location not found.')
 
     async def wait(self,
                    order_id: str,
