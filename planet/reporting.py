@@ -19,7 +19,7 @@ from tqdm.asyncio import tqdm
 LOGGER = logging.getLogger(__name__)
 
 
-class ProgressBar():
+class ProgressBar:
     """Abstract base class for progress bar reporters."""
 
     def __init__(self, disable: bool = False):

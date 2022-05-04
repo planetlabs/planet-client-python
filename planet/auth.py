@@ -132,7 +132,7 @@ class Auth(metaclass=abc.ABCMeta):
         secret_file.write(self.to_dict())
 
 
-class AuthClient():
+class AuthClient:
 
     def __init__(self, base_url: str = None):
         """
@@ -212,7 +212,7 @@ class APIKeyAuth(httpx.BasicAuth, Auth):
         return self._key
 
 
-class _SecretFile():
+class _SecretFile:
 
     def __init__(self, path):
         self.path = path

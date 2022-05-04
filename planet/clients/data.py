@@ -36,7 +36,7 @@ class Items(Paged):
     ITEMS_KEY = 'features'
 
 
-class DataClient():
+class DataClient:
     """Low-level asynchronous access to Planet's data API.
 
     Example:

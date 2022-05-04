@@ -29,7 +29,7 @@ RETRY_WAIT_TIME = 1  # seconds
 LOGGER = logging.getLogger(__name__)
 
 
-class BaseSession():
+class BaseSession:
 
     @staticmethod
     def _get_user_agent():
@@ -261,7 +261,7 @@ class AuthSession(BaseSession):
             raise exceptions.APIError('Incorrect email or password.')
 
 
-class Stream():
+class Stream:
     '''Context manager for asynchronous response stream from Planet server.'''
 
     def __init__(self, session: Session, request: models.Request):
