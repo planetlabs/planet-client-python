@@ -131,7 +131,7 @@ An example of creating the request JSON with `build_request`:
 ... ]
 ...
 >>> request = order_request.build_request(
-...     'test_order', products, tools)
+...     'test_order', products=products, tools=tools)
 ...
 
 ```
@@ -213,7 +213,7 @@ from planet import reporting
 ...             bar.update(state='created', order_id=order['id'])
 ...
 ...             # poll
-...             await cl.poll(order['id'], report=bar.update)
+...             await cl.wait(order['id'], callback=bar.update_state)
 ...
 ...         # download
 ...         await cl.download_order(order['id'])
