@@ -316,3 +316,41 @@ async def create(ctx,
         order = await cl.create_order(request)
 
     echo_json(order, pretty)
+
+
+@orders.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.option('--name', required=True)
+@click.option(
+    '--bundle',
+    multiple=False,
+    required=True,
+    help='Product bundle.',
+    type=click.Choice(planet.specs.get_product_bundles(),
+                      case_sensitive=False),
+)
+@click.option('--id',
+              help='One or more comma-separated item IDs',
+              type=click.STRING,
+              callback=split_list_arg,
+              required=True)
+@click.option('--search-id',
+              help='ID of search from which to populate item IDs.',
+              type=click.STRING,
+              callback=split_list_arg,
+              required=True)
+@click.option('--clip',
+              help='Clip GeoJSON file.',
+              type=click.File('rb'),
+              callback=read_file_geojson)
+@click.option('--email',
+              default=False,
+              is_flag=True,
+              help='Send email notification when Order is complete')
+@click.option(
+    '--like',
+    help='File or stdin providing the order description to use as a template.')
+async def request(ctx, name, bundle, id, clip):
+    """Generate an order request."""
