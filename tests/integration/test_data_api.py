@@ -174,7 +174,10 @@ async def test_create_search_basic(search_filter, session):
 
     # check that request is correct
     expected_request = {
-        "item_types": ["PSScene"], "filter": search_filter, "name": "test"
+        "item_types": ["PSScene"],
+        "filter": search_filter,
+        "name": "test",
+        "__daily_email_enabled": False
     }
     actual_body = json.loads(respx.calls[0].request.content)
     assert actual_body == expected_request
