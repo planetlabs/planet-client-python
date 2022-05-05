@@ -274,25 +274,43 @@ class OrdersClient():
         return dl_path
 
     @staticmethod # should this be an async function?
-    def calculate_checksum(origin_hash: str,
-                        filename: str,
+    def calculate_checksum(manifest_data: str,
+                        filenames: str,
                         checksum: str):
         """Calculate checksum and validate that it passes."""
         if checksum == 'MD5':
             hash_type = hashlib.md5
+            checksum = checksum.lower()
         elif checksum == 'SHA256':
             hash_type = hashlib.sha256
-        # Calculate returned hash
-        with open(filename, 'rb') as file_to_check:
-            json_data = file_to_check.read()
-            returned_hash = hash_type(json_data).hexdigest()
-            # Compare original hashkey in dict with calculated
-            if origin_hash != returned_hash:
-                print('origin_hash: ', origin_hash)
-                print('returned_hash: ', returned_hash)
-                raise exceptions.ClientError(
-                    'Checksum failed. File not correctly downloaded.')
-            return f'({checksum}) checksum succesful: ({filename})'
+            checksum = checksum.lower()
+        file_key_pairs = {}
+        for json_entry in manifest_data['files']:
+            file_name = json_entry['path'].split('/')[-1]
+            origin_hash = json_entry['digests'][checksum]
+            file_key_pairs[file_name] = origin_hash
+        # For each file (not including manifest json file), calculate hash on its contents
+        filenames_loop = [x for x in filenames if not x.endswith('manifest.json')]
+        for filename in filenames_loop:
+            downloaded_file_name = filename.split('/')[-1]
+            origin_hash= file_key_pairs[downloaded_file_name]
+            # Calculate returned hash
+            with open(filename, 'rb') as file_to_check:
+                downloaded_file_name = filename.split('/')[-1]
+                json_data = file_to_check.read()
+                json_data1 = file_to_check.read()
+                json_data2 = file_to_check.read()
+                returned_hash = hash_type(json_data).hexdigest()
+                returned_hash1 = hash_type(json_data1).hexdigest()
+                returned_hash2 = hash_type(json_data2).hexdigest()
+                print (returned_hash, returned_hash1, returned_hash2 )
+                # Compare original hashkey in dict with calculated
+                if origin_hash != returned_hash:
+                    print('origin_hash: ', origin_hash)
+                    print('returned_hash: ', returned_hash)
+                    raise exceptions.ClientError(
+                        'Checksum failed. File not correctly downloaded.')
+                return f'({checksum}) checksum succesful: ({filename})'
 
     async def download_order(self,
                              order_id: str,
@@ -345,18 +363,18 @@ class OrdersClient():
             # Save each filename and respective hash in a dict as a key-value pair
             with open(manifest_json, 'rb') as manifest:
                 manifest_data = json.load(manifest)
-                file_key_pairs = {}
-                for json_entry in manifest_data['files']:
-                    file_name = json_entry['path'].split('/')[-1]
-                    origin_hash = json_entry['digests'][checksum.lower()]
-                    file_key_pairs[file_name] = origin_hash
-            # For each file (not including manifest json file), calculate hash on its contents
-            filenames_loop = [x for x in filenames if not x.endswith('manifest.json')]
-            # filenames_loop = ' '.join([x for x in filenames if not x.endswith('manifest.json')])
-            for filename in filenames_loop:
-                downloaded_file_name = filename.split('/')[-1]
-                self.calculate_checksum(origin_hash= file_key_pairs[downloaded_file_name],
-                                    filename= filename,
+            #     file_key_pairs = {}
+            #     for json_entry in manifest_data['files']:
+            #         file_name = json_entry['path'].split('/')[-1]
+            #         origin_hash = json_entry['digests'][checksum.lower()]
+            #         file_key_pairs[file_name] = origin_hash
+            # # For each file (not including manifest json file), calculate hash on its contents
+            # filenames_loop = [x for x in filenames if not x.endswith('manifest.json')]
+            # # filenames_loop = ' '.join([x for x in filenames if not x.endswith('manifest.json')])
+            # for filename in filenames_loop:
+            #     downloaded_file_name = filename.split('/')[-1]
+                self.calculate_checksum(manifest_data= manifest_data,
+                                    filenames= filenames,
                                     checksum= checksum)
         return filenames
 
