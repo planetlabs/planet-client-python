@@ -159,6 +159,7 @@ def test_cli_orders_list_pretty(invoke, monkeypatch, order_description):
     mock_echo_json.assert_called_once_with([order_description], True)
 
 
+# TODO: add tests for "get --pretty" (gh-491).
 @respx.mock
 def test_cli_orders_get(invoke, oid, order_description):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
@@ -182,6 +183,7 @@ def test_cli_orders_get_id_not_found(invoke, oid):
     assert 'Error: {"message": "Error message"}\n' == result.output
 
 
+# TODO: add tests for "cancel --pretty" (gh-491).
 @respx.mock
 def test_cli_orders_cancel(invoke, oid, order_description):
     cancel_url = f'{TEST_ORDERS_URL}/{oid}'
@@ -206,6 +208,7 @@ def test_cli_orders_cancel_id_not_found(invoke, oid):
     assert 'Error: {"message": "Error message"}\n' == result.output
 
 
+# TODO: add tests for "wait --state" (gh-492) and "wait --pretty" (gh-491).
 @respx.mock
 def test_cli_orders_wait_default(invoke, order_description, oid):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
@@ -286,6 +289,7 @@ def mock_download_response(oid, order_description):
     return _func
 
 
+# TODO: add test for --checksum (see gh-432).
 @respx.mock
 def test_cli_orders_download_default(invoke, mock_download_response, oid):
     mock_download_response()
@@ -362,6 +366,8 @@ def test_cli_orders_download_state(invoke, order_description, oid):
     assert 'order state (running) is not a final state.' in result.output
 
 
+# TODO: convert "create" tests to "request" tests (gh-366).
+# TODO: add tests of "create --pretty" (gh-491).
 @pytest.mark.parametrize(
     "id_string, expected_ids",
     [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),

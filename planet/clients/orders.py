@@ -404,7 +404,9 @@ class OrdersClient:
 
         return current_state
 
-    async def list_orders(self, state: str = None, limit: int = 100):
+    async def list_orders(self,
+                          state: str = None,
+                          limit: typing.Union[int, None] = 100):
         """Get all order requests.
 
         Parameters:
