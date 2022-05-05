@@ -658,6 +658,37 @@ async def test_download_order_state(tmpdir, order_description, oid, session):
 
 @respx.mock
 @pytest.mark.asyncio
+async def test_download_order_without_order_links(tmpdir,
+                                                  order_description,
+                                                  oid,
+                                                  session):
+    dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
+
+    order_description['state'] = 'success'
+    order_description['_links']['results'] = None
+
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.get(get_url).return_value = mock_resp
+
+    mock_resp1 = httpx.Response(HTTPStatus.OK,
+                                json={'key': 'value'},
+                                headers={
+                                    'Content-Type':
+                                    'application/json',
+                                    'Content-Disposition':
+                                    'attachment; filename="m1.json"'
+                                })
+    respx.get(dl_url1).return_value = mock_resp1
+
+    client = OrdersClient(session, base_url=TEST_URL)
+
+    filenames = await client.download_order(oid, directory=str(tmpdir))
+    assert len(filenames) == 0
+
+
+@respx.mock
+@pytest.mark.asyncio
 async def test_download_order_overwrite_true_preexisting_data(
         tmpdir,
         oid,

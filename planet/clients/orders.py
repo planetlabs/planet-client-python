@@ -291,7 +291,6 @@ class OrdersClient:
                 state.
         """
         order = await self.get_order(order_id)
-
         order_state = order['state']
         if not OrderStates.is_final(order_state):
             raise exceptions.ClientError(
@@ -299,7 +298,6 @@ class OrdersClient:
                 f'({order_state}) is not a final state. '
                 'Consider using wait functionality before '
                 'attempting to download.')
-
         locations = self._get_order_locations(order)
         LOGGER.info(
             f'downloading {len(locations)} assets from order {order_id}')
@@ -316,8 +314,14 @@ class OrdersClient:
     @staticmethod
     def _get_order_locations(order):
         links = order['_links']
-        results = links.get('results', None)
-        return list(r['location'] for r in results if r)
+        results = links.get('results', [])
+        try:
+            return list(r['location'] for r in results if r)
+        except TypeError:
+            LOGGER.warning(
+                'order does not have any locations, will not download any ' +
+                'files.')
+            return []
 
     async def wait(self,
                    order_id: str,
