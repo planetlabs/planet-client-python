@@ -181,7 +181,7 @@ async def wait(ctx, order_id, delay, max_attempts, state):
 @click.argument('order_id', type=click.UUID)
 @click.option('--checksum',
               default=None,
-              type=click.Choice(['MD5', 'SHA1'],
+              type=click.Choice(['MD5', 'SHA256'],
                                 case_sensitive=False),
               help=('Verify that checksums match.'))
 @click.option('--directory',
