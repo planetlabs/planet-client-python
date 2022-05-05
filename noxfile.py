@@ -12,7 +12,7 @@ source_files = ("planet", "examples", "tests", "setup.py", "noxfile.py")
 def analyze(session):
     session.install(".[lint]")
 
-    session.run("mypy", "planet")
+    session.run("mypy", "--ignore-missing", "planet")
 
 
 @nox.session

@@ -114,7 +114,8 @@ def product(item_ids: List[str],
     if fallback_bundle is not None:
         validated_fallback_bundle = specs.validate_bundle(fallback_bundle)
         specs.validate_item_type(item_type, validated_fallback_bundle)
-        validated_product_bundle = ','.join([validated_product_bundle, validated_fallback_bundle])
+        validated_product_bundle = ','.join(
+            [validated_product_bundle, validated_fallback_bundle])
 
     product_dict = {
         'item_ids': item_ids,
