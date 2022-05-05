@@ -175,10 +175,11 @@ class DataClient:
 
         # TODO: validate item_types
         request_json = {
-            'name': name, 'filter': search_filter, 'item_types': item_types
+            'name': name,
+            'filter': search_filter,
+            'item_types': item_types,
+            '__daily_email_enabled': enable_email
         }
-        if enable_email:
-            request_json['__daily_email_enabled'] = True
 
         request = self._request(url, method='POST', json=request_json)
         response = await self._do_request(request)
