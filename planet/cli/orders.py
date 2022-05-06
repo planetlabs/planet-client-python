@@ -231,87 +231,13 @@ def read_file_json(ctx, param, value):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.option('--name', required=True)
-@click.option('--id',
-              'ids',
-              help='One or more comma-separated item IDs',
-              type=click.STRING,
-              callback=split_list_arg,
-              required=True)
-# @click.option('--ids_from_search',
-#               help='Embedded data search')
-@click.option(
-    '--bundle',
-    multiple=False,
-    required=True,
-    help='Specify bundle',
-    type=click.Choice(planet.specs.get_product_bundles(),
-                      case_sensitive=False),
-)
-@click.option('--item-type',
-              multiple=False,
-              required=True,
-              help='Specify an item type',
-              type=click.STRING)
-@click.option('--email',
-              default=False,
-              is_flag=True,
-              help='Send email notification when Order is complete')
-@click.option('--cloudconfig',
-              help='Cloud delivery config json file.',
-              type=click.File('rb'),
-              callback=read_file_json)
-@click.option('--clip',
-              help='Clip GeoJSON file.',
-              type=click.File('rb'),
-              callback=read_file_geojson)
-@click.option('--tools',
-              help='Toolchain json file.',
-              type=click.File('rb'),
-              callback=read_file_json)
+@click.argument('request',
+                type=click.Path(exists=True))
 @pretty
-async def create(ctx,
-                 name,
-                 ids,
-                 bundle,
-                 item_type,
-                 email,
-                 cloudconfig,
-                 clip,
-                 tools,
-                 pretty):
-    '''Create an order.'''
-    try:
-        product = planet.order_request.product(ids, bundle, item_type)
-    except planet.specs.SpecificationException as e:
-        raise click.BadParameter(e)
-
-    if email:
-        notifications = planet.order_request.notifications(email=email)
-    else:
-        notifications = None
-
-    if cloudconfig:
-        delivery = planet.order_request.delivery(cloud_config=cloudconfig)
-    else:
-        delivery = None
-
-    if clip and tools:
-        raise click.BadParameter("Specify only one of '--clip' or '--tools'")
-    elif clip:
-        try:
-            clip = planet.geojson.as_polygon(clip)
-        except planet.geojson.GeoJSONException as e:
-            raise click.BadParameter(e)
-
-        tools = [planet.order_request.clip_tool(clip)]
-
-    request = planet.order_request.build_request(name,
-                                                 products=[product],
-                                                 delivery=delivery,
-                                                 notifications=notifications,
-                                                 tools=tools)
-
+async def create(ctx, request, pretty):
+    '''Create an order.
+    "create" sends an order request (as JSON) to the API server
+    '''
     async with orders_client(ctx) as cl:
         order = await cl.create_order(request)
 
@@ -322,7 +248,10 @@ async def create(ctx,
 @click.pass_context
 @translate_exceptions
 @coro
-@click.option('--name', required=True)
+@click.option('--name',
+              required=True,
+              help='Order name. Does not need to be unique.',
+              type=click.STRING)
 @click.option(
     '--bundle',
     multiple=False,
@@ -336,11 +265,18 @@ async def create(ctx,
               type=click.STRING,
               callback=split_list_arg,
               required=True)
-@click.option('--search-id',
-              help='ID of search from which to populate item IDs.',
-              type=click.STRING,
-              callback=split_list_arg,
-              required=True)
+# NOT YET IMPLIMENTED
+@click.option(
+    '--search-id',
+    help='NOT YET IMPLIMENTED. ID of search from which to populate item IDs.',
+    type=click.STRING,
+    callback=split_list_arg,
+    required=False)
+@click.option('--item-type',
+              multiple=False,
+              required=True,
+              help='Specify an item type',
+              type=click.STRING)
 @click.option('--clip',
               help='Clip GeoJSON file.',
               type=click.File('rb'),
@@ -351,6 +287,71 @@ async def create(ctx,
               help='Send email notification when Order is complete')
 @click.option(
     '--like',
-    help='File or stdin providing the order description to use as a template.')
-async def request(ctx, name, bundle, id, clip):
-    """Generate an order request."""
+    help='File or stdin providing the order description to use as a template.',
+    required=False)
+@click.option('--cloudconfig',
+              help='Cloud delivery config json file.',
+              type=click.File('rb'),
+              callback=read_file_json)
+@pretty
+async def request(ctx,
+                  name,
+                  bundle,
+                  id,
+                  search_id,
+                  clip,
+                  item_type,
+                  email,
+                  cloudconfig,
+                  like,
+                  pretty):
+    """Generate an order request.
+    "request" makes an order request (JSON) document from command line inputs.
+    No server used.
+    """
+    if id and search_id:
+        raise click.BadParameter("Specify only one of '--id' or '--search-id'")
+
+    # FIGURE THIS OUT
+    # item_type = [item for item in planet.specs.get_item_types(bundle)]
+    # for item in item_type:
+    try:
+        product = planet.order_request.product(id, bundle, item_type)
+    except planet.specs.SpecificationException as e:
+        raise click.BadParameter(e)
+
+    if email:
+        notifications = planet.order_request.notifications(email=email)
+    else:
+        notifications = None
+
+    if clip:
+        try:
+            clip = planet.geojson.as_polygon(clip)
+        except planet.geojson.GeoJSONException as e:
+            raise click.BadParameter(e)
+
+        tools = [planet.order_request.clip_tool(clip)]
+    else:
+        tools = []
+
+    if cloudconfig:
+        delivery = planet.order_request.delivery(cloud_config=cloudconfig)
+    else:
+        delivery = None
+
+    request = planet.order_request.build_request(name,
+                                                 products=[product],
+                                                 delivery=delivery,
+                                                 notifications=notifications,
+                                                 tools=tools)
+
+    echo_json(request, pretty)
+
+
+# $ planet orders request \
+# --name test_order \
+# --id 20200922_183724_23_106a,20200922_183722_17_106a \
+# --bundle analytic
+# {"name":"test_order","products":[{"item_ids":["20200922_183724_23_106a","20200922_183722_17_106a"],"item_type":"PSScene4Band","product_bundle":"analytic"}]}
+# {"name": "test_order", "products": [{"item_ids": ["20200922_183724_23_106a", "20200922_183722_17_106a"], "item_type": "PSScene4Band", "product_bundle": "analytic"}]}
