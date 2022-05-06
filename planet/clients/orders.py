@@ -273,16 +273,14 @@ class OrdersClient():
                              progress_bar=progress_bar)
         return dl_path
 
-    @staticmethod # should this be an async function?
-    def calculate_checksum(manifest_data: dict,
-                        filenames: str,
-                        checksum: str):
+    @staticmethod  # should this be an async function?
+    def calculate_checksum(manifest_data: dict, filenames: list, checksum: str):
         """Calculate checksum and validate that it passes.
 
         Parameters:
-            manifest_data:
-            filenames:
-            checksum: The type of checksum hash- MD5 or SHA256.
+            manifest_data: The contents of the opened manifest.json file.
+            filenames: List of downloaded assets.
+            checksum: The type of checksum hash- 'MD5' or 'SHA256'.
 
         Returns:
             Message confirming checksums were succesful.
@@ -304,21 +302,24 @@ class OrdersClient():
             origin_hash = json_entry['digests'][checksum]
             file_key_pairs[file_name] = origin_hash
         # For each downloaded file, retrieve origin hashkey from dict
-        filenames_loop = [x for x in filenames if not x.endswith('manifest.json')]
+        filenames_loop = [
+            x for x in filenames if not x.endswith('manifest.json')
+        ]
         for filename in filenames_loop:
             downloaded_file_name = filename.split('/')[-1]
-            origin_hash= file_key_pairs[downloaded_file_name]
-            # For each file (not including manifest json), calculate hash on its contents
-            # This is the returned hash
+            origin_hash = file_key_pairs[downloaded_file_name]
+            # For each file (not including manifest json),
+            # calculate hash on contents. This is the returned hash.
             with open(filename, 'rb') as file_to_check:
                 json_data = file_to_check.read()
                 returned_hash = hash_type(json_data).hexdigest()
                 # Compare original hashkey in dict with calculated
                 if origin_hash != returned_hash:
-                    print ("origin hash: ", origin_hash)
-                    print ("returned hash: ", returned_hash)
+                    print("origin hash: ", origin_hash)
+                    print("returned hash: ", returned_hash)
                     raise exceptions.ClientError(
-                        f'Checksum failed. File ({filename}) not correctly downloaded.')
+                        f'Checksum failed. File ({filename}) not correctly \
+                        downloaded.')
                 print(f'({checksum}) checksum succesful: ({filename})')
         return f'All ({checksum}) checksums succesful.'
 
@@ -368,13 +369,14 @@ class OrdersClient():
         if checksum:
             # Checksum Implementation
             # Get manifest filepath
-            manifest_json = ' '.join([x for x in filenames if x.endswith('manifest.json')])
+            manifest_json = ' '.join(
+                [x for x in filenames if x.endswith('manifest.json')])
             # Open manifest file and pass to checksum function
             with open(manifest_json, 'rb') as manifest:
                 manifest_data = json.load(manifest)
-                self.calculate_checksum(manifest_data= manifest_data,
-                                    filenames= filenames,
-                                    checksum= checksum)
+                self.calculate_checksum(manifest_data=manifest_data,
+                                        filenames=filenames,
+                                        checksum=checksum)
         return filenames
 
     @staticmethod
