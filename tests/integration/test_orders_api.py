@@ -13,7 +13,6 @@
 # the License.
 import copy
 import json
-import hashlib
 from http import HTTPStatus
 import logging
 import math
@@ -557,73 +556,88 @@ async def test_checksum_success(tmpdir, order_description, oid, session):
     respx.get(get_url).return_value = mock_asset
 
     mock_asset1 = httpx.Response(HTTPStatus.OK,
-                                 json={"md5":"1975b76cc6904ff84f432be2ef1fea2e",
-                                      "sha256":"300ebdfd62614f82ce6ba45b298bf797\
-                                          f1ea595d9214bcf23899f3fd2267c5dd"},
-                                headers={
-                                    'Content-Type':
-                                    'application/json',
-                                    'Content-Disposition':
-                                    'attachment; filename="asset1.json"'
-                                })
+                                 json={
+                                     "md5":
+                                     "1975b76cc6904ff84f432be2ef1fea2e",
+                                     "sha256":
+                                     "300ebdfd62614f82ce6ba45b298bf797\
+                                           f1ea595d9214bcf23899f3fd2267c5dd"
+                                 },
+                                 headers={
+                                     'Content-Type':
+                                     'application/json',
+                                     'Content-Disposition':
+                                     'attachment; filename="asset1.json"'
+                                 })
     respx.get(dl_url1).return_value = mock_asset1
 
     mock_asset2 = httpx.Response(HTTPStatus.OK,
-                                json={"md5":"27323e74b2590f97734124bd4cce055e",
-                                      "sha256":"cc70916fe9af731d80220aec6dfbf7c\
-                                          91b9339fea61bf2a6b4d83cee6e11f7c9"},
-                                headers={
-                                    'Content-Type':
-                                    'application/json',
-                                    'Content-Disposition':
-                                    'attachment; filename="asset2.json"'
-                                })
+                                 json={
+                                     "md5":
+                                     "27323e74b2590f97734124bd4cce055e",
+                                     "sha256":
+                                     "cc70916fe9af731d80220aec6dfbf7c\
+                                          91b9339fea61bf2a6b4d83cee6e11f7c9"
+                                 },
+                                 headers={
+                                     'Content-Type':
+                                     'application/json',
+                                     'Content-Disposition':
+                                     'attachment; filename="asset2.json"'
+                                 })
     respx.get(dl_url2).return_value = mock_asset2
-    
-    mock_manifest = httpx.Response(HTTPStatus.OK,
-                            json={"name":"","files":[{"path":"asset1.json",
-                                                      "digests":
-                                                          {"md5":"28d45c12a959ee59fb013443eb073543",
-                                                           "sha256":"e29e53864c9cbc6ac9ea6e6501e1c8\
-                                                               41ad4ab1060e4610cdf8fe25b969784518"},
-                                                          },
-                                                     {"path":"asset2.json",
-                                                      "digests":
-                                                          {"md5":"6f6f26787df1186671f9641942541045",
-                                                           "sha256":"c5e0f7689742b01685fb1d9aa73c8b\
-                                                               667201e42022cd9ef0dce3da269fb50c72"}}
-                                                     ]},
-                            headers={
-                                'Content-Type':
-                                'application/json',
-                                'Content-Disposition':
-                                'attachment; filename="mock_manifest.json"'
-                            })
+
+    mock_manifest = httpx.Response(
+        HTTPStatus.OK,
+        json={
+            "name":
+            "",
+            "files": [{
+                "path": "asset1.json",
+                "digests": {
+                    "md5":
+                    "9a967dfe809c2eb25d990ad547feadf0",
+                    "sha256":
+                    "16aa5141ae5f3e739de78bf1576d4474fc16de471414ce74e793dc852f93d7a8"
+                },
+            },
+                      {
+                          "path": "asset2.json",
+                          "digests": {
+                              "md5":
+                              "8092eb7d64064d4c0c2136d4cdb61eaa",
+                              "sha256":
+                              "0a6874c3e4a75c45828fc3c2ae5f6c238b9f99bfcdcb020332b02e651c5c2873"
+                          }
+                      }]
+        },
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="mock_manifest.json"'
+        })
     respx.get(dl_url3).return_value = mock_manifest
-    # Test MD5 Checksum
-    checksum = 'MD5'
-    cl = OrdersClient(session, base_url=TEST_URL)
-    filenames = await cl.download_order(oid, directory=str(tmpdir))
-    print(mock_manifest.json())
-    cl.calculate_checksum(manifest_data= mock_manifest.json(),
-                        filenames= filenames,
-                        checksum= checksum)
-    # Test SHA256 Checksum
-    checksum = 'SHA256'
-    cl = OrdersClient(session, base_url=TEST_URL)
-    filenames = await cl.download_order(oid, directory=str(tmpdir))
-    print(mock_manifest.json())
-    cl.calculate_checksum(manifest_data= mock_manifest.json(),
-                        filenames= filenames,
-                        checksum= checksum)
-    # Note: the commented code below was run to reverse-engineer the hashkeys above:
-    # 1) Use the below code to generate hashkeys for the mock assets above
-    # 2) Copy those hashkeys to the respective manifests (temporarily)
-    # 3) Test the checksum with these values. Note that it does not pass.
-    # 4) Use the checksum functionality to view the returned checksum
-    # 5) These returned values should replace the temporary hashkey values in the manifest
-    
+    # Test Checksum
+    for checksum in ['MD5', 'SHA256']:
+        cl = OrdersClient(session, base_url=TEST_URL)
+        filenames = await cl.download_order(oid, directory=str(tmpdir))
+        cl.calculate_checksum(manifest_data=mock_manifest.json(),
+                              filenames=filenames,
+                              checksum=checksum)
+    # Note: the commented code below was run to
+    # reverse-engineer hashkeys above:
+    # 1) Use the below code to generate hashkeys for
+    # the mock assets above
+    # 2) Copy those hashkeys to the respective
+    # manifests (temporarily)
+    # 3) Test the checksum with these values.
+    # Note that it does not pass.
+    # 4) Use the checksum functionality to view
+    # the returned checksum
+    # 5) These returned values should replace the
+    # temporary hashkey values in manifest
+
     # # Convert Mock Asset 1 JSON into Hashkey
+    # import hashlib
     # json_str1 = json.dumps(mock_asset1.json(), sort_keys=True, indent=2)
     # if checksum == 'SHA256':
     #     origin_hash1 = hashlib.sha256(json_str1.encode("utf-8")).hexdigest()
@@ -631,20 +645,22 @@ async def test_checksum_success(tmpdir, order_description, oid, session):
     # elif checksum == 'MD5':
     #     origin_hash1 = hashlib.md5(json_str1.encode("utf-8")).hexdigest()
     #     print(origin_hash1)
-        
+
     # # Convert Mock Asset 2 JSON into Hashkey
     # json_str2 = json.dumps(mock_asset2.json(), sort_keys=True, indent=2)
     # if checksum == 'SHA256':
     #     origin_hash2 = hashlib.sha256(json_str2.encode("utf-8")).hexdigest()
-    #     print (origin_hash2)
+    #     print(origin_hash2)
     # elif checksum == 'MD5':
     #     origin_hash2 = hashlib.md5(json_str2.encode("utf-8")).hexdigest()
-    #     print (origin_hash2)
+    #     print(origin_hash2)
+
 
 @respx.mock
 @pytest.mark.asyncio
 async def test_checksum_failure(tmpdir, order_description, oid, session):
-    # Note: the hashkeys in the mock manifest below were changed from the correct keys
+    # Note: the hashkeys in the mock manifest below were changed
+    # from the correct keys
     # They are now the same as the keys in their respective asset files
     # This should cause the checksum to fail.
     # Mock an HTTP response for download
@@ -664,67 +680,86 @@ async def test_checksum_failure(tmpdir, order_description, oid, session):
     respx.get(get_url).return_value = mock_asset
 
     mock_asset1 = httpx.Response(HTTPStatus.OK,
-                                 json={"md5":"1975b76cc6904ff84f432be2ef1fea2e",
-                                      "sha256":"300ebdfd62614f82ce6ba45b298bf797\
-                                          f1ea595d9214bcf23899f3fd2267c5dd"},
-                                headers={
-                                    'Content-Type':
-                                    'application/json',
-                                    'Content-Disposition':
-                                    'attachment; filename="asset1.json"'
-                                })
+                                 json={
+                                     "md5":
+                                     "1975b76cc6904ff84f432be2ef1fea2e",
+                                     "sha256":
+                                     "300ebdfd62614f82ce6ba45b298bf797\
+                                             f1ea595d9214bcf23899f3fd2267c5dd"
+                                 },
+                                 headers={
+                                     'Content-Type':
+                                     'application/json',
+                                     'Content-Disposition':
+                                     'attachment; filename="asset1.json"'
+                                 })
     respx.get(dl_url1).return_value = mock_asset1
 
     mock_asset2 = httpx.Response(HTTPStatus.OK,
-                                json={"md5":"27323e74b2590f97734124bd4cce055e",
-                                      "sha256":"cc70916fe9af731d80220aec6dfbf7c\
-                                          91b9339fea61bf2a6b4d83cee6e11f7c9"},
-                                headers={
-                                    'Content-Type':
-                                    'application/json',
-                                    'Content-Disposition':
-                                    'attachment; filename="asset2.json"'
-                                })
+                                 json={
+                                     "md5":
+                                     "27323e74b2590f97734124bd4cce055e",
+                                     "sha256":
+                                     "cc70916fe9af731d80220aec6dfbf7c\
+                                            91b9339fea61bf2a6b4d83cee6e11f7c9"
+                                 },
+                                 headers={
+                                     'Content-Type':
+                                     'application/json',
+                                     'Content-Disposition':
+                                     'attachment; filename="asset2.json"'
+                                 })
     respx.get(dl_url2).return_value = mock_asset2
-    
-    mock_manifest = httpx.Response(HTTPStatus.OK,
-                            json={"name":"","files":[{"path":"asset1.json",
-                                                      "digests":
-                                                          {"md5":"1975b76cc6904ff84f432be2ef1fea2e",
-                                                           "sha256":"300ebdfd62614f82ce6ba45b298bf797\
-                                                               f1ea595d9214bcf23899f3fd2267c5dd"},
-                                                          },
-                                                     {"path":"asset2.json",
-                                                      "digests":
-                                                          {"md5":"27323e74b2590f97734124bd4cce055e",
-                                                           "sha256":"cc70916fe9af731d80220aec6dfbf7c\
-                                                               91b9339fea61bf2a6b4d83cee6e11f7c9"}}
-                                                     ]},
-                            headers={
-                                'Content-Type':
-                                'application/json',
-                                'Content-Disposition':
-                                'attachment; filename="mock_manifest.json"'
-                            })
+
+    mock_manifest = httpx.Response(
+        HTTPStatus.OK,
+        json={
+            "name":
+            "",
+            "files": [{
+                "path": "asset1.json",
+                "digests": {
+                    "md5":
+                    "1975b76cc6904ff84f432be2ef1fea2e",
+                    "sha256":
+                    "300ebdfd62614f82ce6ba45b298bf797\
+                        f1ea595d9214bcf23899f3fd2267c5dd"
+                },
+            },
+                      {
+                          "path": "asset2.json",
+                          "digests": {
+                              "md5":
+                              "27323e74b2590f97734124bd4cce055e",
+                              "sha256":
+                              "cc70916fe9af731d80220aec6dfbf7c\
+                                  91b9339fea61bf2a6b4d83cee6e11f7c9"
+                          }
+                      }]
+        },
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="mock_manifest.json"'
+        })
     respx.get(dl_url3).return_value = mock_manifest
-    # Test MD5 Checksum
-    checksum = 'MD5'
-    cl = OrdersClient(session, base_url=TEST_URL)
-    filenames = await cl.download_order(oid, directory=str(tmpdir))
-    print(mock_manifest.json())
-    cl.calculate_checksum(manifest_data= mock_manifest.json(),
-                        filenames= filenames,
-                        checksum= checksum)
-    # Test SHA256 Checksum
-    checksum = 'SHA256'
-    cl = OrdersClient(session, base_url=TEST_URL)
-    filenames = await cl.download_order(oid, directory=str(tmpdir))
-    print(mock_manifest.json())
-    cl.calculate_checksum(manifest_data= mock_manifest.json(),
-                        filenames= filenames,
-                        checksum= checksum)
-    with pytest.raises(exceptions.ClientError):
-        print('This test was supposed to fail')
+    # Test Checksum
+    for checksum in ['MD5', 'SHA256']:
+        cl = OrdersClient(session, base_url=TEST_URL)
+        filenames = await cl.download_order(oid, directory=str(tmpdir))
+        with pytest.raises(exceptions.ClientError):
+            await cl.calculate_checksum(manifest_data=mock_manifest.json(),
+                              filenames=filenames,
+                              checksum=checksum)
+    # # Test SHA256 Checksum
+    # checksum = 'SHA256'
+    # cl = OrdersClient(session, base_url=TEST_URL)
+    # filenames = await cl.download_order(oid, directory=str(tmpdir))
+    # cl.calculate_checksum(manifest_data=mock_manifest.json(),
+    #                       filenames=filenames,
+    #                       checksum=checksum)
+    # with pytest.raises(exceptions.ClientError):
+    #     await cl.download_order(oid, directory=str(tmpdir),
+    # checksum=checksum)
 
 
 @respx.mock
