@@ -21,6 +21,7 @@ import uuid
 import json
 import hashlib
 
+from pathlib import Path
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
@@ -298,7 +299,7 @@ class OrdersClient():
             checksum = checksum.lower()
         file_key_pairs = {}
         for json_entry in manifest_data['files']:
-            file_name = json_entry['path'].split('/')[-1]
+            file_name = Path(json_entry['path']).name
             origin_hash = json_entry['digests'][checksum]
             file_key_pairs[file_name] = origin_hash
         # For each downloaded file, retrieve origin hashkey from dict
@@ -306,7 +307,7 @@ class OrdersClient():
             x for x in filenames if not x.endswith('manifest.json')
         ]
         for filename in filenames_loop:
-            downloaded_file_name = filename.split('/')[-1]
+            downloaded_file_name = Path(filename).name
             origin_hash = file_key_pairs[downloaded_file_name]
             # For each file (not including manifest json),
             # calculate hash on contents. This is the returned hash.
