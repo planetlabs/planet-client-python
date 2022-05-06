@@ -275,7 +275,9 @@ class OrdersClient():
         return dl_path
 
     @staticmethod  # should this be an async function?
-    def calculate_checksum(manifest_data: dict, filenames: list, checksum: str):
+    def calculate_checksum(manifest_data: dict,
+                           filenames: list,
+                           checksum: str):
         """Calculate checksum and validate that it passes.
 
         Parameters:

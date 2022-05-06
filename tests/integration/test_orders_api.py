@@ -748,8 +748,8 @@ async def test_checksum_failure(tmpdir, order_description, oid, session):
         filenames = await cl.download_order(oid, directory=str(tmpdir))
         with pytest.raises(exceptions.ClientError):
             await cl.calculate_checksum(manifest_data=mock_manifest.json(),
-                              filenames=filenames,
-                              checksum=checksum)
+                                        filenames=filenames,
+                                        checksum=checksum)
 
 
 @respx.mock
