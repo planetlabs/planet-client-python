@@ -750,16 +750,6 @@ async def test_checksum_failure(tmpdir, order_description, oid, session):
             await cl.calculate_checksum(manifest_data=mock_manifest.json(),
                               filenames=filenames,
                               checksum=checksum)
-    # # Test SHA256 Checksum
-    # checksum = 'SHA256'
-    # cl = OrdersClient(session, base_url=TEST_URL)
-    # filenames = await cl.download_order(oid, directory=str(tmpdir))
-    # cl.calculate_checksum(manifest_data=mock_manifest.json(),
-    #                       filenames=filenames,
-    #                       checksum=checksum)
-    # with pytest.raises(exceptions.ClientError):
-    #     await cl.download_order(oid, directory=str(tmpdir),
-    # checksum=checksum)
 
 
 @respx.mock
