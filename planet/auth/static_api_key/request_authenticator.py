@@ -15,6 +15,5 @@ class FileBackedAPIKeyRequestAuthenticator(RequestAuthenticator):
 
     def pre_request_hook(self):
         self._auth_file.lazy_reload()
-        self._auth_file.assert_valid()
         self._token_body = self._auth_file.api_key()
         self._token_prefix = self._auth_file.bearer_token_prefix()

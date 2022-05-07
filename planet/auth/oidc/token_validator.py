@@ -7,18 +7,23 @@ from planet.auth.auth_client import AuthClientException
 from planet.auth.oidc.api_clients.jwks_api_client import JwksAPIClient
 
 
-class TokenValidator():
-    # Keys really don't change often... Maybe quarterly. In all but emergency
-    # situations a new key would be published long before the old one is
-    # removed from circulation.  We throttle key fetches so we don't
-    # degenerate into DOS'ing the JWKS endpoint if presented with requests
-    # using tokens with invalid keys
-    min_jwks_fetch_interval = 300
+class TokenValidator:
 
-    def __init__(self, jwks_client: JwksAPIClient):
+    # Keys really don't change often... Maybe quarterly. In all but
+    # emergency situations a new key would be published long before the
+    # old one is removed from circulation.  We throttle key fetches so we
+    # don't degenerate into DOS'ing the JWKS endpoint if presented with
+    # requests using tokens with invalid keys.  So, the default fetch
+    # interval can be wide.
+    # TODO: implement a max interval - need to push out removed keys.
+    #       Add some fuzz, so we don't set up refresh storms?
+    def __init__(self,
+                 jwks_client: JwksAPIClient,
+                 min_jwks_fetch_interval=300):
         self._jwks_client = jwks_client
         self._keys_by_id = {}
         self._load_time = 0
+        self.min_jwks_fetch_interval = min_jwks_fetch_interval
 
     def _update(self):
         # TODO: bootstrap from cached values? the concern is large
@@ -50,12 +55,17 @@ class TokenValidator():
         algorithm = unverified_header.get('alg')
         # Don't trust straight pass-through, since "none" is a valid
         # algorithm. Only trust specific algorithms.
-        if not (algorithm and (algorithm.lower() == "rs256"
-                               or algorithm.lower() == "rs512")):
+        # TODO: or algorithm.lower() == "rs384"
+        # TODO: or algorithm.lower() == "rs512"
+        if not (algorithm and (algorithm.lower() == "rs256")):
             raise AuthClientException(
                 "Unknown or unsupported token algorithm {}".format(algorithm))
         return algorithm
 
+    # FIXME: Is this the right exception to throw
+    # TODO?: "validate_token" DOES NOT force nonce validation. It's just
+    #  JWT validation. Nonces are an application layer above. (See ID token
+    #  validation below, which is OIDC ID token specific.
     @AuthClientException.recast(PyJWTError)
     def validate_token(self,
                        token_str,
@@ -87,6 +97,8 @@ class TokenValidator():
                     'Token nonce did not match expected value')
         return validated_claims
 
+    # TODO: should we error if the token has a nonce, and none was given to
+    #       verify?
     def validate_id_token(self,
                           token_str,
                           issuer,

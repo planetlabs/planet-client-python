@@ -1,13 +1,10 @@
-import asyncio
 import http.server
 import logging
 import urllib.parse
 
 import requests
-import socket
 import unittest
 
-from contextlib import closing
 from requests.auth import AuthBase
 from typing import Tuple, Optional
 from unittest import mock
@@ -17,6 +14,7 @@ from planet.auth.oidc.api_clients.authorization_api_client import \
     AuthorizationAPIClient, AuthorizationAPIException, \
     _parse_authcode_from_callback
 from planet.auth.oidc.util import create_pkce_challenge_verifier_pair
+from tests.util import background, find_free_port
 
 TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
 TEST_CLIENT_ID = '_client_id_'
@@ -28,27 +26,6 @@ API_RESPONSE_FAILED = {}
 TEST_VERIFIER, TEST_CHALLENGE = create_pkce_challenge_verifier_pair()
 
 logger = logging.getLogger(__name__)
-
-
-def find_free_port():
-    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-        s.bind(('', 0))
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        return s.getsockname()[1]
-
-
-def background(f):
-    from functools import wraps
-
-    @wraps(f)
-    def wrapped(*args, **kwargs):
-        loop = asyncio.get_event_loop()
-        if callable(f):
-            return loop.run_in_executor(None, f, *args, **kwargs)
-        else:
-            raise TypeError('Task must be a callable')
-
-    return wrapped
 
 
 def noop_auth_enricher(raw_payload: dict,

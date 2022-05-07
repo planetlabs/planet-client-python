@@ -136,7 +136,7 @@ class AuthClient(ABC):
                 ResourceOwnerAuthClient, \
                 ResourceOwnerClientConfig
             from planet.auth.planet_legacy.auth_client import \
-                PlanetLagacyAuthClient, \
+                PlanetLegacyAuthClient, \
                 PlanetLegacyAuthClientConfig
             from planet.auth.static_api_key.auth_client import \
                 StaticApiKeyAuthClient, \
@@ -151,7 +151,7 @@ class AuthClient(ABC):
                 ClientCredentialsSharedKeyClientConfig:
                 ClientCredentialsSharedKeyAuthClient,
                 ResourceOwnerClientConfig: ResourceOwnerAuthClient,
-                PlanetLegacyAuthClientConfig: PlanetLagacyAuthClient,
+                PlanetLegacyAuthClientConfig: PlanetLegacyAuthClient,
                 StaticApiKeyAuthClientConfig: StaticApiKeyAuthClient
             }
 

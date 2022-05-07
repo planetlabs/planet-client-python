@@ -25,9 +25,21 @@ class RequestAuthenticator(requests.auth.AuthBase, httpx.Auth):
     def pre_request_hook(self):
         """
         Hook that will be called immediately prior to making an HTTP request
-        so that implementing classes may make preparations
+        so that implementing classes may make preparations.  Derived
+        classes are expected to populate the member fields _token_prefix,
+        _token_body, and _auth_header with values that are appropriate to
+        the the specific implementation.  These will then be used during
+        subsequent HTTP request to authenticate the connection using
+        a beater token authorization HTTP header.
+
+        Implementers may make external network calls as required to perform
+        necessary tasks such as refreshing access tokens.
+
+        Implementations should not require user interaction by default. If
+        an authentication mechanism will require user interaction, this
+        should be an explicit decision that is left to the application
+        using the RequestAuthenticator to control.
         """
-        pass
 
     def _build_auth_header_payload(self):
         if self._token_prefix:

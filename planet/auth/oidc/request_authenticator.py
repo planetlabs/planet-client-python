@@ -4,7 +4,6 @@ import time
 
 from planet.auth.request_authenticator import RequestAuthenticator
 from planet.auth.oidc.auth_client import OidcAuthClient
-from planet.auth.oidc.api_clients.api_client import OIDCAPIClientException
 from planet.auth.oidc.oidc_token import FileBackedOidcToken
 
 logger = logging.getLogger(__name__)
@@ -24,6 +23,7 @@ class RefreshingOidcTokenRequestAuthenticator(RequestAuthenticator):
     token introspection endpoint.
     """
 
+    #  TODO: fix naming - token_file -> credential_file (fix class names too)
     def __init__(self,
                  token_file: FileBackedOidcToken,
                  auth_client: OidcAuthClient = None):
@@ -69,12 +69,12 @@ class RefreshingOidcTokenRequestAuthenticator(RequestAuthenticator):
                 self._load()
                 if int(time.time()) > self._refresh_at:
                     self._refresh()
-            except OIDCAPIClientException as e:
+            except Exception as e:
                 # we continue with the old auth token to try and be resilient.
                 # Refresh failures could be transient.
                 logger.warning(
-                    "Error refreshing auth token. Continuing with old auth'"
-                    "' token. Refresh error: " + str(e))
+                    "Error refreshing auth token. Continuing with old auth"
+                    " token. Refresh error: " + str(e))
 
         super().pre_request_hook()
 

@@ -8,6 +8,9 @@ from planet.auth.oidc.api_clients.jwks_api_client import JwksAPIClient, \
     JwksAPIException
 
 TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
+# Random snapshot of public keys from one of our Okta instances. We are
+# not verifying keys in this test, so it doesn't matter that we can't generate
+# tokens with these signers.
 API_RESPONSE_VALID = {
     "keys": [
         {
