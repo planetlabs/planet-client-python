@@ -51,11 +51,12 @@ def prepare_client_secret_request_auth(client_id: str, client_secret: str):
     return HTTPBasicAuth(client_id, client_secret)
 
 
-def prepare_client_secret_auth_payload(client_id: str, client_secret: str):
-    client_secret_auth_payload = {
-        'client_id': client_id, 'client_secret': client_secret
-    }
-    return client_secret_auth_payload
+# This is not being used right now.
+# def prepare_client_secret_auth_payload(client_id: str, client_secret: str):
+#     client_secret_auth_payload = {
+#         'client_id': client_id, 'client_secret': client_secret
+#     }
+#     return client_secret_auth_payload
 
 
 def prepare_private_key_assertion_auth_payload(audience: str,
@@ -69,12 +70,13 @@ def prepare_private_key_assertion_auth_payload(audience: str,
     return _prepare_oidc_assertion_auth_payload(signed_jwt)
 
 
-def prepare_shared_key_assertion_auth_payload(audience: str,
-                                              client_id: str,
-                                              shared_key,
-                                              ttl: int):
-    unsigned_jwt = _prepare_oidc_client_jwt_payload(audience=audience,
-                                                    client_id=client_id,
-                                                    ttl=ttl)
-    signed_jwt = jwt.encode(unsigned_jwt, shared_key, algorithm="HS256")
-    return _prepare_oidc_assertion_auth_payload(signed_jwt)
+# Not used yet. See ClientCredentialsSharedKeyAuthClient.
+# def prepare_shared_key_assertion_auth_payload(audience: str,
+#                                               client_id: str,
+#                                               shared_key,
+#                                               ttl: int):
+#     unsigned_jwt = _prepare_oidc_client_jwt_payload(audience=audience,
+#                                                     client_id=client_id,
+#                                                     ttl=ttl)
+#     signed_jwt = jwt.encode(unsigned_jwt, shared_key, algorithm="HS256")
+#     return _prepare_oidc_assertion_auth_payload(signed_jwt)
