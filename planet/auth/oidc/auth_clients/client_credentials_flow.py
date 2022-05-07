@@ -165,6 +165,8 @@ class ClientCredentialsSharedKeyAuthClient(OidcAuthClient):
             self, raw_payload: dict,
             audience: str) -> Tuple[dict, Optional[AuthBase]]:
         raise Exception('No implementation')
+        # when we have an implementation, see
+        # prepare_shared_key_assertion_auth_payload in oidc_request_auth
 
     def login(self, requested_scopes=None, allow_open_browser=False, **kwargs):
         raise Exception('No implementation')
