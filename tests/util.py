@@ -1,5 +1,10 @@
+import asyncio
+import cryptography.hazmat.primitives.serialization as crypto_serialization
 import importlib.resources
+import socket
 import sys
+
+from contextlib import closing
 
 from planet.auth.auth_client import AuthClientConfig
 
@@ -18,3 +23,35 @@ def load_auth_client_config(named_config):
     file_path = tdata_resource_file_path(
         'auth_client_configs/{}.json'.format(named_config))
     return AuthClientConfig.from_file(file_path)
+
+
+def find_free_port():
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(('', 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return s.getsockname()[1]
+
+
+def load_rsa_signing_key(key_file_path):
+    with open(key_file_path, "rb") as key_file:
+        priv_key = crypto_serialization.load_pem_private_key(key_file.read(),
+                                                             password=None)
+        if not priv_key:
+            raise Exception(
+                "Could not private key from {}".format(key_file_path))
+
+    return priv_key
+
+
+def background(f):
+    from functools import wraps
+
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        loop = asyncio.get_event_loop()
+        if callable(f):
+            return loop.run_in_executor(None, f, *args, **kwargs)
+        else:
+            raise TypeError('Task must be a callable')
+
+    return wrapped
