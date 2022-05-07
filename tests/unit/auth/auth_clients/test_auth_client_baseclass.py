@@ -142,7 +142,7 @@ class ClientFactoryTest(unittest.TestCase):
         self.assertIsInstance(
             AuthClient.from_config(
                 PlanetLegacyAuthClientConfig(legacy_auth_endpoint='dummy')),
-            planet.auth.planet_legacy.auth_client.PlanetLagacyAuthClient)
+            planet.auth.planet_legacy.auth_client.PlanetLegacyAuthClient)
 
     def test_static_apikey_client(self):
         self.assertIsInstance(

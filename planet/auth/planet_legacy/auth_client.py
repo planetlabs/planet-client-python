@@ -27,7 +27,7 @@ class PlanetLegacyAuthClientException(AuthClientException):
         self.raw_response = raw_response
 
 
-class PlanetLagacyAuthClient(AuthClient):
+class PlanetLegacyAuthClient(AuthClient):
 
     def __init__(self, legacy_client_config: PlanetLegacyAuthClientConfig):
         super().__init__(legacy_client_config)

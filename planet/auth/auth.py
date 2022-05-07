@@ -117,6 +117,8 @@ class Auth:
                    getenv(ENV_AUTH_CLIENT_CONFIG_FILE),
                    token_file: Union[str, pathlib.PurePath] = os.getenv(
                        ENV_AUTH_TOKEN_FILE)) -> Auth:
+        # TODO: we should have some handling of legacy environment variables
+        #       understood by SDK v1: PL_API_KEY
         if profile == BUILTIN_PROFILE_NAME_NONE:
             auth_client = None
             token_file_path = None

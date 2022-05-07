@@ -6,7 +6,7 @@ from planet.auth.oidc.auth_clients.auth_code_flow import \
     AuthCodePKCEAuthClient
 from planet.auth.oidc.request_authenticator import \
     RefreshingOidcTokenRequestAuthenticator
-from planet.auth.planet_legacy.auth_client import PlanetLagacyAuthClient
+from planet.auth.planet_legacy.auth_client import PlanetLegacyAuthClient
 from planet.auth.planet_legacy.request_authenticator import \
     PlanetLegacyRequestAuthenticator
 from planet.auth.request_authenticator import \
@@ -39,7 +39,7 @@ class AuthTest(unittest.TestCase):
 
     def test_initialize_legacy_by_profile_name(self):
         under_test = Auth.initialize(profile='legacy')
-        self.assertIsInstance(under_test.auth_client(), PlanetLagacyAuthClient)
+        self.assertIsInstance(under_test.auth_client(), PlanetLegacyAuthClient)
         self.assertIsInstance(under_test.request_authenticator(),
                               PlanetLegacyRequestAuthenticator)
         self.assertIsInstance(under_test.token_file_path(), pathlib.Path)
@@ -98,7 +98,7 @@ class AuthTest(unittest.TestCase):
             profile='legacy',
             auth_client_config_file=tdata_resource_file_path(
                 'auth_client_configs/utest/static_api_key.json'))
-        self.assertIsInstance(under_test.auth_client(), PlanetLagacyAuthClient)
+        self.assertIsInstance(under_test.auth_client(), PlanetLegacyAuthClient)
         self.assertIsInstance(under_test.request_authenticator(),
                               PlanetLegacyRequestAuthenticator)
         self.assertIsInstance(under_test.token_file_path(), pathlib.Path)
