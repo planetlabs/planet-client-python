@@ -1,7 +1,6 @@
 import json
 import unittest
 
-from cryptography.hazmat.primitives import serialization
 from requests.models import Response
 from unittest import mock
 
@@ -50,7 +49,8 @@ def mocked_response_invalid(request_url, **kwargs):
 
 
 def load_privkey():
-    return load_rsa_private_key(tdata_resource_file_path('keys/keypair1_priv.test_pem'), 'password')
+    return load_rsa_private_key(
+        tdata_resource_file_path('keys/keypair1_priv.test_pem'), 'password')
 
 
 class TokenApiClientTest(unittest.TestCase):

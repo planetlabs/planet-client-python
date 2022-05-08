@@ -5,8 +5,6 @@ import urllib.parse
 import requests
 import unittest
 
-from requests.auth import AuthBase
-from typing import Tuple, Optional
 from unittest import mock
 from urllib.parse import urlparse, parse_qs
 

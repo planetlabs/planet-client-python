@@ -18,8 +18,7 @@ from planet.auth.oidc.auth_clients.resource_owner_flow import \
     ResourceOwnerClientConfig
 from planet.auth.planet_legacy.auth_client import PlanetLegacyAuthClientConfig
 from planet.auth.request_authenticator import \
-    RequestAuthenticator, \
-    SimpleInMemoryRequestAuthenticator
+    RequestAuthenticator
 from planet.auth.static_api_key.auth_client import \
     StaticApiKeyAuthClientConfig
 from tests.util import tdata_resource_file_path
