@@ -41,6 +41,8 @@ to make use of the following Planet APIs:
  yet implemented)
 
 This quickstart focuses on getting started with the CLI to place an order.
+For information on the Python API see the 
+[documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/)
 
 After you've install the client, as explained in the [installation](#installation)
 section below, you first you must initialize the client with your Planet 
@@ -61,8 +63,8 @@ Now that you're initialized let's start with creating an order with the
 Orders API:
 
 ```
-% planet orders create --name my-first-order --id <scene ids> \ 
-  --item-type SkySatCollect --bundle visual
+$ planet orders create --name my-first-order --id <scene ids> \ 
+  --item-type PSScene --bundle visual
 ```
 
 You should supply a unique name after `--name` for each new order, to help
@@ -75,14 +77,36 @@ to get the right type of image. And then be sure to specify a
 The most common ones are `visual` and `analytic`. 
 
 This will give you an order response JSON as shown in the 'example response' in
-[the docs](https://developers.planet.com/docs/orders/ordering/#basic-ordering). You can 
-grab the `id` from that response and then use that in a single command to wait for
-the order and download it when you are ready:
+[the Order API docs](https://developers.planet.com/docs/orders/ordering/#basic-ordering). 
+You can grab the `id` from that response, which will look something like 
+`dfdf3088-73a2-478c-a8f6-1bad1c09fa09`. You can then use that in a single 
+command to wait for the order and download it when you are ready:
 
 ```
-% planet orders wait dfdf3088-73a2-478c-a8f6-1bad1c09fa09 && planet orders \
+$ planet orders wait dfdf3088-73a2-478c-a8f6-1bad1c09fa09 && planet orders \
   download dfdf3088-73a2-478c-a8f6-1bad1c09fa09
 ```
+
+This usually takes at least a few minutes, and can be longer if it is a large request
+(lots of items or big items like SkySatCollect). The default `wait` will last about
+15 minutes, but can easily be extended.
+
+You can also just wait to download until the order is fulfilled. To check on its status
+just use: 
+
+```
+$ planet orders get dfdf3088-73a2-478c-a8f6-1bad1c09fa09
+```
+
+And then use `planet download <id>` when the order is ready. 
+
+There are many more options in the command-line interface. One of the best ways
+to explore is to just use `--help` after any command to see the options. There is
+also lots of good information in the docs, in the 
+[User Guide](https://planet-sdk-for-python.readthedocs.io/en/latest/guide/#cli)
+and the [CLI Reference](https://planet-sdk-for-python.readthedocs.io/en/latest/cli/).
+
+
 
 ## Installation
 
