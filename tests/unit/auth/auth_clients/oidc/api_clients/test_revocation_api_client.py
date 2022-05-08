@@ -29,14 +29,6 @@ def mocked_response_ok(request_url, **kwargs):
     return response
 
 
-def mocked_response_fail(request_url, **kwargs):
-    response = Response()
-    response.status_code = 200
-    response.headers['content-type'] = 'application/json'
-    response._content = str.encode(json.dumps(API_RESPONSE_FAILED))
-    return response
-
-
 class RevocationApiClientTest(unittest.TestCase):
     """
     Revocation API testing is very boring.  By design, the endpoint doesn't

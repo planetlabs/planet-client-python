@@ -37,13 +37,18 @@ def find_free_port():
         return s.getsockname()[1]
 
 
-def load_rsa_signing_key(key_file_path):
+def load_rsa_private_key(key_file_path, password=None):
     with open(key_file_path, "rb") as key_file:
+        if password:
+            encoded_password = password.encode()
+        else:
+            encoded_password = None
+
         priv_key = crypto_serialization.load_pem_private_key(key_file.read(),
-                                                             password=None)
+                                                             password=encoded_password)
         if not priv_key:
             raise Exception(
-                "Could not private key from {}".format(key_file_path))
+                "Could not load private key from {}".format(key_file_path))
 
     return priv_key
 

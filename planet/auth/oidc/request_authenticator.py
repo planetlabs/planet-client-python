@@ -59,23 +59,33 @@ class RefreshingOidcTokenRequestAuthenticator(RequestAuthenticator):
             self._load()
 
     def pre_request_hook(self):
+        # Reload the file before refreshing. Another process might
+        # have done it for us, and save us the network call.
+        #
+        # Also, if refresh tokens are configured to be one time use,
+        # we want a fresh refresh token. Stale refresh tokens are
+        # invalid in this case.
+        #
+        # Also, it's possible that we have a valid refresh token,
+        # but not an access token.  When that's true, we should
+        # try to cash in the refresh token.
+        #
+        # If everything fails, continue with what we have. Let the API
+        # we are calling decide if it's good enough.
         if int(time.time()) > self._refresh_at:
             try:
-                # Reload the file before refreshing. Another process might
-                # have done it for us, and save us the network call.  Also,
-                # if refresh tokens are configured to be one time use, we
-                # want a fresh refresh token. Stale refresh tokens are
-                # invalid in this case.
                 self._load()
-                if int(time.time()) > self._refresh_at:
-                    self._refresh()
             except Exception as e:
-                # we continue with the old auth token to try and be resilient.
-                # Refresh failures could be transient.
+                logger.warning(
+                    "Error loading auth token. Continuing with old auth"
+                    " token. Load error: " + str(e))
+        if int(time.time()) > self._refresh_at:
+            try:
+                self._refresh()
+            except Exception as e:
                 logger.warning(
                     "Error refreshing auth token. Continuing with old auth"
                     " token. Refresh error: " + str(e))
-
         super().pre_request_hook()
 
 

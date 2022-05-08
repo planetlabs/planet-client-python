@@ -1,7 +1,7 @@
 import jwt
 import time
 import uuid
-from tests.util import load_rsa_signing_key
+from tests.util import load_rsa_private_key
 
 TEST_DEFAULT_TTL = 60
 TEST_MOCK_API_KEY = 'PLAK_MockApiKey'
@@ -19,7 +19,7 @@ class TestTokenBuilder:
                  signing_key_id=None,
                  signing_key_algorithm="RS256"):
         self.signing_key_file = signing_key_file
-        self.signing_key = load_rsa_signing_key(signing_key_file)
+        self.signing_key = load_rsa_private_key(signing_key_file)
         self.signing_key_id = signing_key_id
         self.signing_key_algorithm = signing_key_algorithm
 

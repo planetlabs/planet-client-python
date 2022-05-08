@@ -28,11 +28,6 @@ TEST_VERIFIER, TEST_CHALLENGE = create_pkce_challenge_verifier_pair()
 logger = logging.getLogger(__name__)
 
 
-def noop_auth_enricher(raw_payload: dict,
-                       audience: str) -> Tuple[dict, Optional[AuthBase]]:
-    return raw_payload, None
-
-
 def mocked_get_password(**kwargs):
     return MOCK_AUTHCODE
 

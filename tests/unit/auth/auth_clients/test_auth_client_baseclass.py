@@ -39,11 +39,12 @@ class AuthClientTestImpl(AuthClient):
         self._test_client_config = client_config
 
     def login(self, **kwargs) -> Credential:
-        pass
+        assert 0  # abstract method not under test
 
     def default_request_authenticator(
             self, token_file_path: pathlib.Path) -> RequestAuthenticator:
-        return SimpleInMemoryRequestAuthenticator(token_body=None)
+        # return SimpleInMemoryRequestAuthenticator(token_body=None)
+        assert 0  # abstract method not under test
 
 
 class TestAuthClientBase(unittest.TestCase):
