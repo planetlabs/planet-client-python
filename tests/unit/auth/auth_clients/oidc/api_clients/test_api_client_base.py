@@ -137,6 +137,15 @@ class ApiClientBaseTest(unittest.TestCase):
                                                   request_auth=None)
 
     @mock.patch('requests.get', side_effect=mocked_requests_get_or_post)
+    def test_checked_get_json_response_invalid_not_found(self, mock_get):
+
+        under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
+                                   '/not_found')
+        with self.assertRaises(OIDCAPIClientException):
+            under_test._checked_get_json_response(params=None,
+                                                  request_auth=None)
+
+    @mock.patch('requests.get', side_effect=mocked_requests_get_or_post)
     def test_check_oidc_error_1(self, get_mock):
         under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
                                    '/oidc_error_1.json')

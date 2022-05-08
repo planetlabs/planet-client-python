@@ -12,13 +12,13 @@ from planet.auth.planet_legacy.legacy_api_key import \
 from planet.auth.planet_legacy.request_authenticator import \
     PlanetLegacyRequestAuthenticator
 from tests.unit.auth.util import TestTokenBuilder
-from tests.util import load_rsa_signing_key, tdata_resource_file_path
+from tests.util import load_rsa_private_key, tdata_resource_file_path
 
 TEST_MOCK_API_KEY = 'PLAK_MockApiKey'
 TEST_AUTH_ENDPOINT = 'https://blackhole.unittest.planet.com/legacy_auth'
 TEST_BAD_RESPONSE = {"some_key": "some bogus response payload"}
 
-TEST_SIGNING_KEY = load_rsa_signing_key(
+TEST_SIGNING_KEY = load_rsa_private_key(
     tdata_resource_file_path('keys/keypair1_priv_nopassword.test_pem'))
 
 TOKEN_BUILDER = TestTokenBuilder(

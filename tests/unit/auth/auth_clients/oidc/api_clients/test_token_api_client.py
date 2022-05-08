@@ -8,7 +8,7 @@ from unittest import mock
 from planet.auth.oidc.api_clients.token_api_client import TokenAPIClient, \
     TokenAPIException
 from planet.auth.oidc.util import create_pkce_challenge_verifier_pair
-from tests.util import tdata_resource_file_path
+from tests.util import tdata_resource_file_path, load_rsa_private_key
 
 TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
 TEST_CLIENT_ID = '__test_client_id__'
@@ -50,16 +50,7 @@ def mocked_response_invalid(request_url, **kwargs):
 
 
 def load_privkey():
-    keyfile_path = tdata_resource_file_path('keys/keypair1_priv.test_pem')
-    with open(keyfile_path, "rb") as key_file:
-        priv_key = serialization.load_pem_private_key(
-            key_file.read(),
-            password='password'.encode(),
-        )
-        if not priv_key:
-            raise Exception('Unable to load private key from file "{}"'.format(
-                keyfile_path))
-    return priv_key
+    return load_rsa_private_key(tdata_resource_file_path('keys/keypair1_priv.test_pem'), 'password')
 
 
 class TokenApiClientTest(unittest.TestCase):
