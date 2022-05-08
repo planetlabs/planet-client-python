@@ -44,8 +44,8 @@ def load_rsa_private_key(key_file_path, password=None):
         else:
             encoded_password = None
 
-        priv_key = crypto_serialization.load_pem_private_key(key_file.read(),
-                                                             password=encoded_password)
+        priv_key = crypto_serialization.load_pem_private_key(
+            key_file.read(), password=encoded_password)
         if not priv_key:
             raise Exception(
                 "Could not load private key from {}".format(key_file_path))

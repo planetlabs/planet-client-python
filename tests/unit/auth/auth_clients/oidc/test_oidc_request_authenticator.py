@@ -111,6 +111,7 @@ class StubOidcAuthClient(OidcAuthClient):
 
 
 class RefreshFailingStubOidcAuthClient(StubOidcAuthClient):
+
     def refresh(self, refresh_token, requested_scopes=None, **kwargs):
         raise Exception("Forced test exception")
 
