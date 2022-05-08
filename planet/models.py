@@ -22,6 +22,8 @@ import string
 import httpx
 from tqdm.asyncio import tqdm
 
+from .exceptions import PagingError
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -30,7 +32,7 @@ class RequestException(Exception):
     pass
 
 
-class Request():
+class Request:
     '''Handles a HTTP request for the Planet server.
 
     :param url: URL of API endpoint
@@ -74,7 +76,7 @@ class Request():
         self.http_request.url = httpx.URL(url)
 
 
-class Response():
+class Response:
     '''Handles the Planet server's response to a HTTP request.
 
     :param request: Request that was submitted to the server
@@ -111,7 +113,7 @@ class Response():
         await self.http_response.aclose()
 
 
-class StreamingBody():
+class StreamingBody:
     '''A representation of a streaming resource from the API.
 
     :param response: Response that was received from the server
@@ -181,7 +183,7 @@ class StreamingBody():
         :type progress_bar: boolean, optional
         '''
 
-        class _LOG():
+        class _LOG:
 
             def __init__(self, total, unit, filename, disable):
                 self.total = total
@@ -263,7 +265,7 @@ def _get_random_filename(content_type=None):
     return name
 
 
-class Paged():
+class Paged:
     '''Asynchronous iterator over results in a paged resource from the Planet
     server.
     Each returned result is a json dict.
@@ -276,10 +278,9 @@ class Paged():
     :param limit: Limit orders to given limit. Defaults to None
     :type limit: int, optional
     '''
-    LINKS_KEY = 'links'
+    LINKS_KEY = '_links'
     NEXT_KEY = 'next'
     ITEMS_KEY = 'items'
-    TYPE = None
 
     def __init__(self, request, do_request_fcn, limit=None):
         self.request = request
@@ -338,7 +339,17 @@ class Paged():
             resp = await self._do_request(request)
             page = resp.json()
             yield page
+
+            # If the next URL is the same as the previous URL we will
+            # get the same response and be stuck in a page cycle. This
+            # has happened in development and could happen in the case
+            # of a bug in the production API.
+            prev_url = next_url
             next_url = self._next_link(page)
+
+            if next_url == prev_url:
+                raise PagingError(
+                    "Page cycle detected at {!r}".format(next_url))
 
     def _next_link(self, page):
         try:

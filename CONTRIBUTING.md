@@ -42,7 +42,8 @@ documentation. Nox manages virtual environments for you, specifying Python
 versions and installing the the local, dynamic version of the Plant SDK for
 Python and required development packages.
 
-Run Nox with the default sessions (same checks as CI):
+To run nox with the default sessions (same checks as CI: lint, analyze, test,
+coverage, docs) type "nox".
 
 ```console
     $ nox
@@ -148,6 +149,16 @@ To run lint check:
 
 ```console
     $ nox -s lint
+```
+
+## Static code analysis
+
+The project uses [mypy](https://mypy.readthedocs.io/en/stable/) for static
+analysis of code. Mypy checks for correctness of type hints and can find other
+type-related bugs. The nox session that calls mypy is named analyze.
+
+```console
+    $ nox -s analyze
 ```
 
 ## Documentation

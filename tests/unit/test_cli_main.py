@@ -24,11 +24,6 @@ from planet.cli import cli
 LOGGER = logging.getLogger(__name__)
 
 
-@pytest.fixture
-def debug_input():
-    return ['debug', ' debug ', 'debu', 45]
-
-
 @pytest.mark.parametrize("option,quiet", [("", False), ("--quiet", True)])
 def test_cli_orders_quiet(option, quiet):
     """Check that --quiet is passed in context to subcommands."""

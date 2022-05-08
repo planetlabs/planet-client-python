@@ -14,7 +14,7 @@
 """Functionality for preparing order details for use in creating an order"""
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import logging
-from typing import List
+from typing import Any, Dict, List
 
 from . import geojson, specs
 
@@ -67,7 +67,7 @@ def build_request(name: str,
         planet.specs.SpecificationException: If order_type is not a valid
             order type.
     '''
-    details = {'name': name, 'products': products}
+    details: Dict[str, Any] = {'name': name, 'products': products}
 
     if subscription_id:
         details['subscription_id'] = subscription_id
@@ -79,8 +79,8 @@ def build_request(name: str,
         details['notifications'] = notifications
 
     if order_type:
-        order_type = specs.validate_order_type(order_type)
-        details['order_type'] = order_type
+        validated_order_type = specs.validate_order_type(order_type)
+        details['order_type'] = validated_order_type
 
     if tools:
         details['tools'] = tools
@@ -108,18 +108,19 @@ def product(item_ids: List[str],
             are not valid bundles or if item_type is not valid for the given
             bundle or fallback bundle.
     '''
-    product_bundle = specs.validate_bundle(product_bundle)
-    item_type = specs.validate_item_type(item_type, product_bundle)
+    validated_product_bundle = specs.validate_bundle(product_bundle)
+    item_type = specs.validate_item_type(item_type, validated_product_bundle)
 
     if fallback_bundle is not None:
-        fallback_bundle = specs.validate_bundle(fallback_bundle)
-        specs.validate_item_type(item_type, fallback_bundle)
-        product_bundle = ','.join([product_bundle, fallback_bundle])
+        validated_fallback_bundle = specs.validate_bundle(fallback_bundle)
+        specs.validate_item_type(item_type, validated_fallback_bundle)
+        validated_product_bundle = ','.join(
+            [validated_product_bundle, validated_fallback_bundle])
 
     product_dict = {
         'item_ids': item_ids,
         'item_type': item_type,
-        'product_bundle': product_bundle
+        'product_bundle': validated_product_bundle
     }
     return product_dict
 

@@ -40,12 +40,10 @@ LOGGER = logging.getLogger(__name__)
 class Orders(Paged):
     '''Asynchronous iterator over Orders from a paged response describing
     orders.'''
-    LINKS_KEY = '_links'
-    NEXT_KEY = 'next'
     ITEMS_KEY = 'orders'
 
 
-class OrderStates():
+class OrderStates:
     SEQUENCE = ORDER_STATE_SEQUENCE
 
     @classmethod
@@ -65,7 +63,7 @@ class OrderStates():
         return cls.passed('running', test)
 
 
-class OrdersClient():
+class OrdersClient:
     """High-level asynchronous access to Planet's orders API.
 
     Example:
@@ -293,7 +291,6 @@ class OrdersClient():
                 state.
         """
         order = await self.get_order(order_id)
-
         order_state = order['state']
         if not OrderStates.is_final(order_state):
             raise exceptions.ClientError(
@@ -301,7 +298,6 @@ class OrdersClient():
                 f'({order_state}) is not a final state. '
                 'Consider using wait functionality before '
                 'attempting to download.')
-
         locations = self._get_order_locations(order)
         LOGGER.info(
             f'downloading {len(locations)} assets from order {order_id}')
@@ -318,8 +314,14 @@ class OrdersClient():
     @staticmethod
     def _get_order_locations(order):
         links = order['_links']
-        results = links.get('results', None)
-        return list(r['location'] for r in results if r)
+        results = links.get('results', [])
+        try:
+            return list(r['location'] for r in results if r)
+        except TypeError:
+            LOGGER.warning(
+                'order does not have any locations, will not download any ' +
+                'files.')
+            return []
 
     async def wait(self,
                    order_id: str,
@@ -406,7 +408,9 @@ class OrdersClient():
 
         return current_state
 
-    async def list_orders(self, state: str = None, limit: int = None):
+    async def list_orders(self,
+                          state: str = None,
+                          limit: typing.Union[int, None] = 100):
         """Get all order requests.
 
         Parameters:
@@ -421,6 +425,10 @@ class OrdersClient():
             planet.exceptions.ClientError: If state is not valid.
         """
         url = self._orders_url()
+
+        # Set no limit
+        if limit == 0:
+            limit = None
 
         if state:
             if state not in ORDER_STATE_SEQUENCE:
