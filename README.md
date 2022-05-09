@@ -48,7 +48,7 @@ After you've install the client, as explained in the [installation](#installatio
 section below, you first you must initialize the client with your Planet 
 username and password:
 
-```
+```console
 $ planet auth init
 Email: <youremail@domain.com>
 Password: 
