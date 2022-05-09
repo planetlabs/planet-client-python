@@ -2,16 +2,9 @@ import asyncio
 import cryptography.hazmat.primitives.serialization as crypto_serialization
 import os
 import socket
-import sys
 from pathlib import Path
 
 from contextlib import closing
-
-from planet.auth.auth_client import AuthClientConfig
-
-
-def is_interactive_shell():
-    return sys.stdin.isatty()
 
 
 def tdata_resource_file_path(resource_file: str):
@@ -22,12 +15,6 @@ def tdata_resource_file_path(resource_file: str):
     test_data_path = here / 'data'
     file_path = test_data_path / resource_file
     return file_path
-
-
-def load_auth_client_config(named_config):
-    file_path = tdata_resource_file_path(
-        'auth_client_configs/{}.json'.format(named_config))
-    return AuthClientConfig.from_file(file_path)
 
 
 def find_free_port():
