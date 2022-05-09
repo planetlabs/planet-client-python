@@ -124,7 +124,7 @@ Consider publishing this data in the SDK documentation.
 
 ## contributing.md
 
-The [[current contributing.md](https://github.com/planetlabs/planet-client-python/blob/v2/CONTRIBUTING.md)](https://github.com/planetlabs/planet-client-python/blob/v2/CONTRIBUTING.md) file provides information about how to load the development environment. It does not provide any guidance on who might contribute or how to get involved.
+The [current contributing.md](https://github.com/planetlabs/planet-client-python/blob/v2/CONTRIBUTING.md) file provides information about how to load the development environment. It does not provide any guidance on who might contribute or how to get involved.
 
 This document explains how to generate a local environment and documentation, but does not provide the final locations of the builds and does not instruct on how to view the documentation.
 
@@ -134,7 +134,7 @@ Update the contributing.md file with end-to-end steps to build, change, test, an
 
 ## GitHub wiki
 
-The [[wiki for the GitHub project](https://github.com/planetlabs/planet-client-python/wiki)](https://github.com/planetlabs/planet-client-python/wiki) has not been updated since 2017. It appears to be a getting-started guide.
+The [wiki for the GitHub project](https://github.com/planetlabs/planet-client-python/wiki) has not been updated since 2017. It appears to be a getting-started guide.
 
 ### Ticket to be filed
 
@@ -146,7 +146,7 @@ Versioning, date|time stamp, licensing, privacy, security, and global navigation
 
 On the mkdocs version of the library:
 
-* The versioning on the [[early access V2 documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/upgrading/)](https://planet-sdk-for-python.readthedocs.io/en/latest/upgrading/) is wrong.
+* The versioning on the [early access V2 documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/upgrading/) is wrong.
 * There is no date|time stamp on the documentation releases.
 * There is no copyright date on the documentation.
 * There is no licensing documentation.
@@ -157,7 +157,7 @@ On the mkdocs version of the library:
 * Consider versioning a part of branding. Establish a versioning schema that works hand-in-hand with the name brand.
 * Do not expose development version schemas if they confuse or contradict the brand versioning.
 * Include a copyright and date|time stamp on the documentation, which can help situate the reader and provide maintenance information.
-* Correct the versioning on the [[early access V2 documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/upgrading/)](https://planet-sdk-for-python.readthedocs.io/en/latest/upgrading/) at the earliest possible time.
+* Correct the versioning on the [early access V2 documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/upgrading/) at the earliest possible time.
 * Add pointers to licensing, security & privacy docs.
 
 ## Cost difference between API & SDK call
@@ -179,7 +179,7 @@ As this is an open source project living on GitHub, issues can be used to track 
 
 Link to issues from documentation to encourage users to engage with the development team.
 
-Consider messaging in the CLI that points to the feedback channel, such as GitHub issues and [[discussions](https://docs.github.com/en/discussions)](https://docs.github.com/en/discussions).
+Consider messaging in the CLI that points to the feedback channel, such as GitHub issues and [discussions](https://docs.github.com/en/discussions).
 
 ## MkDocs plugins
 
