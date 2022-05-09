@@ -63,7 +63,7 @@ Now that you're initialized let's start with creating an order with the
 Orders API:
 
 ```console
-$ planet orders create --name my-first-order --id <scene ids> \ 
+$ planet orders create --name my-first-order --id <scene-ids> \ 
     --item-type PSScene --bundle visual
 ```
 
@@ -79,12 +79,11 @@ The most common ones are `visual` and `analytic`.
 This will give you an order response JSON as shown in the 'example response' in
 [the Order API docs](https://developers.planet.com/docs/orders/ordering/#basic-ordering). 
 You can grab the `id` from that response, which will look something like 
-`dfdf3088-73a2-478c-a8f6-1bad1c09fa09`. You can then use that in a single 
-command to wait for the order and download it when you are ready:
+`dfdf3088-73a2-478c-a8f6-1bad1c09fa09`. You can then use that order-id in a 
+single command  to wait for the order and download it when you are ready:
 
 ```console
-$ planet orders wait dfdf3088-73a2-478c-a8f6-1bad1c09fa09 && planet orders \
-  download dfdf3088-73a2-478c-a8f6-1bad1c09fa09
+$ planet orders wait <order-id> && planet orders download <order-id>
 ```
 
 This usually takes at least a few minutes, and can be longer if it is a large request
