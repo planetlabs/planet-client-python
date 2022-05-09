@@ -64,7 +64,7 @@ Orders API:
 
 ```console
 $ planet orders create --name my-first-order --id <scene ids> \ 
-  --item-type PSScene --bundle visual
+    --item-type PSScene --bundle visual
 ```
 
 You should supply a unique name after `--name` for each new order, to help
