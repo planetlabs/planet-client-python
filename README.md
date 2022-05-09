@@ -82,7 +82,7 @@ You can grab the `id` from that response, which will look something like
 `dfdf3088-73a2-478c-a8f6-1bad1c09fa09`. You can then use that in a single 
 command to wait for the order and download it when you are ready:
 
-```
+```console
 $ planet orders wait dfdf3088-73a2-478c-a8f6-1bad1c09fa09 && planet orders \
   download dfdf3088-73a2-478c-a8f6-1bad1c09fa09
 ```
