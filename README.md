@@ -89,7 +89,7 @@ $ planet orders wait dfdf3088-73a2-478c-a8f6-1bad1c09fa09 && planet orders \
 
 This usually takes at least a few minutes, and can be longer if it is a large request
 (lots of items or big items like SkySatCollect). The default `wait` will last about
-15 minutes, but can easily be extended.
+15 minutes, but can easily be extended with the `--max-attempts` option.
 
 You can also just wait to download until the order is fulfilled. To check on its status
 just use: 
