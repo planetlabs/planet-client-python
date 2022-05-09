@@ -553,8 +553,8 @@ async def test_checksum_success(tmpdir, order_description, oid, session):
         'location': dl_url3
     }]
     get_url = f'{TEST_ORDERS_URL}/{oid}'
-    mock_asset = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.get(get_url).return_value = mock_asset
+    get_order_response = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.get(get_url).return_value = get_order_response
 
     mock_asset1 = httpx.Response(HTTPStatus.OK,
                                  json={
