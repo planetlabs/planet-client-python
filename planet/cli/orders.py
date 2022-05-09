@@ -231,12 +231,18 @@ def read_file_json(ctx, param, value):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument('request',
-                type=click.Path(exists=True))
+@click.argument('request', type=click.Path(exists=True))
 @pretty
 async def create(ctx, request, pretty):
-    '''Create an order.
-    "create" sends an order request (as JSON) to the API server
+    '''  Create an order.
+
+        This command creates an order from an order request. 
+        It outputs the created order description, optionally pretty-printed.
+
+        Arguments:
+
+        Order request as stdin, str, or file name. Full description of order
+        to be created.
     '''
     async with orders_client(ctx) as cl:
         order = await cl.create_order(request)
@@ -281,6 +287,10 @@ async def create(ctx, request, pretty):
               help='Clip GeoJSON file.',
               type=click.File('rb'),
               callback=read_file_geojson)
+@click.option('--tools',
+              help='Toolchain json file.',
+              type=click.File('rb'),
+              callback=read_file_json)
 @click.option('--email',
               default=False,
               is_flag=True,
@@ -300,14 +310,17 @@ async def request(ctx,
                   id,
                   search_id,
                   clip,
+                  tools,
                   item_type,
                   email,
                   cloudconfig,
                   like,
                   pretty):
     """Generate an order request.
-    "request" makes an order request (JSON) document from command line inputs.
-    No server used.
+
+    This command provides support for building an order description used
+    in creating an order. It outputs the order request, optionally pretty-
+    printed.
     """
     if id and search_id:
         raise click.BadParameter("Specify only one of '--id' or '--search-id'")
@@ -325,7 +338,9 @@ async def request(ctx,
     else:
         notifications = None
 
-    if clip:
+    if clip and tools:
+        raise click.BadParameter("Specify only one of '--clip' or '--tools'")
+    elif clip:
         try:
             clip = planet.geojson.as_polygon(clip)
         except planet.geojson.GeoJSONException as e:
@@ -349,9 +364,3 @@ async def request(ctx,
     echo_json(request, pretty)
 
 
-# $ planet orders request \
-# --name test_order \
-# --id 20200922_183724_23_106a,20200922_183722_17_106a \
-# --bundle analytic
-# {"name":"test_order","products":[{"item_ids":["20200922_183724_23_106a","20200922_183722_17_106a"],"item_type":"PSScene4Band","product_bundle":"analytic"}]}
-# {"name": "test_order", "products": [{"item_ids": ["20200922_183724_23_106a", "20200922_183722_17_106a"], "item_type": "PSScene4Band", "product_bundle": "analytic"}]}
