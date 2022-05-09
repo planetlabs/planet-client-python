@@ -94,8 +94,8 @@ This usually takes at least a few minutes, and can be longer if it is a large re
 You can also just wait to download until the order is fulfilled. To check on its status
 just use: 
 
-```
-$ planet orders get dfdf3088-73a2-478c-a8f6-1bad1c09fa09
+```console
+$ planet orders get <id>
 ```
 
 And then use `planet download <id>` when the order is ready. 
