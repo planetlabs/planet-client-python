@@ -274,10 +274,8 @@ class OrdersClient():
                              progress_bar=progress_bar)
         return dl_path
 
-    @staticmethod  # should this be an async function?
-    def calculate_checksum(manifest_data: dict,
-                           filenames: list,
-                           checksum: str):
+    @staticmethod
+    def validate_checksum(manifest_data: dict, filenames: list, checksum: str):
         """Calculate checksum and validate that it passes.
 
         Parameters:
@@ -286,7 +284,7 @@ class OrdersClient():
             checksum: The type of checksum hash- 'MD5' or 'SHA256'.
 
         Returns:
-            Message confirming checksums were succesful.
+            Nothing if checksums were succesful.
 
         Raises:
             planet.exceptions.ClientError: If the checksum fails."""
@@ -318,13 +316,10 @@ class OrdersClient():
                 returned_hash = hash_type(json_data).hexdigest()
                 # Compare original hashkey in dict with calculated
                 if origin_hash != returned_hash:
-                    print("origin hash: ", origin_hash)
-                    print("returned hash: ", returned_hash)
                     raise exceptions.ClientError(
-                        f'Checksum failed. File ({filename}) not correctly \
+                        'Checksum failed. File ({filename}) not correctly \
                         downloaded.')
-                print(f'({checksum}) checksum succesful: ({filename})')
-        return f'All ({checksum}) checksums succesful.'
+        return None
 
     async def download_order(self,
                              order_id: str,
@@ -371,15 +366,13 @@ class OrdersClient():
         ]
         if checksum:
             # Checksum Implementation
-            # Get manifest filepath
             manifest_json = ' '.join(
                 [x for x in filenames if x.endswith('manifest.json')])
-            # Open manifest file and pass to checksum function
             with open(manifest_json, 'rb') as manifest:
                 manifest_data = json.load(manifest)
-                self.calculate_checksum(manifest_data=manifest_data,
-                                        filenames=filenames,
-                                        checksum=checksum)
+                self.validate_checksum(manifest_data=manifest_data,
+                                       filenames=filenames,
+                                       checksum=checksum)
         return filenames
 
     @staticmethod
