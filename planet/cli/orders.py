@@ -244,8 +244,9 @@ async def create(ctx, request, pretty):
         Order request as stdin, str, or file name. Full description of order
         to be created.
     '''
+    request_json = json.loads(open(request).read())
     async with orders_client(ctx) as cl:
-        order = await cl.create_order(request)
+        order = await cl.create_order(request_json)
 
     echo_json(order, pretty)
 
@@ -362,5 +363,3 @@ async def request(ctx,
                                                  tools=tools)
 
     echo_json(request, pretty)
-
-
