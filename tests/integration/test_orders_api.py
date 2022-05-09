@@ -543,7 +543,7 @@ async def test_checksum_success(tmpdir, order_description, oid, session):
     # Mock an HTTP response for download
     order_description['state'] = 'success'
     dl_url1 = TEST_DOWNLOAD_URL + '/asset1'
-    dl_url2 = TEST_DOWNLOAD_URL + '/assert2'
+    dl_url2 = TEST_DOWNLOAD_URL + '/asset2'
     dl_url3 = TEST_DOWNLOAD_URL + '/manifest'
     order_description['_links']['results'] = [{
         'location': dl_url1
