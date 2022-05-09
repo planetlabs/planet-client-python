@@ -539,10 +539,12 @@ async def test_download_asset_md(tmpdir, session):
 
 @respx.mock
 @pytest.mark.asyncio
-@pytest.mark.parametrize("checksum",
-                         [("MD5"),
-                          ("SHA256")])
-async def test_checksum_success(tmpdir, order_description, oid, session, checksum):
+@pytest.mark.parametrize("checksum", [("MD5"), ("SHA256")])
+async def test_checksum_success(tmpdir,
+                                order_description,
+                                oid,
+                                session,
+                                checksum):
     # Mock an HTTP response for download
     order_description['state'] = 'success'
     dl_url1 = TEST_DOWNLOAD_URL + '/asset1'
@@ -620,10 +622,12 @@ async def test_checksum_success(tmpdir, order_description, oid, session, checksu
 
 @respx.mock
 @pytest.mark.asyncio
-@pytest.mark.parametrize("checksum",
-                         [("MD5"),
-                          ("SHA256")])
-async def test_checksum_failure(tmpdir, order_description, oid, session, checksum):
+@pytest.mark.parametrize("checksum", [("MD5"), ("SHA256")])
+async def test_checksum_failure(tmpdir,
+                                order_description,
+                                oid,
+                                session,
+                                checksum):
     # Note: the hashkeys in the mock manifest below were changed
     # from the correct keys to temporary keys
     # This should cause the checksum to fail.
@@ -701,9 +705,7 @@ async def test_checksum_failure(tmpdir, order_description, oid, session, checksu
     # Test Checksum
     cl = OrdersClient(session, base_url=TEST_URL)
     with pytest.raises(exceptions.ClientError):
-        await cl.download_order(oid,
-                                directory=str(tmpdir),
-                                checksum=checksum)
+        await cl.download_order(oid, directory=str(tmpdir), checksum=checksum)
 
 
 @respx.mock
