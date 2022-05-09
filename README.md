@@ -62,7 +62,7 @@ will automatically get your API key and store it locally.
 Now that you're initialized let's start with creating an order with the 
 Orders API:
 
-```
+```console
 $ planet orders create --name my-first-order --id <scene ids> \ 
   --item-type PSScene --bundle visual
 ```
