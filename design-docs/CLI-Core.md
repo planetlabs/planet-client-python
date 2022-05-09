@@ -12,7 +12,7 @@ and then links to other documents for orders, data and subscriptions.
 * [Authentication](#authentication)
 * [Orders](CLI-Orders.md)
 * [Data](CLI-Data.md)
-* [Subscriptions](CLI-Subscriptions)
+* [Subscriptions](CLI-Subscriptions.md)
 
 ## CLI Base
 
