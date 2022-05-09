@@ -6,6 +6,14 @@ This document serves as the root document to outline the Command-Line Interface
 (CLI). It includes the interface for the 'base' and 'auth' commands as well as, 
 and then links to other documents for orders, data and subscriptions. 
 
+### CLI Sections
+
+* [CLI Base](#cli-base)
+* [Authentication](#authentication)
+* [Orders](CLI-Orders.md)
+* [Data](CLI-Data.md)
+* [Subscriptions](CLI-Subscriptions)
+
 ## CLI Base
 
 ### General Interface
@@ -83,7 +91,7 @@ NOTE: --account support is post-initial release
 Logistics: The user is prompted for email and password (hidden) in the shell. 
 The api key is downloaded and stored in a local secret file.
 
-### Interface
+#### Interface
 
 ```
 Usage: planet auth login-key [OPTIONS]
@@ -99,7 +107,7 @@ Options:
   --help          Show this message and exit.
 ```
 
-### Usage Examples
+#### Usage Examples
 
 User Story: As a CLI user I would like to obtain and store my api key for authorization.
 
@@ -111,9 +119,9 @@ Password:
 
 Authorized
 
-## print-key
+### print-key
 
-### Interface
+#### Interface
 
 ```
 Usage: planet auth print-key [OPTIONS]
@@ -127,10 +135,9 @@ Options:
   --help  Show this message and exit.
 ```
 
-store-key
----------
+### store-key
 
-### Interface
+#### Interface
 
 ```
 Usage: planet auth store-key [OPTIONS]
