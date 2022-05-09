@@ -4,7 +4,7 @@ This document is a response to the issue #353: Quantify 'accurate and complete d
 
 ## Overview
 
-The list of documentation issues for this project can be found at: [https://github.com/planetlabs/planet-client-python/issues?q=is%3Aissue+is%3Aopen+label%3Adocumentation](https://github.com/planetlabs/planet-client-python/issues?q%3Dis%253Aissue%2Bis%253Aopen%2Blabel%253Adocumentation)
+The list of documentation issues for this project can be found at: [https://github.com/planetlabs/planet-client-python/labels/documentation](https://github.com/planetlabs/planet-client-python/labels/documentation)
 
 
 For a complete list of the project board, source, and current documentation builds, see [SDK Source & Docs in References](#SDK-Source-and-Docs).
