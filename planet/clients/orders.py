@@ -343,6 +343,8 @@ class OrdersClient():
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If the order is not in a final
                 state.
+            planet.exceptions.ClientError: If more than one manifest file
+                per order.
         """
         order = await self.get_order(order_id)
         order_state = order['state']
