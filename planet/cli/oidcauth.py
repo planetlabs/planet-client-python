@@ -85,7 +85,8 @@ def do_print_access_token(ctx):
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_print_api_key(ctx):
     # FIXME: this will only work for legacy auth mechanisms. Maybe that's OK.
-    saved_token = FileBackedPlanetLegacyAPIKey(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedPlanetLegacyAPIKey(
+        None, ctx.obj['AUTH'].token_file_path())
     print(saved_token.legacy_api_key())
 
 
