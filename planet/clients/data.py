@@ -24,6 +24,8 @@ BASE_URL = f'{PLANET_BASE_URL}/data/v1/'
 SEARCHES_PATH = '/searches'
 STATS_PATH = '/stats'
 
+LIST_SORT_ORDER = ('created desc', 'created asc')
+LIST_SEARCH_TYPE = ('any', 'saved', 'quick')
 STATS_INTERVAL = ('hour', 'day', 'week', 'month', 'year')
 
 WAIT_DELAY = 5
@@ -95,8 +97,6 @@ class DataClient:
         `name` parameter of the search defaults to the search id if `name`
         is not given.
 
-        Returns an iterator over all items matching the search.
-
         Example:
 
         ```python
@@ -132,7 +132,7 @@ class DataClient:
             limit: Maximum number of items to return.
 
         Returns:
-            Ordered items matching the filter.
+            Returns an iterator over all items matching the search.
 
         Raises:
             planet.exceptions.APIError: On API error.
@@ -187,6 +187,95 @@ class DataClient:
         request = self._request(url, method='POST', json=request_json)
         response = await self._do_request(request)
         return response.json()
+
+    async def update_search(self, search_id: str,
+                            name: str,
+                            item_types: typing.List[str],
+                            search_filter: dict,
+                            enable_email: bool = False) -> dict:
+        '''Update an existing saved search.
+
+        Parameters:
+            search_id: Saved search identifier.
+            name: The name of the saved search.
+            item_types: The item types to include in the search.
+            search_filter: Structured search criteria.
+            enable_email: Send a daily email when new results are added.
+
+        Returns:
+            Description of the saved search.
+        '''
+        raise NotImplementedError
+
+    async def list_searches(
+            self,
+            sort: str = 'created desc',
+            search_type: str = 'any') -> typing.AsyncIterator[dict]:
+        '''List all saved searches available to the authenticated user.
+
+        NOTE: the term 'saved' is overloaded here. We want to list saved
+        searches that are 'quick' or list saved searches that are 'saved'? Do
+        we want to introduce a new term, 'stored' that encompasses 'saved' and
+        'quick' searches?
+
+        Parameters:
+            sort: Field and direction to order results by.
+            search_type: Search type filter.
+
+        Returns:
+            List of saved searches that match filter.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+            planet.exceptions.ClientError: If sort or search_type are not
+                valid.
+        '''
+        # NOTE: check sort and search_type args are in LIST_SORT_ORDER and
+        # LIST_SEARCH_TYPE, respectively
+        raise NotImplementedError
+
+    async def delete_search(self, search_id: str):
+        '''Delete an existing saved search.
+
+        Parameters:
+            search_id: Saved search identifier.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        '''
+        raise NotImplementedError
+
+    async def get_search(self, search_id: str) -> dict:
+        '''Get a saved search by id.
+
+        Parameters:
+            search_id: Stored search identifier.
+
+        Returns:
+            Saved search details.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        '''
+        raise NotImplementedError
+
+    async def run_search(self, search_id: str) -> typing.AsyncIterator[dict]:
+        '''Execute a saved search.
+
+        Parameters:
+            search_id: Stored search identifier.
+
+        Returns:
+            Returns an iterator over all items matching the search.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        '''
+        raise NotImplementedError
+
 
     async def get_stats(self,
                         item_types: typing.List[str],
