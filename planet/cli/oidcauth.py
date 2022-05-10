@@ -1,12 +1,14 @@
 # FIXME: Rename? This isn't strictly only an "OIDC" Auth CLI interface
 #        anymore. It works with any auth provider that provided an
 #        AuthClient interface. But, this is a heavily OIDC influenced
-#        interface.
+#        interface.  Should we split oidc and legacy into sub-commands?
 import click
 import sys
 
 from planet.auth.auth_client import AuthClientException
 from planet.auth.oidc.oidc_token import FileBackedOidcToken
+from planet.auth.planet_legacy.legacy_api_key import \
+    FileBackedPlanetLegacyAPIKey
 
 from planet.cx.commands.cli.options import \
     opt_auth_password, \
@@ -27,7 +29,7 @@ def oidc_token_group(ctx):
 
 
 @oidc_token_group.command('list-scopes',
-                          help='List well known scopes that may be requested')
+                          help='List well known scopes that may be requested.')
 @click.pass_context
 @recast_exceptions_to_click(AuthClientException, FileNotFoundError)
 def do_list_scopes(ctx):
@@ -74,6 +76,17 @@ def do_print_access_token(ctx):
     # FIXME: this will only work for OIDC auth mechanisms. Maybe that's OK.
     saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
     print(saved_token.access_token())
+
+
+@oidc_token_group.command(
+    'print-api-key',
+    help='Print API key associated with the current auth profile.')
+@click.pass_context
+@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+def do_print_api_key(ctx):
+    # FIXME: this will only work for legacy auth mechanisms. Maybe that's OK.
+    saved_token = FileBackedPlanetLegacyAPIKey(None, ctx.obj['AUTH'].token_file_path())
+    print(saved_token.legacy_api_key())
 
 
 @oidc_token_group.command(
