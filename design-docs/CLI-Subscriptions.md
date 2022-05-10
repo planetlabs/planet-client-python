@@ -1,4 +1,7 @@
-# Subscriptions API
+# Subscriptions Command-Line Interface Specification
+
+This documents lays out the command-line interface to interact with the 
+Planet [Subscriptions API](https://developers.planet.com/docs/subscriptions/reference/)
 
 A subscription connects catalog sources to a data processing pipeline. It can 
 run those tools on new data when it is available. It can process existing data 
