@@ -575,10 +575,7 @@ async def test_checksum_success(tmpdir,
     respx.get(dl_url1).return_value = asset1_response
 
     asset2_response = httpx.Response(HTTPStatus.OK,
-                                     json={
-                                         "md5": "mock_key2_md5",
-                                         "sha256": "mock_key2_sha256"
-                                     },
+                                     json={'foo': 'bar'},
                                      headers={
                                          'Content-Type':
                                          'application/json',
@@ -662,10 +659,7 @@ async def test_checksum_failure(tmpdir,
 
     # The second asset in the order is a json file
     asset2_response = httpx.Response(HTTPStatus.OK,
-                                     json={
-                                         "md5": "mock_key2_md5",
-                                         "sha256": "mock_key2_sha256"
-                                     },
+                                     json={'foo': 'bar'},
                                      headers={
                                          'Content-Type':
                                          'application/json',
