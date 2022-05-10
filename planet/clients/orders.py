@@ -333,8 +333,8 @@ class OrdersClient():
             with open(manifest_json, 'rb') as manifest:
                 manifest_data = json.load(manifest)
                 validate_checksum(manifest_data=manifest_data,
-                                       filenames=filenames,
-                                       checksum=checksum)
+                                  filenames=filenames,
+                                  checksum=checksum)
         return filenames
 
     @staticmethod
@@ -456,6 +456,7 @@ class OrdersClient():
         request = self._request(url, 'GET', params=params)
         return Orders(request, self._do_request, limit=limit)
 
+
 def validate_checksum(manifest_data: dict, filenames: list, checksum: str):
     """Calculate checksum and validate that it passes.
 
@@ -484,9 +485,7 @@ def validate_checksum(manifest_data: dict, filenames: list, checksum: str):
         origin_hash = json_entry['digests'][checksum]
         file_key_pairs[file_name] = origin_hash
     # For each downloaded file, retrieve origin hashkey from dict
-    filenames_loop = [
-        x for x in filenames if not x.endswith('manifest.json')
-    ]
+    filenames_loop = [x for x in filenames if not x.endswith('manifest.json')]
     for filename in filenames_loop:
         downloaded_file_name = Path(filename).name
         origin_hash = file_key_pairs[downloaded_file_name]
