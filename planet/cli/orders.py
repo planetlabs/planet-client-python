@@ -196,7 +196,7 @@ async def wait(ctx, order_id, delay, max_attempts, state):
               help=('Overwrite files if they already exist.'))
 async def download(ctx, order_id, overwrite, directory, checksum):
     """Download order by order ID.
-    
+
 If --checksum is provided, the associated checksums given in the manifest
 are compared against the downloaded files to verify that they match."""
     quiet = ctx.obj['QUIET']

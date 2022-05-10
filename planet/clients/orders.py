@@ -298,6 +298,7 @@ class OrdersClient():
                 state.
             planet.exceptions.ClientError: If more than one manifest file
                 per order.
+            planet.exceptions.ClientError: If no manifest file found in order.
         """
         order = await self.get_order(order_id)
         order_state = order['state']
@@ -322,13 +323,15 @@ class OrdersClient():
         if checksum:
             # Checksum Implementation
             manifest_files = [
-                x for x in filenames if x.endswith('manifest.json')
+                x for x in filenames if Path(x).name == 'manifest.json'
             ]
             manifest_count = len(manifest_files)
             if manifest_count > 1:
                 raise exceptions.ClientError(
                     'Only 1 manifest.json expected per order.\
                                              Recieved: {manifest_count}')
+            elif manifest_count is None:
+                raise exceptions.ClientError('No manifest file found.')
             manifest_json = manifest_files[0]
             with open(manifest_json, 'rb') as manifest:
                 manifest_data = json.load(manifest)
