@@ -366,8 +366,15 @@ class OrdersClient():
         ]
         if checksum:
             # Checksum Implementation
-            manifest_json = ' '.join(
-                [x for x in filenames if x.endswith('manifest.json')])
+            manifest_files = [
+                x for x in filenames if x.endswith('manifest.json')
+            ]
+            manifest_count = len(manifest_files)
+            if manifest_count > 1:
+                raise exceptions.ClientError(
+                    'Only 1 manifest.json expected per order.\
+                                             Recieved: {manifest_count}')
+            manifest_json = manifest_files[0]
             with open(manifest_json, 'rb') as manifest:
                 manifest_data = json.load(manifest)
                 self.validate_checksum(manifest_data=manifest_data,
