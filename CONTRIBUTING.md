@@ -189,39 +189,6 @@ In addition to verifying that the documentation renders correctly locally,
 the accuracy of the code examples must be verified. See Testing Documentation
 below.
 
-## Docker
-A `Dockerfile` is provided that provides build stages geared towards several
-use cases.  Notable docker stages include the following:
-* `runtime` - Builds and packages the SDK with the CLI tool configured as the
-docker entrypoint.
-* `utest` - Builds the SDK in a docker image suitable for running the unit tests.
-The entrypoint is configured to execute the unit tests.
-* `builder-1` - Build a python environment in a docker image that has all of
-SDK's python dependencies installed, but does not have any of the SDK itself
-installed. This image is intended to be useful for SDK development using
-an IDE (such as PyCharm) where it can be configured as the python runtime
-for the project.
-
-## Makefile
-A `Makefile` is included to provide some convenience build targets. These are
-geared primarily toward development of the SDK and the CLI command itself rather
-than the development of applications that use the SDK and Planet imagery.
-Many of the targets provided by this makefile are implemented as generic
-pattern targets.  Some useful targets include the following:
-* `python-venv` - Bootstrap a local Python virtual environment with the minimal
-runtime requirements for SDK development. This environment will have the SDK
-code linked to the source tree for development rather than copying the code
-over for a stand-alone virtual environment.
-* `python-venv-*` - Install the extra requirements for `*` into the virtual
-environment bootstrapped with `python-venv`.
-* `python-venv-clean` - Destroy the local development virtual environment.
-* `python-pytest` - Run pytest with the virtual environment bootstrapped with `python-venv`
-* `docker-build-runtime` - Build a docker image with the CLI installed as the
-docker entry point.
-* `docker-run-utest` - Build the SDK in a docker image and unit tests inside the image.
-* `update-requirements.txt.frozen` - Using the docker runtime, update the version locked
-requirements in the `requirements.txt.frozen` file based on the (unfrozen)
-`requirements.txt` file.
 
 ### Testing Documentation
 
