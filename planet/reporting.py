@@ -19,7 +19,7 @@ from tqdm.asyncio import tqdm
 LOGGER = logging.getLogger(__name__)
 
 
-class ProgressBar():
+class ProgressBar:
     """Abstract base class for progress bar reporters."""
 
     def __init__(self, disable: bool = False):
@@ -90,15 +90,19 @@ class StateBar(ProgressBar):
     def update(self, state: str = None, order_id: str = None):
         if state:
             self.state = state
-            try:
-                self.bar.postfix[1] = self.state
-            except AttributeError:
-                # If the bar is disabled, attempting to access self.bar.postfix
-                # will result in an error. In this case, just skip it.
-                pass
+            if self.bar is not None:
+                try:
+                    self.bar.postfix[1] = self.state
+                except AttributeError:
+                    # If the bar is disabled, attempting to access
+                    # self.bar.postfix will result in an error. In this
+                    # case, just skip it.
+                    pass
 
         if order_id:
             self.order_id = order_id
-            self.bar.set_description_str(self.desc, refresh=False)
+            if self.bar is not None:
+                self.bar.set_description_str(self.desc, refresh=False)
 
-        self.bar.refresh()
+        if self.bar is not None:
+            self.bar.refresh()

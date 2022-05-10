@@ -149,26 +149,37 @@ async def test_list_orders_state_invalid_state(session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_list_orders_limit(order_descriptions, session):
-    nono_page_url = TEST_ORDERS_URL + '?page_marker=OhNoNo'
+@pytest.mark.parametrize("limit,limited_list_length", [(None, 100), (0, 102),
+                                                       (1, 1)])
+async def test_list_orders_limit(order_descriptions,
+                                 session,
+                                 limit,
+                                 limited_list_length):
+    nono_page_url = None
 
-    order1, order2, order3 = order_descriptions
+    # Creating 102 (3x34) order descriptions
+    long_order_descriptions = order_descriptions * 34
+
+    all_orders = {}
+    for x in range(1, len(long_order_descriptions) + 1):
+        all_orders["order{0}".format(x)] = long_order_descriptions[x - 1]
 
     page1_response = {
         "_links": {
             "_self": "string", "next": nono_page_url
         },
-        "orders": [order1, order2]
+        "orders": [
+            all_orders['order%s' % num]
+            for num in range(1, limited_list_length + 1)
+        ]
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    # since nono_page_url is not mocked, an error will occur if the client
-    # attempts to access the next page when the limit is already reached
-    orders = await cl.list_orders(limit=1)
-    assert [order1] == [o async for o in orders]
+    orders = await cl.list_orders(limit=limit)
+    assert len([o async for o in orders]) == limited_list_length
 
 
 @respx.mock
@@ -643,6 +654,37 @@ async def test_download_order_state(tmpdir, order_description, oid, session):
     cl = OrdersClient(session, base_url=TEST_URL)
     with pytest.raises(exceptions.ClientError):
         await cl.download_order(oid, directory=str(tmpdir))
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_download_order_without_order_links(tmpdir,
+                                                  order_description,
+                                                  oid,
+                                                  session):
+    dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
+
+    order_description['state'] = 'success'
+    order_description['_links']['results'] = None
+
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.get(get_url).return_value = mock_resp
+
+    mock_resp1 = httpx.Response(HTTPStatus.OK,
+                                json={'key': 'value'},
+                                headers={
+                                    'Content-Type':
+                                    'application/json',
+                                    'Content-Disposition':
+                                    'attachment; filename="m1.json"'
+                                })
+    respx.get(dl_url1).return_value = mock_resp1
+
+    client = OrdersClient(session, base_url=TEST_URL)
+
+    filenames = await client.download_order(oid, directory=str(tmpdir))
+    assert len(filenames) == 0
 
 
 @respx.mock

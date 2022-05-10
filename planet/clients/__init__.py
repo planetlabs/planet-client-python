@@ -15,6 +15,6 @@ from .data import DataClient
 from .orders import OrdersClient
 
 __all__ = [
-    DataClient,
-    OrdersClient,
+    'DataClient',
+    'OrdersClient',
 ]

@@ -74,7 +74,7 @@ def test_cli_orders_list_basic(invoke, order_descriptions):
 
     result = invoke(['list'])
     assert not result.exception
-    assert [order1, order2, order3] == json.loads(result.output)
+    assert json.dumps([order1, order2, order3]) + '\n' == result.output
 
 
 @respx.mock
@@ -110,22 +110,36 @@ def test_cli_orders_list_state(invoke, order_descriptions):
 
 
 @respx.mock
-def test_cli_orders_list_limit(invoke, order_descriptions):
-    order1, order2, _ = order_descriptions
+@pytest.mark.parametrize("limit,limited_list_length", [(None, 100), (0, 102),
+                                                       (1, 1)])
+def test_cli_orders_list_limit(invoke,
+                               order_descriptions,
+                               limit,
+                               limited_list_length):
+    # Creating 102 (3x34) order descriptions
+    long_order_descriptions = order_descriptions * 34
+
+    all_orders = {}
+    for x in range(1, len(long_order_descriptions) + 1):
+        all_orders["order{0}".format(x)] = long_order_descriptions[x - 1]
 
     page1_response = {
         "_links": {
             "_self": "string"
-        }, "orders": [order1, order2]
+        },
+        "orders": [
+            all_orders['order%s' % num]
+            for num in range(1, limited_list_length + 1)
+        ]
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
 
     # limiting is done within the client, no change to api call
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
-    result = invoke(['list', '--limit', '1'])
+    result = invoke(['list', '--limit', limit])
     assert not result.exception
-    assert [order1] == json.loads(result.output)
+    assert len(json.loads(result.output)) == limited_list_length
 
 
 @respx.mock
@@ -146,6 +160,7 @@ def test_cli_orders_list_pretty(invoke, monkeypatch, order_description):
     mock_echo_json.assert_called_once_with([order_description], True)
 
 
+# TODO: add tests for "get --pretty" (gh-491).
 @respx.mock
 def test_cli_orders_get(invoke, oid, order_description):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
@@ -169,6 +184,7 @@ def test_cli_orders_get_id_not_found(invoke, oid):
     assert 'Error: {"message": "Error message"}\n' == result.output
 
 
+# TODO: add tests for "cancel --pretty" (gh-491).
 @respx.mock
 def test_cli_orders_cancel(invoke, oid, order_description):
     cancel_url = f'{TEST_ORDERS_URL}/{oid}'
@@ -193,6 +209,7 @@ def test_cli_orders_cancel_id_not_found(invoke, oid):
     assert 'Error: {"message": "Error message"}\n' == result.output
 
 
+# TODO: add tests for "wait --state" (gh-492) and "wait --pretty" (gh-491).
 @respx.mock
 def test_cli_orders_wait_default(invoke, order_description, oid):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
@@ -273,6 +290,7 @@ def mock_download_response(oid, order_description):
     return _func
 
 
+# TODO: add test for --checksum (see gh-432).
 @respx.mock
 def test_cli_orders_download_default(invoke, mock_download_response, oid):
     mock_download_response()
@@ -349,6 +367,8 @@ def test_cli_orders_download_state(invoke, order_description, oid):
     assert 'order state (running) is not a final state.' in result.output
 
 
+# TODO: convert "create" tests to "request" tests (gh-366).
+# TODO: add tests of "create --pretty" (gh-491).
 @pytest.mark.parametrize(
     "id_string, expected_ids",
     [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),

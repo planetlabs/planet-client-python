@@ -75,3 +75,8 @@ class ClientError(PlanetError):
 class AuthException(ClientError):
     '''Exceptions encountered during authentication'''
     pass
+
+
+class PagingError(PlanetError):
+    '''For errors that occur during paging.'''
+    pass

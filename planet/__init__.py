@@ -14,6 +14,12 @@
 from .http import Session
 from . import order_request, reporting
 from .__version__ import __version__  # NOQA
-from .clients import DataClient, OrdersClient
+from .clients import DataClient, OrdersClient  # NOQA
 
-__all__ = [Session, OrdersClient, order_request, reporting, DataClient]
+__all__ = [
+    'DataClient'
+    'OrdersClient',
+    'order_request',
+    'reporting',
+    'Session',
+]

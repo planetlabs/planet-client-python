@@ -31,12 +31,11 @@ LOGGER = logging.getLogger(__name__)
 
 class Items(Paged):
     '''Asynchronous iterator over items from a paged response.'''
-    LINKS_KEY = '_links'
     NEXT_KEY = '_next'
     ITEMS_KEY = 'features'
 
 
-class DataClient():
+class DataClient:
     """Low-level asynchronous access to Planet's data API.
 
     Example:
@@ -176,10 +175,11 @@ class DataClient():
 
         # TODO: validate item_types
         request_json = {
-            'name': name, 'filter': search_filter, 'item_types': item_types
+            'name': name,
+            'filter': search_filter,
+            'item_types': item_types,
+            '__daily_email_enabled': enable_email
         }
-        if enable_email:
-            request_json['__daily_email_enabled'] = True
 
         request = self._request(url, method='POST', json=request_json)
         response = await self._do_request(request)

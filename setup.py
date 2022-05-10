@@ -29,7 +29,7 @@ test_requires = [
     'pytest', 'pytest-asyncio==0.16', 'pytest-cov', 'respx==0.16.3'
 ]
 
-lint_requires = ['flake8', 'yapf']
+lint_requires = ['flake8', 'mypy', 'yapf']
 
 doc_requires = [
     'mkdocs==1.3',

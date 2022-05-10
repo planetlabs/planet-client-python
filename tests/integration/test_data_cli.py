@@ -46,10 +46,11 @@ def test_search_quick():
 # TODO: basic test for "planet data search-create".
 # TODO: basic test for "planet data search-update".
 # TODO: basic test for "planet data search-delete".
+# TODO: basic test for "planet data search-get".
+# TODO: basic test for "planet data search-list".
 # TODO: basic test for "planet data search-run".
 # TODO: basic test for "planet data item-get".
 # TODO: basic test for "planet data asset-activate".
 # TODO: basic test for "planet data asset-wait".
 # TODO: basic test for "planet data asset-download".
-# TODO: basic test for "planet data search-create".
 # TODO: basic test for "planet data stats".
