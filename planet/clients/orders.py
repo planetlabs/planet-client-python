@@ -274,53 +274,6 @@ class OrdersClient():
                              progress_bar=progress_bar)
         return dl_path
 
-    @staticmethod
-    def validate_checksum(manifest_data: dict, filenames: list, checksum: str):
-        """Calculate checksum and validate that it passes.
-
-        Parameters:
-            manifest_data: The contents of the opened manifest.json file.
-            filenames: List of downloaded assets.
-            checksum: The type of checksum hash- 'MD5' or 'SHA256'.
-
-        Returns:
-            Nothing if checksums were succesful.
-
-        Raises:
-            planet.exceptions.ClientError: If the checksum fails."""
-
-        # Save hashkey & respective filename from manifest json into dictionary
-        # This is the origin hashkey
-        if checksum == 'MD5':
-            hash_type = hashlib.md5
-            checksum = checksum.lower()
-        elif checksum == 'SHA256':
-            hash_type = hashlib.sha256
-            checksum = checksum.lower()
-        file_key_pairs = {}
-        for json_entry in manifest_data['files']:
-            file_name = Path(json_entry['path']).name
-            origin_hash = json_entry['digests'][checksum]
-            file_key_pairs[file_name] = origin_hash
-        # For each downloaded file, retrieve origin hashkey from dict
-        filenames_loop = [
-            x for x in filenames if not x.endswith('manifest.json')
-        ]
-        for filename in filenames_loop:
-            downloaded_file_name = Path(filename).name
-            origin_hash = file_key_pairs[downloaded_file_name]
-            # For each file (not including manifest json),
-            # calculate hash on contents. This is the returned hash.
-            with open(filename, 'rb') as file_to_check:
-                json_data = file_to_check.read()
-                returned_hash = hash_type(json_data).hexdigest()
-                # Compare original hashkey in dict with calculated
-                if origin_hash != returned_hash:
-                    raise exceptions.ClientError(
-                        'Checksum failed. File ({filename}) not correctly \
-                        downloaded.')
-        return None
-
     async def download_order(self,
                              order_id: str,
                              directory: str = None,
@@ -379,7 +332,7 @@ class OrdersClient():
             manifest_json = manifest_files[0]
             with open(manifest_json, 'rb') as manifest:
                 manifest_data = json.load(manifest)
-                self.validate_checksum(manifest_data=manifest_data,
+                validate_checksum(manifest_data=manifest_data,
                                        filenames=filenames,
                                        checksum=checksum)
         return filenames
@@ -502,3 +455,49 @@ class OrdersClient():
 
         request = self._request(url, 'GET', params=params)
         return Orders(request, self._do_request, limit=limit)
+
+def validate_checksum(manifest_data: dict, filenames: list, checksum: str):
+    """Calculate checksum and validate that it passes.
+
+    Parameters:
+        manifest_data: The contents of the opened manifest.json file.
+        filenames: List of downloaded assets.
+        checksum: The type of checksum hash- 'MD5' or 'SHA256'.
+
+    Returns:
+        Nothing if checksums were succesful.
+
+    Raises:
+        planet.exceptions.ClientError: If the checksum fails."""
+
+    # Save hashkey & respective filename from manifest json into dictionary
+    # This is the origin hashkey
+    if checksum == 'MD5':
+        hash_type = hashlib.md5
+        checksum = checksum.lower()
+    elif checksum == 'SHA256':
+        hash_type = hashlib.sha256
+        checksum = checksum.lower()
+    file_key_pairs = {}
+    for json_entry in manifest_data['files']:
+        file_name = Path(json_entry['path']).name
+        origin_hash = json_entry['digests'][checksum]
+        file_key_pairs[file_name] = origin_hash
+    # For each downloaded file, retrieve origin hashkey from dict
+    filenames_loop = [
+        x for x in filenames if not x.endswith('manifest.json')
+    ]
+    for filename in filenames_loop:
+        downloaded_file_name = Path(filename).name
+        origin_hash = file_key_pairs[downloaded_file_name]
+        # For each file (not including manifest json),
+        # calculate hash on contents. This is the returned hash.
+        with open(filename, 'rb') as file_to_check:
+            json_data = file_to_check.read()
+            returned_hash = hash_type(json_data).hexdigest()
+            # Compare original hashkey in dict with calculated
+            if origin_hash != returned_hash:
+                raise exceptions.ClientError(
+                    'Checksum failed. File ({filename}) not correctly \
+                    downloaded.')
+    return None
