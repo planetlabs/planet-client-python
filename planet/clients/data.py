@@ -220,7 +220,7 @@ class DataClient:
         response = await self._do_request(request)
         return response.json()
 
-    async def list_asset_types(self) -> list:
+    async def list_asset_types(self) -> typing.List[dict]:
         '''List all asset types available to the authenticated user.
 
         Returns:
@@ -249,8 +249,62 @@ class DataClient:
         '''
         raise NotImplementedError
 
-    async def list_assets(self, item_type_id: str,
-                          item_id: str) -> typing.List[dict]:
+    async def list_item_types(self) -> typing.List[dict]:
+        '''List all item types available to the authenticated user.
+
+        Returns:
+            List of item type details.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        '''
+        raise NotImplementedError
+
+    async def get_item_type(self, item_type_id: str) -> dict:
+        '''Get an item type by id.
+
+        An item_type represents the class of spacecraft and/or processing level
+        of an item. All items have an associated item_type. Each item_type has
+        a set of supported asset_types which may be produced for a given item.
+
+        Parameters:
+            item_type_id: Item type identifier.
+
+        Returns:
+            Item type details.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        '''
+        raise NotImplementedError
+
+    async def get_item(
+        self,
+        item_type_id: str,
+        item_id: str,
+    ) -> dict:
+        '''Get an item by id and item type id.
+
+        In the Planet API, an item is an entry in our catalog, and generally
+        represents a single logical observation (or scene) captured by a
+        satellite. Each item is defined by an item_type_id, which specifies the
+        class of spacecraft and/or processing level of the item. Assets (or
+        products, such as visual or analytic) can be derived from the item's
+        source data.
+
+        Parameters:
+            item_type_id: Item type identifier.
+
+        Returns:
+            Item details.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        '''
+        raise NotImplementedError
+
+    async def list_item_assets(self, item_type_id: str,
+                               item_id: str) -> typing.List[dict]:
         '''List all assets available for an item.
 
         An asset describes a product that can be derived from an item's source
@@ -291,49 +345,34 @@ class DataClient:
         '''
         # NOTE: this is not an API endpoint
         # this is getting an asset by name from the dict returned by
-        # list_assets()
+        # list_item_assets()
         raise NotImplementedError
 
-    async def activate_asset(self,
-                             item_type_id: str,
-                             item_id: str,
-                             asset_type_id: str):
+    async def activate_asset(self, asset: dict):
         """Activate an item asset.
 
         Parameters:
-            item_type_id: Item type identifier.
-            item_id: Item identifier.
-            asset_type_id: Asset type identifier.
+            asset: Description of the asset.
 
         Raises:
             planet.exceptions.APIError: On API error.
-            planet.exceptions.ClientError: If asset type identifier is not
+            planet.exceptions.ClientError: If asset description is not
             valid.
         """
         # NOTE: this is not an API endpoint
-        # This is getting the 'activate' link from the asset returned by
-        # get_asset() and then sending the activate request to that link
-        # NOTE: here, 'asset' could be specified by either the dict giving
-        # that is the asset description or by
-        # (item_type_id, item_id, asset_type_id) and then having the function
-        # get the asset description.
-        # Here, (item_type_id, item_id, asset_type_id) was chosen to match args
-        # with wait_asset() and get_asset().
+        # This is getting the 'activate' link from the asset description
+        # and then sending the activate request to that link
         raise NotImplementedError
 
     async def wait_asset(self,
-                         item_type_id: str,
-                         item_id: str,
-                         asset_type_id: str,
+                         asset: dict,
                          delay: int = WAIT_DELAY,
                          max_attempts: int = WAIT_MAX_ATTEMPTS,
                          callback: typing.Callable[[str], None] = None) -> str:
         """Wait for an item asset to be active.
 
         Parameters:
-            item_type_id: Item type identifier.
-            item_id: Item identifier.
-            asset_type_id: Asset type identifier.
+            asset: Description of the asset.
             delay: Time (in seconds) between polls.
             max_attempts: Maximum number of polls. Set to zero for no limit.
             callback: Function that handles state progress updates.
@@ -348,14 +387,10 @@ class DataClient:
                 before the asset is active.
         """
         # NOTE: this is not an API endpoint
-        # This is getting (with get_asset()) and checking the asset status
-        # NOTE: here, 'asset' could be specified by either the dict giving
-        # that is the asset description or by
-        # (item_type_id, item_id, asset_type_id) and then having the function
-        # get the asset description.
-        # Here, (item_type_id, item_id, asset_type_id) was chosen because this
-        # function will need to call get_item() anyway to get the status
-        # of the asset, so might as well provide the args needed by get_asset()
+        # This is getting and checking the asset status and waiting until
+        # the asset is active
+        # NOTE: use the url at asset['_links']['_self'] to get the current
+        # asset status
         raise NotImplementedError
 
     async def download_asset(self,
@@ -369,7 +404,7 @@ class DataClient:
         Asset description is obtained from get_asset() or wait_asset().
 
         Parameters:
-            asset: Asset description.
+            asset: Description of the asset.
             location: Download location url including download token.
             filename: Custom name to assign to downloaded file.
             directory: Base directory for file download.
@@ -385,14 +420,6 @@ class DataClient:
             description is not valid.
         """
         # NOTE: this is not an API endpoint
-        # This is getting (with get_asset()), getting the download location
-        # from the asset description, and then downloading the file at that
-        # location
-        # NOTE: here, 'asset' could be specified by either the dict giving
-        # that is the asset description or by
-        # (item_type_id, item_id, asset_type_id) and then having the function
-        # get the asset description.
-        # Here, a dict that is the asset description was chosen because the
-        # asset description is returned by wait and can be fed directly
-        # into this function without requiring another get_asset() call.
+        # This is getting the download location from the asset description
+        # and then downloading the file at that location
         raise NotImplementedError
