@@ -15,6 +15,7 @@
 from contextlib import asynccontextmanager
 import json
 import logging
+import sys
 
 import click
 
@@ -231,7 +232,15 @@ def read_file_json(ctx, param, value):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument('request', type=click.Path(exists=True))
+# @click.argument('request', type=click.Path(exists=True))
+@click.argument('request', type=click.Path(exists=True), default=sys.stdin)
+# @click.option('--compose-file', 
+#               help='compose file to work with',
+#               type=click.File('r'),
+#               default=sys.stdin)
+# def secret_hash_ini(compose_file):
+#     with compose_file:
+#         data = compose_file.read()
 @pretty
 async def create(ctx, request, pretty):
     '''  Create an order.
@@ -272,13 +281,6 @@ async def create(ctx, request, pretty):
               type=click.STRING,
               callback=split_list_arg,
               required=True)
-# NOT YET IMPLIMENTED
-@click.option(
-    '--search-id',
-    help='NOT YET IMPLIMENTED. ID of search from which to populate item IDs.',
-    type=click.STRING,
-    callback=split_list_arg,
-    required=False)
 @click.option('--item-type',
               multiple=False,
               required=True,
@@ -309,7 +311,6 @@ async def request(ctx,
                   name,
                   bundle,
                   id,
-                  search_id,
                   clip,
                   tools,
                   item_type,
@@ -323,12 +324,6 @@ async def request(ctx,
     in creating an order. It outputs the order request, optionally pretty-
     printed.
     """
-    if id and search_id:
-        raise click.BadParameter("Specify only one of '--id' or '--search-id'")
-
-    # FIGURE THIS OUT
-    # item_type = [item for item in planet.specs.get_item_types(bundle)]
-    # for item in item_type:
     try:
         product = planet.order_request.product(id, bundle, item_type)
     except planet.specs.SpecificationException as e:
