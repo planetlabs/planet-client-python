@@ -188,7 +188,8 @@ class DataClient:
         response = await self._do_request(request)
         return response.json()
 
-    async def update_search(self, search_id: str,
+    async def update_search(self,
+                            search_id: str,
                             name: str,
                             item_types: typing.List[str],
                             search_filter: dict,
