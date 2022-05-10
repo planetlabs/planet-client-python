@@ -21,7 +21,9 @@ def opt_auth_profile(function):
         envvar=ENV_AUTH_PROFILE,
         help='Select the client profile to use. Profiles are defined by'
         ' creating a subdirectory ~/.planet/. Additionally, the built in'
-        ' profiles "default" and "legacy" are understood.',
+        ' profiles "default" and "legacy" are understood.  The auth profile'
+        ' controls how the software interacts with Planet authentication'
+        ' services, as well as how it authenticates to other Planet APIs',
         default='',
         show_envvar=True,
         show_default=True,
@@ -107,7 +109,8 @@ def opt_token_scope(function):
         envvar=ENV_AUTH_SCOPES,
         help='Token scopes to request. Specify multiple options to request'
         ' multiple scopes. When set via environment variable, scopes'
-        ' should be white space delimited.',
+        ' should be white space delimited. Default value is determined'
+        ' by the selected auth profile.',
         default=None,
         show_envvar=True,
         show_default=True)(function)
