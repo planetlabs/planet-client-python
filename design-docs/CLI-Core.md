@@ -3,13 +3,15 @@
 ## Introduction
 
 This document serves as the root document to outline the Command-Line Interface
-(CLI). It includes the interface for the 'base' and 'auth' commands as well as, 
-and then links to other documents for orders, data and subscriptions. 
+(CLI). It includes the interface for the 'base' and 'auth' commands as well as
+helper commands. and then links to other documents for orders, data and 
+subscriptions. 
 
 ### CLI Sections
 
 * [CLI Base](#cli-base)
 * [Authentication](#authentication)
+* [Helper](#Helper)
 * [Orders](CLI-Orders.md)
 * [Data](CLI-Data.md)
 * [Subscriptions](CLI-Subscriptions.md)
@@ -148,4 +150,38 @@ Usage: planet auth store-key [OPTIONS]
 
 Options:
   --help  Show this message and exit.
+```
+
+## Helper
+
+These commands are utility functions that assist in other functions in the CLI.
+
+### Collect
+
+#### Interface
+
+```
+planet collect SEQUENCE
+
+Collect a sequence of JSON into a JSON blob. If the sequence is GeojSON, create a FeatureCollection.
+
+Arguments:
+SEQUENCE - sequence of JSON blobs.
+
+Options:
+--pretty - flag. Pretty-print output
+```
+
+#### Usage Examples
+
+User Story: As a CLI user I want to create a FeatureCollection of PSScene 
+scenes that intersect an AOI and were acquired in July 2021 .
+
+```
+$ planet data filter \
+--geom aoi.geojson \
+--date-range acquired gte 2021-07-01 \
+--date-range acquired lt 2021-08-01 | \
+planet data search-quick PSScene - | planet collect
+{"type": "FeatureCollection", "features" [...]}
 ```
