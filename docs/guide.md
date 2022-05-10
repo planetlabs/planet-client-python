@@ -337,5 +337,6 @@ Example: `tools.json`
             "name_template": "C1232_30_30_{tilex:04d}_{tiley:04d}"
         }
     }
+]
 ```
 
