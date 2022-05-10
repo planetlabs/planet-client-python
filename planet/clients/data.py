@@ -26,6 +26,9 @@ STATS_PATH = '/stats'
 
 STATS_INTERVAL = ('hour', 'day', 'week', 'month', 'year')
 
+WAIT_DELAY = 5
+WAIT_MAX_ATTEMPTS = 200
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -216,3 +219,180 @@ class DataClient:
         request = self._request(url, method='POST', json=request_json)
         response = await self._do_request(request)
         return response.json()
+
+    async def list_asset_types(self) -> list:
+        '''List all asset types available to the authenticated user.
+
+        Returns:
+            List of asset type details.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        '''
+        raise NotImplementedError
+
+    async def get_asset_type(self, asset_type_id: str) -> dict:
+        '''Get an asset type by id.
+
+        An asset describes a product that can be derived from an item's source
+        data, and can be used for various analytic, visual or other purposes.
+        These are referred to as asset_types.
+
+        Parameters:
+            asset_type_id: Asset type identifier.
+
+        Returns:
+            Asset type details.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        '''
+        raise NotImplementedError
+
+    async def list_assets(self, item_type_id: str,
+                          item_id: str) -> typing.List[dict]:
+        '''List all assets available for an item.
+
+        An asset describes a product that can be derived from an item's source
+        data, and can be used for various analytic, visual or other purposes.
+        These are referred to as asset_types.
+
+        Parameters:
+            item_type_id: Item type identifier.
+            item_id: Item identifier.
+
+        Returns:
+            Descriptions of available assets as a dictionary with asset_type_id
+            as keys and asset description as value.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        '''
+        raise NotImplementedError
+
+    async def get_asset(self,
+                        item_type_id: str,
+                        item_id: str,
+                        asset_type_id: str) -> dict:
+        '''Get an item asset.
+
+        Parameters:
+            item_type_id: Item type identifier.
+            item_id: Item identifier.
+            asset_type_id: Asset type identifier.
+
+        Returns:
+            Description of the asset.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+            planet.exceptions.ClientError: If asset type identifier is not
+            valid.
+        '''
+        # NOTE: this is not an API endpoint
+        # this is getting an asset by name from the dict returned by
+        # list_assets()
+        raise NotImplementedError
+
+    async def activate_asset(self,
+                             item_type_id: str,
+                             item_id: str,
+                             asset_type_id: str):
+        """Activate an item asset.
+
+        Parameters:
+            item_type_id: Item type identifier.
+            item_id: Item identifier.
+            asset_type_id: Asset type identifier.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+            planet.exceptions.ClientError: If asset type identifier is not
+            valid.
+        """
+        # NOTE: this is not an API endpoint
+        # This is getting the 'activate' link from the asset returned by
+        # get_asset() and then sending the activate request to that link
+        # NOTE: here, 'asset' could be specified by either the dict giving
+        # that is the asset description or by
+        # (item_type_id, item_id, asset_type_id) and then having the function
+        # get the asset description.
+        # Here, (item_type_id, item_id, asset_type_id) was chosen to match args
+        # with wait_asset() and get_asset().
+        raise NotImplementedError
+
+    async def wait_asset(self,
+                         item_type_id: str,
+                         item_id: str,
+                         asset_type_id: str,
+                         delay: int = WAIT_DELAY,
+                         max_attempts: int = WAIT_MAX_ATTEMPTS,
+                         callback: typing.Callable[[str], None] = None) -> str:
+        """Wait for an item asset to be active.
+
+        Parameters:
+            item_type_id: Item type identifier.
+            item_id: Item identifier.
+            asset_type_id: Asset type identifier.
+            delay: Time (in seconds) between polls.
+            max_attempts: Maximum number of polls. Set to zero for no limit.
+            callback: Function that handles state progress updates.
+
+        Returns:
+            Last received description of the asset.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+            planet.exceptions.ClientError: If asset_type_id is not valid or is
+                not available or if the maximum number of attempts is reached
+                before the asset is active.
+        """
+        # NOTE: this is not an API endpoint
+        # This is getting (with get_asset()) and checking the asset status
+        # NOTE: here, 'asset' could be specified by either the dict giving
+        # that is the asset description or by
+        # (item_type_id, item_id, asset_type_id) and then having the function
+        # get the asset description.
+        # Here, (item_type_id, item_id, asset_type_id) was chosen because this
+        # function will need to call get_item() anyway to get the status
+        # of the asset, so might as well provide the args needed by get_asset()
+        raise NotImplementedError
+
+    async def download_asset(self,
+                             asset: dict,
+                             filename: str = None,
+                             directory: str = None,
+                             overwrite: bool = False,
+                             progress_bar: bool = True) -> str:
+        """Download an asset.
+
+        Asset description is obtained from get_asset() or wait_asset().
+
+        Parameters:
+            asset: Asset description.
+            location: Download location url including download token.
+            filename: Custom name to assign to downloaded file.
+            directory: Base directory for file download.
+            overwrite: Overwrite any existing files.
+            progress_bar: Show progress bar during download.
+
+        Returns:
+            Path to downloaded file.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+            planet.exceptions.ClientError: If asset is not activated or asset
+            description is not valid.
+        """
+        # NOTE: this is not an API endpoint
+        # This is getting (with get_asset()), getting the download location
+        # from the asset description, and then downloading the file at that
+        # location
+        # NOTE: here, 'asset' could be specified by either the dict giving
+        # that is the asset description or by
+        # (item_type_id, item_id, asset_type_id) and then having the function
+        # get the asset description.
+        # Here, a dict that is the asset description was chosen because the
+        # asset description is returned by wait and can be fed directly
+        # into this function without requiring another get_asset() call.
+        raise NotImplementedError
