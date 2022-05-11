@@ -366,30 +366,27 @@ def test_cli_orders_download_state(invoke, order_description, oid):
     assert 'order state (running) is not a final state.' in result.output
 
 
-# TODO: convert "create" tests to "request" tests (gh-366).
-# TODO: add tests of "create --pretty" (gh-491).
 @pytest.mark.parametrize(
     "id_string, expected_ids",
     [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
      ('4500474_2133707_2021-05-20_2419,4500474_2133707_2021-05-20_2420',
       ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])])
 @respx.mock
-def test_cli_orders_create_basic_success(expected_ids,
-                                         id_string,
-                                         invoke,
-                                         order_description):
+def test_cli_orders_request_basic_success(expected_ids,
+                                          id_string,
+                                          invoke,
+                                          order_description):
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
     result = invoke([
-        'create',
+        'request',
         '--name=test',
         f'--id={id_string}',
         '--bundle=analytic',
         '--item-type=PSOrthoTile'
     ])
     assert not result.exception
-    assert order_description == json.loads(result.output)
 
     order_request = {
         "name":
@@ -400,13 +397,12 @@ def test_cli_orders_create_basic_success(expected_ids,
             "product_bundle": "analytic"
         }],
     }
-    sent_request = json.loads(respx.calls.last.request.content)
-    assert sent_request == order_request
+    assert order_request == json.loads(result.output)
 
 
-def test_cli_orders_create_basic_item_type_invalid(invoke):
+def test_cli_orders_request_basic_item_type_invalid(invoke):
     result = invoke([
-        'create',
+        'request',
         '--name=test',
         '--id=4500474_2133707_2021-05-20_2419',
         '--bundle=analytic',
@@ -416,9 +412,9 @@ def test_cli_orders_create_basic_item_type_invalid(invoke):
     assert 'Error: Invalid value: item_type' in result.output
 
 
-def test_cli_orders_create_id_empty(invoke):
+def test_cli_orders_request_id_empty(invoke):
     result = invoke([
-        'create',
+        'request',
         '--name',
         'test',
         '--id',
@@ -433,17 +429,17 @@ def test_cli_orders_create_id_empty(invoke):
 
 
 @respx.mock
-def test_cli_orders_create_clip(invoke,
-                                geom_geojson,
-                                order_description,
-                                write_to_tmp_json_file):
+def test_cli_orders_request_clip(invoke,
+                                 geom_geojson,
+                                 order_description,
+                                 write_to_tmp_json_file):
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
     aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
 
     result = invoke([
-        'create',
+        'request',
         '--name',
         'test',
         '--id',
@@ -473,6 +469,111 @@ def test_cli_orders_create_clip(invoke,
     }
     sent_request = json.loads(respx.calls.last.request.content)
     assert sent_request == order_request
+
+
+# # TODO: convert "create" tests to "request" tests (gh-366).
+# # TODO: add tests of "create --pretty" (gh-491).
+# @pytest.mark.parametrize(
+#     "id_string, expected_ids",
+#     [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
+#      ('4500474_2133707_2021-05-20_2419,4500474_2133707_2021-05-20_2420',
+#       ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])])
+# @respx.mock
+# def test_cli_orders_create_basic_success(expected_ids,
+#                                          id_string,
+#                                          invoke,
+#                                          order_description):
+#     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+#     respx.post(TEST_ORDERS_URL).return_value = mock_resp
+
+#     order_request = {
+#         "name":
+#         "test",
+#         "products": [{
+#             "item_ids": expected_ids,
+#             "item_type": "PSOrthoTile",
+#             "product_bundle": "analytic"
+#         }],
+#     }
+
+#     result = invoke([
+#         'create',
+#         order_request
+#     ])
+
+#     assert not result.exception
+#     assert order_description == json.loads(result.output)
+
+#     sent_request = json.loads(respx.calls.last.request.content)
+#     assert sent_request == order_request
+
+# def test_cli_orders_create_basic_item_type_invalid(invoke):
+#     result = invoke([
+#         'create',
+#         '--name=test',
+#         '--id=4500474_2133707_2021-05-20_2419',
+#         '--bundle=analytic',
+#         '--item-type=invalid'
+#     ])
+#     assert result.exception
+#     assert 'Error: Invalid value: item_type' in result.output
+
+# def test_cli_orders_create_id_empty(invoke):
+#     result = invoke([
+#         'create',
+#         '--name',
+#         'test',
+#         '--id',
+#         '',
+#         '--bundle',
+#         'analytic',
+#         '--item-type',
+#         'PSOrthoTile'
+#     ])
+#     assert result.exit_code
+#     assert 'Entry cannot be an empty string.' in result.output
+
+# @respx.mock
+# def test_cli_orders_create_clip(invoke,
+#                                 geom_geojson,
+#                                 order_description,
+#                                 write_to_tmp_json_file):
+#     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+#     respx.post(TEST_ORDERS_URL).return_value = mock_resp
+
+#     aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
+
+#     result = invoke([
+#         'create',
+#         '--name',
+#         'test',
+#         '--id',
+#         '4500474_2133707_2021-05-20_2419',
+#         '--bundle',
+#         'analytic',
+#         '--item-type',
+#         'PSOrthoTile',
+#         '--clip',
+#         aoi_file
+#     ])
+#     assert not result.exception
+
+#     order_request = {
+#         "name":
+#         "test",
+#         "products": [{
+#             "item_ids": ["4500474_2133707_2021-05-20_2419"],
+#             "item_type": "PSOrthoTile",
+#             "product_bundle": "analytic",
+#         }],
+#         "tools": [{
+#             'clip': {
+#                 'aoi': geom_geojson
+#             }
+#         }]
+#     }
+#     sent_request = json.loads(respx.calls.last.request.content)
+#     assert sent_request == order_request
 
 
 @respx.mock
