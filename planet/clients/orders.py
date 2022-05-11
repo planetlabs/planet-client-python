@@ -275,9 +275,8 @@ class OrdersClient():
         return dl_path
 
     @staticmethod
-    def _validate_checksum(manifest_data: dict,
-                            filenames: list,
-                            checksum: str):
+    def _validate_checksum(manifest_data: dict, filenames: list,
+                           checksum: str):
         """Calculate checksum and validate that it passes.
 
         Parameters:
@@ -385,8 +384,8 @@ class OrdersClient():
             with open(manifest_json, 'rb') as manifest:
                 manifest_data = json.load(manifest)
                 self._validate_checksum(manifest_data=manifest_data,
-                                         filenames=filenames,
-                                         checksum=checksum)
+                                        filenames=filenames,
+                                        checksum=checksum)
         return filenames
 
     @staticmethod
