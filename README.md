@@ -59,16 +59,16 @@ The email address and password you use should be the same as your login to
 [Planet Explorer](https://planet.com/explorer). The `auth init` command
 will automatically get your API key and store it locally.
 
-Now that you're initialized let's start with creating an order with the 
+Now that you're initialized let's start with creating an order request with the 
 Orders API:
 
 ```console
-$ planet orders create --name my-first-order --id <scene-ids> \ 
-    --item-type PSScene --bundle visual
+$ planet orders request -name my-first-order --id <scene-ids> \ 
+    --item-type PSScene --bundle visual > my_order.json
 ```
 
 You should supply a unique name after `--name` for each new order, to help
-you identify what oder. The `--id` is one or more scene ids (separated by
+you identify the order. The `--id` is one or more scene ids (separated by
 commas). These can be obtained from the data API, and you can also grab them
 from any search in Planet Explorer. Just be sure the scene id matches the
 [item-type](https://developers.planet.com/docs/apis/data/items-assets/#item-types) 
@@ -76,6 +76,10 @@ to get the right type of image. And then be sure to specify a
 [bundle](https://developers.planet.com/docs/orders/product-bundles-reference/).
 The most common ones are `visual` and `analytic`. 
 
+Next, you may create an order with the Orders API:
+```console
+$ planet orders create my_order.json
+```
 This will give you an order response JSON as shown in the 'example response' in
 [the Order API docs](https://developers.planet.com/docs/orders/ordering/#basic-ordering). 
 You can grab the `id` from that response, which will look something like 
