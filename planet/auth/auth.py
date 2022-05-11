@@ -4,13 +4,13 @@ import os
 import pathlib
 from typing import Union
 
-from planet.cx.commands.cli.constants import \
-    DEFAULT_OIDC_AUTH_CLIENT_CONFIG, \
-    LEGACY_AUTH_CLIENT_CONFIG
-from planet.cx.commands.cli.constants import \
+from planet.auth.constants import \
     ENV_AUTH_CLIENT_CONFIG_FILE, \
     ENV_AUTH_PROFILE, \
-    ENV_AUTH_TOKEN_FILE
+    ENV_AUTH_TOKEN_FILE, \
+    SDK_OIDC_AUTH_CLIENT_CONFIG_DICT, \
+    LEGACY_AUTH_CLIENT_CONFIG_DICT
+
 from planet.auth.auth_client import AuthClient, AuthClientConfig
 from planet.auth.request_authenticator import \
     RequestAuthenticator, \
@@ -72,13 +72,14 @@ class Auth:
             logger.debug(
                 'Using built-in "{}" auth client configuration'.format(
                     BUILTIN_PROFILE_NAME_DEFAULT))
-            auth_client = AuthClient.from_config(
-                DEFAULT_OIDC_AUTH_CLIENT_CONFIG)
+            client_config = AuthClientConfig.from_dict(
+                SDK_OIDC_AUTH_CLIENT_CONFIG_DICT)
         elif profile.lower() == BUILTIN_PROFILE_NAME_LEGACY:
             logger.debug(
                 'Using built-in "{}" auth client configuration'.format(
                     BUILTIN_PROFILE_NAME_LEGACY))
-            auth_client = AuthClient.from_config(LEGACY_AUTH_CLIENT_CONFIG)
+            client_config = AuthClientConfig.from_dict(
+                LEGACY_AUTH_CLIENT_CONFIG_DICT)
         else:
             auth_config_path = Profile.get_profile_file_path(
                 'auth_client.json', profile, auth_client_config_file)
@@ -93,10 +94,10 @@ class Auth:
                     'Auth configuration file "{}" not found.'
                     ' Using built-in default auth client configuration'.format(
                         str(auth_config_path)))
-                client_config = DEFAULT_OIDC_AUTH_CLIENT_CONFIG
-            auth_client = AuthClient.from_config(client_config)
+                client_config = AuthClientConfig.from_dict(
+                    SDK_OIDC_AUTH_CLIENT_CONFIG_DICT)
 
-        return auth_client
+        return AuthClient.from_config(client_config)
 
     @staticmethod
     def _initialize_token_file_path(profile: str,

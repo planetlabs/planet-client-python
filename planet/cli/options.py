@@ -1,13 +1,14 @@
 import click
 
-from planet.auth.auth import Profile
-from planet.cx.commands.cli.constants import \
+from planet.auth import Profile
+from planet.auth.constants import \
     ENV_AUTH_CLIENT_CONFIG_FILE, \
     ENV_AUTH_PASSWORD, \
     ENV_AUTH_PROFILE, \
     ENV_AUTH_SCOPES, \
     ENV_AUTH_TOKEN_FILE, \
-    ENV_AUTH_USERNAME, \
+    ENV_AUTH_USERNAME
+from planet.cx.commands.cli.constants import \
     ENV_FOO_ID, \
     ENV_FOO_SERVICE_URL, \
     ENV_LOGLEVEL
