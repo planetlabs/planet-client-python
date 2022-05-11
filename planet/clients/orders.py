@@ -384,7 +384,7 @@ class OrdersClient():
             manifest_json = manifest_files[0]
             with open(manifest_json, 'rb') as manifest:
                 manifest_data = json.load(manifest)
-                self.__validate_checksum(manifest_data=manifest_data,
+                self._validate_checksum(manifest_data=manifest_data,
                                          filenames=filenames,
                                          checksum=checksum)
         return filenames
