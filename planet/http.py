@@ -156,6 +156,12 @@ class Session(BaseSession):
         Raises:
             planet.exceptions.TooManyRequests: When retry limit is exceeded.
         """
+        # NOTE: if we need something more fancy, consider the following libs:
+        # * https://pypi.org/project/retry/
+        # * https://pypi.org/project/retrying/
+        # TODO: consider increasing the scope of retryable exceptions, ex:
+        # https://github.com/googleapis/python-storage/blob/1dc6d647b86466bf133
+        # fe03ec8d76c541e19c632/google/cloud/storage/retry.py#L23-L30
         # TODO: if throttling is necessary, check out [1] once v1
         # 1. https://github.com/encode/httpx/issues/984
         num_tries = 0
