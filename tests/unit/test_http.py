@@ -119,7 +119,7 @@ async def test_session_request_retry(monkeypatch, mock_request):
         ]
 
         # let's not actually introcude a wait into the tests
-        monkeypatch.setattr(http, 'MAX_BACKOFF', 0)
+        monkeypatch.setattr(http, 'MAX_RETRY_BACKOFF', 0)
         resp = await ps.request(mock_request)
         assert resp
         assert route.call_count == 2

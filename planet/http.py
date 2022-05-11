@@ -24,8 +24,8 @@ from .auth import Auth, AuthType
 from . import exceptions, models
 from .__version__ import __version__
 
-RETRY_COUNT = 5
-MAX_BACKOFF = 64  # seconds
+MAX_RETRIES = 5
+MAX_RETRY_BACKOFF = 64  # seconds
 
 LOGGER = logging.getLogger(__name__)
 
@@ -137,7 +137,6 @@ class Session(BaseSession):
         self._client.event_hooks['response'] = [
             alog_response, araise_for_status
         ]
-        self.retry_count = RETRY_COUNT
 
     async def __aenter__(self):
         return self
@@ -171,7 +170,7 @@ class Session(BaseSession):
                 resp = await func(*a, **kw)
                 break
             except exceptions.TooManyRequests as e:
-                if num_tries > RETRY_COUNT:
+                if num_tries > MAX_RETRIES:
                     raise e
                 else:
                     LOGGER.debug(f'Try {num_tries}')
@@ -193,7 +192,7 @@ class Session(BaseSession):
         """
         random_number_milliseconds = random.randint(0, 1000) / 1000.0
         calc_wait = 2**num_tries + random_number_milliseconds
-        return min(calc_wait, MAX_BACKOFF)
+        return min(calc_wait, MAX_RETRY_BACKOFF)
 
     async def request(self,
                       request: models.Request,
