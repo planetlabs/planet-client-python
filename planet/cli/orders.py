@@ -182,6 +182,10 @@ async def wait(ctx, order_id, delay, max_attempts, state):
 @translate_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
+@click.option('--checksum',
+              default=None,
+              type=click.Choice(['MD5', 'SHA256'], case_sensitive=False),
+              help=('Verify that checksums match.'))
 @click.option('--directory',
               default='.',
               help=('Base directory for file download.'),
@@ -193,14 +197,18 @@ async def wait(ctx, order_id, delay, max_attempts, state):
               is_flag=True,
               default=False,
               help=('Overwrite files if they already exist.'))
-async def download(ctx, order_id, overwrite, directory):
-    """Download order by order ID."""
+async def download(ctx, order_id, overwrite, directory, checksum):
+    """Download order by order ID.
+
+If --checksum is provided, the associated checksums given in the manifest
+are compared against the downloaded files to verify that they match."""
     quiet = ctx.obj['QUIET']
     async with orders_client(ctx) as cl:
         await cl.download_order(str(order_id),
                                 directory=directory,
                                 overwrite=overwrite,
-                                progress_bar=not quiet)
+                                progress_bar=not quiet,
+                                checksum=checksum)
 
 
 def read_file_geojson(ctx, param, value):
