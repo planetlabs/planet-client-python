@@ -12,16 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 '''Constants used across the code base'''
-import os
-
-ENV_API_KEY = 'PL_API_KEY'
-ENV_AUTH_CLIENT_CONFIG_FILE = 'PL_AUTH_CLIENT_CONFIG_FILE'
-ENV_AUTH_PASSWORD = 'PL_AUTH_PASSWORD'
-ENV_AUTH_PROFILE = 'PL_AUTH_PROFILE'
-ENV_AUTH_SCOPES = 'PL_AUTH_SCOPES'
-ENV_AUTH_TOKEN_FILE = 'PL_AUTH_TOKEN_FILE'
-ENV_AUTH_USERNAME = 'PL_AUTH_USERNAME'
 
 PLANET_BASE_URL = 'https://api.planet.com'
-DEFAULT_LEGACY_PLANET_AUTH_ENDPOINT = 'https://api.planet.com/v0/auth/login'
-SECRET_FILE_PATH = os.path.join(os.path.expanduser('~'), '.planet.json')

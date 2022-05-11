@@ -82,6 +82,9 @@ class AuthTest(unittest.TestCase):
             under_test.token_file_path())
 
     def test_default_overides_authconffile(self):
+        # FIXME: is this actually the behavior we want?  Might we want to
+        #        allow a user to set a default auth_client.json that overrides
+        #        the built-in defaults?
         under_test = Auth.initialize(
             profile='default',
             auth_client_config_file=tdata_resource_file_path(

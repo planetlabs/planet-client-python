@@ -5,10 +5,8 @@
 import click
 import sys
 
-from planet.auth.auth_client import AuthClientException
-from planet.auth.oidc.oidc_token import FileBackedOidcToken
-from planet.auth.planet_legacy.legacy_api_key import \
-    FileBackedPlanetLegacyAPIKey
+from planet.auth import AuthClientException
+from planet.auth import FileBackedOidcToken, FileBackedPlanetLegacyAPIKey
 
 from planet.cli.options import \
     opt_auth_password, \

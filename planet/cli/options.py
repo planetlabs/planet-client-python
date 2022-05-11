@@ -1,7 +1,7 @@
 import click
 
-from planet.auth.auth import Profile
-from planet.constants import \
+from planet.auth import Profile
+from planet.auth.constants import \
     ENV_AUTH_CLIENT_CONFIG_FILE, \
     ENV_AUTH_PASSWORD, \
     ENV_AUTH_PROFILE, \
