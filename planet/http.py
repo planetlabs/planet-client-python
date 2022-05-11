@@ -19,7 +19,7 @@ import logging
 
 import httpx
 
-from planet.auth.auth import Auth
+from planet.auth import Auth
 from . import exceptions, models
 from .__version__ import __version__
 

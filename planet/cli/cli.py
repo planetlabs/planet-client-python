@@ -18,8 +18,7 @@ import sys
 import click
 
 import planet
-from planet.auth.auth import Auth
-
+from planet.auth import Auth
 from planet.cli import data, orders
 from planet.cli.oidcauth import oidc_token_group
 from planet.cli.options import \
