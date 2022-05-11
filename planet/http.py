@@ -16,6 +16,7 @@ from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import asyncio
 from http import HTTPStatus
 import logging
+import random
 
 import httpx
 
@@ -24,7 +25,7 @@ from . import exceptions, models
 from .__version__ import __version__
 
 RETRY_COUNT = 5
-RETRY_WAIT_TIME = 1  # seconds
+MAX_BACKOFF = 64  # seconds
 
 LOGGER = logging.getLogger(__name__)
 
@@ -136,7 +137,6 @@ class Session(BaseSession):
         self._client.event_hooks['response'] = [
             alog_response, araise_for_status
         ]
-        self.retry_wait_time = RETRY_WAIT_TIME
         self.retry_count = RETRY_COUNT
 
     async def __aenter__(self):
@@ -151,18 +151,13 @@ class Session(BaseSession):
     async def _retry(self, func, *a, **kw):
         """Run an asynchronous request function with retry.
 
+        Retry uses exponential backoff
+
         Raises:
             planet.exceptions.TooManyRequests: When retry limit is exceeded.
         """
-        # TODO: retry will be provided in httpx v1 [1] with usage [2]
-        # 1. https://github.com/encode/httpcore/pull/221
-        # 2. https://github.com/encode/httpx/blob/
-        # 89fb0cbc69ea07b123dd7b36dc1ed9151c5d398f/docs/async.md#explicit-transport-instances # noqa
         # TODO: if throttling is necessary, check out [1] once v1
         # 1. https://github.com/encode/httpx/issues/984
-        retry_count = self.retry_count
-        wait_time = self.retry_wait_time
-
         num_tries = 0
         while True:
             num_tries += 1
@@ -170,15 +165,29 @@ class Session(BaseSession):
                 resp = await func(*a, **kw)
                 break
             except exceptions.TooManyRequests as e:
-                if num_tries > retry_count:
+                if num_tries > RETRY_COUNT:
                     raise e
                 else:
                     LOGGER.debug(f'Try {num_tries}')
+                    wait_time = self._calc_exponential_wait(num_tries)
                     LOGGER.info(f'Too Many Requests: sleeping {wait_time}s')
-                    # TODO: consider exponential backoff
-                    # https://developers.planet.com/docs/data/api-mechanics/
                     await asyncio.sleep(wait_time)
         return resp
+
+    @staticmethod
+    def _calc_exponential_wait(num_tries):
+        """Calculates exponential wait
+
+        Introduces some randomness to stagger multiple requests and avoid
+        waves. Also thresholds maximum wait value to MAX_BACKOFF.
+
+        Ref:
+        * https://developers.planet.com/docs/data/api-mechanics/
+        * https://cloud.google.com/iot/docs/how-tos/exponential-backoff
+        """
+        random_number_milliseconds = random.randint(0, 1000) / 1000.0
+        calc_wait = 2**num_tries + random_number_milliseconds
+        return min(calc_wait, MAX_BACKOFF)
 
     async def request(self,
                       request: models.Request,

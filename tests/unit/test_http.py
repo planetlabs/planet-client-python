@@ -13,7 +13,7 @@
 # the License.
 import logging
 from http import HTTPStatus
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock, patch
 
 import httpx
 import respx
@@ -45,6 +45,13 @@ def mock_response():
         return r
 
     return mocker
+
+
+class AsyncMock(MagicMock):
+    """This class was added to the Python library in 3.8"""
+
+    async def __call__(self, *args, **kwargs):
+        return super(AsyncMock, self).__call__(*args, **kwargs)
 
 
 def test_basesession__raise_for_status(mock_response):
@@ -102,7 +109,8 @@ async def test_session_stream(mock_request):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session_request_retry(mock_request, mock_response):
+async def test_session_request_retry(monkeypatch, mock_request):
+    """Test the retry in the Session.request method"""
     async with http.Session() as ps:
         route = respx.get(TEST_URL)
         route.side_effect = [
@@ -110,7 +118,8 @@ async def test_session_request_retry(mock_request, mock_response):
             httpx.Response(HTTPStatus.OK, json={})
         ]
 
-        ps.retry_wait_time = 0  # lets not slow down tests for this
+        # let's not actually introcude a wait into the tests
+        monkeypatch.setattr(http, 'MAX_BACKOFF', 0)
         resp = await ps.request(mock_request)
         assert resp
         assert route.call_count == 2
@@ -118,15 +127,30 @@ async def test_session_request_retry(mock_request, mock_response):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session_retry(mock_request):
-    async with http.Session() as ps:
+async def test_session__retry(monkeypatch):
+    """A unit test for the _retry function"""
+    # decorator form of patch seems to conflict with respx.mock
+    # if it is placed above respx.mock, the funciton does not seem to be mocked
+    # but if it is placed below respx.mock, the reference to the mock cannot
+    # be accessed through the test function arguments
+    with patch('planet.http.asyncio.sleep',
+               new_callable=AsyncMock) as mock_sleep:
 
         async def test_func():
             raise exceptions.TooManyRequests
 
-        ps.retry_wait_time = 0
-        with pytest.raises(exceptions.TooManyRequests):
-            await ps._retry(test_func)
+        async with http.Session() as ps:
+            with pytest.raises(exceptions.TooManyRequests):
+                await ps._retry(test_func)
+
+        calls = mock_sleep.call_args_list
+        wait_times = [c[0][0] for c in calls]
+
+        # (min, max): 2**n to 2**n + 1
+        expected_times = [(2, 3), (4, 5), (8, 9), (16, 17), (32, 33)]
+
+        for wait, expected in zip(wait_times, expected_times):
+            assert wait >= expected[0] and wait < expected[1]
 
 
 @respx.mock
