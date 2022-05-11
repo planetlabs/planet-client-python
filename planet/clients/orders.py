@@ -275,7 +275,7 @@ class OrdersClient():
         return dl_path
 
     @staticmethod
-    def __validate_checksum(manifest_data: dict,
+    def _validate_checksum(manifest_data: dict,
                             filenames: list,
                             checksum: str):
         """Calculate checksum and validate that it passes.
