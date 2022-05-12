@@ -245,7 +245,7 @@ def read_file_json(ctx, param, value):
 async def create(ctx, request, pretty):
     '''  Create an order.
 
-        This command creates an order from an order request. 
+        This command creates an order from an order request.
         It outputs the created order description, optionally pretty-printed.
 
         Arguments:
