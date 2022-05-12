@@ -470,6 +470,53 @@ def test_cli_orders_request_clip(invoke,
     assert order_request == json.loads(result.output)
 
 
+# def test_cli_orders_create_clip(invoke,
+#                                 geom_geojson,
+#                                 order_description,
+#                                 write_to_tmp_json_file):
+#     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+#     respx.post(TEST_ORDERS_URL).return_value = mock_resp
+
+#     aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
+
+#     request_result = invoke([
+#         'request',
+#         '--name',
+#         'test',
+#         '--id',
+#         '4500474_2133707_2021-05-20_2419',
+#         '--bundle',
+#         'analytic',
+#         '--item-type',
+#         'PSOrthoTile',
+#         '--clip',
+#         aoi_file
+#     ])
+#     request_file = write_to_tmp_json_file(json.loads(request_result.output),
+#                                           'request.json')
+#     create_result = invoke([
+#         'create',
+#         request_file
+#     ])
+
+#     order_request = {
+#         "name":
+#         "test",
+#         "products": [{
+#             "item_ids": ["4500474_2133707_2021-05-20_2419"],
+#             "item_type": "PSOrthoTile",
+#             "product_bundle": "analytic",
+#         }],
+#         "tools": [{
+#             'clip': {
+#                 'aoi': geom_geojson
+#             }
+#         }]
+#     }
+#     sent_request = json.loads(respx.calls.last.request.content)
+#     assert sent_request == order_request
+
+
 @respx.mock
 def test_cli_orders_request_clip_featureclass(invoke,
                                               featureclass_geojson,
@@ -682,6 +729,7 @@ def test_cli_orders_request_tools(invoke,
 
 
 # # TODO: convert "create" tests to "request" tests (gh-366).
+# # TODO: add tests of "create --like" (gh-491).
 # # TODO: add tests of "create --pretty" (gh-491).
 
 # # TODO: convert this test to create to send request
