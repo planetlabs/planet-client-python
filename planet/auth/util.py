@@ -4,8 +4,10 @@ import pathlib
 import stat
 import time
 
+from planet.auth.auth_exception import AuthException
 
-class FileBackedJsonObjectException(Exception):
+
+class FileBackedJsonObjectException(AuthException):
 
     def __init__(self, message=None):
         super().__init__(message)

@@ -12,7 +12,7 @@ ENV_AUTH_USERNAME = 'PL_AUTH_USERNAME'
 
 # FIXME: we need a better URL for this public interface, that doesn't embed
 #    implementation details like a specific ID.
-PLANET_OAUTH_SERVER='https://account.planet.com/oauth2/aus2enhwueFYRb50S4x7'
+PLANET_OAUTH_SERVER = 'https://account.planet.com/oauth2/aus2enhwueFYRb50S4x7'
 PLANET_LEGACY_AUTH_ENDPOINT = 'https://api.planet.com/v0/auth/login'
 
 SDK_OIDC_AUTH_CLIENT_CONFIG_DICT = {
@@ -28,10 +28,8 @@ SDK_OIDC_AUTH_CLIENT_CONFIG_DICT = {
     #      --no-open-browser use cases.
     "redirect_uri": "http://localhost:8080/login/callback",
     "local_redirect_uri": "http://localhost:8080",
-    "default_request_scopes": ["planet",
-                               "offline_access",
-                               "openid",
-                               "profile"]
+    "default_request_scopes":
+    ["planet", "offline_access", "openid", "profile"]
 }
 
 LEGACY_AUTH_CLIENT_CONFIG_DICT = {

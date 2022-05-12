@@ -3,16 +3,16 @@ import time
 import uuid
 
 from planet.auth.oidc.api_clients.api_client import \
-    OIDCAPIClient, OIDCAPIClientException
+    OidcApiClient, OidcApiClientException
 
 
-class TokenAPIException(OIDCAPIClientException):
+class TokenApiException(OidcApiClientException):
 
     def __init__(self, message=None, raw_response=None):
         super().__init__(message, raw_response)
 
 
-class TokenAPIClient(OIDCAPIClient):
+class TokenApiClient(OidcApiClient):
 
     def __init__(self, token_uri):
         super().__init__(token_uri)
@@ -20,7 +20,7 @@ class TokenAPIClient(OIDCAPIClient):
     @staticmethod
     def _check_token_response(json_response):
         if not json_response.get('expires_in'):
-            raise TokenAPIException(
+            raise TokenApiException(
                 message='Invalid token received. Missing expires_in field.')
 
     def _checked_call(self, token_params, request_auth=None):
@@ -89,9 +89,6 @@ class TokenAPIClient(OIDCAPIClient):
         if requested_scopes:
             data['scope'] = ' '.join(requested_scopes)
 
-        # FIXME: should this be passed to checked_call() as the request auth?
-        #     (See notes below. Don't recall all permutations)
-        # request_auth = HTTPBasicAuth(client_id, client_secret)
         return self._checked_call(data)
 
     def get_token_from_client_credentials_pubkey(self,

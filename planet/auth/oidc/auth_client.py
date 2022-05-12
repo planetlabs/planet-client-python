@@ -6,21 +6,20 @@ from planet.auth.auth_client import \
     AuthClientConfig, \
     AuthClient
 from planet.auth.oidc.api_clients.authorization_api_client import \
-    AuthorizationAPIClient
+    AuthorizationApiClient
 from planet.auth.oidc.api_clients.discovery_api_client import \
-    DiscoveryAPIClient
+    DiscoveryApiClient
 from planet.auth.oidc.api_clients.introspect_api_client import \
-    IntrospectionAPIClient
+    IntrospectionApiClient
 from planet.auth.oidc.api_clients.jwks_api_client import \
-    JwksAPIClient
+    JwksApiClient
 from planet.auth.oidc.token_validator import \
     TokenValidator
 from planet.auth.oidc.api_clients.revocation_api_client import \
-    RevocationAPIClient
+    RevocationApiClient
 from planet.auth.oidc.api_clients.token_api_client import \
-    TokenAPIClient
-from planet.auth.oidc.oidc_token import \
-    FileBackedOidcToken
+    TokenApiClient
+from planet.auth.oidc.oidc_credential import FileBackedOidcCredential
 
 
 class OidcAuthClientConfig(AuthClientConfig):
@@ -51,7 +50,7 @@ class OidcAuthClient(AuthClient):
     def __init__(self, oidc_client_config: OidcAuthClientConfig):
         super().__init__(oidc_client_config)
         self._oidc_client_config = oidc_client_config
-        self.__discovery_client = DiscoveryAPIClient(
+        self.__discovery_client = DiscoveryApiClient(
             auth_server=self._oidc_client_config.auth_server)
         self.__token_client = None
         self.__authorization_client = None
@@ -76,7 +75,7 @@ class OidcAuthClient(AuthClient):
                 auth_endpoint = self._oidc_client_config.authorization_endpoint
             else:
                 auth_endpoint = self._discovery()['authorization_endpoint']
-            self.__authorization_client = AuthorizationAPIClient(auth_endpoint)
+            self.__authorization_client = AuthorizationApiClient(auth_endpoint)
         return self.__authorization_client
 
     def _introspection_client(self):
@@ -87,7 +86,7 @@ class OidcAuthClient(AuthClient):
             else:
                 introspection_endpoint = self._discovery(
                 )['introspection_endpoint']
-            self.__introspection_client = IntrospectionAPIClient(
+            self.__introspection_client = IntrospectionApiClient(
                 introspection_endpoint)
         return self.__introspection_client
 
@@ -97,7 +96,7 @@ class OidcAuthClient(AuthClient):
                 jwks_endpoint = self._oidc_client_config.jwks_endpoint
             else:
                 jwks_endpoint = self._discovery()['jwks_uri']
-            self.__jwks_client = JwksAPIClient(jwks_endpoint)
+            self.__jwks_client = JwksApiClient(jwks_endpoint)
         return self.__jwks_client
 
     def _revocation_client(self):
@@ -107,7 +106,7 @@ class OidcAuthClient(AuthClient):
                     self._oidc_client_config.revocation_endpoint
             else:
                 revocation_endpoint = self._discovery()['revocation_endpoint']
-            self.__revocation_client = RevocationAPIClient(revocation_endpoint)
+            self.__revocation_client = RevocationApiClient(revocation_endpoint)
         return self.__revocation_client
 
     def _token_client(self):
@@ -116,7 +115,7 @@ class OidcAuthClient(AuthClient):
                 token_endpoint = self._oidc_client_config.token_endpoint
             else:
                 token_endpoint = self._discovery()['token_endpoint']
-            self.__token_client = TokenAPIClient(token_endpoint)
+            self.__token_client = TokenApiClient(token_endpoint)
         return self.__token_client
 
     # Note: I don't really like that auth_client knows about the HTTP-ness,
@@ -149,7 +148,7 @@ class OidcAuthClient(AuthClient):
     def login(self,
               requested_scopes=None,
               allow_open_browser=True,
-              **kwargs) -> FileBackedOidcToken:
+              **kwargs) -> FileBackedOidcCredential:
         """
          Obtain tokens from the OIDC auth server using an appropriate login
          flow. concrete subclasses should implement a single login flow.
@@ -159,7 +158,7 @@ class OidcAuthClient(AuthClient):
               allow_open_browser: specify whether login is permitted to open
                   a browser window.
           Returns:
-              A FileBackedOidcToken object
+              A FileBackedOidcCredential object
         """
 
     def refresh(self, refresh_token, requested_scopes=None):
@@ -171,7 +170,7 @@ class OidcAuthClient(AuthClient):
             request during the token refresh. If not specified, server
             default behavior will apply.
         Returns:
-            A FileBackedOidcToken object
+            A FileBackedOidcCredential object
         """
         # Disabled scope fallback for now.
         # The client config default may have more than the user consented to,
@@ -184,7 +183,7 @@ class OidcAuthClient(AuthClient):
         #
         # if not requested_scopes:
         #    requested_scopes = self._oidc_client_config.default_request_scopes
-        return FileBackedOidcToken(self._token_client().get_token_from_refresh(
+        return FileBackedOidcCredential(self._token_client().get_token_from_refresh(
             self._oidc_client_config.client_id,
             refresh_token,
             requested_scopes))

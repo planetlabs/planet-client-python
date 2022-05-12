@@ -3,9 +3,9 @@ import time
 import unittest
 from unittest.mock import MagicMock
 
-from planet.auth.auth_client import AuthClientException
-from planet.auth.oidc.api_clients.jwks_api_client import JwksAPIClient
-from planet.auth.oidc.token_validator import TokenValidator
+from planet.auth.oidc.api_clients.jwks_api_client import JwksApiClient
+from planet.auth.oidc.token_validator import TokenValidator, \
+    TokenValidatorException
 from tests.unit.auth.util import TestTokenBuilder
 from tests.util import tdata_resource_file_path
 
@@ -52,7 +52,7 @@ class TestTokenValidator(unittest.TestCase):
         cls.jwks_response = {"keys": [pubkey_jwk_1]}
 
     def setUp(self):
-        mock_jwks_client = JwksAPIClient(jwks_uri=TEST_JWKS_ENDPOINT)
+        mock_jwks_client = JwksApiClient(jwks_uri=TEST_JWKS_ENDPOINT)
         mock_jwks_client.jwks = MagicMock(return_value=self.jwks_response)
         self.under_test_1 = TokenValidator(jwks_client=mock_jwks_client)
         self.under_test_2 = TokenValidator(
@@ -72,7 +72,7 @@ class TestTokenValidator(unittest.TestCase):
     def test_access_token_unknown_signing_key(self):
         under_test = self.under_test_1
         access_token = self.token_builder_2.construct_oidc_access_token()
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(TokenValidatorException):
             under_test.validate_token(
                 access_token,
                 issuer=self.token_builder_2.OIDC_ISSUER,
@@ -81,7 +81,7 @@ class TestTokenValidator(unittest.TestCase):
     def test_access_token_issuer_mismatch(self):
         under_test = self.under_test_1
         access_token = self.token_builder_1.construct_oidc_access_token()
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(TokenValidatorException):
             under_test.validate_token(
                 access_token,
                 issuer=self.token_builder_1.OIDC_ISSUER + "_make_it_mismatch",
@@ -90,7 +90,7 @@ class TestTokenValidator(unittest.TestCase):
     def test_access_token_incorrect_audience(self):
         under_test = self.under_test_1
         access_token = self.token_builder_1.construct_oidc_access_token()
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(TokenValidatorException):
             under_test.validate_token(
                 access_token,
                 issuer=self.token_builder_1.OIDC_ISSUER,
@@ -101,7 +101,7 @@ class TestTokenValidator(unittest.TestCase):
         under_test = self.under_test_1
         access_token = self.token_builder_1.construct_oidc_access_token(ttl=3)
         time.sleep(5)
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(TokenValidatorException):
             under_test.validate_token(
                 access_token,
                 issuer=self.token_builder_1.OIDC_ISSUER,
@@ -110,7 +110,7 @@ class TestTokenValidator(unittest.TestCase):
     def test_access_token_missing_claim(self):
         under_test = self.under_test_1
         access_token = self.token_builder_1.construct_oidc_access_token()
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(TokenValidatorException):
             under_test.validate_token(
                 access_token,
                 issuer=self.token_builder_1.OIDC_ISSUER,
@@ -128,7 +128,7 @@ class TestTokenValidator(unittest.TestCase):
                                      issuer=self.token_builder_1.OIDC_ISSUER,
                                      client_id='test_client_id',
                                      nonce='12345')
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(TokenValidatorException):
             under_test.validate_id_token(
                 id_token_with_nonce,
                 issuer=self.token_builder_1.OIDC_ISSUER,
@@ -142,7 +142,7 @@ class TestTokenValidator(unittest.TestCase):
                                      client_id='test_client_id',
                                      nonce=None)
 
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(TokenValidatorException):
             under_test.validate_id_token(
                 id_token_without_nonce,
                 issuer=self.token_builder_1.OIDC_ISSUER,
@@ -176,7 +176,7 @@ class TestTokenValidator(unittest.TestCase):
                 'aud':
                 ['test_client_id', 'extra_audience_1', 'extra_audience_2']
             })
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(TokenValidatorException):
             under_test.validate_id_token(
                 id_token,
                 issuer=self.token_builder_1.OIDC_ISSUER,
@@ -191,7 +191,7 @@ class TestTokenValidator(unittest.TestCase):
                 ['test_client_id', 'extra_audience_1', 'extra_audience_2'],
                 'azp': 'mismatch_azp'
             })
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(TokenValidatorException):
             under_test.validate_id_token(
                 id_token,
                 issuer=self.token_builder_1.OIDC_ISSUER,
@@ -208,7 +208,7 @@ class TestTokenValidator(unittest.TestCase):
         self.assertEqual(0, under_test._jwks_client.jwks.call_count)
 
         # t1 - key miss loads keys
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(TokenValidatorException):
             under_test.validate_token(
                 token_unknown_signer,
                 issuer=self.token_builder_2.OIDC_ISSUER,
@@ -225,7 +225,7 @@ class TestTokenValidator(unittest.TestCase):
         # t3 - Repeated key hits and misses inside the fetch interval should
         # not trigger a reload of the jwks verification keys
         for n in range(5):
-            with self.assertRaises(AuthClientException):
+            with self.assertRaises(TokenValidatorException):
                 under_test.validate_token(
                     token_unknown_signer,
                     issuer=self.token_builder_2.OIDC_ISSUER,
@@ -246,7 +246,7 @@ class TestTokenValidator(unittest.TestCase):
             token_known_signer,
             issuer=self.token_builder_1.OIDC_ISSUER,
             audience=self.token_builder_1.OIDC_ACCESS_TOKEN_AUDIENCE)
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(TokenValidatorException):
             under_test.validate_token(
                 token_unknown_signer,
                 issuer=self.token_builder_2.OIDC_ISSUER,
@@ -256,7 +256,7 @@ class TestTokenValidator(unittest.TestCase):
     def test_bad_algorithm(self):
         under_test = self.under_test_1
         test_token = self.token_builder_3.construct_oidc_access_token()
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(TokenValidatorException):
             under_test.validate_token(
                 test_token,
                 issuer=self.token_builder_1.OIDC_ISSUER,

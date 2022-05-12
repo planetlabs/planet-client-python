@@ -9,7 +9,7 @@ from unittest import mock
 from urllib.parse import urlparse, parse_qs
 
 from planet.auth.oidc.api_clients.authorization_api_client import \
-    AuthorizationAPIClient, AuthorizationAPIException, \
+    AuthorizationApiClient, AuthorizationApiException, \
     _parse_authcode_from_callback
 from planet.auth.oidc.util import create_pkce_challenge_verifier_pair
 from tests.util import background, find_free_port
@@ -76,17 +76,17 @@ class AuthcodeCallbackParserTest(unittest.TestCase):
         self.dummy_callback_baseurl = TEST_REDIRECT_URI_TEMPLATE.format(8080)
 
     def test_empty_request_throws(self):
-        with self.assertRaises(AuthorizationAPIException):
+        with self.assertRaises(AuthorizationApiException):
             self.under_test(None, None)
 
-        with self.assertRaises(AuthorizationAPIException):
+        with self.assertRaises(AuthorizationApiException):
             self.under_test('', None)
 
     def test_explicit_error_throws(self):
         encoded_params = urllib.parse.urlencode({'error': 'test_error_1'})
         callback_uri = '{}?{}'.format(self.dummy_callback_baseurl,
                                       encoded_params)
-        with self.assertRaises(AuthorizationAPIException):
+        with self.assertRaises(AuthorizationApiException):
             self.under_test(callback_uri, None)
 
         # Mix it up. We want a failure whenever there is an error, even if
@@ -103,7 +103,7 @@ class AuthcodeCallbackParserTest(unittest.TestCase):
         })
         callback_uri = '{}?{}'.format(self.dummy_callback_baseurl,
                                       encoded_params)
-        with self.assertRaises(AuthorizationAPIException):
+        with self.assertRaises(AuthorizationApiException):
             self.under_test(callback_uri, None)
 
     # @mock.patch('planet.auth.oidc.util.generate_nonce', mocked_generate_nonce)  # noqa
@@ -124,14 +124,14 @@ class AuthcodeCallbackParserTest(unittest.TestCase):
         })
         callback_uri = '{}?{}'.format(self.dummy_callback_baseurl,
                                       encoded_params)
-        with self.assertRaises(AuthorizationAPIException):
+        with self.assertRaises(AuthorizationApiException):
             self.under_test(callback_uri, test_state_1)
 
     def test_callback_not_understood_throws(self):
         encoded_params = urllib.parse.urlencode({'data1': 'some random data'})
         callback_uri = '{}?{}'.format(self.dummy_callback_baseurl,
                                       encoded_params)
-        with self.assertRaises(AuthorizationAPIException):
+        with self.assertRaises(AuthorizationApiException):
             self.under_test(callback_uri, None)
 
 
@@ -145,7 +145,7 @@ class AuthorizationApiClientTest(unittest.TestCase):
 
     @mock.patch('webbrowser.open', mocked_browser_authserver)
     def test_get_authcode_with_browser_and_listener(self):
-        under_test = AuthorizationAPIClient(
+        under_test = AuthorizationApiClient(
             authorization_uri=TEST_API_ENDPOINT)
 
         # Cover both default and override scope paths
@@ -173,7 +173,7 @@ class AuthorizationApiClientTest(unittest.TestCase):
     @mock.patch('webbrowser.open')
     def test_get_authcode_with_browser_and_listener_unsupported_callback_host(
             self, mock1, mock2, mock3):
-        under_test = AuthorizationAPIClient(
+        under_test = AuthorizationApiClient(
             authorization_uri=TEST_API_ENDPOINT)
 
         # Only localhost callbacks should be supported by current code
@@ -195,7 +195,7 @@ class AuthorizationApiClientTest(unittest.TestCase):
             None,
             self.pkce_challenge)
 
-        with self.assertRaises(AuthorizationAPIException):
+        with self.assertRaises(AuthorizationApiException):
             under_test.authcode_from_pkce_flow_with_browser_with_callback_listener(  # noqa
                 TEST_CLIENT_ID,
                 invalid_callback,
@@ -206,9 +206,9 @@ class AuthorizationApiClientTest(unittest.TestCase):
     @mock.patch('webbrowser.open')
     def test_get_authcode_with_browser_and_listener_unknown_callback_failure(
             self, mock1, mock2):
-        under_test = AuthorizationAPIClient(
+        under_test = AuthorizationApiClient(
             authorization_uri=TEST_API_ENDPOINT)
-        with self.assertRaises(AuthorizationAPIException):
+        with self.assertRaises(AuthorizationApiException):
             under_test.authcode_from_pkce_flow_with_browser_with_callback_listener(  # noqa
                 TEST_CLIENT_ID,
                 self.callback_uri,
@@ -217,7 +217,7 @@ class AuthorizationApiClientTest(unittest.TestCase):
 
     @mock.patch('getpass.getpass', mocked_get_password)
     def test_get_authcode_without_browser_and_listener(self):
-        under_test = AuthorizationAPIClient(
+        under_test = AuthorizationApiClient(
             authorization_uri=TEST_API_ENDPOINT)
 
         # Cover both default and override scope paths

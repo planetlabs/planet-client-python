@@ -32,7 +32,6 @@ def _prepare_oidc_client_jwt_payload(audience: str, client_id: str, ttl: int):
 
 def prepare_client_noauth_auth_payload(client_id: str):
     client_secret_auth_payload = {
-        # FIXME: should just be part of the calls to methods that need it?
         'client_id': client_id,
     }
     return client_secret_auth_payload

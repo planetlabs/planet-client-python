@@ -1,15 +1,15 @@
 from planet.auth.request_authenticator import RequestAuthenticator
-from planet.auth.static_api_key.static_api_key import FileBackedAPIKey
+from planet.auth.static_api_key.static_api_key import FileBackedApiKey
 
 
-class FileBackedAPIKeyRequestAuthenticator(RequestAuthenticator):
+class FileBackedApiKeyRequestAuthenticator(RequestAuthenticator):
     """
     Load a bearer token from a file just in time for the request.
     Perform local checks on the validity of the token and throw
     if we think it will fail.
     """
 
-    def __init__(self, auth_file: FileBackedAPIKey):
+    def __init__(self, auth_file: FileBackedApiKey):
         super().__init__(token_body='')
         self._auth_file = auth_file
 

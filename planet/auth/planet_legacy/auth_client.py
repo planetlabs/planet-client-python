@@ -8,7 +8,7 @@ from planet.auth.auth_client import \
     AuthClient, \
     AuthClientException
 from planet.auth.planet_legacy.legacy_api_key import \
-    FileBackedPlanetLegacyAPIKey
+    FileBackedPlanetLegacyApiKey
 from planet.auth.planet_legacy.request_authenticator import \
     PlanetLegacyRequestAuthenticator
 
@@ -109,11 +109,11 @@ class PlanetLegacyAuthClient(AuthClient):
             password = getpass.getpass(prompt='Password: ')
         auth_payload = self._prepare_auth_payload(username, password)
         api_key = self._checked_auth_request(auth_payload)
-        return FileBackedPlanetLegacyAPIKey(api_key=api_key)
+        return FileBackedPlanetLegacyApiKey(api_key=api_key)
 
     def default_request_authenticator(
             self,
-            token_file_path: pathlib.Path) -> PlanetLegacyRequestAuthenticator:
+            credential_file_path: pathlib.Path) -> PlanetLegacyRequestAuthenticator:
         return PlanetLegacyRequestAuthenticator(
-            api_key_file=FileBackedPlanetLegacyAPIKey(
-                api_key_file=token_file_path))
+            api_key_file=FileBackedPlanetLegacyApiKey(
+                api_key_file=credential_file_path))

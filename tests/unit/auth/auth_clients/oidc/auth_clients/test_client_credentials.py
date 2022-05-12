@@ -10,7 +10,7 @@ from planet.auth.oidc.auth_clients.client_credentials_flow import \
     ClientCredentialsPubKeyClientConfig, \
     ClientCredentialsClientSecretAuthClient, \
     ClientCredentialsClientSecretClientConfig
-from planet.auth.oidc.oidc_token import FileBackedOidcToken
+from planet.auth.oidc.oidc_credential import FileBackedOidcCredential
 from planet.auth.oidc.request_authenticator import \
     RefreshOrReloginOidcTokenRequestAuthenticator
 from tests.util import tdata_resource_file_path
@@ -52,22 +52,22 @@ class ClientCredentialsClientSecretFlowTest(unittest.TestCase):
                 client_secret=TEST_CLIENT_SECRET))
 
     @mock.patch(
-        'planet.auth.oidc.api_clients.token_api_client.TokenAPIClient.get_token_from_client_credentials_secret',  # noqa
+        'planet.auth.oidc.api_clients.token_api_client.TokenApiClient.get_token_from_client_credentials_secret',  # noqa
         mocked_tokenapi_ccred_client_secret)
     def test_login(self):
         test_result = self.under_test.login()
-        self.assertIsInstance(test_result, FileBackedOidcToken)
+        self.assertIsInstance(test_result, FileBackedOidcCredential)
         self.assertEqual(MOCK_TOKEN, test_result.data())
 
         # again with override scopes, but since the response is mocked
         # there is nothing different to check in the result data
         test_result = self.under_test.login(requested_scopes=['override1'])
-        self.assertIsInstance(test_result, FileBackedOidcToken)
+        self.assertIsInstance(test_result, FileBackedOidcCredential)
         # self.assertEqual(MOCK_TOKEN, test_result.data())
 
     def test_default_request_authenticator_type(self):
         test_result = self.under_test.default_request_authenticator(
-            token_file_path=TEST_TOKEN_SAVE_FILE_PATH)
+            credential_file_path=TEST_TOKEN_SAVE_FILE_PATH)
         self.assertIsInstance(test_result,
                               RefreshOrReloginOidcTokenRequestAuthenticator)
 
@@ -238,22 +238,22 @@ class ClientCredentialsPubKeyFlowTest(unittest.TestCase):
                 client_privkey_file=self.privkey_file_path))
 
     @mock.patch(
-        'planet.auth.oidc.api_clients.token_api_client.TokenAPIClient.get_token_from_client_credentials_pubkey',  # noqa
+        'planet.auth.oidc.api_clients.token_api_client.TokenApiClient.get_token_from_client_credentials_pubkey',  # noqa
         mocked_tokenapi_ccred_pubkey)
     def test_login(self):
         test_result = self.under_test.login()
-        self.assertIsInstance(test_result, FileBackedOidcToken)
+        self.assertIsInstance(test_result, FileBackedOidcCredential)
         self.assertEqual(MOCK_TOKEN, test_result.data())
 
         # again with override scopes, but since the response is mocked
         # there is nothing different to check in the result data
         test_result = self.under_test.login(requested_scopes=['override1'])
-        self.assertIsInstance(test_result, FileBackedOidcToken)
+        self.assertIsInstance(test_result, FileBackedOidcCredential)
         # self.assertEqual(MOCK_TOKEN, test_result.data())
 
     def test_default_request_authenticator_type(self):
         test_result = self.under_test.default_request_authenticator(
-            token_file_path=TEST_TOKEN_SAVE_FILE_PATH)
+            credential_file_path=TEST_TOKEN_SAVE_FILE_PATH)
         self.assertIsInstance(test_result,
                               RefreshOrReloginOidcTokenRequestAuthenticator)
 
@@ -296,7 +296,7 @@ class ClientCredentialsSharedKeyFlowTest(unittest.TestCase):
 
     def test_default_request_authenticator_type(self):
         test_result = self.under_test.default_request_authenticator(
-            token_file_path=TEST_TOKEN_SAVE_FILE_PATH)
+            credential_file_path=TEST_TOKEN_SAVE_FILE_PATH)
         self.assertIsInstance(test_result,
                               RefreshOrReloginOidcTokenRequestAuthenticator)
 

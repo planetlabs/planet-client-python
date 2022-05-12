@@ -6,9 +6,9 @@ from planet.auth.auth_client import \
 from planet.auth.credential import \
     Credential
 from planet.auth.static_api_key.request_authenticator import \
-    FileBackedAPIKeyRequestAuthenticator
+    FileBackedApiKeyRequestAuthenticator
 from planet.auth.static_api_key.static_api_key import \
-    FileBackedAPIKey
+    FileBackedApiKey
 
 
 class StaticApiKeyAuthClientConfig(AuthClientConfig):
@@ -26,7 +26,7 @@ class StaticApiKeyAuthClient(AuthClient):
         pass
 
     def default_request_authenticator(
-            self, token_file_path: pathlib.Path
-    ) -> FileBackedAPIKeyRequestAuthenticator:
-        return FileBackedAPIKeyRequestAuthenticator(auth_file=FileBackedAPIKey(
-            api_key_file=token_file_path))
+            self, credential_file_path: pathlib.Path
+    ) -> FileBackedApiKeyRequestAuthenticator:
+        return FileBackedApiKeyRequestAuthenticator(auth_file=FileBackedApiKey(
+            api_key_file=credential_file_path))

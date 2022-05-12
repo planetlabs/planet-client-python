@@ -4,8 +4,8 @@ import unittest
 from requests.models import Response
 from unittest import mock
 
-from planet.auth.oidc.api_clients.token_api_client import TokenAPIClient, \
-    TokenAPIException
+from planet.auth.oidc.api_clients.token_api_client import TokenApiClient, \
+    TokenApiException
 from planet.auth.oidc.util import create_pkce_challenge_verifier_pair
 from tests.util import tdata_resource_file_path, load_rsa_private_key
 
@@ -57,7 +57,7 @@ class TokenApiClientTest(unittest.TestCase):
 
     @mock.patch('requests.post', side_effect=mocked_response_ok)
     def test_token_from_authcode_valid(self, mock_post):
-        under_test = TokenAPIClient(token_uri=TEST_API_ENDPOINT)
+        under_test = TokenApiClient(token_uri=TEST_API_ENDPOINT)
         pkce_code_verifier, pkce_code_challenge = \
             create_pkce_challenge_verifier_pair()
         token_response = under_test.get_token_from_code(
@@ -69,7 +69,7 @@ class TokenApiClientTest(unittest.TestCase):
 
     @mock.patch('requests.post', side_effect=mocked_response_ok)
     def test_token_from_client_credentials_pubkey_valid(self, mock_post):
-        under_test = TokenAPIClient(token_uri=TEST_API_ENDPOINT)
+        under_test = TokenApiClient(token_uri=TEST_API_ENDPOINT)
         private_key = load_privkey()
         token_response = under_test.get_token_from_client_credentials_pubkey(
             TEST_CLIENT_ID, private_key)
@@ -83,7 +83,7 @@ class TokenApiClientTest(unittest.TestCase):
 
     @mock.patch('requests.post', side_effect=mocked_response_ok)
     def test_token_from_client_credentials_secret_valid(self, mock_post):
-        under_test = TokenAPIClient(token_uri=TEST_API_ENDPOINT)
+        under_test = TokenApiClient(token_uri=TEST_API_ENDPOINT)
         token_response = under_test.get_token_from_client_credentials_secret(
             TEST_CLIENT_ID, 'dummy_client_secret')
         self.assertEqual(API_RESPONSE_VALID, token_response)
@@ -98,7 +98,7 @@ class TokenApiClientTest(unittest.TestCase):
 
     @mock.patch('requests.post', side_effect=mocked_response_ok)
     def test_token_from_refresh_valid(self, mock_post):
-        under_test = TokenAPIClient(token_uri=TEST_API_ENDPOINT)
+        under_test = TokenApiClient(token_uri=TEST_API_ENDPOINT)
         token_response = under_test.get_token_from_refresh(
             TEST_CLIENT_ID, TEST_REFRESH_TOKEN)
         self.assertEqual(API_RESPONSE_VALID, token_response)
@@ -113,10 +113,10 @@ class TokenApiClientTest(unittest.TestCase):
 
     @mock.patch('requests.post', side_effect=mocked_response_invalid)
     def test_invalid_response(self, mock_post):
-        under_test = TokenAPIClient(token_uri=TEST_API_ENDPOINT)
+        under_test = TokenApiClient(token_uri=TEST_API_ENDPOINT)
         pkce_code_verifier, pkce_code_challenge = \
             create_pkce_challenge_verifier_pair()
-        with self.assertRaises(TokenAPIException):
+        with self.assertRaises(TokenApiException):
             under_test.get_token_from_code(TEST_CLIENT_ID,
                                            TEST_REDIRECT_URI,
                                            'dummy_authcode',

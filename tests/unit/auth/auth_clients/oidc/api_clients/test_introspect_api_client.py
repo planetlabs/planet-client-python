@@ -7,7 +7,7 @@ from typing import Tuple, Optional
 from unittest import mock
 
 from planet.auth.oidc.api_clients.introspect_api_client import \
-    IntrospectionAPIClient, IntrospectionAPIException
+    IntrospectionApiClient, IntrospectionApiException
 
 TEST_API_ENDPOINT = "https://blackhole.unittest.planet.com/introspect"
 TEST_ACCESS_TOKEN = "__test_access_token__"
@@ -59,33 +59,33 @@ class IntrospectApiClientTest(unittest.TestCase):
 
     @mock.patch('requests.post', side_effect=mocked_validate_ok)
     def test_validate_access_token_valid_with_enricher(self, mock_post):
-        under_test = IntrospectionAPIClient(introspect_uri=TEST_API_ENDPOINT)
+        under_test = IntrospectionApiClient(introspect_uri=TEST_API_ENDPOINT)
         validation_data = under_test.validate_access_token(
             TEST_ACCESS_TOKEN, noop_auth_enricher)
         self.assertEqual(INTROSPECTION_RESPONSE_VALID, validation_data)
 
     @mock.patch('requests.post', side_effect=mocked_validate_ok)
     def test_validate_access_token_valid(self, mock_post):
-        under_test = IntrospectionAPIClient(introspect_uri=TEST_API_ENDPOINT)
+        under_test = IntrospectionApiClient(introspect_uri=TEST_API_ENDPOINT)
         validation_data = under_test.validate_access_token(
             TEST_ACCESS_TOKEN, None)
         self.assertEqual(INTROSPECTION_RESPONSE_VALID, validation_data)
 
     @mock.patch('requests.post', side_effect=mocked_validate_fail)
     def test_validate_access_token_expired(self, mock_post):
-        under_test = IntrospectionAPIClient(introspect_uri=TEST_API_ENDPOINT)
-        with self.assertRaises(IntrospectionAPIException):
+        under_test = IntrospectionApiClient(introspect_uri=TEST_API_ENDPOINT)
+        with self.assertRaises(IntrospectionApiException):
             under_test.validate_access_token(TEST_ACCESS_TOKEN, None)
 
     @mock.patch('requests.post', side_effect=mocked_validate_ok)
     def test_validate_id_token(self, mock_post):
-        under_test = IntrospectionAPIClient(introspect_uri=TEST_API_ENDPOINT)
+        under_test = IntrospectionApiClient(introspect_uri=TEST_API_ENDPOINT)
         validation_data = under_test.validate_id_token(TEST_ID_TOKEN, None)
         self.assertEqual(INTROSPECTION_RESPONSE_VALID, validation_data)
 
     @mock.patch('requests.post', side_effect=mocked_validate_ok)
     def test_validate_refresh_token(self, mock_post):
-        under_test = IntrospectionAPIClient(introspect_uri=TEST_API_ENDPOINT)
+        under_test = IntrospectionApiClient(introspect_uri=TEST_API_ENDPOINT)
         validation_data = under_test.validate_refresh_token(
             TEST_REFRESH_TOKEN, None)
         self.assertEqual(INTROSPECTION_RESPONSE_VALID, validation_data)

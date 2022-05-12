@@ -4,8 +4,8 @@ import unittest
 from requests.models import Response
 from unittest import mock
 
-from planet.auth.oidc.api_clients.jwks_api_client import JwksAPIClient, \
-    JwksAPIException
+from planet.auth.oidc.api_clients.jwks_api_client import JwksApiClient, \
+    JwksApiException
 
 TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
 # Random snapshot of public keys from one of our Okta instances. We are
@@ -75,12 +75,12 @@ class JWKSApiClientTest(unittest.TestCase):
 
     @mock.patch('requests.get', side_effect=mocked_response_ok)
     def test_fetch_keys_valid(self, mock_get):
-        under_test = JwksAPIClient(jwks_uri=TEST_API_ENDPOINT)
+        under_test = JwksApiClient(jwks_uri=TEST_API_ENDPOINT)
         keys = under_test.jwks_keys()
         self.assertEqual(API_RESPONSE_VALID['keys'], keys)
 
     @mock.patch('requests.get', side_effect=mocked_response_invalid)
     def test_invalid(self, mock_get):
-        under_test = JwksAPIClient(jwks_uri=TEST_API_ENDPOINT)
-        with self.assertRaises(JwksAPIException):
+        under_test = JwksApiClient(jwks_uri=TEST_API_ENDPOINT)
+        with self.assertRaises(JwksApiException):
             under_test.jwks_keys()

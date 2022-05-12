@@ -6,8 +6,7 @@ from planet.auth.oidc.api_clients.oidc_request_auth import \
     prepare_client_noauth_auth_payload
 from planet.auth.oidc.auth_client import \
     OidcAuthClientConfig, OidcAuthClient
-from planet.auth.oidc.oidc_token import \
-    FileBackedOidcToken
+from planet.auth.oidc.oidc_credential import FileBackedOidcCredential
 from planet.auth.oidc.request_authenticator import \
     RefreshingOidcTokenRequestAuthenticator
 
@@ -51,7 +50,7 @@ class ImplicitAuthClient(OidcAuthClient):
                 self._implicit_client_config.default_request_scopes
 
         if allow_open_browser:
-            return FileBackedOidcToken(self._authorization_client(
+            return FileBackedOidcCredential(self._authorization_client(
             ).token_from_implicit_flow_with_browser_without_callback_listener(
                 self._implicit_client_config.client_id,
                 self._implicit_client_config.redirect_uri,
@@ -59,7 +58,7 @@ class ImplicitAuthClient(OidcAuthClient):
                 self._implicit_client_config.request_access_token,
                 self._implicit_client_config.request_id_token))
         else:
-            return FileBackedOidcToken(self._authorization_client(
+            return FileBackedOidcCredential(self._authorization_client(
             ).token_from_implicit_flow_without_browser_without_callback_listener(  # noqa
                 self._implicit_client_config.client_id,
                 self._implicit_client_config.redirect_uri,
@@ -68,8 +67,8 @@ class ImplicitAuthClient(OidcAuthClient):
                 self._implicit_client_config.request_id_token))
 
     def default_request_authenticator(
-        self, token_file_path: pathlib.Path
+        self, credential_file_path: pathlib.Path
     ) -> RefreshingOidcTokenRequestAuthenticator:
         return RefreshingOidcTokenRequestAuthenticator(
-            token_file=FileBackedOidcToken(token_file=token_file_path),
+            credential_file=FileBackedOidcCredential(credential_file=credential_file_path),
             auth_client=self)

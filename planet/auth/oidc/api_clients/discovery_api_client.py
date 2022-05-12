@@ -1,12 +1,12 @@
-from planet.auth.oidc.api_clients.api_client import OIDCAPIClient
+from planet.auth.oidc.api_clients.api_client import OidcApiClient
 
-# class DiscoveryAPIException(OIDCAPIClientException):
+# class DiscoveryApiException(OidcApiClientException):
 #
 #    def __init__(self, message=None, raw_response=None):
 #        super().__init__(message, raw_response)
 
 
-class DiscoveryAPIClient(OIDCAPIClient):
+class DiscoveryApiClient(OidcApiClient):
 
     # TODO: Revisit of this is where I should cache. I did work
     #       on the JWKS client after this, and I think it is more mature.

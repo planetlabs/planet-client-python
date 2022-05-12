@@ -6,7 +6,7 @@ from unittest import mock
 from requests.auth import AuthBase
 
 from planet.auth.oidc.auth_client import OidcAuthClient, OidcAuthClientConfig
-from planet.auth.oidc.oidc_token import FileBackedOidcToken
+from planet.auth.oidc.oidc_credential import FileBackedOidcCredential
 from planet.auth.request_authenticator import RequestAuthenticator, \
     SimpleInMemoryRequestAuthenticator
 
@@ -167,16 +167,16 @@ class OidcBaseTestHarnessAuthClient(OidcAuthClient):
     def login(self,
               requested_scopes=None,
               allow_open_browser=True,
-              **kwargs) -> FileBackedOidcToken:
-        return FileBackedOidcToken(data=TEST_FAKE_TOKEN_FILE_DATA)
+              **kwargs) -> FileBackedOidcCredential:
+        return FileBackedOidcCredential(data=TEST_FAKE_TOKEN_FILE_DATA)
 
     def default_request_authenticator(
-            self, token_file_path: pathlib.Path) -> RequestAuthenticator:
+            self, credential_file_path: pathlib.Path) -> RequestAuthenticator:
         return SimpleInMemoryRequestAuthenticator(token_body=TEST_ACCESS_TOKEN)
 
 
 @mock.patch(
-    'planet.auth.oidc.api_clients.discovery_api_client.DiscoveryAPIClient.discovery',  # noqa
+    'planet.auth.oidc.api_clients.discovery_api_client.DiscoveryApiClient.discovery',  # noqa
     side_effect=mocked_oidc_discovery)
 class TestAuthClientBase(unittest.TestCase):
 

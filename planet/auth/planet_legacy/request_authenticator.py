@@ -1,12 +1,12 @@
 from planet.auth.planet_legacy.legacy_api_key import \
-    FileBackedPlanetLegacyAPIKey
+    FileBackedPlanetLegacyApiKey
 from planet.auth.request_authenticator import \
     RequestAuthenticator
 
 
 class PlanetLegacyRequestAuthenticator(RequestAuthenticator):
 
-    def __init__(self, api_key_file: FileBackedPlanetLegacyAPIKey):
+    def __init__(self, api_key_file: FileBackedPlanetLegacyApiKey):
         super().__init__(token_body='', token_prefix='api-key')
         self._api_key_file = api_key_file
 

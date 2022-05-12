@@ -5,7 +5,7 @@ from unittest import mock
 from planet.auth.auth_client import AuthClientException
 from planet.auth.oidc.auth_clients.auth_code_flow import \
     AuthCodePKCEAuthClient, AuthCodePKCEClientConfig
-from planet.auth.oidc.oidc_token import FileBackedOidcToken
+from planet.auth.oidc.oidc_credential import FileBackedOidcCredential
 from planet.auth.oidc.request_authenticator import \
     RefreshingOidcTokenRequestAuthenticator
 
@@ -91,21 +91,21 @@ class PkceAuthCodeFlowTest(unittest.TestCase):
                 redirect_uri=TEST_RECIRECT_URI_LOCAL))
 
     @mock.patch(
-        'planet.auth.oidc.api_clients.authorization_api_client.AuthorizationAPIClient.authcode_from_pkce_flow_with_browser_with_callback_listener',  # noqa
+        'planet.auth.oidc.api_clients.authorization_api_client.AuthorizationApiClient.authcode_from_pkce_flow_with_browser_with_callback_listener',  # noqa
         mocked_authapi_get_authcode)
     @mock.patch(
-        'planet.auth.oidc.api_clients.token_api_client.TokenAPIClient.get_token_from_code',  # noqa
+        'planet.auth.oidc.api_clients.token_api_client.TokenApiClient.get_token_from_code',  # noqa
         mocked_tokenapi_token_from_code)
     def test_login_browser(self):
         test_result = self.under_test.login(allow_open_browser=True)
-        self.assertIsInstance(test_result, FileBackedOidcToken)
+        self.assertIsInstance(test_result, FileBackedOidcCredential)
         self.assertEqual(MOCK_TOKEN, test_result.data())
 
     @mock.patch(
-        'planet.auth.oidc.api_clients.authorization_api_client.AuthorizationAPIClient.authcode_from_pkce_flow_without_browser_without_callback_listener',  # noqa
+        'planet.auth.oidc.api_clients.authorization_api_client.AuthorizationApiClient.authcode_from_pkce_flow_without_browser_without_callback_listener',  # noqa
         mocked_authapi_get_authcode)
     @mock.patch(
-        'planet.auth.oidc.api_clients.token_api_client.TokenAPIClient.get_token_from_code',  # noqa
+        'planet.auth.oidc.api_clients.token_api_client.TokenApiClient.get_token_from_code',  # noqa
         mocked_tokenapi_token_from_code)
     def test_login_no_browser(self):
         # override scopes to also test that code path in contrast to the
@@ -116,12 +116,12 @@ class PkceAuthCodeFlowTest(unittest.TestCase):
         # test here.
         test_result = self.under_test.login(allow_open_browser=False,
                                             requested_scopes=['override'])
-        self.assertIsInstance(test_result, FileBackedOidcToken)
+        self.assertIsInstance(test_result, FileBackedOidcCredential)
         self.assertEqual(MOCK_TOKEN, test_result.data())
 
     def test_default_request_authenticator_type(self):
         test_result = self.under_test.default_request_authenticator(
-            token_file_path=TEST_TOKEN_SAVE_FILE_PATH)
+            credential_file_path=TEST_TOKEN_SAVE_FILE_PATH)
         self.assertIsInstance(test_result,
                               RefreshingOidcTokenRequestAuthenticator)
 

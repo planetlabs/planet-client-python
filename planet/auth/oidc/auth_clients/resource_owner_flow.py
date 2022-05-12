@@ -3,7 +3,7 @@ from requests.auth import AuthBase
 from typing import Tuple, Optional
 
 from planet.auth.oidc.auth_client import OidcAuthClientConfig, OidcAuthClient
-# from planet.auth.oidc.oidc_token import FileBackedOidcToken
+# from planet.auth.oidc.oidc_credential import FileBackedOidcCredential
 from planet.auth.oidc.request_authenticator import \
     RefreshingOidcTokenRequestAuthenticator
 
@@ -32,9 +32,9 @@ class ResourceOwnerAuthClient(OidcAuthClient):
         raise Exception('No implementation')
 
     def default_request_authenticator(
-        self, token_file_path: pathlib.Path
+        self, credential_file_path: pathlib.Path
     ) -> RefreshingOidcTokenRequestAuthenticator:
         # return RefreshingOidcTokenRequestAuthenticator(
-        #    token_file=FileBackedOidcToken(token_file=token_file_path),
+        #    credential_file=FileBackedOidcCredential(credential_file=credential_file_path),
         #    auth_client=self)
         raise Exception('No implementation')

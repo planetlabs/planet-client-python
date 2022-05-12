@@ -1,9 +1,11 @@
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
+
 import logging
 import os
 import pathlib
 from typing import Union
 
+from planet.auth.profile import Profile
 from planet.auth.constants import \
     ENV_AUTH_CLIENT_CONFIG_FILE, \
     ENV_AUTH_PROFILE, \
@@ -17,28 +19,6 @@ from planet.auth.request_authenticator import \
     SimpleInMemoryRequestAuthenticator
 
 logger = logging.getLogger(__name__)
-
-BUILTIN_PROFILE_NAME_DEFAULT = 'default'
-BUILTIN_PROFILE_NAME_LEGACY = 'legacy'
-BUILTIN_PROFILE_NAME_NONE = 'none'
-
-
-class Profile:
-
-    @staticmethod
-    def get_profile_file_path(
-            filename: str,
-            profile: Union[str, None],
-            override_path: Union[str, pathlib.PurePath, None]) -> pathlib.Path:
-        if override_path:
-            return pathlib.Path(override_path)
-        if not profile \
-                or profile == '' \
-                or profile.lower() == BUILTIN_PROFILE_NAME_DEFAULT:
-            return pathlib.Path.home().joinpath(".planet/{}".format(filename))
-        else:
-            return pathlib.Path.home().joinpath(".planet/{}/{}".format(
-                profile.lower(), filename))
 
 
 class Auth:
@@ -66,18 +46,16 @@ class Auth:
             profile: str,
             auth_client_config_file: Union[str,
                                            pathlib.PurePath]) -> AuthClient:
-        if not profile \
-                or profile == '' \
-                or profile.lower() == BUILTIN_PROFILE_NAME_DEFAULT:
+        if Profile.profile_name_is_default(profile):
             logger.debug(
                 'Using built-in "{}" auth client configuration'.format(
-                    BUILTIN_PROFILE_NAME_DEFAULT))
+                    Profile.BUILTIN_PROFILE_NAME_DEFAULT))
             client_config = AuthClientConfig.from_dict(
                 SDK_OIDC_AUTH_CLIENT_CONFIG_DICT)
-        elif profile.lower() == BUILTIN_PROFILE_NAME_LEGACY:
+        elif Profile.profile_name_is_legacy(profile):
             logger.debug(
                 'Using built-in "{}" auth client configuration'.format(
-                    BUILTIN_PROFILE_NAME_LEGACY))
+                    Profile.BUILTIN_PROFILE_NAME_LEGACY))
             client_config = AuthClientConfig.from_dict(
                 LEGACY_AUTH_CLIENT_CONFIG_DICT)
         else:
@@ -120,7 +98,7 @@ class Auth:
                        ENV_AUTH_TOKEN_FILE)) -> Auth:
         # TODO: we should have some handling of legacy environment variables
         #       understood by SDK v1: PL_API_KEY
-        if profile == BUILTIN_PROFILE_NAME_NONE:
+        if Profile.profile_name_is_none(profile):
             auth_client = None
             token_file_path = None
             # TODO: can I set this to None?

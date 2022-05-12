@@ -4,7 +4,7 @@ import time
 
 from planet.auth.request_authenticator import RequestAuthenticator
 from planet.auth.oidc.auth_client import OidcAuthClient
-from planet.auth.oidc.oidc_token import FileBackedOidcToken
+from planet.auth.oidc.oidc_credential import FileBackedOidcCredential
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +23,11 @@ class RefreshingOidcTokenRequestAuthenticator(RequestAuthenticator):
     token introspection endpoint.
     """
 
-    #  TODO: fix naming - token_file -> credential_file (fix class names too)
     def __init__(self,
-                 token_file: FileBackedOidcToken,
+                 credential_file: FileBackedOidcCredential,
                  auth_client: OidcAuthClient = None):
         super().__init__(token_body='')
-        self._token = token_file
+        self._oidc_credentials = credential_file
         self._auth_client = auth_client
         self._refresh_at = 0
 
@@ -39,9 +38,9 @@ class RefreshingOidcTokenRequestAuthenticator(RequestAuthenticator):
         # for clients who will be presenting tokens to such a server.  We
         # are inspecting ourselves, not verifying for trust purposes.
         # We are not expected to be the audience.
-        self._token.load()
-        # self._token.assert_valid()
-        access_token_str = self._token.access_token()
+        self._oidc_credentials.load()
+        # self._oidc_credentials.assert_valid()
+        access_token_str = self._oidc_credentials.access_token()
         unverified_decoded_atoken = jwt.decode(
             access_token_str, options={"verify_signature": False})
         iat = unverified_decoded_atoken.get('iat') or 0
@@ -52,10 +51,10 @@ class RefreshingOidcTokenRequestAuthenticator(RequestAuthenticator):
 
     def _refresh(self):
         if self._auth_client:
-            new_token = self._auth_client.refresh(self._token.refresh_token())
-            new_token.set_path(self._token.path())
-            new_token.save()
-            self._token = new_token
+            new_credentials = self._auth_client.refresh(self._oidc_credentials.refresh_token())
+            new_credentials.set_path(self._oidc_credentials.path())
+            new_credentials.save()
+            self._oidc_credentials = new_credentials
             self._load()
 
     def pre_request_hook(self):
@@ -104,19 +103,19 @@ class RefreshOrReloginOidcTokenRequestAuthenticator(
     """
 
     def __init__(self,
-                 token_file: FileBackedOidcToken,
+                 credential_file: FileBackedOidcCredential,
                  auth_client: OidcAuthClient = None):
-        super().__init__(token_file=token_file, auth_client=auth_client)
+        super().__init__(credential_file=credential_file, auth_client=auth_client)
 
     def _refresh(self):
         if self._auth_client:
-            if self._token.refresh_token():
-                new_token = self._auth_client.refresh(
-                    self._token.refresh_token())
+            if self._oidc_credentials.refresh_token():
+                new_credentials = self._auth_client.refresh(
+                    self._oidc_credentials.refresh_token())
             else:
-                new_token = self._auth_client.login()
+                new_credentials = self._auth_client.login()
 
-            new_token.set_path(self._token.path())
-            new_token.save()
-            self._token = new_token
+            new_credentials.set_path(self._oidc_credentials.path())
+            new_credentials.save()
+            self._oidc_credentials = new_credentials
             self._load()

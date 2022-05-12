@@ -8,7 +8,7 @@ from unittest import mock
 from planet.auth.planet_legacy.auth_client import PlanetLegacyAuthClient, \
     PlanetLegacyAuthClientConfig, PlanetLegacyAuthClientException
 from planet.auth.planet_legacy.legacy_api_key import \
-    FileBackedPlanetLegacyAPIKey
+    FileBackedPlanetLegacyApiKey
 from planet.auth.planet_legacy.request_authenticator import \
     PlanetLegacyRequestAuthenticator
 from tests.unit.auth.util import TestTokenBuilder
@@ -103,7 +103,7 @@ class TestLegacyApiAuthClient(unittest.TestCase):
     def test_login_success_direct_input(self, mock1):
         test_result = self.under_test.login(username='test_user',
                                             password='test_password')
-        self.assertIsInstance(test_result, FileBackedPlanetLegacyAPIKey)
+        self.assertIsInstance(test_result, FileBackedPlanetLegacyApiKey)
         self.assertEqual(TEST_MOCK_API_KEY, test_result.legacy_api_key())
 
     @mock.patch('requests.post', side_effect=mock_response_valid)
@@ -111,7 +111,7 @@ class TestLegacyApiAuthClient(unittest.TestCase):
     @mock.patch('builtins.input', mocked_input_username)
     def test_login_success_user_prompt(self, mock1):
         test_result = self.under_test.login()
-        self.assertIsInstance(test_result, FileBackedPlanetLegacyAPIKey)
+        self.assertIsInstance(test_result, FileBackedPlanetLegacyApiKey)
         self.assertEqual(TEST_MOCK_API_KEY, test_result.legacy_api_key())
 
     @mock.patch('requests.post', side_effect=mock_response_http_error)
@@ -146,5 +146,5 @@ class TestLegacyApiAuthClient(unittest.TestCase):
 
     def test_default_request_authenticator_type(self):
         test_result = self.under_test.default_request_authenticator(
-            token_file_path=pathlib.Path('/test/token.json'))
+            credential_file_path=pathlib.Path('/test/token.json'))
         self.assertIsInstance(test_result, PlanetLegacyRequestAuthenticator)

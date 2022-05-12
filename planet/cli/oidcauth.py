@@ -5,8 +5,8 @@
 import click
 import sys
 
-from planet.auth import AuthClientException
-from planet.auth import FileBackedOidcToken, FileBackedPlanetLegacyAPIKey
+from planet.auth import AuthException, FileBackedOidcCredential
+from planet.auth import FileBackedPlanetLegacyApiKey
 
 from planet.cx.commands.cli.options import \
     opt_auth_password, \
@@ -29,7 +29,7 @@ def oidc_token_group(ctx):
 @oidc_token_group.command('list-scopes',
                           help='List well known scopes that may be requested.')
 @click.pass_context
-@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+@recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_list_scopes(ctx):
     auth_client = ctx.obj['AUTH'].auth_client()
     available_scopes = auth_client.get_scopes()
@@ -55,7 +55,7 @@ def do_list_scopes(ctx):
 @opt_auth_password
 @opt_auth_username
 @click.pass_context
-@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+@recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_token_login(ctx, scope, open_browser, username, password):
     auth_client = ctx.obj['AUTH'].auth_client()
     token = auth_client.login(requested_scopes=scope,
@@ -69,10 +69,10 @@ def do_token_login(ctx, scope, open_browser, username, password):
 @oidc_token_group.command('print-access-token',
                           help='Print the current access token.')
 @click.pass_context
-@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+@recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_print_access_token(ctx):
     # FIXME: this will only work for OIDC auth mechanisms. Maybe that's OK.
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
     print(saved_token.access_token())
 
 
@@ -80,10 +80,10 @@ def do_print_access_token(ctx):
     'print-api-key',
     help='Print API key associated with the current auth profile.')
 @click.pass_context
-@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+@recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_print_api_key(ctx):
     # FIXME: this will only work for legacy auth mechanisms. Maybe that's OK.
-    saved_token = FileBackedPlanetLegacyAPIKey(
+    saved_token = FileBackedPlanetLegacyApiKey(
         None, ctx.obj['AUTH'].token_file_path())
     print(saved_token.legacy_api_key())
 
@@ -99,9 +99,9 @@ def do_print_api_key(ctx):
     ' (long lived) refresh tokens.')
 @opt_token_scope
 @click.pass_context
-@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+@recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_token_refresh(ctx, scope):
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
     auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     if not saved_token.refresh_token():
@@ -116,9 +116,9 @@ def do_token_refresh(ctx, scope):
     'validate-access-token',
     help='Validate the access token associated with the current profile')
 @click.pass_context
-@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+@recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_validate_access_token(ctx):
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
     auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     validation_json = auth_client.validate_access_token(
@@ -135,9 +135,9 @@ def do_validate_access_token(ctx):
     'validate-id-token',
     help='Validate the ID token associated with the current profile')
 @click.pass_context
-@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+@recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_validate_id_token(ctx):
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
     auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     validation_json = auth_client.validate_id_token(saved_token.id_token())
@@ -153,9 +153,9 @@ def do_validate_id_token(ctx):
     'validate-id-token-local',
     help='Validate the ID token associated with the current profile locally.')
 @click.pass_context
-@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+@recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_validate_id_token_local(ctx):
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
     auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     # Throws on error.
@@ -169,9 +169,9 @@ def do_validate_id_token_local(ctx):
     'validate-refresh-token',
     help='Validate the refresh token associated with the current profile')
 @click.pass_context
-@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+@recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_validate_refresh_token(ctx):
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
     auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     validation_json = auth_client.validate_refresh_token(
@@ -188,9 +188,9 @@ def do_validate_refresh_token(ctx):
     'revoke-access-token',
     help='Revoke the access token associated with the current profile')
 @click.pass_context
-@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+@recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_revoke_access_token(ctx):
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
     auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     auth_client.revoke_access_token(saved_token.access_token())
@@ -200,9 +200,9 @@ def do_revoke_access_token(ctx):
     'revoke-refresh-token',
     help='Revoke the refresh token associated with the current profile')
 @click.pass_context
-@recast_exceptions_to_click(AuthClientException, FileNotFoundError)
+@recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_revoke_refresh_token(ctx):
-    saved_token = FileBackedOidcToken(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
     auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     auth_client.revoke_refresh_token(saved_token.refresh_token())

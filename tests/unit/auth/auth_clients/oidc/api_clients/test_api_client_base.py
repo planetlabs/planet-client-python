@@ -4,8 +4,8 @@ import unittest
 from requests.models import Response
 from unittest import mock
 
-from planet.auth.oidc.api_clients.api_client import OIDCAPIClient, \
-    OIDCAPIClientException
+from planet.auth.oidc.api_clients.api_client import OidcApiClient, \
+    OidcApiClientException
 
 TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
 TEST_DATA1 = {"key1": "value1"}
@@ -60,7 +60,7 @@ class ApiClientBaseTest(unittest.TestCase):
 
     @mock.patch('requests.get', side_effect=mocked_requests_get_or_post)
     def test_checked_get_valid(self, mock_get):
-        under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
+        under_test = OidcApiClient(endpoint_uri=TEST_API_ENDPOINT +
                                    '/reflect1.json')
         under_test._checked_get(params={
             'status_code': 200, 'reflect_data': 'test_data'
@@ -69,9 +69,9 @@ class ApiClientBaseTest(unittest.TestCase):
 
     @mock.patch('requests.get', side_effect=mocked_requests_get_or_post)
     def test_checked_get_invalid(self, mock_get):
-        under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
+        under_test = OidcApiClient(endpoint_uri=TEST_API_ENDPOINT +
                                    '/reflect1.json')
-        with self.assertRaises(OIDCAPIClientException):
+        with self.assertRaises(OidcApiClientException):
             under_test._checked_get(params={
                 'status_code': 401, 'reflect_data': 'test_data'
             },
@@ -79,7 +79,7 @@ class ApiClientBaseTest(unittest.TestCase):
 
     @mock.patch('requests.post', side_effect=mocked_requests_get_or_post)
     def test_checked_post_valid(self, mock_get):
-        under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
+        under_test = OidcApiClient(endpoint_uri=TEST_API_ENDPOINT +
                                    '/reflect2.json')
         under_test._checked_post(params={
             'status_code': 200, 'reflect_data': 'test_data'
@@ -88,9 +88,9 @@ class ApiClientBaseTest(unittest.TestCase):
 
     @mock.patch('requests.post', side_effect=mocked_requests_get_or_post)
     def test_checked_post_invalid(self, mock_get):
-        under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
+        under_test = OidcApiClient(endpoint_uri=TEST_API_ENDPOINT +
                                    '/reflect2.json')
-        with self.assertRaises(OIDCAPIClientException):
+        with self.assertRaises(OidcApiClientException):
             under_test._checked_post(params={
                 'status_code': 401, 'reflect_data': 'test_data'
             },
@@ -98,7 +98,7 @@ class ApiClientBaseTest(unittest.TestCase):
 
     @mock.patch('requests.get', side_effect=mocked_requests_get_or_post)
     def test_checked_get_json_response_valid(self, mock_get):
-        under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
+        under_test = OidcApiClient(endpoint_uri=TEST_API_ENDPOINT +
                                    '/data1.json')
         json_response = under_test._checked_get_json_response(
             params=None, request_auth=None)
@@ -106,7 +106,7 @@ class ApiClientBaseTest(unittest.TestCase):
 
     @mock.patch('requests.post', side_effect=mocked_requests_get_or_post)
     def test_checked_post_json_response_valid(self, mock_get):
-        under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
+        under_test = OidcApiClient(endpoint_uri=TEST_API_ENDPOINT +
                                    '/data1.json')
         json_response = under_test._checked_post_json_response(
             params=None, request_auth=None)
@@ -114,57 +114,57 @@ class ApiClientBaseTest(unittest.TestCase):
 
     @mock.patch('requests.get', side_effect=mocked_requests_get_or_post)
     def test_checked_get_json_response_invalid(self, mock_get):
-        under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
+        under_test = OidcApiClient(endpoint_uri=TEST_API_ENDPOINT +
                                    '/data2.dat')
-        with self.assertRaises(OIDCAPIClientException):
+        with self.assertRaises(OidcApiClientException):
             under_test._checked_get_json_response(params=None,
                                                   request_auth=None)
 
     @mock.patch('requests.post', side_effect=mocked_requests_get_or_post)
     def test_checked_post_json_response_invalid(self, mock_get):
-        under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
+        under_test = OidcApiClient(endpoint_uri=TEST_API_ENDPOINT +
                                    '/data2.dat')
-        with self.assertRaises(OIDCAPIClientException):
+        with self.assertRaises(OidcApiClientException):
             under_test._checked_post_json_response(params=None,
                                                    request_auth=None)
 
     @mock.patch('requests.get', side_effect=mocked_requests_get_or_post)
     def test_checked_get_json_response_invalid_empty(self, mock_get):
-        under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
+        under_test = OidcApiClient(endpoint_uri=TEST_API_ENDPOINT +
                                    '/empty_json.json')
-        with self.assertRaises(OIDCAPIClientException):
+        with self.assertRaises(OidcApiClientException):
             under_test._checked_get_json_response(params=None,
                                                   request_auth=None)
 
     @mock.patch('requests.get', side_effect=mocked_requests_get_or_post)
     def test_checked_get_json_response_invalid_not_found(self, mock_get):
 
-        under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
+        under_test = OidcApiClient(endpoint_uri=TEST_API_ENDPOINT +
                                    '/not_found')
-        with self.assertRaises(OIDCAPIClientException):
+        with self.assertRaises(OidcApiClientException):
             under_test._checked_get_json_response(params=None,
                                                   request_auth=None)
 
     @mock.patch('requests.get', side_effect=mocked_requests_get_or_post)
     def test_check_oidc_error_1(self, get_mock):
-        under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
+        under_test = OidcApiClient(endpoint_uri=TEST_API_ENDPOINT +
                                    '/oidc_error_1.json')
-        with self.assertRaises(OIDCAPIClientException):
+        with self.assertRaises(OidcApiClientException):
             under_test._checked_get_json_response(params=None,
                                                   request_auth=None)
 
     @mock.patch('requests.get', side_effect=mocked_requests_get_or_post)
     def test_check_oidc_error_2(self, get_mock):
-        under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
+        under_test = OidcApiClient(endpoint_uri=TEST_API_ENDPOINT +
                                    '/oidc_error_2.json')
-        with self.assertRaises(OIDCAPIClientException):
+        with self.assertRaises(OidcApiClientException):
             under_test._checked_get_json_response(params=None,
                                                   request_auth=None)
 
     @mock.patch('requests.get', side_effect=mocked_requests_get_or_post)
     def test_check_oidc_error_content_type(self, get_mock):
-        under_test = OIDCAPIClient(endpoint_uri=TEST_API_ENDPOINT +
+        under_test = OidcApiClient(endpoint_uri=TEST_API_ENDPOINT +
                                    '/data2.dat')
-        with self.assertRaises(OIDCAPIClientException):
+        with self.assertRaises(OidcApiClientException):
             under_test._checked_get_json_response(params=None,
                                                   request_auth=None)

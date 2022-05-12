@@ -9,14 +9,14 @@ from webbrowser import open_new
 
 import planet.auth.oidc.util as oidc_util
 from planet.auth.oidc import resources
-from planet.auth.oidc.api_clients.api_client import OIDCAPIClientException
+from planet.auth.oidc.api_clients.api_client import OidcApiClientException
 
 logger = logging.getLogger(__name__)
 DEFAULT_REDIRECT_LISTEN_PORT = 80
 AUTH_TIMEOUT = 60
 
 
-class AuthorizationAPIException(OIDCAPIClientException):
+class AuthorizationApiException(OidcApiClientException):
 
     def __init__(self, message=None, raw_response=None):
         super().__init__(message, raw_response)
@@ -57,7 +57,7 @@ class _OidcPKCESigninCallbackHandler(http.server.BaseHTTPRequestHandler):
 
 def _parse_authcode_from_callback(raw_request_path, expected_state):
     if not raw_request_path:
-        raise AuthorizationAPIException("Authorization callback was empty")
+        raise AuthorizationApiException("Authorization callback was empty")
 
     logger.debug("Parsing callback request from authorization server" +
                  raw_request_path)
@@ -71,7 +71,7 @@ def _parse_authcode_from_callback(raw_request_path, expected_state):
         error_description = parsed_query_string.get('error_description') or [
             'no error description'
         ]
-        raise AuthorizationAPIException(
+        raise AuthorizationApiException(
             'Authorization error: {}: {}'.format(error_code[0],
                                                  error_description[0]),
             raw_request_path)
@@ -82,7 +82,7 @@ def _parse_authcode_from_callback(raw_request_path, expected_state):
     if state_array:
         state = state_array[0]
     if state != expected_state:
-        raise AuthorizationAPIException(
+        raise AuthorizationApiException(
             'Callback state did not match expected value. Expected: {},'
             ' Received: {}'.format(expected_state, state),
             raw_request_path)
@@ -92,7 +92,7 @@ def _parse_authcode_from_callback(raw_request_path, expected_state):
     if auth_code_array:
         auth_code = auth_code_array[0]
     if not auth_code:
-        raise AuthorizationAPIException(
+        raise AuthorizationApiException(
             'Failed to understand authorization callback. Callback request'
             ' did not include an authorization code or a recognized error.'
             ' Raw callback request: ' + raw_request_path,
@@ -101,10 +101,10 @@ def _parse_authcode_from_callback(raw_request_path, expected_state):
     return auth_code
 
 
-# Not a child class of OIDCAPIClient since we do not directly call the
+# Not a child class of OidcApiClient since we do not directly call the
 # authorization API. Rather, interaction with the authorization server is via
 # a browser to accommodate user interaction flows.
-class AuthorizationAPIClient():
+class AuthorizationApiClient():
 
     def __init__(self, authorization_uri=None):
         self._authorization_uri = authorization_uri
@@ -169,7 +169,7 @@ class AuthorizationAPIClient():
         listen_port = parsed_redirect_url.port if parsed_redirect_url.port else DEFAULT_REDIRECT_LISTEN_PORT  # noqa
         if parsed_redirect_url.hostname.lower(
         ) != 'localhost' and parsed_redirect_url.hostname != '127.0.0.1':
-            raise AuthorizationAPIException(
+            raise AuthorizationApiException(
                 'Unexpected hostname in auth redirect URI. Expected'
                 ' localhost URI, but received "{}"'.format(redirect_uri))
 
@@ -203,7 +203,7 @@ class AuthorizationAPIClient():
             return _parse_authcode_from_callback(
                 http_server.callback_raw_request_path, data['state'])
         else:
-            raise AuthorizationAPIException(
+            raise AuthorizationApiException(
                 'Unknown error obtaining login tokens.'
                 ' No callback data was received.')
 
