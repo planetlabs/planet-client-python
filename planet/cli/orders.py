@@ -234,7 +234,7 @@ def read_file_json(ctx, param, value):
 @coro
 # @click.argument('request', type=click.Path(exists=True))
 @click.argument('request', type=click.Path(exists=True), default=sys.stdin)
-# @click.option('--compose-file', 
+# @click.option('--compose-file',
 #               help='compose file to work with',
 #               type=click.File('r'),
 #               default=sys.stdin)
