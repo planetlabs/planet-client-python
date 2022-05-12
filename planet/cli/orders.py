@@ -343,8 +343,6 @@ async def request(ctx,
             raise click.BadParameter(e)
 
         tools = [planet.order_request.clip_tool(clip)]
-    else:
-        tools = []
 
     if cloudconfig:
         delivery = planet.order_request.delivery(cloud_config=cloudconfig)
