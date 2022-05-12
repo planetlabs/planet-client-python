@@ -1,7 +1,7 @@
 import pathlib
 import unittest
 
-from planet.auth.auth import Profile
+from planet.auth.profile import Profile
 
 
 class ProfileTest(unittest.TestCase):

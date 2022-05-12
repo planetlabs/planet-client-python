@@ -4,7 +4,7 @@ import unittest
 from planet.auth.static_api_key.auth_client import StaticApiKeyAuthClient, \
     StaticApiKeyAuthClientConfig
 from planet.auth.static_api_key.request_authenticator import \
-    FileBackedAPIKeyRequestAuthenticator
+    FileBackedApiKeyRequestAuthenticator
 
 
 class TestStaticApiKeyAuthClient(unittest.TestCase):
@@ -19,6 +19,6 @@ class TestStaticApiKeyAuthClient(unittest.TestCase):
 
     def test_default_request_authenticator_type(self):
         test_result = self.under_test.default_request_authenticator(
-            token_file_path=pathlib.Path('/test/token.json'))
+            credential_file_path=pathlib.Path('/test/token.json'))
         self.assertIsInstance(test_result,
-                              FileBackedAPIKeyRequestAuthenticator)
+                              FileBackedApiKeyRequestAuthenticator)

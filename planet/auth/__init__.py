@@ -24,8 +24,10 @@ are encapsulated in implementation subclasses that implement the primary
       of the above.
 """
 
-from .auth import Auth, Profile
-from .auth_client import AuthClientConfig, AuthClient, AuthClientException
+from .auth import Auth
+from .auth_exception import AuthException
+from .profile import Profile
+from .auth_client import AuthClientConfig, AuthClient
 from .credential import Credential
 from .request_authenticator import RequestAuthenticator
 
@@ -44,9 +46,9 @@ from .static_api_key.auth_client import \
     StaticApiKeyAuthClientConfig, \
     StaticApiKeyAuthClient
 
-from .oidc.oidc_token import FileBackedOidcToken
-from .planet_legacy.legacy_api_key import FileBackedPlanetLegacyAPIKey
-from .static_api_key.static_api_key import FileBackedAPIKey
+from .oidc.oidc_credential import FileBackedOidcCredential
+from .planet_legacy.legacy_api_key import FileBackedPlanetLegacyApiKey
+from .static_api_key.static_api_key import FileBackedApiKey
 
 from .oidc.request_authenticator import \
     RefreshingOidcTokenRequestAuthenticator, \
@@ -54,38 +56,31 @@ from .oidc.request_authenticator import \
 from .planet_legacy.request_authenticator import \
     PlanetLegacyRequestAuthenticator
 from .static_api_key.request_authenticator import \
-    FileBackedAPIKeyRequestAuthenticator
+    FileBackedApiKeyRequestAuthenticator
 
 __all__ = [
-    # Base interfaces
     Auth,
     AuthClient,
     AuthClientConfig,
     Credential,
     Profile,
     RequestAuthenticator,
-    AuthClientException,
-
-    # Specific implementations - OAuth/OIDC
+    AuthException,
     AuthCodePKCEClientConfig,
     AuthCodePKCEAuthClient,
     ClientCredentialsClientSecretClientConfig,
     ClientCredentialsClientSecretAuthClient,
     ClientCredentialsPubKeyClientConfig,
     ClientCredentialsPubKeyAuthClient,
-    FileBackedOidcToken,
+    FileBackedOidcCredential,
     RefreshingOidcTokenRequestAuthenticator,
     RefreshOrReloginOidcTokenRequestAuthenticator,
-
-    # Specific implementations - Planet Legacy
     PlanetLegacyAuthClientConfig,
     PlanetLegacyAuthClient,
-    FileBackedPlanetLegacyAPIKey,
+    FileBackedPlanetLegacyApiKey,
     PlanetLegacyRequestAuthenticator,
-
-    # Specific implementations - Basic
     StaticApiKeyAuthClientConfig,
     StaticApiKeyAuthClient,
-    FileBackedAPIKey,
-    FileBackedAPIKeyRequestAuthenticator
+    FileBackedApiKey,
+    FileBackedApiKeyRequestAuthenticator
 ]

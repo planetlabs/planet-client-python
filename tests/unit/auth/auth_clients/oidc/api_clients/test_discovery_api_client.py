@@ -5,7 +5,7 @@ from requests.models import Response
 from unittest import mock
 
 from planet.auth.oidc.api_clients.discovery_api_client import \
-    DiscoveryAPIClient
+    DiscoveryApiClient
 
 TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
 API_RESPONSE_VALID = {
@@ -147,7 +147,7 @@ class DiscoveryApiClientTest(unittest.TestCase):
     @mock.patch('requests.get', side_effect=MockRequests.mocked_response_ok)
     def test_verify_caching(self, mock_get):
         self.assertEqual(0, MockRequests.request_counter)
-        under_test = DiscoveryAPIClient(discovery_uri=TEST_API_ENDPOINT)
+        under_test = DiscoveryApiClient(discovery_uri=TEST_API_ENDPOINT)
         json_response = under_test.discovery()
         self.assertEqual(API_RESPONSE_VALID, json_response)
         self.assertEqual(1, MockRequests.request_counter)

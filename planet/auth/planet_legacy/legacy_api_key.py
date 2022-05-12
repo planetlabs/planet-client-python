@@ -2,7 +2,7 @@ from planet.auth.credential import Credential
 from planet.auth.util import FileBackedJsonObjectException
 
 
-class FileBackedPlanetLegacyAPIKey(Credential):
+class FileBackedPlanetLegacyApiKey(Credential):
 
     def __init__(self, api_key=None, api_key_file=None):
         if api_key:

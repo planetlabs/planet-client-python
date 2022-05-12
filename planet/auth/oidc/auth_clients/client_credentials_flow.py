@@ -8,7 +8,7 @@ from planet.auth.oidc.api_clients.oidc_request_auth import \
     prepare_client_secret_request_auth, \
     prepare_private_key_assertion_auth_payload
 from planet.auth.oidc.auth_client import OidcAuthClientConfig, OidcAuthClient
-from planet.auth.oidc.oidc_token import FileBackedOidcToken
+from planet.auth.oidc.oidc_credential import FileBackedOidcCredential
 from planet.auth.oidc.request_authenticator import \
     RefreshOrReloginOidcTokenRequestAuthenticator
 
@@ -39,17 +39,17 @@ class ClientCredentialsClientSecretAuthClient(OidcAuthClient):
             requested_scopes = \
                 self._ccauth_client_config.default_request_scopes
 
-        return FileBackedOidcToken(
+        return FileBackedOidcCredential(
             self._token_client().get_token_from_client_credentials_secret(
                 self._ccauth_client_config.client_id,
                 self._ccauth_client_config.client_secret,
                 requested_scopes))
 
     def default_request_authenticator(
-        self, token_file_path: pathlib.Path
+        self, credential_file_path: pathlib.Path
     ) -> RefreshOrReloginOidcTokenRequestAuthenticator:
         return RefreshOrReloginOidcTokenRequestAuthenticator(
-            token_file=FileBackedOidcToken(token_file=token_file_path),
+            credential_file=FileBackedOidcCredential(credential_file=credential_file_path),
             auth_client=self)
 
 
@@ -74,7 +74,7 @@ class ClientCredentialsPubKeyClientConfig(OidcAuthClientConfig):
         else:
             self.client_privkey_password = client_privkey_password
 
-    # Catches bad passwords. Too broad? # noqa
+    # Recast is to catches bad passwords. Too broad? # noqa
     @AuthClientException.recast(TypeError, ValueError)
     def _load_private_key(self):
         # TODO: also handle loading of JWK keys? Fork based on filename
@@ -131,7 +131,7 @@ class ClientCredentialsPubKeyAuthClient(OidcAuthClient):
             requested_scopes = \
                 self._pubkey_client_config.default_request_scopes
 
-        return FileBackedOidcToken(
+        return FileBackedOidcCredential(
             # FIXME: change get_token_from_client_credentials_pubkey to
             #        use enrichment.
             self._token_client().get_token_from_client_credentials_pubkey(
@@ -140,10 +140,10 @@ class ClientCredentialsPubKeyAuthClient(OidcAuthClient):
                 requested_scopes))
 
     def default_request_authenticator(
-        self, token_file_path: pathlib.Path
+        self, credential_file_path: pathlib.Path
     ) -> RefreshOrReloginOidcTokenRequestAuthenticator:
         return RefreshOrReloginOidcTokenRequestAuthenticator(
-            token_file=FileBackedOidcToken(token_file=token_file_path),
+            credential_file=FileBackedOidcCredential(credential_file=credential_file_path),
             auth_client=self)
 
 
@@ -164,16 +164,16 @@ class ClientCredentialsSharedKeyAuthClient(OidcAuthClient):
     def _client_auth_enricher(
             self, raw_payload: dict,
             audience: str) -> Tuple[dict, Optional[AuthBase]]:
-        raise Exception('No implementation')
+        raise AuthClientException('No implementation')
         # when we have an implementation, see
         # prepare_shared_key_assertion_auth_payload in oidc_request_auth
 
     def login(self, requested_scopes=None, allow_open_browser=False, **kwargs):
-        raise Exception('No implementation')
+        raise AuthClientException('No implementation')
 
     def default_request_authenticator(
-        self, token_file_path: pathlib.Path
+        self, credential_file_path: pathlib.Path
     ) -> RefreshOrReloginOidcTokenRequestAuthenticator:
         return RefreshOrReloginOidcTokenRequestAuthenticator(
-            token_file=FileBackedOidcToken(token_file=token_file_path),
+            credential_file=FileBackedOidcCredential(credential_file=credential_file_path),
             auth_client=self)

@@ -13,7 +13,7 @@ from planet.auth.request_authenticator import \
     SimpleInMemoryRequestAuthenticator
 from planet.auth.static_api_key.auth_client import StaticApiKeyAuthClient
 from planet.auth.static_api_key.request_authenticator import \
-    FileBackedAPIKeyRequestAuthenticator
+    FileBackedApiKeyRequestAuthenticator
 from tests.util import tdata_resource_file_path
 
 
@@ -61,7 +61,7 @@ class AuthTest(unittest.TestCase):
                 'auth_client_configs/utest/static_api_key.json'))
         self.assertIsInstance(under_test.auth_client(), StaticApiKeyAuthClient)
         self.assertIsInstance(under_test.request_authenticator(),
-                              FileBackedAPIKeyRequestAuthenticator)
+                              FileBackedApiKeyRequestAuthenticator)
         self.assertIsInstance(under_test.token_file_path(), pathlib.Path)
         self.assertEqual(
             pathlib.Path.home().joinpath(".planet/test_profile/token.json"),

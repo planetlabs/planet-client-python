@@ -9,9 +9,9 @@ import uuid
 from requests.auth import AuthBase
 from typing import Tuple, Optional
 
-from planet.auth.oidc.api_clients.token_api_client import TokenAPIException
+from planet.auth.oidc.api_clients.token_api_client import TokenApiException
 from planet.auth.oidc.auth_client import OidcAuthClient, OidcAuthClientConfig
-from planet.auth.oidc.oidc_token import FileBackedOidcToken
+from planet.auth.oidc.oidc_credential import FileBackedOidcCredential
 from planet.auth.oidc.request_authenticator import \
     RefreshingOidcTokenRequestAuthenticator, \
     RefreshOrReloginOidcTokenRequestAuthenticator
@@ -68,7 +68,7 @@ class StubOidcAuthClient(OidcAuthClient):
                 'get_access_token': get_access_token
             }
 
-        credential = FileBackedOidcToken(data=credential_data)
+        credential = FileBackedOidcCredential(data=credential_data)
         return credential
 
     def _client_auth_enricher(self, raw_payload: dict, audience: str) -> \
@@ -83,7 +83,7 @@ class StubOidcAuthClient(OidcAuthClient):
               get_access_token=True,
               get_id_token=True,
               get_refresh_token=True,
-              **kwargs) -> FileBackedOidcToken:
+              **kwargs) -> FileBackedOidcCredential:
         return self._construct_oidc_credential(
             get_access_token=get_access_token,
             get_id_token=get_id_token,
@@ -99,12 +99,12 @@ class StubOidcAuthClient(OidcAuthClient):
                 ['get_id_token'])
         else:
             # raise AuthClientException("cannot refresh without refresh token")
-            raise TokenAPIException("cannot refresh without refresh token")
+            raise TokenApiException("cannot refresh without refresh token")
 
     def default_request_authenticator(
-            self, token_file_path: pathlib.Path) -> RequestAuthenticator:
+            self, credential_file_path: pathlib.Path) -> RequestAuthenticator:
         # return RefreshingOidcTokenRequestAuthenticator(
-        #    token_file=FileBackedOidcToken(token_file=token_file_path),
+        #    credential_file=FileBackedOidcCredential(credential_file=credential_file_path),
         #    auth_client=self)
         # Abstract in the base class. Not under test here.
         assert 0
@@ -135,7 +135,7 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
         test_credential = self.mock_auth_login_and_command_initialize(
             credential_path, self.stub_auth_client)
         return RefreshingOidcTokenRequestAuthenticator(
-            token_file=test_credential,
+            credential_file=test_credential,
             auth_client=self.wrapped_stub_auth_client)
 
     def under_test_no_refresh_token(self):
@@ -143,7 +143,7 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
         test_credential = self.mock_auth_login_and_command_initialize(
             credential_path, self.stub_auth_client, get_refresh_token=False)
         return RefreshingOidcTokenRequestAuthenticator(
-            token_file=test_credential,
+            credential_file=test_credential,
             auth_client=self.wrapped_stub_auth_client)
 
     def under_test_no_auth_client(self):
@@ -151,14 +151,14 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
         test_credential = self.mock_auth_login_and_command_initialize(
             credential_path, self.stub_auth_client)
         return RefreshingOidcTokenRequestAuthenticator(
-            token_file=test_credential, auth_client=None)
+            credential_file=test_credential, auth_client=None)
 
     def under_test_no_access_token(self):
         credential_path = self.tmp_dir_path / 'refreshing_oidc_authenticator_test_token__no_access_token.json'  # noqa
         test_credential = self.mock_auth_login_and_command_initialize(
             credential_path, self.stub_auth_client, get_access_token=False)
         return RefreshingOidcTokenRequestAuthenticator(
-            token_file=test_credential,
+            credential_file=test_credential,
             auth_client=self.wrapped_stub_auth_client)
 
     def under_test_refresh_fails(self):
@@ -166,7 +166,7 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
         test_credential = self.mock_auth_login_and_command_initialize(
             credential_path, self.refresh_failing_auth_client)
         return RefreshingOidcTokenRequestAuthenticator(
-            token_file=test_credential,
+            credential_file=test_credential,
             auth_client=self.wrapper_refresh_failing_auth_client)
 
     @staticmethod
@@ -189,7 +189,7 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
 
         # bash$ planet <some API command>
         #       # sets up credential object to be lazy loaded.
-        test_credential = FileBackedOidcToken(token_file=credential_path)
+        test_credential = FileBackedOidcCredential(credential_file=credential_path)
         #       # The command would then use this credential and an
         #       # authenticator to interact with a planet API. Take it away,
         #       # test case...
@@ -208,18 +208,18 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
         # If the token is current, the auth client should be untouched.
         under_test = self.under_test_happy_path()
 
-        self.assertIsNone(under_test._token.data())
+        self.assertIsNone(under_test._oidc_credentials.data())
         self.mock_api_call(under_test)
-        self.assertIsNotNone(under_test._token.data())
+        self.assertIsNotNone(under_test._oidc_credentials.data())
         self.assertEqual(0, under_test._auth_client.refresh.call_count)
-        access_token_t1 = under_test._token.access_token()
+        access_token_t1 = under_test._oidc_credentials.access_token()
 
         # inside the refresh window, more access should not refresh
         self.mock_api_call(under_test)
         self.mock_api_call(under_test)
         self.mock_api_call(under_test)
         self.assertEqual(0, under_test._auth_client.refresh.call_count)
-        access_token_t2 = under_test._token.access_token()
+        access_token_t2 = under_test._oidc_credentials.access_token()
         self.assertEqual(access_token_t1, access_token_t2)
 
         # When the token reaches the 3/4 life, the authenticator should
@@ -227,7 +227,7 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
         time.sleep(((3 * TEST_TOKEN_TTL) / 4) + 2)
         self.mock_api_call(under_test)
         self.assertEqual(1, under_test._auth_client.refresh.call_count)
-        access_token_t3 = under_test._token.access_token()
+        access_token_t3 = under_test._oidc_credentials.access_token()
         self.assertNotEqual(access_token_t1, access_token_t3)
 
     def test_happy_path_2(self):
@@ -238,7 +238,7 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
 
         time.sleep(TEST_TOKEN_TTL + 2)
         self.mock_api_call(under_test)
-        self.assertIsNotNone(under_test._token.data())
+        self.assertIsNotNone(under_test._oidc_credentials.data())
         self.assertEqual(1, under_test._auth_client.refresh.call_count)
 
     def test_refresh_fails(self):
@@ -252,13 +252,13 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
         self.assertEqual(0, under_test._auth_client.refresh.call_count)
         self.mock_api_call(under_test)
         self.assertEqual(0, under_test._auth_client.refresh.call_count)
-        access_token_t1 = under_test._token.access_token()
+        access_token_t1 = under_test._oidc_credentials.access_token()
 
         time.sleep(TEST_TOKEN_TTL + 2)
 
         self.mock_api_call(under_test)
         self.assertEqual(1, under_test._auth_client.refresh.call_count)
-        access_token_t2 = under_test._token.access_token()
+        access_token_t2 = under_test._oidc_credentials.access_token()
 
         self.assertEqual(access_token_t1, access_token_t2)
 
@@ -274,14 +274,14 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
         under_test = self.under_test_no_refresh_token()
 
         self.mock_api_call(under_test)
-        access_token_t1 = under_test._token.access_token()
+        access_token_t1 = under_test._oidc_credentials.access_token()
         self.assertEqual(0, under_test._auth_client.refresh.call_count)
 
         time.sleep(TEST_TOKEN_TTL + 2)
 
         self.mock_api_call(under_test)
         self.assertEqual(1, under_test._auth_client.refresh.call_count)
-        access_token_t2 = under_test._token.access_token()
+        access_token_t2 = under_test._oidc_credentials.access_token()
         self.assertEqual(access_token_t1, access_token_t2)
 
     def test_no_auth_client(self):
@@ -290,12 +290,12 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
         under_test = self.under_test_no_auth_client()
 
         self.mock_api_call(under_test)
-        access_token_t1 = under_test._token.access_token()
+        access_token_t1 = under_test._oidc_credentials.access_token()
 
         time.sleep(TEST_TOKEN_TTL + 2)
 
         self.mock_api_call(under_test)
-        access_token_t2 = under_test._token.access_token()
+        access_token_t2 = under_test._oidc_credentials.access_token()
         self.assertEqual(access_token_t1, access_token_t2)
 
     def test_no_access_token(self):
@@ -310,7 +310,7 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
         # It allows an application to potentially be bootstrap with just
         # a refresh token.
         under_test = self.under_test_no_access_token()
-        access_token_t1 = under_test._token.access_token()
+        access_token_t1 = under_test._oidc_credentials.access_token()
         self.assertIsNone(access_token_t1)
         self.assertEqual(0, under_test._auth_client.refresh.call_count)
         self.mock_api_call(under_test)
@@ -321,15 +321,15 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
         # the credential file without attempting a refresh.
         under_test = self.under_test_happy_path()
 
-        self.assertIsNone(under_test._token.data())
+        self.assertIsNone(under_test._oidc_credentials.data())
         self.mock_api_call(under_test)
-        self.assertIsNotNone(under_test._token.data())
+        self.assertIsNotNone(under_test._oidc_credentials.data())
         self.assertEqual(0, under_test._auth_client.refresh.call_count)
-        access_token_t1 = under_test._token.access_token()
+        access_token_t1 = under_test._oidc_credentials.access_token()
 
         time.sleep(TEST_TOKEN_TTL + 2)
 
-        credential_t1 = under_test._token
+        credential_t1 = under_test._oidc_credentials
         oob_credential = self.stub_auth_client.refresh(
             credential_t1.refresh_token())
         oob_credential.set_path(credential_t1.path())
@@ -338,7 +338,7 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
 
         # The new token is within TTL, and a refresh should not occure
         self.mock_api_call(under_test)
-        access_token_t2 = under_test._token.access_token()
+        access_token_t2 = under_test._oidc_credentials.access_token()
         self.assertEqual(0, under_test._auth_client.refresh.call_count)
         self.assertNotEqual(access_token_t1, access_token_t2)
         self.assertEqual(access_token_oob, access_token_t2)
@@ -348,13 +348,13 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
         # the credential file without attempting a refresh.
         under_test = self.under_test_happy_path()
 
-        self.assertIsNone(under_test._token.data())
+        self.assertIsNone(under_test._oidc_credentials.data())
         self.mock_api_call(under_test)
-        self.assertIsNotNone(under_test._token.data())
+        self.assertIsNotNone(under_test._oidc_credentials.data())
         self.assertEqual(0, under_test._auth_client.refresh.call_count)
-        access_token_t1 = under_test._token.access_token()
+        access_token_t1 = under_test._oidc_credentials.access_token()
 
-        credential_t1 = under_test._token
+        credential_t1 = under_test._oidc_credentials
         oob_credential = self.stub_auth_client.refresh(
             credential_t1.refresh_token())
         oob_credential.set_path(credential_t1.path())
@@ -366,7 +366,7 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
         # The new token is outside TTL, even after the token is reloaded, this
         # should be detected and a refresh should still occur.
         self.mock_api_call(under_test)
-        access_token_t2 = under_test._token.access_token()
+        access_token_t2 = under_test._oidc_credentials.access_token()
         self.assertEqual(1, under_test._auth_client.refresh.call_count)
         self.assertNotEqual(access_token_t1, access_token_t2)
         self.assertNotEqual(access_token_oob, access_token_t2)
@@ -387,21 +387,21 @@ class RefreshOrReloginOidcRequestAuthenticatorTest(unittest.TestCase):
         test_credential = self.mock_auth_login_and_command_initialize(
             credential_path)
         return RefreshOrReloginOidcTokenRequestAuthenticator(
-            token_file=test_credential, auth_client=self.mock_auth_client)
+            credential_file=test_credential, auth_client=self.mock_auth_client)
 
     def under_test_without_refresh_token(self):
         credential_path = self.tmp_dir_path / 'refreshing_or_relogin_oidc_authenticator_test_token__without_refresh.json'  # noqa
         test_credential = self.mock_auth_login_and_command_initialize(
             credential_path, get_refresh_token=False)
         return RefreshOrReloginOidcTokenRequestAuthenticator(
-            token_file=test_credential, auth_client=self.mock_auth_client)
+            credential_file=test_credential, auth_client=self.mock_auth_client)
 
     def under_test_no_auth_client(self):
         credential_path = self.tmp_dir_path / 'refreshing_or_relogin_oidc_authenticator_test_token__no_client_provided.json'  # noqa
         test_credential = self.mock_auth_login_and_command_initialize(
             credential_path)
         return RefreshOrReloginOidcTokenRequestAuthenticator(
-            token_file=test_credential, auth_client=None)
+            credential_file=test_credential, auth_client=None)
 
     def mock_auth_login_and_command_initialize(self,
                                                credential_path,
@@ -422,7 +422,7 @@ class RefreshOrReloginOidcRequestAuthenticatorTest(unittest.TestCase):
 
         # bash$ planet <some API command>
         #       # sets up credential object to be lazy loaded.
-        test_credential = FileBackedOidcToken(token_file=credential_path)
+        test_credential = FileBackedOidcCredential(credential_file=credential_path)
         #       # The command would then use this credential and an
         #       # authenticator to interact with a planet API. Take it away,
         #       # test case...
@@ -438,37 +438,37 @@ class RefreshOrReloginOidcRequestAuthenticatorTest(unittest.TestCase):
     def test_refresh_token_calls_refresh(self):
         under_test = self.under_test_with_refresh_token()
 
-        self.assertIsNone(under_test._token.data())
+        self.assertIsNone(under_test._oidc_credentials.data())
         self.mock_api_call(under_test)
-        self.assertIsNotNone(under_test._token.data())
+        self.assertIsNotNone(under_test._oidc_credentials.data())
         self.assertEqual(0, under_test._auth_client.refresh.call_count)
         self.assertEqual(0, under_test._auth_client.login.call_count)
-        access_token_t1 = under_test._token.access_token()
+        access_token_t1 = under_test._oidc_credentials.access_token()
 
         time.sleep(TEST_TOKEN_TTL + 2)
 
         self.mock_api_call(under_test)
         self.assertEqual(1, under_test._auth_client.refresh.call_count)
         self.assertEqual(0, under_test._auth_client.login.call_count)
-        access_token_t2 = under_test._token.access_token()
+        access_token_t2 = under_test._oidc_credentials.access_token()
         self.assertNotEqual(access_token_t1, access_token_t2)
 
     def test_no_refresh_token_calls_login(self):
         under_test = self.under_test_without_refresh_token()
 
-        self.assertIsNone(under_test._token.data())
+        self.assertIsNone(under_test._oidc_credentials.data())
         self.mock_api_call(under_test)
-        self.assertIsNotNone(under_test._token.data())
+        self.assertIsNotNone(under_test._oidc_credentials.data())
         self.assertEqual(0, under_test._auth_client.refresh.call_count)
         self.assertEqual(0, under_test._auth_client.login.call_count)
-        access_token_t1 = under_test._token.access_token()
+        access_token_t1 = under_test._oidc_credentials.access_token()
 
         time.sleep(TEST_TOKEN_TTL + 2)
 
         self.mock_api_call(under_test)
         self.assertEqual(0, under_test._auth_client.refresh.call_count)
         self.assertEqual(1, under_test._auth_client.login.call_count)
-        access_token_t2 = under_test._token.access_token()
+        access_token_t2 = under_test._oidc_credentials.access_token()
         self.assertNotEqual(access_token_t1, access_token_t2)
 
     def test_no_auth_client(self):
@@ -477,10 +477,10 @@ class RefreshOrReloginOidcRequestAuthenticatorTest(unittest.TestCase):
         under_test = self.under_test_no_auth_client()
 
         self.mock_api_call(under_test)
-        access_token_t1 = under_test._token.access_token()
+        access_token_t1 = under_test._oidc_credentials.access_token()
 
         time.sleep(TEST_TOKEN_TTL + 2)
 
         self.mock_api_call(under_test)
-        access_token_t2 = under_test._token.access_token()
+        access_token_t2 = under_test._oidc_credentials.access_token()
         self.assertEqual(access_token_t1, access_token_t2)

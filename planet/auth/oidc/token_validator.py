@@ -3,8 +3,14 @@ import time
 import jwt
 from jwt import PyJWTError
 
-from planet.auth.auth_client import AuthClientException
-from planet.auth.oidc.api_clients.jwks_api_client import JwksAPIClient
+from planet.auth.auth_exception import AuthException
+from planet.auth.oidc.api_clients.jwks_api_client import JwksApiClient
+
+
+class TokenValidatorException(AuthException):
+
+    def __init__(self, message=None, inner_exception=None):
+        super().__init__(message, inner_exception)
 
 
 class TokenValidator:
@@ -18,7 +24,7 @@ class TokenValidator:
     # TODO: implement a max interval - need to push out removed keys.
     #       Add some fuzz, so we don't set up refresh storms?
     def __init__(self,
-                 jwks_client: JwksAPIClient,
+                 jwks_client: JwksApiClient,
                  min_jwks_fetch_interval=300):
         self._jwks_client = jwks_client
         self._keys_by_id = {}
@@ -45,7 +51,7 @@ class TokenValidator:
             self._update()
             key = self._keys_by_id.get(key_id)
         if not key:
-            raise AuthClientException(
+            raise TokenValidatorException(
                 "Could not find signing key for key ID {}".format(key_id))
 
         return key
@@ -58,15 +64,14 @@ class TokenValidator:
         # TODO: or algorithm.lower() == "rs384"
         # TODO: or algorithm.lower() == "rs512"
         if not (algorithm and (algorithm.lower() == "rs256")):
-            raise AuthClientException(
+            raise TokenValidatorException(
                 "Unknown or unsupported token algorithm {}".format(algorithm))
         return algorithm
 
-    # FIXME: Is this the right exception to throw
-    # TODO?: "validate_token" DOES NOT force nonce validation. It's just
+    # Note: "validate_token" DOES NOT force nonce validation. It's just
     #  JWT validation. Nonces are an application layer above. (See ID token
     #  validation below, which is OIDC ID token specific.
-    @AuthClientException.recast(PyJWTError)
+    @TokenValidatorException.recast(PyJWTError)
     def validate_token(self,
                        token_str,
                        issuer,
@@ -93,7 +98,7 @@ class TokenValidator:
         )
         if nonce:
             if nonce != validated_claims.get('nonce'):
-                raise AuthClientException(
+                raise TokenValidatorException(
                     'Token nonce did not match expected value')
         return validated_claims
 
@@ -121,14 +126,14 @@ class TokenValidator:
         if isinstance(validated_claims.get('aud'), list):
             validated_azp = validated_claims.get('azp')
             if not validated_azp:
-                raise AuthClientException(
+                raise TokenValidatorException(
                     '"azp" claim mut be present when ID token contains'
                     ' multiple audiences.')
 
         # if the azp claim is present, it must equal the client ID.
         if validated_azp:
             if validated_azp != client_id:
-                raise AuthClientException(
+                raise TokenValidatorException(
                     'ID token "azp" claim expected to match the client'
                     ' ID "{}", but was "{}"'.format(client_id, validated_azp))
 

@@ -1,12 +1,12 @@
-from planet.auth.oidc.api_clients.api_client import OIDCAPIClient
+from planet.auth.oidc.api_clients.api_client import OidcApiClient
 
-# class RevocationAPIException(OIDCAPIClientException):
+# class RevocationAPIException(OidcApiClientException):
 #
 #   def __init__(self, message=None, raw_response=None):
 #        super().__init__(message, raw_response)
 
 
-class RevocationAPIClient(OIDCAPIClient):
+class RevocationApiClient(OidcApiClient):
 
     def __init__(self, revocation_uri):
         super().__init__(revocation_uri)
@@ -24,7 +24,7 @@ class RevocationAPIClient(OIDCAPIClient):
         params = {
             'token': token,
             'token_type_hint': token_hint,
-            # 'client_id': client_id # FIXME? Requred? Part of enrichment?
+            # 'client_id': client_id # FIXME? Required? Part of enrichment?
         }
         request_auth = None
         if auth_enricher:

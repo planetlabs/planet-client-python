@@ -1,10 +1,10 @@
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 
 from abc import ABC, abstractmethod
-import functools
 import logging
 import pathlib
 
+from planet.auth.auth_exception import AuthException
 from planet.auth.credential import Credential
 from planet.auth.request_authenticator import RequestAuthenticator
 from planet.auth.util import FileBackedJsonObject
@@ -12,30 +12,10 @@ from planet.auth.util import FileBackedJsonObject
 logger = logging.getLogger(__name__)
 
 
-class AuthClientException(Exception):
+class AuthClientException(AuthException):
 
     def __init__(self, message=None, inner_exception=None):
-        super().__init__(message)
-        self._inner_exception = inner_exception
-
-    @staticmethod
-    def recast(*exceptions, **params):
-        if not exceptions:
-            exceptions = (Exception, )
-        # params.get('some_arg', 'default')
-
-        def decorator(func):
-
-            @functools.wraps(func)
-            def wrapper(*args, **kwargs):
-                try:
-                    return func(*args, **kwargs)
-                except exceptions as e:
-                    raise AuthClientException(str(e), e)
-
-            return wrapper
-
-        return decorator
+        super().__init__(message, inner_exception)
 
 
 class AuthClientConfigException(AuthClientException):
@@ -222,11 +202,11 @@ class AuthClient(ABC):
 
     @abstractmethod
     def default_request_authenticator(
-            self, token_file_path: pathlib.Path) -> RequestAuthenticator:
+            self, credential_file_path: pathlib.Path) -> RequestAuthenticator:
         """
         Return an instance of the default request authenticator to use for
         the specific AuthClient type and configured to use the provided
-        token file for token persistence.
+        credential file for persistence.
 
         It's not automatic that the default is always the right choice.
         Some authenticators may initiate logins, which may be interactive
@@ -246,6 +226,6 @@ class AuthClient(ABC):
         user interaction after an initial Credential has been obtained from
         an initial call to login()
 
-        :param token_file_path:
+        :param credential_file_path:
         :return:
         """

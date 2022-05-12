@@ -1,14 +1,14 @@
 from planet.auth.oidc.api_clients.api_client import \
-    OIDCAPIClient, OIDCAPIClientException
+    OidcApiClient, OidcApiClientException
 
 
-class IntrospectionAPIException(OIDCAPIClientException):
+class IntrospectionApiException(OidcApiClientException):
 
     def __init__(self, message=None, raw_response=None):
         super().__init__(message, raw_response)
 
 
-class IntrospectionAPIClient(OIDCAPIClient):
+class IntrospectionApiClient(OidcApiClient):
 
     def __init__(self, introspect_uri=None):
         super().__init__(introspect_uri)
@@ -16,15 +16,13 @@ class IntrospectionAPIClient(OIDCAPIClient):
     def _checked_introspection_call(self, validate_params, auth):
         json_response = self._checked_post_json_response(validate_params, auth)
         if not bool(json_response.get('active')):
-            raise IntrospectionAPIException('Token is not active')
+            raise IntrospectionApiException('Token is not active')
         return json_response
 
     def _validate_token(self, token, token_hint, auth_enricher):
         params = {
             'token': token,
             'token_type_hint': token_hint,
-            # FIXME: Required?? Or part of enrichment?
-            # 'client_id': client_id
         }
         request_auth = None
         if auth_enricher:
@@ -35,7 +33,6 @@ class IntrospectionAPIClient(OIDCAPIClient):
     #       throw on invalid tokens, but only throw when there is an error
     #       making the call.
 
-    # FIXME: strict typing for the enricher
     def validate_access_token(self, access_token, auth_enricher=None):
         return self._validate_token(access_token,
                                     'access_token',

@@ -7,7 +7,7 @@ from typing import Tuple, Optional
 from unittest import mock
 
 from planet.auth.oidc.api_clients.revocation_api_client import \
-    RevocationAPIClient
+    RevocationApiClient
 
 TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
 TEST_ACCESS_TOKEN = "__test_access_token__"
@@ -38,15 +38,15 @@ class RevocationApiClientTest(unittest.TestCase):
 
     @mock.patch('requests.post', side_effect=mocked_response_ok)
     def test_revoke_access_token_with_enricher(self, mock_post):
-        under_test = RevocationAPIClient(revocation_uri=TEST_API_ENDPOINT)
+        under_test = RevocationApiClient(revocation_uri=TEST_API_ENDPOINT)
         under_test.revoke_access_token(TEST_ACCESS_TOKEN, noop_auth_enricher)
 
     @mock.patch('requests.post', side_effect=mocked_response_ok)
     def test_revoke_access_token_without_enricher(self, mock_post):
-        under_test = RevocationAPIClient(revocation_uri=TEST_API_ENDPOINT)
+        under_test = RevocationApiClient(revocation_uri=TEST_API_ENDPOINT)
         under_test.revoke_access_token(TEST_ACCESS_TOKEN, None)
 
     @mock.patch('requests.post', side_effect=mocked_response_ok)
     def test_revoke_refresh_token(self, mock_post):
-        under_test = RevocationAPIClient(revocation_uri=TEST_API_ENDPOINT)
+        under_test = RevocationApiClient(revocation_uri=TEST_API_ENDPOINT)
         under_test.revoke_refresh_token(TEST_REFRESH_TOKEN, None)

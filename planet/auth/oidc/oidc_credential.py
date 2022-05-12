@@ -1,11 +1,11 @@
-from planet.auth.credential import Credential
+from planet.auth import Credential
 from planet.auth.util import FileBackedJsonObjectException
 
 
-class FileBackedOidcToken(Credential):
+class FileBackedOidcCredential(Credential):
 
-    def __init__(self, data=None, token_file=None):
-        super().__init__(data=data, file_path=token_file)
+    def __init__(self, data=None, credential_file=None):
+        super().__init__(data=data, file_path=credential_file)
 
     def check_data(self, data):
         super().check_data(data)

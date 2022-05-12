@@ -40,7 +40,7 @@ class AuthClientTestImpl(AuthClient):
         assert 0  # abstract method not under test
 
     def default_request_authenticator(
-            self, token_file_path: pathlib.Path) -> RequestAuthenticator:
+            self, credential_file_path: pathlib.Path) -> RequestAuthenticator:
         # return SimpleInMemoryRequestAuthenticator(token_body=None)
         assert 0  # abstract method not under test
 

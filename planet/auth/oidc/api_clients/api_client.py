@@ -5,7 +5,7 @@ from abc import ABC
 from planet.auth.auth_client import AuthClientException
 
 
-class OIDCAPIClient(ABC):
+class OidcApiClient(ABC):
     """
     Base class that provides utility functions common to interactions with
     any of the OIDC endpoints.
@@ -16,7 +16,7 @@ class OIDCAPIClient(ABC):
 
     def __check_http_error(self, response):
         if not response.ok:
-            raise OIDCAPIClientException(
+            raise OidcApiClientException(
                 message="HTTP error from OIDC endpoint at {}: {}: {}".format(
                     self._endpoint_uri, response.status_code, response.reason),
                 raw_response=response)
@@ -30,7 +30,7 @@ class OIDCAPIClient(ABC):
 
             # Irritatingly, I've seen multiple error payload schemas
             if json_response.get('error'):
-                raise OIDCAPIClientException(
+                raise OidcApiClientException(
                     message='Error from OIDC endpoint at {}: {}: {}'.format(
                         self._endpoint_uri,
                         json_response.get('error'),
@@ -38,7 +38,7 @@ class OIDCAPIClient(ABC):
                     raw_response=response)
 
             if json_response.get('errorCode'):
-                raise OIDCAPIClientException(
+                raise OidcApiClientException(
                     message='Error from OIDC endpoint at {}: {}: {}'.format(
                         self._endpoint_uri,
                         json_response.get('errorCode'),
@@ -50,13 +50,13 @@ class OIDCAPIClient(ABC):
         json_response = None
         if response.content:
             if not response.headers.get('content-type') == 'application/json':
-                raise OIDCAPIClientException(
+                raise OidcApiClientException(
                     message='Expected json content-type, but got {}'.format(
                         response.headers.get('content-type')),
                     raw_response=response)
             json_response = response.json()
         if not json_response:
-            raise OIDCAPIClientException(
+            raise OidcApiClientException(
                 'Response was not understood. Expected JSON response payload,'
                 ' but none was found.',
                 response)
@@ -96,7 +96,7 @@ class OIDCAPIClient(ABC):
             self._checked_get(params, request_auth))
 
 
-class OIDCAPIClientException(AuthClientException):
+class OidcApiClientException(AuthClientException):
 
     def __init__(self, message=None, raw_response=None):
         super().__init__(message)

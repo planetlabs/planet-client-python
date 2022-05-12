@@ -1,6 +1,6 @@
 import unittest
 
-from planet.auth.oidc.oidc_token import FileBackedOidcToken
+from planet.auth.oidc.oidc_credential import FileBackedOidcCredential
 from planet.auth.util import FileBackedJsonObjectException
 from tests.util import tdata_resource_file_path
 
@@ -8,8 +8,8 @@ from tests.util import tdata_resource_file_path
 class TestOidcCredential(unittest.TestCase):
 
     def test_asserts_valid(self):
-        under_test = FileBackedOidcToken(data=None,
-                                         token_file=tdata_resource_file_path(
+        under_test = FileBackedOidcCredential(data=None,
+                                              credential_file=tdata_resource_file_path(
                                              'keys/oidc_test_credential.json'))
         under_test.load()
         self.assertIsNotNone(under_test.data())
@@ -21,8 +21,8 @@ class TestOidcCredential(unittest.TestCase):
             under_test.set_data({'test': 'missing all required fields'})
 
     def test_getters(self):
-        under_test = FileBackedOidcToken(data=None,
-                                         token_file=tdata_resource_file_path(
+        under_test = FileBackedOidcCredential(data=None,
+                                              credential_file=tdata_resource_file_path(
                                              'keys/oidc_test_credential.json'))
         under_test.load()
         self.assertEqual('_dummy_access_token_', under_test.access_token())
