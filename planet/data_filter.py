@@ -12,16 +12,13 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """Functionality for preparing a data search filter"""
+from datetime import datetime
 import logging
-from typing import Any, List
+from typing import List, Union
 
 from planet import exceptions
 
 LOGGER = logging.getLogger(__name__)
-
-
-def _logicalfilter(ftype: str, nested_filters: List[dict]) -> dict:
-    return {'type': ftype, 'config': nested_filters}
 
 
 def and_filter(nested_filters: List[dict]) -> dict:
@@ -36,7 +33,7 @@ def and_filter(nested_filters: List[dict]) -> dict:
     Parameters:
         nested_filters: Filters to AND together
     """
-    return _logicalfilter('AndFilter', nested_filters)
+    return {'type': 'AndFilter', 'config': nested_filters}
 
 
 def or_filter(nested_filters: List[dict]) -> dict:
@@ -48,7 +45,7 @@ def or_filter(nested_filters: List[dict]) -> dict:
     Parameters:
         nested_filters: Filters to OR together
     """
-    return _logicalfilter('OrFilter', nested_filters)
+    return {'type': 'OrFilter', 'config': nested_filters}
 
 
 def not_filter(nested_filter: dict):
@@ -64,55 +61,58 @@ def not_filter(nested_filter: dict):
     Parameters:
         nested_filter: Filter to NOT
     """
-    return _logicalfilter('NotFilter', nested_filter)
+    return {'type': 'NotFilter', 'config': nested_filter}
 
 
-def _field_filter(ftype: str, field_name: str, config: Any[dict,
-                                                           list]) -> dict:
+def _field_filter(ftype: str, field_name: str, config: Union[dict,
+                                                             list]) -> dict:
     return {'type': ftype, 'field_name': field_name, 'config': config}
 
 
 def date_range_filter(field_name: str,
-                      gt: str = None,
-                      lt: str = None,
-                      gte: str = None,
-                      lte: str = None) -> dict:
+                      gt: datetime = None,
+                      lt: datetime = None,
+                      gte: datetime = None,
+                      lte: datetime = None) -> dict:
     """Create a DateRangeFilter
 
     The DateRangeFilter can be used to search on any property with a timestamp
     such as acquired or published.
 
-    The filter's configuration is a nested structure with optional keys: gte,
-    gt, lt or lte. Each corresponding value is an RFC 3339 date.
-
-    Predicate arguments accept a str that is ISO-8601 format or a value
-    that has an `isoformat` callable that returns an ISO-8601 compliant str.
-    If no timezone is provided, UTC is assumed for RFC 3339 compatability.
+    One or more of the conditional parameters `gt`, `lt`, `gte`, `lte` must be
+    specified.
 
     Parameters:
         field_name: Name of field to filter on
-        gt: Filter to field values greater than this value
-        lt: Filter to field values less than this value
-        gte: Filter to field values greater than or equal to this value
-        lte: Filter to field values less than or equal to this value
+        gt: Filter to field timestamp later than this value
+        lt: Filter to field timestamp earlier than this value
+        gte: Filter to field timestamp at or later than this value
+        lte: Filter to field timestamp at or earlier than this value
 
+    Raises:
+        exceptions.PlanetError: If no conditional parameter is specified.
     """
     conditionals = {'gt': gt, 'lt': lt, 'gte': gte, 'lte': lte}
 
-    if all(v is None for v in conditionals.values):
+    if all(v is None for v in conditionals.values()):
         raise exceptions.PlanetError("Must specify one of gt, lt, gte, or lte")
 
     config = {
-        key: _to_rfc3339_date(value)
-        for (key, value) in conditionals if value
+        key: datetime_to_rfc3339(value)  # convert datetime to RFC3339 string
+        for (key, value) in conditionals.items() if value
     }
+
+    LOGGER.warning(config)
 
     return _field_filter('DateRangeFilter',
                          field_name=field_name,
                          config=config)
 
 
-def _to_rfc3339_date(value):
-    raise NotImplementedError
-
-
+def datetime_to_rfc3339(value: datetime) -> str:
+    """Converts the datetime to an RFC3339 string"""
+    iso = value.isoformat()
+    if not value.utcoffset():
+        # rfc3339 needs a Z if there is no timezone offset
+        iso += 'Z'
+    return iso
