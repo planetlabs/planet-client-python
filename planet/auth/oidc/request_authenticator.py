@@ -51,7 +51,8 @@ class RefreshingOidcTokenRequestAuthenticator(RequestAuthenticator):
 
     def _refresh(self):
         if self._auth_client:
-            new_credentials = self._auth_client.refresh(self._oidc_credentials.refresh_token())
+            new_credentials = self._auth_client.refresh(
+                self._oidc_credentials.refresh_token())
             new_credentials.set_path(self._oidc_credentials.path())
             new_credentials.save()
             self._oidc_credentials = new_credentials
@@ -105,7 +106,8 @@ class RefreshOrReloginOidcTokenRequestAuthenticator(
     def __init__(self,
                  credential_file: FileBackedOidcCredential,
                  auth_client: OidcAuthClient = None):
-        super().__init__(credential_file=credential_file, auth_client=auth_client)
+        super().__init__(credential_file=credential_file,
+                         auth_client=auth_client)
 
     def _refresh(self):
         if self._auth_client:

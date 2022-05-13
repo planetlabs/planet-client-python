@@ -22,23 +22,57 @@ logger = logging.getLogger(__name__)
 
 
 class Auth:
+    """A container class for initializing and grouping a working set of
+    authentication objects.
+
+    Example:
+        ```python
+        >>> from planet.auth import Auth
+        >>> from planet import Session
+        >>>
+        >>> my_auth = Auth.initialize()
+        >>> async with Session(auth=my_auth) as sess:
+                # Application code follows
+                ...
+        ```
+     """
 
     def __init__(self,
                  auth_client: AuthClient = None,
                  request_authenticator: RequestAuthenticator = None,
                  token_file_path: pathlib.Path = None):
+        '''
+        Create a new auth container object with the specified auth components.
+        See [initialize][planet.auth.Auth.initialize] for user friendly
+        construction.
+        '''
         self._auth_client = auth_client
         self._request_authenticator = request_authenticator
         self._token_file_path = token_file_path
         # self._credential = credential
 
     def auth_client(self) -> AuthClient:
+        '''
+        Get the currently configured auth client.
+        Returns:
+            The current AuthClient instance.
+        '''
         return self._auth_client
 
     def request_authenticator(self) -> RequestAuthenticator:
+        '''
+        Get the current request authenticator.
+        Returns:
+            The current RequestAuthenticator instance.
+        '''
         return self._request_authenticator
 
     def token_file_path(self) -> pathlib.Path:
+        '''
+        Get the path to the current credentials file.
+        Returns:
+            returns the path to the current credentials file.
+        '''
         return self._token_file_path
 
     @staticmethod
@@ -96,6 +130,31 @@ class Auth:
                    getenv(ENV_AUTH_CLIENT_CONFIG_FILE),
                    token_file: Union[str, pathlib.PurePath] = os.getenv(
                        ENV_AUTH_TOKEN_FILE)) -> Auth:
+        '''
+        Construct and initialize a working set of authentication primitives,
+        returning them in a new container object.
+        Parameters:
+            profile: The name of the selected auth profile to initialize. The
+                default value will be taken from the environment variable
+                PL_AUTH_PROFILE. If this is not set, the built in default
+                auth profile will be used.
+            auth_client_config_file: The path to an
+                [AuthClientConfig][planet.auth.AuthClientConfig] file. If
+                not set, the default will be set from the environment variable
+                PL_AUTH_CLIENT_CONFIG_FILE.  If this is also not set, the
+                profile directory will be searched for the auth client config
+                file.  The recommended setting is to leave and the environment
+                variable unset, and use the default value.
+            token_file: The path to a
+                [Credential][planet.auth.Credential] file. If
+                not set, the default will be set from the environment variable
+                PL_AUTH_TOKEN_FILE.  If this is also not set, the
+                profile directory will be searched for the credential
+                file.  The recommended setting is to leave and the environment
+                variable unset, and use the default value.
+        Returns:
+            Returns an initialized Auth instance.
+        '''
         # TODO: we should have some handling of legacy environment variables
         #       understood by SDK v1: PL_API_KEY
         if Profile.profile_name_is_none(profile):

@@ -25,6 +25,33 @@ class AuthClientConfigException(AuthClientException):
 
 
 class AuthClientConfig(ABC):
+    """
+    Base class for auth client configuration objects. Each concrete auth
+    client type has a dedicated auth client config type help and keep
+    the varied configuration needs of different clients on rails.
+
+    The factory methods in the base class accept a dictionary, and will
+    return an instance of an appropriate subclass.
+
+    Example:
+        ```python
+        >>> from planet.auth import AuthClientConfig
+        >>> config_dict = {
+        ...     "client_type": "oidc_auth_code",
+        ...     "auth_server": "https://account.planet.com/oauth2",
+        ...     "client_id": "your_client_id",
+        ...     "redirect_uri": "https://your_client_redirect_uri",
+        ...     "default_request_scopes": [
+        ...         "planet",
+        ...         "offline_access",
+        ...         "openid",
+        ...         "profile"]
+        ... }
+        >>> my_auth_config = AuthClientConfig.from_dict(config_dict)
+        >>> # an instance of AuthCodePKCEClientConfig will be created
+        ```
+    """
+
     _typename_map = {}
 
     def __init__(self, **kwargs):
@@ -70,7 +97,12 @@ class AuthClientConfig(ABC):
         return cls._typename_map
 
     @classmethod
-    def from_dict(cls, config_data: dict):
+    def from_dict(cls, config_data: dict) -> AuthClientConfig:
+        """
+        Create a AuthClientConfig from a configuration dictionary.
+        Returns:
+            A concrete auth client config object.
+        """
         config_data.get('client_type')
         config_type = config_data.get('client_type')
         config_cls = AuthClientConfig._get_typename_map().get(config_type)
@@ -82,6 +114,12 @@ class AuthClientConfig(ABC):
 
     @staticmethod
     def from_file(file_path) -> AuthClientConfig:
+        """
+        Create an AuthClientConfig from a json file that contains a config
+        dictionary.
+        Returns:
+            A concrete auth client config object.
+        """
         # TODO: do we want to make file backing an intrinsic part of the base
         #       class? It would be nice for saving configs, but I don't think
         #       creating a new object for the purpose of writing a config file
@@ -92,6 +130,23 @@ class AuthClientConfig(ABC):
 
 
 class AuthClient(ABC):
+    """
+    Base class for auth clients.  Concrate instances of this base class
+    manage the specific of how to authenticate a user and obtain credentials
+    that may be used for service APIs.
+
+    The factory methods in the base class accepts a client specific client
+    configuraiton type, and will return an instance of an appropriate subclass.
+
+    Example:
+        ```python
+        >>> from planet.auth import AuthClientConfig, AuthClient
+        >>> config_dict = { ... } # See AuthClientConfig
+        >>> my_auth_config = AuthClientConfig.from_dict(config_dict)
+        >>> my_auth_client = AuthClient.from_config(my_auth_config)
+        ```
+    """
+
     _type_map = {}
 
     def __init__(self, auth_client_config: AuthClientConfig):
@@ -139,6 +194,11 @@ class AuthClient(ABC):
 
     @classmethod
     def from_config(cls, config: AuthClientConfig) -> AuthClient:
+        """
+        Create an AuthClient of an appropriate subtype from the client config.
+        Returns:
+            An initialized auth client instance.
+        """
         client_cls = AuthClient._get_type_map().get(type(config))
         if not client_cls:
             raise AuthClientException(
@@ -150,52 +210,115 @@ class AuthClient(ABC):
     @abstractmethod
     def login(self, **kwargs) -> Credential:
         """
-        Perform a login using the authentication mechanism implemented by the
-        AuthClient instance.  The results of a successful login is
-        FileBackedJsonObject Credential containing credentials that may be
-        used for subsequent service API requests.  How these credentials are
-        used for this purpose is outside the scope of either the AuthClient
-        or the Credential.  This is the job of a RequestAuthenticator
+        Perform an initial login using the authentication mechanism
+        implemented by the AuthClient instance.  The results of a successful
+        login is FileBackedJsonObject Credential containing credentials that
+        may be used for subsequent service API requests.  How these
+        credentials are used for this purpose is outside the scope of either
+        the AuthClient or the Credential.  This is the job of a
+        RequestAuthenticator.
 
-        :param kwargs:
-        :return:
+        Returns:
+            Upon successful login, a Credential will be returned. The returned
+            value will be in memory only. It is the responsibility of the
+            application to save this credential to disk as appropriate using
+            the mechanisms built into the Credential type.
         """
 
-    def refresh(self, refresh_token, requested_scopes):
+    def refresh(self, refresh_token: str,
+                requested_scopes: list[str]) -> Credential:
+        # TODO: It may be better to accept a Credential as input?
+        """
+        Obtain a refreshed credential using the supplied refresh token.
+        This method will be implemented by concrete AuthClients that
+        implement a particular OAuth flow.
+        Parameters:
+            refresh_token: Refresh token
+            requested_scopes: Scopes to request in the access token
+        Returns:
+            Upon success, a fresh Credential will be returned. As with
+            login(), this credential will not have been persisted to storage.
+            This is the responsibility of the application.
+        """
         raise AuthClientException(
             'Refresh not implemented for the current authentication mechanism')
 
-    def validate_access_token(self, access_token):
+    def validate_access_token(self, access_token: str):
+        """
+        Validate an access token with the authorization server.
+        Parameters:
+            access_token: Access token to validate
+        Returns:
+            Returns a dictionary of validated token claims
+        """
         raise AuthClientException(
             'Access token validation is not implemented for the current'
             ' authentication mechanism')
 
-    def validate_id_token(self, id_token):
+    def validate_id_token(self, id_token: str):
+        """
+        Validate an ID token with the authorization server.
+        Parameters:
+            id_token: ID token to validate
+        Returns:
+            Returns a dictionary of validated token claims
+        """
         raise AuthClientException(
             'ID token validation is not implemented for the current'
             ' authentication mechanism')
 
-    def validate_id_token_local(self, id_token):
+    def validate_id_token_local(self, id_token: str):
+        """
+        Validate an ID token locally. The authorization server may still be
+        called to obtain signing keys for validation.  Signing keys will be
+        cached for future use.
+        Parameters:
+            id_token: ID token to validate
+        Returns:
+            Returns a dictionary of validated token claims
+        """
         raise AuthClientException(
             'ID token validation is not implemented for the current'
             ' authentication mechanism')
 
-    def validate_refresh_token(self, refresh_token):
+    def validate_refresh_token(self, refresh_token: str):
+        """
+        Validate a refresh token with the authorization server.
+        Parameters:
+            refresh_token: Refresh token to validate
+        Returns:
+        """
         raise AuthClientException(
             'Refresh token validation is not implemented for the current'
             ' authentication mechanism')
 
-    def revoke_access_token(self, access_token):
+    def revoke_access_token(self, access_token: str):
+        """
+        Revoke an access token with the authorization server.
+        Parameters:
+            access_token: Access token to revoke.
+        """
         raise AuthClientException(
             'Access token revocation is not implemented for the current'
             ' authentication mechanism')
 
-    def revoke_refresh_token(self, refresh_token):
+    def revoke_refresh_token(self, refresh_token: str):
+        """
+        Revoke a refresh token with the authorization server.
+        Parameters:
+            refresh_token: Access token to revoke.
+        """
         raise AuthClientException(
             'Refresh token revocation is not implemented for the current'
             ' authentication mechanism')
 
     def get_scopes(self):
+        """
+        Query the authorization server for a list of scopes.
+        Returns:
+            Returns a list of scopes that may be requested during a call
+            to login or refresh
+        """
         raise AuthClientException(
             'Listing scopes is not implemented for the current'
             ' authentication mechanism.')
@@ -226,6 +349,10 @@ class AuthClient(ABC):
         user interaction after an initial Credential has been obtained from
         an initial call to login()
 
-        :param credential_file_path:
-        :return:
+        Parameters:
+            credential_file_path: Path to the credential file that should be
+            used.
+        Returns:
+            Returns an instance of the default request authenticator class
+            to use for Credentials of the type obtained by the AuthClient.
         """

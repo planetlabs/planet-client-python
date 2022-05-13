@@ -133,8 +133,8 @@ def do_print_access_token(ctx):
     profile. Auth profiles that do not use OAuth will not support this
     command.
     '''
-    # FIXME: this will only work for OIDC auth mechanisms. Maybe that's OK.
-    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None,
+                                           ctx.obj['AUTH'].token_file_path())
     print(saved_token.access_token())
 
 
@@ -146,7 +146,6 @@ def do_print_api_key(ctx):
     Show the API Key used by the currently selected authentication profile.
     Auth profiles that do not use API keys will not support this command.
     '''
-    # FIXME: this will only work for legacy auth mechanisms. Maybe that's OK.
     saved_token = FileBackedPlanetLegacyApiKey(
         None, ctx.obj['AUTH'].token_file_path())
     print(saved_token.legacy_api_key())
@@ -167,7 +166,8 @@ def do_token_refresh(ctx, scope):
     the concepts of separate (short lived) access tokens and
     (long lived) refresh tokens.
     '''
-    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None,
+                                           ctx.obj['AUTH'].token_file_path())
     auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     if not saved_token.refresh_token():
@@ -188,7 +188,8 @@ def do_validate_access_token(ctx):
     Validation is performed by calling out to the auth provider's
     token introspection network service.
     '''
-    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None,
+                                           ctx.obj['AUTH'].token_file_path())
     auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     validation_json = auth_client.validate_access_token(
@@ -211,7 +212,8 @@ def do_validate_id_token(ctx):
     Validation is performed by calling out to the auth provider's
     token introspection network service.
     '''
-    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None,
+                                           ctx.obj['AUTH'].token_file_path())
     auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     validation_json = auth_client.validate_id_token(saved_token.id_token())
@@ -235,7 +237,8 @@ def do_validate_id_token_local(ctx):
     locally, network access is still required to obtain the signing keys
     from the auth provider.
     '''
-    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None,
+                                           ctx.obj['AUTH'].token_file_path())
     auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     # Throws on error.
@@ -255,7 +258,8 @@ def do_validate_refresh_token(ctx):
     Validation is performed by calling out to the auth provider's
     token introspection network service.
     '''
-    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None,
+                                           ctx.obj['AUTH'].token_file_path())
     auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     validation_json = auth_client.validate_refresh_token(
@@ -286,7 +290,8 @@ def do_revoke_access_token(ctx):
     pass local validation, and checking with the auth provider that they have
     not been revoked.
     '''
-    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None,
+                                           ctx.obj['AUTH'].token_file_path())
     auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     auth_client.revoke_access_token(saved_token.access_token())
@@ -304,7 +309,8 @@ def do_revoke_refresh_token(ctx):
     revoke the current access token, which may remain potent until its
     natural expiration time if not also revoked.
     '''
-    saved_token = FileBackedOidcCredential(None, ctx.obj['AUTH'].token_file_path())
+    saved_token = FileBackedOidcCredential(None,
+                                           ctx.obj['AUTH'].token_file_path())
     auth_client = ctx.obj['AUTH'].auth_client()
     saved_token.load()
     auth_client.revoke_refresh_token(saved_token.refresh_token())

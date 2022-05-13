@@ -32,6 +32,10 @@ class PlanetLegacyAuthClientException(AuthClientException):
 
 
 class PlanetLegacyAuthClient(AuthClient):
+    """
+    Implementation of the AuthClient that interacts with Planet's API key
+    auth interfaces.
+    """
 
     def __init__(self, legacy_client_config: PlanetLegacyAuthClientConfig):
         super().__init__(legacy_client_config)
@@ -100,6 +104,13 @@ class PlanetLegacyAuthClient(AuthClient):
         return api_key
 
     def login(self, username=None, password=None, **kwargs):
+        """
+        Parameters:
+            username: Planet account user name. If not specified,
+                the user will be prompted for their user name.
+            password: Planet user password.  If not specified, the user
+                will be prompted for their password.
+        """
         # Should this user interactivity be here down in the library?
         # This is a parallel construction to OIDC auth mechanisms, that
         # may need to spawn a browser, which is inherently user interactive.
@@ -112,8 +123,8 @@ class PlanetLegacyAuthClient(AuthClient):
         return FileBackedPlanetLegacyApiKey(api_key=api_key)
 
     def default_request_authenticator(
-            self,
-            credential_file_path: pathlib.Path) -> PlanetLegacyRequestAuthenticator:
+        self, credential_file_path: pathlib.Path
+    ) -> PlanetLegacyRequestAuthenticator:
         return PlanetLegacyRequestAuthenticator(
             api_key_file=FileBackedPlanetLegacyApiKey(
                 api_key_file=credential_file_path))

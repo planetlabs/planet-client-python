@@ -46,6 +46,10 @@ class OidcAuthClientConfig(AuthClientConfig):
 
 
 class OidcAuthClient(AuthClient):
+    """
+    Base class for AuthClient implementations that implement an OAuth/OIDC
+    authentication flow.
+    """
 
     def __init__(self, oidc_client_config: OidcAuthClientConfig):
         super().__init__(oidc_client_config)
@@ -151,7 +155,7 @@ class OidcAuthClient(AuthClient):
               **kwargs) -> FileBackedOidcCredential:
         """
          Obtain tokens from the OIDC auth server using an appropriate login
-         flow. concrete subclasses should implement a single login flow.
+         flow. concrete subclasses should implement a single OAuth login flow.
          Args:
               requested_scopes: a list of strings specifying the scopes to
                   request.
@@ -183,16 +187,18 @@ class OidcAuthClient(AuthClient):
         #
         # if not requested_scopes:
         #    requested_scopes = self._oidc_client_config.default_request_scopes
-        return FileBackedOidcCredential(self._token_client().get_token_from_refresh(
-            self._oidc_client_config.client_id,
-            refresh_token,
-            requested_scopes))
+        return FileBackedOidcCredential(
+            self._token_client().get_token_from_refresh(
+                self._oidc_client_config.client_id,
+                refresh_token,
+                requested_scopes))
 
     def validate_access_token(self, access_token):
         """
         Validate the access token against the OIDC token introspection endpoint
-        :param access_token:
-        :return:
+        Parameters:
+            access_token: The access token to validate
+        Returns:
             The raw validate json payload
             TODO: object model this as a IntrospectionResult, like we do
                   tokens?
@@ -200,20 +206,13 @@ class OidcAuthClient(AuthClient):
         return self._introspection_client().validate_access_token(
             access_token, self._client_auth_enricher)
 
-    def validate_access_token_local(self, access_token, audience):
-        # The client doesn't know resource server's expected audience,
-        # so this perhaps doesn't belong in "AuthClient"
-        return self._token_validator().validate_token(
-            token_str=access_token,
-            issuer=self._oidc_client_config.auth_server,
-            audience=audience)
-
     def validate_id_token(self, id_token):
         """
         Validate the ID token against the OIDC token introspection endpoint
-        :param id_token:
-        :return:
-            The raw validate json payload
+        Parameters:
+            id_token: ID token to validate
+        Returns:
+            The raw validated json payload
             TODO: object model this as a IntrospectionResult, like we do
                   tokens?
         """
@@ -224,8 +223,9 @@ class OidcAuthClient(AuthClient):
         """
         Validate the ID token locally. A remote connection may still be made
         to obtain signing keys.
-        :param id_token:
-        :return:
+        Parameters:
+            id_token: ID token to validate
+        Returns:
             Upon success, the validated token claims are returned
         """
         # return self._token_validator().validate_token(
@@ -241,8 +241,9 @@ class OidcAuthClient(AuthClient):
         """
         Validate the refresh token against the OIDC token introspection
         endpoint
-        :param refresh_token:
-        :return:
+        Parameters:
+            refresh_token: Refresh token to validate
+        Returns:
             The raw validate json payload
             TODO: object model this as a IntrospectionResult, like we do
                   tokens?
@@ -253,7 +254,8 @@ class OidcAuthClient(AuthClient):
     def revoke_access_token(self, access_token) -> None:
         """
         Revoke the access token with the OIDC provider.
-        :param access_token
+        Parameters:
+            access_token: The access token to revoke
         """
         self._revocation_client().revoke_access_token(
             access_token, self._client_auth_enricher)
@@ -261,10 +263,17 @@ class OidcAuthClient(AuthClient):
     def revoke_refresh_token(self, refresh_token) -> None:
         """
         Revoke the refresh token with the OIDC provider.
-        :param refresh_token
+        Parameters:
+            refresh_token: The refresh token to revoke
         """
         self._revocation_client().revoke_refresh_token(
             refresh_token, self._client_auth_enricher)
 
     def get_scopes(self):
+        """
+        Query the authorization server for a list of scopes.
+        Returns:
+            Returns a list of scopes that may be requested during a call
+            to login or refresh
+        """
         return self._discovery()['scopes_supported']
