@@ -1,6 +1,4 @@
 import asyncio
-import os
-
 import cryptography.hazmat.primitives.serialization as crypto_serialization
 import os
 import socket
