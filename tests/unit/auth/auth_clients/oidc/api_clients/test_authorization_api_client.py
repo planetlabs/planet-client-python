@@ -2,6 +2,7 @@ import http.server
 import logging
 import urllib.parse
 
+import pytest as pytest
 import requests
 import unittest
 
@@ -12,7 +13,7 @@ from planet.auth.oidc.api_clients.authorization_api_client import \
     AuthorizationApiClient, AuthorizationApiException, \
     _parse_authcode_from_callback
 from planet.auth.oidc.util import create_pkce_challenge_verifier_pair
-from tests.util import background, find_free_port
+from tests.util import background, find_free_port, is_cicd
 
 TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
 TEST_CLIENT_ID = '_client_id_'
@@ -143,6 +144,9 @@ class AuthorizationApiClientTest(unittest.TestCase):
             self.callback_port)
         self.pkce_verifier, self.pkce_challenge = create_pkce_challenge_verifier_pair() # noqa
 
+    @pytest.mark.skipif(
+        condition=is_cicd(),
+        reason='Skipping tests that listen on a network port for CI/CD')
     @mock.patch('webbrowser.open', mocked_browser_authserver)
     def test_get_authcode_with_browser_and_listener(self):
         under_test = AuthorizationApiClient(

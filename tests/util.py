@@ -1,10 +1,18 @@
 import asyncio
+import os
+
 import cryptography.hazmat.primitives.serialization as crypto_serialization
 import os
 import socket
 from pathlib import Path
 
 from contextlib import closing
+
+
+def is_cicd() -> bool:
+    # CI - GitHub
+    # CI_COMMIT_SHA - GitLab
+    return bool(os.getenv('CI') or os.getenv('CI_COMMIT_SHA'))
 
 
 def tdata_resource_file_path(resource_file: str):

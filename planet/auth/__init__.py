@@ -23,11 +23,11 @@ follows:
       performing basic data validation.  Knows nothing about how to get a
       credential, or how to use a credential.
 - [RequestAuthenticator][planet.auth.RequestAuthenticator] - Responsible for
-      decorating API requests with a credential. Compatible with httpx and
-      requests libraries.  Some authentication mechanisms require that
+      decorating API requests with a credential. Compatible with `httpx` and
+      `requests` libraries.  Some authentication mechanisms require that
       the request authenticator also have an
       [AuthClient][planet.auth.AuthClient], others do not.  Whether or not
-      this is requires is driven by the specifics of the authentication
+      this is required is driven by the specifics of the authentication
       mechanism.
 """
 
