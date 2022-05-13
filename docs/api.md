@@ -1,6 +1,6 @@
 # API Reference 
 
-## ::: planet.Auth
+### ::: planet.auth
     rendering:
       show_root_full_path: false
 

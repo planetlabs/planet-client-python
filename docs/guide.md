@@ -35,52 +35,65 @@ Alternatively, use `await Session.aclose()` to close a `Session` explicitly:
 
 ### Authentication
 
+#### Authentication Overview
+
 There are two steps to managing authentication information, obtaining the
 authentication information from Planet and then managing it for local retrieval
-for authentication purposes.
+for service authentication purposes.
 
-The recommended method for obtaining authentication information is through
-logging in, using `Auth.from_login()` (note: using something like the `getpass`
-module is recommended to ensure your password remains secure). Alternatively,
-the api key can be obtained directly from the Planet account site and then used
-in `Auth.from_key()`.
+The recommended method for obtaining authentication information is to
+log in using the `login()` method on an instance of `AuthClient`. 
+Different implementations of `AuthClient` exist to support different use cases.
+The specific steps that will be followed depends on the configuration of the auth
+system, which may vary depending on the type of application under development.
 
 Once the authentication information is obtained, the most convenient way of
-managing it for local use is to write it to a secret file using `Auth.write()`.
-It can also be accessed, e.g. to store in an environment variable, as
-`Auth.value`.
+managing it for local use is to write it to a secret file using `Credential.save()`.
 
-For example, to obtain and store authentication information:
+The `Auth` class exists to manage the different components of the auth system,
+encapsulating the orchestration of the different classes needed to initialize,
+save, and use service access credentials that may be obtained using a variety
+of mechanisms.  The Auth class manages different configurations using profiles
+to manage on disk locations of configuration and credential files.  This 
+use of profiles also allows for the CLI find and manage credentials that may be used
+by other applications built on top of the Planet SDK library.
+
+For example, to obtain and store authentication information using the library:
 
 ```python
->>> import getpass
->>> from planet import Auth
->>>
->>> pw = getpass.getpass()
->>> auth = Auth.from_login('user', 'pw')
->>> auth.write()
-
+>>> from planet.auth import Auth
+>>> my_auth_system = Auth.initialize()
+>>> my_credential = my_auth_system.auth_client().login()
+>>> my_credential.set_path(my_auth_system.token_file_path())
+>>> my_credential.save()
 ```
 
-When a `Session` is created, by default, authentication is read from the secret
-file created with `Auth.write()`. This behavior can be modified by specifying
-`Auth` explicitly using the methods `Auth.from_file()` and `Auth.from_env()`.
-While `Auth.from_key()` and `Auth.from_login` can be used, it is recommended
-that those functions be used in authentication initialization and the
-authentication information be stored using `Auth.write()`.
+The same thing may be accomplished outside your application using Planet's 
+CLI tool:
 
-The file and environment variable read from can be customized in the
-respective functions. For example, authentication can be read from a custom
-environment variable:
+```shell
+planet auth login
+```
+
+Both of these will result in credentials being saved in a `~/.planet/`
+in your home directory that will be understood by subsequent initializations
+of the `Auth` system without calling `AuthClient.login()`.
+
+When a `Session` is created, authentication is read from the secret
+file created with `Credential.save()`. By default, sessions will use the default
+auth profile used by Planet's CLI. This behavior can be modified by passing
+in an already initialized Auth object.  Session assumes the selected
+auth profile has already been initialized by a call `AuthClient.login()` and 
+`Credential.save()`.
 
 ```python
 >>> import asyncio
->>> import os
->>> from planet import Auth, Session
->>>
->>> auth = Auth.from_env('ALTERNATE_VAR')
+>>> from planet import Session
+>>> from planet.auth import Auth
+>>> 
+>>> my_auth = Auth.initialize(profile="my_profile_name")
 >>> async def main():
-...     async with Session(auth=auth) as sess:
+...     async with Session(auth=my_auth) as sess:
 ...         # perform operations here
 ...         pass
 ...
@@ -88,6 +101,110 @@ environment variable:
 
 ```
 
+#### Authentication Profiles
+Authentication profiles are used to configure how the library interacts
+with authentication services, as well as how the credentials obtained from
+authentication services are subsequently used by the rest of the SDK to
+talk to Planet services.  Different profile configurations have different
+login requirements and different downstream behavior characteristics that
+must be accommodated.
+
+In their most basic form, a profile is defined by creating a profile 
+directory on disk under the `~/.planet/` directory in the user's home
+directory. The directory name is used as the profile identifier in all
+other operations. Profile names and directories are expected to be all
+lower case.
+
+Within the profile directory, the following files are defined:
+
+* `auth_client.json` - This file controls how the `Auth` system is
+   bootstrapped by `Auth.initialize()`.  It is here that application
+   specific client information may be configured.  Depending on the
+   client application type, this file may contain sensitive information.
+* `token.json`- This is the file that will store the `Credential` that
+   that is returned from a successful login. This credential will then be used
+   to authorize subsequent calls to pther Planet APIs.  Depending on the
+   profile configuration, this credential may be long-lived, or may be periodically
+   refreshed.
+
+##### Built in Profiles
+The following profiles are built into the SDK, and will be understood
+without the user creating a corresponding profile directory:
+
+* **default**: Configures the SDK to use the built-in client profile that
+  uses OAuth based authentication mechanisms to access Planet services on
+  behalf of the user. OAuth features short-lived access tokens and user
+  controlled scoped access to their account for improved security.
+* **legacy**: Configure the SDK to use Planet API keys to access
+  Planet services on behalf of the user.  Planet API keys are sensitive
+  long-lived keys that provide full access to the user's account.
+  The use of OAuth based mechanisms is considered more secure, and should
+  be preferred where possible.
+
+##### User Defined Profiles
+*TODO:* We need links to appropriate platform documentation on how to
+create applicaiton ID, manage grants, and what these scope things are
+at an API level.
+
+*TODO:* We need to document how to configure auth profiles of the various
+types: Planet Legacy, OAuth PKCE, OAuth Client Credentials, etc.
+
+**PKCE OAuth Client Configuration:**
+```json
+{
+    "client_type": "oidc_auth_code",
+    "auth_server": "FIXME",
+    "client_id": "__YOUR_CLIENT_ID_HERE__",
+    "redirect_uri": "__YOUR_CLIENT_REDIRECT_URI_HERE__",
+    "local_redirect_uri": "__YOUR_CLIENT_REDIRECT_URI_HERE__",
+    "default_request_scopes": ["planet",
+                               "planet.admin",
+                               "planet.admin:read",
+                               "planet.admin:write",
+                               "planet.tasking",
+                               "planet.tasking:read",
+                               "planet.tasking:write",
+                               "planet.platform",
+                               "planet.platform:read",
+                               "planet.platform:write",
+                               "offline_access",
+                               "openid",
+                               "profile"]
+}
+```
+
+**Client Secret Client Credentials Client Configuration:**
+```json
+{
+    "client_type": "oidc_client_credentials_secret",
+    "auth_server": "FIXME",
+    "client_id": "__YOUR_CLIENT_ID_HERE__",
+    "client_secret": "__YOUR_CLIENT_SECRET__",
+    "default_request_scopes": ["planet"]
+}
+```
+
+**Public Key Client Credentials Client Configuration:**
+```json
+{
+    "client_type": "oidc_client_credentials_pubkey",
+    "auth_server": "FIXME",
+    "client_id": "__YOUR_CLIENT_ID_HERE__",
+    "client_privkey": "-----BEGIN RSA PRIVATE KEY-----\n__YOUR_PRIVATE_KEY_HERE__\n-----END RSA PRIVATE KEY-----",
+    "client_privkey_file": "/path/to/private/key.pem",
+    "client_privkey_password": "__PASSWORD_FOR_PRIVATEKEY__",
+    "default_request_scopes": ["planet"]
+}
+```
+Only one of `private_key` or `private_key_file` is required.
+
+**Planet Legacy API Key Client Configuration**:
+```json
+{
+    "client_type": "planet_legacy",
+    "legacy_auth_endpoint": "https://api.planet.com/v0/auth/login"
+}
+```
 ### Orders Client
 
 The Orders Client mostly mirrors the
