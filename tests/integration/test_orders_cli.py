@@ -456,6 +456,48 @@ def test_cli_orders_request_clip(invoke, geom_geojson, write_to_tmp_json_file):
     assert order_request == json.loads(result.output)
 
 
+# TODO: convert "create" tests to "request" tests (gh-366).
+# TODO: add tests of "create --pretty" (gh-491).
+@pytest.mark.parametrize(
+    "id_string, expected_ids",
+    [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
+     ('4500474_2133707_2021-05-20_2419,4500474_2133707_2021-05-20_2420',
+      ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])])
+@respx.mock
+def test_cli_orders_create_basic_success(expected_ids,
+                                         id_string,
+                                         invoke,
+                                         order_description,
+                                         write_to_tmp_json_file):
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.post(TEST_ORDERS_URL).return_value = mock_resp
+
+    request_result = invoke([
+        'request',
+        '--name=test',
+        f'--id={id_string}',
+        '--bundle=analytic',
+        '--item-type=PSOrthoTile'
+    ])
+    request_file = write_to_tmp_json_file(json.loads(request_result.output),
+                                          'orders.json')
+
+    # Invoke the create call
+    invoke(['create', str(request_file)])
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": expected_ids,
+            "item_type": "PSOrthoTile",
+            "product_bundle": "analytic"
+        }],
+    }
+    sent_request = json.loads(respx.calls.last.request.content)
+    assert sent_request == order_request
+
+
 def test_cli_orders_request_clip_featureclass(invoke,
                                               featureclass_geojson,
                                               geom_geojson,
