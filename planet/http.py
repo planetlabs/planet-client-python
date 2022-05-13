@@ -138,6 +138,9 @@ class Session(BaseSession):
             alog_response, araise_for_status
         ]
 
+        self.max_retries = MAX_RETRIES
+        self.max_retry_backoff = MAX_RETRY_BACKOFF
+
     async def __aenter__(self):
         return self
 
@@ -170,21 +173,28 @@ class Session(BaseSession):
                 resp = await func(*a, **kw)
                 break
             except exceptions.TooManyRequests as e:
-                if num_tries > MAX_RETRIES:
+                if num_tries > self.max_retries:
                     raise e
                 else:
                     LOGGER.debug(f'Try {num_tries}')
-                    wait_time = self._calc_exponential_wait(num_tries)
+                    wait_time = self._calculate_wait(num_tries,
+                                                     self.max_retry_backoff)
                     LOGGER.info(f'Too Many Requests: sleeping {wait_time}s')
                     await asyncio.sleep(wait_time)
         return resp
 
     @staticmethod
-    def _calc_exponential_wait(num_tries):
-        """Calculates exponential wait
+    def _calculate_wait(num_tries, max_retry_backoff):
+        """Calculates retry wait
 
-        Introduces some randomness to stagger multiple requests and avoid
-        waves. Also thresholds maximum wait value to MAX_BACKOFF.
+        Base wait period is calculated as a exponential based on the number of
+        tries. Then, a random jitter of up to 1s is added to the base wait
+        to avoid waves of requests in the case of multiple requests. Finally,
+        the wait is thresholded to the maximum retry backoff.
+
+        Because threshold is applied after jitter, calculations that hit
+        threshold will not have random jitter applied, they will simply result
+        in the threshold value being returned.
 
         Ref:
         * https://developers.planet.com/docs/data/api-mechanics/
@@ -192,7 +202,7 @@ class Session(BaseSession):
         """
         random_number_milliseconds = random.randint(0, 1000) / 1000.0
         calc_wait = 2**num_tries + random_number_milliseconds
-        return min(calc_wait, MAX_RETRY_BACKOFF)
+        return min(calc_wait, max_retry_backoff)
 
     async def request(self,
                       request: models.Request,

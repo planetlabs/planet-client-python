@@ -13,6 +13,7 @@
 # the License.
 import logging
 from http import HTTPStatus
+import math
 from unittest.mock import MagicMock, Mock, patch
 
 import httpx
@@ -109,7 +110,7 @@ async def test_session_stream(mock_request):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session_request_retry(monkeypatch, mock_request):
+async def test_session_request_retry(mock_request):
     """Test the retry in the Session.request method"""
     async with http.Session() as ps:
         route = respx.get(TEST_URL)
@@ -118,8 +119,9 @@ async def test_session_request_retry(monkeypatch, mock_request):
             httpx.Response(HTTPStatus.OK, json={})
         ]
 
-        # let's not actually introcude a wait into the tests
-        monkeypatch.setattr(http, 'MAX_RETRY_BACKOFF', 0)
+        # let's not actually introduce a wait into the tests
+        ps.max_retry_backoff = 0
+
         resp = await ps.request(mock_request)
         assert resp
         assert route.call_count == 2
@@ -127,30 +129,40 @@ async def test_session_request_retry(monkeypatch, mock_request):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session__retry(monkeypatch):
+async def test_session__retry():
     """A unit test for the _retry function"""
-    # decorator form of patch seems to conflict with respx.mock
-    # if it is placed above respx.mock, the funciton does not seem to be mocked
-    # but if it is placed below respx.mock, the reference to the mock cannot
-    # be accessed through the test function arguments
-    with patch('planet.http.asyncio.sleep',
-               new_callable=AsyncMock) as mock_sleep:
 
-        async def test_func():
-            raise exceptions.TooManyRequests
+    async def test_func():
+        # directly trigger the retry logic
+        raise exceptions.TooManyRequests
+
+    with patch('planet.http.Session._calculate_wait') as mock_wait:
+        # let's not actually introduce a wait into the tests
+        mock_wait.return_value = 0
 
         async with http.Session() as ps:
             with pytest.raises(exceptions.TooManyRequests):
                 await ps._retry(test_func)
 
-        calls = mock_sleep.call_args_list
-        wait_times = [c[0][0] for c in calls]
+        calls = mock_wait.call_args_list
+        args = [c[0] for c in calls]
+        assert args == [(1, 64), (2, 64), (3, 64), (4, 64), (5, 64)]
 
-        # (min, max): 2**n to 2**n + 1
-        expected_times = [(2, 3), (4, 5), (8, 9), (16, 17), (32, 33)]
 
-        for wait, expected in zip(wait_times, expected_times):
-            assert wait >= expected[0] and wait < expected[1]
+def test__calculate_wait():
+    max_retry_backoff = 20
+    wait_times = [
+        http.Session._calculate_wait(i + 1, max_retry_backoff)
+        for i in range(5)
+    ]
+
+    # (min, max): 2**n to 2**n + 1, last entry hit threshold
+    expected_times = [2, 4, 8, 16, 20]
+
+    for wait, expected in zip(wait_times, expected_times):
+        # this doesn't really test the randomness but does test exponential
+        # and threshold
+        assert math.floor(wait) == expected
 
 
 @respx.mock
