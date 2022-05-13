@@ -366,6 +366,8 @@ def test_cli_orders_download_state(invoke, order_description, oid):
     assert 'order state (running) is not a final state.' in result.output
 
 
+# # TODO: add tests of "create --like" (gh-491).
+# # TODO: add tests of "create --pretty" (gh-491).
 @pytest.mark.parametrize(
     "id_string, expected_ids",
     [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
@@ -537,6 +539,56 @@ def test_cli_orders_request_clip_featureclass(invoke,
     assert order_request == json.loads(result.output)
 
 
+@respx.mock
+def test_cli_orders_create_clip_featureclass(invoke,
+                                             featureclass_geojson,
+                                             geom_geojson,
+                                             order_description,
+                                             write_to_tmp_json_file):
+    """Tests that the clip option takes in feature class geojson as well"""
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.post(TEST_ORDERS_URL).return_value = mock_resp
+
+    fc_file = write_to_tmp_json_file(featureclass_geojson, 'fc.geojson')
+
+    request_result = invoke([
+        'request',
+        '--name',
+        'test',
+        '--id',
+        '4500474_2133707_2021-05-20_2419',
+        '--bundle',
+        'analytic',
+        '--item-type',
+        'PSOrthoTile',
+        '--clip',
+        fc_file
+    ])
+
+    request_file = write_to_tmp_json_file(json.loads(request_result.output),
+                                          'orders.json')
+
+    # Invoke the create call
+    invoke(['create', str(request_file)])
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": ["4500474_2133707_2021-05-20_2419"],
+            "item_type": "PSOrthoTile",
+            "product_bundle": "analytic",
+        }],
+        "tools": [{
+            'clip': {
+                'aoi': geom_geojson
+            }
+        }]
+    }
+    sent_request = json.loads(respx.calls.last.request.content)
+    assert sent_request == order_request
+
+
 def test_cli_orders_request_clip_invalid_geometry(invoke,
                                                   point_geom_geojson,
                                                   write_to_tmp_json_file):
@@ -628,6 +680,59 @@ def test_cli_orders_request_cloudconfig(invoke, write_to_tmp_json_file):
     assert order_request == json.loads(result.output)
 
 
+@respx.mock
+def test_cli_orders_create_cloudconfig(invoke,
+                                       order_description,
+                                       write_to_tmp_json_file):
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.post(TEST_ORDERS_URL).return_value = mock_resp
+
+    config_json = {
+        'amazon_s3': {
+            'aws_access_key_id': 'aws_access_key_id',
+            'aws_secret_access_key': 'aws_secret_access_key',
+            'bucket': 'bucket',
+            'aws_region': 'aws_region'
+        },
+        'archive_type': 'zip'
+    }
+    config_file = write_to_tmp_json_file(config_json, 'config.json')
+
+    request_result = invoke([
+        'request',
+        '--name',
+        'test',
+        '--id',
+        '4500474_2133707_2021-05-20_2419',
+        '--bundle',
+        'analytic',
+        '--item-type',
+        'PSOrthoTile',
+        '--cloudconfig',
+        config_file
+    ])
+
+    request_file = write_to_tmp_json_file(json.loads(request_result.output),
+                                          'orders.json')
+
+    # Invoke the create call
+    invoke(['create', str(request_file)])
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": ["4500474_2133707_2021-05-20_2419"],
+            "item_type": "PSOrthoTile",
+            "product_bundle": "analytic",
+        }],
+        "delivery":
+        config_json
+    }
+    sent_request = json.loads(respx.calls.last.request.content)
+    assert sent_request == order_request
+
+
 def test_cli_orders_request_email(invoke):
     result = invoke([
         'request',
@@ -656,6 +761,48 @@ def test_cli_orders_request_email(invoke):
         }
     }
     assert order_request == json.loads(result.output)
+
+
+@respx.mock
+def test_cli_orders_create_email(invoke,
+                                 order_description,
+                                 write_to_tmp_json_file):
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.post(TEST_ORDERS_URL).return_value = mock_resp
+
+    request_result = invoke([
+        'request',
+        '--name',
+        'test',
+        '--id',
+        '4500474_2133707_2021-05-20_2419',
+        '--bundle',
+        'analytic',
+        '--item-type',
+        'PSOrthoTile',
+        '--email'
+    ])
+
+    request_file = write_to_tmp_json_file(json.loads(request_result.output),
+                                          'orders.json')
+
+    # Invoke the create call
+    invoke(['create', str(request_file)])
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": ["4500474_2133707_2021-05-20_2419"],
+            "item_type": "PSOrthoTile",
+            "product_bundle": "analytic",
+        }],
+        "notifications": {
+            "email": True
+        }
+    }
+    sent_request = json.loads(respx.calls.last.request.content)
+    assert sent_request == order_request
 
 
 def test_cli_orders_request_tools(invoke, geom_geojson,
@@ -687,307 +834,45 @@ def test_cli_orders_request_tools(invoke, geom_geojson,
     assert order_request == json.loads(result.output)
 
 
-# def test_cli_orders_create_clip(invoke,
-#                                 geom_geojson,
-#                                 order_description,
-#                                 write_to_tmp_json_file):
-#     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-#     respx.post(TEST_ORDERS_URL).return_value = mock_resp
+@respx.mock
+def test_cli_orders_create_tools(invoke,
+                                 geom_geojson,
+                                 order_description,
+                                 write_to_tmp_json_file):
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
-#     aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
+    tools_json = [{'clip': {'aoi': geom_geojson}}, {'composite': {}}]
+    tools_file = write_to_tmp_json_file(tools_json, 'tools.json')
 
-#     request_result = invoke([
-#         'request',
-#         '--name',
-#         'test',
-#         '--id',
-#         '4500474_2133707_2021-05-20_2419',
-#         '--bundle',
-#         'analytic',
-#         '--item-type',
-#         'PSOrthoTile',
-#         '--clip',
-#         aoi_file
-#     ])
-#     request_file = write_to_tmp_json_file(json.loads(request_result.output),
-#                                           'request.json')
-#     create_result = invoke([
-#         'create',
-#         request_file
-#     ])
+    request_result = invoke([
+        'request',
+        '--name=test',
+        '--id=4500474_2133707_2021-05-20_2419',
+        '--bundle=analytic',
+        '--item-type=PSOrthoTile',
+        f'--tools={tools_file}'
+    ])
 
-#     order_request = {
-#         "name":
-#         "test",
-#         "products": [{
-#             "item_ids": ["4500474_2133707_2021-05-20_2419"],
-#             "item_type": "PSOrthoTile",
-#             "product_bundle": "analytic",
-#         }],
-#         "tools": [{
-#             'clip': {
-#                 'aoi': geom_geojson
-#             }
-#         }]
-#     }
-#     sent_request = json.loads(respx.calls.last.request.content)
-#     assert sent_request == order_request
+    request_file = write_to_tmp_json_file(json.loads(request_result.output),
+                                          'orders.json')
 
-# # TODO: convert "create" tests to "request" tests (gh-366).
-# # TODO: add tests of "create --like" (gh-491).
-# # TODO: add tests of "create --pretty" (gh-491).
+    # Invoke the create call
+    invoke(['create', str(request_file)])
 
-# # TODO: convert this test to create to send request
-# @respx.mock
-# def test_cli_orders_create_clip(invoke,
-#                                 geom_geojson,
-#                                 order_description,
-#                                 write_to_tmp_json_file):
-#     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-#     respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
-#     aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
-
-#     result = invoke([
-#         'create',
-#         '--name',
-#         'test',
-#         '--id',
-#         '4500474_2133707_2021-05-20_2419',
-#         '--bundle',
-#         'analytic',
-#         '--item-type',
-#         'PSOrthoTile',
-#         '--clip',
-#         aoi_file
-#     ])
-#     assert not result.exception
-
-#     order_request = {
-#         "name":
-#         "test",
-#         "products": [{
-#             "item_ids": ["4500474_2133707_2021-05-20_2419"],
-#             "item_type": "PSOrthoTile",
-#             "product_bundle": "analytic",
-#         }],
-#         "tools": [{
-#             'clip': {
-#                 'aoi': geom_geojson
-#             }
-#         }]
-#     }
-#     sent_request = json.loads(respx.calls.last.request.content)
-#     assert sent_request == order_request
-
-# @respx.mock
-# def test_cli_orders_create_clip_featureclass(invoke,
-#                                              featureclass_geojson,
-#                                              geom_geojson,
-#                                              order_description,
-#                                              write_to_tmp_json_file):
-#     """Tests that the clip option takes in feature class geojson as well"""
-#     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-#     respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
-#     fc_file = write_to_tmp_json_file(featureclass_geojson, 'fc.geojson')
-
-#     result = invoke([
-#         'create',
-#         '--name',
-#         'test',
-#         '--id',
-#         '4500474_2133707_2021-05-20_2419',
-#         '--bundle',
-#         'analytic',
-#         '--item-type',
-#         'PSOrthoTile',
-#         '--clip',
-#         fc_file
-#     ])
-#     assert not result.exception
-
-#     order_request = {
-#         "name":
-#         "test",
-#         "products": [{
-#             "item_ids": ["4500474_2133707_2021-05-20_2419"],
-#             "item_type": "PSOrthoTile",
-#             "product_bundle": "analytic",
-#         }],
-#         "tools": [{
-#             'clip': {
-#                 'aoi': geom_geojson
-#             }
-#         }]
-#     }
-#     sent_request = json.loads(respx.calls.last.request.content)
-#     assert sent_request == order_request
-
-# def test_cli_orders_create_clip_invalid_geometry(invoke,
-#                                                  point_geom_geojson,
-#                                                  write_to_tmp_json_file):
-#     aoi_file = write_to_tmp_json_file(point_geom_geojson, 'aoi.geojson')
-
-#     result = invoke([
-#         'create',
-#         '--name',
-#         'test',
-#         '--id',
-#         '4500474_2133707_2021-05-20_2419',
-#         '--bundle',
-#         'analytic',
-#         '--item-type',
-#         'PSOrthoTile',
-#         '--clip',
-#         aoi_file
-#     ])
-#     assert result.exception
-#     error_msg = ('Error: Invalid value: Invalid geometry type: ' +
-#                  'Point is not Polygon.')
-#     assert error_msg in result.output
-
-# def test_cli_orders_create_clip_and_tools(invoke,
-#                                           geom_geojson,
-#                                           write_to_tmp_json_file):
-#     # interestingly, it is important that both clip and tools
-#     # option values lead to valid json files
-#     aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
-
-#     result = invoke([
-#         'create',
-#         '--name',
-#         'test',
-#         '--id',
-#         '4500474_2133707_2021-05-20_2419',
-#         '--bundle',
-#         'analytic',
-#         '--item-type',
-#         'PSOrthoTile',
-#         '--clip',
-#         aoi_file,
-#         '--tools',
-#         aoi_file
-#     ])
-#     assert result.exception
-#     assert "Specify only one of '--clip' or '--tools'" in result.output
-
-# @respx.mock
-# def test_cli_orders_create_cloudconfig(invoke,
-#                                        geom_geojson,
-#                                        order_description,
-#                                        write_to_tmp_json_file):
-#     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-#     respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
-#     config_json = {
-#         'amazon_s3': {
-#             'aws_access_key_id': 'aws_access_key_id',
-#             'aws_secret_access_key': 'aws_secret_access_key',
-#             'bucket': 'bucket',
-#             'aws_region': 'aws_region'
-#         },
-#         'archive_type': 'zip'
-#     }
-#     config_file = write_to_tmp_json_file(config_json, 'config.json')
-
-#     result = invoke([
-#         'create',
-#         '--name',
-#         'test',
-#         '--id',
-#         '4500474_2133707_2021-05-20_2419',
-#         '--bundle',
-#         'analytic',
-#         '--item-type',
-#         'PSOrthoTile',
-#         '--cloudconfig',
-#         config_file
-#     ])
-#     assert not result.exception
-
-#     order_request = {
-#         "name":
-#         "test",
-#         "products": [{
-#             "item_ids": ["4500474_2133707_2021-05-20_2419"],
-#             "item_type": "PSOrthoTile",
-#             "product_bundle": "analytic",
-#         }],
-#         "delivery":
-#         config_json
-#     }
-#     sent_request = json.loads(respx.calls.last.request.content)
-#     assert sent_request == order_request
-
-# @respx.mock
-# def test_cli_orders_create_email(invoke, geom_geojson, order_description):
-#     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-#     respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
-#     result = invoke([
-#         'create',
-#         '--name',
-#         'test',
-#         '--id',
-#         '4500474_2133707_2021-05-20_2419',
-#         '--bundle',
-#         'analytic',
-#         '--item-type',
-#         'PSOrthoTile',
-#         '--email'
-#     ])
-#     assert not result.exception
-
-#     order_request = {
-#         "name":
-#         "test",
-#         "products": [{
-#             "item_ids": ["4500474_2133707_2021-05-20_2419"],
-#             "item_type": "PSOrthoTile",
-#             "product_bundle": "analytic",
-#         }],
-#         "notifications": {
-#             "email": True
-#         }
-#     }
-#     sent_request = json.loads(respx.calls.last.request.content)
-#     assert sent_request == order_request
-
-# @respx.mock
-# def test_cli_orders_create_tools(invoke,
-#                                  geom_geojson,
-#                                  order_description,
-#                                  write_to_tmp_json_file):
-#     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-#     respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
-#     tools_json = [{'clip': {'aoi': geom_geojson}}, {'composite': {}}]
-#     tools_file = write_to_tmp_json_file(tools_json, 'tools.json')
-
-#     result = invoke([
-#         'create',
-#         '--name=test',
-#         '--id=4500474_2133707_2021-05-20_2419',
-#         '--bundle=analytic',
-#         '--item-type=PSOrthoTile',
-#         f'--tools={tools_file}'
-#     ])
-#     assert not result.exception
-
-#     order_request = {
-#         "name":
-#         "test",
-#         "products": [{
-#             "item_ids": ["4500474_2133707_2021-05-20_2419"],
-#             "item_type": "PSOrthoTile",
-#             "product_bundle": "analytic",
-#         }],
-#         "tools":
-#         tools_json
-#     }
-#     sent_request = json.loads(respx.calls.last.request.content)
-#     assert sent_request == order_request
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": ["4500474_2133707_2021-05-20_2419"],
+            "item_type": "PSOrthoTile",
+            "product_bundle": "analytic",
+        }],
+        "tools":
+        tools_json
+    }
+    sent_request = json.loads(respx.calls.last.request.content)
+    assert sent_request == order_request
 
 
 def test_cli_orders_read_file_json_doesnotexist(invoke):
