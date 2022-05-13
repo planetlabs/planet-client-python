@@ -1,12 +1,13 @@
 import http.server
 import httpx
 import json
+import pytest
 import requests
 import unittest
 
 from planet.auth.request_authenticator import \
     SimpleInMemoryRequestAuthenticator
-from tests.util import background, find_free_port
+from tests.util import background, find_free_port, is_cicd
 
 TEST_HEADER = 'x-test-header'
 TEST_PREFIX = 'TEST'
@@ -44,6 +45,10 @@ def handle_test_request_background(listen_port):
     http_server.handle_request()
 
 
+@pytest.mark.skipif(
+    condition=is_cicd(),
+    reason='Skipping tests that listen on a network port for CI/CD'
+)
 class RequestAuthenticatorTest(unittest.TestCase):
 
     def setUp(self):

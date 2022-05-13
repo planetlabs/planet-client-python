@@ -1,4 +1,6 @@
 import asyncio
+import os
+
 import cryptography.hazmat.primitives.serialization as crypto_serialization
 import importlib.resources
 import socket
@@ -11,6 +13,12 @@ from planet.auth.auth_client import AuthClientConfig
 
 def is_interactive_shell():
     return sys.stdin.isatty()
+
+
+def is_cicd() -> bool:
+    # CI - GitHub
+    # CI_COMMIT_SHA - GitLab
+    return bool(os.getenv('CI') or os.getenv('CI_COMMIT_SHA'))
 
 
 def tdata_resource_file_path(resource_file: str):
