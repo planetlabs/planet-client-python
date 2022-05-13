@@ -47,8 +47,7 @@ def handle_test_request_background(listen_port):
 
 @pytest.mark.skipif(
     condition=is_cicd(),
-    reason='Skipping tests that listen on a network port for CI/CD'
-)
+    reason='Skipping tests that listen on a network port for CI/CD')
 class RequestAuthenticatorTest(unittest.TestCase):
 
     def setUp(self):

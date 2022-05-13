@@ -146,8 +146,7 @@ class AuthorizationApiClientTest(unittest.TestCase):
 
     @pytest.mark.skipif(
         condition=is_cicd(),
-        reason='Skipping tests that listen on a network port for CI/CD'
-    )
+        reason='Skipping tests that listen on a network port for CI/CD')
     @mock.patch('webbrowser.open', mocked_browser_authserver)
     def test_get_authcode_with_browser_and_listener(self):
         under_test = AuthorizationApiClient(
