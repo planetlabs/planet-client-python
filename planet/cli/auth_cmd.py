@@ -1,7 +1,3 @@
-# FIXME: Rename? This isn't strictly only an "OIDC" Auth CLI interface
-#        anymore. It works with any auth provider that provided an
-#        AuthClient interface. But, this is a heavily OIDC influenced
-#        interface.  Should we split oidc and legacy into sub-commands?
 import click
 import sys
 
@@ -18,13 +14,15 @@ from planet.cli.util import recast_exceptions_to_click
 
 @click.group('auth', invoke_without_command=True)
 @click.pass_context
-def oidc_token_group(ctx):
+def auth_cmd_group(ctx):
     '''
     Manage authentication and credentials.
 
     The auth command exists to interface with authentication services,
     and manage authentication credentials that are used for interacting with
-    other services.
+    other services.  The interface is heavily influenced by the capabilities
+    of OAuth/OIDC, but this command currently services multiple authentication
+    mechanisms.
 
     Since the authentication command exists to prepare a runtime environment
     for calling other commands, and not just for interacting with auth
@@ -77,7 +75,7 @@ def oidc_token_group(ctx):
         sys.exit(0)
 
 
-@oidc_token_group.command('list-scopes')
+@auth_cmd_group.command('list-scopes')
 @click.pass_context
 @recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_list_scopes(ctx):
@@ -102,7 +100,7 @@ def do_list_scopes(ctx):
 #       gcloud cli, which is what we patterned our flag after. This was for
 #       "security reasons". We need to understand what and why, and what a
 #       solution is.
-@oidc_token_group.command('login')
+@auth_cmd_group.command('login')
 @opt_token_scope
 @opt_open_browser
 @opt_auth_password
@@ -124,7 +122,7 @@ def do_token_login(ctx, scope, open_browser, username, password):
     token.save()
 
 
-@oidc_token_group.command('print-access-token')
+@auth_cmd_group.command('print-access-token')
 @click.pass_context
 @recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_print_access_token(ctx):
@@ -138,7 +136,7 @@ def do_print_access_token(ctx):
     print(saved_token.access_token())
 
 
-@oidc_token_group.command('print-api-key')
+@auth_cmd_group.command('print-api-key')
 @click.pass_context
 @recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_print_api_key(ctx):
@@ -151,7 +149,7 @@ def do_print_api_key(ctx):
     print(saved_token.legacy_api_key())
 
 
-@oidc_token_group.command('refresh')
+@auth_cmd_group.command('refresh')
 @opt_token_scope
 @click.pass_context
 @recast_exceptions_to_click(AuthException, FileNotFoundError)
@@ -178,7 +176,7 @@ def do_token_refresh(ctx, scope):
     saved_token.save()
 
 
-@oidc_token_group.command('validate-access-token')
+@auth_cmd_group.command('validate-access-token')
 @click.pass_context
 @recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_validate_access_token(ctx):
@@ -202,7 +200,7 @@ def do_validate_access_token(ctx):
     print(validation_json)
 
 
-@oidc_token_group.command('validate-id-token')
+@auth_cmd_group.command('validate-id-token')
 @click.pass_context
 @recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_validate_id_token(ctx):
@@ -225,7 +223,7 @@ def do_validate_id_token(ctx):
     print(validation_json)
 
 
-@oidc_token_group.command('validate-id-token-local')
+@auth_cmd_group.command('validate-id-token-local')
 @click.pass_context
 @recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_validate_id_token_local(ctx):
@@ -248,7 +246,7 @@ def do_validate_id_token_local(ctx):
     print(validation_json)
 
 
-@oidc_token_group.command('validate-refresh-token')
+@auth_cmd_group.command('validate-refresh-token')
 @click.pass_context
 @recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_validate_refresh_token(ctx):
@@ -272,7 +270,7 @@ def do_validate_refresh_token(ctx):
     print(validation_json)
 
 
-@oidc_token_group.command('revoke-access-token')
+@auth_cmd_group.command('revoke-access-token')
 @click.pass_context
 @recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_revoke_access_token(ctx):
@@ -297,7 +295,7 @@ def do_revoke_access_token(ctx):
     auth_client.revoke_access_token(saved_token.access_token())
 
 
-@oidc_token_group.command('revoke-refresh-token')
+@auth_cmd_group.command('revoke-refresh-token')
 @click.pass_context
 @recast_exceptions_to_click(AuthException, FileNotFoundError)
 def do_revoke_refresh_token(ctx):
