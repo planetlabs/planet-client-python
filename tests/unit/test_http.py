@@ -14,7 +14,7 @@
 import logging
 from http import HTTPStatus
 import math
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import httpx
 import respx
@@ -46,13 +46,6 @@ def mock_response():
         return r
 
     return mocker
-
-
-class AsyncMock(MagicMock):
-    """This class was added to the Python library in 3.8"""
-
-    async def __call__(self, *args, **kwargs):
-        return super(AsyncMock, self).__call__(*args, **kwargs)
 
 
 def test_basesession__raise_for_status(mock_response):
