@@ -1,8 +1,4 @@
-# API Reference 
-
-## ::: planet.Auth
-    rendering:
-      show_root_full_path: false
+# API Reference
 
 ## ::: planet.Session
     rendering:
@@ -19,5 +15,3 @@
 ## ::: planet.reporting
     rendering:
       show_root_full_path: false
-
-

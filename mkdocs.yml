@@ -31,7 +31,9 @@ nav:
     - User Guide: 'guide.md'
     - Upgrading: 'upgrading.md'
     - Early Access: 'v2_earlyaccess.md'
-    - API Reference: 'api.md'
+    - API Reference:
+      - Planet Service API Reference: 'api.md'
+      - Authenticaiton API Reference: 'api-auth.md'
     - CLI Reference: 'cli.md'
 
 markdown_extensions:
