@@ -18,7 +18,7 @@ class PlanetLegacyAuthClientConfig(AuthClientConfig):
     def __init__(self, legacy_auth_endpoint, **kwargs):
         # TODO: add the ability to store long term credentials in the
         #  auth client config?  This would mirror client credential
-        #  flow.  It would prbably be more appropriate to store the API
+        #  flow.  It would probably be more appropriate to store the API
         #  key than username/password.
         super().__init__(**kwargs)
         self.legacy_auth_endpoint = legacy_auth_endpoint

@@ -218,6 +218,10 @@ class AuthClient(ABC):
         the AuthClient or the Credential.  This is the job of a
         RequestAuthenticator.
 
+        The login command is permitted to be user interactive.  Depending on
+        the implementation, this may terminal prompts, or may require the
+        use of a web browser.
+
         Returns:
             Upon successful login, a Credential will be returned. The returned
             value will be in memory only. It is the responsibility of the
