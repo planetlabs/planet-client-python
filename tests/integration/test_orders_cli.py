@@ -371,14 +371,7 @@ def test_cli_orders_download_state(invoke, order_description, oid):
     [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
      ('4500474_2133707_2021-05-20_2419,4500474_2133707_2021-05-20_2420',
       ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])])
-@respx.mock
-def test_cli_orders_request_basic_success(expected_ids,
-                                          id_string,
-                                          invoke,
-                                          order_description):
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
+def test_cli_orders_request_basic_success(expected_ids, id_string, invoke):
     result = invoke([
         'request',
         '--name=test',
@@ -428,14 +421,7 @@ def test_cli_orders_request_id_empty(invoke):
     assert 'Entry cannot be an empty string.' in result.output
 
 
-@respx.mock
-def test_cli_orders_request_clip(invoke,
-                                 geom_geojson,
-                                 order_description,
-                                 write_to_tmp_json_file):
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
+def test_cli_orders_request_clip(invoke, geom_geojson, write_to_tmp_json_file):
     aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
 
     result = invoke([
@@ -470,63 +456,11 @@ def test_cli_orders_request_clip(invoke,
     assert order_request == json.loads(result.output)
 
 
-# def test_cli_orders_create_clip(invoke,
-#                                 geom_geojson,
-#                                 order_description,
-#                                 write_to_tmp_json_file):
-#     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-#     respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
-#     aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
-
-#     request_result = invoke([
-#         'request',
-#         '--name',
-#         'test',
-#         '--id',
-#         '4500474_2133707_2021-05-20_2419',
-#         '--bundle',
-#         'analytic',
-#         '--item-type',
-#         'PSOrthoTile',
-#         '--clip',
-#         aoi_file
-#     ])
-#     request_file = write_to_tmp_json_file(json.loads(request_result.output),
-#                                           'request.json')
-#     create_result = invoke([
-#         'create',
-#         request_file
-#     ])
-
-#     order_request = {
-#         "name":
-#         "test",
-#         "products": [{
-#             "item_ids": ["4500474_2133707_2021-05-20_2419"],
-#             "item_type": "PSOrthoTile",
-#             "product_bundle": "analytic",
-#         }],
-#         "tools": [{
-#             'clip': {
-#                 'aoi': geom_geojson
-#             }
-#         }]
-#     }
-#     sent_request = json.loads(respx.calls.last.request.content)
-#     assert sent_request == order_request
-
-
-@respx.mock
 def test_cli_orders_request_clip_featureclass(invoke,
                                               featureclass_geojson,
                                               geom_geojson,
-                                              order_description,
                                               write_to_tmp_json_file):
     """Tests that the clip option takes in feature class geojson as well"""
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
     fc_file = write_to_tmp_json_file(featureclass_geojson, 'fc.geojson')
 
     result = invoke([
@@ -611,14 +545,7 @@ def test_cli_orders_request_clip_and_tools(invoke,
     assert "Specify only one of '--clip' or '--tools'" in result.output
 
 
-@respx.mock
-def test_cli_orders_request_cloudconfig(invoke,
-                                        geom_geojson,
-                                        order_description,
-                                        write_to_tmp_json_file):
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
+def test_cli_orders_request_cloudconfig(invoke, write_to_tmp_json_file):
     config_json = {
         'amazon_s3': {
             'aws_access_key_id': 'aws_access_key_id',
@@ -659,11 +586,7 @@ def test_cli_orders_request_cloudconfig(invoke,
     assert order_request == json.loads(result.output)
 
 
-@respx.mock
-def test_cli_orders_request_email(invoke, geom_geojson, order_description):
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
+def test_cli_orders_request_email(invoke):
     result = invoke([
         'request',
         '--name',
@@ -693,14 +616,8 @@ def test_cli_orders_request_email(invoke, geom_geojson, order_description):
     assert order_request == json.loads(result.output)
 
 
-@respx.mock
-def test_cli_orders_request_tools(invoke,
-                                  geom_geojson,
-                                  order_description,
+def test_cli_orders_request_tools(invoke, geom_geojson,
                                   write_to_tmp_json_file):
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
     tools_json = [{'clip': {'aoi': geom_geojson}}, {'composite': {}}]
     tools_file = write_to_tmp_json_file(tools_json, 'tools.json')
 
@@ -727,6 +644,52 @@ def test_cli_orders_request_tools(invoke,
     }
     assert order_request == json.loads(result.output)
 
+
+# def test_cli_orders_create_clip(invoke,
+#                                 geom_geojson,
+#                                 order_description,
+#                                 write_to_tmp_json_file):
+#     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+#     respx.post(TEST_ORDERS_URL).return_value = mock_resp
+
+#     aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
+
+#     request_result = invoke([
+#         'request',
+#         '--name',
+#         'test',
+#         '--id',
+#         '4500474_2133707_2021-05-20_2419',
+#         '--bundle',
+#         'analytic',
+#         '--item-type',
+#         'PSOrthoTile',
+#         '--clip',
+#         aoi_file
+#     ])
+#     request_file = write_to_tmp_json_file(json.loads(request_result.output),
+#                                           'request.json')
+#     create_result = invoke([
+#         'create',
+#         request_file
+#     ])
+
+#     order_request = {
+#         "name":
+#         "test",
+#         "products": [{
+#             "item_ids": ["4500474_2133707_2021-05-20_2419"],
+#             "item_type": "PSOrthoTile",
+#             "product_bundle": "analytic",
+#         }],
+#         "tools": [{
+#             'clip': {
+#                 'aoi': geom_geojson
+#             }
+#         }]
+#     }
+#     sent_request = json.loads(respx.calls.last.request.content)
+#     assert sent_request == order_request
 
 # # TODO: convert "create" tests to "request" tests (gh-366).
 # # TODO: add tests of "create --like" (gh-491).
