@@ -25,8 +25,9 @@ class AuthTest(unittest.TestCase):
         self.assertIsInstance(under_test.request_authenticator(),
                               RefreshingOidcTokenRequestAuthenticator)
         self.assertIsInstance(under_test.token_file_path(), pathlib.Path)
-        self.assertEqual(pathlib.Path.home().joinpath(".planet/token.json"),
-                         under_test.token_file_path())
+        self.assertEqual(
+            pathlib.Path.home().joinpath(".planet/default/token.json"),
+            under_test.token_file_path())
 
     def test_initialize_default_by_profile_name(self):
         under_test = Auth.initialize(profile='default')
@@ -34,8 +35,9 @@ class AuthTest(unittest.TestCase):
         self.assertIsInstance(under_test.request_authenticator(),
                               RefreshingOidcTokenRequestAuthenticator)
         self.assertIsInstance(under_test.token_file_path(), pathlib.Path)
-        self.assertEqual(pathlib.Path.home().joinpath(".planet/token.json"),
-                         under_test.token_file_path())
+        self.assertEqual(
+            pathlib.Path.home().joinpath(".planet/default/token.json"),
+            under_test.token_file_path())
 
     def test_initialize_legacy_by_profile_name(self):
         under_test = Auth.initialize(profile='legacy')
@@ -93,8 +95,9 @@ class AuthTest(unittest.TestCase):
         self.assertIsInstance(under_test.request_authenticator(),
                               RefreshingOidcTokenRequestAuthenticator)
         self.assertIsInstance(under_test.token_file_path(), pathlib.Path)
-        self.assertEqual(pathlib.Path.home().joinpath(".planet/token.json"),
-                         under_test.token_file_path())
+        self.assertEqual(
+            pathlib.Path.home().joinpath(".planet/default/token.json"),
+            under_test.token_file_path())
 
     def test_legacy_overrirdes_authconffile(self):
         under_test = Auth.initialize(

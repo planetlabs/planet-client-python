@@ -15,13 +15,10 @@ class Profile:
             override_path: Union[str, pathlib.PurePath, None]) -> pathlib.Path:
         if override_path:
             return pathlib.Path(override_path)
-        if not profile \
-                or profile == '' \
-                or profile.lower() == Profile.BUILTIN_PROFILE_NAME_DEFAULT:
-            return pathlib.Path.home().joinpath(".planet/{}".format(filename))
-        else:
-            return pathlib.Path.home().joinpath(".planet/{}/{}".format(
-                profile.lower(), filename))
+        if not profile or profile == '':
+            profile = Profile.BUILTIN_PROFILE_NAME_DEFAULT
+        return pathlib.Path.home().joinpath(".planet/{}/{}".format(
+            profile.lower(), filename))
 
     @staticmethod
     def profile_name_is_default(profile_name: Union[str, None]) -> bool:

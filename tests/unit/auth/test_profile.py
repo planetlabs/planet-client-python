@@ -11,24 +11,27 @@ class ProfileTest(unittest.TestCase):
                                                    profile=None,
                                                    override_path=None)
         self.assertIsInstance(under_test, pathlib.Path)
-        self.assertEqual(pathlib.Path.home().joinpath(".planet/testfile.dat"),
-                         under_test)
+        self.assertEqual(
+            pathlib.Path.home().joinpath(".planet/default/testfile.dat"),
+            under_test)
 
     def test_filepath_default_blank(self):
         under_test = Profile.get_profile_file_path(filename='testfile.dat',
                                                    profile='',
                                                    override_path=None)
         self.assertIsInstance(under_test, pathlib.Path)
-        self.assertEqual(pathlib.Path.home().joinpath(".planet/testfile.dat"),
-                         under_test)
+        self.assertEqual(
+            pathlib.Path.home().joinpath(".planet/default/testfile.dat"),
+            under_test)
 
     def test_filepath_default_explicit(self):
         under_test = Profile.get_profile_file_path(filename='testfile.dat',
                                                    profile='default',
                                                    override_path=None)
         self.assertIsInstance(under_test, pathlib.Path)
-        self.assertEqual(pathlib.Path.home().joinpath(".planet/testfile.dat"),
-                         under_test)
+        self.assertEqual(
+            pathlib.Path.home().joinpath(".planet/default/testfile.dat"),
+            under_test)
 
     def test_filepath_default_override(self):
         under_test = Profile.get_profile_file_path(filename='testfile.dat',

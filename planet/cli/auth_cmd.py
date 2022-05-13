@@ -37,14 +37,14 @@ def auth_cmd_group(ctx):
     also be used to manage different client accounts.
 
     The auth profile also controls where authentication configuration
-    files and authentication tokens are stored on disk.  When the default
-    profile is selected, the ~/.planet/ directory will be used in the user’s
-    home directory.  When any other profile is selected,
-    the ~/.planet/<profile> directory will be used.  Within the currently
-    active profile directory, auth credentials will be stored in a
-    token.json file, and auth profile configuration will be stored in an
-    auth_client.json file.  The contents and format of these files vary
-    depending on the specific auth mechanism configured for the auth profile.
+    files and authentication tokens are stored on disk.  When a given
+    profile is selected, the ~/.planet/<profile> directory will be used in
+    the user’s home directory.  Profile names will be down-cased to
+    all lowercase. Within the currently active profile directory, auth
+    credentials will be stored in a token.json file, and auth profile
+    configuration will be stored in an auth_client.json file.  The contents
+    and format of these files vary depending on the specific auth mechanism
+    configured for the auth profile.
 
     The following auth profiles are built in, and do not require any user
     configuration.  When a built in profile is used, it will be used to
