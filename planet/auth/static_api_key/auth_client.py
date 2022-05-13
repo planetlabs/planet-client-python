@@ -26,7 +26,7 @@ class StaticApiKeyAuthClient(AuthClient):
         pass
 
     def default_request_authenticator(
-            self, credential_file_path: pathlib.Path
+        self, credential_file_path: pathlib.Path
     ) -> FileBackedApiKeyRequestAuthenticator:
         return FileBackedApiKeyRequestAuthenticator(auth_file=FileBackedApiKey(
             api_key_file=credential_file_path))

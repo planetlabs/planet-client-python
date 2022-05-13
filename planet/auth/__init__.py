@@ -7,21 +7,28 @@ the service itself apart from how to interact with authentication APIs.
 
 This package understands multiple authentication mechanisms, whose details
 are encapsulated in implementation subclasses that implement the primary
-(abstract) base class interfaces.  These primary interfaces are as follows:
+(mostly abstract) base class interfaces.  These primary interfaces are as
+follows:
 
-- AuthClient & AuthClientConfig - Responsible for interacting with
-      authentication services to obtain a credential that may be used for
-      other API requests. Different clients have different configuration
-      needs, so a configuration type exists for each client type to keep
-      configuration on rails.
-- Credential - Models just a credential. Responsible for reading and
-      writing saved credentials to disk and performing basic data
-      validation.  Knows nothing about how to get a credential, or how to
-      use a credential.
-- RequestAuthenticator - Responsible for decorating API requests with a
-      credential. Compatible with httpx and requests libraries.
-- Auth - A container class for initializing and grouping a working set
-      of the above.
+- [Auth][planet.auth.Auth] - A container class for initializing and grouping
+      a working set of authentication objects (below).
+- [AuthClient][planet.auth.AuthClient] &
+      [AuthClientConfig][planet.auth.AuthClientConfig] - Responsible for
+      interacting with authentication services to obtain a credential that
+      may be used with other API requests. Different clients have different
+      configuration needs, so a configuration type exists for each client
+      type to keep configuration on rails.
+- [Credential][planet.auth.Credential] - Models just a credential.
+      Responsible for reading and writing saved credentials to disk and
+      performing basic data validation.  Knows nothing about how to get a
+      credential, or how to use a credential.
+- [RequestAuthenticator][planet.auth.RequestAuthenticator] - Responsible for
+      decorating API requests with a credential. Compatible with httpx and
+      requests libraries.  Some authentication mechanisms require that
+      the request authenticator also have an
+      [AuthClient][planet.auth.AuthClient], others do not.  Whether or not
+      this is requires is driven by the specifics of the authentication
+      mechanism.
 """
 
 from .auth import Auth

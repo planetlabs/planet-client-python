@@ -189,7 +189,8 @@ class RefreshingOidcRequestAuthenticatorTest(unittest.TestCase):
 
         # bash$ planet <some API command>
         #       # sets up credential object to be lazy loaded.
-        test_credential = FileBackedOidcCredential(credential_file=credential_path)
+        test_credential = FileBackedOidcCredential(
+            credential_file=credential_path)
         #       # The command would then use this credential and an
         #       # authenticator to interact with a planet API. Take it away,
         #       # test case...
@@ -422,7 +423,8 @@ class RefreshOrReloginOidcRequestAuthenticatorTest(unittest.TestCase):
 
         # bash$ planet <some API command>
         #       # sets up credential object to be lazy loaded.
-        test_credential = FileBackedOidcCredential(credential_file=credential_path)
+        test_credential = FileBackedOidcCredential(
+            credential_file=credential_path)
         #       # The command would then use this credential and an
         #       # authenticator to interact with a planet API. Take it away,
         #       # test case...

@@ -70,5 +70,6 @@ class ImplicitAuthClient(OidcAuthClient):
         self, credential_file_path: pathlib.Path
     ) -> RefreshingOidcTokenRequestAuthenticator:
         return RefreshingOidcTokenRequestAuthenticator(
-            credential_file=FileBackedOidcCredential(credential_file=credential_file_path),
+            credential_file=FileBackedOidcCredential(
+                credential_file=credential_file_path),
             auth_client=self)

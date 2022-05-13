@@ -49,7 +49,8 @@ class ClientCredentialsClientSecretAuthClient(OidcAuthClient):
         self, credential_file_path: pathlib.Path
     ) -> RefreshOrReloginOidcTokenRequestAuthenticator:
         return RefreshOrReloginOidcTokenRequestAuthenticator(
-            credential_file=FileBackedOidcCredential(credential_file=credential_file_path),
+            credential_file=FileBackedOidcCredential(
+                credential_file=credential_file_path),
             auth_client=self)
 
 
@@ -143,7 +144,8 @@ class ClientCredentialsPubKeyAuthClient(OidcAuthClient):
         self, credential_file_path: pathlib.Path
     ) -> RefreshOrReloginOidcTokenRequestAuthenticator:
         return RefreshOrReloginOidcTokenRequestAuthenticator(
-            credential_file=FileBackedOidcCredential(credential_file=credential_file_path),
+            credential_file=FileBackedOidcCredential(
+                credential_file=credential_file_path),
             auth_client=self)
 
 
@@ -175,5 +177,6 @@ class ClientCredentialsSharedKeyAuthClient(OidcAuthClient):
         self, credential_file_path: pathlib.Path
     ) -> RefreshOrReloginOidcTokenRequestAuthenticator:
         return RefreshOrReloginOidcTokenRequestAuthenticator(
-            credential_file=FileBackedOidcCredential(credential_file=credential_file_path),
+            credential_file=FileBackedOidcCredential(
+                credential_file=credential_file_path),
             auth_client=self)
