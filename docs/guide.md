@@ -37,8 +37,8 @@ Alternatively, use `await Session.aclose()` to close a `Session` explicitly:
 
 #### Authentication Overview
 
-There are two steps to managing authentication information, obtaining the
-authentication information from Planet and then managing it for local retrieval
+There are two steps to managing authentication information: obtaining the
+authentication information from Planet, and managing it for local retrieval
 for service authentication purposes.
 
 The recommended method for obtaining authentication information is to
