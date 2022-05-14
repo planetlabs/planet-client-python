@@ -1,4 +1,5 @@
 import http.server
+
 import httpx
 import json
 import pytest
@@ -48,7 +49,7 @@ def handle_test_request_background(listen_port):
 @pytest.mark.skipif(
     condition=is_cicd(),
     reason='Skipping tests that listen on a network port for CI/CD')
-class RequestAuthenticatorTest(unittest.TestCase):
+class RequestAuthenticatorNetworkTest(unittest.TestCase):
 
     def setUp(self):
         self.listen_port = find_free_port()
@@ -67,7 +68,7 @@ class RequestAuthenticatorTest(unittest.TestCase):
         self.assertEqual(TEST_PREFIX + ' ' + TEST_TOKEN,
                          response_json.get('header_value'))
 
-    def test_requests_noauth(self):
+    def test_requests_no_auth(self):
         under_test = SimpleInMemoryRequestAuthenticator(token_body=None,
                                                         token_prefix=None,
                                                         auth_header=None)
@@ -95,7 +96,7 @@ class RequestAuthenticatorTest(unittest.TestCase):
         self.assertEqual(TEST_PREFIX + ' ' + TEST_TOKEN,
                          response_json.get('header_value'))
 
-    def test_httpx_noauth(self):
+    def test_httpx_no_auth(self):
         under_test = SimpleInMemoryRequestAuthenticator(token_body=None,
                                                         token_prefix=None,
                                                         auth_header=None)
@@ -113,3 +114,65 @@ class RequestAuthenticatorTest(unittest.TestCase):
         self.assertEqual(TEST_TOKEN, response_json.get('header_value'))
 
     # TODO: add aiohttp support
+
+
+# The above is a better test, since it exercises how the base class interacts
+# with the HTTP client libs requets and httpx and affects the resulting
+# network traffic.  But, setting up a listener is problematic in some
+# environments.  Testing the base class amounts to little more than testing
+# setters. It doesn't validate that it interacts with the other libs to affect
+# the network traffic the way we want it it do.  (We maintain this test anyway
+# to hit our CI/CD coverage targets.)
+class RequestAuthenticatorNoNetworkTest(unittest.TestCase):
+
+    def mock_httpx_get(self, under_test):
+        request = under_test.auth_flow(
+            httpx._models.Request(url='http://unittest/', method='GET'))
+        return next(request)
+
+    def mock_requests_get(self, under_test):
+        request = requests.Request()
+        under_test.__call__(request)
+        return request
+
+    def test_requests_auth(self):
+        under_test = SimpleInMemoryRequestAuthenticator(
+            token_body=TEST_TOKEN,
+            token_prefix=TEST_PREFIX,
+            auth_header=TEST_HEADER)
+        request = self.mock_requests_get(under_test)
+        self.assertEqual(request.headers[TEST_HEADER],
+                         TEST_PREFIX + ' ' + TEST_TOKEN)
+
+    def test_requests_no_auth(self):
+        under_test = SimpleInMemoryRequestAuthenticator(
+            token_body=None, token_prefix=TEST_PREFIX, auth_header=TEST_HEADER)
+        request = self.mock_requests_get(under_test)
+        self.assertIsNone(request.headers.get(TEST_HEADER))
+
+    def test_requests_no_prefix(self):
+        under_test = SimpleInMemoryRequestAuthenticator(
+            token_body=TEST_TOKEN, token_prefix=None, auth_header=TEST_HEADER)
+        request = self.mock_requests_get(under_test)
+        self.assertEqual(request.headers[TEST_HEADER], TEST_TOKEN)
+
+    def test_httpx_auth(self):
+        under_test = SimpleInMemoryRequestAuthenticator(
+            token_body=TEST_TOKEN,
+            token_prefix=TEST_PREFIX,
+            auth_header=TEST_HEADER)
+        request = self.mock_httpx_get(under_test)
+        self.assertEqual(request.headers[TEST_HEADER],
+                         TEST_PREFIX + ' ' + TEST_TOKEN)
+
+    def test_httpx_no_auth(self):
+        under_test = SimpleInMemoryRequestAuthenticator(
+            token_body=None, token_prefix=TEST_PREFIX, auth_header=TEST_HEADER)
+        request = self.mock_httpx_get(under_test)
+        self.assertIsNone(request.headers.get(TEST_HEADER))
+
+    def test_httpx_no_prefix(self):
+        under_test = SimpleInMemoryRequestAuthenticator(
+            token_body=TEST_TOKEN, token_prefix=None, auth_header=TEST_HEADER)
+        request = self.mock_httpx_get(under_test)
+        self.assertEqual(request.headers[TEST_HEADER], TEST_TOKEN)

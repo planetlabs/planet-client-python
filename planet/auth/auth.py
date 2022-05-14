@@ -23,7 +23,9 @@ logger = logging.getLogger(__name__)
 
 class Auth:
     """A container class for initializing and grouping a working set of
-    authentication objects.
+    authentication objects.  See
+    [planet.auth.Auth.initialize][planet.auth.Auth.initialize] for user
+    friendly initialization.
 
     Example:
         ```python
