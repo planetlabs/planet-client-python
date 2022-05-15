@@ -20,8 +20,8 @@ class AuthClientException(AuthException):
 
 class AuthClientConfigException(AuthClientException):
 
-    def __init__(self, message=None):
-        super().__init__(message)
+    def __init__(self, message=None, inner_exception=None):
+        super().__init__(message, inner_exception)
 
 
 class AuthClientConfig(ABC):

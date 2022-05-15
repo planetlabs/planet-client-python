@@ -3,7 +3,8 @@ import cryptography.hazmat.primitives.serialization as crypto_serialization
 from requests.auth import AuthBase
 from typing import Tuple, Optional
 
-from planet.auth.auth_client import AuthClientException
+from planet.auth.auth_client import AuthClientException, \
+    AuthClientConfigException
 from planet.auth.oidc.api_clients.oidc_request_auth import \
     prepare_client_secret_request_auth, \
     prepare_private_key_assertion_auth_payload
@@ -76,7 +77,7 @@ class ClientCredentialsPubKeyClientConfig(OidcAuthClientConfig):
             self.client_privkey_password = client_privkey_password
 
     # Recast is to catches bad passwords. Too broad? # noqa
-    @AuthClientException.recast(TypeError, ValueError)
+    @AuthClientConfigException.recast(TypeError, ValueError)
     def _load_private_key(self):
         # TODO: also handle loading of JWK keys? Fork based on filename
         #       or detect?
@@ -87,18 +88,18 @@ class ClientCredentialsPubKeyClientConfig(OidcAuthClientConfig):
             priv_key = crypto_serialization.load_pem_private_key(
                 self.client_privkey, password=self.client_privkey_password)
             if not priv_key:
-                raise AuthClientException(
+                raise AuthClientConfigException(
                     'Unable to load private key literal from configuration')
         else:
             if not self.client_privkey_file:
-                raise AuthClientException(
+                raise AuthClientConfigException(
                     'Private key must be configured for public key auth'
                     ' client credentials flow.')
             with open(self.client_privkey_file, "rb") as key_file:
                 priv_key = crypto_serialization.load_pem_private_key(
                     key_file.read(), password=self.client_privkey_password)
                 if not priv_key:
-                    raise AuthClientException(
+                    raise AuthClientConfigException(
                         'Unable to load private key from file "{}"'.format(
                             self.client_privkey_file))
         self._private_key_data = priv_key

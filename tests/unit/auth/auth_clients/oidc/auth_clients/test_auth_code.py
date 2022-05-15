@@ -2,7 +2,7 @@ import pathlib
 import unittest
 from unittest import mock
 
-from planet.auth.auth_client import AuthClientException
+from planet.auth.auth_client import AuthClientConfigException
 from planet.auth.oidc.auth_clients.auth_code_flow import \
     AuthCodePKCEAuthClient, AuthCodePKCEClientConfig
 from planet.auth.oidc.oidc_credential import FileBackedOidcCredential
@@ -56,7 +56,7 @@ class ClientCredentialsPubKeyConfigTest(unittest.TestCase):
         self.assertEqual(TEST_RECIRECT_URI_LOCAL,
                          under_test.local_redirect_uri)
 
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(AuthClientConfigException):
             under_test = AuthCodePKCEClientConfig(auth_server=TEST_AUTH_SERVER,
                                                   client_id=TEST_CLIENT_ID,
                                                   redirect_uri=None,
