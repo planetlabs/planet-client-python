@@ -185,6 +185,8 @@ class TestAuthClientBase(unittest.TestCase):
             OidcBaseTestHarnessClientConfig(
                 auth_server=TEST_DISCOVERED_AUTH_SERVER_BASE,
                 client_id=TEST_CLIENT_ID))
+        self.oidc_test_credential = FileBackedOidcCredential(
+            data=TEST_FAKE_TOKEN_FILE_DATA)
 
     def test_oidc_discovery_override_authorization(self, mocked_discovery):
         # OIDC discovery is intended to be JIT in the base class.
@@ -380,3 +382,85 @@ class TestAuthClientBase(unittest.TestCase):
         default_api_client = self.defaults_under_test._token_client()
         self.assertEqual(TEST_DISCOVERED_AUTH_SERVER_BASE + '/token',
                          default_api_client._endpoint_uri)
+
+    def test_token_validator_created_once(self, mocked_discovery):
+        under_test = self.defaults_under_test
+        token_validator = under_test._token_validator()
+        self.assertIsNotNone(token_validator)
+        token_validator2 = under_test._token_validator()
+        self.assertEqual(token_validator, token_validator2)
+
+    #
+    # The base client implementation of the following is pretty much
+    # one liner pass through.  These nothing-burger tests are mostly
+    # to goose the coverage targets, and would really only catch
+    # gross errors in the pass through implementation. These are
+    # better tested in end-to-end tests.
+    #
+    @mock.patch(
+        'planet.auth.oidc.api_clients.token_api_client.TokenApiClient.get_token_from_refresh'  # noqa
+    )
+    def test_refresh(self, mock_api_client, mocked_discovery):
+        under_test = self.defaults_under_test
+        credential = under_test.refresh(
+            self.oidc_test_credential.refresh_token())
+        self.assertIsInstance(credential, FileBackedOidcCredential)
+        self.assertEqual(1, mock_api_client.call_count)
+
+    @mock.patch(
+        'planet.auth.oidc.api_clients.introspect_api_client.IntrospectionApiClient.validate_access_token'  # noqa
+    )
+    def test_validate_access_token(self, mock_api_client, mocked_discovery):
+        under_test = self.defaults_under_test
+        under_test.validate_access_token(
+            self.oidc_test_credential.access_token())
+        self.assertEqual(1, mock_api_client.call_count)
+
+    @mock.patch(
+        'planet.auth.oidc.api_clients.introspect_api_client.IntrospectionApiClient.validate_id_token'  # noqa
+    )
+    def test_validate_id_token(self, mock_api_client, mocked_discovery):
+        under_test = self.defaults_under_test
+        under_test.validate_id_token(self.oidc_test_credential.id_token())
+        self.assertEqual(1, mock_api_client.call_count)
+
+    @mock.patch(
+        'planet.auth.oidc.token_validator.TokenValidator.validate_id_token')
+    def test_validate_id_token_local(self, mock_api_client, mocked_discovery):
+        under_test = self.defaults_under_test
+        under_test.validate_id_token_local(
+            self.oidc_test_credential.id_token())
+        self.assertEqual(1, mock_api_client.call_count)
+
+    @mock.patch(
+        'planet.auth.oidc.api_clients.introspect_api_client.IntrospectionApiClient.validate_refresh_token'  # noqa
+    )
+    def test_validate_refresh_token(self, mock_api_client, mocked_discovery):
+        under_test = self.defaults_under_test
+        under_test.validate_refresh_token(
+            self.oidc_test_credential.refresh_token())
+        self.assertEqual(1, mock_api_client.call_count)
+
+    @mock.patch(
+        'planet.auth.oidc.api_clients.revocation_api_client.RevocationApiClient.revoke_access_token'  # noqa
+    )
+    def test_revoke_access_token(self, mock_api_client, mocked_discovery):
+        under_test = self.defaults_under_test
+        under_test.revoke_access_token(
+            self.oidc_test_credential.access_token())
+        self.assertEqual(1, mock_api_client.call_count)
+
+    @mock.patch(
+        'planet.auth.oidc.api_clients.revocation_api_client.RevocationApiClient.revoke_refresh_token'  # noqa
+    )
+    def test_revoke_refresh_token(self, mock_api_client, mocked_discovery):
+        under_test = self.defaults_under_test
+        under_test.revoke_refresh_token(
+            self.oidc_test_credential.refresh_token())
+        self.assertEqual(1, mock_api_client.call_count)
+
+    def test_get_scopes(self, mocked_discovery):
+        under_test = self.defaults_under_test
+        test_scopes = under_test.get_scopes()
+        self.assertEqual(TEST_FAKE_OIDC_DISCOVERY['scopes_supported'],
+                         test_scopes)
