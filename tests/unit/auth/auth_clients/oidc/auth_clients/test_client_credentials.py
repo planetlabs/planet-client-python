@@ -2,7 +2,7 @@ import pathlib
 import unittest
 from unittest import mock
 
-from planet.auth.auth_client import AuthClientException
+from planet.auth.auth_client import AuthClientConfigException
 from planet.auth.oidc.auth_clients.client_credentials_flow import \
     ClientCredentialsSharedKeyAuthClient, \
     ClientCredentialsSharedKeyClientConfig, \
@@ -160,7 +160,7 @@ class ClientCredentialsPubKeyConfigTest(unittest.TestCase):
             client_id=TEST_CLIENT_ID,
             client_privkey_password=None,
             client_privkey=self.privkey_literal_str)
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(AuthClientConfigException):
             under_test.private_key_data()
 
         under_test = ClientCredentialsPubKeyClientConfig(
@@ -168,7 +168,7 @@ class ClientCredentialsPubKeyConfigTest(unittest.TestCase):
             client_id=TEST_CLIENT_ID,
             client_privkey_password='bad password',
             client_privkey=self.privkey_literal_str)
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(AuthClientConfigException):
             under_test.private_key_data()
 
         under_test = ClientCredentialsPubKeyClientConfig(
@@ -176,7 +176,7 @@ class ClientCredentialsPubKeyConfigTest(unittest.TestCase):
             client_id=TEST_CLIENT_ID,
             client_privkey_password=None,
             client_privkey_file=self.privkey_file_path)
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(AuthClientConfigException):
             under_test.private_key_data()
 
         under_test = ClientCredentialsPubKeyClientConfig(
@@ -184,7 +184,7 @@ class ClientCredentialsPubKeyConfigTest(unittest.TestCase):
             client_id=TEST_CLIENT_ID,
             client_privkey_password='bad password',
             client_privkey_file=self.privkey_file_path)
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(AuthClientConfigException):
             under_test.private_key_data()
 
     @mock.patch(
@@ -195,14 +195,14 @@ class ClientCredentialsPubKeyConfigTest(unittest.TestCase):
             auth_server=TEST_AUTH_SERVER,
             client_id=TEST_CLIENT_ID,
             client_privkey=self.privkey_literal_str_nopassword)
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(AuthClientConfigException):
             under_test.private_key_data()
 
         under_test = ClientCredentialsPubKeyClientConfig(
             auth_server=TEST_AUTH_SERVER,
             client_id=TEST_CLIENT_ID,
             client_privkey_file=self.privkey_file_path_nopassword)
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(AuthClientConfigException):
             under_test.private_key_data()
 
     def test_no_key_configured(self):
@@ -212,7 +212,7 @@ class ClientCredentialsPubKeyConfigTest(unittest.TestCase):
             client_privkey=None,
             client_privkey_file=None,
             client_privkey_password=None)
-        with self.assertRaises(AuthClientException):
+        with self.assertRaises(AuthClientConfigException):
             under_test.private_key_data()
 
     def test_lazy_load_only_once(self):

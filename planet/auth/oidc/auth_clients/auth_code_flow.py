@@ -2,7 +2,7 @@ import pathlib
 from requests.auth import AuthBase
 from typing import Tuple, Optional
 
-from planet.auth.auth_client import AuthClientException
+from planet.auth.auth_client import AuthClientConfigException
 from planet.auth.oidc.api_clients.oidc_request_auth import \
     prepare_client_noauth_auth_payload
 from planet.auth.oidc.auth_client import OidcAuthClientConfig, OidcAuthClient
@@ -29,7 +29,7 @@ class AuthCodePKCEClientConfig(OidcAuthClientConfig):
             self.redirect_uri = local_redirect_uri
 
         if not self.redirect_uri:
-            raise AuthClientException(
+            raise AuthClientConfigException(
                 'A redirect_uri or local_redirect_uri is required.')
 
 
