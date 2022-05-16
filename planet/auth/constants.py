@@ -36,3 +36,7 @@ LEGACY_AUTH_CLIENT_CONFIG_DICT = {
     "client_type": "planet_legacy",
     "legacy_auth_endpoint": PLANET_LEGACY_AUTH_ENDPOINT
 }
+
+NOOP_AUTH_CLIENT_CONFIG_DICT = {
+    "client_type": "none",
+}

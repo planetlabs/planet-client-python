@@ -80,6 +80,8 @@ class AuthClientConfig(ABC):
                 PlanetLegacyAuthClientConfig
             from planet.auth.static_api_key.auth_client import \
                 StaticApiKeyAuthClientConfig
+            from planet.auth.none.noop_auth import \
+                NoOpAuthClientConfig
 
             cls._typename_map = {
                 'oidc_auth_code': AuthCodePKCEClientConfig,
@@ -91,7 +93,8 @@ class AuthClientConfig(ABC):
                 ClientCredentialsSharedKeyClientConfig,
                 'oidc_resource_owner': ResourceOwnerClientConfig,
                 'planet_legacy': PlanetLegacyAuthClientConfig,
-                'static_apikey': StaticApiKeyAuthClientConfig
+                'static_apikey': StaticApiKeyAuthClientConfig,
+                'none': NoOpAuthClientConfig
             }
 
         return cls._typename_map
@@ -176,6 +179,9 @@ class AuthClient(ABC):
             from planet.auth.static_api_key.auth_client import \
                 StaticApiKeyAuthClient, \
                 StaticApiKeyAuthClientConfig
+            from planet.auth.none.noop_auth import \
+                NoOpAuthClient, \
+                NoOpAuthClientConfig
 
             cls._type_map = {
                 AuthCodePKCEClientConfig: AuthCodePKCEAuthClient,
@@ -187,7 +193,8 @@ class AuthClient(ABC):
                 ClientCredentialsSharedKeyAuthClient,
                 ResourceOwnerClientConfig: ResourceOwnerAuthClient,
                 PlanetLegacyAuthClientConfig: PlanetLegacyAuthClient,
-                StaticApiKeyAuthClientConfig: StaticApiKeyAuthClient
+                StaticApiKeyAuthClientConfig: StaticApiKeyAuthClient,
+                NoOpAuthClientConfig: NoOpAuthClient
             }
 
         return cls._type_map

@@ -14,6 +14,7 @@ from planet.auth.request_authenticator import \
 from planet.auth.static_api_key.auth_client import StaticApiKeyAuthClient
 from planet.auth.static_api_key.request_authenticator import \
     FileBackedApiKeyRequestAuthenticator
+from planet.auth.none.noop_auth import NoOpAuthClient
 from tests.util import tdata_resource_file_path
 
 
@@ -51,10 +52,12 @@ class AuthTest(unittest.TestCase):
 
     def test_initialize_none_by_profile_name(self):
         under_test = Auth.initialize(profile='none')
-        self.assertIsNone(under_test.auth_client())
+        self.assertIsInstance(under_test.auth_client(), NoOpAuthClient)
         self.assertIsInstance(under_test.request_authenticator(),
                               SimpleInMemoryRequestAuthenticator)
-        self.assertIsNone(under_test.token_file_path())
+        self.assertEqual(
+            pathlib.Path.home().joinpath(".planet/none/token.json"),
+            under_test.token_file_path())
 
     def test_initialize_by_authconffile_valid(self):
         under_test = Auth.initialize(
