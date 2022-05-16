@@ -8,6 +8,7 @@ TEST_CREDENTIAL_FILE = "/some/path/that/does/not/exist.json"
 
 
 class NoOpCredentialTest(unittest.TestCase):
+
     def test_noop_cred(self):
         under_test = NoOpCredential()
         under_test.set_path(TEST_CREDENTIAL_FILE)
