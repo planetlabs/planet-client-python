@@ -1,4 +1,5 @@
 import click
+import json
 import sys
 
 from planet.auth import AuthException, FileBackedOidcCredential
@@ -25,6 +26,21 @@ from .io_helper import echo_json
 # FIXME: Handling of "pretty" option from CLI.
 def print_obj(obj):
     echo_json(obj, pretty=True)
+
+
+# FIXME: Might we have global options for other output formats?
+# FIXME: This is consistent with other CLI commands in the Planet Python SDK,
+#        but adding JSON quotes for output like API keys or access tokens that
+#        are simple strings may be problematic.  CLI commands like
+#        "print-access-token" are useful for injecting these strings into
+#        other flows (e.g. using it to grab tokens in a shell script for curl
+#        or what-have-you). Forcing particular escaping may be annoying for
+#        users.  (This is why tools like "jq" have "-r" options for raw
+#        output.)
+# FIXME: Handling of "pretty" option from CLI.
+def print_obj(obj):
+    json_str = json.dumps(obj, indent=2, sort_keys=True)
+    print(json_str)
 
 
 @click.group('auth', invoke_without_command=True)
