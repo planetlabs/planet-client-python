@@ -52,6 +52,9 @@ from .planet_legacy.auth_client import \
 from .static_api_key.auth_client import \
     StaticApiKeyAuthClientConfig, \
     StaticApiKeyAuthClient
+from .none.noop_auth import \
+    NoOpAuthClientConfig, \
+    NoOpAuthClient
 
 from .oidc.oidc_credential import FileBackedOidcCredential
 from .planet_legacy.legacy_api_key import FileBackedPlanetLegacyApiKey
@@ -89,5 +92,7 @@ __all__ = [
     StaticApiKeyAuthClientConfig,
     StaticApiKeyAuthClient,
     FileBackedApiKey,
-    FileBackedApiKeyRequestAuthenticator
+    FileBackedApiKeyRequestAuthenticator,
+    NoOpAuthClientConfig,
+    NoOpAuthClient
 ]

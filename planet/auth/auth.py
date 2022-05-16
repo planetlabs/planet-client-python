@@ -11,12 +11,11 @@ from planet.auth.constants import \
     ENV_AUTH_PROFILE, \
     ENV_AUTH_TOKEN_FILE, \
     SDK_OIDC_AUTH_CLIENT_CONFIG_DICT, \
-    LEGACY_AUTH_CLIENT_CONFIG_DICT
+    LEGACY_AUTH_CLIENT_CONFIG_DICT, \
+    NOOP_AUTH_CLIENT_CONFIG_DICT
 
 from planet.auth.auth_client import AuthClient, AuthClientConfig
-from planet.auth.request_authenticator import \
-    RequestAuthenticator, \
-    SimpleInMemoryRequestAuthenticator
+from planet.auth.request_authenticator import  RequestAuthenticator
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +93,12 @@ class Auth:
                     Profile.BUILTIN_PROFILE_NAME_LEGACY))
             client_config = AuthClientConfig.from_dict(
                 LEGACY_AUTH_CLIENT_CONFIG_DICT)
+        elif Profile.profile_name_is_none(profile):
+            logger.debug(
+                'Using built-in "{}" auth client configuration'.format(
+                    Profile.BUILTIN_PROFILE_NAME_NONE))
+            client_config = AuthClientConfig.from_dict(
+                NOOP_AUTH_CLIENT_CONFIG_DICT)
         else:
             auth_config_path = Profile.get_profile_file_path(
                 'auth_client.json', profile, auth_client_config_file)
@@ -159,18 +164,11 @@ class Auth:
         '''
         # TODO: we should have some handling of legacy environment variables
         #       understood by SDK v1: PL_API_KEY
-        if Profile.profile_name_is_none(profile):
-            auth_client = None
-            token_file_path = None
-            # TODO: can I set this to None?
-            request_authenticator = SimpleInMemoryRequestAuthenticator(
-                token_body=None)
-        else:
-            auth_client = Auth._initialize_auth_client(
-                profile, auth_client_config_file)
-            token_file_path = Auth._initialize_token_file_path(
-                profile, token_file)
-            request_authenticator = Auth._initialize_request_authenticator(
-                profile, auth_client, token_file_path)
+        auth_client = Auth._initialize_auth_client(
+            profile, auth_client_config_file)
+        token_file_path = Auth._initialize_token_file_path(
+            profile, token_file)
+        request_authenticator = Auth._initialize_request_authenticator(
+            profile, auth_client, token_file_path)
 
         return Auth(auth_client, request_authenticator, token_file_path)
