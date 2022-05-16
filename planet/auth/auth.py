@@ -15,7 +15,7 @@ from planet.auth.constants import \
     NOOP_AUTH_CLIENT_CONFIG_DICT
 
 from planet.auth.auth_client import AuthClient, AuthClientConfig
-from planet.auth.request_authenticator import  RequestAuthenticator
+from planet.auth.request_authenticator import RequestAuthenticator
 
 logger = logging.getLogger(__name__)
 
@@ -164,10 +164,9 @@ class Auth:
         '''
         # TODO: we should have some handling of legacy environment variables
         #       understood by SDK v1: PL_API_KEY
-        auth_client = Auth._initialize_auth_client(
-            profile, auth_client_config_file)
-        token_file_path = Auth._initialize_token_file_path(
-            profile, token_file)
+        auth_client = Auth._initialize_auth_client(profile,
+                                                   auth_client_config_file)
+        token_file_path = Auth._initialize_token_file_path(profile, token_file)
         request_authenticator = Auth._initialize_request_authenticator(
             profile, auth_client, token_file_path)
 
