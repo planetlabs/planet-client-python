@@ -1,4 +1,5 @@
 import click
+import json
 import sys
 
 from planet.auth import AuthException, FileBackedOidcCredential
@@ -10,6 +11,21 @@ from planet.cx.commands.cli.options import \
     opt_open_browser, \
     opt_token_scope
 from planet.cx.commands.cli.util import recast_exceptions_to_click
+
+
+# FIXME: Might we have global options for other output formats?
+# FIXME: This is consistent with other CLI commands in the Planet Python SDK,
+#        but adding JSON quotes for output like API keys or access tokens that
+#        are simple strings may be problematic.  CLI commands like
+#        "print-access-token" are useful for injecting these strings into
+#        other flows (e.g. using it to grab tokens in a shell script for curl
+#        or what-have-you). Forcing particular escaping may be annoying for
+#        users.  (This is why tools like "jq" have "-r" options for raw
+#        output.)
+# FIXME: Handling of "pretty" option from CLI.
+def print_obj(obj):
+    json_str = json.dumps(obj, indent=2, sort_keys=True)
+    print(json_str)
 
 
 @click.group('auth', invoke_without_command=True)
@@ -88,12 +104,11 @@ def do_list_scopes(ctx):
     auth_client = ctx.obj['AUTH'].auth_client()
     available_scopes = auth_client.get_scopes()
     available_scopes.sort()
-    print('Available scopes:')
     if available_scopes:
-        print('\t' + '\n\t'.join(available_scopes))
+        print_obj(available_scopes)
     else:
-        print('\tNo scopes found')
-        sys.exit(1)
+        print_obj([])
+        # sys.exit(1)
 
 
 # TODO: Google deprecated the behavior of --no-launch-browser in their
@@ -133,7 +148,7 @@ def do_print_access_token(ctx):
     '''
     saved_token = FileBackedOidcCredential(None,
                                            ctx.obj['AUTH'].token_file_path())
-    print(saved_token.access_token())
+    print_obj(saved_token.access_token())
 
 
 @auth_cmd_group.command('print-api-key')
@@ -146,7 +161,7 @@ def do_print_api_key(ctx):
     '''
     saved_token = FileBackedPlanetLegacyApiKey(
         None, ctx.obj['AUTH'].token_file_path())
-    print(saved_token.legacy_api_key())
+    print_obj(saved_token.legacy_api_key())
 
 
 @auth_cmd_group.command('refresh')
@@ -194,10 +209,10 @@ def do_validate_access_token(ctx):
         saved_token.access_token())
 
     if not validation_json or not validation_json.get('active'):
-        print("INVALID")
+        print_obj("INVALID")
         sys.exit(1)
-    # print("OK")
-    print(validation_json)
+    # print_obj("OK")
+    print_obj(validation_json)
 
 
 @auth_cmd_group.command('validate-id-token')
@@ -217,10 +232,10 @@ def do_validate_id_token(ctx):
     validation_json = auth_client.validate_id_token(saved_token.id_token())
 
     if not validation_json or not validation_json.get('active'):
-        print("INVALID")
+        print_obj("INVALID")
         sys.exit(1)
-    # print("OK")
-    print(validation_json)
+    # print_obj("OK")
+    print_obj(validation_json)
 
 
 @auth_cmd_group.command('validate-id-token-local')
@@ -242,8 +257,8 @@ def do_validate_id_token_local(ctx):
     # Throws on error.
     validation_json = auth_client.validate_id_token_local(
         saved_token.id_token())
-    # print("OK")
-    print(validation_json)
+    # print_obj("OK")
+    print_obj(validation_json)
 
 
 @auth_cmd_group.command('validate-refresh-token')
@@ -264,10 +279,10 @@ def do_validate_refresh_token(ctx):
         saved_token.refresh_token())
 
     if not validation_json or not validation_json.get('active'):
-        print("INVALID")
+        print_obj("INVALID")
         sys.exit(1)
-    # print("OK")
-    print(validation_json)
+    # print_obj("OK")
+    print_obj(validation_json)
 
 
 @auth_cmd_group.command('revoke-access-token')
