@@ -19,6 +19,7 @@ from planet.auth.request_authenticator import \
     RequestAuthenticator
 from planet.auth.static_api_key.auth_client import \
     StaticApiKeyAuthClientConfig
+from planet.auth.none.noop_auth import NoOpAuthClientConfig
 from tests.util import tdata_resource_file_path
 
 
@@ -135,8 +136,11 @@ class ClientFactoryTest(unittest.TestCase):
             AuthClient.from_config(StaticApiKeyAuthClientConfig()),
             planet.auth.static_api_key.auth_client.StaticApiKeyAuthClient)
 
-    def test_invalid_config_type(self):
+    def test_noop_client(self):
+        self.assertIsInstance(AuthClient.from_config(NoOpAuthClientConfig()),
+                              planet.auth.none.noop_auth.NoOpAuthClient)
 
+    def test_invalid_config_type(self):
         with self.assertRaises(AuthClientException):
             AuthClient.from_config(AuthClientConfigInvalidImpl())
 
@@ -185,6 +189,12 @@ class ConfigFactoryTest(unittest.TestCase):
             'auth_client_configs/utest/static_api_key.json')
         auth_client_config = AuthClientConfig.from_file(file_path)
         self.assertIsInstance(auth_client_config, StaticApiKeyAuthClientConfig)
+
+    def test_noop_config_from_file(self):
+        file_path = tdata_resource_file_path(
+            'auth_client_configs/utest/none.json')
+        auth_client_config = AuthClientConfig.from_file(file_path)
+        self.assertIsInstance(auth_client_config, NoOpAuthClientConfig)
 
     def test_planet_legacy_config_from_file(self):
         file_path = tdata_resource_file_path(
