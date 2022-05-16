@@ -14,7 +14,7 @@
 """Functionality for preparing a data search filter"""
 from datetime import datetime
 import logging
-from typing import List, Union
+from typing import Any, Callable, List, Union
 
 from planet import exceptions
 
@@ -69,6 +69,45 @@ def _field_filter(ftype: str, field_name: str, config: Union[dict,
     return {'type': ftype, 'field_name': field_name, 'config': config}
 
 
+def _range_filter(
+    ftype: str,
+    field_name: str,
+    gt: Any,
+    lt: Any,
+    gte: Any,
+    lte: Any,
+    callback: Callable = None,
+) -> dict:
+    """Base for creating range filters
+
+    Parameters:
+        ftype: Type of the filter
+        field_name: Name of field to filter on.
+        gt: Greater than conditional value.
+        lt: Less than conditional value.
+        gte: Greater than or equal to conditional value.
+        lte: Less than or equal to conditional value.
+        callback: Function to apply to preprocess conditional values.
+
+    Raises:
+        exceptions.PlanetError: If no conditional parameter is specified.
+    """
+    conditionals = {'gt': gt, 'lt': lt, 'gte': gte, 'lte': lte}
+
+    # if callback isn't specified, just use a passthrough
+    callback = callback if callback else lambda x: x
+
+    config = {
+        key: callback(value)
+        for (key, value) in conditionals.items() if value is not None
+    }
+
+    if not config:
+        raise exceptions.PlanetError("No conditional parameters specified.")
+
+    return _field_filter(ftype, field_name=field_name, config=config)
+
+
 def date_range_filter(field_name: str,
                       gt: datetime = None,
                       lt: datetime = None,
@@ -83,36 +122,89 @@ def date_range_filter(field_name: str,
     specified.
 
     Parameters:
-        field_name: Name of field to filter on
-        gt: Filter to field timestamp later than this value
-        lt: Filter to field timestamp earlier than this value
-        gte: Filter to field timestamp at or later than this value
-        lte: Filter to field timestamp at or earlier than this value
+        field_name: Name of field to filter on.
+        gt: Filter to field timestamp later than this datetime.
+        lt: Filter to field timestamp earlier than this datetime.
+        gte: Filter to field timestamp at or later than this datetime.
+        lte: Filter to field timestamp at or earlier than this datetime.
 
     Raises:
         exceptions.PlanetError: If no conditional parameter is specified.
     """
-    conditionals = {'gt': gt, 'lt': lt, 'gte': gte, 'lte': lte}
-
-    if all(v is None for v in conditionals.values()):
-        raise exceptions.PlanetError("Must specify one of gt, lt, gte, or lte")
-
-    config = {
-        key: datetime_to_rfc3339(value)  # convert datetime to RFC3339 string
-        for (key, value) in conditionals.items() if value
-    }
-
-    LOGGER.warning(config)
-
-    return _field_filter('DateRangeFilter',
-                         field_name=field_name,
-                         config=config)
+    return _range_filter('DateRangeFilter',
+                         field_name,
+                         gt,
+                         lt,
+                         gte,
+                         lte,
+                         callback=_datetime_to_rfc3339)
 
 
-def datetime_to_rfc3339(value: datetime) -> str:
+def _datetime_to_rfc3339(value: datetime) -> str:
     """Converts the datetime to an RFC3339 string"""
     iso = value.isoformat()
     if not value.utcoffset():
         # rfc3339 needs a Z if there is no timezone offset
         iso += 'Z'
     return iso
+
+
+def range_filter(field_name: str,
+                 gt: float = None,
+                 lt: float = None,
+                 gte: float = None,
+                 lte: float = None) -> dict:
+    """Create a RangeFilter
+
+    The RangeFilter can be used to search for items with numerical properties.
+    It is useful for matching fields that have a continuous range of values
+    such as cloud_cover or view_angle.
+
+    One or more of the conditional parameters `gt`, `lt`, `gte`, `lte` must be
+    specified.
+
+    Parameters:
+        field_name: Name of field to filter on.
+        gt: Filter to field value greater than this number.
+        lt: Filter to field value less than this number.
+        gte: Filter to field value greater than or equal to this number.
+        lte: Filter to field value less than or equal to this number.
+
+    Raises:
+        exceptions.PlanetError: If no conditional parameter is specified.
+    """
+    return _range_filter('RangeFilter', field_name, gt, lt, gte, lte)
+
+
+def update_filter(field_name: str,
+                  gt: float = None,
+                  lt: float = None,
+                  gte: float = None,
+                  lte: float = None) -> dict:
+    """Create an UpdateFilter
+
+    The UpdateFilter can be used to filter items by changes to a specified
+    metadata field value made after a specified date, due to a republishing
+    event. This feature allows you identify items which may have been
+    republished with improvements or fixes, enabling you to keep your internal
+    catalogs up-to-date and make more informed redownload decisions. The filter
+    works for all items published on or after April 10, 2020.
+
+    One or more of the conditional parameters `gt` or `gte` must be
+    specified.
+
+    Parameters:
+        field_name: Name of field to filter on.
+        gt: Filter to changes to field metadata after this datetime.
+        gte: Filter to changes to field metadata at or after this datetime.
+
+    Raises:
+        exceptions.PlanetError: If no conditional parameter is specified.
+    """
+    return _range_filter('UpdateFilter',
+                         field_name,
+                         gt,
+                         None,
+                         gte,
+                         None,
+                         callback=_datetime_to_rfc3339)

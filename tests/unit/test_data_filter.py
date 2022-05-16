@@ -43,63 +43,137 @@ def test_not_filter():
     assert res == expected
 
 
-def test_date_range_filter_basic():
-    gt = datetime(2022, 5, 1, 1, 0, 0, 1)
-    gte = datetime(2022, 5, 1, 1, 0, 1)
-    lt = datetime(2022, 6, 1, 1, 1)
-    lte = datetime(2022, 6, 1, 1)
+def test__range_filter_success():
 
-    res = data_filter.date_range_filter('acquired',
-                                        gt=gt,
-                                        gte=gte,
-                                        lt=lt,
-                                        lte=lte)
+    def _test_callback(x):
+        return x + 'a'
+
+    res = data_filter._range_filter('testfilter',
+                                    'testfield',
+                                    gt='a',
+                                    gte=None,
+                                    lt='b',
+                                    lte='c',
+                                    callback=_test_callback)
+    expected = {
+        'type': 'testfilter',
+        'field_name': 'testfield',
+        'config': {
+            'gt': 'aa', 'lt': 'ba', 'lte': 'ca'
+        }
+    }
+    assert expected == res
+
+
+def test__range_filter_nocallback():
+    res = data_filter._range_filter('testfilter',
+                                    'testfield',
+                                    gt='a',
+                                    gte=None,
+                                    lt='b',
+                                    lte='c')
+    expected = {
+        'type': 'testfilter',
+        'field_name': 'testfield',
+        'config': {
+            'gt': 'a', 'lt': 'b', 'lte': 'c'
+        }
+    }
+    assert expected == res
+
+
+def test__range_filter_no_conditionals():
+
+    def _test_callback(x):
+        return x + 'a'
+
+    with pytest.raises(exceptions.PlanetError):
+        data_filter._range_filter('testfilter',
+                                  'testfield',
+                                  gt=None,
+                                  gte=None,
+                                  lt=None,
+                                  lte=None,
+                                  callback=_test_callback)
+
+
+class TestTZ(tzinfo):
+
+    def __init__(self, offset=None):
+        self.offset = offset
+        super().__init__()
+
+    def utcoffset(self, dt):
+        return timedelta(hours=self.offset) if self.offset else None
+
+    def dt(self, dt):
+        # a fixed-offset class:  doesn't account for DST
+        return timedelta(0)
+
+    def tzname(self, dt):
+        return 'TestTZ'
+
+
+@pytest.mark.parametrize(
+    "dtime,expected",
+    [(datetime(2022, 5, 1, 1, 0, 0, 1), '2022-05-01T01:00:00.000001Z'),
+     (datetime(2022, 5, 1, 1, 0, 1), '2022-05-01T01:00:01Z'),
+     (datetime(2022, 6, 1, 1, 1), '2022-06-01T01:01:00Z'),
+     (datetime(2022, 6, 1, 1), '2022-06-01T01:00:00Z'),
+     (datetime(2022, 6, 1, 1, tzinfo=TestTZ(0)), '2022-06-01T01:00:00Z'),
+     (datetime(2022, 6, 1, 1, tzinfo=TestTZ(1)), '2022-06-01T01:00:00+01:00')])
+def test__datetime_to_rfc3339_basic(dtime, expected):
+    assert data_filter._datetime_to_rfc3339(dtime) == expected
+
+
+def test_date_range_filter_success():
+    res = data_filter.date_range_filter('testfield',
+                                        gt=datetime(2022, 6, 1, 1),
+                                        lt=datetime(2022, 7, 1, 1))
     expected = {
         'type': 'DateRangeFilter',
-        'field_name': 'acquired',
+        'field_name': 'testfield',
         'config': {
-            'gt': '2022-05-01T01:00:00.000001Z',
-            'gte': '2022-05-01T01:00:01Z',
-            'lt': '2022-06-01T01:01:00Z',
-            'lte': '2022-06-01T01:00:00Z',
+            'gt': '2022-06-01T01:00:00Z', 'lt': '2022-07-01T01:00:00Z'
         }
     }
     assert res == expected
 
 
-def test_date_range_filter_timezone():
-    # Make a concrete tzinfo class for testing
-    # https://docs.python.org/3.7/library/datetime.html#datetime.tzinfo
-    class TestTZ(tzinfo):
+def test_range_filter_noconditionals():
+    with pytest.raises(exceptions.PlanetError):
+        data_filter.range_filter('acquired')
 
-        def __init__(self, offset=None):
-            self.offset = offset
-            super().__init__()
 
-        def utcoffset(self, dt):
-            return timedelta(hours=self.offset) if self.offset else None
-
-        def dt(self, dt):
-            # a fixed-offset class:  doesn't account for DST
-            return timedelta(0)
-
-        def tzname(self, dt):
-            return 'TestTZ'
-
-    gt = datetime(2022, 6, 1, 1, tzinfo=TestTZ(0))
-    lt = datetime(2022, 6, 1, 1, tzinfo=TestTZ(1))
-
-    res = data_filter.date_range_filter('acquired', gt=gt, lt=lt)
+def test_range_filter_success():
+    res = data_filter.range_filter('testfield', gt=0.1, lt=0.9)
     expected = {
-        'type': 'DateRangeFilter',
-        'field_name': 'acquired',
+        'type': 'RangeFilter',
+        'field_name': 'testfield',
         'config': {
-            'gt': '2022-06-01T01:00:00Z', 'lt': '2022-06-01T01:00:00+01:00'
+            'gt': 0.1, 'lt': 0.9
         }
     }
     assert res == expected
 
 
-def test_date_range_filter_failure():
+def test_date_range_filter_noconditionals():
     with pytest.raises(exceptions.PlanetError):
         data_filter.date_range_filter('acquired')
+
+
+def test_update_filter_success():
+    res = data_filter.update_filter('testfield', gt=datetime(2022, 6, 1, 1))
+    expected = {
+        'type': 'UpdateFilter',
+        'field_name': 'testfield',
+        'config': {
+            'gt': '2022-06-01T01:00:00Z'
+        }
+    }
+    assert res == expected
+
+
+def test_update_filter_noconditionals():
+    with pytest.raises(exceptions.PlanetError):
+        data_filter.update_filter('acquired')
