@@ -1,17 +1,38 @@
 """The Planet Data CLI."""
 
 import json
-from typing import AsyncIterator, List
+from typing import List
+from contextlib import asynccontextmanager
 
 import click
+import planet
+from planet import DataClient, Session
 
 from .cmds import coro, translate_exceptions
 from .io import echo_json
 
-# Parameter callbacks are what we use to validate and transform the
-# values of arguments and options. On the command line, everything is
-# a string, but we want to transform to natural Python types as soon as
-# possible.
+pretty = click.option('--pretty', is_flag=True, help='Pretty-print output.')
+
+
+@asynccontextmanager
+async def data_client(ctx):
+    auth = ctx.obj['AUTH']
+    base_url = ctx.obj['BASE_URL']
+    async with Session(auth=auth) as sess:
+        cl = DataClient(sess, base_url=base_url)
+        yield cl
+
+
+@click.group()
+@click.pass_context
+@click.option('-u',
+              '--base-url',
+              default=None,
+              help='Assign custom base Orders API URL.')
+def data(ctx, base_url):
+    '''Commands for interacting with the Orders API'''
+    ctx.obj['AUTH'] = planet.Auth.from_file()
+    ctx.obj['BASE_URL'] = base_url
 
 
 def parse_item_types(ctx, param, value: str) -> List[str]:
@@ -23,83 +44,69 @@ def parse_item_types(ctx, param, value: str) -> List[str]:
 
 def parse_filter(ctx, param, value: str) -> dict:
     """Turn filter JSON into a dict."""
-    return json.loads(value)
-
-
-@click.group()
-@click.pass_context
-def data(ctx):
-    """A group of commands for interacting with the Data API."""
+    # read filter using raw json
+    if value.startswith('{'):
+        try:
+            json_value = json.loads(value)
+        except json.decoder.JSONDecodeError:
+            raise click.ClickException('File does not contain valid json.')
+        return json_value
+    # read filter using click pipe option
+    elif value == '-':
+        try:
+            with click.open_file(value) as f:
+                json_value = json.load(f)
+        except json.decoder.JSONDecodeError:
+            raise click.ClickException('File does not contain valid json.')
+        return json_value
+    else:
+        raise click.ClickException(
+            'Please pass filter using filename or STDIN.')
 
 
 # TODO: filter().
 
 
 @data.command()
+@click.pass_context
 @translate_exceptions
-# Our CLI command functions are async functions. They need an event
-# loop to be executed. The coro decorator provides that event loop.
 @coro
-# The command has two positional arguments. ITEM_TYPES comes first.
-# By default these are required and will evaluate to str type.
+@pretty
 @click.argument("item_types", callback=parse_item_types)
 @click.argument("filter", callback=parse_filter)
-# The command has three options.
-@click.option("--limit",
+@click.option('--name',
+              type=str,
+              default=False,
+              help=('Name of the saved search.'))
+@click.option('--limit',
               type=int,
               default=100,
-              help="Maximum number of results to return.")
-@click.option("--name", help="Name for the saved search.")
-@click.option("--pretty", is_flag=True, help="Pretty print output.")
-# This decorator gives our function a context (named "ctx") that may
-# contain parameters set by the "planet data" command group, like
-# "planet --quiet data" or "planet --verbosity=debug data".
-@click.pass_context
-async def search_quick(ctx,
-                       item_types: List[str],
-                       filter: dict,
-                       limit: int,
-                       pretty: bool,
-                       name: str):
-    """Execute a structured item search and print results.
+              help='Maximum number of results to return. Defaults to 100.')
+async def search_quick(ctx, item_types, filter, name, limit, pretty):
+    """Execute a structured item search.
+    Quick searches are stored for approximately 30 days and the --name
+    parameter will be applied to the stored quick search. \n
 
-    Results are represented as a sequence of GeoJSON features.
+    Arguments: \n
+    ITEM_TYPES - string. Comma-separated item type identifier(s). \n
+    FILTER - string. A full JSON description of search criteria.
+    Supports file and stdin. \n
+
+    Output:
+    A series of GeoJSON descriptions for each of the returned items.
 
     """
+    if not filter.endswith(".json") | filter != '-':
+        raise click.BadParameter("Please pass filter using filename or STDIN.")
 
-    # Note: API tokens will be found in "ctx". They are unused in this
-    # example.
-    #
-    # The Planet Data client will return a stream of GeoJSON
-    # Feature-like dicts (aka an "iterator"). The search_quick function
-    # will iterate over the features, encode them as JSON, and echo
-    # them. We simulate that here.
-    async def example_client(item_types,
-                             filter,
-                             limit=0,
-                             name=None) -> AsyncIterator[dict]:
-        """This is a placeholder.
-
-        We'll delete this and use the real method from
-        planet.clients.data when it is available.
-
-        """
-        # Note: we re-emit the input item types and filter to help us
-        # sanity check during early sprints.
-        for feature in item_types:
-            yield dict(item_type=feature)
-
-        yield dict(filter=filter)
-
-    # CLI functions raise ClickException when any kind of intentionally
-    # raised PlanetError occurs. We *don't* handle other errors now
-    # because those will be caused by bugs in our code and we want them
-    # raw and unfiltered.
-    async for feature in example_client(item_types,
-                                        filter,
-                                        limit=limit,
-                                        name=name):
-        echo_json(feature, pretty=pretty)
+    async with data_client(ctx) as cl:
+        items = await cl.quick_search(name=name,
+                                      item_types=item_types,
+                                      search_filter=filter,
+                                      limit=limit,
+                                      sort=None)
+        async for item in items:
+            echo_json(item, pretty)
 
 
 # TODO: search_create()".
