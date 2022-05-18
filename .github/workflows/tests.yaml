@@ -6,6 +6,8 @@ on:
     branches: ["v1"]
   pull_request:
     branches: ["v1"]
+  schedule:
+    - cron: '0 0 * * 0'
   workflow_dispatch:
 
 jobs:
@@ -16,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["2.7", "3.6", "3.7"]
+        python-version: ["2.7", "3.6", "3.7", "3.8", "3.9"]
 
     steps:
       - uses: "actions/checkout@v2"
