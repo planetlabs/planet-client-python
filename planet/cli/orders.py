@@ -16,7 +16,7 @@ from contextlib import asynccontextmanager
 import json
 import logging
 from os import path
-from typing import List
+import sys
 
 import click
 
@@ -28,35 +28,6 @@ from .io import echo_json
 LOGGER = logging.getLogger(__name__)
 
 pretty = click.option('--pretty', is_flag=True, help='Format JSON output.')
-
-
-def parse_item_types(ctx, param, value: str) -> List[str]:
-    """Turn a string of comma-separated names into a list of names."""
-    # Note: we could also normalize case and validate the names against
-    # our schema here.
-    return [part.strip() for part in value.split(",")]
-
-
-def parse_filter(ctx, param, value: str) -> dict:
-    """Turn filter JSON into a dict."""
-    # read filter using raw json
-    if path.exists(value) and path.isfile(value):
-        try:
-            json_value = json.loads(open(value).read())
-        except json.decoder.JSONDecodeError:
-            raise click.ClickException('File does not contain valid json.')
-        return json_value
-    # read filter using click pipe option
-    elif value == '-':
-        try:
-            with click.open_file(value) as f:
-                json_value = json.load(f)
-        except json.decoder.JSONDecodeError:
-            raise click.ClickException('File does not contain valid json.')
-        return json_value
-    else:
-        raise click.ClickException(
-            'Please pass filter using filename or STDIN.')
 
 
 @asynccontextmanager
@@ -262,7 +233,12 @@ def read_file_json(ctx, param, value):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument('request', required=True, callback=parse_filter)
+@click.argument('request',
+                required=True,
+                type=click.Path(exists=True,
+                                resolve_path=True,
+                                writable=True,
+                                allow_dash=True))
 @pretty
 async def create(ctx, request: str, pretty):
     '''  Create an order.
@@ -275,8 +251,13 @@ async def create(ctx, request: str, pretty):
         Order request as stdin, str, or file name. Full description of order
         to be created.
     '''
+    if request == "-":
+        request_json = json.loads(sys.stdin.read())
+    if path.exists(request) and path.isfile(request):
+        request_json = json.loads(open(request).read())
+
     async with orders_client(ctx) as cl:
-        order = await cl.create_order(request)
+        order = await cl.create_order(request_json)
 
     echo_json(order, pretty)
 
