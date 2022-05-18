@@ -15,7 +15,8 @@
 from contextlib import asynccontextmanager
 import json
 import logging
-import sys
+from os import path
+import re
 
 import click
 
@@ -27,6 +28,45 @@ from .io import echo_json
 LOGGER = logging.getLogger(__name__)
 
 pretty = click.option('--pretty', is_flag=True, help='Format JSON output.')
+
+
+def _split(value):
+    '''return input split on any whitespace or comma'''
+    return re.split(r'\s+|,', value)
+
+
+def read(value, split=False):
+    '''Get the value of an option interpreting as a file implicitly or
+    explicitly and falling back to the value if not explicitly specified.
+    If the value is '@name', then a file must exist with name and the returned
+    value will be the contents of that file. If the value is '@-' or '-', then
+    stdin will be read and returned as the value. Finally, if a file exists
+    with the provided value, that file will be read. Otherwise, the value
+    will be returned.
+    '''
+    v = str(value)
+    retval = value
+    if v == '-':
+        fname = '-' if v == '-' else v[1:]
+        try:
+            with click.open_file(fname) as fp:
+                if not fp.isatty():
+                    retval = fp.read()
+                else:
+                    retval = None
+        # @todo better to leave as IOError and let caller handle it
+        # to better report in context of call (e.g. the option/type)
+        except IOError as ioe:
+            # if explicit and problems, raise
+            if v[0] == '@':
+                raise click.ClickException(str(ioe))
+    elif path.exists(v) and path.isfile(v):
+        retval = json.loads(open(retval).read())
+    if retval and split and type(retval) != tuple:
+        retval = _split(retval.strip())
+    if v == '-':
+        retval = json.loads(retval)
+    return retval
 
 
 @asynccontextmanager
@@ -232,15 +272,7 @@ def read_file_json(ctx, param, value):
 @click.pass_context
 @translate_exceptions
 @coro
-# @click.argument('request', type=click.Path(exists=True))
-@click.argument('request', type=click.Path(exists=True), default=sys.stdin)
-# @click.option('--compose-file',
-#               help='compose file to work with',
-#               type=click.File('r'),
-#               default=sys.stdin)
-# def secret_hash_ini(compose_file):
-#     with compose_file:
-#         data = compose_file.read()
+@click.argument('request', default='-', required=False)
 @pretty
 async def create(ctx, request, pretty):
     '''  Create an order.
@@ -253,7 +285,7 @@ async def create(ctx, request, pretty):
         Order request as stdin, str, or file name. Full description of order
         to be created.
     '''
-    request_json = json.loads(open(request).read())
+    request_json = read(request)
     async with orders_client(ctx) as cl:
         order = await cl.create_order(request_json)
 
@@ -300,6 +332,7 @@ async def create(ctx, request, pretty):
               help='Send email notification when Order is complete')
 @click.option(
     '--like',
+    type=click.STRING,
     help='File or stdin providing the order description to use as a template.',
     required=False)
 @click.option('--cloudconfig',
