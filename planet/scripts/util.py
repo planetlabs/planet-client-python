@@ -30,6 +30,15 @@ from click import termui
 from planet import api
 from planet.api import filters
 
+# get_terminal_size was removed from click.termui in click 8.1.0.
+# Previously, click delegated to shutil.get_terminal_size for Python
+# versions >= 3.3. This import dance allows us to *not* pin the Python
+# Client's click dependency for any version of Python.
+try:
+    from shutil import get_terminal_size
+except ImportError:
+    from click.termui import get_terminal_size
+
 
 def _split(value):
     '''return input split on any whitespace or comma'''
@@ -314,7 +323,7 @@ class AnsiOutput(_BaseOutput):
         #
         # scrolling log output
         # ...
-        width, height = click.termui.get_terminal_size()
+        width, height = get_terminal_size()
         wrapper = textwrap.TextWrapper(width=width)
         self._stats['elapsed'] = '%d' % (time.time() - self._start)
         stats = ['%s: %s' % (k, v) for k, v in sorted(self._stats.items())]
@@ -337,7 +346,12 @@ class AnsiOutput(_BaseOutput):
 
 def downloader_output(dl, disable_ansi=False):
     thread = threading.current_thread()
-    # do fancy output if we can or not explicitly disabled
+    # Do fancy output if we can or not explicitly disabled.
+    # Attention: the click project deprecated a method in its termui
+    # module in 8.0.0 and removed it in 8.1.0. If support for v1 of the
+    # Python client continues, we should keep an eye on termui's WIN
+    # attribute, which looks like an incidental part of click's API
+    # (it's not imported into click/__init__.py).
     if sys.stdout.isatty() and not disable_ansi and not termui.WIN:
         return AnsiOutput(thread, dl)
     # work around for lack of nice output for downloader on windows:
