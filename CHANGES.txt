@@ -1,7 +1,8 @@
 # Changes.txt
 
-Next (TBD)
+1.4.10 (2022-05-18)
 
+- Fix: restore compatibility with click versions >= 8.1.0.
 - Fix: handle FeedSource array in analytics API.
 
 1.4.9 (2021-12-07)
