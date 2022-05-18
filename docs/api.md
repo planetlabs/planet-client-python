@@ -16,6 +16,14 @@
     rendering:
       show_root_full_path: false
 
+## ::: planet.DataClient
+    rendering:
+      show_root_full_path: false
+
+## ::: planet.data_filter
+    rendering:
+      show_root_full_path: false
+
 ## ::: planet.reporting
     rendering:
       show_root_full_path: false
