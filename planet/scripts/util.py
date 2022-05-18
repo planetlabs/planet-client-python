@@ -35,9 +35,9 @@ from planet.api import filters
 # versions >= 3.3. This import dance allows us to *not* pin the Python
 # Client's click dependency for any version of Python.
 try:
-    from click.termui import get_terminal_size
-except ImportError:
     from shutil import get_terminal_size
+except ImportError:
+    from click.termui import get_terminal_size
 
 
 def _split(value):
