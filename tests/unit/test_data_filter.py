@@ -187,3 +187,41 @@ def test_geometry_filter(geom_geojson):
         'config': geom_geojson
     }
     assert res == expected
+
+
+def test_number_in_filter():
+    res = data_filter.number_in_filter('testfield', [3, 3])
+    expected = {
+        'type': 'NumberInFilter',
+        'field_name': 'testfield',
+        'config': [3, 3]
+    }
+    assert res == expected
+
+
+def test_string_in_filter():
+    res = data_filter.string_in_filter('testfield', ['three', 'three'])
+    expected = {
+        'type': 'StringInFilter',
+        'field_name': 'testfield',
+        'config': ['three', 'three']
+    }
+    assert res == expected
+
+
+def test_asset_filter():
+    res = data_filter.asset_filter(['asset1', 'asset2'])
+    expected = {
+        'type': 'AssetFilter',
+        'config': ['asset1', 'asset2']
+    }
+    assert res == expected
+
+
+def test_permission_filter():
+    res = data_filter.permission_filter()
+    expected = {
+        'type': 'PermissionFilter',
+        'config': ['assets:download']
+    }
+    assert res == expected

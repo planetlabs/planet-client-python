@@ -225,8 +225,69 @@ def geometry_filter(geom: dict) -> dict:
 
     Parameters:
         geom: GeoJSON describing the filter geometry.
-
-    Raises:
-        exceptions.PlanetError: If no conditional parameter is specified.
     """
     return _field_filter('GeometryFilter', field_name='geometry', config=geom)
+
+
+def number_in_filter(field_name: str, values: List[float]) -> dict:
+    """Create a NumberInFilter
+
+    The NumberInFilter can be used to search for items with numerical
+    poperties. It is useful for matching fields such as gsd.
+
+    Parameters:
+        field_name: Name of field to filter on.
+        values: List of numbers to filter on.
+    """
+    return _field_filter('NumberInFilter',
+                         field_name=field_name,
+                         config=values)
+
+
+def string_in_filter(field_name: str, values: List[str]) -> dict:
+    """Create a StringInFilter
+
+    The StringInFilter can be used to search for items with string properties
+    such as instrument or quality_category. Boolean properties such as
+    ground_control are also supported with the StringInFilter.
+
+    Filters to items with the given field matching any of the values.
+
+    Parameters:
+        field_name: Name of field to filter on.
+        values: List of strings to filter on.
+    """
+    return _field_filter('StringInFilter',
+                         field_name=field_name,
+                         config=values)
+
+
+def asset_filter(asset_types: List[str]) -> dict:
+    """Create an AssetFilter
+
+    The AssetFilter can be used to search for items which have published a
+    specified asset_type. This filter is commonly used to filter items by
+    published asset types which:
+
+    * May be published at delay after an item's first publish. analytic_sr,
+    for instance, may be published up to 12 hours after an item first becomes
+    available.
+    * May not be available for the full catalog. udm2, for instance, is only
+    available globally through July 2018.
+
+    Filters to all items which include any of the listed asset types. An
+    AndFilter can be used to filter items by multiple asset types.
+
+    Parameters:
+        asset_types: List of the names of the asset type to filter on.
+    """
+    return {'type': 'AssetFilter', 'config': asset_types}
+
+
+def permission_filter() -> dict:
+    """Create a PermissionFilter
+
+    The PermissionFilter limits results to items that a user has permission to
+    download.
+    """
+    return {'type': 'PermissionFilter', 'config': ['assets:download']}
