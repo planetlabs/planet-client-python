@@ -84,7 +84,7 @@ def test__range_filter_nocallback():
 
 def test__range_filter_no_conditionals():
 
-    def _test_callback(x):
+    def _test_callback(x):  # pragma: no cover
         return x + 'a'
 
     with pytest.raises(exceptions.PlanetError):
@@ -105,13 +105,6 @@ class TZTest(tzinfo):
 
     def utcoffset(self, dt):
         return timedelta(hours=self.offset) if self.offset else None
-
-    def dt(self, dt):
-        # a fixed-offset class:  doesn't account for DST
-        return timedelta(0)
-
-    def tzname(self, dt):
-        return 'TestTZ'
 
 
 @pytest.mark.parametrize(
@@ -192,9 +185,7 @@ def test_geometry_filter(geom_geojson):
 def test_number_in_filter():
     res = data_filter.number_in_filter('testfield', [3, 3])
     expected = {
-        'type': 'NumberInFilter',
-        'field_name': 'testfield',
-        'config': [3, 3]
+        'type': 'NumberInFilter', 'field_name': 'testfield', 'config': [3, 3]
     }
     assert res == expected
 
@@ -211,17 +202,11 @@ def test_string_in_filter():
 
 def test_asset_filter():
     res = data_filter.asset_filter(['asset1', 'asset2'])
-    expected = {
-        'type': 'AssetFilter',
-        'config': ['asset1', 'asset2']
-    }
+    expected = {'type': 'AssetFilter', 'config': ['asset1', 'asset2']}
     assert res == expected
 
 
 def test_permission_filter():
     res = data_filter.permission_filter()
-    expected = {
-        'type': 'PermissionFilter',
-        'config': ['assets:download']
-    }
+    expected = {'type': 'PermissionFilter', 'config': ['assets:download']}
     assert res == expected
