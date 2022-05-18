@@ -508,8 +508,7 @@ def test_cli_orders_create_basic_success(expected_ids,
 def test_cli_orders_create_basic_stdin_success(expected_ids,
                                                id_string,
                                                invoke,
-                                               order_description,
-                                               write_to_tmp_json_file):
+                                               order_description):
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
