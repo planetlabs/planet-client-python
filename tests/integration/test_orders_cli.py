@@ -366,7 +366,7 @@ def test_cli_orders_download_state(invoke, order_description, oid):
     assert 'order state (running) is not a final state.' in result.output
 
 
-# # TODO: add tests of "create --like" (gh-491).
+# # TODO: add tests of "create --like" (gh-557).
 # # TODO: add tests of "create --pretty" (gh-491).
 @pytest.mark.parametrize(
     "id_string, expected_ids",
@@ -458,7 +458,6 @@ def test_cli_orders_request_clip(invoke, geom_geojson, write_to_tmp_json_file):
     assert order_request == json.loads(result.output)
 
 
-# TODO: convert "create" tests to "request" tests (gh-366).
 # TODO: add tests of "create --pretty" (gh-491).
 @pytest.mark.parametrize(
     "id_string, expected_ids",
@@ -497,6 +496,48 @@ def test_cli_orders_create_basic_success(expected_ids,
         }],
     }
     sent_request = json.loads(respx.calls.last.request.content)
+    assert sent_request == order_request
+
+
+@pytest.mark.parametrize(
+    "id_string, expected_ids",
+    [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
+     ('4500474_2133707_2021-05-20_2419,4500474_2133707_2021-05-20_2420',
+      ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])])
+@respx.mock
+def test_cli_orders_create_basic_stdin_success(expected_ids,
+                                               id_string,
+                                               invoke,
+                                               order_description,
+                                               write_to_tmp_json_file):
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.post(TEST_ORDERS_URL).return_value = mock_resp
+
+    request_result = invoke([
+        'request',
+        '--name=test',
+        f'--id={id_string}',
+        '--bundle=analytic',
+        '--item-type=PSOrthoTile'
+    ])
+
+    # Invoke the create call
+    runner = CliRunner()
+    extra_args = ['create', '-']
+    args = ['orders', '--base-url', TEST_URL] + extra_args
+    runner.invoke(cli.main, args=args, input=request_result.output)
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": expected_ids,
+            "item_type": "PSOrthoTile",
+            "product_bundle": "analytic"
+        }],
+    }
+    sent_request = json.loads(respx.calls.last.request.content)
+
     assert sent_request == order_request
 
 
