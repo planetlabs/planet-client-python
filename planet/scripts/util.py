@@ -18,7 +18,6 @@ import json
 import logging
 import re
 from os import path
-import shutil
 import sys
 import tempfile
 import textwrap
@@ -30,6 +29,15 @@ from click import termui
 
 from planet import api
 from planet.api import filters
+
+# get_terminal_size was removed from click.termui in click 8.1.0.
+# Previously, click delegated to shutil.get_terminal_size for Python
+# versions >= 3.3. This import dance allows us to *not* pin the Python
+# Client's click dependency for any version of Python.
+try:
+    from click.termui import get_terminal_size
+except ImportError:
+    from shutil import get_terminal_size
 
 
 def _split(value):
@@ -315,7 +323,7 @@ class AnsiOutput(_BaseOutput):
         #
         # scrolling log output
         # ...
-        width, height = shutil.get_terminal_size()
+        width, height = get_terminal_size()
         wrapper = textwrap.TextWrapper(width=width)
         self._stats['elapsed'] = '%d' % (time.time() - self._start)
         stats = ['%s: %s' % (k, v) for k, v in sorted(self._stats.items())]

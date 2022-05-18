@@ -136,3 +136,10 @@ def test_api_key_flag():
     run_cli(['-k', 'shazbot', 'help'])
     assert 'api_key' in cli.client_params
     assert cli.client_params['api_key'] == 'shazbot'
+
+
+def test_get_terminal_size():
+    """Check compatibility of get_terminal_size (see gh-529)."""
+    columns, rows = util.get_terminal_size()
+    assert isinstance(columns, int)
+    assert isinstance(rows, int)
