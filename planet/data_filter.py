@@ -208,3 +208,25 @@ def update_filter(field_name: str,
                          gte,
                          None,
                          callback=_datetime_to_rfc3339)
+
+
+def geometry_filter(geom: dict) -> dict:
+    """Create a GeometryFilter
+
+    The GeometryFilter can be used to search for items with a footprint
+    geometry which intersects with the specified geometry.
+
+    The filter's configuration supports Point, MultiPoint, LineString,
+    MultiLineString, Polygon, and MultiPolygon GeoJSON object. For best
+    results, the geometry should meet OpenGIS Simple Features Interface
+    Specification requirements. If an invalid GeoJSON object is supplied, the
+    API will automatically attempt to correct the geometry and return matching
+    search results.
+
+    Parameters:
+        geom: GeoJSON describing the filter geometry.
+
+    Raises:
+        exceptions.PlanetError: If no conditional parameter is specified.
+    """
+    return _field_filter('GeometryFilter', field_name='geometry', config=geom)

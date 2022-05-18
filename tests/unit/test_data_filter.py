@@ -97,7 +97,7 @@ def test__range_filter_no_conditionals():
                                   callback=_test_callback)
 
 
-class TestTZ(tzinfo):
+class TZTest(tzinfo):
 
     def __init__(self, offset=None):
         self.offset = offset
@@ -120,8 +120,8 @@ class TestTZ(tzinfo):
      (datetime(2022, 5, 1, 1, 0, 1), '2022-05-01T01:00:01Z'),
      (datetime(2022, 6, 1, 1, 1), '2022-06-01T01:01:00Z'),
      (datetime(2022, 6, 1, 1), '2022-06-01T01:00:00Z'),
-     (datetime(2022, 6, 1, 1, tzinfo=TestTZ(0)), '2022-06-01T01:00:00Z'),
-     (datetime(2022, 6, 1, 1, tzinfo=TestTZ(1)), '2022-06-01T01:00:00+01:00')])
+     (datetime(2022, 6, 1, 1, tzinfo=TZTest(0)), '2022-06-01T01:00:00Z'),
+     (datetime(2022, 6, 1, 1, tzinfo=TZTest(1)), '2022-06-01T01:00:00+01:00')])
 def test__datetime_to_rfc3339_basic(dtime, expected):
     assert data_filter._datetime_to_rfc3339(dtime) == expected
 
@@ -177,3 +177,13 @@ def test_update_filter_success():
 def test_update_filter_noconditionals():
     with pytest.raises(exceptions.PlanetError):
         data_filter.update_filter('acquired')
+
+
+def test_geometry_filter(geom_geojson):
+    res = data_filter.geometry_filter(geom_geojson)
+    expected = {
+        'type': 'GeometryFilter',
+        'field_name': 'geometry',
+        'config': geom_geojson
+    }
+    assert res == expected
