@@ -3,6 +3,7 @@
 import json
 from typing import List
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import click
 import planet
@@ -52,7 +53,7 @@ def parse_filter(ctx, param, value: str) -> dict:
             raise click.ClickException('File does not contain valid json.')
         return json_value
     # read filter using click pipe option
-    elif value == '-':
+    elif value == '-' or Path(value).name.endswith('.json'):
         try:
             with click.open_file(value) as f:
                 json_value = json.load(f)
@@ -96,9 +97,6 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
     A series of GeoJSON descriptions for each of the returned items.
 
     """
-    if not filter.endswith(".json") | filter != '-':
-        raise click.BadParameter("Please pass filter using filename or STDIN.")
-
     async with data_client(ctx) as cl:
         items = await cl.quick_search(name=name,
                                       item_types=item_types,

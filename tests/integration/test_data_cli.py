@@ -5,14 +5,58 @@ import pytest
 
 from planet.cli import cli
 
+TEST_URL = 'http://MockNotRealURL/api/path'
+TEST_DOWNLOAD_URL = f'{TEST_URL}/download'
+TEST_DATA_URL = f'{TEST_URL}/data/v2'
+
+
+@pytest.fixture
+def invoke():
+
+    def _invoke(extra_args, runner=None):
+        runner = runner or CliRunner()
+        args = ['data', '--base-url', TEST_URL] + extra_args
+        return runner.invoke(cli.main, args=args)
+
+    return _invoke
+
 
 def test_data_command_registered():
     """planet-data command prints help and usage message."""
-    result = CliRunner().invoke(cli.main, ["data", "--help"])
+    result = CliRunner().invoke("--help")
     assert result.exit_code == 0
     assert "Usage" in result.output
     assert "search-quick" in result.output
     # Add other sub-commands here.
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("filter", [{1: 1}, {}, {"foo"}])
+async def test_data_search_quick_filter_fail(invoke, filter):
+    """Test for planet data search_quick. Test should fail as filter
+    does not contain valid JSON."""
+    runner = CliRunner()
+    item_type = 'SkySatScene'
+    result = invoke(["search_quick", filter, item_type], runner=runner)
+    assert result.exit_code == 2
+
+
+@pytest.mark.asyncio
+async def test_data_search_quick_filter_success(invoke):
+    """Test for planet data search_quick. Test should succeed as filter
+    contains valid JSON."""
+    filter = {
+        "type": "DateRangeFilter",
+        "field_name": "acquired",
+        "config": {
+            "gt": "2019-12-31T00:00:00Z", "lte": "2020-01-31T00:00:00Z"
+        }
+    }
+    runner = CliRunner()
+    item_type = 'SkySatScene'
+    result = invoke(["search_quick", filter, item_type], runner=runner)
+
+    assert result.exit_code == 0
 
 
 # TODO: basic test for "planet data filter".
