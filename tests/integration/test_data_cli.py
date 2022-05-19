@@ -1,13 +1,17 @@
 """Tests of the Data CLI."""
 
+import click
 from click.testing import CliRunner
 import pytest
-
+import json
+import httpx
+import respx
+from http import HTTPStatus
+from planet import DataClient, exceptions
 from planet.cli import cli
 
-TEST_URL = 'http://MockNotRealURL/api/path'
-TEST_DOWNLOAD_URL = f'{TEST_URL}/download'
-TEST_DATA_URL = f'{TEST_URL}/data/v2'
+TEST_URL = 'https://api.planet.com/data/v1'
+TEST_QUICKSEARCH_URL = f'{TEST_URL}/quick-search'
 
 
 @pytest.fixture
@@ -15,7 +19,7 @@ def invoke():
 
     def _invoke(extra_args, runner=None):
         runner = runner or CliRunner()
-        args = ['data', '--base-url', TEST_URL] + extra_args
+        args = ['data'] + extra_args
         return runner.invoke(cli.main, args=args)
 
     return _invoke
@@ -30,20 +34,33 @@ def test_data_command_registered():
     # Add other sub-commands here.
 
 
+@respx.mock
 @pytest.mark.asyncio
-@pytest.mark.parametrize("filter", [{1: 1}, {}, {"foo"}])
-async def test_data_search_quick_filter_fail(invoke, filter):
-    """Test for planet data search_quick. Test should fail as filter
-    does not contain valid JSON."""
+@pytest.mark.parametrize("filter", [{''}, {"foo"}])
+@pytest.mark.parametrize(
+    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+def test_data_search_quick_filter_fail(invoke, item_types, filter):
+    """Test for planet data search_quick. Test with multiple item_types.
+    Test should fail as filter does not contain valid JSON."""
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               json={'features': [{
+                                   "key": "value"
+                               }]})
+    respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
+
     runner = CliRunner()
-    item_type = 'SkySatScene'
-    result = invoke(["search_quick", filter, item_type], runner=runner)
-    assert result.exit_code == 2
+    item_types = 'SkySatScene'
+    with pytest.raises(TypeError):
+        result = invoke(["search-quick", item_types, json.dumps(filter)],
+                        runner=runner)
 
 
-def test_data_search_quick_filter_success(invoke):
-    """Test for planet data search_quick. Test should succeed as filter
-    contains valid JSON."""
+@respx.mock
+@pytest.mark.parametrize(
+    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+def test_data_search_quick_filter_success(invoke, item_types):
+    """Test for planet data search_quick. Test with multiple item_types.
+    Test should succeed as filter contains valid JSON."""
     filter = {
         "type": "DateRangeFilter",
         "field_name": "acquired",
@@ -51,11 +68,19 @@ def test_data_search_quick_filter_success(invoke):
             "gt": "2019-12-31T00:00:00Z", "lte": "2020-01-31T00:00:00Z"
         }
     }
+
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               json={'features': [{
+                                   "key": "value"
+                               }]})
+    respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
+
     runner = CliRunner()
-    item_type = 'SkySatScene'
-    result = invoke(["search-quick", item_type, json.dumps(filter)], runner=runner)
+    result = invoke(["search-quick", item_types, json.dumps(filter)],
+                    runner=runner)
 
     assert result.exit_code == 0
+    assert len(result.output.strip().split('\n')) == 1  #we have 1 feature
 
 
 # TODO: basic test for "planet data filter".
