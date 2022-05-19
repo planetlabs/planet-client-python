@@ -243,6 +243,7 @@ class OrdersClient:
 
     async def download_asset(self,
                              location: str,
+                             order_description_path: str,
                              filename: str = None,
                              directory: str = None,
                              overwrite: bool = False,
@@ -251,6 +252,7 @@ class OrdersClient:
 
         Parameters:
             location: Download location url including download token.
+            order_description_path: Path to file in order description
             filename: Custom name to assign to downloaded file.
             directory: Base directory for file download.
             overwrite: Overwrite any existing files.
@@ -266,7 +268,10 @@ class OrdersClient:
 
         async with self._session.stream(req) as resp:
             body = StreamingBody(resp)
-            dl_path = os.path.join(directory or '.', filename or body.name)
+            dl_dir = os.path.join(directory or '.', order_description_path)
+            if not os.path.isdir(dl_dir):
+                os.mkdir(dl_dir)
+            dl_path = os.path.join(dl_dir, filename or body.name)
             await body.write(dl_path,
                              overwrite=overwrite,
                              progress_bar=progress_bar)
@@ -355,11 +360,13 @@ class OrdersClient:
                 'Consider using wait functionality before '
                 'attempting to download.')
         locations = self._get_order_locations(order)
+        order_description_path = self._get_order_description_path(order)
         LOGGER.info(
             f'downloading {len(locations)} assets from order {order_id}')
 
         filenames = [
             await self.download_asset(location,
+                                      order_description_path,
                                       directory=directory,
                                       overwrite=overwrite,
                                       progress_bar=progress_bar)
@@ -393,8 +400,19 @@ class OrdersClient:
             return list(r['location'] for r in results if r)
         except TypeError:
             LOGGER.warning(
-                'order does not have any locations, will not download any ' +
+                'Order does not have any locations, will not download any ' +
                 'files.')
+            return []
+
+    @staticmethod
+    def _get_order_description_path(order):
+        links = order['_links']
+        results = links.get('results', [])
+        try:
+            # Currently, this returns the order ID, but this may change
+            return os.path.dirname(results[0]['name'])
+        except TypeError:
+            LOGGER.warning('Order does not contain any files.')
             return []
 
     async def wait(self,
