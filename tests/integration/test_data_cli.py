@@ -23,9 +23,10 @@ def invoke():
     return _invoke
 
 
-def test_data_command_registered():
+def test_data_command_registered(invoke):
     """planet-data command prints help and usage message."""
-    result = CliRunner().invoke("--help")
+    runner = CliRunner()
+    result = invoke(["--help"], runner = runner)
     assert result.exit_code == 0
     assert "Usage" in result.output
     assert "search-quick" in result.output
