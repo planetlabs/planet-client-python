@@ -54,7 +54,7 @@ async def test_data_search_quick_filter_success(invoke):
     }
     runner = CliRunner()
     item_type = 'SkySatScene'
-    result = invoke(["search_quick", filter, item_type], runner=runner)
+    result = invoke(["search-quick", item_type, json.dumps(filter)], runner=runner)
 
     assert result.exit_code == 0
 
