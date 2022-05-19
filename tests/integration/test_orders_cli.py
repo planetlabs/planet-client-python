@@ -520,11 +520,10 @@ def test_cli_orders_create_basic_stdin_success(expected_ids,
         '--item-type=PSOrthoTile'
     ])
 
-    # Invoke the create call
     runner = CliRunner()
-    extra_args = ['create', '-']
-    args = ['orders', '--base-url', TEST_URL] + extra_args
-    runner.invoke(cli.main, args=args, input=request_result.output)
+    runner.invoke(cli.main, ['orders', '--base-url', TEST_URL, 'create', '-'],
+                  input=request_result.output,
+                  catch_exceptions=False)
 
     order_request = {
         "name":
