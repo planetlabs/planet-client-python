@@ -1,13 +1,11 @@
 """Tests of the Data CLI."""
 
-import click
 from click.testing import CliRunner
 import pytest
 import json
 import httpx
 import respx
 from http import HTTPStatus
-from planet import DataClient, exceptions
 from planet.cli import cli
 
 TEST_URL = 'https://api.planet.com/data/v1'
@@ -80,7 +78,7 @@ def test_data_search_quick_filter_success(invoke, item_types):
                     runner=runner)
 
     assert result.exit_code == 0
-    assert len(result.output.strip().split('\n')) == 1  #we have 1 feature
+    assert len(result.output.strip().split('\n')) == 1  # we have 1 feature
 
 
 # TODO: basic test for "planet data filter".

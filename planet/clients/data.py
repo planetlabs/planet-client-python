@@ -148,8 +148,6 @@ class DataClient:
         if sort:
             # TODO: validate sort
             params['sort'] = sort
-            
-        import pdb; pdb.set_trace()
 
         request = self._request(url,
                                 method='POST',
