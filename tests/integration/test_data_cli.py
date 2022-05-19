@@ -41,8 +41,7 @@ async def test_data_search_quick_filter_fail(invoke, filter):
     assert result.exit_code == 2
 
 
-@pytest.mark.asyncio
-async def test_data_search_quick_filter_success(invoke):
+def test_data_search_quick_filter_success(invoke):
     """Test for planet data search_quick. Test should succeed as filter
     contains valid JSON."""
     filter = {
