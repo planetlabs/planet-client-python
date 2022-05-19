@@ -78,7 +78,7 @@ def _range_filter(
     lte: Any,
     callback: Callable = None,
 ) -> dict:
-    """Base for creating range filters
+    """Base for creating range filters.
 
     Parameters:
         ftype: Type of the filter
@@ -119,7 +119,8 @@ def date_range_filter(field_name: str,
     such as acquired or published.
 
     One or more of the conditional parameters `gt`, `lt`, `gte`, `lte` must be
-    specified.
+    specified. Conditionals are combined in a logical AND, so only items that
+    match all specified conditionals are returned.
 
     Parameters:
         field_name: Name of field to filter on.
@@ -161,7 +162,8 @@ def range_filter(field_name: str,
     such as cloud_cover or view_angle.
 
     One or more of the conditional parameters `gt`, `lt`, `gte`, `lte` must be
-    specified.
+    specified. Conditionals are combined in a logical AND, so only items that
+    match all specified conditionals are returned.
 
     Parameters:
         field_name: Name of field to filter on.
@@ -191,7 +193,8 @@ def update_filter(field_name: str,
     works for all items published on or after April 10, 2020.
 
     One or more of the conditional parameters `gt` or `gte` must be
-    specified.
+    specified. Conditionals are combined in a logical AND, so only items that
+    match all specified conditionals are returned.
 
     Parameters:
         field_name: Name of field to filter on.
