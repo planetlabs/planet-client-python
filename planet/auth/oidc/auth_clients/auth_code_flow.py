@@ -42,6 +42,8 @@ class AuthCodePKCEAuthClient(OidcAuthClient):
     def _client_auth_enricher(
             self, raw_payload: dict,
             audience: str) -> Tuple[dict, Optional[AuthBase]]:
+        # TODO: Add support for having a client secret or pubkey. This is used
+        #       for "private" applications that still act on behalf of a user.
         auth_payload = prepare_client_noauth_auth_payload(
             client_id=self._authcode_client_config.client_id)
         enriched_payload = {**raw_payload, **auth_payload}  # Python >= 3.5
