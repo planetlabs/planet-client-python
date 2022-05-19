@@ -1,5 +1,5 @@
 import pathlib
-from typing import Union
+from typing import List, Union
 
 
 class Profile:
@@ -22,7 +22,7 @@ class Profile:
 
     @staticmethod
     def get_profile_file_path_with_priority(
-            filenames: list[str],
+            filenames: List[str],
             profile: Union[str, None],
             override_path: Union[str, pathlib.PurePath, None]) -> pathlib.Path:
         """Given a list of candidate filenames, choose the first that that
