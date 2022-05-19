@@ -12,7 +12,10 @@ from planet.auth.constants import \
     ENV_AUTH_TOKEN_FILE, \
     SDK_OIDC_AUTH_CLIENT_CONFIG_DICT, \
     LEGACY_AUTH_CLIENT_CONFIG_DICT, \
-    NOOP_AUTH_CLIENT_CONFIG_DICT
+    NOOP_AUTH_CLIENT_CONFIG_DICT, \
+    TOKEN_FILE_PLAIN, \
+    AUTH_CONFIG_FILE_PLAIN, \
+    AUTH_CONFIG_FILE_SOPS
 
 from planet.auth.auth_client import AuthClient, AuthClientConfig
 from planet.auth.request_authenticator import RequestAuthenticator
@@ -78,10 +81,12 @@ class Auth:
 
     @staticmethod
     def _initialize_auth_client(
-            profile: str,
-            auth_client_config_file: Union[str,
-                                           pathlib.PurePath]) -> AuthClient:
+        profile: str,
+        auth_client_config_file_override: Union[str, pathlib.PurePath]
+    ) -> AuthClient:
         if Profile.profile_name_is_default(profile):
+            # TODO: New feature (maybe?) allow someone to override the
+            #       default for their environment?
             logger.debug(
                 'Using built-in "{}" auth client configuration'.format(
                     Profile.BUILTIN_PROFILE_NAME_DEFAULT))
@@ -100,14 +105,16 @@ class Auth:
             client_config = AuthClientConfig.from_dict(
                 NOOP_AUTH_CLIENT_CONFIG_DICT)
         else:
-            auth_config_path = Profile.get_profile_file_path(
-                'auth_client.json', profile, auth_client_config_file)
+            auth_config_path = Profile.get_profile_file_path_with_priority(
+                filenames=[AUTH_CONFIG_FILE_SOPS, AUTH_CONFIG_FILE_PLAIN],
+                profile=profile,
+                override_path=auth_client_config_file_override)
             if auth_config_path.exists():
                 logger.debug(
                     'Using auth client configuration from "{}"'.format(
                         str(auth_config_path)))
                 client_config = AuthClientConfig.from_file(
-                    auth_client_config_file)
+                    auth_client_config_file_override)
             else:
                 logger.debug(
                     'Auth configuration file "{}" not found.'
@@ -121,7 +128,7 @@ class Auth:
     @staticmethod
     def _initialize_token_file_path(profile: str,
                                     token_file_override) -> pathlib.Path:
-        return Profile.get_profile_file_path('token.json',
+        return Profile.get_profile_file_path(TOKEN_FILE_PLAIN,
                                              profile,
                                              token_file_override)
 

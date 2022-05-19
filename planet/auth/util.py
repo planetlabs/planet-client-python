@@ -2,6 +2,7 @@ import json
 import os
 import pathlib
 import stat
+import subprocess
 import time
 
 from planet.auth.auth_exception import AuthException
@@ -85,9 +86,12 @@ class FileBackedJsonObject:
             raise FileBackedJsonObjectException(
                 'Cannot load data from file. File path is not set.')
 
-        with open(self._file_path, 'r') as file_r:
-            new_data = json.load(file_r)
-            self.check_data(new_data)
+        if self._is_sops_path(self._file_path):
+            new_data = self._read_json_sops(self._file_path)
+        else:
+            new_data = self._read_json(self._file_path)
+
+        self.check_data(new_data)
 
         self._data = new_data
         self._load_time = int(time.time())
@@ -100,10 +104,12 @@ class FileBackedJsonObject:
         self.check_data(self._data)
 
         self._file_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(self._file_path, 'w') as file_w:
-            os.chmod(self._file_path, stat.S_IREAD | stat.S_IWRITE)
-            file_w.write(json.dumps(self._data))
-            self._load_time = int(time.time())
+        if self._is_sops_path(self._file_path):
+            self._write_json_sops(self._file_path, self._data)
+        else:
+            self._write_json(self._file_path, self._data)
+
+        self._load_time = int(time.time())
 
     def lazy_load(self):
         """
@@ -156,9 +162,53 @@ class FileBackedJsonObject:
     # This is probably a bad idea, since it would encourage development
     # that makes it more likely that data may change in between get()'s
     # of multiple fields in the same object, leading to inconsistency.
-    # Only the application knows what transation boundaries are.
+    # Only the application knows what transaction boundaries are.
     # def lazy_reload_get(self, field):
     #    self.lazy_reload()
     #    if self._data:
     #        return self._data.get(field)
     #    return None
+
+    @staticmethod
+    def _read_json(data_file):
+        with open(data_file, 'r') as file_r:
+            return json.load(file_r)
+
+    @staticmethod
+    def _read_json_sops(data_file):
+        data_b = subprocess.check_output(['sops', '-d', data_file])
+        return json.loads(data_b)
+
+    @staticmethod
+    def _write_json(data_file, data):
+        with open(data_file, 'w') as file_w:
+            os.chmod(data_file, stat.S_IREAD | stat.S_IWRITE)
+            file_w.write(json.dumps(data))
+
+    @staticmethod
+    def _write_json_sops(data_file, data):
+        # Seems to blow up. I guess we have to write clear text,
+        # then encrypt in place?
+        # with io.StringIO(json.dumps(data)) as data_f:
+        #     subprocess.check_call(
+        #         ['sops', '-e', '--input-type', 'json', '--output-type',
+        #          'json', '--output', data_file, '/dev/stdin'],
+        #         stdin=data_f)
+        FileBackedJsonObject._write_json(data_file, data)
+        subprocess.check_call([
+            'sops',
+            '-e',
+            '--input-type',
+            'json',
+            '--output-type',
+            'json',
+            '-i',
+            data_file
+        ])
+
+    @staticmethod
+    def _is_sops_path(file_path):
+        # FIXME: could be json.sops, or sops.json, depending on file
+        #        level or field level encryption.  We currently only
+        #        look for and support field level encryption in json files.
+        return bool(file_path.suffixes == ['.sops', '.json'])
