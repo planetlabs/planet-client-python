@@ -60,7 +60,10 @@ def auth_cmd_group(ctx):
     credentials will be stored in a token.json file, and auth profile
     configuration will be stored in an auth_client.json file.  The contents
     and format of these files vary depending on the specific auth mechanism
-    configured for the auth profile.
+    configured for the auth profile.  If present, auth_client.sops.json
+    will take priority over auth_client.json, allowing clients that have
+    secrets to securely store this information on disk using SOPS encryption.
+    SOPS is not currently supported for the token.json file at this time.
 
     The following auth profiles are built in, and do not require any user
     configuration.  When a built in profile is used, it will be used to
@@ -108,7 +111,6 @@ def do_list_scopes(ctx):
         print_obj(available_scopes)
     else:
         print_obj([])
-        # sys.exit(1)
 
 
 # TODO: Google deprecated the behavior of --no-launch-browser in their

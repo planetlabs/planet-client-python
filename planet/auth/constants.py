@@ -10,6 +10,11 @@ ENV_AUTH_SCOPES = 'PL_AUTH_SCOPES'
 ENV_AUTH_TOKEN_FILE = 'PL_AUTH_TOKEN_FILE'
 ENV_AUTH_USERNAME = 'PL_AUTH_USERNAME'
 
+AUTH_CONFIG_FILE_PLAIN = 'auth_client.json'
+AUTH_CONFIG_FILE_SOPS = 'auth_client.sops.json'
+TOKEN_FILE_PLAIN = 'token.json'
+# TOKEN_FILE_SOPS = 'token.sops.json'  # Not supported at this time.
+
 # FIXME: we need a better URL for this public interface, that doesn't embed
 #    implementation details like a specific ID.
 PLANET_OAUTH_SERVER = 'https://account.planet.com/oauth2/aus2enhwueFYRb50S4x7'

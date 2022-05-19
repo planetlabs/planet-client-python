@@ -32,8 +32,7 @@ class NoOpAuthClient(AuthClient):
             self, credential_file_path: pathlib.Path) -> RequestAuthenticator:
         return SimpleInMemoryRequestAuthenticator(token_body=None)
 
-    def refresh(self, refresh_token: str,
-                requested_scopes: list[str]) -> Credential:
+    def refresh(self, refresh_token, requested_scopes) -> Credential:
         return self.login()
 
     def validate_access_token(self, access_token: str):
