@@ -1,6 +1,7 @@
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 
 from abc import ABC, abstractmethod
+from typing import List
 import logging
 import pathlib
 
@@ -245,7 +246,7 @@ class AuthClient(ABC):
         """
 
     def refresh(self, refresh_token: str,
-                requested_scopes: list[str]) -> Credential:
+                requested_scopes: List[str]) -> Credential:
         # TODO: It may be better to accept a Credential as input?
         """
         Obtain a refreshed credential using the supplied refresh token.
