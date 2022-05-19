@@ -16,6 +16,7 @@ from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import asyncio
 from http import HTTPStatus
 import logging
+import random
 
 import httpx
 
@@ -23,8 +24,8 @@ from planet.auth import Auth
 from . import exceptions, models
 from .__version__ import __version__
 
-RETRY_COUNT = 5
-RETRY_WAIT_TIME = 1  # seconds
+MAX_RETRIES = 5
+MAX_RETRY_BACKOFF = 64  # seconds
 
 LOGGER = logging.getLogger(__name__)
 
@@ -136,8 +137,9 @@ class Session(BaseSession):
         self._client.event_hooks['response'] = [
             alog_response, araise_for_status
         ]
-        self.retry_wait_time = RETRY_WAIT_TIME
-        self.retry_count = RETRY_COUNT
+
+        self.max_retries = MAX_RETRIES
+        self.max_retry_backoff = MAX_RETRY_BACKOFF
 
     async def __aenter__(self):
         return self
@@ -151,18 +153,19 @@ class Session(BaseSession):
     async def _retry(self, func, *a, **kw):
         """Run an asynchronous request function with retry.
 
+        Retry uses exponential backoff
+
         Raises:
             planet.exceptions.TooManyRequests: When retry limit is exceeded.
         """
-        # TODO: retry will be provided in httpx v1 [1] with usage [2]
-        # 1. https://github.com/encode/httpcore/pull/221
-        # 2. https://github.com/encode/httpx/blob/
-        # 89fb0cbc69ea07b123dd7b36dc1ed9151c5d398f/docs/async.md#explicit-transport-instances # noqa
+        # NOTE: if we need something more fancy, consider the following libs:
+        # * https://pypi.org/project/retry/
+        # * https://pypi.org/project/retrying/
+        # TODO: consider increasing the scope of retryable exceptions, ex:
+        # https://github.com/googleapis/python-storage/blob/1dc6d647b86466bf133
+        # fe03ec8d76c541e19c632/google/cloud/storage/retry.py#L23-L30
         # TODO: if throttling is necessary, check out [1] once v1
         # 1. https://github.com/encode/httpx/issues/984
-        retry_count = self.retry_count
-        wait_time = self.retry_wait_time
-
         num_tries = 0
         while True:
             num_tries += 1
@@ -170,15 +173,36 @@ class Session(BaseSession):
                 resp = await func(*a, **kw)
                 break
             except exceptions.TooManyRequests as e:
-                if num_tries > retry_count:
+                if num_tries > self.max_retries:
                     raise e
                 else:
                     LOGGER.debug(f'Try {num_tries}')
+                    wait_time = self._calculate_wait(num_tries,
+                                                     self.max_retry_backoff)
                     LOGGER.info(f'Too Many Requests: sleeping {wait_time}s')
-                    # TODO: consider exponential backoff
-                    # https://developers.planet.com/docs/data/api-mechanics/
                     await asyncio.sleep(wait_time)
         return resp
+
+    @staticmethod
+    def _calculate_wait(num_tries, max_retry_backoff):
+        """Calculates retry wait
+
+        Base wait period is calculated as a exponential based on the number of
+        tries. Then, a random jitter of up to 1s is added to the base wait
+        to avoid waves of requests in the case of multiple requests. Finally,
+        the wait is thresholded to the maximum retry backoff.
+
+        Because threshold is applied after jitter, calculations that hit
+        threshold will not have random jitter applied, they will simply result
+        in the threshold value being returned.
+
+        Ref:
+        * https://developers.planet.com/docs/data/api-mechanics/
+        * https://cloud.google.com/iot/docs/how-tos/exponential-backoff
+        """
+        random_number_milliseconds = random.randint(0, 1000) / 1000.0
+        calc_wait = 2**num_tries + random_number_milliseconds
+        return min(calc_wait, max_retry_backoff)
 
     async def request(self,
                       request: models.Request,
