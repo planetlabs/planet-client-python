@@ -11,6 +11,9 @@ from planet.auth.static_api_key.static_api_key import \
     FileBackedApiKey
 
 
+# TODO: for static API keys, should we allow the API key to be stored
+#       in the auth_client.json file, rather than forcing a separate
+#       token.json file with the key itself?
 class StaticApiKeyAuthClientConfig(AuthClientConfig):
 
     def __init__(self, **kwargs):

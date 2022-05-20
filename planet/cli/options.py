@@ -8,6 +8,7 @@ from planet.auth.constants import \
     ENV_AUTH_SCOPES, \
     ENV_AUTH_TOKEN_FILE, \
     ENV_AUTH_USERNAME, \
+    TOKEN_FILE_SOPS, \
     TOKEN_FILE_PLAIN, \
     AUTH_CONFIG_FILE_SOPS, \
     AUTH_CONFIG_FILE_PLAIN
@@ -96,15 +97,18 @@ def opt_token_file(function):
         '--token-file',
         type=click.Path(),
         envvar=ENV_AUTH_TOKEN_FILE,
-        help='Auth token file. The default will be constructed to '
-        '~/.planet/<auth_profile>/' + TOKEN_FILE_PLAIN,
+        help='Auth token file. The default will be constructed to'
+        ' ~/.planet/<auth_profile>/{} or ~/.planet/<auth_profile>/{}'.format(
+            TOKEN_FILE_SOPS, TOKEN_FILE_PLAIN),
         default=None,
         show_envvar=True,
         show_default=True,
         callback=lambda ctx,
         param,
-        value: Profile.get_profile_file_path(
-            TOKEN_FILE_PLAIN, ctx.params['auth_profile'], value))(function)
+        value: Profile.get_profile_file_path_with_priority(
+            [TOKEN_FILE_SOPS, TOKEN_FILE_PLAIN],
+            ctx.params['auth_profile'],
+            value))(function)
     return function
 
 

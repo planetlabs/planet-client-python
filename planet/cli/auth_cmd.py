@@ -62,7 +62,9 @@ def auth_cmd_group(ctx):
     configured for the auth profile.  If present, auth_client.sops.json
     will take priority over auth_client.json, allowing clients that have
     secrets to securely store this information on disk using SOPS encryption.
-    SOPS is not currently supported for the token.json file at this time.
+    Similarly, a token.sops.json file will take priority over a token.json
+    file.  SOPS is not the default fallback since the configuration of SOPS
+    is outside the scope of Planet tooling.
 
     The following auth profiles are built in, and do not require any user
     configuration.  When a built in profile is used, it will be used to

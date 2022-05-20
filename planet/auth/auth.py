@@ -13,6 +13,7 @@ from planet.auth.constants import \
     SDK_OIDC_AUTH_CLIENT_CONFIG_DICT, \
     LEGACY_AUTH_CLIENT_CONFIG_DICT, \
     NOOP_AUTH_CLIENT_CONFIG_DICT, \
+    TOKEN_FILE_SOPS, \
     TOKEN_FILE_PLAIN, \
     AUTH_CONFIG_FILE_PLAIN, \
     AUTH_CONFIG_FILE_SOPS
@@ -128,9 +129,10 @@ class Auth:
     @staticmethod
     def _initialize_token_file_path(profile: str,
                                     token_file_override) -> pathlib.Path:
-        return Profile.get_profile_file_path(TOKEN_FILE_PLAIN,
-                                             profile,
-                                             token_file_override)
+        return Profile.get_profile_file_path_with_priority(
+                filenames=[TOKEN_FILE_SOPS, TOKEN_FILE_PLAIN],
+                profile=profile,
+                override_path=token_file_override)
 
     @staticmethod
     def _initialize_request_authenticator(

@@ -14,10 +14,6 @@ class FileBackedJsonObjectException(AuthException):
         super().__init__(message)
 
 
-# TODO: support SOPS encrypted json files. Autodetect SOPS on read.
-#    ??? on SOPS write.  This is most useful auth client profile
-#    storage, where Client Credential applications have to manage
-#    application secrets.
 class FileBackedJsonObject:
     """
     A file backed json object for storing information. Base class provides
@@ -187,6 +183,10 @@ class FileBackedJsonObject:
 
     @staticmethod
     def _write_json_sops(data_file, data):
+        # TODO: It would be nice to only encrypt the fields we need to.
+        #       It would be a better user experience.  Probably the thing to
+        #       do is let derived classes tell us what fields are to
+        #       be encrypted.
         # Seems to blow up. I guess we have to write clear text,
         # then encrypt in place?
         # with io.StringIO(json.dumps(data)) as data_f:

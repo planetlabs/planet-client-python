@@ -13,7 +13,7 @@ ENV_AUTH_USERNAME = 'PL_AUTH_USERNAME'
 AUTH_CONFIG_FILE_PLAIN = 'auth_client.json'
 AUTH_CONFIG_FILE_SOPS = 'auth_client.sops.json'
 TOKEN_FILE_PLAIN = 'token.json'
-# TOKEN_FILE_SOPS = 'token.sops.json'  # Not supported at this time.
+TOKEN_FILE_SOPS = 'token.sops.json'
 
 # FIXME: we need a better URL for this public interface, that doesn't embed
 #    implementation details like a specific ID.
