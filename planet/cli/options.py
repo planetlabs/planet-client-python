@@ -124,10 +124,13 @@ def opt_loglevel(function):
 
 
 def opt_okta_tenant(function):
-    function = click.option('--okta-tenant', type=str, envvar='PL_OKTA_TENANT',
+    function = click.option('--okta-tenant',
+                            type=str,
+                            envvar='PL_OKTA_TENANT',
                             help='Specify the URL of the okta tenant.'
                             '\nEnvironment variable: PL_OKTA_TENANT',
-                            default='https://account-next.planet.com', show_default=True)(function)
+                            default='https://account-next.planet.com',
+                            show_default=True)(function)
     return function
 
 
