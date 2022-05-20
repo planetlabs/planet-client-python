@@ -50,7 +50,9 @@ def parse_filter(ctx, param, value: str) -> dict:
         try:
             json_value = json.loads(value)
         except json.decoder.JSONDecodeError:
-            raise click.ClickException('File does not contain valid json.')
+            raise click.BadParameter('Filter does not contain valid json.',
+                                     ctx=ctx,
+                                     param=param)
         return json_value
     # read filter using click pipe option
     elif value == '-' or Path(value).name.endswith('.json'):
@@ -58,7 +60,9 @@ def parse_filter(ctx, param, value: str) -> dict:
             with click.open_file(value) as f:
                 json_value = json.load(f)
         except json.decoder.JSONDecodeError:
-            raise click.ClickException('File does not contain valid json.')
+            raise click.BadParameter('Filter does not contain valid json.',
+                                     ctx=ctx,
+                                     param=param)
         return json_value
     else:
         raise click.ClickException(

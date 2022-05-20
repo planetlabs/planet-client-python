@@ -1,5 +1,5 @@
 """Tests of the Data CLI."""
-
+import click
 from click.testing import CliRunner
 import pytest
 import json
@@ -26,7 +26,7 @@ def invoke():
 def test_data_command_registered(invoke):
     """planet-data command prints help and usage message."""
     runner = CliRunner()
-    result = invoke(["--help"], runner = runner)
+    result = invoke(["--help"], runner=runner)
     assert result.exit_code == 0
     assert "Usage" in result.output
     assert "search-quick" in result.output
@@ -48,10 +48,8 @@ def test_data_search_quick_filter_fail(invoke, item_types, filter):
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
 
     runner = CliRunner()
-    item_types = 'SkySatScene'
-    with pytest.raises(TypeError):
-        result = invoke(["search-quick", item_types, json.dumps(filter)],
-                        runner=runner)
+    with pytest.raises(click.exceptions.BadParameter):
+        result = invoke(["search-quick", item_types, filter], runner=runner)
 
 
 @respx.mock
