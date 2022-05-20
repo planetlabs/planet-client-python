@@ -130,9 +130,9 @@ class Auth:
     def _initialize_token_file_path(profile: str,
                                     token_file_override) -> pathlib.Path:
         return Profile.get_profile_file_path_with_priority(
-                filenames=[TOKEN_FILE_SOPS, TOKEN_FILE_PLAIN],
-                profile=profile,
-                override_path=token_file_override)
+            filenames=[TOKEN_FILE_SOPS, TOKEN_FILE_PLAIN],
+            profile=profile,
+            override_path=token_file_override)
 
     @staticmethod
     def _initialize_request_authenticator(
