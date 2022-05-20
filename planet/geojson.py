@@ -39,15 +39,15 @@ def as_geom(data: dict) -> dict:
     """Extract the geometry from GeoJSON and validate.
 
     Parameters:
-        data: GeoJSON geometry, Feature, or FeatureClass.
+        data: GeoJSON geometry, Feature, or FeatureCollection.
 
     Returns:
         GeoJSON geometry.
 
     Raises:
         GeoJSONException: If data is not valid GeoJSON geometry, Feature,
-            or FeatureClass.
-        DataLossWarning: If more than one Feature is in a FeatureClass.
+            or FeatureCollection.
+        DataLossWarning: If more than one Feature is in a FeatureCollection.
     """
     geom = geom_from_geojson(data)
     validate_geom(geom)
@@ -67,7 +67,7 @@ def geom_from_geojson(data: dict) -> dict:
     """Get GeoJSON geometry from GeoJSON.
 
     Parameters:
-        data: GeoJSON geometry, Feature, or FeatureClass.
+        data: GeoJSON geometry, Feature, or FeatureCollection.
 
     Returns:
         GeoJSON geometry.
@@ -84,15 +84,15 @@ def geom_from_geojson(data: dict) -> dict:
             ret = as_geom(data['geometry'])
         except KeyError:
             try:
-                # featureclass
+                # FeatureCollection
                 features = data['features']
             except KeyError:
                 raise GeoJSONException('Invalid GeoJSON: {data}')
 
             if len(features) > 1:
                 raise MultipleFeaturesException(
-                    'FeatureClass has multiple features. Only one feature '
-                    'can be used to get geometry.')
+                    'FeatureCollection has multiple features. Only one feature'
+                    ' can be used to get geometry.')
 
             ret = as_geom(features[0])
     return ret

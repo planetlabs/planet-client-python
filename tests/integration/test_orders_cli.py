@@ -476,16 +476,16 @@ def test_cli_orders_create_clip(invoke,
 
 
 @respx.mock
-def test_cli_orders_create_clip_featureclass(invoke,
-                                             featureclass_geojson,
-                                             geom_geojson,
-                                             order_description,
-                                             write_to_tmp_json_file):
+def test_cli_orders_create_clip_featurecollection(invoke,
+                                                  featurecollection_geojson,
+                                                  geom_geojson,
+                                                  order_description,
+                                                  write_to_tmp_json_file):
     """Tests that the clip option takes in feature class geojson as well"""
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
-    fc_file = write_to_tmp_json_file(featureclass_geojson, 'fc.geojson')
+    fc_file = write_to_tmp_json_file(featurecollection_geojson, 'fc.geojson')
 
     result = invoke([
         'create',

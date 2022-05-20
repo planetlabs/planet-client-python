@@ -37,7 +37,7 @@ def assert_geom_equal():
 
 def test_geom_from_geojson_success(geom_geojson,
                                    feature_geojson,
-                                   featureclass_geojson,
+                                   featurecollection_geojson,
                                    assert_geom_equal):
     ggeo = geojson.as_geom(geom_geojson)
     assert_geom_equal(ggeo, geom_geojson)
@@ -45,7 +45,7 @@ def test_geom_from_geojson_success(geom_geojson,
     fgeo = geojson.geom_from_geojson(feature_geojson)
     assert_geom_equal(fgeo, geom_geojson)
 
-    fcgeo = geojson.geom_from_geojson(featureclass_geojson)
+    fcgeo = geojson.geom_from_geojson(featurecollection_geojson)
     assert_geom_equal(fcgeo, geom_geojson)
 
 
@@ -67,11 +67,12 @@ def test_geom_from_geojson_missing_type(geom_geojson):
         _ = geojson.geom_from_geojson(geom_geojson)
 
 
-def test_geom_from_geojson_multiple_features(featureclass_geojson):
+def test_geom_from_geojson_multiple_features(featurecollection_geojson):
     # duplicate the feature
-    featureclass_geojson['features'] = 2 * featureclass_geojson['features']
+    featurecollection_geojson[
+        'features'] = 2 * featurecollection_geojson['features']
     with pytest.raises(geojson.MultipleFeaturesException):
-        _ = geojson.geom_from_geojson(featureclass_geojson)
+        _ = geojson.geom_from_geojson(featurecollection_geojson)
 
 
 def test_validate_geom_invalid_type(geom_geojson):
