@@ -34,7 +34,7 @@ def test_data_command_registered(invoke):
 
 @respx.mock
 @pytest.mark.asyncio
-@pytest.mark.parametrize("filter", ['{""}', '{"foo"}'])
+@pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
 @pytest.mark.parametrize(
     "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
 def test_data_search_quick_filter_fail(invoke, item_types, filter):
@@ -47,7 +47,6 @@ def test_data_search_quick_filter_fail(invoke, item_types, filter):
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
 
     runner = CliRunner()
-    # with pytest.raises(click.exceptions.BadParameter):
     result = invoke(["search-quick", item_types, filter], runner=runner)
     assert result.exit_code == 2
 

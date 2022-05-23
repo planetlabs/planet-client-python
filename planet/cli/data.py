@@ -3,7 +3,6 @@
 import json
 from typing import List
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 import click
 import planet
@@ -54,12 +53,10 @@ def parse_filter(ctx, param, value: str) -> dict:
                                      ctx=ctx,
                                      param=param)
         if json_value == {}:
-            raise click.BadParameter('Filter does not contain valid json.',
-                                     ctx=ctx,
-                                     param=param)
+            raise click.BadParameter('Filter is empty.', ctx=ctx, param=param)
         return json_value
     # read filter using click pipe option
-    elif value == '-' or Path(value).name.endswith('.json'):
+    else:
         try:
             with click.open_file(value) as f:
                 json_value = json.load(f)
@@ -68,9 +65,6 @@ def parse_filter(ctx, param, value: str) -> dict:
                                      ctx=ctx,
                                      param=param)
         return json_value
-    else:
-        raise click.ClickException(
-            'Please pass filter using filename or STDIN.')
 
 
 # TODO: filter().
