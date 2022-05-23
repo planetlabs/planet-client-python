@@ -59,7 +59,7 @@ def parse_filter(ctx, param, value: str) -> dict:
                                      param=param)
         return json_value
     # read filter using click pipe option
-    elif value == '-' or Path(value).name.endswith('.json'):
+    else:
         try:
             with click.open_file(value) as f:
                 json_value = json.load(f)
@@ -68,9 +68,6 @@ def parse_filter(ctx, param, value: str) -> dict:
                                      ctx=ctx,
                                      param=param)
         return json_value
-    else:
-        raise click.ClickException(
-            'Please pass filter using filename or STDIN.')
 
 
 # TODO: filter().
