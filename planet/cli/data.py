@@ -3,7 +3,6 @@
 import json
 from typing import List
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 import click
 import planet
