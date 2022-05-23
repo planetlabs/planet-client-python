@@ -53,7 +53,7 @@ def parse_filter(ctx, param, value: str) -> dict:
                                      ctx=ctx,
                                      param=param)
         if json_value == {}:
-            raise click.BadParameter('Filter does not contain valid json.',
+            raise click.BadParameter('Filter is empty.',
                                      ctx=ctx,
                                      param=param)
         return json_value
