@@ -53,6 +53,10 @@ def parse_filter(ctx, param, value: str) -> dict:
             raise click.BadParameter('Filter does not contain valid json.',
                                      ctx=ctx,
                                      param=param)
+        if json_value == {}:
+            raise click.BadParameter('Filter does not contain valid json.',
+                                     ctx=ctx,
+                                     param=param)
         return json_value
     # read filter using click pipe option
     elif value == '-' or Path(value).name.endswith('.json'):
