@@ -126,7 +126,8 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
     Arguments:
     NAME - string. The name to give the saved search.
     ITEM_TYPES - string. Comma-separated item type identifier(s).
-    FILTER - string. A full JSON description of search criteria. Supports file and stdin.
+    FILTER - string. A full JSON description of search criteria.
+    Supports file and stdin.
 
     Output:
     A full JSON description of the created search.

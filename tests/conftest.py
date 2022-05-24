@@ -53,6 +53,7 @@ def get_test_file_json():
 
     return func
 
+
 @pytest.fixture
 def search_result(get_test_file_json):
     filename = 'search_result_20200130_093253_ssc6_u0001.json'
