@@ -1,4 +1,5 @@
-# Copyright 2017 Planet Labs, PBC.
+# Copyright 2017 Planet Labs, Inc.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
