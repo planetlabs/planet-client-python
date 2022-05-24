@@ -109,7 +109,37 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
             echo_json(item, pretty)
 
 
-# TODO: search_create()".
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@pretty
+@click.argument('name')
+@click.argument("item_types", callback=parse_item_types)
+@click.argument("filter", callback=parse_filter)
+@click.option('--daily_email',
+              is_flag=True,
+              help='Send a daily email when new results are added.')
+async def search_create(ctx, name, item_types, filter, daily_email, pretty):
+    """Create a new saved structured item search.
+
+    Arguments:
+    NAME - string. The name to give the saved search.
+    ITEM_TYPES - string. Comma-separated item type identifier(s).
+    FILTER - string. A full JSON description of search criteria. Supports file and stdin.
+
+    Output:
+    A full JSON description of the created search.
+
+    """
+    async with data_client(ctx) as cl:
+        items = await cl.create_search(name=name,
+                                       item_types=item_types,
+                                       search_filter=filter,
+                                       enable_email=daily_email)
+        echo_json(items, pretty)
+
+
 # TODO: search_update()".
 # TODO: search_delete()".
 # TODO: search_run()".
@@ -117,5 +147,4 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
 # TODO: asset_activate()".
 # TODO: asset_wait()".
 # TODO: asset_download()".
-# TODO: search_create()".
 # TODO: stats()".
