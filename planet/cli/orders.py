@@ -309,7 +309,7 @@ async def create(ctx,
     elif clip:
         try:
             clip = planet.geojson.as_polygon(clip)
-        except planet.geojson.GeoJSONException as e:
+        except planet.exceptions.GeoJSONError as e:
             raise click.BadParameter(e)
 
         tools = [planet.order_request.clip_tool(clip)]
