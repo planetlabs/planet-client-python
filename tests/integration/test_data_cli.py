@@ -82,6 +82,52 @@ def test_data_search_quick_filter_success(invoke, item_types):
 
 
 @respx.mock
+@pytest.mark.parametrize("limit,limited_list_length", [(None, 100), (0, 102),
+                                                       (1, 1)])
+def test_data_search_quick_limit(invoke,
+                                 search_results,
+                                 limit,
+                                 limited_list_length):
+    """Test for planet data search_quick limit option. Make sure the
+    result contains at most 100 entries."""
+    filter = {
+        "type": "DateRangeFilter",
+        "field_name": "acquired",
+        "config": {
+            "gt": "2019-12-31T00:00:00Z", "lte": "2020-01-31T00:00:00Z"
+        }
+    }
+    item_types = 'SkySatCollect'
+
+    # Creating 102 (3x34) search results
+    long_search_results = search_results * 34
+
+    all_results = {}
+    for x in range(1, len(long_search_results) + 1):
+        all_results["result{0}".format(x)] = long_search_results[x - 1]
+
+    page1_response = {
+        "_links": {
+            "_self": "string1", "assets": "string2", "thumbnail": "string3"
+        },
+        "features": [
+            all_results['result%s' % num]
+            for num in range(1, limited_list_length + 1)
+        ]
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
+
+    respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
+
+    runner = CliRunner()
+    result = invoke(
+        ["search-quick", item_types, json.dumps(filter), "--limit", limit],
+        runner=runner)
+    assert result.exit_code == 0
+    assert len(json.loads(result.output)) == limited_list_length
+
+
+@respx.mock
 @pytest.mark.asyncio
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
 @pytest.mark.parametrize(
