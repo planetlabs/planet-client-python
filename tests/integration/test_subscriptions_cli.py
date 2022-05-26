@@ -78,3 +78,30 @@ def test_subscriptions_create_failure(monkeypatch):
     assert result.exit_code == 1  # failure.
     assert "Request lacks required members" in result.output
     assert _count_fake_subs() == 0
+
+
+def test_subscriptions_create_success(monkeypatch):
+    """An valid subscription request succeeds in creating a new subscription."""
+
+    monkeypatch.setattr(planet.cli.subscriptions, '_fake_subs', [])
+
+    # This subscription request has the members required by our fake API.
+    # It must be updated when we begin to test against a more strict
+    # imitation of the Planet Subscriptions API.
+    sub = {'name': 'lol', 'delivery': True, 'source': 'wut'}
+
+    # The "-" argument says "read from stdin" and the input keyword
+    # argument specifies what bytes go to the runner's stdin.
+    result = CliRunner().invoke(
+        cli.main,
+        args=['subscriptions', 'create', '-'],
+        input=json.dumps(sub),
+        # Note: catch_exceptions=True (the default) is required if we want
+        # to exercise the "translate_exceptions" decorator and test for
+        # failure.
+        catch_exceptions=True)
+
+    assert result.exit_code == 0  # success.
+    assert "Request lacks required members" not in result.output
+    assert json.loads(result.output)['id'] == '42'
+    assert _count_fake_subs() == 1
