@@ -9,7 +9,7 @@ from planet.cli import cli
 
 TEST_URL = 'https://api.planet.com/data/v1'
 TEST_QUICKSEARCH_URL = f'{TEST_URL}/quick-search'
-TEST_CREATESEARCH_URL = f'{TEST_URL}/searches'
+TEST_SEARCHES_URL = f'{TEST_URL}/searches'
 
 
 @pytest.fixture
@@ -39,7 +39,7 @@ def test_data_command_registered(invoke):
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
 @pytest.mark.parametrize(
     "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
-def test_data_search_quick_filter_fail(invoke, item_types, filter):
+def test_data_search_quick_filter_invalid_json(invoke, item_types, filter):
     """Test for planet data search_quick. Test with multiple item_types.
     Test should fail as filter does not contain valid JSON."""
     mock_resp = httpx.Response(HTTPStatus.OK,
@@ -86,14 +86,14 @@ def test_data_search_quick_filter_success(invoke, item_types):
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
 @pytest.mark.parametrize(
     "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
-def test_data_search_create_filter_fail(invoke, item_types, filter):
+def test_data_search_create_filter_invalid_json(invoke, item_types, filter):
     """Test for planet data search_create. Test with multiple item_types.
     Test should fail as filter does not contain valid JSON."""
     mock_resp = httpx.Response(HTTPStatus.OK,
                                json={'features': [{
                                    "key": "value"
                                }]})
-    respx.post(TEST_CREATESEARCH_URL).return_value = mock_resp
+    respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
     name = "temp"
 
@@ -122,7 +122,7 @@ def test_data_search_create_filter_success(invoke, item_types):
                                json={'features': [{
                                    "key": "value"
                                }]})
-    respx.post(TEST_CREATESEARCH_URL).return_value = mock_resp
+    respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
     runner = CliRunner()
     result = invoke(["search-create", name, item_types, json.dumps(filter)],
@@ -135,7 +135,7 @@ def test_data_search_create_filter_success(invoke, item_types):
 @respx.mock
 def test_search_create_daily_email(invoke, search_result):
     mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
-    respx.post(TEST_CREATESEARCH_URL).return_value = mock_resp
+    respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
     filter = {
         "type": "DateRangeFilter",
