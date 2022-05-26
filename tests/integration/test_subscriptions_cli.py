@@ -81,7 +81,7 @@ def test_subscriptions_create_failure(monkeypatch):
 
 
 def test_subscriptions_create_success(monkeypatch):
-    """An valid subscription request succeeds in creating a new subscription."""
+    """Subscriptions creation succeeds with a valid subscription request."""
 
     monkeypatch.setattr(planet.cli.subscriptions, '_fake_subs', [])
 
