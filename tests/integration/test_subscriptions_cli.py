@@ -233,6 +233,9 @@ def test_subscriptions_cancel_success(monkeypatch):
 
         echo_json(sub, pretty)
 
+    # Let's check the state of the fake API before we try to cancel.
+    assert _count_fake_subs() == 1
+
     result = CliRunner().invoke(
         cli.main,
         args=['subscriptions', 'cancel', '42'],
