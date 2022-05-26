@@ -4,10 +4,12 @@ There are 6 subscriptions commands:
 
 [x] planet subscriptions list
 [x] planet subscriptions describe
-[ ] planet subscriptions results
+[x] planet subscriptions results
 [x] planet subscriptions create
 [x] planet subscriptions update
 [x] planet subscriptions cancel
+
+TODO: tests for 3 options of the planet-subscriptions-results command.
 
 """
 
