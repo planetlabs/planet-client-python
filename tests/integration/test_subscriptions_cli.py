@@ -3,10 +3,10 @@
 There are 6 subscriptions commands:
 
 [x] planet subscriptions list
-[ ] planet subscriptions describe
+[x] planet subscriptions describe
 [ ] planet subscriptions results
 [x] planet subscriptions create
-[ ] planet subscriptions update
+[x] planet subscriptions update
 [x] planet subscriptions cancel
 
 """
@@ -180,46 +180,6 @@ def test_subscriptions_update_failure(monkeypatch):
 
     monkeypatch.setattr(planet.cli.subscriptions, '_fake_subs', {})
 
-    # Begin CLI command.
-    import click
-    from planet.cli.subscriptions import (subscriptions,
-                                          parse_request,
-                                          echo_json,
-                                          translate_exceptions,
-                                          coro,
-                                          _update_fake_sub)
-    from planet.exceptions import PlanetError
-
-    @subscriptions.command(name='update')
-    @click.argument('subscription_id')
-    @click.argument('request', callback=parse_request)
-    @click.option('--pretty', is_flag=True, help='Pretty-print output.')
-    @click.pass_context
-    @translate_exceptions
-    @coro
-    async def update_subscription(ctx, subscription_id, request, pretty):
-        """Cancels a subscription and prints the API response.
-
-        This implementation is only a placeholder. To begin, instead
-        of mocking calls to the Subscriptions API, we'll use a
-        collection of fake subscriptions (the all_subs object).
-        After we refactor we will change to mocking the API.
-
-        """
-        # Begin fake subscriptions service. Note that the Subscriptions
-        # API will report missing keys differently, but the Python API
-        # *will* raise PlanetError like this.
-        try:
-            sub = _update_fake_sub(subscription_id, **request)
-        except KeyError:
-            raise PlanetError(f"No such subscription: {subscription_id!r}")
-
-        # End fake subscriptions service. After we refactor we will get
-        # the "sub" from a method in planet.clients.subscriptions (which
-        # doesn't exist yet).
-
-        echo_json(sub, pretty)
-
     result = CliRunner().invoke(
         cli.main,
         args=['subscriptions', 'update', '42', json.dumps(GOOD_SUB_REQUEST)],
@@ -238,45 +198,6 @@ def test_subscriptions_update_success(monkeypatch):
     monkeypatch.setattr(planet.cli.subscriptions,
                         '_fake_subs', {'42': GOOD_SUB_REQUEST})
 
-    import click
-    from planet.cli.subscriptions import (subscriptions,
-                                          parse_request,
-                                          echo_json,
-                                          translate_exceptions,
-                                          coro,
-                                          _update_fake_sub)
-    from planet.exceptions import PlanetError
-
-    @subscriptions.command(name='update')
-    @click.argument('subscription_id')
-    @click.argument('request', callback=parse_request)
-    @click.option('--pretty', is_flag=True, help='Pretty-print output.')
-    @click.pass_context
-    @translate_exceptions
-    @coro
-    async def update_subscription(ctx, subscription_id, request, pretty):
-        """Cancels a subscription and prints the API response.
-
-        This implementation is only a placeholder. To begin, instead
-        of mocking calls to the Subscriptions API, we'll use a
-        collection of fake subscriptions (the all_subs object).
-        After we refactor we will change to mocking the API.
-
-        """
-        # Begin fake subscriptions service. Note that the Subscriptions
-        # API will report missing keys differently, but the Python API
-        # *will* raise PlanetError like this.
-        try:
-            sub = _update_fake_sub(subscription_id, **request)
-        except KeyError:
-            raise PlanetError(f"No such subscription: {subscription_id!r}")
-
-        # End fake subscriptions service. After we refactor we will get
-        # the "sub" from a method in planet.clients.subscriptions (which
-        # doesn't exist yet).
-
-        echo_json(sub, pretty)
-
     request = GOOD_SUB_REQUEST.copy()
     request['name'] = 'new_name'
 
@@ -290,3 +211,118 @@ def test_subscriptions_update_success(monkeypatch):
 
     assert result.exit_code == 0  # success.
     assert json.loads(result.output)['name'] == 'new_name'
+
+
+def test_subscriptions_describe_failure(monkeypatch):
+    """Describe command exits gracefully from an API error."""
+
+    monkeypatch.setattr(planet.cli.subscriptions, '_fake_subs', {})
+
+    # Begin CLI command.
+    import click
+    from planet.cli.subscriptions import (subscriptions,
+                                          echo_json,
+                                          translate_exceptions,
+                                          coro,
+                                          _get_fake_sub)
+    from planet.exceptions import PlanetError
+
+    @subscriptions.command(name='describe')
+    @click.argument('subscription_id')
+    @click.option('--pretty', is_flag=True, help='Pretty-print output.')
+    @click.pass_context
+    @translate_exceptions
+    @coro
+    async def describe_subscription(ctx, subscription_id, pretty):
+        """Cancels a subscription and prints the API response.
+
+        This implementation is only a placeholder. To begin, instead
+        of mocking calls to the Subscriptions API, we'll use a
+        collection of fake subscriptions (the all_subs object).
+        After we refactor we will change to mocking the API.
+
+        """
+        # Begin fake subscriptions service. Note that the Subscriptions
+        # API will report missing keys differently, but the Python API
+        # *will* raise PlanetError like this.
+        try:
+            sub = _get_fake_sub(subscription_id)
+        except KeyError:
+            raise PlanetError(f"No such subscription: {subscription_id!r}")
+
+        # End fake subscriptions service. After we refactor we will get
+        # the "sub" from a method in planet.clients.subscriptions (which
+        # doesn't exist yet).
+
+        echo_json(sub, pretty)
+
+    # End CLI command.
+
+    result = CliRunner().invoke(
+        cli.main,
+        args=['subscriptions', 'describe', '42'],
+        # Note: catch_exceptions=True (the default) is required if we want
+        # to exercise the "translate_exceptions" decorator and test for
+        # failure.
+        catch_exceptions=True)
+
+    assert result.exit_code == 1  # failure.
+    assert "No such subscription" in result.output
+
+
+def test_subscriptions_describe_success(monkeypatch):
+    """Describe command succeeds."""
+
+    monkeypatch.setattr(planet.cli.subscriptions,
+                        '_fake_subs', {'42': GOOD_SUB_REQUEST})
+
+    # Begin CLI command.
+    import click
+    from planet.cli.subscriptions import (subscriptions,
+                                          echo_json,
+                                          translate_exceptions,
+                                          coro,
+                                          _get_fake_sub)
+    from planet.exceptions import PlanetError
+
+    @subscriptions.command(name='describe')
+    @click.argument('subscription_id')
+    @click.option('--pretty', is_flag=True, help='Pretty-print output.')
+    @click.pass_context
+    @translate_exceptions
+    @coro
+    async def describe_subscription(ctx, subscription_id, pretty):
+        """Cancels a subscription and prints the API response.
+
+        This implementation is only a placeholder. To begin, instead
+        of mocking calls to the Subscriptions API, we'll use a
+        collection of fake subscriptions (the all_subs object).
+        After we refactor we will change to mocking the API.
+
+        """
+        # Begin fake subscriptions service. Note that the Subscriptions
+        # API will report missing keys differently, but the Python API
+        # *will* raise PlanetError like this.
+        try:
+            sub = _get_fake_sub(subscription_id)
+        except KeyError:
+            raise PlanetError(f"No such subscription: {subscription_id!r}")
+
+        # End fake subscriptions service. After we refactor we will get
+        # the "sub" from a method in planet.clients.subscriptions (which
+        # doesn't exist yet).
+
+        echo_json(sub, pretty)
+
+    # End CLI command.
+
+    result = CliRunner().invoke(
+        cli.main,
+        args=['subscriptions', 'describe', '42'],
+        # Note: catch_exceptions=True (the default) is required if we want
+        # to exercise the "translate_exceptions" decorator and test for
+        # failure.
+        catch_exceptions=True)
+
+    assert result.exit_code == 0  # success.
+    assert json.loads(result.output)['id'] == '42'
