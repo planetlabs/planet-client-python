@@ -80,22 +80,26 @@ def test_subscriptions_create_failure(monkeypatch):
     assert _count_fake_subs() == 0
 
 
-def test_subscriptions_create_success(monkeypatch):
+# This subscription request has the members required by our fake API.
+# It must be updated when we begin to test against a more strict
+# imitation of the Planet Subscriptions API.
+GOOD_SUB_REQUEST = {'name': 'lol', 'delivery': True, 'source': 'wut'}
+
+
+@pytest.mark.parametrize('cmd_arg, runner_input',
+                         [('-', json.dumps(GOOD_SUB_REQUEST)),
+                          (json.dumps(GOOD_SUB_REQUEST), None)])
+def test_subscriptions_create_success(cmd_arg, runner_input, monkeypatch):
     """Subscriptions creation succeeds with a valid subscription request."""
 
     monkeypatch.setattr(planet.cli.subscriptions, '_fake_subs', [])
-
-    # This subscription request has the members required by our fake API.
-    # It must be updated when we begin to test against a more strict
-    # imitation of the Planet Subscriptions API.
-    sub = {'name': 'lol', 'delivery': True, 'source': 'wut'}
 
     # The "-" argument says "read from stdin" and the input keyword
     # argument specifies what bytes go to the runner's stdin.
     result = CliRunner().invoke(
         cli.main,
-        args=['subscriptions', 'create', '-'],
-        input=json.dumps(sub),
+        args=['subscriptions', 'create', cmd_arg],
+        input=runner_input,
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
         # failure.
@@ -105,3 +109,27 @@ def test_subscriptions_create_success(monkeypatch):
     assert "Request lacks required members" not in result.output
     assert json.loads(result.output)['id'] == '42'
     assert _count_fake_subs() == 1
+
+
+# Invalid JSON.
+BAD_SUB_REQUEST = '{0: "lolwut"}'
+
+
+@pytest.mark.parametrize('cmd_arg, runner_input', [('-', BAD_SUB_REQUEST),
+                                                   (BAD_SUB_REQUEST, None)])
+def test_subscriptions_bad_request(cmd_arg, runner_input):
+    """Short circuit and print help message if request is bad."""
+
+    # The "-" argument says "read from stdin" and the input keyword
+    # argument specifies what bytes go to the runner's stdin.
+    result = CliRunner().invoke(
+        cli.main,
+        args=['subscriptions', 'create', cmd_arg],
+        input=runner_input,
+        # Note: catch_exceptions=True (the default) is required if we want
+        # to exercise the "translate_exceptions" decorator and test for
+        # failure.
+        catch_exceptions=True)
+
+    assert result.exit_code == 2  # bad parameter.
+    assert "Request does not contain valid json" in result.output

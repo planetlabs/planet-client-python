@@ -79,8 +79,6 @@ def parse_request(ctx, param, value: str) -> dict:
             raise click.BadParameter('Request does not contain valid json.',
                                      ctx=ctx,
                                      param=param)
-        if not obj:
-            raise click.BadParameter('Request is empty.', ctx=ctx, param=param)
     else:
         try:
             with click.open_file(value) as f:
