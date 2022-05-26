@@ -126,3 +126,33 @@ async def create_subscription(ctx, request, pretty):
     # doesn't exist yet).
 
     echo_json(sub, pretty)
+
+
+@subscriptions.command(name='cancel')
+@click.argument('subscription_id')
+@click.option('--pretty', is_flag=True, help='Pretty-print output.')
+@click.pass_context
+@translate_exceptions
+@coro
+async def cancel_subscription(ctx, subscription_id, pretty):
+    """Cancels a subscription and prints the API response.
+
+    This implementation is only a placeholder. To begin, instead
+    of mocking calls to the Subscriptions API, we'll use a
+    collection of fake subscriptions (the all_subs object).
+    After we refactor we will change to mocking the API.
+
+    """
+    # Begin fake subscriptions service. Note that the Subscriptions
+    # API will report missing keys differently, but the Python API
+    # *will* raise PlanetError like this.
+    try:
+        sub = _cancel_fake_sub(subscription_id)
+    except KeyError:
+        raise PlanetError(f"No such subscription: {subscription_id!r}")
+
+    # End fake subscriptions service. After we refactor we will get
+    # the "sub" from a method in planet.clients.subscriptions (which
+    # doesn't exist yet).
+
+    echo_json(sub, pretty)
