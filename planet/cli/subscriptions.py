@@ -24,6 +24,13 @@ def _cancel_fake_sub(sub_id):
     return _fake_subs.pop(sub_id)
 
 
+def _update_fake_sub(sub_id, **kwds):
+    _fake_subs[sub_id].update(**kwds)
+    sub = _fake_subs[sub_id].copy()
+    sub.update(id=sub_id)
+    return sub
+
+
 @click.group()
 @click.pass_context
 def subscriptions(ctx):
