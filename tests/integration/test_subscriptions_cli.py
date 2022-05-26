@@ -253,42 +253,6 @@ def test_subscriptions_results_failure(monkeypatch):
 
     monkeypatch.setattr(planet.cli.subscriptions, '_fake_sub_results', {})
 
-    # Begin CLI command.
-    import click
-    from planet.cli.subscriptions import (subscriptions,
-                                          translate_exceptions,
-                                          coro,
-                                          _get_fake_sub_results)
-    from planet.exceptions import PlanetError
-
-    @subscriptions.command(name='results')
-    @click.argument('subscription_id')
-    @click.pass_context
-    @translate_exceptions
-    @coro
-    async def list_subscription_results(ctx, subscription_id):
-        """Gets results of a subscription and prints the API response.
-
-        This implementation is only a placeholder. To begin, instead
-        of mocking calls to the Subscriptions API, we'll use a
-        collection of fake subscriptions (the all_subs object).
-        After we refactor we will change to mocking the API.
-
-        """
-        # Begin fake subscriptions service. Note that the Subscriptions
-        # API will report missing keys differently, but the Python API
-        # *will* raise PlanetError like this.
-        try:
-            _ = _get_fake_sub_results(subscription_id)
-        except KeyError:
-            raise PlanetError(f"No such subscription: {subscription_id!r}")
-
-        # End fake subscriptions service. After we refactor we will get
-        # the "sub" from a method in planet.clients.subscriptions (which
-        # doesn't exist yet).
-
-    # End CLI command.
-
     result = CliRunner().invoke(
         cli.main,
         args=['subscriptions', 'results', '42'],
@@ -316,75 +280,6 @@ def test_subscriptions_results_success(options, expected_count, monkeypatch):
         {'42': [{
             'id': f'r{i}', 'status': 'created'
         } for i in range(101)]})
-
-    # Begin CLI command.
-    import itertools
-    import click
-    from planet.cli.subscriptions import (subscriptions,
-                                          echo_json,
-                                          translate_exceptions,
-                                          coro,
-                                          _get_fake_sub_results)
-    from planet.exceptions import PlanetError
-
-    @subscriptions.command(name='results')
-    @click.argument('subscription_id')
-    @click.option('--pretty', is_flag=True, help='Pretty-print output.')
-    @click.option(
-        '--status',
-        type=click.Choice(
-            ["created", "queued", "processing", "failed", "success"]),
-        multiple=True,
-        default=None,
-        help="Select subscription results in one or more states. Default: all."
-    )
-    @click.option('--limit',
-                  type=int,
-                  default=100,
-                  help='Maximum number of results to return. Defaults to 100.')
-    # TODO: the following 3 options.
-    # –created: timestamp instant or range.
-    # –updated: timestamp instant or range.
-    # –completed: timestamp instant or range.
-    @click.pass_context
-    @translate_exceptions
-    @coro
-    async def list_subscription_results(ctx,
-                                        subscription_id,
-                                        pretty,
-                                        status,
-                                        limit):
-        """Gets results of a subscription and prints the API response.
-
-        This implementation is only a placeholder. To begin, instead
-        of mocking calls to the Subscriptions API, we'll use a
-        collection of fake subscriptions (the all_subs object).
-        After we refactor we will change to mocking the API.
-
-        """
-        # Begin fake subscriptions service. Note that the Subscriptions
-        # API will report missing keys differently, but the Python API
-        # *will* raise PlanetError like this.
-
-        try:
-            # Filter by status, like the Subscriptions API does.
-            if status:
-                select_results = (
-                    res for res in _get_fake_sub_results(subscription_id)
-                    if res['status'] in status)
-            else:
-                select_results = _get_fake_sub_results(subscription_id)
-
-            filtered_results = itertools.islice(select_results, limit)
-        except KeyError:
-            raise PlanetError(f"No such subscription: {subscription_id!r}")
-
-        # End fake subscriptions service. After we refactor we will get
-        # the "sub" from a method in planet.clients.subscriptions (which
-        # doesn't exist yet).
-
-        for result in filtered_results:
-            echo_json(result, pretty)
 
     result = CliRunner().invoke(
         cli.main,
