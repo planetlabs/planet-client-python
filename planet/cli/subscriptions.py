@@ -20,6 +20,10 @@ def _count_fake_subs():
     return len(_fake_subs)
 
 
+def _cancel_fake_sub(sub_id):
+    return _fake_subs.pop(sub_id)
+
+
 @click.group()
 @click.pass_context
 def subscriptions(ctx):
