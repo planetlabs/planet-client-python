@@ -44,7 +44,7 @@ def _get_fake_sub_results(sub_id):
 @click.group()
 @click.pass_context
 def subscriptions(ctx):
-    ctx.obj['AUTH'] = planet.Auth.from_file()
+    pass
 
 
 # We want our command to be known as "list" on the command line but

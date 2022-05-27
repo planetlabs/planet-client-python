@@ -16,7 +16,7 @@ def invoke():
 
     def _invoke(extra_args, runner=None):
         runner = runner or CliRunner()
-        args = ['data'] + extra_args
+        args = ['--auth-profile', 'none',  'data'] + extra_args
         return runner.invoke(cli.main, args=args)
 
     return _invoke
