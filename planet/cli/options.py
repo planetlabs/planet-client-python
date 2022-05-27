@@ -2,10 +2,11 @@ import click
 
 from planet.auth import Profile
 from planet.auth.constants import \
+    ENV_AUTH_AUDIENCE, \
     ENV_AUTH_CLIENT_CONFIG_FILE, \
     ENV_AUTH_PASSWORD, \
     ENV_AUTH_PROFILE, \
-    ENV_AUTH_SCOPES, \
+    ENV_AUTH_SCOPE, \
     ENV_AUTH_TOKEN_FILE, \
     ENV_AUTH_USERNAME, \
     TOKEN_FILE_SOPS, \
@@ -112,12 +113,28 @@ def opt_token_file(function):
     return function
 
 
+def opt_token_audience(function):
+    function = click.option(
+        '--audience',
+        multiple=True,
+        type=str,
+        envvar=ENV_AUTH_AUDIENCE,
+        help='Token audiences to request. Specify multiple options to request'
+        ' multiple audiences. When set via environment variable, audiences'
+        ' should be white space delimited. Default value is determined'
+        ' by the selected auth profile.',
+        default=None,
+        show_envvar=True,
+        show_default=True)(function)
+    return function
+
+
 def opt_token_scope(function):
     function = click.option(
         '--scope',
         multiple=True,
         type=str,
-        envvar=ENV_AUTH_SCOPES,
+        envvar=ENV_AUTH_SCOPE,
         help='Token scopes to request. Specify multiple options to request'
         ' multiple scopes. When set via environment variable, scopes'
         ' should be white space delimited. Default value is determined'

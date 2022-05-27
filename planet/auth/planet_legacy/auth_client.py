@@ -11,6 +11,7 @@ from planet.auth.planet_legacy.legacy_api_key import \
     FileBackedPlanetLegacyApiKey
 from planet.auth.planet_legacy.request_authenticator import \
     PlanetLegacyRequestAuthenticator
+from planet.auth.util import parse_content_type
 
 
 class PlanetLegacyAuthClientConfig(AuthClientConfig):
@@ -58,9 +59,10 @@ class PlanetLegacyAuthClient(AuthClient):
     def _check_json_payload(self, response):
         json_response = None
         if response.content:
-            if not response.headers.get('content-type') == 'application/json':
+            ct = parse_content_type(response.headers.get('content-type'))
+            if not ct['content-type'] == 'application/json':
                 raise PlanetLegacyAuthClientException(
-                    message='Expected json content-type, but got {}'.format(
+                    message='Expected json content-type, but got "{}"'.format(
                         response.headers.get('content-type')),
                     raw_response=response)
             json_response = response.json()

@@ -8,6 +8,7 @@ from planet.cli.options import \
     opt_auth_password, \
     opt_auth_username, \
     opt_open_browser, \
+    opt_token_audience, \
     opt_token_scope
 from planet.cli.util import recast_exceptions_to_click
 from .io_helper import echo_json
@@ -120,12 +121,13 @@ def do_list_scopes(ctx):
 #       solution is.
 @auth_cmd_group.command('login')
 @opt_token_scope
+@opt_token_audience
 @opt_open_browser
 @opt_auth_password
 @opt_auth_username
 @click.pass_context
 @recast_exceptions_to_click(AuthException, FileNotFoundError)
-def do_token_login(ctx, scope, open_browser, username, password):
+def do_token_login(ctx, scope, audience, open_browser, username, password):
     '''
     Perform an initial login, obtain user authorization, and save access
     tokens for the selected authentication profile.  The specific process
@@ -133,6 +135,7 @@ def do_token_login(ctx, scope, open_browser, username, password):
     '''
     auth_client = ctx.obj['AUTH'].auth_client()
     token = auth_client.login(requested_scopes=scope,
+                              requested_audiences=audience,
                               allow_open_browser=open_browser,
                               username=username,
                               password=password)
@@ -215,6 +218,29 @@ def do_validate_access_token(ctx):
         print_obj("INVALID")
         sys.exit(1)
     # print_obj("OK")
+    print_obj(validation_json)
+
+
+# XXX Garbage for investigation.  This doesn't belong in the client. Access
+# tokens are technically opaque to us. If we want to plumb a general purpose
+# token util command, that maybe doesn't belong here in this "auth_cmd", which
+# is geared towards API client use cases.  That probably calls for a
+# differently focused 'token' command group
+# TODO: migrate to 'token validate-local' or the like
+@auth_cmd_group.command('validate-access-token-local')
+@click.pass_context
+@opt_token_audience
+@recast_exceptions_to_click(AuthException, FileNotFoundError)
+def do_validate_access_token_local(ctx, audience):
+    '''
+    '''
+    saved_token = FileBackedOidcCredential(None,
+                                           ctx.obj['AUTH'].token_file_path())
+    auth_client = ctx.obj['AUTH'].auth_client()
+    saved_token.load()
+    # Throws on error.
+    validation_json = auth_client.validate_access_token_local(
+        access_token=saved_token.access_token(), required_audience=audience)
     print_obj(validation_json)
 
 

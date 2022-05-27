@@ -1,0 +1,9 @@
+{
+    "client_type": "oidc_auth_code_pubkey",
+    "auth_server": "__auth_server__",
+    "client_id": "__client_id__",
+    "client_privkey": "__private_key_literal__",
+    "redirect_uri": "__local_uri__",
+    "local_redirect_uri": "__local_redirect_uri__",
+    "default_request_scopes": ["planet", "offline_access", "openid", "profile"]
+}

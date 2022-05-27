@@ -1,10 +1,13 @@
 import asyncio
+
 import cryptography.hazmat.primitives.serialization as crypto_serialization
 import os
 import socket
 from pathlib import Path
 
 from contextlib import closing
+
+from planet.auth.auth_client import AuthClientConfig
 
 
 def is_cicd() -> bool:
@@ -21,6 +24,18 @@ def tdata_resource_file_path(resource_file: str):
     test_data_path = here / 'data'
     file_path = test_data_path / resource_file
     return file_path
+
+
+def load_auth_client_config(named_config):
+    sops_path = tdata_resource_file_path(
+        'auth_client_configs/{}.sops.json'.format(named_config))
+    clear_path = tdata_resource_file_path(
+        'auth_client_configs/{}.json'.format(named_config))
+    if sops_path.exists():
+        conf_path = sops_path
+    else:
+        conf_path = clear_path
+    return AuthClientConfig.from_file(conf_path)
 
 
 def find_free_port():

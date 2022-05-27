@@ -40,7 +40,11 @@ from .request_authenticator import RequestAuthenticator
 
 from .oidc.auth_clients.auth_code_flow import \
     AuthCodePKCEClientConfig, \
-    AuthCodePKCEAuthClient
+    AuthCodePKCEAuthClient, \
+    AuthCodePKCEWithClientSecretClientConfig, \
+    AuthCodePKCEWithClientSecretAuthClient, \
+    AuthCodePKCEWithPubKeyClientConfig, \
+    AuthCodePKCEWithPubKeyAuthClient
 from .oidc.auth_clients.client_credentials_flow import \
     ClientCredentialsClientSecretClientConfig, \
     ClientCredentialsClientSecretAuthClient, \
@@ -78,6 +82,10 @@ __all__ = [
     AuthException,
     AuthCodePKCEClientConfig,
     AuthCodePKCEAuthClient,
+    AuthCodePKCEWithClientSecretClientConfig,
+    AuthCodePKCEWithClientSecretAuthClient,
+    AuthCodePKCEWithPubKeyClientConfig,
+    AuthCodePKCEWithPubKeyAuthClient,
     ClientCredentialsClientSecretClientConfig,
     ClientCredentialsClientSecretAuthClient,
     ClientCredentialsPubKeyClientConfig,

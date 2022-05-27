@@ -5,10 +5,12 @@ from unittest import mock
 
 from requests.auth import AuthBase
 
+from planet.auth.auth_client import AuthClientConfigException
 from planet.auth.oidc.auth_client import OidcAuthClient, OidcAuthClientConfig
 from planet.auth.oidc.oidc_credential import FileBackedOidcCredential
 from planet.auth.request_authenticator import RequestAuthenticator, \
     SimpleInMemoryRequestAuthenticator
+from tests.util import tdata_resource_file_path
 
 TEST_CLIENT_ID = "_FAKE_CLIENT_ID_"
 TEST_ACCESS_TOKEN = "_FAKE_ACCESS_TOKEN_"
@@ -22,6 +24,7 @@ TEST_FAKE_TOKEN_FILE_DATA = {
     "id_token": "_dummy_id_token_"
 }
 
+TEST_AUTH_SERVER = 'https://blackhole.unittest.planet.com/fake_authserver'
 TEST_DISCOVERED_AUTH_SERVER_BASE = "https://auth.unittest.planet.com"
 TEST_OVERRIDE_AUTH_SERVER_BASE = "https://auth_override.unittest.planet.com"
 TEST_FAKE_OIDC_DISCOVERY = {
@@ -175,10 +178,140 @@ class OidcBaseTestHarnessAuthClient(OidcAuthClient):
         return SimpleInMemoryRequestAuthenticator(token_body=TEST_ACCESS_TOKEN)
 
 
+def mocked_pem_load_error(key_data, **kwargs):
+    return None
+
+
+class AuthClientConfigBase(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.privkey_password = 'password'
+        cls.privkey_file_path = tdata_resource_file_path(
+            'keys/keypair1_priv.test_pem')
+        with open(cls.privkey_file_path) as key_file:
+            cls.privkey_literal_str = key_file.read()
+
+        cls.privkey_file_path_nopassword = tdata_resource_file_path(
+            'keys/keypair1_priv_nopassword.test_pem')
+        with open(cls.privkey_file_path_nopassword) as key_file:
+            cls.privkey_literal_str_nopassword = key_file.read()
+
+    def _assert_rsa_keys_equal(self, key1, key2):
+        # We are not validating the crypto libs. We assume if both keys
+        # loaded without throwing and look similar, our code is working as
+        # expected.
+        self.assertEqual(key1.key_size, key2.key_size)
+
+    def test_key_loads_from_literal_or_file(self):
+        under_test_literal = OidcAuthClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey=self.privkey_literal_str_nopassword)
+        under_test_filebacked = OidcAuthClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey_file=self.privkey_file_path_nopassword)
+        self._assert_rsa_keys_equal(under_test_filebacked.private_key_data(),
+                                    under_test_literal.private_key_data())
+
+    def test_key_loads_with_or_without_password_literal(self):
+        under_test_nopw = OidcAuthClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey=self.privkey_literal_str_nopassword)
+        under_test_pw = OidcAuthClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey=self.privkey_literal_str,
+            client_privkey_password=self.privkey_password)
+        key_nopw = under_test_nopw.private_key_data()
+        key_pw = under_test_pw.private_key_data()
+        self._assert_rsa_keys_equal(key_pw, key_nopw)
+
+    def test_key_loads_with_or_without_password_filebacked(self):
+        under_test_nopw = OidcAuthClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey_file=self.privkey_file_path_nopassword)
+        under_test_pw = OidcAuthClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey_file=self.privkey_file_path,
+            client_privkey_password=self.privkey_password)
+        key_nopw = under_test_nopw.private_key_data()
+        key_pw = under_test_pw.private_key_data()
+        self._assert_rsa_keys_equal(key_pw, key_nopw)
+
+    def test_bad_password_throws(self):
+        under_test = OidcAuthClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey_password=None,
+            client_privkey=self.privkey_literal_str)
+        with self.assertRaises(AuthClientConfigException):
+            under_test.private_key_data()
+
+        under_test = OidcAuthClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey_password='bad password',
+            client_privkey=self.privkey_literal_str)
+        with self.assertRaises(AuthClientConfigException):
+            under_test.private_key_data()
+
+        under_test = OidcAuthClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey_password=None,
+            client_privkey_file=self.privkey_file_path)
+        with self.assertRaises(AuthClientConfigException):
+            under_test.private_key_data()
+
+        under_test = OidcAuthClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey_password='bad password',
+            client_privkey_file=self.privkey_file_path)
+        with self.assertRaises(AuthClientConfigException):
+            under_test.private_key_data()
+
+    @mock.patch(
+        'cryptography.hazmat.primitives.serialization.load_pem_private_key',
+        mocked_pem_load_error)  # noqa
+    def test_unexpected_keyload_restult(self):
+        under_test = OidcAuthClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey=self.privkey_literal_str_nopassword)
+        with self.assertRaises(AuthClientConfigException):
+            under_test.private_key_data()
+
+        under_test = OidcAuthClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey_file=self.privkey_file_path_nopassword)
+        with self.assertRaises(AuthClientConfigException):
+            under_test.private_key_data()
+
+    def test_no_key_configured(self):
+        under_test = OidcAuthClientConfig(auth_server=TEST_AUTH_SERVER,
+                                          client_id=TEST_CLIENT_ID,
+                                          client_privkey=None,
+                                          client_privkey_file=None,
+                                          client_privkey_password=None)
+        with self.assertRaises(AuthClientConfigException):
+            under_test.private_key_data()
+
+    def test_lazy_load_only_once(self):
+        # TODO: test that private_key_data() only loads on the first call
+        pass
+
+
 @mock.patch(
     'planet.auth.oidc.api_clients.discovery_api_client.DiscoveryApiClient.discovery',  # noqa
     side_effect=mocked_oidc_discovery)
-class TestAuthClientBase(unittest.TestCase):
+class AuthClientBaseTest(unittest.TestCase):
 
     def setUp(self):
         self.defaults_under_test = OidcBaseTestHarnessAuthClient(

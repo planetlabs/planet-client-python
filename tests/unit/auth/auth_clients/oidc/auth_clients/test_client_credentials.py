@@ -2,10 +2,7 @@ import pathlib
 import unittest
 from unittest import mock
 
-from planet.auth.auth_client import AuthClientConfigException
 from planet.auth.oidc.auth_clients.client_credentials_flow import \
-    ClientCredentialsSharedKeyAuthClient, \
-    ClientCredentialsSharedKeyClientConfig, \
     ClientCredentialsPubKeyAuthClient, \
     ClientCredentialsPubKeyClientConfig, \
     ClientCredentialsClientSecretAuthClient, \
@@ -27,17 +24,11 @@ MOCK_TOKEN = {
 }
 
 
-def mocked_tokenapi_ccred_client_secret(obj_self,
-                                        client_id,
-                                        client_secret,
-                                        requested_scopes):
-    return MOCK_TOKEN
-
-
-def mocked_tokenapi_ccred_pubkey(obj_self,
-                                 client_id,
-                                 private_key,
-                                 requested_scopes):
+def mocked_tokenapi_ccred(obj_self,
+                          client_id,
+                          requested_scopes,
+                          requested_audiences,
+                          auth_enricher):
     return MOCK_TOKEN
 
 
@@ -52,8 +43,8 @@ class ClientCredentialsClientSecretFlowTest(unittest.TestCase):
                 client_secret=TEST_CLIENT_SECRET))
 
     @mock.patch(
-        'planet.auth.oidc.api_clients.token_api_client.TokenApiClient.get_token_from_client_credentials_secret',  # noqa
-        mocked_tokenapi_ccred_client_secret)
+        'planet.auth.oidc.api_clients.token_api_client.TokenApiClient.get_token_from_client_credentials',  # noqa
+        mocked_tokenapi_ccred)
     def test_login(self):
         test_result = self.under_test.login()
         self.assertIsInstance(test_result, FileBackedOidcCredential)
@@ -89,137 +80,6 @@ class ClientCredentialsClientSecretFlowTest(unittest.TestCase):
         self.assertEqual(TEST_CLIENT_SECRET, auth.password)
 
 
-def mocked_pem_load_error(key_data, **kwargs):
-    return None
-
-
-class ClientCredentialsPubKeyConfigTest(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.privkey_password = 'password'
-        cls.privkey_file_path = tdata_resource_file_path(
-            'keys/keypair1_priv.test_pem')
-        with open(cls.privkey_file_path) as key_file:
-            cls.privkey_literal_str = key_file.read()
-
-        cls.privkey_file_path_nopassword = tdata_resource_file_path(
-            'keys/keypair1_priv_nopassword.test_pem')
-        with open(cls.privkey_file_path_nopassword) as key_file:
-            cls.privkey_literal_str_nopassword = key_file.read()
-
-    def _assert_rsa_keys_equal(self, key1, key2):
-        # We are not validating the crypto libs. We assume if both keys
-        # loaded without throwing and look similar, our code is working as
-        # expected.
-        self.assertEqual(key1.key_size, key2.key_size)
-
-    def test_key_loads_from_literal_or_file(self):
-        under_test_literal = ClientCredentialsPubKeyClientConfig(
-            auth_server=TEST_AUTH_SERVER,
-            client_id=TEST_CLIENT_ID,
-            client_privkey=self.privkey_literal_str_nopassword)
-        under_test_filebacked = ClientCredentialsPubKeyClientConfig(
-            auth_server=TEST_AUTH_SERVER,
-            client_id=TEST_CLIENT_ID,
-            client_privkey_file=self.privkey_file_path_nopassword)
-        self._assert_rsa_keys_equal(under_test_filebacked.private_key_data(),
-                                    under_test_literal.private_key_data())
-
-    def test_key_loads_with_or_without_password_literal(self):
-        under_test_nopw = ClientCredentialsPubKeyClientConfig(
-            auth_server=TEST_AUTH_SERVER,
-            client_id=TEST_CLIENT_ID,
-            client_privkey=self.privkey_literal_str_nopassword)
-        under_test_pw = ClientCredentialsPubKeyClientConfig(
-            auth_server=TEST_AUTH_SERVER,
-            client_id=TEST_CLIENT_ID,
-            client_privkey=self.privkey_literal_str,
-            client_privkey_password=self.privkey_password)
-        key_nopw = under_test_nopw.private_key_data()
-        key_pw = under_test_pw.private_key_data()
-        self._assert_rsa_keys_equal(key_pw, key_nopw)
-
-    def test_key_loads_with_or_without_password_filebacked(self):
-        under_test_nopw = ClientCredentialsPubKeyClientConfig(
-            auth_server=TEST_AUTH_SERVER,
-            client_id=TEST_CLIENT_ID,
-            client_privkey_file=self.privkey_file_path_nopassword)
-        under_test_pw = ClientCredentialsPubKeyClientConfig(
-            auth_server=TEST_AUTH_SERVER,
-            client_id=TEST_CLIENT_ID,
-            client_privkey_file=self.privkey_file_path,
-            client_privkey_password=self.privkey_password)
-        key_nopw = under_test_nopw.private_key_data()
-        key_pw = under_test_pw.private_key_data()
-        self._assert_rsa_keys_equal(key_pw, key_nopw)
-
-    def test_bad_password_throws(self):
-        under_test = ClientCredentialsPubKeyClientConfig(
-            auth_server=TEST_AUTH_SERVER,
-            client_id=TEST_CLIENT_ID,
-            client_privkey_password=None,
-            client_privkey=self.privkey_literal_str)
-        with self.assertRaises(AuthClientConfigException):
-            under_test.private_key_data()
-
-        under_test = ClientCredentialsPubKeyClientConfig(
-            auth_server=TEST_AUTH_SERVER,
-            client_id=TEST_CLIENT_ID,
-            client_privkey_password='bad password',
-            client_privkey=self.privkey_literal_str)
-        with self.assertRaises(AuthClientConfigException):
-            under_test.private_key_data()
-
-        under_test = ClientCredentialsPubKeyClientConfig(
-            auth_server=TEST_AUTH_SERVER,
-            client_id=TEST_CLIENT_ID,
-            client_privkey_password=None,
-            client_privkey_file=self.privkey_file_path)
-        with self.assertRaises(AuthClientConfigException):
-            under_test.private_key_data()
-
-        under_test = ClientCredentialsPubKeyClientConfig(
-            auth_server=TEST_AUTH_SERVER,
-            client_id=TEST_CLIENT_ID,
-            client_privkey_password='bad password',
-            client_privkey_file=self.privkey_file_path)
-        with self.assertRaises(AuthClientConfigException):
-            under_test.private_key_data()
-
-    @mock.patch(
-        'cryptography.hazmat.primitives.serialization.load_pem_private_key',
-        mocked_pem_load_error)  # noqa
-    def test_unexpected_keyload_restult(self):
-        under_test = ClientCredentialsPubKeyClientConfig(
-            auth_server=TEST_AUTH_SERVER,
-            client_id=TEST_CLIENT_ID,
-            client_privkey=self.privkey_literal_str_nopassword)
-        with self.assertRaises(AuthClientConfigException):
-            under_test.private_key_data()
-
-        under_test = ClientCredentialsPubKeyClientConfig(
-            auth_server=TEST_AUTH_SERVER,
-            client_id=TEST_CLIENT_ID,
-            client_privkey_file=self.privkey_file_path_nopassword)
-        with self.assertRaises(AuthClientConfigException):
-            under_test.private_key_data()
-
-    def test_no_key_configured(self):
-        under_test = ClientCredentialsPubKeyClientConfig(
-            auth_server=TEST_AUTH_SERVER,
-            client_id=TEST_CLIENT_ID,
-            client_privkey=None,
-            client_privkey_file=None,
-            client_privkey_password=None)
-        with self.assertRaises(AuthClientConfigException):
-            under_test.private_key_data()
-
-    def test_lazy_load_only_once(self):
-        # TODO: test that private_key_data() only loads on the first call
-        pass
-
-
 class ClientCredentialsPubKeyFlowTest(unittest.TestCase):
 
     @classmethod
@@ -238,8 +98,8 @@ class ClientCredentialsPubKeyFlowTest(unittest.TestCase):
                 client_privkey_file=self.privkey_file_path))
 
     @mock.patch(
-        'planet.auth.oidc.api_clients.token_api_client.TokenApiClient.get_token_from_client_credentials_pubkey',  # noqa
-        mocked_tokenapi_ccred_pubkey)
+        'planet.auth.oidc.api_clients.token_api_client.TokenApiClient.get_token_from_client_credentials',  # noqa
+        mocked_tokenapi_ccred)
     def test_login(self):
         test_result = self.under_test.login()
         self.assertIsInstance(test_result, FileBackedOidcCredential)
@@ -275,34 +135,3 @@ class ClientCredentialsPubKeyFlowTest(unittest.TestCase):
 
         # No request auth expected
         self.assertIsNone(auth)
-
-
-class ClientCredentialsSharedKeyFlowTest(unittest.TestCase):
-
-    def setUp(self):
-        self.under_test = ClientCredentialsSharedKeyAuthClient(
-            ClientCredentialsSharedKeyClientConfig(
-                auth_server=TEST_AUTH_SERVER,
-                token_endpoint=TEST_AUTH_SERVER + '/token',
-                client_id=TEST_CLIENT_ID,
-                shared_key=None))
-
-    def test_login(self):
-        # Dummy fake test since there is no real implementation yet.
-        # this is here just to not let the stub class fail test coverage
-        # requirements.
-        with self.assertRaises(Exception):
-            self.under_test.login()
-
-    def test_default_request_authenticator_type(self):
-        test_result = self.under_test.default_request_authenticator(
-            credential_file_path=TEST_TOKEN_SAVE_FILE_PATH)
-        self.assertIsInstance(test_result,
-                              RefreshOrReloginOidcTokenRequestAuthenticator)
-
-    def test_auth_enricher(self):
-        # Dummy fake test since there is no real implementation yet.
-        # this is here just to not let the stub class fail test coverage
-        # requirements.
-        with self.assertRaises(Exception):
-            self.under_test._client_auth_enricher(None, None)

@@ -113,6 +113,7 @@ class AuthorizationApiClient():
     def _prep_pkce_auth_payload(client_id,
                                 redirect_uri,
                                 requested_scopes,
+                                requested_audiences,
                                 pkce_code_challenge):
         data = {
             'client_id': client_id,
@@ -125,16 +126,24 @@ class AuthorizationApiClient():
         }
         if requested_scopes:
             data['scope'] = ' '.join(requested_scopes)
+        if requested_audiences:
+            data['audience'] = ' '.join(requested_audiences)
 
         return data
 
     def authcode_from_pkce_flow_with_browser_with_callback_listener(
-            self, client_id, redirect_uri, requested_scopes,
+            self,
+            client_id,
+            redirect_uri,
+            requested_scopes,
+            requested_audiences,
             pkce_code_challenge):
-        data = self._prep_pkce_auth_payload(client_id,
-                                            redirect_uri,
-                                            requested_scopes,
-                                            pkce_code_challenge)
+        data = self._prep_pkce_auth_payload(
+            client_id=client_id,
+            redirect_uri=redirect_uri,
+            requested_scopes=requested_scopes,
+            requested_audiences=requested_audiences,
+            pkce_code_challenge=pkce_code_challenge)
         auth_request_uri = self._authorization_uri + '?' + urlencode(data)
 
         # HTTP server to catch the callback redirect from the browser
@@ -185,16 +194,22 @@ class AuthorizationApiClient():
                 ' No callback data was received.')
 
     def authcode_from_pkce_flow_without_browser_without_callback_listener(
-            self, client_id, redirect_uri, requested_scopes,
+            self,
+            client_id,
+            redirect_uri,
+            requested_scopes,
+            requested_audiences,
             pkce_code_challenge):
         # 1) Display URL for user to paste into browser.
         # 2) Wait for them to copy-paste the auth code URL.
         # X) The process of catching the redirect from the auth and parsing
         #    out the auth code is out of band of this code.
-        data = self._prep_pkce_auth_payload(client_id,
-                                            redirect_uri,
-                                            requested_scopes,
-                                            pkce_code_challenge)
+        data = self._prep_pkce_auth_payload(
+            client_id=client_id,
+            redirect_uri=redirect_uri,
+            requested_scopes=requested_scopes,
+            requested_audiences=requested_audiences,
+            pkce_code_challenge=pkce_code_challenge)
         auth_request_uri = self._authorization_uri + '?' + urlencode(data)
         print("Please go to the following URL to proceed with login.\n"
               "After successful login, please provide the resulting"
