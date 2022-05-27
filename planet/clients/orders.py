@@ -14,7 +14,6 @@
 """Functionality for interacting with the orders api"""
 import asyncio
 import logging
-import os
 import time
 import typing
 import uuid
@@ -244,9 +243,9 @@ class OrdersClient:
     async def download_asset(self,
                              location: str,
                              filename: str = None,
-                             directory: str = None,
+                             directory: Path = Path('.'),
                              overwrite: bool = False,
-                             progress_bar: bool = True) -> str:
+                             progress_bar: bool = True) -> Path:
         """Download ordered asset.
 
         Parameters:
@@ -266,14 +265,15 @@ class OrdersClient:
 
         async with self._session.stream(req) as resp:
             body = StreamingBody(resp)
-            dl_path = os.path.join(directory or '.', filename or body.name)
+            dl_path = Path(directory, filename or body.name)
             await body.write(dl_path,
                              overwrite=overwrite,
                              progress_bar=progress_bar)
         return dl_path
 
     @staticmethod
-    def _validate_checksum(manifest_data: dict, filenames: list,
+    def _validate_checksum(manifest_data: dict,
+                           filenames: typing.List[Path],
                            checksum: str):
         """Calculate checksum and validate that it passes.
 
@@ -296,44 +296,49 @@ class OrdersClient:
         elif checksum == 'SHA256':
             hash_type = hashlib.sha256
             checksum = checksum.lower()
+
         file_key_pairs = {}
         for json_entry in manifest_data['files']:
             file_name = Path(json_entry['path']).name
             origin_hash = json_entry['digests'][checksum]
             file_key_pairs[file_name] = origin_hash
+
         # For each downloaded file, retrieve origin hashkey from dict
-        filenames_loop = [
-            x for x in filenames if not x.endswith('manifest.json')
-        ]
-        for filename in filenames_loop:
-            downloaded_file_name = Path(filename).name
-            origin_hash = file_key_pairs[downloaded_file_name]
-            # For each file (not including manifest json),
-            # calculate hash on contents. This is the returned hash.
-            with open(filename, 'rb') as file_to_check:
-                json_data = file_to_check.read()
-                returned_hash = hash_type(json_data).hexdigest()
-                # Compare original hashkey in dict with calculated
-                if origin_hash != returned_hash:
-                    raise exceptions.ClientError(
-                        'Checksum failed. File ({filename}) not correctly \
-                        downloaded.')
+        for filename in filenames:
+            if filename.name == 'manifest.json':
+                # skip the manifest file itself
+                continue
+
+            origin_hash = file_key_pairs[filename.name]
+            returned_hash = hash_type(filename.read_bytes()).hexdigest()
+
+            if origin_hash != returned_hash:
+                raise exceptions.ClientError(
+                    'Checksum failed. File ({filename}) not correctly \
+                    downloaded.')
         return None
 
     async def download_order(self,
                              order_id: str,
-                             directory: str = None,
+                             directory: Path = Path('.'),
                              overwrite: bool = False,
                              progress_bar: bool = False,
-                             checksum: str = None) -> typing.List[str]:
-        """Download all assets in an order.
+                             checksum: str = None) -> typing.List[Path]:
+        """Download all assets in an order and the order manifest.
+
+        If 'checksum' is specified, the checksums given in the manifest will
+        be validated against checksums calculated from the downloaded files.
+        Checksum validation will fail if any of the files are missing or if the
+        checksums do not match.
 
         Parameters:
             order_id: The ID of the order.
-            directory: Base directory for file download.
+            directory: Base directory for file download. This directory must
+                already exist.
             overwrite: Overwrite files if they already exist.
             progress_bar: Show progress bar during download.
-            checksum: The type of checksum hash- MD5 or SHA256.
+            checksum: Perform checksum validation against the specified
+                checksum hash type - MD5 or SHA256.
 
         Returns:
             Paths to downloaded files.
@@ -341,10 +346,7 @@ class OrdersClient:
         Raises:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If the order is not in a final
-                state.
-            planet.exceptions.ClientError: If more than one manifest file
-                per order.
-            planet.exceptions.ClientError: If no manifest file found in order.
+                state or if checksum validation fails.
         """
         order = await self.get_order(order_id)
         order_state = order['state']
@@ -368,7 +370,7 @@ class OrdersClient:
         if checksum:
             # Checksum Implementation
             manifest_files = [
-                x for x in filenames if Path(x).name == 'manifest.json'
+                f for f in filenames if f.name == 'manifest.json'
             ]
             manifest_count = len(manifest_files)
             if manifest_count > 1:
@@ -377,12 +379,12 @@ class OrdersClient:
                                              Recieved: {manifest_count}')
             elif manifest_count is None:
                 raise exceptions.ClientError('No manifest file found.')
-            manifest_json = manifest_files[0]
-            with open(manifest_json, 'rb') as manifest:
-                manifest_data = json.load(manifest)
-                self._validate_checksum(manifest_data=manifest_data,
-                                        filenames=filenames,
-                                        checksum=checksum)
+
+            manifest_file = manifest_files[0]
+            manifest_data = json.loads(manifest_file.read_bytes())
+            self._validate_checksum(manifest_data=manifest_data,
+                                    filenames=filenames,
+                                    checksum=checksum)
         return filenames
 
     @staticmethod
