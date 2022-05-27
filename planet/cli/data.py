@@ -5,7 +5,6 @@ from typing import List
 from contextlib import asynccontextmanager
 
 import click
-import planet
 from planet import DataClient, Session
 
 from .cmds import coro, translate_exceptions

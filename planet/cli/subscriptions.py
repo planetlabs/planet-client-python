@@ -5,7 +5,6 @@ import json
 
 import click
 
-import planet
 from planet.cli.cmds import coro, translate_exceptions
 from planet.cli.io_helper import echo_json
 from planet.exceptions import PlanetError
