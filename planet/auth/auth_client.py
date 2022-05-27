@@ -69,14 +69,14 @@ class AuthClientConfig(ABC):
         if not cls._typename_map:
             from planet.auth.oidc.auth_clients.auth_code_flow import \
                 AuthCodePKCEClientConfig
-            from planet.auth.oidc.auth_clients.implicit_flow import \
-                ImplicitClientConfig
+            from planet.auth.oidc.auth_clients.auth_code_flow import \
+                AuthCodePKCEWithClientSecretClientConfig
+            from planet.auth.oidc.auth_clients.auth_code_flow import \
+                AuthCodePKCEWithPubKeyClientConfig
             from planet.auth.oidc.auth_clients.client_credentials_flow import \
                 ClientCredentialsPubKeyClientConfig
             from planet.auth.oidc.auth_clients.client_credentials_flow import \
                 ClientCredentialsClientSecretClientConfig
-            from planet.auth.oidc.auth_clients.client_credentials_flow import \
-                ClientCredentialsSharedKeyClientConfig
             from planet.auth.oidc.auth_clients.resource_owner_flow import \
                 ResourceOwnerClientConfig
             from planet.auth.planet_legacy.auth_client import \
@@ -88,14 +88,13 @@ class AuthClientConfig(ABC):
 
             cls._typename_map = {
                 'oidc_auth_code': AuthCodePKCEClientConfig,
+                'oidc_auth_code_secret':
+                AuthCodePKCEWithClientSecretClientConfig,
+                'oidc_auth_code_pubkey': AuthCodePKCEWithPubKeyClientConfig,
                 'oidc_client_credentials_secret':
                 ClientCredentialsClientSecretClientConfig,
                 'oidc_client_credentials_pubkey':
                 ClientCredentialsPubKeyClientConfig,
-                'oidc_client_credentials_sharedkey':
-                ClientCredentialsSharedKeyClientConfig,
-                # TODO: remove implicit. It was a study
-                'oidc_implicit': ImplicitClientConfig,
                 'oidc_resource_owner': ResourceOwnerClientConfig,
                 'planet_legacy': PlanetLegacyAuthClientConfig,
                 'static_apikey': StaticApiKeyAuthClientConfig,
@@ -166,18 +165,18 @@ class AuthClient(ABC):
             from planet.auth.oidc.auth_clients.auth_code_flow import \
                 AuthCodePKCEAuthClient, \
                 AuthCodePKCEClientConfig
-            from planet.auth.oidc.auth_clients.implicit_flow import\
-                ImplicitAuthClient, \
-                ImplicitClientConfig
+            from planet.auth.oidc.auth_clients.auth_code_flow import \
+                AuthCodePKCEWithClientSecretAuthClient, \
+                AuthCodePKCEWithClientSecretClientConfig
+            from planet.auth.oidc.auth_clients.auth_code_flow import \
+                AuthCodePKCEWithPubKeyAuthClient, \
+                AuthCodePKCEWithPubKeyClientConfig
             from planet.auth.oidc.auth_clients.client_credentials_flow import \
                 ClientCredentialsPubKeyAuthClient, \
                 ClientCredentialsPubKeyClientConfig
             from planet.auth.oidc.auth_clients.client_credentials_flow import\
                 ClientCredentialsClientSecretAuthClient, \
                 ClientCredentialsClientSecretClientConfig
-            from planet.auth.oidc.auth_clients.client_credentials_flow import\
-                ClientCredentialsSharedKeyAuthClient, \
-                ClientCredentialsSharedKeyClientConfig
             from planet.auth.oidc.auth_clients.resource_owner_flow import\
                 ResourceOwnerAuthClient, \
                 ResourceOwnerClientConfig
@@ -193,13 +192,14 @@ class AuthClient(ABC):
 
             cls._type_map = {
                 AuthCodePKCEClientConfig: AuthCodePKCEAuthClient,
+                AuthCodePKCEWithClientSecretClientConfig:
+                AuthCodePKCEWithClientSecretAuthClient,
+                AuthCodePKCEWithPubKeyClientConfig:
+                AuthCodePKCEWithPubKeyAuthClient,
                 ClientCredentialsClientSecretClientConfig:
                 ClientCredentialsClientSecretAuthClient,
                 ClientCredentialsPubKeyClientConfig:
                 ClientCredentialsPubKeyAuthClient,
-                ClientCredentialsSharedKeyClientConfig:
-                ClientCredentialsSharedKeyAuthClient,
-                ImplicitClientConfig: ImplicitAuthClient,
                 ResourceOwnerClientConfig: ResourceOwnerAuthClient,
                 PlanetLegacyAuthClientConfig: PlanetLegacyAuthClient,
                 StaticApiKeyAuthClientConfig: StaticApiKeyAuthClient,
@@ -268,6 +268,25 @@ class AuthClient(ABC):
         Validate an access token with the authorization server.
         Parameters:
             access_token: Access token to validate
+        Returns:
+            Returns a dictionary of validated token claims
+        """
+        raise AuthClientException(
+            'Access token validation is not implemented for the current'
+            ' authentication mechanism')
+
+    def validate_access_token_local(self,
+                                    access_token: str,
+                                    required_audience: str):
+        """
+        Validate an access token locally. The authorization server may still
+        may called to obtain signing keys for validation.  Signing keys will
+        be cached for future use.  While tokens may be requested and have
+        multiple audiences, validation currently only supports checking
+        for a single audience.
+        Parameters:
+            access_token: Access token to validate
+            required_audience:
         Returns:
             Returns a dictionary of validated token claims
         """

@@ -3,6 +3,7 @@ import requests
 from abc import ABC
 
 from planet.auth.auth_client import AuthClientException
+from planet.auth.util import parse_content_type
 
 
 class OidcApiClient(ABC):
@@ -23,7 +24,8 @@ class OidcApiClient(ABC):
 
     def __check_oidc_payload_json_error(self, response):
         if response.content:
-            if not response.headers.get('content-type') == 'application/json':
+            ct = parse_content_type(response.headers.get('content-type'))
+            if not ct['content-type'] == 'application/json':
                 return
 
             json_response = response.json()
@@ -49,9 +51,10 @@ class OidcApiClient(ABC):
     def __checked_json_response(response):
         json_response = None
         if response.content:
-            if not response.headers.get('content-type') == 'application/json':
+            ct = parse_content_type(response.headers.get('content-type'))
+            if not ct['content-type'] == 'application/json':
                 raise OidcApiClientException(
-                    message='Expected json content-type, but got {}'.format(
+                    message='Expected json content-type, but got "{}"'.format(
                         response.headers.get('content-type')),
                     raw_response=response)
             json_response = response.json()

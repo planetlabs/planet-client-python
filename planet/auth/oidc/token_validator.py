@@ -71,6 +71,8 @@ class TokenValidator:
     # Note: "validate_token" DOES NOT force nonce validation. It's just
     #  JWT validation. Nonces are an application layer above. (See ID token
     #  validation below, which is OIDC ID token specific.
+    # TODO: verify and document behaviors when multiple expected audiences
+    #  are passed.
     @TokenValidatorException.recast(PyJWTError)
     def validate_token(self,
                        token_str,

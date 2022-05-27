@@ -5,6 +5,7 @@ import os
 import pathlib
 from typing import Union
 
+from planet.auth.auth_exception import AuthException
 from planet.auth.profile import Profile
 from planet.auth.constants import \
     ENV_AUTH_CLIENT_CONFIG_FILE, \
@@ -117,12 +118,19 @@ class Auth:
                 client_config = AuthClientConfig.from_file(
                     auth_client_config_file_override)
             else:
-                logger.debug(
-                    'Auth configuration file "{}" not found.'
-                    ' Using built-in default auth client configuration'.format(
+                raise AuthException(
+                    'Auth configuration file "{}" not found.'.format(
                         str(auth_config_path)))
-                client_config = AuthClientConfig.from_dict(
-                    SDK_OIDC_AUTH_CLIENT_CONFIG_DICT)
+            # The fallback might be nice for managing multiple user
+            # profiles with the CLI or the like, but this fallback behaves
+            # poorly when you are working programmatically and expect it
+            # to fail.
+            #     logger.debug(
+            #         'Auth configuration file "{}" not found.'
+            #         ' Using built-in default auth client configuration'
+            #         .format(str(auth_config_path)))
+            #     client_config = AuthClientConfig.from_dict(
+            #         SDK_OIDC_AUTH_CLIENT_CONFIG_DICT)
 
         return AuthClient.from_config(client_config)
 

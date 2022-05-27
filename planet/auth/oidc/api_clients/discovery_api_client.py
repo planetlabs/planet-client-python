@@ -11,8 +11,14 @@ class DiscoveryApiClient(OidcApiClient):
     # TODO: Revisit of this is where I should cache. I did work
     #       on the JWKS client after this, and I think it is more mature.
     def __init__(self, discovery_uri=None, auth_server=None):
-        super().__init__(discovery_uri if discovery_uri else auth_server +
-                         '/.well-known/openid-configuration')
+        if discovery_uri:
+            d_uri = discovery_uri
+        else:
+            if auth_server.endswith('/'):
+                d_uri = auth_server + '.well-known/openid-configuration'
+            else:
+                d_uri = auth_server + '/.well-known/openid-configuration'
+        super().__init__(d_uri)
         self._oidc_discovery = None
 
     def do_discovery(self):

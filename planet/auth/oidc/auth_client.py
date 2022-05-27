@@ -1,10 +1,12 @@
 from abc import abstractmethod
+import cryptography.hazmat.primitives.serialization as crypto_serialization
 from requests.auth import AuthBase
 from typing import Tuple, Optional
 
 from planet.auth.auth_client import \
     AuthClientConfig, \
-    AuthClient
+    AuthClient, \
+    AuthClientConfigException
 from planet.auth.oidc.api_clients.authorization_api_client import \
     AuthorizationApiClient
 from planet.auth.oidc.api_clients.discovery_api_client import \
@@ -28,6 +30,12 @@ class OidcAuthClientConfig(AuthClientConfig):
                  auth_server,
                  client_id,
                  default_request_scopes=None,
+                 default_request_audiences=None,
+                 client_secret=None,
+                 client_privkey=None,
+                 client_privkey_file=None,
+                 client_privkey_password=None,
+                 issuer=None,
                  authorization_endpoint=None,
                  introspection_endpoint=None,
                  jwks_endpoint=None,
@@ -38,11 +46,62 @@ class OidcAuthClientConfig(AuthClientConfig):
         self.auth_server = auth_server
         self.client_id = client_id
         self.default_request_scopes = default_request_scopes
+        self.default_request_audiences = default_request_audiences
+        self.client_secret = client_secret
+
+        self._private_key_data = None
+        self.client_privkey_file = client_privkey_file
+
+        if client_privkey and type(client_privkey) is str:
+            self.client_privkey = client_privkey.encode()
+        else:
+            self.client_privkey = client_privkey
+
+        if client_privkey_password and type(client_privkey_password) is str:
+            self.client_privkey_password = client_privkey_password.encode()
+        else:
+            self.client_privkey_password = client_privkey_password
+
+        self.issuer = issuer
         self.authorization_endpoint = authorization_endpoint
         self.introspection_endpoint = introspection_endpoint
         self.jwks_endpoint = jwks_endpoint
         self.revocation_endpoint = revocation_endpoint
         self.token_endpoint = token_endpoint
+
+    # Recast is to catches bad passwords. Too broad? # noqa
+    @AuthClientConfigException.recast(TypeError, ValueError)
+    def _load_private_key(self):
+        # TODO: also handle loading of JWK keys? Fork based on filename
+        #       or detect?
+        # import jwt
+        # priv_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key_dict))
+
+        if self.client_privkey:
+            priv_key = crypto_serialization.load_pem_private_key(
+                self.client_privkey, password=self.client_privkey_password)
+            if not priv_key:
+                raise AuthClientConfigException(
+                    'Unable to load private key literal from configuration')
+        else:
+            if not self.client_privkey_file:
+                raise AuthClientConfigException(
+                    'Private key must be configured for public key auth'
+                    ' client.')
+            with open(self.client_privkey_file, "rb") as key_file:
+                priv_key = crypto_serialization.load_pem_private_key(
+                    key_file.read(), password=self.client_privkey_password)
+                if not priv_key:
+                    raise AuthClientConfigException(
+                        'Unable to load private key from file "{}"'.format(
+                            self.client_privkey_file))
+        self._private_key_data = priv_key
+
+    def private_key_data(self):
+        # TODO: handle key refresh if the file has changed?
+        if not self._private_key_data:
+            self._load_private_key()
+        return self._private_key_data
 
 
 class OidcAuthClient(AuthClient):
@@ -62,11 +121,36 @@ class OidcAuthClient(AuthClient):
         self.__revocation_client = None
         self.__jwks_client = None
         self.__token_validator = None
+        self.__issuer = None
 
     def _discovery(self):
         # We know the internals of the discovery client fetch this
         # JIT and caches
+        # TODO: this does OIDC discovery.  Should we fall back to OAuth2
+        #  discovery?  This comes down to .well-known/openid-configuration
+        #  vs .well-known/oauth-authorization-server
         return self.__discovery_client.discovery()
+
+    def _issuer(self):
+        # Issuer is normally expected to be the same as the auth server.
+        # we handle them separately to allow discovery under the auth
+        # server url to set the issuer string value used in validation.
+        # I can't see much use for this other than deployments where
+        # proxy redirects may be in play. In such cases, a proxy may own
+        # a public "auth server" URL that routes to particular instances,
+        # and there is an expectation that "issuer" (used for token
+        # validation) may deviate from the URL used to locate the auth server.
+        if not self.__issuer:
+            if self._oidc_client_config.issuer:
+                self.__issuer = self._oidc_client_config.issuer
+            else:
+                self.__issuer = self._discovery()['issuer']
+                # TODO: should we fall back to the "auth server" if
+                #  discovery fails?  In the wild we've seen oauth servers
+                #  that lack discovery endpoints, and it would be bad
+                #  user experience to force users to provide both
+                #  an auth server and an issuer.
+        return self.__issuer
 
     def _token_validator(self):
         if not self.__token_validator:
@@ -151,6 +235,7 @@ class OidcAuthClient(AuthClient):
     @abstractmethod
     def login(self,
               requested_scopes=None,
+              requested_audiences=None,
               allow_open_browser=True,
               **kwargs) -> FileBackedOidcCredential:
         """
@@ -159,6 +244,8 @@ class OidcAuthClient(AuthClient):
          Args:
               requested_scopes: a list of strings specifying the scopes to
                   request.
+              requested_audiences: a list of strings specifying the audiences
+                  to request.
               allow_open_browser: specify whether login is permitted to open
                   a browser window.
           Returns:
@@ -206,6 +293,28 @@ class OidcAuthClient(AuthClient):
         return self._introspection_client().validate_access_token(
             access_token, self._client_auth_enricher)
 
+    def validate_access_token_local(self, access_token, required_audience):
+        # FIXME: A little bit of a mis-match. Audience is a parameter on
+        #   local validation, but not server. It's vital information for
+        #   performing a local validation, but not an option for server
+        #   validation.
+        # FIXME: There is also the question of the plurality.  Tokens
+        #   may have multiple audiences. When someone requests a token
+        #   with multiple audiences, the expectation during login is that
+        #   the result has multiple audiences.  However, the underlying
+        #   behavior of the jwt.decode() validation appears to be satisfied
+        #   if the token under validation has any one of the provided
+        #   audiences.  It does not check that all of the provided
+        #   audiences are present.
+        if not required_audience:
+            required_audience = \
+                self._oidc_client_config.default_request_audiences
+
+        return self._token_validator().validate_token(
+            token_str=access_token,
+            issuer=self._issuer(),
+            audience=required_audience)
+
     def validate_id_token(self, id_token):
         """
         Validate the ID token against the OIDC token introspection endpoint
@@ -230,11 +339,11 @@ class OidcAuthClient(AuthClient):
         """
         # return self._token_validator().validate_token(
         #    token_str=id_token,
-        #    issuer=self._oidc_client_config.auth_server,
+        #    issuer=self._issuer(),
         #    audience=self._oidc_client_config.client_id)
         return self._token_validator().validate_id_token(
             token_str=id_token,
-            issuer=self._oidc_client_config.auth_server,
+            issuer=self._issuer(),
             client_id=self._oidc_client_config.client_id)
 
     def validate_refresh_token(self, refresh_token):

@@ -1,7 +1,3 @@
-import jwt
-import time
-import uuid
-
 from planet.auth.oidc.api_clients.api_client import \
     OidcApiClient, OidcApiClientException
 
@@ -23,23 +19,16 @@ class TokenApiClient(OidcApiClient):
             raise TokenApiException(
                 message='Invalid token received. Missing expires_in field.')
 
-    def _checked_call(self, token_params, request_auth=None):
+    def _checked_call(self, token_params, auth_enricher=None):
+        request_auth = None
+        if auth_enricher:
+            token_params, request_auth = auth_enricher(token_params,
+                                                       self._endpoint_uri)
+
         json_response = self._checked_post_json_response(
             token_params, request_auth)
         self._check_token_response(json_response)
         return json_response
-
-    def _prepare_private_key_jwt(self, client_id, private_key):
-        now = int(time.time())
-        unsigned_jwt = {
-            'iss': client_id,
-            'sub': client_id,
-            'aud': self._endpoint_uri,
-            'iat': now,
-            'exp': now + 300,
-            'jti': str(uuid.uuid4())
-        }
-        return jwt.encode(unsigned_jwt, private_key, algorithm="RS256")
 
     def get_token_from_refresh(self,
                                client_id,
@@ -54,71 +43,44 @@ class TokenApiClient(OidcApiClient):
             # You can request down-scope on refresh, but the refresh token
             # remains potent.
             data['scope'] = ' '.join(requested_scopes)
-        return self._checked_call(data)
-
-    # FIXME: delete? When should we defer auth to the flow enricher vs had a
-    #        bespoke methods. Enrichment for auth itself is slightly
-    #        different than it is for any call that requires auth.
-    # def get_token_from_client_credentials_enrichment(self,
-    #                                                 client_id,
-    #                                                 requested_scopes=None,
-    #                                                 auth_enricher=None):
-    #    # FIXME: should client id come from enricher? It's a pretty intrinsic
-    #    #        part of the client credential request.
-    #    data = {
-    #        'grant_type': 'client_credentials',
-    #        'client_id': client_id,
-    #    }
-    #    if requested_scopes:
-    #        data['scope'] = ' '.join(requested_scopes)#
-    #
-    #    if auth_enricher:
-    #        data, auth = auth_enricher(data, self._endpoint_uri)
-    #
-    #    return self._checked_call(data)
-
-    def get_token_from_client_credentials_secret(self,
-                                                 client_id,
-                                                 client_secret,
-                                                 requested_scopes=None):
-        data = {
-            'grant_type': 'client_credentials',
-            'client_id': client_id,
-            'client_secret': client_secret
-        }
-        if requested_scopes:
-            data['scope'] = ' '.join(requested_scopes)
+        # FIXME: can you change audience on refresh?
 
         return self._checked_call(data)
 
-    def get_token_from_client_credentials_pubkey(self,
-                                                 client_id,
-                                                 private_key,
-                                                 requested_scopes=None):
-        signed_jwt = self._prepare_private_key_jwt(client_id, private_key)
+    def get_token_from_client_credentials(self,
+                                          client_id,
+                                          requested_scopes=None,
+                                          requested_audiences=None,
+                                          auth_enricher=None):
         data = {
             'grant_type': 'client_credentials',
-            # client_id causes a "Cannot supply multiple client credentials."
-            # error from Okta. Redundant with the signed assertion
+            # Client id, secret, or assertion come from enricher.
             # 'client_id': client_id,
-            'client_assertion_type':
-            'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-            'client_assertion': signed_jwt
+            # 'client_secret': client_secret
+            # 'client_assertion_type':
+            #        'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+            #  client_assertion': signed_jwt
         }
         if requested_scopes:
             data['scope'] = ' '.join(requested_scopes)
+        if requested_audiences:
+            data['audience'] = ' '.join(requested_audiences)
 
-        return self._checked_call(data)
+        return self._checked_call(data, auth_enricher)
 
-    def get_token_from_code(self, redirect_uri, client_id, code,
-                            code_verifier):
+    def get_token_from_code(self,
+                            redirect_uri,
+                            client_id,
+                            code,
+                            code_verifier,
+                            auth_enricher=None):
         data = {
             'grant_type': 'authorization_code',
             'redirect_uri': redirect_uri,
             'code': code,
             'code_verifier': code_verifier,
-            'client_id': client_id,
-            'request_auth': None
+            # 'client_id': client_id,  # The job of the enricher.
+            # 'request_auth': None     # Where did this come from?
         }
 
-        return self._checked_call(data)
+        return self._checked_call(data, auth_enricher)

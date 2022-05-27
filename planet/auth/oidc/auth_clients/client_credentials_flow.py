@@ -1,13 +1,14 @@
 import pathlib
-import cryptography.hazmat.primitives.serialization as crypto_serialization
+from abc import ABC
+
 from requests.auth import AuthBase
 from typing import Tuple, Optional
 
-from planet.auth.auth_client import AuthClientException, \
-    AuthClientConfigException
+from planet.auth.auth_client import AuthClientConfigException
 from planet.auth.oidc.api_clients.oidc_request_auth import \
     prepare_client_secret_request_auth, \
-    prepare_private_key_assertion_auth_payload
+    prepare_private_key_assertion_auth_payload, \
+    prepare_client_secret_auth_payload
 from planet.auth.oidc.auth_client import OidcAuthClientConfig, OidcAuthClient
 from planet.auth.oidc.oidc_credential import FileBackedOidcCredential
 from planet.auth.oidc.request_authenticator import \
@@ -16,12 +17,26 @@ from planet.auth.oidc.request_authenticator import \
 
 class ClientCredentialsClientSecretClientConfig(OidcAuthClientConfig):
 
-    def __init__(self, client_secret, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.client_secret = client_secret
+        if not self.client_secret:
+            raise AuthClientConfigException(
+                'client_secret must be configured for client'
+                ' credentials client secret client.')
 
 
-class ClientCredentialsClientSecretAuthClient(OidcAuthClient):
+class ClientCredentialsAuthClientBase(OidcAuthClient, ABC):
+
+    def default_request_authenticator(
+        self, credential_file_path: pathlib.Path
+    ) -> RefreshOrReloginOidcTokenRequestAuthenticator:
+        return RefreshOrReloginOidcTokenRequestAuthenticator(
+            credential_file=FileBackedOidcCredential(
+                credential_file=credential_file_path),
+            auth_client=self)
+
+
+class ClientCredentialsClientSecretAuthClient(ClientCredentialsAuthClientBase):
 
     def __init__(self,
                  client_config: ClientCredentialsClientSecretClientConfig):
@@ -32,86 +47,56 @@ class ClientCredentialsClientSecretAuthClient(OidcAuthClient):
             self, raw_payload: dict,
             audience: str) -> Tuple[dict, Optional[AuthBase]]:
         return raw_payload, prepare_client_secret_request_auth(
-            self._ccauth_client_config.client_id,
-            self._ccauth_client_config.client_secret)
+            self._oidc_client_config.client_id,
+            self._oidc_client_config.client_secret)
 
-    def login(self, requested_scopes=None, allow_open_browser=False, **kwargs):
+    # With client credentials and a simple client secret, the auth server
+    # insists that we put the secret in the payload during the initial
+    # token request.  For other commands (e.g. token validate) it permits
+    # us to send it an an auth header.  We prefer this as the default since
+    # an auth header should be less likely to land in a log than URL
+    # parameters or request payloads.
+    def _client_auth_enricher_login(
+            self, raw_payload: dict,
+            audience: str) -> Tuple[dict, Optional[AuthBase]]:
+        auth_payload = prepare_client_secret_auth_payload(
+            client_id=self._oidc_client_config.client_id,
+            client_secret=self._oidc_client_config.client_secret)
+        enriched_payload = {**raw_payload, **auth_payload}
+        return enriched_payload, None
+
+    def login(self,
+              requested_scopes=None,
+              requested_audiences=None,
+              allow_open_browser=False,
+              **kwargs):
         if not requested_scopes:
             requested_scopes = \
                 self._ccauth_client_config.default_request_scopes
 
-        return FileBackedOidcCredential(
-            self._token_client().get_token_from_client_credentials_secret(
-                self._ccauth_client_config.client_id,
-                self._ccauth_client_config.client_secret,
-                requested_scopes))
+        if not requested_audiences:
+            requested_audiences = \
+                self._ccauth_client_config.default_request_audiences
 
-    def default_request_authenticator(
-        self, credential_file_path: pathlib.Path
-    ) -> RefreshOrReloginOidcTokenRequestAuthenticator:
-        return RefreshOrReloginOidcTokenRequestAuthenticator(
-            credential_file=FileBackedOidcCredential(
-                credential_file=credential_file_path),
-            auth_client=self)
+        return FileBackedOidcCredential(
+            self._token_client().get_token_from_client_credentials(
+                client_id=self._ccauth_client_config.client_id,
+                requested_scopes=requested_scopes,
+                requested_audiences=requested_audiences,
+                auth_enricher=self._client_auth_enricher_login))
 
 
 class ClientCredentialsPubKeyClientConfig(OidcAuthClientConfig):
 
-    def __init__(self,
-                 client_privkey=None,
-                 client_privkey_file=None,
-                 client_privkey_password=None,
-                 **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._private_key_data = None
-        self.client_privkey_file = client_privkey_file
-
-        if client_privkey and type(client_privkey) is str:
-            self.client_privkey = client_privkey.encode()
-        else:
-            self.client_privkey = client_privkey
-
-        if client_privkey_password and type(client_privkey_password) is str:
-            self.client_privkey_password = client_privkey_password.encode()
-        else:
-            self.client_privkey_password = client_privkey_password
-
-    # Recast is to catches bad passwords. Too broad? # noqa
-    @AuthClientConfigException.recast(TypeError, ValueError)
-    def _load_private_key(self):
-        # TODO: also handle loading of JWK keys? Fork based on filename
-        #       or detect?
-        # import jwt
-        # priv_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key_dict))
-
-        if self.client_privkey:
-            priv_key = crypto_serialization.load_pem_private_key(
-                self.client_privkey, password=self.client_privkey_password)
-            if not priv_key:
-                raise AuthClientConfigException(
-                    'Unable to load private key literal from configuration')
-        else:
-            if not self.client_privkey_file:
-                raise AuthClientConfigException(
-                    'Private key must be configured for public key auth'
-                    ' client credentials flow.')
-            with open(self.client_privkey_file, "rb") as key_file:
-                priv_key = crypto_serialization.load_pem_private_key(
-                    key_file.read(), password=self.client_privkey_password)
-                if not priv_key:
-                    raise AuthClientConfigException(
-                        'Unable to load private key from file "{}"'.format(
-                            self.client_privkey_file))
-        self._private_key_data = priv_key
-
-    def private_key_data(self):
-        # TODO: handle key refresh if the file has changed?
-        if not self._private_key_data:
-            self._load_private_key()
-        return self._private_key_data
+        if not self.client_privkey and not self.client_privkey_file:
+            raise AuthClientConfigException(
+                'One of client_privkey or client_privkey_file must be'
+                ' configured for client credentials public key client')
 
 
-class ClientCredentialsPubKeyAuthClient(OidcAuthClient):
+class ClientCredentialsPubKeyAuthClient(ClientCredentialsAuthClientBase):
 
     def __init__(self, client_config: ClientCredentialsPubKeyClientConfig):
         super().__init__(client_config)
@@ -122,62 +107,30 @@ class ClientCredentialsPubKeyAuthClient(OidcAuthClient):
             audience: str) -> Tuple[dict, Optional[AuthBase]]:
         auth_assertion_payload = prepare_private_key_assertion_auth_payload(
             audience=audience,
-            client_id=self._pubkey_client_config.client_id,
-            private_key=self._pubkey_client_config.private_key_data(),
+            client_id=self._oidc_client_config.client_id,
+            private_key=self._oidc_client_config.private_key_data(),
             ttl=300)
         enriched_payload = {**raw_payload, **auth_assertion_payload}
         return enriched_payload, None
 
-    def login(self, requested_scopes=None, allow_open_browser=False, **kwargs):
+    def login(self,
+              requested_scopes=None,
+              requested_audiences=None,
+              allow_open_browser=False,
+              **kwargs):
+        # FIXME: how much can we consolidate this common fallback
+        #  to default in login() methods?
         if not requested_scopes:
             requested_scopes = \
                 self._pubkey_client_config.default_request_scopes
 
+        if not requested_audiences:
+            requested_audiences = \
+                self._pubkey_client_config.default_request_audiences
+
         return FileBackedOidcCredential(
-            # FIXME: change get_token_from_client_credentials_pubkey to
-            #        use enrichment.
-            self._token_client().get_token_from_client_credentials_pubkey(
-                self._pubkey_client_config.client_id,
-                self._pubkey_client_config.private_key_data(),
-                requested_scopes))
-
-    def default_request_authenticator(
-        self, credential_file_path: pathlib.Path
-    ) -> RefreshOrReloginOidcTokenRequestAuthenticator:
-        return RefreshOrReloginOidcTokenRequestAuthenticator(
-            credential_file=FileBackedOidcCredential(
-                credential_file=credential_file_path),
-            auth_client=self)
-
-
-# TODO: No implementation yet.
-class ClientCredentialsSharedKeyClientConfig(OidcAuthClientConfig):
-
-    def __init__(self, shared_key, **kwargs):
-        super().__init__(**kwargs)
-        self.shared_key = shared_key
-
-
-class ClientCredentialsSharedKeyAuthClient(OidcAuthClient):
-
-    def __init__(self, client_config: ClientCredentialsSharedKeyClientConfig):
-        super().__init__(client_config)
-        self._sharedkey_client_config = client_config
-
-    def _client_auth_enricher(
-            self, raw_payload: dict,
-            audience: str) -> Tuple[dict, Optional[AuthBase]]:
-        raise AuthClientException('No implementation')
-        # when we have an implementation, see
-        # prepare_shared_key_assertion_auth_payload in oidc_request_auth
-
-    def login(self, requested_scopes=None, allow_open_browser=False, **kwargs):
-        raise AuthClientException('No implementation')
-
-    def default_request_authenticator(
-        self, credential_file_path: pathlib.Path
-    ) -> RefreshOrReloginOidcTokenRequestAuthenticator:
-        return RefreshOrReloginOidcTokenRequestAuthenticator(
-            credential_file=FileBackedOidcCredential(
-                credential_file=credential_file_path),
-            auth_client=self)
+            self._token_client().get_token_from_client_credentials(
+                client_id=self._pubkey_client_config.client_id,
+                requested_scopes=requested_scopes,
+                requested_audiences=requested_audiences,
+                auth_enricher=self._client_auth_enricher))

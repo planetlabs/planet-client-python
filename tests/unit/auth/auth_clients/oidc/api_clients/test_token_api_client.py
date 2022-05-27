@@ -2,12 +2,13 @@ import json
 import unittest
 
 from requests.models import Response
+from requests.auth import AuthBase
+from typing import Tuple, Optional
 from unittest import mock
 
 from planet.auth.oidc.api_clients.token_api_client import TokenApiClient, \
     TokenApiException
 from planet.auth.oidc.util import create_pkce_challenge_verifier_pair
-from tests.util import tdata_resource_file_path, load_rsa_private_key
 
 TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
 TEST_CLIENT_ID = '__test_client_id__'
@@ -48,12 +49,16 @@ def mocked_response_invalid(request_url, **kwargs):
     return response
 
 
-def load_privkey():
-    return load_rsa_private_key(
-        tdata_resource_file_path('keys/keypair1_priv.test_pem'), 'password')
+# def load_privkey():
+#     return load_rsa_private_key(
+#         tdata_resource_file_path('keys/keypair1_priv.test_pem'), 'password')
 
 
 class TokenApiClientTest(unittest.TestCase):
+
+    def _test_auth_enricher(self, raw_payload: dict,
+                            audience: str) -> Tuple[dict, Optional[AuthBase]]:
+        return raw_payload, None
 
     @mock.patch('requests.post', side_effect=mocked_response_ok)
     def test_token_from_authcode_valid(self, mock_post):
@@ -61,40 +66,38 @@ class TokenApiClientTest(unittest.TestCase):
         pkce_code_verifier, pkce_code_challenge = \
             create_pkce_challenge_verifier_pair()
         token_response = under_test.get_token_from_code(
-            TEST_CLIENT_ID,
-            TEST_REDIRECT_URI,
-            'dummy_authcode',
-            pkce_code_verifier)
+            client_id=TEST_CLIENT_ID,
+            redirect_uri=TEST_REDIRECT_URI,
+            code='dummy_authcode',
+            code_verifier=pkce_code_verifier)
         self.assertEqual(API_RESPONSE_VALID, token_response)
 
     @mock.patch('requests.post', side_effect=mocked_response_ok)
-    def test_token_from_client_credentials_pubkey_valid(self, mock_post):
+    def test_token_from_authcode_valid_with_auth_enricher(self, mock_post):
         under_test = TokenApiClient(token_uri=TEST_API_ENDPOINT)
-        private_key = load_privkey()
-        token_response = under_test.get_token_from_client_credentials_pubkey(
-            TEST_CLIENT_ID, private_key)
+        pkce_code_verifier, pkce_code_challenge = \
+            create_pkce_challenge_verifier_pair()
+        token_response = under_test.get_token_from_code(
+            client_id=TEST_CLIENT_ID,
+            redirect_uri=TEST_REDIRECT_URI,
+            code='dummy_authcode',
+            code_verifier=pkce_code_verifier,
+            auth_enricher=self._test_auth_enricher)
+        self.assertEqual(API_RESPONSE_VALID, token_response)
+
+    @mock.patch('requests.post', side_effect=mocked_response_ok)
+    def test_token_from_client_credentials(self, mock_post):
+        under_test = TokenApiClient(token_uri=TEST_API_ENDPOINT)
+        # private_key = load_privkey()
+        token_response = under_test.get_token_from_client_credentials(
+            TEST_CLIENT_ID)
         self.assertEqual(API_RESPONSE_VALID, token_response)
         # Coverage complains when we don't test the custom scopes
         # branch, but the server and it's response is mock, so we
         # don't actually have anything different to check in the result.
         # All we can check is that it didn't throw.
-        under_test.get_token_from_client_credentials_pubkey(
-            TEST_CLIENT_ID, private_key, requested_scopes=['scope1', 'scope2'])
-
-    @mock.patch('requests.post', side_effect=mocked_response_ok)
-    def test_token_from_client_credentials_secret_valid(self, mock_post):
-        under_test = TokenApiClient(token_uri=TEST_API_ENDPOINT)
-        token_response = under_test.get_token_from_client_credentials_secret(
-            TEST_CLIENT_ID, 'dummy_client_secret')
-        self.assertEqual(API_RESPONSE_VALID, token_response)
-        # Coverage complains when we don't test the custom scopes
-        # branch, but the server and it's response is mock, so we
-        # don't actually have anything different to check in the result.
-        # All we can check is that it didn't throw.
-        under_test.get_token_from_client_credentials_secret(
-            TEST_CLIENT_ID,
-            'dummy_client_secret',
-            requested_scopes=['scope1', 'scope2'])
+        under_test.get_token_from_client_credentials(
+            TEST_CLIENT_ID, requested_scopes=['scope1', 'scope2'])
 
     @mock.patch('requests.post', side_effect=mocked_response_ok)
     def test_token_from_refresh_valid(self, mock_post):

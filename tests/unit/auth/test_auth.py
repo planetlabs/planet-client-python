@@ -1,4 +1,5 @@
 import pathlib
+import pytest
 import unittest
 
 from planet.auth.auth import Auth
@@ -72,6 +73,11 @@ class AuthTest(unittest.TestCase):
             pathlib.Path.home().joinpath(".planet/test_profile/token.json"),
             under_test.token_file_path())
 
+    @pytest.mark.xfail(reason="This functionality intentionally disabled."
+                       " We will likely remove it or implement it in"
+                       " a different way.  Such a fallback feature"
+                       " probably belongs in the application, not"
+                       " the library.")
     def test_initialize_by_authconffile_valid_fallback_to_default(self):
         under_test = Auth.initialize(profile='test_profile',
                                      auth_client_config_file='__bad_path__')

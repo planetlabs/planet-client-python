@@ -1,4 +1,5 @@
 import asyncio
+
 import cryptography.hazmat.primitives.serialization as crypto_serialization
 import importlib.resources
 import os
@@ -27,9 +28,15 @@ def tdata_resource_file_path(resource_file: str):
 
 
 def load_auth_client_config(named_config):
-    file_path = tdata_resource_file_path(
+    sops_path = tdata_resource_file_path(
+        'auth_client_configs/{}.sops.json'.format(named_config))
+    clear_path = tdata_resource_file_path(
         'auth_client_configs/{}.json'.format(named_config))
-    return AuthClientConfig.from_file(file_path)
+    if sops_path.exists():
+        conf_path = sops_path
+    else:
+        conf_path = clear_path
+    return AuthClientConfig.from_file(conf_path)
 
 
 def find_free_port():

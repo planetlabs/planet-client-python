@@ -19,6 +19,7 @@ TEST_API_ENDPOINT = 'https://blackhole.unittest.planet.com/api'
 TEST_CLIENT_ID = '_client_id_'
 TEST_REDIRECT_URI_TEMPLATE = 'http://localhost:{}/utest_callback_uri'
 TEST_REQUESTED_SCOPES = ['scope1', 'scope2']
+TEST_REQUESTED_AUDIENCES = ['aud1']
 MOCK_AUTHCODE = '_mock_authcode_'
 API_RESPONSE_VALID = {}
 API_RESPONSE_FAILED = {}
@@ -157,17 +158,19 @@ class AuthorizationApiClientTest(unittest.TestCase):
         #       and verify it.  A real verification of that URL amounts to
         #       implementing a partial authorization server.
         authcode = under_test.authcode_from_pkce_flow_with_browser_with_callback_listener(  # noqa
-            TEST_CLIENT_ID,
-            self.callback_uri,
-            None,
-            self.pkce_challenge)
+            client_id=TEST_CLIENT_ID,
+            redirect_uri=self.callback_uri,
+            requested_scopes=None,
+            requested_audiences=None,
+            pkce_code_challenge=self.pkce_challenge)
         self.assertEqual(MOCK_AUTHCODE, authcode)
 
         authcode = under_test.authcode_from_pkce_flow_with_browser_with_callback_listener(  # noqa
-            TEST_CLIENT_ID,
-            self.callback_uri,
-            TEST_REQUESTED_SCOPES,
-            self.pkce_challenge)
+            client_id=TEST_CLIENT_ID,
+            redirect_uri=self.callback_uri,
+            requested_scopes=TEST_REQUESTED_SCOPES,
+            requested_audiences=TEST_REQUESTED_AUDIENCES,
+            pkce_code_challenge=self.pkce_challenge)
         self.assertEqual(MOCK_AUTHCODE, authcode)
 
     @mock.patch('http.server.HTTPServer')
@@ -188,23 +191,26 @@ class AuthorizationApiClientTest(unittest.TestCase):
         invalid_callback = 'https://test.planet.com:443'
 
         under_test.authcode_from_pkce_flow_with_browser_with_callback_listener(  # noqa
-            TEST_CLIENT_ID,
-            valid_callback_1,
-            None,
-            self.pkce_challenge)
+            client_id=TEST_CLIENT_ID,
+            redirect_uri=valid_callback_1,
+            requested_scopes=None,
+            requested_audiences=None,
+            pkce_code_challenge=self.pkce_challenge)
 
         under_test.authcode_from_pkce_flow_with_browser_with_callback_listener(  # noqa
-            TEST_CLIENT_ID,
-            valid_callback_2,
-            None,
-            self.pkce_challenge)
+            client_id=TEST_CLIENT_ID,
+            redirect_uri=valid_callback_2,
+            requested_scopes=None,
+            requested_audiences=None,
+            pkce_code_challenge=self.pkce_challenge)
 
         with self.assertRaises(AuthorizationApiException):
             under_test.authcode_from_pkce_flow_with_browser_with_callback_listener(  # noqa
-                TEST_CLIENT_ID,
-                invalid_callback,
-                None,
-                self.pkce_challenge)
+                client_id=TEST_CLIENT_ID,
+                redirect_uri=invalid_callback,
+                requested_scopes=None,
+                requested_audiences=None,
+                pkce_code_challenge=self.pkce_challenge)
 
     @mock.patch('http.server.HTTPServer', spec=http.server.HTTPServer)
     @mock.patch('webbrowser.open')
@@ -214,10 +220,11 @@ class AuthorizationApiClientTest(unittest.TestCase):
             authorization_uri=TEST_API_ENDPOINT)
         with self.assertRaises(AuthorizationApiException):
             under_test.authcode_from_pkce_flow_with_browser_with_callback_listener(  # noqa
-                TEST_CLIENT_ID,
-                self.callback_uri,
-                None,
-                self.pkce_challenge)
+                client_id=TEST_CLIENT_ID,
+                redirect_uri=self.callback_uri,
+                requested_scopes=None,
+                requested_audiences=None,
+                pkce_code_challenge=self.pkce_challenge)
 
     @mock.patch('getpass.getpass', mocked_get_password)
     def test_get_authcode_without_browser_and_listener(self):
@@ -229,15 +236,17 @@ class AuthorizationApiClientTest(unittest.TestCase):
         #       and verify it.  A real verification of that URL amounts to
         #       implementing a partial authorization server.
         authcode = under_test.authcode_from_pkce_flow_without_browser_without_callback_listener(  # noqa
-            TEST_CLIENT_ID,
-            self.callback_uri,
-            None,
-            self.pkce_challenge)
+            client_id=TEST_CLIENT_ID,
+            redirect_uri=self.callback_uri,
+            requested_scopes=None,
+            requested_audiences=None,
+            pkce_code_challenge=self.pkce_challenge)
         self.assertEqual(MOCK_AUTHCODE, authcode)
 
         authcode = under_test.authcode_from_pkce_flow_without_browser_without_callback_listener(  # noqa
-            TEST_CLIENT_ID,
-            self.callback_uri,
-            TEST_REQUESTED_SCOPES,
-            self.pkce_challenge)
+            client_id=TEST_CLIENT_ID,
+            redirect_uri=self.callback_uri,
+            requested_scopes=TEST_REQUESTED_SCOPES,
+            requested_audiences=TEST_REQUESTED_AUDIENCES,
+            pkce_code_challenge=self.pkce_challenge)
         self.assertEqual(MOCK_AUTHCODE, authcode)

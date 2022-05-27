@@ -8,6 +8,23 @@ import time
 from planet.auth.auth_exception import AuthException
 
 
+def parse_content_type(content_type: str):
+    result = {
+        'content-type': None,
+    }
+    if content_type:
+        ct = content_type.split(';')
+        result['content-type'] = ct.pop(0).strip()
+        for subfield in ct:
+            sf = subfield.split('=', 1)
+            if sf[0].strip():
+                if len(sf) == 1:
+                    result[sf[0].strip()] = None
+                else:
+                    result[sf[0].strip()] = sf[1].strip()
+    return result
+
+
 class FileBackedJsonObjectException(AuthException):
 
     def __init__(self, message=None):

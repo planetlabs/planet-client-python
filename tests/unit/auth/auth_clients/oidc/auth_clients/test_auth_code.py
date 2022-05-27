@@ -67,6 +67,7 @@ def mocked_authapi_get_authcode(obj_self,
                                 client_id,
                                 redirect_uri,
                                 requested_scopes,
+                                requested_audiences,
                                 pkce_code_challenge):
     return TEST_AUTH_CODE
 
@@ -75,7 +76,8 @@ def mocked_tokenapi_token_from_code(obj_self,
                                     redirect_uri,
                                     client_id,
                                     code,
-                                    code_verifier):
+                                    code_verifier,
+                                    auth_enricher):
     return MOCK_TOKEN
 
 
@@ -140,3 +142,13 @@ class PkceAuthCodeFlowTest(unittest.TestCase):
 
         # No request auth expected
         self.assertIsNone(auth)
+
+
+# TODO
+class PkceAuthCodeWithSecretFlowTest(unittest.TestCase):
+    pass
+
+
+# TODO
+class PkceAuthCodeWithPubKeyFlowTest(unittest.TestCase):
+    pass
