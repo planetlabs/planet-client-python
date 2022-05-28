@@ -251,7 +251,8 @@ class OrdersClient:
         Parameters:
             location: Download location url including download token.
             filename: Custom name to assign to downloaded file.
-            directory: Base directory for file download.
+            directory: Base directory for file download. This directory will be
+                created if it does not already exist.
             overwrite: Overwrite any existing files.
             progress_bar: Show progress bar during download.
 
@@ -266,57 +267,11 @@ class OrdersClient:
         async with self._session.stream(req) as resp:
             body = StreamingBody(resp)
             dl_path = Path(directory, filename or body.name)
+            dl_path.parent.mkdir(exist_ok=True, parents=True)
             await body.write(dl_path,
                              overwrite=overwrite,
                              progress_bar=progress_bar)
         return dl_path
-
-    @staticmethod
-    def _validate_checksum(manifest_data: dict,
-                           filenames: typing.List[Path],
-                           checksum: str):
-        """Calculate checksum and validate that it passes.
-
-        Parameters:
-            manifest_data: The contents of the opened manifest.json file.
-            filenames: List of downloaded assets.
-            checksum: The type of checksum hash- 'MD5' or 'SHA256'.
-
-        Returns:
-            Nothing if checksums were succesful.
-
-        Raises:
-            planet.exceptions.ClientError: If the checksum fails."""
-
-        # Save hashkey & respective filename from manifest json into dictionary
-        # This is the origin hashkey
-        if checksum == 'MD5':
-            hash_type = hashlib.md5
-            checksum = checksum.lower()
-        elif checksum == 'SHA256':
-            hash_type = hashlib.sha256
-            checksum = checksum.lower()
-
-        file_key_pairs = {}
-        for json_entry in manifest_data['files']:
-            file_name = Path(json_entry['path']).name
-            origin_hash = json_entry['digests'][checksum]
-            file_key_pairs[file_name] = origin_hash
-
-        # For each downloaded file, retrieve origin hashkey from dict
-        for filename in filenames:
-            if filename.name == 'manifest.json':
-                # skip the manifest file itself
-                continue
-
-            origin_hash = file_key_pairs[filename.name]
-            returned_hash = hash_type(filename.read_bytes()).hexdigest()
-
-            if origin_hash != returned_hash:
-                raise exceptions.ClientError(
-                    'Checksum failed. File ({filename}) not correctly \
-                    downloaded.')
-        return None
 
     async def download_order(self,
                              order_id: str,
@@ -324,7 +279,7 @@ class OrdersClient:
                              overwrite: bool = False,
                              progress_bar: bool = False,
                              checksum: str = None) -> typing.List[Path]:
-        """Download all assets in an order and the order manifest.
+        """Download all assets in an order.
 
         If 'checksum' is specified, the checksums given in the manifest will
         be validated against checksums calculated from the downloaded files.
@@ -356,19 +311,19 @@ class OrdersClient:
                 f'({order_state}) is not a final state. '
                 'Consider using wait functionality before '
                 'attempting to download.')
-        locations = self._get_order_locations(order)
-        LOGGER.info(
-            f'downloading {len(locations)} assets from order {order_id}')
+
+        info = self._get_download_info(order)
+        LOGGER.info(f'downloading {len(info)} assets from order {order_id}')
 
         filenames = [
-            await self.download_asset(location,
-                                      directory=directory,
+            await self.download_asset(i['location'],
+                                      filename=i['filename'],
+                                      directory=directory / i['directory'],
                                       overwrite=overwrite,
-                                      progress_bar=progress_bar)
-            for location in locations
+                                      progress_bar=progress_bar) for i in info
         ]
+
         if checksum:
-            # Checksum Implementation
             manifest_files = [
                 f for f in filenames if f.name == 'manifest.json'
             ]
@@ -382,22 +337,66 @@ class OrdersClient:
 
             manifest_file = manifest_files[0]
             manifest_data = json.loads(manifest_file.read_bytes())
-            self._validate_checksum(manifest_data=manifest_data,
-                                    filenames=filenames,
-                                    checksum=checksum)
+            self._validate_checksum(manifest_data, directory, checksum)
         return filenames
 
     @staticmethod
-    def _get_order_locations(order):
+    def _get_download_info(order):
         links = order['_links']
         results = links.get('results', [])
+
+        def _info_from_result(result):
+            name = Path(result['name'])
+            return {
+                'location': result['location'],
+                'directory': name.parent,
+                'filename': name.name
+            }
+
         try:
-            return list(r['location'] for r in results if r)
+            info = list(_info_from_result(r) for r in results if r)
         except TypeError:
             LOGGER.warning(
                 'order does not have any locations, will not download any ' +
                 'files.')
-            return []
+            info = []
+        return info
+
+    @staticmethod
+    def _validate_checksum(manifest_data: dict, directory: Path,
+                           checksum: str):
+        """For each file entry in the manifest, validates checksum against the
+        downloaded file.
+
+        Parameters:
+            manifest_data: The contents of the opened manifest.json file.
+            filenames: List of downloaded assets.
+            checksum: The type of checksum hash- 'MD5' or 'SHA256'.
+
+        Raises:
+            planet.exceptions.ClientError: If the checksum fails.
+        """
+        if checksum.upper() == 'MD5':
+            hash_type = hashlib.md5
+        elif checksum.upper() == 'SHA256':
+            hash_type = hashlib.sha256
+        else:
+            raise exceptions.ClientError(
+                'Checksum ({checksum}) must be one of MD5 or SHA256.')
+
+        for json_entry in manifest_data['files']:
+            origin_hash = json_entry['digests'][checksum.lower()]
+            filename = Path(directory / json_entry['path'])
+
+            try:
+                returned_hash = hash_type(filename.read_bytes()).hexdigest()
+            except FileNotFoundError:
+                raise exceptions.ClientError(
+                    'Checksum failed. File ({filename}) does not exist.')
+
+            if origin_hash != returned_hash:
+                raise exceptions.ClientError(
+                    'File ({filename}) checksums do not match.')
 
     async def wait(self,
                    order_id: str,

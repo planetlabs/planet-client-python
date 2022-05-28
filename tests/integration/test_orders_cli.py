@@ -257,9 +257,9 @@ def mock_download_response(oid, order_description):
         dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
         dl_url2 = TEST_DOWNLOAD_URL + '/2?token=IAmAnotherToken'
         order_description['_links']['results'] = [{
-            'location': dl_url1
+            'location': dl_url1, 'name': 'oid/itemtype/m1.json'
         }, {
-            'location': dl_url2
+            'location': dl_url2, 'name': 'oid/itemtype/m2.json'
         }]
 
         get_url = f'{TEST_ORDERS_URL}/{oid}'
@@ -303,9 +303,9 @@ def test_cli_orders_download_default(invoke, mock_download_response, oid):
         assert 'm1.json' in result.output
 
         # Check that the files were downloaded and have the correct contents
-        f1_path = Path(folder) / 'm1.json'
+        f1_path = Path(folder) / 'oid/itemtype/m1.json'
         assert json.load(open(f1_path)) == {'key': 'value'}
-        f2_path = Path(folder) / 'm2.json'
+        f2_path = Path(folder) / 'oid/itemtype/m2.json'
         assert json.load(open(f2_path)) == {'key2': 'value2'}
 
 
@@ -322,9 +322,9 @@ def test_cli_orders_download_dest(invoke, mock_download_response, oid):
         assert not result.exception
 
         # Check that the files were downloaded to the custom directory
-        f1_path = dest_dir / 'm1.json'
+        f1_path = dest_dir / 'oid/itemtype/m1.json'
         assert json.load(open(f1_path)) == {'key': 'value'}
-        f2_path = dest_dir / 'm2.json'
+        f2_path = dest_dir / 'oid/itemtype/m2.json'
         assert json.load(open(f2_path)) == {'key2': 'value2'}
 
 
@@ -337,8 +337,9 @@ def test_cli_orders_download_overwrite(invoke,
 
     runner = CliRunner()
     with runner.isolated_filesystem() as folder:
-        filepath = Path(folder) / 'm1.json'
-        write_to_tmp_json_file({'foo': 'bar'}, filepath)
+        filepath = Path(folder) / 'oid/itemtype/m1.json'
+        filepath.parent.mkdir(parents=True)
+        filepath.write_text(json.dumps({'foo': 'bar'}))
 
         # check the file doesn't get overwritten by default
         result = invoke(['download', oid], runner=runner)
