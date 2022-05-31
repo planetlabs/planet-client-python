@@ -1,19 +1,22 @@
 """Subscriptions CLI"""
 
+from contextlib import asynccontextmanager
 import itertools
 import json
+from typing import AsyncIterator, Dict, Set
 
 import click
 
 import planet
+from planet import Session
 from planet.cli.cmds import coro, translate_exceptions
 from planet.cli.io import echo_json
 from planet.exceptions import PlanetError
 
 # Collections of fake subscriptions and results for testing. Tests will
 # monkeypatch these attributes.
-_fake_subs = None
-_fake_sub_results = None
+_fake_subs: Dict[str, dict] = {}
+_fake_sub_results: Dict[str, list] = {}
 
 
 # The following 5 functions are for use in CLI commands until there
@@ -37,8 +40,38 @@ def _get_fake_sub(sub_id):
     return sub
 
 
-def _get_fake_sub_results(sub_id):
-    return _fake_sub_results[sub_id]
+class PlaceholderSubscriptionsClient:
+
+    def __init__(self, session):
+        # Note: placeholder doesn't use the session (yet).
+        self.session = session
+
+    async def list_results(self,
+                           subscription_id: str,
+                           status: Set[str] = None,
+                           limit: int = 100) -> AsyncIterator[dict]:
+        try:
+            if status:
+                select_results = (
+                    result for result in _fake_sub_results[subscription_id]
+                    if result['status'] in status)
+            else:
+                select_results = (
+                    result for result in _fake_sub_results[subscription_id])
+
+            filtered_results = itertools.islice(select_results, limit)
+        except KeyError:
+            raise PlanetError(f"No such subscription: {subscription_id!r}")
+
+        for result in filtered_results:
+            yield result
+
+
+@asynccontextmanager
+async def subscriptions_client(ctx):
+    auth = ctx.obj['AUTH']
+    async with Session(auth=auth) as sess:
+        yield PlaceholderSubscriptionsClient(sess)
 
 
 @click.group()
@@ -245,6 +278,9 @@ async def describe_subscription(ctx, subscription_id, pretty):
                        "success"]),
     multiple=True,
     default=None,
+    callback=lambda ctx,
+    param,
+    value: set(value),
     help="Select subscription results in one or more states. Default: all.")
 @click.option('--limit',
               type=int,
@@ -262,34 +298,10 @@ async def list_subscription_results(ctx,
                                     pretty,
                                     status,
                                     limit):
-    """Gets results of a subscription and prints the API response.
-
-    This implementation is only a placeholder. To begin, instead
-    of mocking calls to the Subscriptions API, we'll use a
-    collection of fake subscriptions (the all_subs object).
-    After we refactor we will change to mocking the API.
-
-    """
-    # Begin fake subscriptions service. Note that the Subscriptions
-    # API will report missing keys differently, but the Python API
-    # *will* raise PlanetError like this.
-
-    try:
-        # Filter by status, like the Subscriptions API does.
-        if status:
-            select_results = (res
-                              for res in _get_fake_sub_results(subscription_id)
-                              if res['status'] in status)
-        else:
-            select_results = _get_fake_sub_results(subscription_id)
-
-        filtered_results = itertools.islice(select_results, limit)
-    except KeyError:
-        raise PlanetError(f"No such subscription: {subscription_id!r}")
-
-    # End fake subscriptions service. After we refactor we will get
-    # the "sub" from a method in planet.clients.subscriptions (which
-    # doesn't exist yet).
-
-    for result in filtered_results:
-        echo_json(result, pretty)
+    """Gets results of a subscription and prints the API response."""
+    async with subscriptions_client(ctx) as client:
+        filtered_results = client.list_results(subscription_id,
+                                               status=status,
+                                               limit=limit)
+        async for result in filtered_results:
+            echo_json(result, pretty)
