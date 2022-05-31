@@ -26,9 +26,10 @@ Planet API's ([analytics](https://developers.planet.com/docs/analytics/),
 
 ## Documentation
 
-Full documentation is not yet hosted online but can be built and hosted locally
-(see [CONTRIBUTING.md](CONTRIBUTING.md)) or can be read from source in the
-`[docs](docs/)` directory.
+Documentation is currently [hosted online](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/)
+It should be considered 'in progress', with many updated to come. It can also
+be built and hosted locally (see [CONTRIBUTING.md](CONTRIBUTING.md)) or can be 
+read from source in the `[docs](docs/)` directory.
 
 ## Quick Start
 
@@ -36,13 +37,13 @@ The Planet SDK includes both a Python API and a command-line interface (CLI)
 to make use of the following Planet APIs:
 
 * [orders](https://developers.planet.com/docs/orders/)
-* [data](https://developers.planet.com/docs/data/) (not yet implemented)
+* [data](https://developers.planet.com/docs/data/) (in progress)
 * [subscriptions](https://developers.planet.com/docs/subscriptions/) (not 
  yet implemented)
 
 This quickstart focuses on getting started with the CLI to place an order.
 For information on the Python API see the 
-[documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/)
+[documentation]([https://planet-sdk-for-python.readthedocs.io/en/latest/](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/))
 
 After you've installed the client, as explained in the [installation](#installation)
 section below, you first must initialize the client with your Planet 
