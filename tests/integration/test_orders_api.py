@@ -550,6 +550,99 @@ async def test_download_asset_md(tmpdir, session):
 
 @respx.mock
 @pytest.mark.asyncio
+@pytest.mark.parametrize("checksum", [("MD5"), ("SHA256")])
+async def test_download_order_checksum_failure(tmpdir,
+                                               order_description,
+                                               oid,
+                                               session,
+                                               checksum):
+    # Note: the hashkeys in the mock manifest below were changed
+    # from the correct keys to temporary keys
+    # This should cause the checksum to fail.
+    # Mock an HTTP response for download
+    order_description['state'] = 'success'
+    dl_url1 = TEST_DOWNLOAD_URL + '/asset1'
+    dl_url2 = TEST_DOWNLOAD_URL + '/asset2'
+    dl_url3 = TEST_DOWNLOAD_URL + '/manifest'
+    order_description['_links']['results'] = [{
+        'location': dl_url1, 'name': 'oid/itemtype1/asset.tif'
+    },
+                                              {
+                                                  'location':
+                                                  dl_url2,
+                                                  'name':
+                                                  'oid/itemtype1/asset2.json'
+                                              },
+                                              {
+                                                  'location':
+                                                  dl_url3,
+                                                  'name':
+                                                  'oid/itemtype1/manifest.json'
+                                              }]
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+    get_order_response = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.get(get_url).return_value = get_order_response
+
+    # The first asset in the order:
+    # A 1-byte binary file containing the value "1".
+    asset1_content = b"1"
+    asset1_response = httpx.Response(HTTPStatus.OK,
+                                     content=asset1_content,
+                                     headers={
+                                         'Content-Type':
+                                         'image/tiff',
+                                         'Content-Disposition':
+                                         'attachment; filename="asset1.tif"'
+                                     })
+    respx.get(dl_url1).return_value = asset1_response
+
+    # The second asset in the order is a json file
+    asset2_response = httpx.Response(HTTPStatus.OK,
+                                     json={'foo': 'bar'},
+                                     headers={
+                                         'Content-Type':
+                                         'application/json',
+                                         'Content-Disposition':
+                                         'attachment; filename="asset2.json"'
+                                     })
+    respx.get(dl_url2).return_value = asset2_response
+
+    manifest = httpx.Response(HTTPStatus.OK,
+                              json={
+                                  "name":
+                                  "",
+                                  "files": [{
+                                      "path": "asset1.tif",
+                                      "digests": {
+                                          "md5": "manifest_key1_md5",
+                                          "sha256": "manifest_key1_sha256"
+                                      },
+                                  },
+                                            {
+                                                "path": "asset2.json",
+                                                "digests": {
+                                                    "md5":
+                                                    "manifest_key2_md5",
+                                                    "sha256":
+                                                    "manifest_key2_sha256"
+                                                }
+                                            }]
+                              },
+                              headers={
+                                  'Content-Type':
+                                  'application/json',
+                                  'Content-Disposition':
+                                  'attachment; filename="manifest.json"'
+                              })
+    respx.get(dl_url3).return_value = manifest
+    # Test Checksum
+    cl = OrdersClient(session, base_url=TEST_URL)
+    with pytest.raises(exceptions.ClientError):
+        await cl.download_order(oid, directory=Path(tmpdir), checksum=checksum)
+
+
+@respx.mock
+@pytest.mark.asyncio
 async def test_download_asset_img(tmpdir, open_test_img, session):
     dl_url = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
 
@@ -824,96 +917,3 @@ async def test_download_order_checksum_success(tmpdir,
 
     cl = OrdersClient(session, base_url=TEST_URL)
     await cl.download_order(oid, directory=Path(tmpdir), checksum=checksum)
-
-
-@respx.mock
-@pytest.mark.asyncio
-@pytest.mark.parametrize("checksum", [("MD5"), ("SHA256")])
-async def test_download_order_checksum_failure(tmpdir,
-                                               order_description,
-                                               oid,
-                                               session,
-                                               checksum):
-    # Note: the hashkeys in the mock manifest below were changed
-    # from the correct keys to temporary keys
-    # This should cause the checksum to fail.
-    # Mock an HTTP response for download
-    order_description['state'] = 'success'
-    dl_url1 = TEST_DOWNLOAD_URL + '/asset1'
-    dl_url2 = TEST_DOWNLOAD_URL + '/asset2'
-    dl_url3 = TEST_DOWNLOAD_URL + '/manifest'
-    order_description['_links']['results'] = [{
-        'location': dl_url1, 'name': 'oid/itemtype1/asset.tif'
-    },
-                                              {
-                                                  'location':
-                                                  dl_url2,
-                                                  'name':
-                                                  'oid/itemtype1/asset2.json'
-                                              },
-                                              {
-                                                  'location':
-                                                  dl_url3,
-                                                  'name':
-                                                  'oid/itemtype1/manifest.json'
-                                              }]
-    get_url = f'{TEST_ORDERS_URL}/{oid}'
-    get_order_response = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.get(get_url).return_value = get_order_response
-
-    # The first asset in the order:
-    # A 1-byte binary file containing the value "1".
-    asset1_content = b"1"
-    asset1_response = httpx.Response(HTTPStatus.OK,
-                                     content=asset1_content,
-                                     headers={
-                                         'Content-Type':
-                                         'image/tiff',
-                                         'Content-Disposition':
-                                         'attachment; filename="asset1.tif"'
-                                     })
-    respx.get(dl_url1).return_value = asset1_response
-
-    # The second asset in the order is a json file
-    asset2_response = httpx.Response(HTTPStatus.OK,
-                                     json={'foo': 'bar'},
-                                     headers={
-                                         'Content-Type':
-                                         'application/json',
-                                         'Content-Disposition':
-                                         'attachment; filename="asset2.json"'
-                                     })
-    respx.get(dl_url2).return_value = asset2_response
-
-    manifest = httpx.Response(HTTPStatus.OK,
-                              json={
-                                  "name":
-                                  "",
-                                  "files": [{
-                                      "path": "asset1.tif",
-                                      "digests": {
-                                          "md5": "manifest_key1_md5",
-                                          "sha256": "manifest_key1_sha256"
-                                      },
-                                  },
-                                            {
-                                                "path": "asset2.json",
-                                                "digests": {
-                                                    "md5":
-                                                    "manifest_key2_md5",
-                                                    "sha256":
-                                                    "manifest_key2_sha256"
-                                                }
-                                            }]
-                              },
-                              headers={
-                                  'Content-Type':
-                                  'application/json',
-                                  'Content-Disposition':
-                                  'attachment; filename="manifest.json"'
-                              })
-    respx.get(dl_url3).return_value = manifest
-    # Test Checksum
-    cl = OrdersClient(session, base_url=TEST_URL)
-    with pytest.raises(exceptions.ClientError):
-        await cl.download_order(oid, directory=Path(tmpdir), checksum=checksum)

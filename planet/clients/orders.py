@@ -273,6 +273,42 @@ class OrdersClient:
                              progress_bar=progress_bar)
         return dl_path
 
+    @staticmethod
+    def _validate_checksum(manifest_data: dict, directory: Path,
+                           checksum: str):
+        """For each file entry in the manifest, validates checksum against the
+        downloaded file.
+
+        Parameters:
+            manifest_data: The contents of the opened manifest.json file.
+            filenames: List of downloaded assets.
+            checksum: The type of checksum hash- 'MD5' or 'SHA256'.
+
+        Raises:
+            planet.exceptions.ClientError: If the checksum fails.
+        """
+        if checksum.upper() == 'MD5':
+            hash_type = hashlib.md5
+        elif checksum.upper() == 'SHA256':
+            hash_type = hashlib.sha256
+        else:
+            raise exceptions.ClientError(
+                'Checksum ({checksum}) must be one of MD5 or SHA256.')
+
+        for json_entry in manifest_data['files']:
+            origin_hash = json_entry['digests'][checksum.lower()]
+            filename = Path(directory / json_entry['path'])
+
+            try:
+                returned_hash = hash_type(filename.read_bytes()).hexdigest()
+            except FileNotFoundError:
+                raise exceptions.ClientError(
+                    'Checksum failed. File ({filename}) does not exist.')
+
+            if origin_hash != returned_hash:
+                raise exceptions.ClientError(
+                    'File ({filename}) checksums do not match.')
+
     async def download_order(self,
                              order_id: str,
                              directory: Path = Path('.'),
@@ -361,42 +397,6 @@ class OrdersClient:
                 'files.')
             info = []
         return info
-
-    @staticmethod
-    def _validate_checksum(manifest_data: dict, directory: Path,
-                           checksum: str):
-        """For each file entry in the manifest, validates checksum against the
-        downloaded file.
-
-        Parameters:
-            manifest_data: The contents of the opened manifest.json file.
-            filenames: List of downloaded assets.
-            checksum: The type of checksum hash- 'MD5' or 'SHA256'.
-
-        Raises:
-            planet.exceptions.ClientError: If the checksum fails.
-        """
-        if checksum.upper() == 'MD5':
-            hash_type = hashlib.md5
-        elif checksum.upper() == 'SHA256':
-            hash_type = hashlib.sha256
-        else:
-            raise exceptions.ClientError(
-                'Checksum ({checksum}) must be one of MD5 or SHA256.')
-
-        for json_entry in manifest_data['files']:
-            origin_hash = json_entry['digests'][checksum.lower()]
-            filename = Path(directory / json_entry['path'])
-
-            try:
-                returned_hash = hash_type(filename.read_bytes()).hexdigest()
-            except FileNotFoundError:
-                raise exceptions.ClientError(
-                    'Checksum failed. File ({filename}) does not exist.')
-
-            if origin_hash != returned_hash:
-                raise exceptions.ClientError(
-                    'File ({filename}) checksums do not match.')
 
     async def wait(self,
                    order_id: str,
