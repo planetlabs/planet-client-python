@@ -199,7 +199,7 @@ def test_search_create_daily_email(invoke, search_result):
         '--daily_email'
     ])
 
-    order_request = {
+    search_request = {
         "name": "temp",
         "filter": {
             "type": "DateRangeFilter",
@@ -212,8 +212,9 @@ def test_search_create_daily_email(invoke, search_result):
         "__daily_email_enabled": True
     }
     sent_request = json.loads(respx.calls.last.request.content)
-    assert not result.exception
-    assert sent_request == order_request
+    assert result.exit_code == 0
+    assert sent_request == search_request
+    assert json.loads(result.output) == search_result
 
 
 # TODO: basic test for "planet data filter".
