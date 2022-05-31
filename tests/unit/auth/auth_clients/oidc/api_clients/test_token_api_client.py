@@ -95,9 +95,11 @@ class TokenApiClientTest(unittest.TestCase):
         # Coverage complains when we don't test the custom scopes
         # branch, but the server and it's response is mock, so we
         # don't actually have anything different to check in the result.
-        # All we can check is that it didn't throw.
+        # All we can check is that it didn't throw. Same for audiences.
         under_test.get_token_from_client_credentials(
-            TEST_CLIENT_ID, requested_scopes=['scope1', 'scope2'])
+            TEST_CLIENT_ID,
+            requested_scopes=['scope1', 'scope2'],
+            requested_audiences=['req_audience_1'])
 
     @mock.patch('requests.post', side_effect=mocked_response_ok)
     def test_token_from_refresh_valid(self, mock_post):

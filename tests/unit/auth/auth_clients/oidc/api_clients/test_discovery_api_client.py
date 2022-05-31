@@ -153,3 +153,17 @@ class DiscoveryApiClientTest(unittest.TestCase):
         self.assertEqual(1, MockRequests.request_counter)
         under_test.discovery()
         self.assertEqual(1, MockRequests.request_counter)
+
+    def test_discovery_url_fixups(self):
+        under_test = DiscoveryApiClient(discovery_uri='/test_discover_uri')
+        self.assertEqual('/test_discover_uri', under_test._endpoint_uri)
+
+        under_test = DiscoveryApiClient(auth_server='/test_auth_server_base')
+        self.assertEqual(
+            '/test_auth_server_base/.well-known/openid-configuration',
+            under_test._endpoint_uri)
+
+        under_test = DiscoveryApiClient(auth_server='/test_auth_server_base/')
+        self.assertEqual(
+            '/test_auth_server_base/.well-known/openid-configuration',
+            under_test._endpoint_uri)

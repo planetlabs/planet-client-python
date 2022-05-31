@@ -38,6 +38,11 @@ class NoOpAuthClient(AuthClient):
     def validate_access_token(self, access_token: str):
         return {}
 
+    def validate_access_token_local(self,
+                                    access_token: str,
+                                    required_audience: str):
+        return {}
+
     def validate_id_token(self, id_token: str):
         return {}
 

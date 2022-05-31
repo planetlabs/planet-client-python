@@ -36,6 +36,11 @@ class NoOpAuthClientTest(unittest.TestCase):
         results = self.under_test.validate_access_token("test_token")
         self.assertEqual({}, results)
 
+    def test_validate_access_token_local(self):
+        results = self.under_test.validate_access_token_local(
+            "test_token", "test_audience")
+        self.assertEqual({}, results)
+
     def test_validate_id_token(self):
         results = self.under_test.validate_id_token("test_token")
         self.assertEqual({}, results)

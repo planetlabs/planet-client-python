@@ -11,8 +11,12 @@ from contextlib import closing
 from planet.auth.auth_client import AuthClientConfig
 
 
-def is_interactive_shell():
+def is_interactive_shell() -> bool:
     return sys.stdin.isatty()
+
+
+def is_not_interactive_shell() -> bool:
+    return not sys.stdin.isatty()
 
 
 def is_cicd() -> bool:

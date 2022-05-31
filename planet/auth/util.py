@@ -15,6 +15,9 @@ def parse_content_type(content_type: str):
     if content_type:
         ct = content_type.split(';')
         result['content-type'] = ct.pop(0).strip()
+        if not result['content-type']:
+            # Don't return blank strings
+            result['content-type'] = None
         for subfield in ct:
             sf = subfield.split('=', 1)
             if sf[0].strip():

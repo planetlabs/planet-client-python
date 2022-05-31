@@ -4,13 +4,20 @@ from unittest import mock
 
 from planet.auth.auth_client import AuthClientConfigException
 from planet.auth.oidc.auth_clients.auth_code_flow import \
-    AuthCodePKCEAuthClient, AuthCodePKCEClientConfig
+    AuthCodePKCEAuthClient, \
+    AuthCodePKCEClientConfig, \
+    AuthCodePKCEWithClientSecretAuthClient, \
+    AuthCodePKCEWithClientSecretClientConfig, \
+    AuthCodePKCEWithPubKeyAuthClient, \
+    AuthCodePKCEWithPubKeyClientConfig
 from planet.auth.oidc.oidc_credential import FileBackedOidcCredential
 from planet.auth.oidc.request_authenticator import \
     RefreshingOidcTokenRequestAuthenticator
+from tests.util import tdata_resource_file_path
 
 TEST_AUTH_SERVER = 'https://blackhole.unittest.planet.com/fake_authserver'
 TEST_CLIENT_ID = 'fake_test_client_id'
+TEST_CLIENT_SECRET = 'fake_client_secret'
 TEST_RECIRECT_URI_REMOTE = \
     'https://blackhole.unittest.planet.com/auth_callback'
 TEST_RECIRECT_URI_LOCAL = 'http://localhost:8080/auth_callback'
@@ -26,7 +33,7 @@ MOCK_TOKEN = {
 }
 
 
-class ClientCredentialsPubKeyConfigTest(unittest.TestCase):
+class AuthCodePKCEClientConfigTest(unittest.TestCase):
 
     def test_callback_urls_set(self):
         under_test = AuthCodePKCEClientConfig(
@@ -112,12 +119,13 @@ class PkceAuthCodeFlowTest(unittest.TestCase):
     def test_login_no_browser(self):
         # override scopes to also test that code path in contrast to the
         # "with browser" case above.
-        # No difference in the result between over rideing the scopes or not
+        # No difference in the result between over riding the scopes or not
         # in this test. This is because the response is mocked.  A real auth
         # server might behave differently, but that's beyond the unit under
-        # test here.
+        # test here.  Same for audiences.
         test_result = self.under_test.login(allow_open_browser=False,
-                                            requested_scopes=['override'])
+                                            requested_scopes=['override'],
+                                            requested_audiences=['req_aud'])
         self.assertIsInstance(test_result, FileBackedOidcCredential)
         self.assertEqual(MOCK_TOKEN, test_result.data())
 
@@ -144,11 +152,111 @@ class PkceAuthCodeFlowTest(unittest.TestCase):
         self.assertIsNone(auth)
 
 
-# TODO
+class AuthCodePKCEWithClientSecretClientConfigTest(unittest.TestCase):
+
+    def test_secret_required(self):
+        # No exception
+        AuthCodePKCEWithClientSecretClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            redirect_uri=TEST_RECIRECT_URI_REMOTE,
+            client_secret=TEST_CLIENT_SECRET)
+
+        with self.assertRaises(AuthClientConfigException):
+            AuthCodePKCEWithClientSecretClientConfig(
+                auth_server=TEST_AUTH_SERVER,
+                redirect_uri=TEST_RECIRECT_URI_REMOTE,
+                client_id=TEST_CLIENT_ID)
+
+
 class PkceAuthCodeWithSecretFlowTest(unittest.TestCase):
-    pass
+
+    def setUp(self):
+        self.under_test = AuthCodePKCEWithClientSecretAuthClient(
+            AuthCodePKCEWithClientSecretClientConfig(
+                auth_server=TEST_AUTH_SERVER,
+                token_endpoint=TEST_AUTH_SERVER + '/token',
+                authorization_endpoint=TEST_AUTH_SERVER + '/auth',
+                client_id=TEST_CLIENT_ID,
+                client_secret=TEST_CLIENT_SECRET,
+                redirect_uri=TEST_RECIRECT_URI_LOCAL))
+
+    def test_auth_enricher(self):
+        # The correctness of what enrichment does is determined by the token
+        # endpoint, and we've externalized the heavy lifting of preparing the
+        # enrichment into helper functions that could be unit tested
+        # separately. (So unit testing of that ought to be done there,
+        # although perhaps testing it here in the context of a particular
+        # flow here is more meaningful.)
+        enriched_payload, auth = self.under_test._client_auth_enricher(
+            {}, 'test_audience')
+
+        # No payload enrichment expected.
+        self.assertEqual({}, enriched_payload)
+
+        # HTTP basic auth with the client secret.
+        self.assertEqual(TEST_CLIENT_ID, auth.username)
+        self.assertEqual(TEST_CLIENT_SECRET, auth.password)
 
 
-# TODO
+class AuthCodePKCEWithPubKeyClientConfigTest(unittest.TestCase):
+
+    def test_privkey_required(self):
+        # No exception
+        AuthCodePKCEWithPubKeyClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            redirect_uri=TEST_RECIRECT_URI_REMOTE,
+            client_privkey_file='/dummy/utest/file')
+
+        # No exception
+        AuthCodePKCEWithPubKeyClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            redirect_uri=TEST_RECIRECT_URI_REMOTE,
+            client_privkey='dummy private key literal')
+
+        with self.assertRaises(AuthClientConfigException):
+            AuthCodePKCEWithPubKeyClientConfig(
+                auth_server=TEST_AUTH_SERVER,
+                redirect_uri=TEST_RECIRECT_URI_REMOTE,
+                client_id=TEST_CLIENT_ID)
+
+
 class PkceAuthCodeWithPubKeyFlowTest(unittest.TestCase):
-    pass
+
+    @classmethod
+    def setUpClass(cls):
+        cls.privkey_password = 'password'
+        cls.privkey_file_path = tdata_resource_file_path(
+            'keys/keypair1_priv.test_pem')
+
+    def setUp(self):
+        self.under_test = AuthCodePKCEWithPubKeyAuthClient(
+            AuthCodePKCEWithPubKeyClientConfig(
+                auth_server=TEST_AUTH_SERVER,
+                token_endpoint=TEST_AUTH_SERVER + '/token',
+                authorization_endpoint=TEST_AUTH_SERVER + '/auth',
+                client_id=TEST_CLIENT_ID,
+                client_privkey_password=self.privkey_password,
+                client_privkey_file=self.privkey_file_path,
+                redirect_uri=TEST_RECIRECT_URI_LOCAL))
+
+    def test_auth_enricher(self):
+        # The correctness of what enrichment does is determined by the token
+        # endpoint, and we've externalized the heavy lifting of preparing the
+        # enrichment into helper functions that could be unit tested
+        # separately. (So unit testing of that ought to be done there,
+        # although perhaps testing it here in the context of a particular
+        # flow here is more meaningful.)
+        enriched_payload, auth = self.under_test._client_auth_enricher(
+            {}, 'test_audience')
+
+        # Payload enriched with a signed key assertion
+        self.assertEqual(
+            'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+            enriched_payload.get('client_assertion_type'))
+        self.assertIsNotNone(enriched_payload.get('client_assertion'))
+
+        # No request auth expected
+        self.assertIsNone(auth)

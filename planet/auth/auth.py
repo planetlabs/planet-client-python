@@ -11,7 +11,7 @@ from planet.auth.constants import \
     ENV_AUTH_CLIENT_CONFIG_FILE, \
     ENV_AUTH_PROFILE, \
     ENV_AUTH_TOKEN_FILE, \
-    SDK_OIDC_AUTH_CLIENT_CONFIG_DICT, \
+    DEFAULT_AUTH_CLIENT_CONFIG_DICT, \
     LEGACY_AUTH_CLIENT_CONFIG_DICT, \
     NOOP_AUTH_CLIENT_CONFIG_DICT, \
     TOKEN_FILE_SOPS, \
@@ -93,7 +93,7 @@ class Auth:
                 'Using built-in "{}" auth client configuration'.format(
                     Profile.BUILTIN_PROFILE_NAME_DEFAULT))
             client_config = AuthClientConfig.from_dict(
-                SDK_OIDC_AUTH_CLIENT_CONFIG_DICT)
+                DEFAULT_AUTH_CLIENT_CONFIG_DICT)
         elif Profile.profile_name_is_legacy(profile):
             logger.debug(
                 'Using built-in "{}" auth client configuration'.format(
@@ -130,7 +130,7 @@ class Auth:
             #         ' Using built-in default auth client configuration'
             #         .format(str(auth_config_path)))
             #     client_config = AuthClientConfig.from_dict(
-            #         SDK_OIDC_AUTH_CLIENT_CONFIG_DICT)
+            #         DEFAULT_AUTH_CLIENT_CONFIG_DICT)
 
         return AuthClient.from_config(client_config)
 

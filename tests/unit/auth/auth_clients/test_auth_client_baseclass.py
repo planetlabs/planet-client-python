@@ -59,6 +59,9 @@ class TestAuthClientBase(unittest.TestCase):
             under_test.validate_access_token(None)
 
         with self.assertRaises(AuthClientException):
+            under_test.validate_access_token_local(None, None)
+
+        with self.assertRaises(AuthClientException):
             under_test.validate_id_token(None)
 
         with self.assertRaises(AuthClientException):
@@ -149,8 +152,11 @@ class ClientFactoryTest(unittest.TestCase):
             planet.auth.static_api_key.auth_client.StaticApiKeyAuthClient)
 
     def test_noop_client(self):
-        self.assertIsInstance(AuthClient.from_config(NoOpAuthClientConfig()),
-                              planet.auth.none.noop_auth.NoOpAuthClient)
+        self.assertIsInstance(
+            AuthClient.from_config(
+                NoOpAuthClientConfig(
+                    extra_garbage_to_ignore='some_test_trash')),
+            planet.auth.none.noop_auth.NoOpAuthClient)
 
     def test_invalid_config_type(self):
         with self.assertRaises(AuthClientException):
