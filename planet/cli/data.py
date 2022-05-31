@@ -86,18 +86,16 @@ def parse_filter(ctx, param, value: str) -> dict:
               default=100,
               help='Maximum number of results to return. Defaults to 100.')
 async def search_quick(ctx, item_types, filter, name, limit, pretty):
-    """Execute a structured item search.
+    """This function executes a structured item search using the item_types,
+    and json filter specified (using file or stdin).
     Quick searches are stored for approximately 30 days and the --name
-    parameter will be applied to the stored quick search. \n
-
-    Arguments: \n
-    ITEM_TYPES - string. Comma-separated item type identifier(s). \n
-    FILTER - string. A full JSON description of search criteria.
-    Supports file and stdin. \n
-
-    Output:
-    A series of GeoJSON descriptions for each of the returned items.
-
+    parameter will be applied to the stored quick search. This function
+    outputs a series of GeoJSON descriptions, one for each of the returned
+    items. The limit on the number of output items can be controlled using
+    the "--limit" option, which defaults to 100. If "--limit" is set to zero,
+    no limit is applied and all results (a potentially large number) are
+    returned. The output can also be optionally pretty-printed using
+    "--pretty".
     """
     async with data_client(ctx) as cl:
         items = await cl.quick_search(name=name,
@@ -109,7 +107,34 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
             echo_json(item, pretty)
 
 
-# TODO: search_create()".
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@pretty
+@click.argument('name')
+@click.argument("item_types", callback=parse_item_types)
+@click.argument("filter", callback=parse_filter)
+@click.option('--daily_email',
+              is_flag=True,
+              help='Send a daily email when new results are added.')
+async def search_create(ctx, name, item_types, filter, daily_email, pretty):
+    """ This function creates a new saved structured item search, using the
+    name of the search, item_types, and json filter specified (using file or
+    stdin). If specified, the "--daily_email" option enables users to recieve
+    an email when new results are available each day. This function outputs a
+    full JSON description of the created search. The output can also be
+    optionally pretty-printed using "--pretty".
+
+    """
+    async with data_client(ctx) as cl:
+        items = await cl.create_search(name=name,
+                                       item_types=item_types,
+                                       search_filter=filter,
+                                       enable_email=daily_email)
+        echo_json(items, pretty)
+
+
 # TODO: search_update()".
 # TODO: search_delete()".
 # TODO: search_run()".
@@ -117,5 +142,4 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
 # TODO: asset_activate()".
 # TODO: asset_wait()".
 # TODO: asset_download()".
-# TODO: search_create()".
 # TODO: stats()".
