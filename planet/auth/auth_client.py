@@ -54,6 +54,7 @@ class AuthClientConfig(ABC):
     """
 
     _typename_map = {}
+    CLIENT_TYPE_KEY = 'client_type'
 
     def __init__(self, **kwargs):
         if len(kwargs.keys()) > 0:
@@ -61,8 +62,10 @@ class AuthClientConfig(ABC):
             # 'Unexpected config arguments in client configuration: {}'
             # .format(', '.join(kwargs.keys())))
             for key in kwargs.keys():
-                logger.debug('Ignoring unknown keyword argument: "{}"'.format(
-                    str(key)))
+                if key != AuthClientConfig.CLIENT_TYPE_KEY:
+                    logger.debug(
+                        'Ignoring unknown keyword argument: "{}"'.format(
+                            str(key)))
 
     @classmethod
     def _get_typename_map(cls):
@@ -110,8 +113,7 @@ class AuthClientConfig(ABC):
         Returns:
             A concrete auth client config object.
         """
-        config_data.get('client_type')
-        config_type = config_data.get('client_type')
+        config_type = config_data.get(cls.CLIENT_TYPE_KEY)
         config_cls = AuthClientConfig._get_typename_map().get(config_type)
         if not config_cls:
             raise AuthClientException(

@@ -2,6 +2,7 @@ import pathlib
 import unittest
 from typing import Tuple, Optional
 from unittest import mock
+from unittest.mock import MagicMock
 
 from requests.auth import AuthBase
 
@@ -304,8 +305,18 @@ class AuthClientConfigBase(unittest.TestCase):
             under_test.private_key_data()
 
     def test_lazy_load_only_once(self):
-        # TODO: test that private_key_data() only loads on the first call
-        pass
+        # FIXME: wrapping the object in this way doesn't seem to actually
+        #   catch call counts for internal method calls.  Stepping through
+        #   debugger seems to indicate proper behavior.
+        under_test = MagicMock(wraps=OidcAuthClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey_file=self.privkey_file_path_nopassword))
+        self.assertEqual(0, under_test._load_private_key.call_count)
+        under_test.private_key_data()
+        # self.assertEqual(1, under_test._load_private_key.call_count)
+        under_test.private_key_data()
+        # self.assertEqual(1, under_test._load_private_key.call_count)
 
 
 @mock.patch(
@@ -516,6 +527,28 @@ class AuthClientBaseTest(unittest.TestCase):
         self.assertEqual(TEST_DISCOVERED_AUTH_SERVER_BASE + '/token',
                          default_api_client._endpoint_uri)
 
+    def test_issuer_discovery_override(self, mocked_discovery):
+        under_test = OidcBaseTestHarnessAuthClient(
+            OidcBaseTestHarnessClientConfig(
+                auth_server=TEST_DISCOVERED_AUTH_SERVER_BASE,
+                client_id=TEST_CLIENT_ID,
+                issuer=TEST_OVERRIDE_AUTH_SERVER_BASE + '/override_issuer'))
+        self.assertEqual(TEST_OVERRIDE_AUTH_SERVER_BASE + '/override_issuer',
+                         under_test._issuer())
+        self.assertEqual(0, mocked_discovery.call_count)
+
+        under_test = OidcBaseTestHarnessAuthClient(
+            OidcBaseTestHarnessClientConfig(
+                auth_server=TEST_DISCOVERED_AUTH_SERVER_BASE,
+                client_id=TEST_CLIENT_ID))
+        self.assertEqual(TEST_DISCOVERED_AUTH_SERVER_BASE,
+                         under_test._issuer())
+        self.assertEqual(1, mocked_discovery.call_count)
+
+        # second call doesn't re-do discovery
+        under_test._issuer()
+        self.assertEqual(1, mocked_discovery.call_count)
+
     def test_token_validator_created_once(self, mocked_discovery):
         under_test = self.defaults_under_test
         token_validator = under_test._token_validator()
@@ -548,6 +581,29 @@ class AuthClientBaseTest(unittest.TestCase):
         under_test.validate_access_token(
             self.oidc_test_credential.access_token())
         self.assertEqual(1, mock_api_client.call_count)
+
+    @mock.patch(
+        'planet.auth.oidc.token_validator.TokenValidator.validate_token')
+    def test_validate_access_token_local(self,
+                                         mock_validate_token,
+                                         mocked_discovery):
+        under_test = self.defaults_under_test
+        under_test.validate_access_token_local(
+            self.oidc_test_credential.access_token(),
+            required_audience="req_audience")
+        self.assertEqual(1, mock_validate_token.call_count)
+
+    # Leaving this test commented out until I clean up some of the code
+    # under test here.
+    # @mock.patch(
+    #     'planet.auth.oidc.token_validator.TokenValidator.validate_token')
+    # def test_validate_access_token_local_default_audience_from_config(
+    #         self, mock_validate_token, mocked_discovery):
+    #     under_test = self.defaults_under_test
+    #     under_test.validate_access_token_local(
+    #         self.oidc_test_credential.access_token(),
+    #         required_audience=None)
+    #     self.assertEqual(1, mock_validate_token.call_count)
 
     @mock.patch(
         'planet.auth.oidc.api_clients.introspect_api_client.IntrospectionApiClient.validate_id_token'  # noqa

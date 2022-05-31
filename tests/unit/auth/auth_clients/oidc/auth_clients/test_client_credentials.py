@@ -2,6 +2,7 @@ import pathlib
 import unittest
 from unittest import mock
 
+from planet.auth.auth_client import AuthClientConfigException
 from planet.auth.oidc.auth_clients.client_credentials_flow import \
     ClientCredentialsPubKeyAuthClient, \
     ClientCredentialsPubKeyClientConfig, \
@@ -32,6 +33,20 @@ def mocked_tokenapi_ccred(obj_self,
     return MOCK_TOKEN
 
 
+class ClientCredentialsClientSecretConfigTest(unittest.TestCase):
+
+    def test_secret_required(self):
+        # No exception
+        ClientCredentialsClientSecretClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_secret=TEST_CLIENT_SECRET)
+
+        with self.assertRaises(AuthClientConfigException):
+            ClientCredentialsClientSecretClientConfig(
+                auth_server=TEST_AUTH_SERVER, client_id=TEST_CLIENT_ID)
+
+
 class ClientCredentialsClientSecretFlowTest(unittest.TestCase):
 
     def setUp(self):
@@ -51,8 +66,10 @@ class ClientCredentialsClientSecretFlowTest(unittest.TestCase):
         self.assertEqual(MOCK_TOKEN, test_result.data())
 
         # again with override scopes, but since the response is mocked
-        # there is nothing different to check in the result data
-        test_result = self.under_test.login(requested_scopes=['override1'])
+        # there is nothing different to check in the result data.
+        # Same goes for audiences.
+        test_result = self.under_test.login(requested_scopes=['override1'],
+                                            requested_audiences=['req_aud1'])
         self.assertIsInstance(test_result, FileBackedOidcCredential)
         # self.assertEqual(MOCK_TOKEN, test_result.data())
 
@@ -78,6 +95,44 @@ class ClientCredentialsClientSecretFlowTest(unittest.TestCase):
         # HTTP basic auth with the client secret.
         self.assertEqual(TEST_CLIENT_ID, auth.username)
         self.assertEqual(TEST_CLIENT_SECRET, auth.password)
+
+    def test_auth_login_enricher(self):
+        # Client secret client credentials uses a different enricher
+        # for logins vs more other use cases.  Again, it's not called
+        # by the class directly, but by an API client that is mocked out
+        # for unit tests. Again, the arbitor of what is correct is
+        # the external token server.
+        enriched_payload, enriched_auth = \
+            self.under_test._client_auth_enricher_login({}, 'test_audience')
+
+        # Client secret ought to be put into the payload
+        self.assertEqual(
+            {
+                'client_id': TEST_CLIENT_ID,
+                'client_secret': TEST_CLIENT_SECRET
+            },
+            enriched_payload)
+        self.assertIsNone(enriched_auth)
+
+
+class ClientCredentialsPubKeyClientConfigTest(unittest.TestCase):
+
+    def test_privkey_required(self):
+        # No exception
+        ClientCredentialsPubKeyClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey_file='/dummy/utest/file')
+
+        # No exception
+        ClientCredentialsPubKeyClientConfig(
+            auth_server=TEST_AUTH_SERVER,
+            client_id=TEST_CLIENT_ID,
+            client_privkey='dummy private key literal')
+
+        with self.assertRaises(AuthClientConfigException):
+            ClientCredentialsPubKeyClientConfig(auth_server=TEST_AUTH_SERVER,
+                                                client_id=TEST_CLIENT_ID)
 
 
 class ClientCredentialsPubKeyFlowTest(unittest.TestCase):
@@ -106,8 +161,10 @@ class ClientCredentialsPubKeyFlowTest(unittest.TestCase):
         self.assertEqual(MOCK_TOKEN, test_result.data())
 
         # again with override scopes, but since the response is mocked
-        # there is nothing different to check in the result data
-        test_result = self.under_test.login(requested_scopes=['override1'])
+        # there is nothing different to check in the result data/
+        # Same goes for audiences.
+        test_result = self.under_test.login(requested_scopes=['override1'],
+                                            requested_audiences=['req_aud1'])
         self.assertIsInstance(test_result, FileBackedOidcCredential)
         # self.assertEqual(MOCK_TOKEN, test_result.data())
 

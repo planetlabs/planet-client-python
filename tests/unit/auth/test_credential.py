@@ -9,6 +9,8 @@ import unittest
 #     relationship upside down, but I haven't refactored this yet.
 #     As written, this is really a test of FileBackedJsonObject,
 #     and Credential is just an alias for that.
+import pytest as pytest
+
 from planet.auth.credential import Credential
 from planet.auth.util import FileBackedJsonObjectException
 from tests.util import tdata_resource_file_path
@@ -191,3 +193,11 @@ class TestCredential(unittest.TestCase):
         under_test.set_data(test_data)
         self.assertEqual(test_data, under_test.data())
         self.assertEqual(test_path, under_test.path())
+
+    @pytest.mark.skip('No test for SOPS encryption at this time')
+    def test_sops_read(self):
+        pass
+
+    @pytest.mark.skip('No test for SOPS encryption at this time')
+    def test_sops_write(self):
+        pass
