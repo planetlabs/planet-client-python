@@ -257,10 +257,16 @@ def mock_download_response(oid, order_description):
         dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
         dl_url2 = TEST_DOWNLOAD_URL + '/2?token=IAmAnotherToken'
         order_description['_links']['results'] = [{
-            'location': dl_url1, 'name': 'oid/itemtype/m1.json'
-        }, {
-            'location': dl_url2, 'name': 'oid/itemtype/m2.json'
-        }]
+            'location':
+            dl_url1, 'name':
+            'oid/itemtype/m1.json'
+        },
+                                                  {
+                                                      'location':
+                                                      dl_url2,
+                                                      'name':
+                                                      'oid/itemtype/m2.json'
+                                                  }]
 
         get_url = f'{TEST_ORDERS_URL}/{oid}'
         mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)

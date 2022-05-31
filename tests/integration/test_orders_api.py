@@ -760,7 +760,6 @@ async def test_download_asset_img(tmpdir, open_test_img, session):
 
 @respx.mock
 @pytest.mark.asyncio
-@respx.mock
 @pytest.mark.parametrize(
     "results, paths",
     [(None, []),
