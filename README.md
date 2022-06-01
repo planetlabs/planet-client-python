@@ -26,9 +26,10 @@ Planet API's ([analytics](https://developers.planet.com/docs/analytics/),
 
 ## Documentation
 
-Full documentation is not yet hosted online but can be built and hosted locally
-(see [CONTRIBUTING.md](CONTRIBUTING.md)) or can be read from source in the
-`[docs](docs/)` directory.
+Documentation is currently [hosted online](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/)
+It should be considered 'in progress', with many updated to come. It can also
+be built and hosted locally (see [CONTRIBUTING.md](CONTRIBUTING.md)) or can be 
+read from source in the `[docs](docs/)` directory.
 
 ## Quick Start
 
@@ -36,16 +37,16 @@ The Planet SDK includes both a Python API and a command-line interface (CLI)
 to make use of the following Planet APIs:
 
 * [orders](https://developers.planet.com/docs/orders/)
-* [data](https://developers.planet.com/docs/data/) (not yet implemented)
+* [data](https://developers.planet.com/docs/data/) (in progress)
 * [subscriptions](https://developers.planet.com/docs/subscriptions/) (not 
  yet implemented)
 
 This quickstart focuses on getting started with the CLI to place an order.
 For information on the Python API see the 
-[documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/)
+[documentation]([https://planet-sdk-for-python.readthedocs.io/en/latest/](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/))
 
-After you've install the client, as explained in the [installation](#installation)
-section below, you first you must initialize the client with your Planet 
+After you've installed the client, as explained in the [installation](#installation)
+section below, you first must initialize the client with your Planet 
 username and password:
 
 ```console
@@ -105,11 +106,14 @@ also lots of good information in the docs, in the
 [User Guide](https://planet-sdk-for-python.readthedocs.io/en/latest/guide/#cli)
 and the [CLI Reference](https://planet-sdk-for-python.readthedocs.io/en/latest/cli/).
 
-
-
 ## Installation
 
-Install with [pip](https://pip.pypa.io):
+This repository is not yet available on PyPi or any other distribution channels. To 
+install you must [clone this repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
+to your local computer. After you have the repo local just navigate to the root
+directory.
+
+Then you can install locally with [pip](https://pip.pypa.io):
 
 ```console
 $ python -m pip install . 
@@ -119,6 +123,10 @@ The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs)
 flag is highly recommended for those new to pip.
 
 The Planet SDK for Python requires Python 3.7+.
+
+After installation you should be able to use the command-line interface. Just type
+`planet` into the command-line and the usage and options should appear. If it doesn't 
+work don't hesitate to ask for help in the [discussions](https://github.com/planetlabs/planet-client-python/discussions/categories/q-a)
 
 ## Authentication
 

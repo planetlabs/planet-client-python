@@ -1,4 +1,5 @@
 # Copyright 2017 Planet Labs, Inc.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -160,7 +161,7 @@ async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
     r.http_response = hr
     body = models.StreamingBody(r)
 
-    filename = Path(str(tmpdir)) / 'test.tif'
+    filename = Path(tmpdir) / 'test.tif'
     await body.write(filename, progress_bar=False)
 
     assert os.path.isfile(filename)

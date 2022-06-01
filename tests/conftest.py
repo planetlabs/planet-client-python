@@ -1,4 +1,5 @@
 # Copyright 2020 Planet Labs, Inc.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,6 +53,12 @@ def get_test_file_json():
         return json.load(open(file_path, 'r'))
 
     return func
+
+
+@pytest.fixture
+def search_result(get_test_file_json):
+    filename = 'search_result_20200130_093253_ssc6_u0001.json'
+    return get_test_file_json(filename)
 
 
 @pytest.fixture

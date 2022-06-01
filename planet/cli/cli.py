@@ -1,4 +1,5 @@
-# Copyright 2017 Planet Labs, PBC.
+# Copyright 2017 Planet Labs, Inc.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +20,7 @@ import click
 
 import planet
 
-from . import auth, collect, data, orders
+from . import auth, collect, data, orders, subscriptions
 
 LOGGER = logging.getLogger(__name__)
 
@@ -78,4 +79,5 @@ def _configure_logging(verbosity):
 main.add_command(auth.auth)
 main.add_command(data.data)
 main.add_command(orders.orders)
+main.add_command(subscriptions.subscriptions)
 main.add_command(collect.collect)

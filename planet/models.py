@@ -1,4 +1,5 @@
 # Copyright 2015 Planet Labs, Inc.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +16,7 @@
 from datetime import datetime
 import logging
 import mimetypes
+from pathlib import Path
 import random
 import re
 import string
@@ -171,17 +173,17 @@ class StreamingBody:
         async for c in self.response.aiter_bytes():
             yield c
 
-    async def write(self, filename, overwrite=True, progress_bar=True):
-        '''Write the body to a file.
+    async def write(self,
+                    filename: Path,
+                    overwrite: bool = True,
+                    progress_bar: bool = True):
+        """Write the body to a file.
 
-        :param filename: Name to assign to downloaded file.
-        :type filename: str
-        :param overwrite: Overwrite any existing files. Defaults to True
-        :type overwrite: boolean, optional
-        :param progress_bar: Show progress bar during download. Defaults to
-            True.
-        :type progress_bar: boolean, optional
-        '''
+        Parameters:
+            filename: Name to assign to downloaded file.
+            overwrite: Overwrite any existing files.
+            progress_bar: Show progress bar during download.
+        """
 
         class _LOG:
 
@@ -190,7 +192,7 @@ class StreamingBody:
                 self.unit = unit
                 self.disable = disable
                 self.previous = 0
-                self.filename = filename
+                self.filename = str(filename)
 
                 if not self.disable:
                     LOGGER.debug(f'writing to {self.filename}')
@@ -216,7 +218,7 @@ class StreamingBody:
                           unit_scale=True,
                           unit_divisor=unit,
                           unit='B',
-                          desc=filename,
+                          desc=str(filename),
                           disable=not progress_bar) as progress:
                     previous = self.num_bytes_downloaded
                     async for chunk in self.aiter_bytes():
