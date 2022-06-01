@@ -60,7 +60,7 @@ def create_download_mock(downloaded_content, order_description, oid):
         dl_url = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
         order_description['_links']['results'] = [
             {
-                'location': dl_url
+                'location': dl_url, 'name': 'file.json'
             },
         ]
 
@@ -552,23 +552,25 @@ async def test_download_asset_md(tmpdir, session):
 @respx.mock
 @pytest.mark.asyncio
 @pytest.mark.parametrize("checksum", [("MD5"), ("SHA256")])
-async def test_checksum_success(tmpdir,
-                                order_description,
-                                oid,
-                                session,
-                                checksum):
+async def test_download_order_checksum_success(tmpdir,
+                                               order_description,
+                                               oid,
+                                               session,
+                                               checksum):
     # Mock an HTTP response for download
     order_description['state'] = 'success'
     dl_url1 = TEST_DOWNLOAD_URL + '/asset1'
     dl_url2 = TEST_DOWNLOAD_URL + '/asset2'
     dl_url3 = TEST_DOWNLOAD_URL + '/manifest'
-    order_description['_links']['results'] = [{
-        'location': dl_url1
-    }, {
-        'location': dl_url2
-    }, {
-        'location': dl_url3
-    }]
+    order_description['_links']['results'] = [
+        {
+            'location': dl_url1, 'name': 'oid/itemtype1/asset1.tif'
+        }, {
+            'location': dl_url2, 'name': 'oid/itemtype1/asset2.json'
+        }, {
+            'location': dl_url3, 'name': 'oid/itemtype1/manifest.json'
+        }]  # yapf: disable
+
     get_url = f'{TEST_ORDERS_URL}/{oid}'
     get_order_response = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.get(get_url).return_value = get_order_response
@@ -603,7 +605,7 @@ async def test_checksum_success(tmpdir,
             "",
             "files":
             [{
-                "path": "asset1.tif",
+                "path": "oid/itemtype1/asset1.tif",
                 "digests": {
                     "md5": hashlib.md5(asset1_response.content).hexdigest(),
                     "sha256":
@@ -611,7 +613,7 @@ async def test_checksum_success(tmpdir,
                 },
             },
              {
-                 "path": "asset2.json",
+                 "path": "oid/itemtype1/asset2.json",
                  "digests": {
                      "md5": hashlib.md5(asset2_response.content).hexdigest(),
                      "sha256":
@@ -624,19 +626,19 @@ async def test_checksum_success(tmpdir,
             'Content-Disposition': 'attachment; filename="manifest.json"'
         })
     respx.get(dl_url3).return_value = manifest
-    # Test Checksum
+
     cl = OrdersClient(session, base_url=TEST_URL)
-    await cl.download_order(oid, directory=str(tmpdir), checksum=checksum)
+    await cl.download_order(oid, directory=Path(tmpdir), checksum=checksum)
 
 
 @respx.mock
 @pytest.mark.asyncio
 @pytest.mark.parametrize("checksum", [("MD5"), ("SHA256")])
-async def test_checksum_failure(tmpdir,
-                                order_description,
-                                oid,
-                                session,
-                                checksum):
+async def test_download_order_checksum_failure(tmpdir,
+                                               order_description,
+                                               oid,
+                                               session,
+                                               checksum):
     # Note: the hashkeys in the mock manifest below were changed
     # from the correct keys to temporary keys
     # This should cause the checksum to fail.
@@ -646,12 +648,20 @@ async def test_checksum_failure(tmpdir,
     dl_url2 = TEST_DOWNLOAD_URL + '/asset2'
     dl_url3 = TEST_DOWNLOAD_URL + '/manifest'
     order_description['_links']['results'] = [{
-        'location': dl_url1
-    }, {
-        'location': dl_url2
-    }, {
-        'location': dl_url3
-    }]
+        'location': dl_url1, 'name': 'oid/itemtype1/asset.tif'
+    },
+                                              {
+                                                  'location':
+                                                  dl_url2,
+                                                  'name':
+                                                  'oid/itemtype1/asset2.json'
+                                              },
+                                              {
+                                                  'location':
+                                                  dl_url3,
+                                                  'name':
+                                                  'oid/itemtype1/manifest.json'
+                                              }]
     get_url = f'{TEST_ORDERS_URL}/{oid}'
     get_order_response = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.get(get_url).return_value = get_order_response
@@ -711,7 +721,7 @@ async def test_checksum_failure(tmpdir,
     # Test Checksum
     cl = OrdersClient(session, base_url=TEST_URL)
     with pytest.raises(exceptions.ClientError):
-        await cl.download_order(oid, directory=str(tmpdir), checksum=checksum)
+        await cl.download_order(oid, directory=Path(tmpdir), checksum=checksum)
 
 
 @respx.mock
@@ -751,21 +761,29 @@ async def test_download_asset_img(tmpdir, open_test_img, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_download_order_success(tmpdir, order_description, oid, session):
-    '''
-    Test if download_order() successfully downloads an order with two files,
-    given a singular order ID.
-    '''
+@pytest.mark.parametrize(
+    "results, paths",
+    [(None, []),
+     ([], []),
+     ([{"location": f'{TEST_DOWNLOAD_URL}/1',
+        "name": "oid/itemtype1/asset.json"},
+       {"location": f'{TEST_DOWNLOAD_URL}/2',
+        "name": "oid/itemtype2/asset.json"},
+       ],
+      [Path('oid', 'itemtype1', 'asset.json'),
+       Path('oid', 'itemtype2', 'asset.json'),
+       ])
+     ])  # yapf: disable
+async def test_download_order_success(results,
+                                      paths,
+                                      tmpdir,
+                                      order_description,
+                                      oid,
+                                      session):
 
     # Mock an HTTP response for download
     order_description['state'] = 'success'
-    dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
-    dl_url2 = TEST_DOWNLOAD_URL + '/2?token=IAmAnotherToken'
-    order_description['_links']['results'] = [{
-        'location': dl_url1
-    }, {
-        'location': dl_url2
-    }]
+    order_description['_links']['results'] = results
 
     get_url = f'{TEST_ORDERS_URL}/{oid}'
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
@@ -777,9 +795,9 @@ async def test_download_order_success(tmpdir, order_description, oid, session):
                                     'Content-Type':
                                     'application/json',
                                     'Content-Disposition':
-                                    'attachment; filename="m1.json"'
+                                    'attachment; filename="asset.json"'
                                 })
-    respx.get(dl_url1).return_value = mock_resp1
+    respx.get(f'{TEST_DOWNLOAD_URL}/1').return_value = mock_resp1
 
     mock_resp2 = httpx.Response(HTTPStatus.OK,
                                 json={'key2': 'value2'},
@@ -787,21 +805,18 @@ async def test_download_order_success(tmpdir, order_description, oid, session):
                                     'Content-Type':
                                     'application/json',
                                     'Content-Disposition':
-                                    'attachment; filename="m2.json"'
+                                    'attachment; filename="asset.json"'
                                 })
-    respx.get(dl_url2).return_value = mock_resp2
+    respx.get(f'{TEST_DOWNLOAD_URL}/2').return_value = mock_resp2
 
     cl = OrdersClient(session, base_url=TEST_URL)
     filenames = await cl.download_order(oid, directory=str(tmpdir))
 
-    # Check there are as many files as expected, given in order_description
-    assert len(filenames) == 2
+    assert filenames == [Path(tmpdir, p) for p in paths]
 
-    # Check that the downloaded files have the correct filename and contents
-    assert json.load(open(filenames[0])) == {'key': 'value'}
-    assert Path(filenames[0]).name == 'm1.json'
-    assert json.load(open(filenames[1])) == {'key2': 'value2'}
-    assert Path(filenames[1]).name == 'm2.json'
+    if filenames:
+        assert json.load(open(filenames[0])) == {'key': 'value'}
+        assert json.load(open(filenames[1])) == {'key2': 'value2'}
 
 
 @respx.mock
@@ -821,37 +836,6 @@ async def test_download_order_state(tmpdir, order_description, oid, session):
     cl = OrdersClient(session, base_url=TEST_URL)
     with pytest.raises(exceptions.ClientError):
         await cl.download_order(oid, directory=str(tmpdir))
-
-
-@respx.mock
-@pytest.mark.asyncio
-async def test_download_order_without_order_links(tmpdir,
-                                                  order_description,
-                                                  oid,
-                                                  session):
-    dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
-
-    order_description['state'] = 'success'
-    order_description['_links']['results'] = None
-
-    get_url = f'{TEST_ORDERS_URL}/{oid}'
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.get(get_url).return_value = mock_resp
-
-    mock_resp1 = httpx.Response(HTTPStatus.OK,
-                                json={'key': 'value'},
-                                headers={
-                                    'Content-Type':
-                                    'application/json',
-                                    'Content-Disposition':
-                                    'attachment; filename="m1.json"'
-                                })
-    respx.get(dl_url1).return_value = mock_resp1
-
-    client = OrdersClient(session, base_url=TEST_URL)
-
-    filenames = await client.download_order(oid, directory=str(tmpdir))
-    assert len(filenames) == 0
 
 
 @respx.mock
