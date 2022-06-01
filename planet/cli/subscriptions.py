@@ -25,15 +25,28 @@ def _count_fake_subs():
     return len(_fake_subs)
 
 
-def _cancel_fake_sub(sub_id):
-    return _fake_subs.pop(sub_id)
-
-
 class PlaceholderSubscriptionsClient:
 
     def __init__(self, session):
         # Note: placeholder doesn't use the session (yet).
         self.session = session
+
+    async def cancel_subscription(self, subscription_id: str) -> dict:
+        """Cancel a Subscription
+
+        Parameters:
+            subscription_id
+
+        Returns:
+            dict
+
+        Raises:
+
+        """
+        try:
+            return _fake_subs.pop(subscription_id)
+        except KeyError:
+            raise PlanetError(f"No such subscription: {subscription_id!r}")
 
     async def update_subscription(self, subscription_id: str,
                                   request: dict) -> dict:
@@ -230,27 +243,10 @@ async def create_subscription(ctx, request, pretty):
 @translate_exceptions
 @coro
 async def cancel_subscription(ctx, subscription_id, pretty):
-    """Cancels a subscription and prints the API response.
-
-    This implementation is only a placeholder. To begin, instead
-    of mocking calls to the Subscriptions API, we'll use a
-    collection of fake subscriptions (the all_subs object).
-    After we refactor we will change to mocking the API.
-
-    """
-    # Begin fake subscriptions service. Note that the Subscriptions
-    # API will report missing keys differently, but the Python API
-    # *will* raise PlanetError like this.
-    try:
-        sub = _cancel_fake_sub(subscription_id)
-    except KeyError:
-        raise PlanetError(f"No such subscription: {subscription_id!r}")
-
-    # End fake subscriptions service. After we refactor we will get
-    # the "sub" from a method in planet.clients.subscriptions (which
-    # doesn't exist yet).
-
-    echo_json(sub, pretty)
+    """Cancels a subscription and prints the API response."""
+    async with subscriptions_client(ctx) as client:
+        sub = await client.cancel_subscription(subscription_id)
+        echo_json(sub, pretty)
 
 
 @subscriptions.command(name='update')
