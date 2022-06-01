@@ -22,7 +22,6 @@ from .cmds import coro, translate_exceptions
 from .io import echo_json
 from .options import pretty
 
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -37,14 +36,15 @@ async def collect(ctx, input, pretty):
 
     If the descriptions represent GeoJSON features, a GeoJSON FeatureCollection
     is returned.
+
+    Output can be pretty-printed with --pretty option.
     """
-    # LOGGER.warning(input.readlines())
+
     # make an AsyncGenerator from the input lines
     async def _entries_aiter():
         for line in input:
             yield json.loads(line)
 
     entries = _entries_aiter()
-    # LOGGER.warning([f'*{e}*' async for e in entries])
     collected = await planet.collect(entries)
     echo_json(collected, pretty)

@@ -33,6 +33,7 @@ async def collect(
     """
     as_list = [v async for v in values]
 
+    ret: typing.Union[typing.List[dict], dict]
     try:
         ret = geojson.as_featurecollection(as_list)
     except exceptions.GeoJSONError:
