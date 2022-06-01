@@ -92,10 +92,10 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
     parameter will be applied to the stored quick search. This function
     outputs a series of GeoJSON descriptions, one for each of the returned
     items. The limit on the number of output items can be controlled using
-    the "--limit" option, which defaults to 100. If "--limit" is set to zero,
-    no limit is applied and all results (a potentially large number) are
-    returned. The output can also be optionally pretty-printed using
-    "--pretty".
+    the "--limit" option, which defaults to 100 if limit is set to None or
+    if the option is not used at all. If "--limit" is set to zero, no limit
+    is applied and all results (a potentially large number) are returned.
+    The output can also be optionally pretty-printed using "--pretty".
     """
     async with data_client(ctx) as cl:
         items = await cl.quick_search(name=name,

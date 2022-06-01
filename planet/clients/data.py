@@ -85,12 +85,14 @@ class DataClient:
         """
         return await self._session.request(request)
 
-    async def quick_search(self,
-                           item_types: typing.List[str],
-                           search_filter: dict,
-                           name: str = None,
-                           sort: str = None,
-                           limit: int = None) -> typing.AsyncIterator[dict]:
+    async def quick_search(
+            self,
+            item_types: typing.List[str],
+            search_filter: dict,
+            name: str = None,
+            sort: str = None,
+            limit: typing.Union[int,
+                                None] = 100) -> typing.AsyncIterator[dict]:
         """Execute a quick search.
 
         Quick searches are saved for a short period of time (~month). The
@@ -138,6 +140,10 @@ class DataClient:
             planet.exceptions.APIError: On API error.
         """
         url = f'{self._base_url}/quick-search'
+
+        # Set no limit
+        if limit == 0:
+            limit = None
 
         # TODO: validate item_types
         request_json = {'filter': search_filter, 'item_types': item_types}

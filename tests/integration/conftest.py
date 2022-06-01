@@ -35,3 +35,14 @@ def order_descriptions(order_description):
     order3 = copy.deepcopy(order_description)
     order3['id'] = 'oid3'
     return [order1, order2, order3]
+
+
+@pytest.fixture
+def search_results(search_result):
+    result1 = search_result
+    result1['id'] = 'id1'
+    result2 = copy.deepcopy(search_result)
+    result2['id'] = 'id2'
+    result3 = copy.deepcopy(search_result)
+    result3['id'] = 'id3'
+    return [result1, result2, result3]
