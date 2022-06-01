@@ -1,44 +1,195 @@
 """Subscriptions CLI"""
 
+from contextlib import asynccontextmanager
 import itertools
 import json
+from typing import AsyncIterator, Dict, Set
+import uuid
 
 import click
 
 import planet
+from planet import Session
 from planet.cli.cmds import coro, translate_exceptions
 from planet.cli.io import echo_json
 from planet.exceptions import PlanetError
 
 # Collections of fake subscriptions and results for testing. Tests will
 # monkeypatch these attributes.
-_fake_subs = None
-_fake_sub_results = None
+_fake_subs: Dict[str, dict] = {}
+_fake_sub_results: Dict[str, list] = {}
 
 
-# The following 5 functions are for use in CLI commands until there
-# is subscriptions Python client to call on.
-def _count_fake_subs():
-    return len(_fake_subs)
+class PlaceholderSubscriptionsClient:
+    """A placeholder client.
+
+    This class and its methods are derived from tests of a skeleton
+    Subscriptions CLI.
+
+    """
+
+    async def list_subscriptions(self,
+                                 status: Set[str] = None,
+                                 limit: int = 100) -> AsyncIterator[dict]:
+        """Get Subscriptions.
+
+        Parameters:
+            status
+            limit
+
+        Yields:
+            dict
+
+        """
+        if status:
+            select_subs = (dict(**sub, id=sub_id) for sub_id,
+                           sub in _fake_subs.items()
+                           if sub['status'] in status)
+        else:
+            select_subs = (
+                dict(**sub, id=sub_id) for sub_id, sub in _fake_subs.items())
+
+        filtered_subs = itertools.islice(select_subs, limit)
+
+        for sub in filtered_subs:
+            yield sub
+
+    async def create_subscription(self, request: dict) -> dict:
+        """Create a Subscription.
+
+        Parameters:
+            request
+
+        Returns:
+            dict
+
+        Raises:
+            PlanetError
+
+        """
+        missing_keys = {'name', 'delivery', 'source'} - request.keys()
+        if missing_keys:
+            raise PlanetError(
+                f"Request lacks required members: {missing_keys!r}")
+
+        id = str(uuid.uuid4())
+        _fake_subs[id] = request
+        sub = _fake_subs[id].copy()
+        sub.update(id=id)
+        return sub
+
+    async def cancel_subscription(self, subscription_id: str) -> dict:
+        """Cancel a Subscription.
+
+        Parameters:
+            subscription_id
+
+        Returns:
+            dict
+
+        Raises:
+            PlanetError
+
+        """
+        try:
+            sub = _fake_subs.pop(subscription_id)
+        except KeyError:
+            raise PlanetError(f"No such subscription: {subscription_id!r}")
+
+        sub.update(id=subscription_id)
+        return sub
+
+    async def update_subscription(self, subscription_id: str,
+                                  request: dict) -> dict:
+        """Update (edit) a Subscription.
+
+        Parameters:
+            subscription_id
+
+        Returns:
+            dict
+
+        Raises:
+            PlanetError
+
+        """
+        try:
+            _fake_subs[subscription_id].update(**request)
+            sub = _fake_subs[subscription_id].copy()
+        except KeyError:
+            raise PlanetError(f"No such subscription: {subscription_id!r}")
+
+        sub.update(id=subscription_id)
+        return sub
+
+    async def get_subscription(self, subscription_id: str) -> dict:
+        """Get a description of a Subscription.
+
+        Parameters:
+            subscription_id
+
+        Returns:
+            dict
+
+        Raises:
+            PlanetError
+
+        """
+        try:
+            sub = _fake_subs[subscription_id].copy()
+        except KeyError:
+            raise PlanetError(f"No such subscription: {subscription_id!r}")
+
+        sub.update(id=subscription_id)
+        return sub
+
+    async def list_subscription_results(
+            self,
+            subscription_id: str,
+            status: Set[str] = None,
+            limit: int = 100) -> AsyncIterator[dict]:
+        """Get Results of a Subscription.
+
+        Parameters:
+            subscription_id
+            status
+            limit
+
+        Yields:
+            dict
+
+        Raises:
+            PlanetError
+
+        """
+        try:
+            if status:
+                select_results = (
+                    result for result in _fake_sub_results[subscription_id]
+                    if result['status'] in status)
+            else:
+                select_results = (
+                    result for result in _fake_sub_results[subscription_id])
+
+            filtered_results = itertools.islice(select_results, limit)
+        except KeyError:
+            raise PlanetError(f"No such subscription: {subscription_id!r}")
+
+        for result in filtered_results:
+            yield result
 
 
-def _cancel_fake_sub(sub_id):
-    return _fake_subs.pop(sub_id)
+@asynccontextmanager
+async def subscriptions_client(ctx):
+    """Create an authenticated client.
 
+    Note that the session is not currently used with the placeholder
+    client.
 
-def _update_fake_sub(sub_id, **kwds):
-    _fake_subs[sub_id].update(**kwds)
-    return _get_fake_sub(sub_id)
-
-
-def _get_fake_sub(sub_id):
-    sub = _fake_subs[sub_id].copy()
-    sub.update(id=sub_id)
-    return sub
-
-
-def _get_fake_sub_results(sub_id):
-    return _fake_sub_results[sub_id]
+    """
+    auth = ctx.obj['AUTH']
+    async with Session(auth=auth):
+        yield PlaceholderSubscriptionsClient()
 
 
 @click.group()
@@ -66,29 +217,12 @@ def subscriptions(ctx):
 @click.pass_context
 @translate_exceptions
 @coro
-async def list_subscriptions(ctx, status, limit, pretty):
-    """Prints a sequence of JSON-encoded Subscription descriptions.
-
-    This implementation is only a placeholder. To begin, instead
-    of mocking calls to the Subscriptions API, we'll use a
-    collection of fake subscriptions (the all_subs fixture).
-    After we refactor we will change to mocking the API.
-
-    """
-    # Filter by status, like the Subscriptions API does.
-    if status:
-        select_subs = (sub for sub in _fake_subs if sub['status'] in status)
-    else:
-        select_subs = _fake_subs
-
-    filtered_subs = itertools.islice(select_subs, limit)
-    # End of placeholder implementation. In the future we will get
-    # the filtered subscriptions from a method of the to-be-written
-    # planet.clients.subscriptions.
-
-    # Print output to terminal, respecting the provided limit.
-    for sub in filtered_subs:
-        echo_json(sub, pretty)
+async def list_subscriptions_cmd(ctx, status, limit, pretty):
+    """Prints a sequence of JSON-encoded Subscription descriptions."""
+    async with subscriptions_client(ctx) as client:
+        filtered_subs = client.list_subscriptions(status=status, limit=limit)
+        async for sub in filtered_subs:
+            echo_json(sub, pretty)
 
 
 def parse_request(ctx, param, value: str) -> dict:
@@ -118,31 +252,11 @@ def parse_request(ctx, param, value: str) -> dict:
 @click.pass_context
 @translate_exceptions
 @coro
-async def create_subscription(ctx, request, pretty):
-    """Submits a subscription request and prints the API response.
-
-    This implementation is only a placeholder. To begin, instead
-    of mocking calls to the Subscriptions API, we'll use a
-    collection of fake subscriptions (the all_subs object).
-    After we refactor we will change to mocking the API.
-
-    """
-    # Begin fake subscriptions service. Note that the Subscriptions
-    # API will report missing keys differently, but the Python API
-    # *will* raise PlanetError like this.
-    missing_keys = {'name', 'delivery', 'source'} - request.keys()
-    if missing_keys:
-        raise PlanetError(f"Request lacks required members: {missing_keys!r}")
-
-    # Update the request with an id.
-    sub = dict(**request, id='42')
-    _fake_subs.append(sub)
-
-    # End fake subscriptions service. After we refactor we will get
-    # the "sub" from a method in planet.clients.subscriptions (which
-    # doesn't exist yet).
-
-    echo_json(sub, pretty)
+async def create_subscription_cmd(ctx, request, pretty):
+    """Submits a subscription request and prints the API response."""
+    async with subscriptions_client(ctx) as client:
+        sub = await client.create_subscription(request)
+        echo_json(sub, pretty)
 
 
 @subscriptions.command(name='cancel')
@@ -151,28 +265,11 @@ async def create_subscription(ctx, request, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-async def cancel_subscription(ctx, subscription_id, pretty):
-    """Cancels a subscription and prints the API response.
-
-    This implementation is only a placeholder. To begin, instead
-    of mocking calls to the Subscriptions API, we'll use a
-    collection of fake subscriptions (the all_subs object).
-    After we refactor we will change to mocking the API.
-
-    """
-    # Begin fake subscriptions service. Note that the Subscriptions
-    # API will report missing keys differently, but the Python API
-    # *will* raise PlanetError like this.
-    try:
-        sub = _cancel_fake_sub(subscription_id)
-    except KeyError:
-        raise PlanetError(f"No such subscription: {subscription_id!r}")
-
-    # End fake subscriptions service. After we refactor we will get
-    # the "sub" from a method in planet.clients.subscriptions (which
-    # doesn't exist yet).
-
-    echo_json(sub, pretty)
+async def cancel_subscription_cmd(ctx, subscription_id, pretty):
+    """Cancels a subscription and prints the API response."""
+    async with subscriptions_client(ctx) as client:
+        sub = await client.cancel_subscription(subscription_id)
+        echo_json(sub, pretty)
 
 
 @subscriptions.command(name='update')
@@ -182,28 +279,11 @@ async def cancel_subscription(ctx, subscription_id, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-async def update_subscription(ctx, subscription_id, request, pretty):
-    """Cancels a subscription and prints the API response.
-
-    This implementation is only a placeholder. To begin, instead
-    of mocking calls to the Subscriptions API, we'll use a
-    collection of fake subscriptions (the all_subs object).
-    After we refactor we will change to mocking the API.
-
-    """
-    # Begin fake subscriptions service. Note that the Subscriptions
-    # API will report missing keys differently, but the Python API
-    # *will* raise PlanetError like this.
-    try:
-        sub = _update_fake_sub(subscription_id, **request)
-    except KeyError:
-        raise PlanetError(f"No such subscription: {subscription_id!r}")
-
-    # End fake subscriptions service. After we refactor we will get
-    # the "sub" from a method in planet.clients.subscriptions (which
-    # doesn't exist yet).
-
-    echo_json(sub, pretty)
+async def update_subscription_cmd(ctx, subscription_id, request, pretty):
+    """Cancels a subscription and prints the API response."""
+    async with subscriptions_client(ctx) as client:
+        sub = await client.update_subscription(subscription_id, request)
+        echo_json(sub, pretty)
 
 
 @subscriptions.command(name='describe')
@@ -212,7 +292,7 @@ async def update_subscription(ctx, subscription_id, request, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-async def describe_subscription(ctx, subscription_id, pretty):
+async def describe_subscription_cmd(ctx, subscription_id, pretty):
     """Cancels a subscription and prints the API response.
 
     This implementation is only a placeholder. To begin, instead
@@ -221,19 +301,9 @@ async def describe_subscription(ctx, subscription_id, pretty):
     After we refactor we will change to mocking the API.
 
     """
-    # Begin fake subscriptions service. Note that the Subscriptions
-    # API will report missing keys differently, but the Python API
-    # *will* raise PlanetError like this.
-    try:
-        sub = _get_fake_sub(subscription_id)
-    except KeyError:
-        raise PlanetError(f"No such subscription: {subscription_id!r}")
-
-    # End fake subscriptions service. After we refactor we will get
-    # the "sub" from a method in planet.clients.subscriptions (which
-    # doesn't exist yet).
-
-    echo_json(sub, pretty)
+    async with subscriptions_client(ctx) as client:
+        sub = await client.get_subscription(subscription_id)
+        echo_json(sub, pretty)
 
 
 @subscriptions.command(name='results')
@@ -245,6 +315,9 @@ async def describe_subscription(ctx, subscription_id, pretty):
                        "success"]),
     multiple=True,
     default=None,
+    callback=lambda ctx,
+    param,
+    value: set(value),
     help="Select subscription results in one or more states. Default: all.")
 @click.option('--limit',
               type=int,
@@ -257,39 +330,15 @@ async def describe_subscription(ctx, subscription_id, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-async def list_subscription_results(ctx,
-                                    subscription_id,
-                                    pretty,
-                                    status,
-                                    limit):
-    """Gets results of a subscription and prints the API response.
-
-    This implementation is only a placeholder. To begin, instead
-    of mocking calls to the Subscriptions API, we'll use a
-    collection of fake subscriptions (the all_subs object).
-    After we refactor we will change to mocking the API.
-
-    """
-    # Begin fake subscriptions service. Note that the Subscriptions
-    # API will report missing keys differently, but the Python API
-    # *will* raise PlanetError like this.
-
-    try:
-        # Filter by status, like the Subscriptions API does.
-        if status:
-            select_results = (res
-                              for res in _get_fake_sub_results(subscription_id)
-                              if res['status'] in status)
-        else:
-            select_results = _get_fake_sub_results(subscription_id)
-
-        filtered_results = itertools.islice(select_results, limit)
-    except KeyError:
-        raise PlanetError(f"No such subscription: {subscription_id!r}")
-
-    # End fake subscriptions service. After we refactor we will get
-    # the "sub" from a method in planet.clients.subscriptions (which
-    # doesn't exist yet).
-
-    for result in filtered_results:
-        echo_json(result, pretty)
+async def list_subscription_results_cmd(ctx,
+                                        subscription_id,
+                                        pretty,
+                                        status,
+                                        limit):
+    """Gets results of a subscription and prints the API response."""
+    async with subscriptions_client(ctx) as client:
+        filtered_results = client.list_subscription_results(subscription_id,
+                                                            status=status,
+                                                            limit=limit)
+        async for result in filtered_results:
+            echo_json(result, pretty)
