@@ -46,10 +46,44 @@ class PlaceholderSubscriptionsClient:
         # Note: placeholder doesn't use the session (yet).
         self.session = session
 
-    async def list_results(self,
-                           subscription_id: str,
-                           status: Set[str] = None,
-                           limit: int = 100) -> AsyncIterator[dict]:
+    async def get_subscription(self, subscription_id: str) -> dict:
+        """Get a description of a Subscription.
+
+        Parameters:
+            subscription_id
+
+        Returns:
+            dict
+
+        Raises:
+
+        """
+        try:
+            sub = _fake_subs[subscription_id].copy()
+        except KeyError:
+            raise PlanetError(f"No such subscription: {subscription_id!r}")
+
+        sub.update(id=subscription_id)
+        return sub
+
+    async def list_subscription_results(
+            self,
+            subscription_id: str,
+            status: Set[str] = None,
+            limit: int = 100) -> AsyncIterator[dict]:
+        """Get Results of a Subscription.
+
+        Parameters:
+            subscription_id
+            status
+            limit
+
+        Returns:
+            dict
+
+        Raises:
+
+        """
         try:
             if status:
                 select_results = (
@@ -254,19 +288,9 @@ async def describe_subscription(ctx, subscription_id, pretty):
     After we refactor we will change to mocking the API.
 
     """
-    # Begin fake subscriptions service. Note that the Subscriptions
-    # API will report missing keys differently, but the Python API
-    # *will* raise PlanetError like this.
-    try:
-        sub = _get_fake_sub(subscription_id)
-    except KeyError:
-        raise PlanetError(f"No such subscription: {subscription_id!r}")
-
-    # End fake subscriptions service. After we refactor we will get
-    # the "sub" from a method in planet.clients.subscriptions (which
-    # doesn't exist yet).
-
-    echo_json(sub, pretty)
+    async with subscriptions_client(ctx) as client:
+        sub = await client.get_subscription(subscription_id)
+        echo_json(sub, pretty)
 
 
 @subscriptions.command(name='results')
@@ -300,8 +324,8 @@ async def list_subscription_results(ctx,
                                     limit):
     """Gets results of a subscription and prints the API response."""
     async with subscriptions_client(ctx) as client:
-        filtered_results = client.list_results(subscription_id,
-                                               status=status,
-                                               limit=limit)
+        filtered_results = client.list_subscription_results(subscription_id,
+                                                            status=status,
+                                                            limit=limit)
         async for result in filtered_results:
             echo_json(result, pretty)
