@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-"""Functionality for collecting a sequence into JSON."""
+"""Functionality for processing inputs and outputs."""
 import logging
 import typing
 
@@ -23,6 +23,14 @@ LOGGER = logging.getLogger(__name__)
 async def collect(
     values: typing.AsyncIterator[dict]
 ) -> typing.Union[typing.List[dict], dict]:
+    """Collect a sequence into JSON.
+
+    If the items in values are GeoJSON features, the JSON blob is a GeoJSON
+    FeatureCollection. Otherwise, the JSON blob is a list of the items.
+
+    Returns:
+        JSON blob containing all sequence entries.
+    """
     as_list = [v async for v in values]
 
     try:

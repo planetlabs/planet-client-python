@@ -14,7 +14,7 @@
 import logging
 import pytest
 
-from planet import collect
+from planet import io
 
 LOGGER = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ async def test_collect_non_features(make_aiter):
     }]
 
     values_aiter = make_aiter(values)
-    res = await collect.collect(values_aiter)
+    res = await io.collect(values_aiter)
     assert res == values
 
 
@@ -49,6 +49,6 @@ async def test_collect_features(feature_geojson, make_aiter):
     values = [feature_geojson, feature2]
     values_aiter = make_aiter(values)
 
-    res = await collect.collect(values_aiter)
+    res = await io.collect(values_aiter)
     expected = {'type': 'FeatureCollection', 'features': values}
     assert res == expected

@@ -22,10 +22,9 @@ import planet
 from planet import OrdersClient, Session  # allow mocking
 from .cmds import coro, translate_exceptions
 from .io import echo_json
+from .options import pretty
 
 LOGGER = logging.getLogger(__name__)
-
-pretty = click.option('--pretty', is_flag=True, help='Format JSON output.')
 
 
 @asynccontextmanager
