@@ -15,15 +15,19 @@
 import logging
 import typing
 
-from . import geojson
+from . import exceptions, geojson
 
 LOGGER = logging.getLogger(__name__)
 
 
-async def as_list(values: typing.AsyncIterator[dict]) -> typing.List[dict]:
-    return [v async for v in values]
+async def collect(
+    values: typing.AsyncIterator[dict]
+) -> typing.Union[typing.List[dict], dict]:
+    as_list = [v async for v in values]
 
+    try:
+        ret = geojson.as_featurecollection(as_list)
+    except exceptions.GeoJSONError:
+        ret = as_list
 
-async def as_featurecollection(features: typing.AsyncIterator[dict]) -> dict:
-    features_list = await as_list(features)
-    return geojson.as_featurecollection(features_list)
+    return ret

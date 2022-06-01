@@ -14,7 +14,7 @@
 import logging
 import pytest
 
-from planet import collect, exceptions
+from planet import collect
 
 LOGGER = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ def make_aiter():
 
 
 @pytest.mark.asyncio
-async def test_as_list(make_aiter):
+async def test_collect_non_features(make_aiter):
     values = [{
         'key11': 'value11', 'key12': 'value12'
     }, {
@@ -38,26 +38,17 @@ async def test_as_list(make_aiter):
     }]
 
     values_aiter = make_aiter(values)
-    res = await collect.as_list(values_aiter)
+    res = await collect.collect(values_aiter)
     assert res == values
 
 
 @pytest.mark.asyncio
-async def test_as_featurecollection_success(feature_geojson, make_aiter):
+async def test_collect_features(feature_geojson, make_aiter):
     feature2 = feature_geojson.copy()
     feature2['properties'] = {'foo': 'bar'}
     values = [feature_geojson, feature2]
     values_aiter = make_aiter(values)
 
-    res = await collect.as_featurecollection(values_aiter)
+    res = await collect.collect(values_aiter)
     expected = {'type': 'FeatureCollection', 'features': values}
     assert res == expected
-
-
-@pytest.mark.asyncio
-async def test_as_featurecollection_non_features(feature_geojson, make_aiter):
-    values = [feature_geojson, {'key21': 'value21', 'key22': 'value22'}]
-    values_aiter = make_aiter(values)
-
-    with pytest.raises(exceptions.ClientError):
-        await collect.as_featurecollection(values_aiter)
