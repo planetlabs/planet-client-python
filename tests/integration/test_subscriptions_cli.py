@@ -13,14 +13,33 @@ TODO: tests for 3 options of the planet-subscriptions-results command.
 
 """
 
+import asyncio
 import json
+import uuid
 
 from click.testing import CliRunner
 import pytest
 
 from planet.cli import cli
 import planet.cli.subscriptions
-from planet.cli.subscriptions import _count_fake_subs
+from planet.cli.subscriptions import PlaceholderSubscriptionsClient
+
+
+@pytest.fixture
+def subscription_count():
+    """Return a function that counts subscriptions in the system."""
+
+    def func():
+
+        async def count_em():
+            return len([
+                sub async for sub in
+                PlaceholderSubscriptionsClient().list_subscriptions()
+            ])
+
+        return asyncio.run(count_em())
+
+    return func
 
 
 # CliRunner doesn't agree with empty options, so a list of option
@@ -41,9 +60,10 @@ def test_subscriptions_list_options(options, expected_count, monkeypatch):
 
     monkeypatch.setattr(planet.cli.subscriptions,
                         '_fake_subs',
-                        [{
-                            'id': str(i), 'status': 'created'
-                        } for i in range(101)])
+                        {str(i): {
+                            'status': 'created'
+                        }
+                         for i in range(101)})
 
     # While developing it is handy to have click's command invoker
     # *not* catch exceptions, so we can use the pytest --pdb option.
@@ -57,10 +77,10 @@ def test_subscriptions_list_options(options, expected_count, monkeypatch):
     assert result.output.count('"id"') == expected_count
 
 
-def test_subscriptions_create_failure(monkeypatch):
+def test_subscriptions_create_failure(monkeypatch, subscription_count):
     """An invalid subscription request fails to create a new subscription."""
 
-    monkeypatch.setattr(planet.cli.subscriptions, '_fake_subs', [])
+    monkeypatch.setattr(planet.cli.subscriptions, '_fake_subs', {})
 
     # This subscription request lacks the required "delivery" and
     # "source" members.
@@ -79,7 +99,7 @@ def test_subscriptions_create_failure(monkeypatch):
 
     assert result.exit_code == 1  # failure.
     assert "Request lacks required members" in result.output
-    assert _count_fake_subs() == 0
+    assert subscription_count() == 0
 
 
 # This subscription request has the members required by our fake API.
@@ -91,10 +111,13 @@ GOOD_SUB_REQUEST = {'name': 'lol', 'delivery': True, 'source': 'wut'}
 @pytest.mark.parametrize('cmd_arg, runner_input',
                          [('-', json.dumps(GOOD_SUB_REQUEST)),
                           (json.dumps(GOOD_SUB_REQUEST), None)])
-def test_subscriptions_create_success(cmd_arg, runner_input, monkeypatch):
+def test_subscriptions_create_success(cmd_arg,
+                                      runner_input,
+                                      monkeypatch,
+                                      subscription_count):
     """Subscriptions creation succeeds with a valid subscription request."""
 
-    monkeypatch.setattr(planet.cli.subscriptions, '_fake_subs', [])
+    monkeypatch.setattr(planet.cli.subscriptions, '_fake_subs', {})
 
     # The "-" argument says "read from stdin" and the input keyword
     # argument specifies what bytes go to the runner's stdin.
@@ -109,8 +132,8 @@ def test_subscriptions_create_success(cmd_arg, runner_input, monkeypatch):
 
     assert result.exit_code == 0  # success.
     assert "Request lacks required members" not in result.output
-    assert json.loads(result.output)['id'] == '42'
-    assert _count_fake_subs() == 1
+    assert uuid.UUID(json.loads(result.output)['id'])
+    assert subscription_count() == 1
 
 
 # Invalid JSON.
@@ -154,15 +177,14 @@ def test_subscriptions_cancel_failure(monkeypatch):
     assert "No such subscription" in result.output
 
 
-def test_subscriptions_cancel_success(monkeypatch):
+def test_subscriptions_cancel_success(monkeypatch, subscription_count):
     """Cancel command succeeds."""
 
     monkeypatch.setattr(planet.cli.subscriptions,
-                        '_fake_subs',
-                        {'42': dict(**GOOD_SUB_REQUEST, id='42')})
+                        '_fake_subs', {'42': GOOD_SUB_REQUEST})
 
     # Let's check the state of the fake API before we try to cancel.
-    assert _count_fake_subs() == 1
+    assert subscription_count() == 1
 
     result = CliRunner().invoke(
         cli.main,
@@ -174,7 +196,7 @@ def test_subscriptions_cancel_success(monkeypatch):
 
     assert result.exit_code == 0  # success.
     assert json.loads(result.output)['id'] == '42'
-    assert _count_fake_subs() == 0
+    assert subscription_count() == 0
 
 
 def test_subscriptions_update_failure(monkeypatch):

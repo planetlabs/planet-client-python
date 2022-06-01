@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 import itertools
 import json
 from typing import AsyncIterator, Dict, Set
+import uuid
 
 import click
 
@@ -19,20 +20,66 @@ _fake_subs: Dict[str, dict] = {}
 _fake_sub_results: Dict[str, list] = {}
 
 
-# The following 5 functions are for use in CLI commands until there
-# is subscriptions Python client to call on.
-def _count_fake_subs():
-    return len(_fake_subs)
-
-
 class PlaceholderSubscriptionsClient:
+    """A placeholder client.
 
-    def __init__(self, session):
-        # Note: placeholder doesn't use the session (yet).
-        self.session = session
+    This class and its methods are derived from tests of a skeleton
+    Subscriptions CLI.
+
+    """
+
+    async def list_subscriptions(self,
+                                 status: Set[str] = None,
+                                 limit: int = 100) -> AsyncIterator[dict]:
+        """Get Subscriptions.
+
+        Parameters:
+            status
+            limit
+
+        Yields:
+            dict
+
+        """
+        if status:
+            select_subs = (dict(**sub, id=sub_id) for sub_id,
+                           sub in _fake_subs.items()
+                           if sub['status'] in status)
+        else:
+            select_subs = (
+                dict(**sub, id=sub_id) for sub_id, sub in _fake_subs.items())
+
+        filtered_subs = itertools.islice(select_subs, limit)
+
+        for sub in filtered_subs:
+            yield sub
+
+    async def create_subscription(self, request: dict) -> dict:
+        """Create a Subscription.
+
+        Parameters:
+            request
+
+        Returns:
+            dict
+
+        Raises:
+            PlanetError
+
+        """
+        missing_keys = {'name', 'delivery', 'source'} - request.keys()
+        if missing_keys:
+            raise PlanetError(
+                f"Request lacks required members: {missing_keys!r}")
+
+        id = str(uuid.uuid4())
+        _fake_subs[id] = request
+        sub = _fake_subs[id].copy()
+        sub.update(id=id)
+        return sub
 
     async def cancel_subscription(self, subscription_id: str) -> dict:
-        """Cancel a Subscription
+        """Cancel a Subscription.
 
         Parameters:
             subscription_id
@@ -41,12 +88,16 @@ class PlaceholderSubscriptionsClient:
             dict
 
         Raises:
+            PlanetError
 
         """
         try:
-            return _fake_subs.pop(subscription_id)
+            sub = _fake_subs.pop(subscription_id)
         except KeyError:
             raise PlanetError(f"No such subscription: {subscription_id!r}")
+
+        sub.update(id=subscription_id)
+        return sub
 
     async def update_subscription(self, subscription_id: str,
                                   request: dict) -> dict:
@@ -59,6 +110,7 @@ class PlaceholderSubscriptionsClient:
             dict
 
         Raises:
+            PlanetError
 
         """
         try:
@@ -80,6 +132,7 @@ class PlaceholderSubscriptionsClient:
             dict
 
         Raises:
+            PlanetError
 
         """
         try:
@@ -102,10 +155,11 @@ class PlaceholderSubscriptionsClient:
             status
             limit
 
-        Returns:
+        Yields:
             dict
 
         Raises:
+            PlanetError
 
         """
         try:
@@ -127,9 +181,15 @@ class PlaceholderSubscriptionsClient:
 
 @asynccontextmanager
 async def subscriptions_client(ctx):
+    """Create an authenticated client.
+
+    Note that the session is not currently used with the placeholder
+    client.
+
+    """
     auth = ctx.obj['AUTH']
-    async with Session(auth=auth) as sess:
-        yield PlaceholderSubscriptionsClient(sess)
+    async with Session(auth=auth):
+        yield PlaceholderSubscriptionsClient()
 
 
 @click.group()
@@ -157,29 +217,12 @@ def subscriptions(ctx):
 @click.pass_context
 @translate_exceptions
 @coro
-async def list_subscriptions(ctx, status, limit, pretty):
-    """Prints a sequence of JSON-encoded Subscription descriptions.
-
-    This implementation is only a placeholder. To begin, instead
-    of mocking calls to the Subscriptions API, we'll use a
-    collection of fake subscriptions (the all_subs fixture).
-    After we refactor we will change to mocking the API.
-
-    """
-    # Filter by status, like the Subscriptions API does.
-    if status:
-        select_subs = (sub for sub in _fake_subs if sub['status'] in status)
-    else:
-        select_subs = _fake_subs
-
-    filtered_subs = itertools.islice(select_subs, limit)
-    # End of placeholder implementation. In the future we will get
-    # the filtered subscriptions from a method of the to-be-written
-    # planet.clients.subscriptions.
-
-    # Print output to terminal, respecting the provided limit.
-    for sub in filtered_subs:
-        echo_json(sub, pretty)
+async def list_subscriptions_cmd(ctx, status, limit, pretty):
+    """Prints a sequence of JSON-encoded Subscription descriptions."""
+    async with subscriptions_client(ctx) as client:
+        filtered_subs = client.list_subscriptions(status=status, limit=limit)
+        async for sub in filtered_subs:
+            echo_json(sub, pretty)
 
 
 def parse_request(ctx, param, value: str) -> dict:
@@ -209,31 +252,11 @@ def parse_request(ctx, param, value: str) -> dict:
 @click.pass_context
 @translate_exceptions
 @coro
-async def create_subscription(ctx, request, pretty):
-    """Submits a subscription request and prints the API response.
-
-    This implementation is only a placeholder. To begin, instead
-    of mocking calls to the Subscriptions API, we'll use a
-    collection of fake subscriptions (the all_subs object).
-    After we refactor we will change to mocking the API.
-
-    """
-    # Begin fake subscriptions service. Note that the Subscriptions
-    # API will report missing keys differently, but the Python API
-    # *will* raise PlanetError like this.
-    missing_keys = {'name', 'delivery', 'source'} - request.keys()
-    if missing_keys:
-        raise PlanetError(f"Request lacks required members: {missing_keys!r}")
-
-    # Update the request with an id.
-    sub = dict(**request, id='42')
-    _fake_subs.append(sub)
-
-    # End fake subscriptions service. After we refactor we will get
-    # the "sub" from a method in planet.clients.subscriptions (which
-    # doesn't exist yet).
-
-    echo_json(sub, pretty)
+async def create_subscription_cmd(ctx, request, pretty):
+    """Submits a subscription request and prints the API response."""
+    async with subscriptions_client(ctx) as client:
+        sub = await client.create_subscription(request)
+        echo_json(sub, pretty)
 
 
 @subscriptions.command(name='cancel')
@@ -242,7 +265,7 @@ async def create_subscription(ctx, request, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-async def cancel_subscription(ctx, subscription_id, pretty):
+async def cancel_subscription_cmd(ctx, subscription_id, pretty):
     """Cancels a subscription and prints the API response."""
     async with subscriptions_client(ctx) as client:
         sub = await client.cancel_subscription(subscription_id)
@@ -256,7 +279,7 @@ async def cancel_subscription(ctx, subscription_id, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-async def update_subscription(ctx, subscription_id, request, pretty):
+async def update_subscription_cmd(ctx, subscription_id, request, pretty):
     """Cancels a subscription and prints the API response."""
     async with subscriptions_client(ctx) as client:
         sub = await client.update_subscription(subscription_id, request)
@@ -269,7 +292,7 @@ async def update_subscription(ctx, subscription_id, request, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-async def describe_subscription(ctx, subscription_id, pretty):
+async def describe_subscription_cmd(ctx, subscription_id, pretty):
     """Cancels a subscription and prints the API response.
 
     This implementation is only a placeholder. To begin, instead
@@ -307,11 +330,11 @@ async def describe_subscription(ctx, subscription_id, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-async def list_subscription_results(ctx,
-                                    subscription_id,
-                                    pretty,
-                                    status,
-                                    limit):
+async def list_subscription_results_cmd(ctx,
+                                        subscription_id,
+                                        pretty,
+                                        status,
+                                        limit):
     """Gets results of a subscription and prints the API response."""
     async with subscriptions_client(ctx) as client:
         filtered_results = client.list_subscription_results(subscription_id,
