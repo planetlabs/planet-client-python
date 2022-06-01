@@ -111,7 +111,7 @@ def test_data_search_quick_limit(invoke,
             "_self": "string1", "assets": "string2", "thumbnail": "string3"
         },
         "features": [
-            all_results['result%s' % num]
+            all_results[f'result{num}']
             for num in range(1, limited_list_length + 1)
         ]
     }
