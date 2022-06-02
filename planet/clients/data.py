@@ -77,6 +77,7 @@ class DataClient:
     def _request(self, url, method, data=None, params=None, json=None):
         return Request(url, method=method, data=data, params=params, json=json)
 
+
     async def _do_request(self, request: Request) -> Response:
         """Submit a request and get response.
 
@@ -267,7 +268,10 @@ class DataClient:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        raise NotImplementedError
+        url = f'{self._searches_url()}/{search_id}'
+        req = self._request(url, method='GET')
+        resp = await self._do_request(req)
+        return resp.json()
 
     async def run_search(self, search_id: str) -> typing.AsyncIterator[dict]:
         """Execute a saved search.
