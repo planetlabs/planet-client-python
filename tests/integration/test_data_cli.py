@@ -31,6 +31,7 @@ def test_data_command_registered(invoke):
     assert "Usage" in result.output
     assert "search-quick" in result.output
     assert "search-create" in result.output
+    assert "search-get" in result.output
     # Add other sub-commands here.
 
 
@@ -218,31 +219,6 @@ def test_search_create_daily_email(invoke, search_result):
 
 
 # TODO: basic test for "planet data filter".
-
-
-# We expect this test to fail now. When the Data API client is
-# available, we will remove the xfail marker and work to get this test,
-# or a better version, to pass.
-@pytest.mark.xfail(reason="Data client not yet implemented")
-def test_search_quick():
-    """planet data search-quick prints 1 GeoJSON Feature."""
-    result = CliRunner().invoke(
-        cli.main,
-        # When testing, we "explode" our command and its parameters
-        # into a list to make parameterization more clear.
-        [
-            "data",
-            "search-quick",
-            # To keep yapf from putting option name and value on
-            # different lines, use a "=".
-            "--limit=10",
-            "--name=test",
-            "--pretty",
-            "lol,wut",
-            "{}"
-        ])
-    assert result.exit_code == 0
-    assert "Feature" in result.output
 
 
 @respx.mock
