@@ -77,7 +77,6 @@ class DataClient:
     def _request(self, url, method, data=None, params=None, json=None):
         return Request(url, method=method, data=data, params=params, json=json)
 
-
     async def _do_request(self, request: Request) -> Response:
         """Submit a request and get response.
 
