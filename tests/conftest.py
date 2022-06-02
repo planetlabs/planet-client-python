@@ -85,6 +85,11 @@ def oid():
 
 
 @pytest.fixture
+def search_id():
+    return '20200130_093253_ssc6_u0001'
+
+
+@pytest.fixture
 def write_to_tmp_json_file(tmp_path):
 
     def write(data, filename):

@@ -245,6 +245,29 @@ def test_search_quick():
     assert "Feature" in result.output
 
 
+@respx.mock
+def test_search_get(invoke, search_id, search_result):
+    get_url = f'{TEST_SEARCHES_URL}/{search_id}'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
+    respx.get(get_url).return_value = mock_resp
+
+    result = invoke(['search-get', search_id])
+    assert not result.exception
+    assert search_result == json.loads(result.output)
+
+
+@respx.mock
+def test_search_get_id_not_found(invoke, search_id):
+    get_url = f'{TEST_SEARCHES_URL}/{search_id}'
+    error_json = {"message": "Error message"}
+    mock_resp = httpx.Response(404, json=error_json)
+    respx.get(get_url).return_value = mock_resp
+
+    result = invoke(['search-get', search_id])
+    assert result.exception
+    assert 'Error: {"message": "Error message"}\n' == result.output
+
+
 # TODO: basic test for "planet data search-create".
 # TODO: basic test for "planet data search-update".
 # TODO: basic test for "planet data search-delete".
