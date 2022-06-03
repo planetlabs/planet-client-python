@@ -15,10 +15,9 @@
 """Functionality for validating against the Planet API specification."""
 import json
 import logging
-import os
-from pathlib import Path
 
-DATA_DIR = 'data'
+from .constants import DATA_DIR
+
 PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2022_02_02.json'
 SUPPORTED_TOOLS = [
     'band_math',
@@ -114,13 +113,7 @@ def get_item_types(product_bundle):
     return spec['bundles'][product_bundle]['assets'].keys()
 
 
-def _get_product_bundle_spec_path():
-    curr_path = Path(os.path.dirname(__file__))
-    data_dir = curr_path / DATA_DIR
-    return data_dir / PRODUCT_BUNDLE_SPEC_NAME
-
-
 def _get_product_bundle_spec():
-    with open(_get_product_bundle_spec_path()) as f:
+    with open(DATA_DIR / PRODUCT_BUNDLE_SPEC_NAME) as f:
         data = json.load(f)
     return data

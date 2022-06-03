@@ -27,6 +27,7 @@ install_requires = [
     'click>=8.0.0',
     'geojson',
     'httpx==0.16.1',
+    'jsonschema',
     'pyjwt>=2.1',
     'tqdm>=4.56',
 ]

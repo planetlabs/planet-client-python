@@ -118,7 +118,7 @@ def feature_geojson(geom_geojson):
 
 
 @pytest.fixture
-def featureclass_geojson(feature_geojson):
+def featurecollection_geojson(feature_geojson):
     return {"type": "FeatureCollection", "features": [feature_geojson]}
 
 

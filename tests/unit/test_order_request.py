@@ -16,7 +16,7 @@ import logging
 
 import pytest
 
-from planet import geojson, order_request, specs
+from planet import exceptions, order_request, specs
 
 LOGGER = logging.getLogger(__name__)
 
@@ -223,7 +223,7 @@ def test_clip_tool(geom_geojson, point_geom_geojson):
     expected = {'clip': {'aoi': geom_geojson}}
     assert ct == expected
 
-    with pytest.raises(geojson.WrongTypeException):
+    with pytest.raises(exceptions.GeoJSONError):
         _ = order_request.clip_tool(point_geom_geojson)
 
 
