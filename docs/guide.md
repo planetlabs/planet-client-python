@@ -343,9 +343,21 @@ represent GeoJSON features, the JSON blob is a GeoJSON FeatureCollection.
 Otherwise, the JSON blob is a list of the individual results.
 
 ```console
-$ planet orders list | planet collect -
+$ planet data search-quick PSScene filter.json | planet collect -
 ```
 
+contents of `filter.json`:
+
+```json
+{
+   "type":"DateRangeFilter",
+   "field_name":"acquired",
+   "config":{
+      "gt":"2019-12-31T00:00:00Z",
+      "lte":"2020-01-31T00:00:00Z"
+   }
+}
+```
 
 ### Orders API
 
