@@ -13,6 +13,7 @@
 # the License.
 '''Test Orders CLI'''
 import copy
+import hashlib
 from http import HTTPStatus
 import json
 from pathlib import Path
@@ -256,17 +257,18 @@ def mock_download_response(oid, order_description):
         order_description['state'] = 'success'
         dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
         dl_url2 = TEST_DOWNLOAD_URL + '/2?token=IAmAnotherToken'
+        dl_url3 = TEST_DOWNLOAD_URL + '/manifest'
+
         order_description['_links']['results'] = [{
-            'location':
-            dl_url1, 'name':
-            'oid/itemtype/m1.json'
-        },
-                                                  {
-                                                      'location':
-                                                      dl_url2,
-                                                      'name':
-                                                      'oid/itemtype/m2.json'
-                                                  }]
+            'location': dl_url1,
+            'name': 'oid/itemtype/m1.json'
+        }, {
+            'location': dl_url2,
+            'name': 'oid/itemtype/m2.json'
+        }, {
+            'location': dl_url3,
+            'name': 'oid/manifest.json'
+        }]  # yapf: disable
 
         get_url = f'{TEST_ORDERS_URL}/{oid}'
         mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
@@ -292,12 +294,57 @@ def mock_download_response(oid, order_description):
                                     })
         respx.get(dl_url2).return_value = mock_resp2
 
+        m1_bytes = b'{"key": "value"}'
+        m2_bytes = b'{"key2": "value2"}'
+        manifest_data = {
+            "name": "",
+            "files": [
+                {
+                    "path": "itemtype/m1.json",
+                    "digests": {
+                        "md5": hashlib.md5(m1_bytes).hexdigest(),
+                        "sha256": hashlib.sha256(m1_bytes).hexdigest()}
+                }, {
+                    "path": "itemtype/m2.json",
+                    "digests": {
+                        "md5": hashlib.md5(m2_bytes).hexdigest(),
+                        "sha256": hashlib.sha256(m2_bytes).hexdigest()}
+                }]
+        }  # yapf: disable
+        mock_resp3 = httpx.Response(HTTPStatus.OK,
+                                    json=manifest_data,
+                                    headers={
+                                        'Content-Type':
+                                        'application/json',
+                                        'Content-Disposition':
+                                        'attachment; filename="manifest.json"'
+                                    })
+        respx.get(dl_url3).return_value = mock_resp3
+
     return _func
 
 
-# TODO: add test for --checksum (see gh-432).
 @respx.mock
 def test_cli_orders_download_default(invoke, mock_download_response, oid):
+    mock_download_response()
+
+    runner = CliRunner()
+    with runner.isolated_filesystem() as folder:
+        result = invoke(['download', oid], runner=runner)
+        assert not result.exception
+
+        # basic check of progress reporting
+        assert 'm1.json' in result.output
+
+        # Check that the files were downloaded and have the correct contents
+        f1_path = Path(folder) / 'oid/itemtype/m1.json'
+        assert json.load(open(f1_path)) == {'key': 'value'}
+        f2_path = Path(folder) / 'oid/itemtype/m2.json'
+        assert json.load(open(f2_path)) == {'key2': 'value2'}
+
+
+@respx.mock
+def test_cli_orders_download_checksum(invoke, mock_download_response, oid):
     mock_download_response()
 
     runner = CliRunner()
