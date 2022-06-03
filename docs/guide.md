@@ -331,20 +331,6 @@ for passing into a Docker instance:
 $ export PL_API_KEY=$(planet auth value)
 ```
 
-The `auth` command allows the CLI to authenticate with Planet servers. Before
-any other command is run, the CLI authentication should be initiated with
-
-```console
-$ planet auth init
-```
-
-To store the authentication information in an environment variable, e.g.
-for passing into a Docker instance:
-
-```console
-$ export PL_API_KEY=$(planet auth value)
-```
-
 
 ### Collecting Results
 
