@@ -15,6 +15,7 @@
 from contextlib import asynccontextmanager
 import json
 import logging
+from pathlib import Path
 
 import click
 
@@ -199,15 +200,23 @@ async def wait(ctx, order_id, delay, max_attempts, state):
 async def download(ctx, order_id, overwrite, directory, checksum):
     """Download order by order ID.
 
-If --checksum is provided, the associated checksums given in the manifest
-are compared against the downloaded files to verify that they match."""
+    If --checksum is provided, the associated checksums given in the manifest
+    are compared against the downloaded files to verify that they match.
+
+    If --checksum is provided, files are already downloaded, and --overwrite is
+    not specified, this will simply validate the checksums of the files against
+    the manifest.
+    """
     quiet = ctx.obj['QUIET']
     async with orders_client(ctx) as cl:
-        await cl.download_order(str(order_id),
-                                directory=directory,
-                                overwrite=overwrite,
-                                progress_bar=not quiet,
-                                checksum=checksum)
+        await cl.download_order(
+            str(order_id),
+            directory=Path(directory),
+            overwrite=overwrite,
+            progress_bar=not quiet,
+        )
+        if checksum:
+            cl.validate_checksum(Path(directory, str(order_id)), checksum)
 
 
 def read_file_geojson(ctx, param, value):

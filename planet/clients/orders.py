@@ -274,42 +274,6 @@ class OrdersClient:
                              progress_bar=progress_bar)
         return dl_path
 
-    @staticmethod
-    def _validate_checksum(manifest_data: dict, directory: Path,
-                           checksum: str):
-        """For each file entry in the manifest, validates checksum against the
-        downloaded file.
-
-        Parameters:
-            manifest_data: The contents of the opened manifest.json file.
-            filenames: List of downloaded assets.
-            checksum: The type of checksum hash- 'MD5' or 'SHA256'.
-
-        Raises:
-            planet.exceptions.ClientError: If the checksum fails.
-        """
-        if checksum.upper() == 'MD5':
-            hash_type = hashlib.md5
-        elif checksum.upper() == 'SHA256':
-            hash_type = hashlib.sha256
-        else:
-            raise exceptions.ClientError(
-                'Checksum ({checksum}) must be one of MD5 or SHA256.')
-
-        for json_entry in manifest_data['files']:
-            origin_hash = json_entry['digests'][checksum.lower()]
-            filename = Path(directory / json_entry['path'])
-
-            try:
-                returned_hash = hash_type(filename.read_bytes()).hexdigest()
-            except FileNotFoundError:
-                raise exceptions.ClientError(
-                    'Checksum failed. File ({filename}) does not exist.')
-
-            if origin_hash != returned_hash:
-                raise exceptions.ClientError(
-                    'File ({filename}) checksums do not match.')
-
     async def download_order(self,
                              order_id: str,
                              directory: Path = Path('.'),
@@ -318,19 +282,12 @@ class OrdersClient:
                              checksum: str = None) -> typing.List[Path]:
         """Download all assets in an order.
 
-        If 'checksum' is specified, the checksums given in the manifest will
-        be validated against checksums calculated from the downloaded files.
-        Checksum validation will fail if any of the files are missing or if the
-        checksums do not match.
-
         Parameters:
             order_id: The ID of the order.
             directory: Base directory for file download. This directory must
                 already exist.
             overwrite: Overwrite files if they already exist.
             progress_bar: Show progress bar during download.
-            checksum: Perform checksum validation against the specified
-                checksum hash type - MD5 or SHA256.
 
         Returns:
             Paths to downloaded files.
@@ -338,7 +295,7 @@ class OrdersClient:
         Raises:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If the order is not in a final
-                state or if checksum validation fails.
+                state.
         """
         order = await self.get_order(order_id)
         order_state = order['state']
@@ -360,21 +317,6 @@ class OrdersClient:
                                       progress_bar=progress_bar) for i in info
         ]
 
-        if checksum:
-            manifest_files = [
-                f for f in filenames if f.name == 'manifest.json'
-            ]
-            manifest_count = len(manifest_files)
-            if manifest_count > 1:
-                raise exceptions.ClientError(
-                    'Only 1 manifest.json expected per order.\
-                                             Recieved: {manifest_count}')
-            elif manifest_count is None:
-                raise exceptions.ClientError('No manifest file found.')
-
-            manifest_file = manifest_files[0]
-            manifest_data = json.loads(manifest_file.read_bytes())
-            self._validate_checksum(manifest_data, directory, checksum)
         return filenames
 
     @staticmethod
@@ -398,6 +340,56 @@ class OrdersClient:
                 'files.')
             info = []
         return info
+
+    @staticmethod
+    def validate_checksum(directory: Path, checksum: str):
+        """Validate checksums of downloaded files against order manifest.
+
+        For each file entry in the order manifest, the specified checksum given
+        in the manifest file will be validated against the checksum calculated
+        from the downloaded file.
+
+        Parameters:
+            directory: Path to order directory.
+            checksum: The type of checksum hash- 'MD5' or 'SHA256'.
+
+        Raises:
+            planet.exceptions.ClientError: If a file is missing or if checksums
+                do not match.
+        """
+        manifest_path = directory / 'manifest.json'
+
+        try:
+            manifest_data = json.loads(manifest_path.read_text())
+        except FileNotFoundError:
+            raise exceptions.ClientError(
+                f'File ({manifest_path}) does not exist.')
+        except json.decoder.JSONDecodeError:
+            raise exceptions.ClientError(
+                f'Manifest file ({manifest_path}) does not contain valid JSON.'
+            )
+
+        if checksum.upper() == 'MD5':
+            hash_type = hashlib.md5
+        elif checksum.upper() == 'SHA256':
+            hash_type = hashlib.sha256
+        else:
+            raise exceptions.ClientError(
+                f'Checksum ({checksum}) must be one of MD5 or SHA256.')
+
+        for json_entry in manifest_data['files']:
+            origin_hash = json_entry['digests'][checksum.lower()]
+
+            filename = directory / json_entry['path']
+            try:
+                returned_hash = hash_type(filename.read_bytes()).hexdigest()
+            except FileNotFoundError:
+                raise exceptions.ClientError(
+                    f'Checksum failed. File ({filename}) does not exist.')
+
+            if origin_hash != returned_hash:
+                raise exceptions.ClientError(
+                    f'File ({filename}) checksums do not match.')
 
     async def wait(self,
                    order_id: str,

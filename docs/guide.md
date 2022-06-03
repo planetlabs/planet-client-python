@@ -248,6 +248,27 @@ from planet import reporting
 >>> asyncio.run(create_poll_and_download())
 ```
 
+#### Validating Checksums
+
+Checksum validation provides for verification that the files in an order have
+been downloaded successfully and are not missing, currupted, or changed. This
+functionality is included in the OrderClient, but does not require an instance
+of the class to be used.
+
+
+To perform checksum validation:
+
+```python
+from pathlib import Path
+
+# path includes order id
+order_path = Path('193e5bd1-dedc-4c65-a539-6bc70e55d928')
+OrdersClient.validate_checksum(order_path, 'md5')
+```
+
+
+
+
 ### Data Client
 
 The Data Client mostly mirrors the
