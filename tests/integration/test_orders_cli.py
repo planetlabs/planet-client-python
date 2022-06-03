@@ -72,8 +72,9 @@ def test_cli_orders_list_basic(invoke, order_descriptions):
     respx.get(next_page_url).return_value = mock_resp2
 
     result = invoke(['list'])
-    assert not result.exception
-    assert json.dumps([order1, order2, order3]) + '\n' == result.output
+    assert result.exit_code == 0
+    sequence = '\n'.join([json.dumps(o) for o in [order1, order2, order3]])
+    assert result.output == sequence + '\n'
 
 
 @respx.mock
@@ -83,8 +84,8 @@ def test_cli_orders_list_empty(invoke):
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
     result = invoke(['list'])
-    assert not result.exception
-    assert [] == json.loads(result.output)
+    assert result.exit_code == 0
+    assert result.output == ''
 
 
 @respx.mock
@@ -104,8 +105,9 @@ def test_cli_orders_list_state(invoke, order_descriptions):
     # if the value of state doesn't get sent as a url parameter,
     # the mock will fail and this test will fail
     result = invoke(['list', '--state', 'failed'])
-    assert not result.exception
-    assert [order1, order2] == json.loads(result.output)
+    assert result.exit_code == 0
+    sequence = '\n'.join([json.dumps(o) for o in [order1, order2]])
+    assert result.output == sequence + '\n'
 
 
 @respx.mock
@@ -137,8 +139,9 @@ def test_cli_orders_list_limit(invoke,
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
     result = invoke(['list', '--limit', limit])
-    assert not result.exception
-    assert len(json.loads(result.output)) == limited_list_length
+    assert result.exit_code == 0
+    count = len(result.output.strip().split('\n'))
+    assert count == limited_list_length
 
 
 @respx.mock
@@ -155,8 +158,8 @@ def test_cli_orders_list_pretty(invoke, monkeypatch, order_description):
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
     result = invoke(['list', '--pretty'])
-    assert not result.exception
-    mock_echo_json.assert_called_once_with([order_description], True)
+    assert result.exit_code == 0
+    mock_echo_json.assert_called_once_with(order_description, True)
 
 
 # TODO: add tests for "get --pretty" (gh-491).
