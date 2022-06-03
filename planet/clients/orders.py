@@ -380,9 +380,6 @@ class OrdersClient:
         for json_entry in manifest_data['files']:
             origin_hash = json_entry['digests'][checksum.lower()]
 
-            # drop top directory in path which is already specified as the
-            # laset entry in directory
-            # filename = directory / Path(*Path(json_entry['path']).parts[1:])
             filename = directory / json_entry['path']
             try:
                 returned_hash = hash_type(filename.read_bytes()).hexdigest()
