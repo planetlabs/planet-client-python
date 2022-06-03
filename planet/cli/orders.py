@@ -71,8 +71,8 @@ async def list(ctx, state, limit, pretty):
     '''
     async with orders_client(ctx) as cl:
         orders = await cl.list_orders(state=state, limit=limit)
-        orders_list = [o async for o in orders]
-    echo_json(orders_list, pretty)
+        async for o in orders:
+            echo_json(o, pretty)
 
 
 @orders.command()
