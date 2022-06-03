@@ -88,6 +88,33 @@ environment variable:
 
 ```
 
+
+### Collecting Results
+
+Some API calls, such as searching for imagery and listing orders, return a
+varying, and potentially large, number of results. These API responses are
+paged. The SDK manages paging internally and the associated client commands
+return an asynchronous iterator over the results. These results can be
+converted to a JSON blob using the `collect` command. When the results
+represent GeoJSON features, the JSON blob is a GeoJSON FeatureCollection.
+Otherwise, the JSON blob is a list of the individual results.
+
+
+```python
+>>> import asyncio
+>>> from planet import collect, OrdersClient, Session
+>>>
+>>> async def main():
+...     async with Session() as sess:
+...         client = OrdersClient(sess)
+...         orders = client.list_orders()
+...         orders_list = collect(orders)
+...
+>>> asyncio.run(main())
+
+```
+
+
 ### Orders Client
 
 The Orders Client mostly mirrors the
@@ -303,6 +330,36 @@ for passing into a Docker instance:
 ```console
 $ export PL_API_KEY=$(planet auth value)
 ```
+
+The `auth` command allows the CLI to authenticate with Planet servers. Before
+any other command is run, the CLI authentication should be initiated with
+
+```console
+$ planet auth init
+```
+
+To store the authentication information in an environment variable, e.g.
+for passing into a Docker instance:
+
+```console
+$ export PL_API_KEY=$(planet auth value)
+```
+
+
+### Collecting Results
+
+Some API calls, such as searching for imagery and listing orders, return a
+varying, and potentially large, number of results. These API responses are
+paged. The SDK manages paging internally and the associated cli commands
+output the results as a sequence. These results can be converted to a JSON blob
+using the `collect` command. When the results
+represent GeoJSON features, the JSON blob is a GeoJSON FeatureCollection.
+Otherwise, the JSON blob is a list of the individual results.
+
+```console
+$ planet orders list | planet collect -
+```
+
 
 ### Orders API
 
