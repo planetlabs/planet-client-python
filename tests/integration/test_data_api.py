@@ -226,6 +226,43 @@ async def test_create_search_email(search_filter, session):
 
 @respx.mock
 @pytest.mark.asyncio
+async def test_update_search_basic(search_filter, session):
+    sid = 'search_id'
+
+    page_response = {
+        "__daily_email_enabled": False,
+        "_links": {
+            "_self": "string", "thumbnail": "string"
+        },
+        "created": "2019-08-24T14:15:22Z",
+        "filter": search_filter,
+        "id": sid,
+        "last_executed": "2019-08-24T14:15:22Z",
+        "name": "test",
+        "updated": "2019-08-24T14:15:22Z"
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.put(f'{TEST_SEARCHES_URL}/{sid}').return_value = mock_resp
+
+    cl = DataClient(session, base_url=TEST_URL)
+    search = await cl.update_search(sid, 'test', ['PSScene'], search_filter)
+
+    # check that request is correct
+    expected_request = {
+        "item_types": ["PSScene"],
+        "filter": search_filter,
+        "name": "test",
+        "__daily_email_enabled": False
+    }
+    actual_body = json.loads(respx.calls[0].request.content)
+    assert actual_body == expected_request
+
+    # check the response is returned unaltered
+    assert search == page_response
+
+
+@respx.mock
+@pytest.mark.asyncio
 async def test_get_stats_success(search_filter, session):
 
     page_response = {

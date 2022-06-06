@@ -212,7 +212,18 @@ class DataClient:
         Returns:
             Description of the saved search.
         """
-        raise NotImplementedError
+        url = f'{self._searches_url()}/{search_id}'
+
+        request_json = {
+            'name': name,
+            'filter': search_filter,
+            'item_types': item_types,
+            '__daily_email_enabled': enable_email
+        }
+
+        request = self._request(url, method='PUT', json=request_json)
+        response = await self._do_request(request)
+        return response.json()
 
     async def list_searches(
             self,
