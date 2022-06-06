@@ -37,9 +37,24 @@ def data(ctx, base_url):
 
 def parse_item_types(ctx, param, value: str) -> List[str]:
     """Turn a string of comma-separated names into a list of names."""
-    # Note: we could also normalize case and validate the names against
-    # our schema here.
-    return [part.strip() for part in value.split(",")]
+    # convert user-input strings to match our naming schema
+    update_value = value.lower()
+
+    dict = {
+        "psscene": "PSScene",
+        "psorthotile": "PSOrthoTile",
+        "reorthotile": "REOrthoTile",
+        "rescene": "REScene",
+        "skysatscene": "SkySatScene",
+        "skysatcollect": "SkySatCollect",
+        "skysatvideo": "SkySatVideo",
+        "landsat8l1g": "Landsat8L1G",
+        "sentinel2l1c": "Sentinel2L1C"
+    }
+    for original, validated in dict.items():
+        update_value = update_value.replace(original, validated)
+
+    return [part.strip() for part in update_value.split(",")]
 
 
 def parse_filter(ctx, param, value: str) -> dict:
@@ -135,6 +150,41 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
         echo_json(items, pretty)
 
 
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument("item_types", callback=parse_item_types)
+@click.argument('interval',
+                default=None,
+                type=click.Choice(['hour', 'day', 'week', 'month', 'year'],
+                                  case_sensitive=False))
+@click.argument("filter", callback=parse_filter)
+@click.option('--utc_offset',
+              type=str,
+              default=False,
+              help=('a "ISO 8601 UTC offset" that can be used to adjust the \
+                    buckets to a users time zone. Please specify in \
+                    elasticsearch time units (e.g. +1h or -10h, etc. )'))
+async def stats(ctx, item_types, interval, filter, utc_offset):
+    """Get a bucketed histogram of items matching the filter.
+
+    This function returns a bucketed histogram of results based on the
+    item_types, interval, and json filter specified (using file or stdin).
+    The "--utc-offset" option is a "ISO 8601 UTC offset" (e.g. +01:00 or
+    -08:00) that can be used to adjust the buckets to a user's time zone.
+    This function outputs a full JSON description of the returned statistics
+    result.
+
+    """
+    async with data_client(ctx) as cl:
+        items = await cl.get_stats(item_types=item_types,
+                                   interval=interval,
+                                   search_filter=filter,
+                                   utc_offset = utc_offset)
+        echo_json(items)
+
+
 # TODO: search_update()".
 # TODO: search_delete()".
 # TODO: search_run()".
@@ -142,4 +192,3 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
 # TODO: asset_activate()".
 # TODO: asset_wait()".
 # TODO: asset_download()".
-# TODO: stats()".
