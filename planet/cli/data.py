@@ -147,7 +147,7 @@ async def search_get(ctx, search_id, pretty):
     search. The output can also be optionally pretty-printed using "--pretty".
     """
     async with data_client(ctx) as cl:
-        items = await cl.get_search(search_id=search_id)
+        items = await cl.get_search(search_id)
         echo_json(items, pretty)
 
 
