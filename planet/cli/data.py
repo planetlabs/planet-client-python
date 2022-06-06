@@ -142,7 +142,9 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
 @pretty
 @click.argument('search_id')
 async def search_get(ctx, search_id, pretty):
-    """ This function obtsains an existing saved search, using the search_id.
+    """ Get saved search.
+
+    This function obtains an existing saved search, using the search_id.
     This function outputs a full JSON description of the identified saved
     search. The output can also be optionally pretty-printed using "--pretty".
     """
