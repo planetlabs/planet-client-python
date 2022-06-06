@@ -226,6 +226,36 @@ async def test_create_search_email(search_filter, session):
 
 @respx.mock
 @pytest.mark.asyncio
+async def test_get_search(search_id, search_result, session):
+    get_url = f'{TEST_SEARCHES_URL}/{search_id}'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
+    respx.get(get_url).return_value = mock_resp
+
+    cl = DataClient(session, base_url=TEST_URL)
+    search = await cl.get_search(search_id)
+    assert search_result == search
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_get_search_id_doesnt_exist(search_id, session):
+    get_url = f'{TEST_SEARCHES_URL}/{search_id}'
+
+    resp = {
+        "message": f'The requested search id does not exist:\
+        {search_id}'
+    }
+    mock_resp = httpx.Response(404, json=resp)
+    respx.get(get_url).return_value = mock_resp
+
+    cl = DataClient(session, base_url=TEST_URL)
+
+    with pytest.raises(exceptions.MissingResource):
+        await cl.get_search(search_id)
+
+
+@respx.mock
+@pytest.mark.asyncio
 async def test_get_stats_success(search_filter, session):
 
     page_response = {
