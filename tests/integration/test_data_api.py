@@ -226,7 +226,7 @@ async def test_create_search_email(search_filter, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_get_search(search_id, search_result, session):
+async def test_get_search_success(search_id, search_result, session):
     get_url = f'{TEST_SEARCHES_URL}/{search_id}'
     mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
     respx.get(get_url).return_value = mock_resp
