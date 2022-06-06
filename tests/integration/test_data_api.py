@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
+from contextlib import nullcontext as does_not_raise
 from http import HTTPStatus
 import json
 import logging
@@ -259,6 +260,24 @@ async def test_update_search_basic(search_filter, session):
 
     # check the response is returned unaltered
     assert search == page_response
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("retcode, expectation",
+                         [(204, does_not_raise()),
+                          (404, pytest.raises(exceptions.APIError))])
+async def test_delete_search(retcode, expectation, session):
+    sid = 'search_id'
+    mock_resp = httpx.Response(retcode)
+    route = respx.delete(f'{TEST_SEARCHES_URL}/{sid}')
+    route.return_value = mock_resp
+    cl = DataClient(session, base_url=TEST_URL)
+
+    with expectation:
+        await cl.delete_search(sid)
+
+    assert route.called
 
 
 @respx.mock

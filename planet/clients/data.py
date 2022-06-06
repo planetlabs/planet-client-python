@@ -258,13 +258,13 @@ class DataClient:
         Parameters:
             search_id: Saved search identifier.
 
-        Returns:
-            Nothing.
-
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        raise NotImplementedError
+        url = f'{self._searches_url()}/{search_id}'
+
+        request = self._request(url, method='DELETE')
+        await self._do_request(request)
 
     async def get_search(self, search_id: str) -> dict:
         """Get a saved search by id.
