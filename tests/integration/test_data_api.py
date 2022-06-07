@@ -264,6 +264,47 @@ async def test_update_search_basic(search_filter, session):
 
 @respx.mock
 @pytest.mark.asyncio
+@pytest.mark.parametrize("limit, expected_list_length", [(None, 4), (3, 3)])
+async def test_list_searches_success(limit,
+                                     expected_list_length,
+                                     search_result,
+                                     session):
+    page1_response = {"_links": {}, "searches": [search_result] * 4}
+    route = respx.get(f'{TEST_SEARCHES_URL}/searches')
+    route.return_value = httpx.Response(200, json=page1_response)
+
+    cl = DataClient(session, base_url=TEST_URL)
+
+    searches = await cl.list_searches(limit=limit)
+    searches_list_length = len([s async for s in searches])
+    assert searches_list_length == expected_list_length
+
+    assert route.called
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "sort, search_type, expectation",
+    [('DOESNOTEXIST', 'ANY', pytest.raises(exceptions.ClientError)),
+     ('CREATED DESC', 'DOESNOTEXIST', pytest.raises(exceptions.ClientError))])
+async def test_list_searches_args_do_not_match(sort,
+                                               search_type,
+                                               expectation,
+                                               session):
+    route = respx.get(f'{TEST_SEARCHES_URL}/searches')
+    route.return_value = httpx.Response(200, json={})
+
+    cl = DataClient(session, base_url=TEST_URL)
+
+    with expectation:
+        await cl.list_searches(sort=sort, search_type=search_type)
+
+    assert not route.called
+
+
+@respx.mock
+@pytest.mark.asyncio
 @pytest.mark.parametrize("retcode, expectation",
                          [(204, does_not_raise()),
                           (404, pytest.raises(exceptions.APIError))])
