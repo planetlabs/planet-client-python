@@ -10,6 +10,7 @@ from planet.cli import cli
 TEST_URL = 'https://api.planet.com/data/v1'
 TEST_QUICKSEARCH_URL = f'{TEST_URL}/quick-search'
 TEST_SEARCHES_URL = f'{TEST_URL}/searches'
+TEST_STATS_URL = f'{TEST_URL}/stats'
 
 
 @pytest.fixture
@@ -216,7 +217,55 @@ def test_search_create_daily_email(invoke, search_result):
     assert sent_request == search_request
     assert json.loads(result.output) == search_result
 
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
+@pytest.mark.parametrize(
+    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+def test_data_stats_filter_invalid_json(invoke, item_types, filter):
+    """Test for planet data search_create. Test with multiple item_types.
+    Test should fail as filter does not contain valid JSON."""
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               json={'features': [{
+                                   "key": "value"
+                               }]})
+    respx.post(TEST_STATS_URL).return_value = mock_resp
 
+    name = "temp"
+
+    runner = CliRunner()
+    result = invoke(["stats", name, item_types, filter], runner=runner)
+    assert result.exit_code == 2
+
+
+@respx.mock
+@pytest.mark.parametrize(
+    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+def test_data_stats_filter_success(invoke, item_types):
+    """Test for planet data search_create. Test with multiple item_types.
+    Test should succeed as filter contains valid JSON."""
+    filter = {
+        "type": "DateRangeFilter",
+        "field_name": "acquired",
+        "config": {
+            "gt": "2019-12-31T00:00:00Z", "lte": "2020-01-31T00:00:00Z"
+        }
+    }
+
+    name = "temp"
+
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               json={'features': [{
+                                   "key": "value"
+                               }]})
+    respx.post(TEST_STATS_URL).return_value = mock_resp
+
+    runner = CliRunner()
+    result = invoke(["search-create", name, item_types, json.dumps(filter)],
+                    runner=runner)
+
+    assert result.exit_code == 0
+    assert len(result.output.strip().split('\n')) == 1  # we have 1 feature
 # TODO: basic test for "planet data filter".
 
 
