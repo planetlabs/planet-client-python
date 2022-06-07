@@ -84,7 +84,7 @@ This will give you an order response JSON as shown in the 'example response' in
 [the Order API docs](https://developers.planet.com/docs/orders/ordering/#basic-ordering). You may also pipe the `request` command to the `create` command to avoid the creation of a request.json file:
 ```console
 $ planet orders request -name my-first-order --id <scene-ids> \ 
-    --item-type PSScene --bundle visual > planet orders create -
+    --item-type PSScene --bundle visual | planet orders create -
 ```
 You can grab the `id` from that response, which will look something like 
 `dfdf3088-73a2-478c-a8f6-1bad1c09fa09`. You can then use that order-id in a 
