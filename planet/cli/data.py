@@ -183,6 +183,18 @@ async def stats(ctx, item_types, interval, filter, utc_offset):
                                    search_filter=filter,
                                    utc_offset = utc_offset)
         echo_json(items)
+@pretty
+@click.argument('search_id')
+async def search_get(ctx, search_id, pretty):
+    """Get saved search.
+
+    This function obtains an existing saved search, using the search_id.
+    This function outputs a full JSON description of the identified saved
+    search. The output can also be optionally pretty-printed using "--pretty".
+    """
+    async with data_client(ctx) as cl:
+        items = await cl.get_search(search_id)
+        echo_json(items, pretty)
 
 
 # TODO: search_update()".
