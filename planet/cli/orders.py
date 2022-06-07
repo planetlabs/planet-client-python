@@ -247,36 +247,53 @@ def read_file_json(ctx, param, value):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.option('--name', required=True)
-@click.option('--id',
-              'ids',
-              help='One or more comma-separated item IDs',
-              type=click.STRING,
-              callback=split_list_arg,
-              required=True)
-# @click.option('--ids_from_search',
-#               help='Embedded data search')
+@click.argument("request", default="-", required=False)
+@pretty
+async def create(ctx, request: str, pretty):
+    '''  Create an order.
+
+    This command creates an order from an order request.
+    It outputs the created order description, optionally pretty-printed.
+
+    Arguments:
+
+    Order request as stdin, str, or file name. Full description of order
+    to be created.
+    '''
+    request_json = json.load(click.open_file(request))
+
+    async with orders_client(ctx) as cl:
+        order = await cl.create_order(request_json)
+
+    echo_json(order, pretty)
+
+
+@orders.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.option('--name',
+              required=True,
+              help='Order name. Does not need to be unique.',
+              type=click.STRING)
 @click.option(
     '--bundle',
     multiple=False,
     required=True,
-    help='Specify bundle',
+    help='Product bundle.',
     type=click.Choice(planet.specs.get_product_bundles(),
                       case_sensitive=False),
 )
+@click.option('--id',
+              help='One or more comma-separated item IDs',
+              type=click.STRING,
+              callback=split_list_arg,
+              required=True)
 @click.option('--item-type',
               multiple=False,
               required=True,
               help='Specify an item type',
               type=click.STRING)
-@click.option('--email',
-              default=False,
-              is_flag=True,
-              help='Send email notification when Order is complete')
-@click.option('--cloudconfig',
-              help='Cloud delivery config json file.',
-              type=click.File('rb'),
-              callback=read_file_json)
 @click.option('--clip',
               help='Clip GeoJSON file.',
               type=click.File('rb'),
@@ -285,20 +302,35 @@ def read_file_json(ctx, param, value):
               help='Toolchain json file.',
               type=click.File('rb'),
               callback=read_file_json)
+@click.option('--email',
+              default=False,
+              is_flag=True,
+              help='Send email notification when Order is complete')
+@click.option(
+    '--cloudconfig',
+    help='Credentials for cloud storage provider to enable cloud delivery'
+    'of data.',
+    type=click.File('rb'),
+    callback=read_file_json)
 @pretty
-async def create(ctx,
-                 name,
-                 ids,
-                 bundle,
-                 item_type,
-                 email,
-                 cloudconfig,
-                 clip,
-                 tools,
-                 pretty):
-    '''Create an order.'''
+async def request(ctx,
+                  name,
+                  bundle,
+                  id,
+                  clip,
+                  tools,
+                  item_type,
+                  email,
+                  cloudconfig,
+                  pretty):
+    """Generate an order request.
+
+    This command provides support for building an order description used
+    in creating an order. It outputs the order request, optionally pretty-
+    printed.
+    """
     try:
-        product = planet.order_request.product(ids, bundle, item_type)
+        product = planet.order_request.product(id, bundle, item_type)
     except planet.specs.SpecificationException as e:
         raise click.BadParameter(e)
 
@@ -306,11 +338,6 @@ async def create(ctx,
         notifications = planet.order_request.notifications(email=email)
     else:
         notifications = None
-
-    if cloudconfig:
-        delivery = planet.order_request.delivery(cloud_config=cloudconfig)
-    else:
-        delivery = None
 
     if clip and tools:
         raise click.BadParameter("Specify only one of '--clip' or '--tools'")
@@ -322,13 +349,15 @@ async def create(ctx,
 
         tools = [planet.order_request.clip_tool(clip)]
 
+    if cloudconfig:
+        delivery = planet.order_request.delivery(cloud_config=cloudconfig)
+    else:
+        delivery = None
+
     request = planet.order_request.build_request(name,
                                                  products=[product],
                                                  delivery=delivery,
                                                  notifications=notifications,
                                                  tools=tools)
 
-    async with orders_client(ctx) as cl:
-        order = await cl.create_order(request)
-
-    echo_json(order, pretty)
+    echo_json(request, pretty)
