@@ -28,7 +28,7 @@ from planet.cli import cli
 
 TEST_URL = 'http://MockNotRealURL/api/path'
 TEST_DOWNLOAD_URL = f'{TEST_URL}/download'
-TEST_ORDERS_URL = f'{TEST_URL}/orders/v2'
+TEST_ORDERS_URL = 'https://api.planet.com/compute/ops/orders/v2'
 
 # NOTE: These tests use a lot of the same mocked responses as test_orders_api.
 
@@ -38,7 +38,7 @@ def invoke():
 
     def _invoke(extra_args, runner=None):
         runner = runner or CliRunner()
-        args = ['orders', '--base-url', TEST_URL] + extra_args
+        args = ['orders'] + extra_args
         return runner.invoke(cli.main, args=args)
 
     return _invoke
@@ -483,20 +483,13 @@ def test_cli_orders_create_basic_success(expected_ids,
     request_file = write_to_tmp_json_file(json.loads(request_result.output),
                                           'orders.json')
 
-    # Invoke the create call
-    invoke(['create', str(request_file)])
+    result = CliRunner().invoke(cli.main,
+                                ['orders', 'create', str(request_file)],
+                                catch_exceptions=False)
 
-    order_request = {
-        "name":
-        "test",
-        "products": [{
-            "item_ids": expected_ids,
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic"
-        }],
-    }
-    sent_request = json.loads(respx.calls.last.request.content)
-    assert sent_request == order_request
+    assert result.exit_code == 0
+    assert json.loads(
+        result.output)['_links']['results'][0]['delivery'] == 'success'
 
 
 @pytest.mark.parametrize(
@@ -520,23 +513,13 @@ def test_cli_orders_create_basic_stdin_success(expected_ids,
         '--item-type=PSOrthoTile'
     ])
 
-    runner = CliRunner()
-    runner.invoke(cli.main, ['orders', '--base-url', TEST_URL, 'create', '-'],
-                  input=request_result.output,
-                  catch_exceptions=False)
+    result = CliRunner().invoke(cli.main, ['orders', 'create', '-'],
+                                input=request_result.output,
+                                catch_exceptions=False)
 
-    order_request = {
-        "name":
-        "test",
-        "products": [{
-            "item_ids": expected_ids,
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic"
-        }],
-    }
-    sent_request = json.loads(respx.calls.last.request.content)
-
-    assert sent_request == order_request
+    assert result.exit_code == 0
+    assert json.loads(
+        result.output)['_links']['results'][0]['delivery'] == 'success'
 
 
 def test_cli_orders_request_clip_featureclass(invoke,
@@ -608,24 +591,13 @@ def test_cli_orders_create_clip_featureclass(invoke,
                                           'orders.json')
 
     # Invoke the create call
-    invoke(['create', str(request_file)])
+    result = CliRunner().invoke(cli.main,
+                                ['orders', 'create', str(request_file)],
+                                catch_exceptions=False)
 
-    order_request = {
-        "name":
-        "test",
-        "products": [{
-            "item_ids": ["4500474_2133707_2021-05-20_2419"],
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic",
-        }],
-        "tools": [{
-            'clip': {
-                'aoi': geom_geojson
-            }
-        }]
-    }
-    sent_request = json.loads(respx.calls.last.request.content)
-    assert sent_request == order_request
+    assert result.exit_code == 0
+    assert json.loads(
+        result.output)['_links']['results'][0]['delivery'] == 'success'
 
 
 def test_cli_orders_request_clip_invalid_geometry(invoke,
@@ -755,21 +727,14 @@ def test_cli_orders_create_cloudconfig(invoke,
                                           'orders.json')
 
     # Invoke the create call
-    invoke(['create', str(request_file)])
+    # Invoke the create call
+    result = CliRunner().invoke(cli.main,
+                                ['orders', 'create', str(request_file)],
+                                catch_exceptions=False)
 
-    order_request = {
-        "name":
-        "test",
-        "products": [{
-            "item_ids": ["4500474_2133707_2021-05-20_2419"],
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic",
-        }],
-        "delivery":
-        config_json
-    }
-    sent_request = json.loads(respx.calls.last.request.content)
-    assert sent_request == order_request
+    assert result.exit_code == 0
+    assert json.loads(
+        result.output)['_links']['results'][0]['delivery'] == 'success'
 
 
 def test_cli_orders_request_email(invoke):
@@ -826,22 +791,14 @@ def test_cli_orders_create_email(invoke,
                                           'orders.json')
 
     # Invoke the create call
-    invoke(['create', str(request_file)])
+    # Invoke the create call
+    result = CliRunner().invoke(cli.main,
+                                ['orders', 'create', str(request_file)],
+                                catch_exceptions=False)
 
-    order_request = {
-        "name":
-        "test",
-        "products": [{
-            "item_ids": ["4500474_2133707_2021-05-20_2419"],
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic",
-        }],
-        "notifications": {
-            "email": True
-        }
-    }
-    sent_request = json.loads(respx.calls.last.request.content)
-    assert sent_request == order_request
+    assert result.exit_code == 0
+    assert json.loads(
+        result.output)['_links']['results'][0]['delivery'] == 'success'
 
 
 def test_cli_orders_request_tools(invoke, geom_geojson,
@@ -897,21 +854,14 @@ def test_cli_orders_create_tools(invoke,
                                           'orders.json')
 
     # Invoke the create call
-    invoke(['create', str(request_file)])
+    # Invoke the create call
+    result = CliRunner().invoke(cli.main,
+                                ['orders', 'create', str(request_file)],
+                                catch_exceptions=False)
 
-    order_request = {
-        "name":
-        "test",
-        "products": [{
-            "item_ids": ["4500474_2133707_2021-05-20_2419"],
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic",
-        }],
-        "tools":
-        tools_json
-    }
-    sent_request = json.loads(respx.calls.last.request.content)
-    assert sent_request == order_request
+    assert result.exit_code == 0
+    assert json.loads(
+        result.output)['_links']['results'][0]['delivery'] == 'success'
 
 
 def test_cli_orders_read_file_json_doesnotexist(invoke):
