@@ -15,8 +15,6 @@
 from contextlib import asynccontextmanager
 import json
 import logging
-from os import path
-import sys
 
 import click
 
@@ -233,28 +231,20 @@ def read_file_json(ctx, param, value):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument('request',
-                required=True,
-                type=click.Path(exists=True,
-                                resolve_path=True,
-                                writable=True,
-                                allow_dash=True))
+@click.argument("request", default="-", required=False)
 @pretty
 async def create(ctx, request: str, pretty):
     '''  Create an order.
 
-        This command creates an order from an order request.
-        It outputs the created order description, optionally pretty-printed.
+    This command creates an order from an order request.
+    It outputs the created order description, optionally pretty-printed.
 
-        Arguments:
+    Arguments:
 
-        Order request as stdin, str, or file name. Full description of order
-        to be created.
+    Order request as stdin, str, or file name. Full description of order
+    to be created.
     '''
-    if request == "-":
-        request_json = json.loads(sys.stdin.read())
-    if path.exists(request) and path.isfile(request):
-        request_json = json.loads(open(request).read())
+    request_json = click.open_file(input).readlines()
 
     async with orders_client(ctx) as cl:
         order = await cl.create_order(request_json)
@@ -301,14 +291,11 @@ async def create(ctx, request: str, pretty):
               is_flag=True,
               help='Send email notification when Order is complete')
 @click.option(
-    '--like',
-    type=click.STRING,
-    help='File or stdin providing the order description to use as a template.',
-    required=False)
-@click.option('--cloudconfig',
-              help='Cloud delivery config json file.',
-              type=click.File('rb'),
-              callback=read_file_json)
+    '--cloudconfig',
+    help='Credentials for cloud storage provider to enable cloud delivery'
+    'of data.',
+    type=click.File('rb'),
+    callback=read_file_json)
 @pretty
 async def request(ctx,
                   name,
@@ -319,7 +306,6 @@ async def request(ctx,
                   item_type,
                   email,
                   cloudconfig,
-                  like,
                   pretty):
     """Generate an order request.
 
