@@ -580,11 +580,42 @@ def test_cli_orders_create_basic_stdin_success(expected_ids,
 
 
 def test_cli_orders_request_clip_featureclass(invoke,
-                                              featureclass_geojson,
+                                              feature_geojson,
                                               geom_geojson,
                                               write_to_tmp_json_file):
     """Tests that the clip option takes in feature class geojson as well"""
-    fc_file = write_to_tmp_json_file(featureclass_geojson, 'fc.geojson')
+    fc_file = write_to_tmp_json_file(feature_geojson, 'fc.geojson')
+
+    result = invoke([
+        'request',
+        '--name',
+        'test',
+        '--id',
+        '4500474_2133707_2021-05-20_2419',
+        '--bundle',
+        'analytic',
+        '--item-type',
+        'PSOrthoTile',
+        '--clip',
+        fc_file
+    ])
+    assert not result.exception
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": ["4500474_2133707_2021-05-20_2419"],
+            "item_type": "PSOrthoTile",
+            "product_bundle": "analytic",
+        }],
+        "tools": [{
+            'clip': {
+                'aoi': geom_geojson
+            }
+        }]
+    }
+    assert order_request == json.loads(result.output)
 
 
 def test_cli_orders_create_clip_featurecollection(invoke,
@@ -632,7 +663,7 @@ def test_cli_orders_create_clip_featurecollection(invoke,
 
 @respx.mock
 def test_cli_orders_create_clip_featureclass(invoke,
-                                             featureclass_geojson,
+                                             feature_geojson,
                                              geom_geojson,
                                              order_description,
                                              write_to_tmp_json_file):
@@ -640,7 +671,7 @@ def test_cli_orders_create_clip_featureclass(invoke,
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
-    fc_file = write_to_tmp_json_file(featureclass_geojson, 'fc.geojson')
+    fc_file = write_to_tmp_json_file(feature_geojson, 'fc.geojson')
 
     request_result = invoke([
         'request',
