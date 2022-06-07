@@ -236,8 +236,9 @@ def test_data_stats_invalid_filter(invoke, item_types, filter):
     interval = "hour"
     utc_offset = "+1h"
     runner = CliRunner()
-    result = invoke(["stats", item_types, interval, filter, "--utc_offset", utc_offset],
-                    runner=runner)
+    result = invoke(
+        ["stats", item_types, interval, filter, "--utc_offset", utc_offset],
+        runner=runner)
     assert result.exit_code == 2
 
 
@@ -265,9 +266,15 @@ def test_data_stats_invalid_interval(invoke, item_types, interval):
     utc_offset = "+1h"
 
     runner = CliRunner()
-    result = invoke(
-        ["stats", item_types, interval, json.dumps(filter), "--utc_offset", utc_offset],
-        runner=runner)
+    result = invoke([
+        "stats",
+        item_types,
+        interval,
+        json.dumps(filter),
+        "--utc_offset",
+        utc_offset
+    ],
+                    runner=runner)
 
     assert result.exit_code == 2
 
@@ -295,9 +302,15 @@ def test_data_stats_success(invoke, item_types, interval, utc_offset):
     respx.post(TEST_STATS_URL).return_value = mock_resp
 
     runner = CliRunner()
-    result = invoke(
-        ["stats", item_types, interval, json.dumps(filter), "--utc_offset", utc_offset],
-        runner=runner)
+    result = invoke([
+        "stats",
+        item_types,
+        interval,
+        json.dumps(filter),
+        "--utc_offset",
+        utc_offset
+    ],
+                    runner=runner)
     assert result.exit_code == 0
 
 
