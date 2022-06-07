@@ -267,7 +267,7 @@ class DataClient:
             raise exceptions.ClientError(
                 f'{search_type} must be one of {LIST_SEARCH_TYPE}')
 
-        url = f'{self._searches_url()}/searches'
+        url = f'{self._searches_url()}'
         request = self._request(url, method='GET')
         return Searches(request, self._do_request, limit=limit)
 

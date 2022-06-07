@@ -270,7 +270,7 @@ async def test_list_searches_success(limit,
                                      search_result,
                                      session):
     page1_response = {"_links": {}, "searches": [search_result] * 4}
-    route = respx.get(f'{TEST_SEARCHES_URL}/searches')
+    route = respx.get(TEST_SEARCHES_URL)
     route.return_value = httpx.Response(200, json=page1_response)
 
     cl = DataClient(session, base_url=TEST_URL)
@@ -292,7 +292,7 @@ async def test_list_searches_args_do_not_match(sort,
                                                search_type,
                                                expectation,
                                                session):
-    route = respx.get(f'{TEST_SEARCHES_URL}/searches')
+    route = respx.get(TEST_SEARCHES_URL)
     route.return_value = httpx.Response(200, json={})
 
     cl = DataClient(session, base_url=TEST_URL)
