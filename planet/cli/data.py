@@ -181,8 +181,10 @@ async def stats(ctx, item_types, interval, filter, utc_offset):
         items = await cl.get_stats(item_types=item_types,
                                    interval=interval,
                                    search_filter=filter,
-                                   utc_offset = utc_offset)
+                                   utc_offset=utc_offset)
         echo_json(items)
+
+
 @pretty
 @click.argument('search_id')
 async def search_get(ctx, search_id, pretty):
