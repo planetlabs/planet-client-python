@@ -1,6 +1,5 @@
 """Tests of the Data CLI."""
 from click.testing import CliRunner
-import click
 import pytest
 import json
 import httpx

@@ -353,7 +353,7 @@ class DataClient:
             'interval': interval,
             'filter': search_filter,
             'item_types': item_types,
-            'utc_offset' : utc_offset
+            'utc_offset': utc_offset
         }
         request = self._request(url, method='POST', json=request_json)
         response = await self._do_request(request)
