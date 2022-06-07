@@ -13,6 +13,7 @@
 # the License.
 '''Test Orders CLI'''
 import copy
+import hashlib
 from http import HTTPStatus
 import json
 from pathlib import Path
@@ -72,8 +73,9 @@ def test_cli_orders_list_basic(invoke, order_descriptions):
     respx.get(next_page_url).return_value = mock_resp2
 
     result = invoke(['list'])
-    assert not result.exception
-    assert json.dumps([order1, order2, order3]) + '\n' == result.output
+    assert result.exit_code == 0
+    sequence = '\n'.join([json.dumps(o) for o in [order1, order2, order3]])
+    assert result.output == sequence + '\n'
 
 
 @respx.mock
@@ -83,8 +85,8 @@ def test_cli_orders_list_empty(invoke):
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
     result = invoke(['list'])
-    assert not result.exception
-    assert [] == json.loads(result.output)
+    assert result.exit_code == 0
+    assert result.output == ''
 
 
 @respx.mock
@@ -104,8 +106,9 @@ def test_cli_orders_list_state(invoke, order_descriptions):
     # if the value of state doesn't get sent as a url parameter,
     # the mock will fail and this test will fail
     result = invoke(['list', '--state', 'failed'])
-    assert not result.exception
-    assert [order1, order2] == json.loads(result.output)
+    assert result.exit_code == 0
+    sequence = '\n'.join([json.dumps(o) for o in [order1, order2]])
+    assert result.output == sequence + '\n'
 
 
 @respx.mock
@@ -137,8 +140,9 @@ def test_cli_orders_list_limit(invoke,
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
     result = invoke(['list', '--limit', limit])
-    assert not result.exception
-    assert len(json.loads(result.output)) == limited_list_length
+    assert result.exit_code == 0
+    count = len(result.output.strip().split('\n'))
+    assert count == limited_list_length
 
 
 @respx.mock
@@ -155,8 +159,8 @@ def test_cli_orders_list_pretty(invoke, monkeypatch, order_description):
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
     result = invoke(['list', '--pretty'])
-    assert not result.exception
-    mock_echo_json.assert_called_once_with([order_description], True)
+    assert result.exit_code == 0
+    mock_echo_json.assert_called_once_with(order_description, True)
 
 
 # TODO: add tests for "get --pretty" (gh-491).
@@ -256,17 +260,18 @@ def mock_download_response(oid, order_description):
         order_description['state'] = 'success'
         dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
         dl_url2 = TEST_DOWNLOAD_URL + '/2?token=IAmAnotherToken'
+        dl_url3 = TEST_DOWNLOAD_URL + '/manifest'
+
         order_description['_links']['results'] = [{
-            'location':
-            dl_url1, 'name':
-            'oid/itemtype/m1.json'
-        },
-                                                  {
-                                                      'location':
-                                                      dl_url2,
-                                                      'name':
-                                                      'oid/itemtype/m2.json'
-                                                  }]
+            'location': dl_url1,
+            'name': 'oid/itemtype/m1.json'
+        }, {
+            'location': dl_url2,
+            'name': 'oid/itemtype/m2.json'
+        }, {
+            'location': dl_url3,
+            'name': 'oid/manifest.json'
+        }]  # yapf: disable
 
         get_url = f'{TEST_ORDERS_URL}/{oid}'
         mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
@@ -292,12 +297,57 @@ def mock_download_response(oid, order_description):
                                     })
         respx.get(dl_url2).return_value = mock_resp2
 
+        m1_bytes = b'{"key": "value"}'
+        m2_bytes = b'{"key2": "value2"}'
+        manifest_data = {
+            "name": "",
+            "files": [
+                {
+                    "path": "itemtype/m1.json",
+                    "digests": {
+                        "md5": hashlib.md5(m1_bytes).hexdigest(),
+                        "sha256": hashlib.sha256(m1_bytes).hexdigest()}
+                }, {
+                    "path": "itemtype/m2.json",
+                    "digests": {
+                        "md5": hashlib.md5(m2_bytes).hexdigest(),
+                        "sha256": hashlib.sha256(m2_bytes).hexdigest()}
+                }]
+        }  # yapf: disable
+        mock_resp3 = httpx.Response(HTTPStatus.OK,
+                                    json=manifest_data,
+                                    headers={
+                                        'Content-Type':
+                                        'application/json',
+                                        'Content-Disposition':
+                                        'attachment; filename="manifest.json"'
+                                    })
+        respx.get(dl_url3).return_value = mock_resp3
+
     return _func
 
 
-# TODO: add test for --checksum (see gh-432).
 @respx.mock
 def test_cli_orders_download_default(invoke, mock_download_response, oid):
+    mock_download_response()
+
+    runner = CliRunner()
+    with runner.isolated_filesystem() as folder:
+        result = invoke(['download', oid], runner=runner)
+        assert not result.exception
+
+        # basic check of progress reporting
+        assert 'm1.json' in result.output
+
+        # Check that the files were downloaded and have the correct contents
+        f1_path = Path(folder) / 'oid/itemtype/m1.json'
+        assert json.load(open(f1_path)) == {'key': 'value'}
+        f2_path = Path(folder) / 'oid/itemtype/m2.json'
+        assert json.load(open(f2_path)) == {'key2': 'value2'}
+
+
+@respx.mock
+def test_cli_orders_download_checksum(invoke, mock_download_response, oid):
     mock_download_response()
 
     runner = CliRunner()
@@ -483,16 +533,16 @@ def test_cli_orders_create_clip(invoke,
 
 
 @respx.mock
-def test_cli_orders_create_clip_featureclass(invoke,
-                                             featureclass_geojson,
-                                             geom_geojson,
-                                             order_description,
-                                             write_to_tmp_json_file):
+def test_cli_orders_create_clip_featurecollection(invoke,
+                                                  featurecollection_geojson,
+                                                  geom_geojson,
+                                                  order_description,
+                                                  write_to_tmp_json_file):
     """Tests that the clip option takes in feature class geojson as well"""
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
-    fc_file = write_to_tmp_json_file(featureclass_geojson, 'fc.geojson')
+    fc_file = write_to_tmp_json_file(featurecollection_geojson, 'fc.geojson')
 
     result = invoke([
         'create',

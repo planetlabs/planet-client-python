@@ -81,3 +81,7 @@ class AuthException(ClientError):
 class PagingError(PlanetError):
     '''For errors that occur during paging.'''
     pass
+
+
+class GeoJSONError(ClientError):
+    """Errors that occur due to invalid GeoJSON"""

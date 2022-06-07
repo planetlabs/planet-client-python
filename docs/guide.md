@@ -88,6 +88,33 @@ environment variable:
 
 ```
 
+
+### Collecting Results
+
+Some API calls, such as searching for imagery and listing orders, return a
+varying, and potentially large, number of results. These API responses are
+paged. The SDK manages paging internally and the associated client commands
+return an asynchronous iterator over the results. These results can be
+converted to a JSON blob using the `collect` command. When the results
+represent GeoJSON features, the JSON blob is a GeoJSON FeatureCollection.
+Otherwise, the JSON blob is a list of the individual results.
+
+
+```python
+>>> import asyncio
+>>> from planet import collect, OrdersClient, Session
+>>>
+>>> async def main():
+...     async with Session() as sess:
+...         client = OrdersClient(sess)
+...         orders = client.list_orders()
+...         orders_list = collect(orders)
+...
+>>> asyncio.run(main())
+
+```
+
+
 ### Orders Client
 
 The Orders Client mostly mirrors the
@@ -221,6 +248,27 @@ from planet import reporting
 >>> asyncio.run(create_poll_and_download())
 ```
 
+#### Validating Checksums
+
+Checksum validation provides for verification that the files in an order have
+been downloaded successfully and are not missing, currupted, or changed. This
+functionality is included in the OrderClient, but does not require an instance
+of the class to be used.
+
+
+To perform checksum validation:
+
+```python
+from pathlib import Path
+
+# path includes order id
+order_path = Path('193e5bd1-dedc-4c65-a539-6bc70e55d928')
+OrdersClient.validate_checksum(order_path, 'md5')
+```
+
+
+
+
 ### Data Client
 
 The Data Client mostly mirrors the
@@ -302,6 +350,34 @@ for passing into a Docker instance:
 
 ```console
 $ export PL_API_KEY=$(planet auth value)
+```
+
+
+### Collecting Results
+
+Some API calls, such as searching for imagery and listing orders, return a
+varying, and potentially large, number of results. These API responses are
+paged. The SDK manages paging internally and the associated cli commands
+output the results as a sequence. These results can be converted to a JSON blob
+using the `collect` command. When the results
+represent GeoJSON features, the JSON blob is a GeoJSON FeatureCollection.
+Otherwise, the JSON blob is a list of the individual results.
+
+```console
+$ planet data search-quick PSScene filter.json | planet collect -
+```
+
+contents of `filter.json`:
+
+```json
+{
+   "type":"DateRangeFilter",
+   "field_name":"acquired",
+   "config":{
+      "gt":"2019-12-31T00:00:00Z",
+      "lte":"2020-01-31T00:00:00Z"
+   }
+}
 ```
 
 ### Orders API

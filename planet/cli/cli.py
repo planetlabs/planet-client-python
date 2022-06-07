@@ -20,7 +20,7 @@ import click
 
 import planet
 
-from . import auth, data, orders, subscriptions
+from . import auth, collect, data, orders, subscriptions
 
 LOGGER = logging.getLogger(__name__)
 
@@ -80,3 +80,4 @@ main.add_command(auth.auth)
 main.add_command(data.data)
 main.add_command(orders.orders)
 main.add_command(subscriptions.subscriptions)
+main.add_command(collect.collect)

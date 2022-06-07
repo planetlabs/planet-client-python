@@ -17,7 +17,7 @@ import logging
 
 import pytest
 
-from planet import geojson
+from planet import geojson, exceptions
 
 LOGGER = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ def assert_geom_equal():
 
 def test_geom_from_geojson_success(geom_geojson,
                                    feature_geojson,
-                                   featureclass_geojson,
+                                   featurecollection_geojson,
                                    assert_geom_equal):
     ggeo = geojson.as_geom(geom_geojson)
     assert_geom_equal(ggeo, geom_geojson)
@@ -46,50 +46,51 @@ def test_geom_from_geojson_success(geom_geojson,
     fgeo = geojson.geom_from_geojson(feature_geojson)
     assert_geom_equal(fgeo, geom_geojson)
 
-    fcgeo = geojson.geom_from_geojson(featureclass_geojson)
+    fcgeo = geojson.geom_from_geojson(featurecollection_geojson)
     assert_geom_equal(fcgeo, geom_geojson)
 
 
 def test_geom_from_geojson_no_geometry(feature_geojson):
     feature_geojson.pop('geometry')
-    with pytest.raises(geojson.GeoJSONException):
+    with pytest.raises(exceptions.GeoJSONError):
         _ = geojson.geom_from_geojson(feature_geojson)
 
 
 def test_geom_from_geojson_missing_coordinates(geom_geojson):
     geom_geojson.pop('coordinates')
-    with pytest.raises(geojson.GeoJSONException):
+    with pytest.raises(exceptions.GeoJSONError):
         _ = geojson.geom_from_geojson(geom_geojson)
 
 
 def test_geom_from_geojson_missing_type(geom_geojson):
     geom_geojson.pop('type')
-    with pytest.raises(geojson.GeoJSONException):
+    with pytest.raises(exceptions.GeoJSONError):
         _ = geojson.geom_from_geojson(geom_geojson)
 
 
-def test_geom_from_geojson_multiple_features(featureclass_geojson):
+def test_geom_from_geojson_multiple_features(featurecollection_geojson):
     # duplicate the feature
-    featureclass_geojson['features'] = 2 * featureclass_geojson['features']
-    with pytest.raises(geojson.MultipleFeaturesException):
-        _ = geojson.geom_from_geojson(featureclass_geojson)
+    featurecollection_geojson[
+        'features'] = 2 * featurecollection_geojson['features']
+    with pytest.raises(geojson.GeoJSONError):
+        _ = geojson.geom_from_geojson(featurecollection_geojson)
 
 
 def test_validate_geom_invalid_type(geom_geojson):
     geom_geojson['type'] = 'invalid'
-    with pytest.raises(geojson.GeoJSONException):
+    with pytest.raises(exceptions.GeoJSONError):
         _ = geojson.validate_geom(geom_geojson)
 
 
 def test_validate_geom_wrong_type(geom_geojson):
     geom_geojson['type'] = 'point'
-    with pytest.raises(geojson.GeoJSONException):
+    with pytest.raises(exceptions.GeoJSONError):
         _ = geojson.validate_geom(geom_geojson)
 
 
 def test_validate_geom_invalid_coordinates(geom_geojson):
     geom_geojson['coordinates'] = 'invalid'
-    with pytest.raises(geojson.GeoJSONException):
+    with pytest.raises(exceptions.GeoJSONError):
         _ = geojson.validate_geom(geom_geojson)
 
 
@@ -107,5 +108,28 @@ def test_as_polygon(geom_geojson):
 
 
 def test_as_polygon_wrong_type(point_geom_geojson):
-    with pytest.raises(geojson.WrongTypeException):
+    with pytest.raises(exceptions.GeoJSONError):
         _ = geojson.as_polygon(point_geom_geojson)
+
+
+def test_as_featurecollection_success(feature_geojson):
+    feature2 = feature_geojson.copy()
+    feature2['properties'] = {'foo': 'bar'}
+    values = [feature_geojson, feature2]
+    res = geojson.as_featurecollection(values)
+
+    expected = {'type': 'FeatureCollection', 'features': values}
+    assert res == expected
+
+
+def test__is_instance_of_success(feature_geojson):
+    assert geojson._is_instance_of(feature_geojson, 'Feature')
+
+    feature2 = feature_geojson.copy()
+    feature2['properties'] = {'foo': 'bar'}
+    assert geojson._is_instance_of(feature2, 'Feature')
+
+
+def test__is_instance_of_does_not_exist(feature_geojson):
+    with pytest.raises(exceptions.GeoJSONError):
+        geojson._is_instance_of(feature_geojson, 'Foobar')
