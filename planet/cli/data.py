@@ -184,6 +184,7 @@ async def stats(ctx, item_types, interval, filter, utc_offset):
                                    utc_offset=utc_offset)
         echo_json(items)
 
+
 @data.command()
 @click.pass_context
 @translate_exceptions
