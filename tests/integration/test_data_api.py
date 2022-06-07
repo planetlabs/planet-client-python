@@ -282,6 +282,53 @@ async def test_delete_search(retcode, expectation, session):
 
 @respx.mock
 @pytest.mark.asyncio
+async def test_run_search_success(item_descriptions, session):
+    sid = 'search_id'
+    route = respx.get(f'{TEST_SEARCHES_URL}/{sid}/results')
+
+    next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
+    item1, item2, item3 = item_descriptions
+    page1_response = {
+        "_links": {
+            "_next": next_page_url
+        }, "features": [item1, item2]
+    }
+
+    route.return_value = httpx.Response(204, json=page1_response)
+
+    page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    cl = DataClient(session, base_url=TEST_URL)
+    items = await cl.run_search(sid)
+    items_list = [i async for i in items]
+
+    assert route.called
+
+    # check that all of the items were returned unchanged
+    assert items_list == item_descriptions
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_run_search_doesnotexist(session):
+    sid = 'search_id'
+    route = respx.get(f'{TEST_SEARCHES_URL}/{sid}/results')
+    route.return_value = httpx.Response(404)
+
+    cl = DataClient(session, base_url=TEST_URL)
+    with pytest.raises(exceptions.APIError):
+        items = await cl.run_search(sid)
+        # this won't throw the error until the iterator is processed
+        # issue 476
+        [i async for i in items]
+
+    assert route.called
+
+
+@respx.mock
+@pytest.mark.asyncio
 async def test_get_stats_success(search_filter, session):
 
     page_response = {

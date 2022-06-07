@@ -280,11 +280,16 @@ class DataClient:
         """
         raise NotImplementedError
 
-    async def run_search(self, search_id: str) -> typing.AsyncIterator[dict]:
+    async def run_search(
+            self,
+            search_id: str,
+            limit: typing.Union[int,
+                                None] = 100) -> typing.AsyncIterator[dict]:
         """Execute a saved search.
 
         Parameters:
             search_id: Stored search identifier.
+            limit: Maximum number of items to return.
 
         Returns:
             Returns an iterator over all items matching the search.
@@ -292,7 +297,10 @@ class DataClient:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        raise NotImplementedError
+        url = f'{self._searches_url()}/{search_id}/results'
+
+        request = self._request(url, method='GET')
+        return Items(request, self._do_request, limit=limit)
 
     async def get_stats(self,
                         item_types: typing.List[str],
