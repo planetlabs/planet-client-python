@@ -297,7 +297,10 @@ class DataClient:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        raise NotImplementedError
+        url = f'{self._searches_url()}/{search_id}'
+        req = self._request(url, method='GET')
+        resp = await self._do_request(req)
+        return resp.json()
 
     async def run_search(
             self,

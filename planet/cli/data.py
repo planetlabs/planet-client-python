@@ -135,6 +135,24 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
         echo_json(items, pretty)
 
 
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@pretty
+@click.argument('search_id')
+async def search_get(ctx, search_id, pretty):
+    """Get saved search.
+
+    This function obtains an existing saved search, using the search_id.
+    This function outputs a full JSON description of the identified saved
+    search. The output can also be optionally pretty-printed using "--pretty".
+    """
+    async with data_client(ctx) as cl:
+        items = await cl.get_search(search_id)
+        echo_json(items, pretty)
+
+
 # TODO: search_update()".
 # TODO: search_delete()".
 # TODO: search_run()".

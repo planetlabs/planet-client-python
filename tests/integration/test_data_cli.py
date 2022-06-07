@@ -31,6 +31,7 @@ def test_data_command_registered(invoke):
     assert "Usage" in result.output
     assert "search-quick" in result.output
     assert "search-create" in result.output
+    assert "search-get" in result.output
     # Add other sub-commands here.
 
 
@@ -220,29 +221,27 @@ def test_search_create_daily_email(invoke, search_result):
 # TODO: basic test for "planet data filter".
 
 
-# We expect this test to fail now. When the Data API client is
-# available, we will remove the xfail marker and work to get this test,
-# or a better version, to pass.
-@pytest.mark.xfail(reason="Data client not yet implemented")
-def test_search_quick():
-    """planet data search-quick prints 1 GeoJSON Feature."""
-    result = CliRunner().invoke(
-        cli.main,
-        # When testing, we "explode" our command and its parameters
-        # into a list to make parameterization more clear.
-        [
-            "data",
-            "search-quick",
-            # To keep yapf from putting option name and value on
-            # different lines, use a "=".
-            "--limit=10",
-            "--name=test",
-            "--pretty",
-            "lol,wut",
-            "{}"
-        ])
-    assert result.exit_code == 0
-    assert "Feature" in result.output
+@respx.mock
+def test_search_get(invoke, search_id, search_result):
+    get_url = f'{TEST_SEARCHES_URL}/{search_id}'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
+    respx.get(get_url).return_value = mock_resp
+
+    result = invoke(['search-get', search_id])
+    assert not result.exception
+    assert search_result == json.loads(result.output)
+
+
+@respx.mock
+def test_search_get_id_not_found(invoke, search_id):
+    get_url = f'{TEST_SEARCHES_URL}/{search_id}'
+    error_json = {"message": "Error message"}
+    mock_resp = httpx.Response(404, json=error_json)
+    respx.get(get_url).return_value = mock_resp
+
+    result = invoke(['search-get', search_id])
+    assert result.exception
+    assert 'Error: {"message": "Error message"}\n' == result.output
 
 
 # TODO: basic test for "planet data search-create".
