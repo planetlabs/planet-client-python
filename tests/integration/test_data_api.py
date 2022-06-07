@@ -350,7 +350,6 @@ async def test_delete_search(retcode, expectation, session):
 
     assert route.called
 
-        
 @respx.mock
 @pytest.mark.asyncio
 async def test_run_search_success(item_descriptions, session):
