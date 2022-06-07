@@ -245,7 +245,7 @@ def read_file_json(ctx, param, value):
 
 @orders.command()
 @click.pass_context
-# @translate_exceptions
+@translate_exceptions
 @coro
 @click.argument("request", default="-", required=False)
 @pretty

@@ -542,7 +542,7 @@ def test_cli_orders_create_basic_success(expected_ids,
 
     result = CliRunner().invoke(cli.main,
                                 ['orders', 'create', str(request_file)],
-                                catch_exceptions=False)
+                                catch_exceptions=True)
 
     assert result.exit_code == 0
     assert json.loads(
@@ -572,7 +572,7 @@ def test_cli_orders_create_basic_stdin_success(expected_ids,
 
     result = CliRunner().invoke(cli.main, ['orders', 'create', '-'],
                                 input=request_result.output,
-                                catch_exceptions=False)
+                                catch_exceptions=True)
 
     assert result.exit_code == 0
     assert json.loads(
@@ -693,7 +693,7 @@ def test_cli_orders_create_clip_featureclass(invoke,
     # Invoke the create call
     result = CliRunner().invoke(cli.main,
                                 ['orders', 'create', str(request_file)],
-                                catch_exceptions=False)
+                                catch_exceptions=True)
 
     assert result.exit_code == 0
     assert json.loads(
@@ -830,7 +830,7 @@ def test_cli_orders_create_cloudconfig(invoke,
     # Invoke the create call
     result = CliRunner().invoke(cli.main,
                                 ['orders', 'create', str(request_file)],
-                                catch_exceptions=False)
+                                catch_exceptions=True)
 
     assert result.exit_code == 0
     assert json.loads(
@@ -894,7 +894,7 @@ def test_cli_orders_create_email(invoke,
     # Invoke the create call
     result = CliRunner().invoke(cli.main,
                                 ['orders', 'create', str(request_file)],
-                                catch_exceptions=False)
+                                catch_exceptions=True)
 
     assert result.exit_code == 0
     assert json.loads(
@@ -957,7 +957,7 @@ def test_cli_orders_create_tools(invoke,
     # Invoke the create call
     result = CliRunner().invoke(cli.main,
                                 ['orders', 'create', str(request_file)],
-                                catch_exceptions=False)
+                                catch_exceptions=True)
 
     assert result.exit_code == 0
     assert json.loads(
