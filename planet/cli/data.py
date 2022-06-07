@@ -184,7 +184,10 @@ async def stats(ctx, item_types, interval, filter, utc_offset):
                                    utc_offset=utc_offset)
         echo_json(items)
 
-
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
 @pretty
 @click.argument('search_id')
 async def search_get(ctx, search_id, pretty):
