@@ -1,4 +1,5 @@
 # Copyright 2020 Planet Labs, Inc.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,9 +17,11 @@ from . import order_request, reporting
 from .__version__ import __version__  # NOQA
 from .auth import Auth
 from .clients import DataClient, OrdersClient  # NOQA
+from .io import collect
 
 __all__ = [
     'Auth',
+    'collect',
     'DataClient'
     'OrdersClient',
     'order_request',

@@ -1,4 +1,5 @@
 # Copyright 2015 Planet Labs, Inc.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -80,3 +81,7 @@ class AuthException(ClientError):
 class PagingError(PlanetError):
     '''For errors that occur during paging.'''
     pass
+
+
+class GeoJSONError(ClientError):
+    """Errors that occur due to invalid GeoJSON"""

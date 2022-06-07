@@ -1,4 +1,4 @@
-# Copyright 2022 Planet Labs, PBC.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +15,17 @@
 from contextlib import asynccontextmanager
 import json
 import logging
+from pathlib import Path
+
 import click
 
 import planet
 from planet import OrdersClient, Session  # allow mocking
 from .cmds import coro, translate_exceptions
 from .io import echo_json
+from .options import pretty
 
 LOGGER = logging.getLogger(__name__)
-
-pretty = click.option('--pretty', is_flag=True, help='Format JSON output.')
 
 
 @asynccontextmanager
@@ -70,8 +71,8 @@ async def list(ctx, state, limit, pretty):
     '''
     async with orders_client(ctx) as cl:
         orders = await cl.list_orders(state=state, limit=limit)
-        orders_list = [o async for o in orders]
-    echo_json(orders_list, pretty)
+        async for o in orders:
+            echo_json(o, pretty)
 
 
 @orders.command()
@@ -181,6 +182,10 @@ async def wait(ctx, order_id, delay, max_attempts, state):
 @translate_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
+@click.option('--checksum',
+              default=None,
+              type=click.Choice(['MD5', 'SHA256'], case_sensitive=False),
+              help=('Verify that checksums match.'))
 @click.option('--directory',
               default='.',
               help=('Base directory for file download.'),
@@ -192,14 +197,26 @@ async def wait(ctx, order_id, delay, max_attempts, state):
               is_flag=True,
               default=False,
               help=('Overwrite files if they already exist.'))
-async def download(ctx, order_id, overwrite, directory):
-    """Download order by order ID."""
+async def download(ctx, order_id, overwrite, directory, checksum):
+    """Download order by order ID.
+
+    If --checksum is provided, the associated checksums given in the manifest
+    are compared against the downloaded files to verify that they match.
+
+    If --checksum is provided, files are already downloaded, and --overwrite is
+    not specified, this will simply validate the checksums of the files against
+    the manifest.
+    """
     quiet = ctx.obj['QUIET']
     async with orders_client(ctx) as cl:
-        await cl.download_order(str(order_id),
-                                directory=directory,
-                                overwrite=overwrite,
-                                progress_bar=not quiet)
+        await cl.download_order(
+            str(order_id),
+            directory=Path(directory),
+            overwrite=overwrite,
+            progress_bar=not quiet,
+        )
+        if checksum:
+            cl.validate_checksum(Path(directory, str(order_id)), checksum)
 
 
 def read_file_geojson(ctx, param, value):
@@ -327,7 +344,7 @@ async def request(ctx,
     elif clip:
         try:
             clip = planet.geojson.as_polygon(clip)
-        except planet.geojson.GeoJSONException as e:
+        except planet.exceptions.GeoJSONError as e:
             raise click.BadParameter(e)
 
         tools = [planet.order_request.clip_tool(clip)]

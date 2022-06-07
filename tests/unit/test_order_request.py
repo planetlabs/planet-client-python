@@ -1,4 +1,5 @@
 # Copyright 2020 Planet Labs, Inc.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +16,7 @@ import logging
 
 import pytest
 
-from planet import geojson, order_request, specs
+from planet import exceptions, order_request, specs
 
 LOGGER = logging.getLogger(__name__)
 
@@ -222,7 +223,7 @@ def test_clip_tool(geom_geojson, point_geom_geojson):
     expected = {'clip': {'aoi': geom_geojson}}
     assert ct == expected
 
-    with pytest.raises(geojson.WrongTypeException):
+    with pytest.raises(exceptions.GeoJSONError):
         _ = order_request.clip_tool(point_geom_geojson)
 
 

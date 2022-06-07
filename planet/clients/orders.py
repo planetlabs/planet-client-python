@@ -1,4 +1,5 @@
 # Copyright 2020 Planet Labs, Inc.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -14,11 +15,13 @@
 """Functionality for interacting with the orders api"""
 import asyncio
 import logging
-import os
 import time
 import typing
 import uuid
+import json
+import hashlib
 
+from pathlib import Path
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
@@ -241,15 +244,16 @@ class OrdersClient:
     async def download_asset(self,
                              location: str,
                              filename: str = None,
-                             directory: str = None,
+                             directory: Path = Path('.'),
                              overwrite: bool = False,
-                             progress_bar: bool = True) -> str:
+                             progress_bar: bool = True) -> Path:
         """Download ordered asset.
 
         Parameters:
             location: Download location url including download token.
             filename: Custom name to assign to downloaded file.
-            directory: Base directory for file download.
+            directory: Base directory for file download. This directory will be
+                created if it does not already exist.
             overwrite: Overwrite any existing files.
             progress_bar: Show progress bar during download.
 
@@ -263,7 +267,8 @@ class OrdersClient:
 
         async with self._session.stream(req) as resp:
             body = StreamingBody(resp)
-            dl_path = os.path.join(directory or '.', filename or body.name)
+            dl_path = Path(directory, filename or body.name)
+            dl_path.parent.mkdir(exist_ok=True, parents=True)
             await body.write(dl_path,
                              overwrite=overwrite,
                              progress_bar=progress_bar)
@@ -271,14 +276,16 @@ class OrdersClient:
 
     async def download_order(self,
                              order_id: str,
-                             directory: str = None,
+                             directory: Path = Path('.'),
                              overwrite: bool = False,
-                             progress_bar: bool = False) -> typing.List[str]:
+                             progress_bar: bool = False,
+                             checksum: str = None) -> typing.List[Path]:
         """Download all assets in an order.
 
         Parameters:
-            order_id: The ID of the order
-            directory: Root directory for file download.
+            order_id: The ID of the order.
+            directory: Base directory for file download. This directory must
+                already exist.
             overwrite: Overwrite files if they already exist.
             progress_bar: Show progress bar during download.
 
@@ -298,30 +305,91 @@ class OrdersClient:
                 f'({order_state}) is not a final state. '
                 'Consider using wait functionality before '
                 'attempting to download.')
-        locations = self._get_order_locations(order)
-        LOGGER.info(
-            f'downloading {len(locations)} assets from order {order_id}')
+
+        info = self._get_download_info(order)
+        LOGGER.info(f'downloading {len(info)} assets from order {order_id}')
 
         filenames = [
-            await self.download_asset(location,
-                                      directory=directory,
+            await self.download_asset(i['location'],
+                                      filename=i['filename'],
+                                      directory=directory / i['directory'],
                                       overwrite=overwrite,
-                                      progress_bar=progress_bar)
-            for location in locations
+                                      progress_bar=progress_bar) for i in info
         ]
+
         return filenames
 
     @staticmethod
-    def _get_order_locations(order):
+    def _get_download_info(order):
         links = order['_links']
         results = links.get('results', [])
+
+        def _info_from_result(result):
+            name = Path(result['name'])
+            return {
+                'location': result['location'],
+                'directory': name.parent,
+                'filename': name.name
+            }
+
         try:
-            return list(r['location'] for r in results if r)
+            info = list(_info_from_result(r) for r in results if r)
         except TypeError:
             LOGGER.warning(
                 'order does not have any locations, will not download any ' +
                 'files.')
-            return []
+            info = []
+        return info
+
+    @staticmethod
+    def validate_checksum(directory: Path, checksum: str):
+        """Validate checksums of downloaded files against order manifest.
+
+        For each file entry in the order manifest, the specified checksum given
+        in the manifest file will be validated against the checksum calculated
+        from the downloaded file.
+
+        Parameters:
+            directory: Path to order directory.
+            checksum: The type of checksum hash- 'MD5' or 'SHA256'.
+
+        Raises:
+            planet.exceptions.ClientError: If a file is missing or if checksums
+                do not match.
+        """
+        manifest_path = directory / 'manifest.json'
+
+        try:
+            manifest_data = json.loads(manifest_path.read_text())
+        except FileNotFoundError:
+            raise exceptions.ClientError(
+                f'File ({manifest_path}) does not exist.')
+        except json.decoder.JSONDecodeError:
+            raise exceptions.ClientError(
+                f'Manifest file ({manifest_path}) does not contain valid JSON.'
+            )
+
+        if checksum.upper() == 'MD5':
+            hash_type = hashlib.md5
+        elif checksum.upper() == 'SHA256':
+            hash_type = hashlib.sha256
+        else:
+            raise exceptions.ClientError(
+                f'Checksum ({checksum}) must be one of MD5 or SHA256.')
+
+        for json_entry in manifest_data['files']:
+            origin_hash = json_entry['digests'][checksum.lower()]
+
+            filename = directory / json_entry['path']
+            try:
+                returned_hash = hash_type(filename.read_bytes()).hexdigest()
+            except FileNotFoundError:
+                raise exceptions.ClientError(
+                    f'Checksum failed. File ({filename}) does not exist.')
+
+            if origin_hash != returned_hash:
+                raise exceptions.ClientError(
+                    f'File ({filename}) checksums do not match.')
 
     async def wait(self,
                    order_id: str,
@@ -408,9 +476,11 @@ class OrdersClient:
 
         return current_state
 
-    async def list_orders(self,
-                          state: str = None,
-                          limit: typing.Union[int, None] = 100):
+    async def list_orders(
+            self,
+            state: str = None,
+            limit: typing.Union[int,
+                                None] = 100) -> typing.AsyncIterator[dict]:
         """Get all order requests.
 
         Parameters:

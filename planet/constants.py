@@ -1,4 +1,5 @@
 # Copyright 2020 Planet Labs, Inc.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +14,10 @@
 # limitations under the License.
 '''Constants used across the code base'''
 import os
+from pathlib import Path
+
+DATA_DIR = Path(os.path.dirname(__file__)) / 'data'
 
 PLANET_BASE_URL = 'https://api.planet.com'
 
-SECRET_FILE_PATH = os.path.join(os.path.expanduser('~'), '.planet.json')
+SECRET_FILE_PATH = Path(os.path.expanduser('~')) / '.planet.json'

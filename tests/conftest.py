@@ -1,4 +1,5 @@
 # Copyright 2020 Planet Labs, Inc.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -55,6 +56,12 @@ def get_test_file_json():
 
 
 @pytest.fixture
+def search_result(get_test_file_json):
+    filename = 'search_result_20200130_093253_ssc6_u0001.json'
+    return get_test_file_json(filename)
+
+
+@pytest.fixture
 def order_description(get_test_file_json):
     filename = 'order_description_b0cb3448-0a74-11eb-92a1-a3d779bb08e0.json'
     return get_test_file_json(filename)
@@ -75,6 +82,11 @@ def orders_page(get_test_file_json):
 @pytest.fixture
 def oid():
     return 'b0cb3448-0a74-11eb-92a1-a3d779bb08e0'
+
+
+@pytest.fixture
+def search_id():
+    return '20200130_093253_ssc6_u0001'
 
 
 @pytest.fixture
@@ -111,7 +123,7 @@ def feature_geojson(geom_geojson):
 
 
 @pytest.fixture
-def featureclass_geojson(feature_geojson):
+def featurecollection_geojson(feature_geojson):
     return {"type": "FeatureCollection", "features": [feature_geojson]}
 
 

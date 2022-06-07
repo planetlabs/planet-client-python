@@ -1,4 +1,5 @@
-# Copyright 2020 Planet Labs, PBC.
+# Copyright 2020 Planet Labs, Inc.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,3 +35,14 @@ def order_descriptions(order_description):
     order3 = copy.deepcopy(order_description)
     order3['id'] = 'oid3'
     return [order1, order2, order3]
+
+
+@pytest.fixture
+def search_results(search_result):
+    result1 = search_result
+    result1['id'] = 'id1'
+    result2 = copy.deepcopy(search_result)
+    result2['id'] = 'id2'
+    result3 = copy.deepcopy(search_result)
+    result3['id'] = 'id3'
+    return [result1, result2, result3]

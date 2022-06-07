@@ -1,4 +1,4 @@
-# Copyright 2022 Planet Labs, PBC.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -38,6 +38,12 @@ class Items(Paged):
     """Asynchronous iterator over items from a paged response."""
     NEXT_KEY = '_next'
     ITEMS_KEY = 'features'
+
+
+class Searches(Paged):
+    """Asynchronous iterator over searches from a paged response."""
+    NEXT_KEY = '_next'
+    ITEMS_KEY = 'searches'
 
 
 class DataClient:
@@ -85,12 +91,14 @@ class DataClient:
         """
         return await self._session.request(request)
 
-    async def quick_search(self,
-                           item_types: typing.List[str],
-                           search_filter: dict,
-                           name: str = None,
-                           sort: str = None,
-                           limit: int = None) -> typing.AsyncIterator[dict]:
+    async def quick_search(
+            self,
+            item_types: typing.List[str],
+            search_filter: dict,
+            name: str = None,
+            sort: str = None,
+            limit: typing.Union[int,
+                                None] = 100) -> typing.AsyncIterator[dict]:
         """Execute a quick search.
 
         Quick searches are saved for a short period of time (~month). The
@@ -138,6 +146,10 @@ class DataClient:
             planet.exceptions.APIError: On API error.
         """
         url = f'{self._base_url}/quick-search'
+
+        # Set no limit
+        if limit == 0:
+            limit = None
 
         # TODO: validate item_types
         request_json = {'filter': search_filter, 'item_types': item_types}
@@ -206,12 +218,25 @@ class DataClient:
         Returns:
             Description of the saved search.
         """
-        raise NotImplementedError
+        url = f'{self._searches_url()}/{search_id}'
+
+        request_json = {
+            'name': name,
+            'filter': search_filter,
+            'item_types': item_types,
+            '__daily_email_enabled': enable_email
+        }
+
+        request = self._request(url, method='PUT', json=request_json)
+        response = await self._do_request(request)
+        return response.json()
 
     async def list_searches(
             self,
             sort: str = 'created desc',
-            search_type: str = 'any') -> typing.AsyncIterator[dict]:
+            search_type: str = 'any',
+            limit: typing.Union[int,
+                                None] = 100) -> typing.AsyncIterator[dict]:
         """List all saved searches available to the authenticated user.
 
         NOTE: the term 'saved' is overloaded here. We want to list saved
@@ -222,18 +247,29 @@ class DataClient:
         Parameters:
             sort: Field and direction to order results by.
             search_type: Search type filter.
+            limit: Maximum number of items to return.
 
         Returns:
-            List of saved searches that match filter.
+            An iterator over all searches that match filter.
 
         Raises:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If sort or search_type are not
                 valid.
         """
-        # NOTE: check sort and search_type args are in LIST_SORT_ORDER and
-        # LIST_SEARCH_TYPE, respectively
-        raise NotImplementedError
+        sort = sort.lower()
+        if sort not in LIST_SORT_ORDER:
+            raise exceptions.ClientError(
+                f'{sort} must be one of {LIST_SORT_ORDER}')
+
+        search_type = search_type.lower()
+        if search_type not in LIST_SEARCH_TYPE:
+            raise exceptions.ClientError(
+                f'{search_type} must be one of {LIST_SEARCH_TYPE}')
+
+        url = f'{self._searches_url()}'
+        request = self._request(url, method='GET')
+        return Searches(request, self._do_request, limit=limit)
 
     async def delete_search(self, search_id: str):
         """Delete an existing saved search.
@@ -241,13 +277,13 @@ class DataClient:
         Parameters:
             search_id: Saved search identifier.
 
-        Returns:
-            Nothing.
-
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        raise NotImplementedError
+        url = f'{self._searches_url()}/{search_id}'
+
+        request = self._request(url, method='DELETE')
+        await self._do_request(request)
 
     async def get_search(self, search_id: str) -> dict:
         """Get a saved search by id.
@@ -261,13 +297,21 @@ class DataClient:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        raise NotImplementedError
+        url = f'{self._searches_url()}/{search_id}'
+        req = self._request(url, method='GET')
+        resp = await self._do_request(req)
+        return resp.json()
 
-    async def run_search(self, search_id: str) -> typing.AsyncIterator[dict]:
+    async def run_search(
+            self,
+            search_id: str,
+            limit: typing.Union[int,
+                                None] = 100) -> typing.AsyncIterator[dict]:
         """Execute a saved search.
 
         Parameters:
             search_id: Stored search identifier.
+            limit: Maximum number of items to return.
 
         Returns:
             Returns an iterator over all items matching the search.
@@ -275,7 +319,10 @@ class DataClient:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        raise NotImplementedError
+        url = f'{self._searches_url()}/{search_id}/results'
+
+        request = self._request(url, method='GET')
+        return Items(request, self._do_request, limit=limit)
 
     async def get_stats(self,
                         item_types: typing.List[str],
@@ -295,6 +342,7 @@ class DataClient:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If interval is not valid.
         """
+        interval = interval.lower()
         if interval not in STATS_INTERVAL:
             raise exceptions.ClientError(
                 f'{interval} must be one of {STATS_INTERVAL}')

@@ -1,4 +1,5 @@
 # Copyright 2015 Planet Labs, Inc.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,6 +27,7 @@ install_requires = [
     'click>=8.0.0',
     'geojson',
     'httpx==0.16.1',
+    'jsonschema',
     'pyjwt>=2.1',
     'tqdm>=4.56',
 ]

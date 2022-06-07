@@ -88,6 +88,33 @@ environment variable:
 
 ```
 
+
+### Collecting Results
+
+Some API calls, such as searching for imagery and listing orders, return a
+varying, and potentially large, number of results. These API responses are
+paged. The SDK manages paging internally and the associated client commands
+return an asynchronous iterator over the results. These results can be
+converted to a JSON blob using the `collect` command. When the results
+represent GeoJSON features, the JSON blob is a GeoJSON FeatureCollection.
+Otherwise, the JSON blob is a list of the individual results.
+
+
+```python
+>>> import asyncio
+>>> from planet import collect, OrdersClient, Session
+>>>
+>>> async def main():
+...     async with Session() as sess:
+...         client = OrdersClient(sess)
+...         orders = client.list_orders()
+...         orders_list = collect(orders)
+...
+>>> asyncio.run(main())
+
+```
+
+
 ### Orders Client
 
 The Orders Client mostly mirrors the
@@ -189,22 +216,22 @@ the context of a `Session` with the `OrdersClient`:
 
 ```
 
-#### Polling and Downloading an Order
+#### Waiting and Downloading an Order
 
 Once an order is created, the Orders API takes some time to create the order
 and thus we must wait a while before downloading the order.
-We can use polling to watch the order creation process and find out when the
+We can use waiting to watch the order creation process and find out when the
 order is created successfully and ready to download.
 
-With polling and download, it is often desired to track progress as these
+With wait and download, it is often desired to track progress as these
 processes can take a long time. Therefore, in this example, we use a progress
-bar from the `reporting` module to report poll status. `download_order` has
+bar from the `reporting` module to report wait status. `download_order` has
 reporting built in.
 
 ```python
 from planet import reporting
 
->>> async def create_poll_and_download():
+>>> async def create_wait_and_download():
 ...     async with Session() as sess:
 ...         cl = OrdersClient(sess)
 ...         with reporting.StateBar(state='creating') as bar:
@@ -219,6 +246,92 @@ from planet import reporting
 ...         await cl.download_order(order['id'])
 ...
 >>> asyncio.run(create_poll_and_download())
+```
+
+#### Validating Checksums
+
+Checksum validation provides for verification that the files in an order have
+been downloaded successfully and are not missing, currupted, or changed. This
+functionality is included in the OrderClient, but does not require an instance
+of the class to be used.
+
+
+To perform checksum validation:
+
+```python
+from pathlib import Path
+
+# path includes order id
+order_path = Path('193e5bd1-dedc-4c65-a539-6bc70e55d928')
+OrdersClient.validate_checksum(order_path, 'md5')
+```
+
+
+
+
+### Data Client
+
+The Data Client mostly mirrors the
+[Data API](https://developers.planet.com/docs/apis/data/reference/),
+with the only difference being the addition of functionality to activate an
+asset, poll for when activation is complete, and download the asset.
+
+```python
+>>> from planet import DataClient
+>>>
+>>> async def main():
+...     async with Session() as sess:
+...         client = DataClient(sess)
+...         # perform operations here
+...
+>>> asyncio.run(main())
+
+```
+
+#### Filter
+
+When performing a quick search, creating or updating a saved search, or
+requesting stats, the data search filter must be provided to the API
+as a JSON blob. This JSON blob can be built up manually or by using the
+`data_filter` module.
+
+An example of creating the request JSON with `data_filter`:
+
+```python
+>>> from datetime import datetime
+>>> from planet import data_filter
+>>> sfilter = data_filter.and_filter([
+...     data_filter.permission_filter(),
+...     data_filter.date_range_filter('acquired', gt=datetime(2022, 6, 1, 1))
+... ])
+```
+
+The same thing, expressed as a `JSON` blob:
+
+```python
+>>> sfilter = {
+...     'type': 'AndFilter',
+...     'config': [
+...         {'type': 'PermissionFilter', 'config': ['assets:download']},
+...         {
+...             'type': 'DateRangeFilter',
+...             'field_name': 'acquired',
+...             'config': {'gt': '2022-06-01T01:00:00Z'}
+...         }
+...     ]
+... }
+```
+
+Once the filter is built up, performing a search is done within
+the context of a `Session` with the `DataClient`:
+
+```python
+>>> async def main():
+...     async with Session() as sess:
+...         cl = DataClient(sess)
+...         items = await cl.quick_search(sfilter)
+...
+>>> asyncio.run(main())
 ```
 
 ## CLI
@@ -237,6 +350,34 @@ for passing into a Docker instance:
 
 ```console
 $ export PL_API_KEY=$(planet auth value)
+```
+
+
+### Collecting Results
+
+Some API calls, such as searching for imagery and listing orders, return a
+varying, and potentially large, number of results. These API responses are
+paged. The SDK manages paging internally and the associated cli commands
+output the results as a sequence. These results can be converted to a JSON blob
+using the `collect` command. When the results
+represent GeoJSON features, the JSON blob is a GeoJSON FeatureCollection.
+Otherwise, the JSON blob is a list of the individual results.
+
+```console
+$ planet data search-quick PSScene filter.json | planet collect -
+```
+
+contents of `filter.json`:
+
+```json
+{
+   "type":"DateRangeFilter",
+   "field_name":"acquired",
+   "config":{
+      "gt":"2019-12-31T00:00:00Z",
+      "lte":"2020-01-31T00:00:00Z"
+   }
+}
 ```
 
 ### Orders API

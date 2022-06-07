@@ -1,4 +1,5 @@
-# Copyright 2020 Planet Labs, PBC.
+# Copyright 2020 Planet Labs, Inc.
+# Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -13,7 +14,8 @@
 # the License.
 import logging
 from http import HTTPStatus
-from unittest.mock import Mock
+import math
+from unittest.mock import Mock, patch
 
 import httpx
 import respx
@@ -102,7 +104,8 @@ async def test_session_stream(mock_request):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session_request_retry(mock_request, mock_response):
+async def test_session_request_retry(mock_request):
+    """Test the retry in the Session.request method"""
     async with http.Session() as ps:
         route = respx.get(TEST_URL)
         route.side_effect = [
@@ -110,7 +113,9 @@ async def test_session_request_retry(mock_request, mock_response):
             httpx.Response(HTTPStatus.OK, json={})
         ]
 
-        ps.retry_wait_time = 0  # lets not slow down tests for this
+        # let's not actually introduce a wait into the tests
+        ps.max_retry_backoff = 0
+
         resp = await ps.request(mock_request)
         assert resp
         assert route.call_count == 2
@@ -118,15 +123,40 @@ async def test_session_request_retry(mock_request, mock_response):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session_retry(mock_request):
-    async with http.Session() as ps:
+async def test_session__retry():
+    """A unit test for the _retry function"""
 
-        async def test_func():
-            raise exceptions.TooManyRequests
+    async def test_func():
+        # directly trigger the retry logic
+        raise exceptions.TooManyRequests
 
-        ps.retry_wait_time = 0
-        with pytest.raises(exceptions.TooManyRequests):
-            await ps._retry(test_func)
+    with patch('planet.http.Session._calculate_wait') as mock_wait:
+        # let's not actually introduce a wait into the tests
+        mock_wait.return_value = 0
+
+        async with http.Session() as ps:
+            with pytest.raises(exceptions.TooManyRequests):
+                await ps._retry(test_func)
+
+        calls = mock_wait.call_args_list
+        args = [c[0] for c in calls]
+        assert args == [(1, 64), (2, 64), (3, 64), (4, 64), (5, 64)]
+
+
+def test__calculate_wait():
+    max_retry_backoff = 20
+    wait_times = [
+        http.Session._calculate_wait(i + 1, max_retry_backoff)
+        for i in range(5)
+    ]
+
+    # (min, max): 2**n to 2**n + 1, last entry hit threshold
+    expected_times = [2, 4, 8, 16, 20]
+
+    for wait, expected in zip(wait_times, expected_times):
+        # this doesn't really test the randomness but does test exponential
+        # and threshold
+        assert math.floor(wait) == expected
 
 
 @respx.mock
