@@ -15,7 +15,7 @@
 from contextlib import asynccontextmanager
 import json
 import logging
-
+import sys
 import click
 
 import planet
@@ -244,7 +244,10 @@ async def create(ctx, request: str, pretty):
     Order request as stdin, str, or file name. Full description of order
     to be created.
     '''
-    request_json = click.open_file(input).readlines()
+    try:
+        request_json = json.loads(sys.stdin.read())
+    except IOError:
+        request_json = json.loads(open(request).read())
 
     async with orders_client(ctx) as cl:
         order = await cl.create_order(request_json)
