@@ -349,12 +349,20 @@ class DataClient:
                 f'{interval} must be one of {STATS_INTERVAL}')
 
         url = f'{self._base_url}{STATS_PATH}'
-        request_json = {
-            'interval': interval,
-            'filter': search_filter,
-            'item_types': item_types,
-            'utc_offset': utc_offset
-        }
+
+        if utc_offset == None:
+            request_json = {
+                'interval': interval,
+                'filter': search_filter,
+                'item_types': item_types
+            }
+        else:
+            request_json = {
+                'interval': interval,
+                'filter': search_filter,
+                'item_types': item_types,
+                'utc_offset': utc_offset
+            }
         request = self._request(url, method='POST', json=request_json)
         response = await self._do_request(request)
         return response.json()

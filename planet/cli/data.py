@@ -162,7 +162,7 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
 @click.argument("filter", callback=parse_filter)
 @click.option('--utc_offset',
               type=str,
-              default=False,
+              default=None,
               help=('a "ISO 8601 UTC offset" that can be used to adjust the \
                     buckets to a users time zone. Please specify in \
                     elasticsearch time units (e.g. +1h or -10h, etc. )'))
