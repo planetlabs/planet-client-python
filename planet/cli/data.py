@@ -163,7 +163,7 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
 @click.option('--utc_offset',
               type=str,
               default=None,
-              help=('a "ISO 8601 UTC offset" that can be used to adjust the \
+              help=('An elasticsearch offset that can be used to adjust the \
                     buckets to a users time zone. Please specify in \
                     elasticsearch time units (e.g. +1h or -10h, etc. )'))
 async def stats(ctx, item_types, interval, filter, utc_offset):
@@ -171,8 +171,8 @@ async def stats(ctx, item_types, interval, filter, utc_offset):
 
     This function returns a bucketed histogram of results based on the
     item_types, interval, and json filter specified (using file or stdin).
-    The "--utc-offset" option is a "ISO 8601 UTC offset" (e.g. +01:00 or
-    -08:00) that can be used to adjust the buckets to a user's time zone.
+    The "--utc-offset" option is an elasticsearch offset (e.g. +1h or
+    -8h) that can be used to adjust the buckets to a user's time zone.
     This function outputs a full JSON description of the returned statistics
     result.
 
