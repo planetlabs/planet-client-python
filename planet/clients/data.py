@@ -350,7 +350,7 @@ class DataClient:
 
         url = f'{self._base_url}{STATS_PATH}'
 
-        if utc_offset == None:
+        if utc_offset is None:
             request_json = {
                 'interval': interval,
                 'filter': search_filter,
