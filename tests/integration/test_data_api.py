@@ -421,10 +421,7 @@ async def test_get_stats_success(search_filter, session):
 
     # check that request is correct
     expected_request = {
-        "item_types": ["PSScene"],
-        "filter": search_filter,
-        "interval": "day",
-        "utc_offset": None
+        "item_types": ["PSScene"], "filter": search_filter, "interval": "day"
     }
     actual_body = json.loads(respx.calls[0].request.content)
     assert actual_body == expected_request
