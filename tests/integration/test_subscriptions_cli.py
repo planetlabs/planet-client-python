@@ -58,7 +58,7 @@ def subscription_count():
 def test_subscriptions_list_options(options, expected_count, monkeypatch):
     """Prints the expected sequence of subscriptions."""
 
-    monkeypatch.setattr(planet.cli.subscriptions,
+    monkeypatch.setattr(planet.clients.subscriptions,
                         '_fake_subs',
                         {str(i): {
                             'status': 'created'
@@ -80,7 +80,7 @@ def test_subscriptions_list_options(options, expected_count, monkeypatch):
 def test_subscriptions_create_failure(monkeypatch, subscription_count):
     """An invalid subscription request fails to create a new subscription."""
 
-    monkeypatch.setattr(planet.cli.subscriptions, '_fake_subs', {})
+    monkeypatch.setattr(planet.clients.subscriptions, '_fake_subs', {})
 
     # This subscription request lacks the required "delivery" and
     # "source" members.
@@ -117,7 +117,7 @@ def test_subscriptions_create_success(cmd_arg,
                                       subscription_count):
     """Subscriptions creation succeeds with a valid subscription request."""
 
-    monkeypatch.setattr(planet.cli.subscriptions, '_fake_subs', {})
+    monkeypatch.setattr(planet.clients.subscriptions, '_fake_subs', {})
 
     # The "-" argument says "read from stdin" and the input keyword
     # argument specifies what bytes go to the runner's stdin.
@@ -163,7 +163,7 @@ def test_subscriptions_bad_request(cmd_arg, runner_input, monkeypatch):
 def test_subscriptions_cancel_failure(monkeypatch):
     """Cancel command exits gracefully from an API error."""
 
-    monkeypatch.setattr(planet.cli.subscriptions, '_fake_subs', {})
+    monkeypatch.setattr(planet.clients.subscriptions, '_fake_subs', {})
 
     result = CliRunner().invoke(
         cli.main,
@@ -180,7 +180,7 @@ def test_subscriptions_cancel_failure(monkeypatch):
 def test_subscriptions_cancel_success(monkeypatch, subscription_count):
     """Cancel command succeeds."""
 
-    monkeypatch.setattr(planet.cli.subscriptions,
+    monkeypatch.setattr(planet.clients.subscriptions,
                         '_fake_subs', {'42': GOOD_SUB_REQUEST})
 
     # Let's check the state of the fake API before we try to cancel.
@@ -202,7 +202,7 @@ def test_subscriptions_cancel_success(monkeypatch, subscription_count):
 def test_subscriptions_update_failure(monkeypatch):
     """Update command exits gracefully from an API error."""
 
-    monkeypatch.setattr(planet.cli.subscriptions, '_fake_subs', {})
+    monkeypatch.setattr(planet.clients.subscriptions, '_fake_subs', {})
 
     result = CliRunner().invoke(
         cli.main,
@@ -219,7 +219,7 @@ def test_subscriptions_update_failure(monkeypatch):
 def test_subscriptions_update_success(monkeypatch):
     """Update command succeeds."""
 
-    monkeypatch.setattr(planet.cli.subscriptions,
+    monkeypatch.setattr(planet.clients.subscriptions,
                         '_fake_subs', {'42': GOOD_SUB_REQUEST})
 
     request = GOOD_SUB_REQUEST.copy()
@@ -240,7 +240,7 @@ def test_subscriptions_update_success(monkeypatch):
 def test_subscriptions_describe_failure(monkeypatch):
     """Describe command exits gracefully from an API error."""
 
-    monkeypatch.setattr(planet.cli.subscriptions, '_fake_subs', {})
+    monkeypatch.setattr(planet.clients.subscriptions, '_fake_subs', {})
 
     result = CliRunner().invoke(
         cli.main,
@@ -257,7 +257,7 @@ def test_subscriptions_describe_failure(monkeypatch):
 def test_subscriptions_describe_success(monkeypatch):
     """Describe command succeeds."""
 
-    monkeypatch.setattr(planet.cli.subscriptions,
+    monkeypatch.setattr(planet.clients.subscriptions,
                         '_fake_subs', {'42': GOOD_SUB_REQUEST})
 
     result = CliRunner().invoke(
@@ -275,7 +275,7 @@ def test_subscriptions_describe_success(monkeypatch):
 def test_subscriptions_results_failure(monkeypatch):
     """Results command exits gracefully from an API error."""
 
-    monkeypatch.setattr(planet.cli.subscriptions, '_fake_sub_results', {})
+    monkeypatch.setattr(planet.clients.subscriptions, '_fake_sub_results', {})
 
     result = CliRunner().invoke(
         cli.main,
@@ -299,7 +299,7 @@ def test_subscriptions_results_success(options, expected_count, monkeypatch):
     """Describe command succeeds."""
 
     monkeypatch.setattr(
-        planet.cli.subscriptions,
+        planet.clients.subscriptions,
         '_fake_sub_results',
         {'42': [{
             'id': f'r{i}', 'status': 'created'
