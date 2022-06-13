@@ -22,7 +22,7 @@ import pytest
 
 from planet.cli import cli
 import planet.cli.subscriptions
-from planet.cli.subscriptions import PlaceholderSubscriptionsClient
+from planet.clients.subscriptions import PlaceholderSubscriptionsClient
 
 
 @pytest.fixture

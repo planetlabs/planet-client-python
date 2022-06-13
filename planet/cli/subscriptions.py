@@ -1,34 +1,22 @@
 """Subscriptions CLI"""
 
-from contextlib import asynccontextmanager
 import json
 
 import click
 
-import planet
 from planet import Session
 from planet.cli.cmds import coro, translate_exceptions
 from planet.cli.io import echo_json
-from planet.clients.subscriptions import PlaceholderSubscriptionsClient
-
-
-@asynccontextmanager
-async def subscriptions_client(ctx):
-    """Create an authenticated client.
-
-    Note that the session is not currently used with the placeholder
-    client.
-
-    """
-    auth = ctx.obj['AUTH']
-    async with Session(auth=auth):
-        yield PlaceholderSubscriptionsClient()
+from planet.clients.subscriptions import (PlaceholderSubscriptionsClient as
+                                          SubscriptionsClient)
 
 
 @click.group()
 @click.pass_context
 def subscriptions(ctx):
-    ctx.obj['AUTH'] = planet.Auth.from_file()
+    # None means that order of precedence is 1) environment variable,
+    # 2) secret file.
+    ctx.obj['AUTH'] = None
 
 
 # We want our command to be known as "list" on the command line but
@@ -52,7 +40,8 @@ def subscriptions(ctx):
 @coro
 async def list_subscriptions_cmd(ctx, status, limit, pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
-    async with subscriptions_client(ctx) as client:
+    async with Session(auth=ctx.obj['AUTH']) as session:
+        client = SubscriptionsClient(session)
         filtered_subs = client.list_subscriptions(status=status, limit=limit)
         async for sub in filtered_subs:
             echo_json(sub, pretty)
@@ -87,7 +76,8 @@ def parse_request(ctx, param, value: str) -> dict:
 @coro
 async def create_subscription_cmd(ctx, request, pretty):
     """Submits a subscription request and prints the API response."""
-    async with subscriptions_client(ctx) as client:
+    async with Session(auth=ctx.obj['AUTH']) as session:
+        client = SubscriptionsClient(session)
         sub = await client.create_subscription(request)
         echo_json(sub, pretty)
 
@@ -100,7 +90,8 @@ async def create_subscription_cmd(ctx, request, pretty):
 @coro
 async def cancel_subscription_cmd(ctx, subscription_id, pretty):
     """Cancels a subscription and prints the API response."""
-    async with subscriptions_client(ctx) as client:
+    async with Session(auth=ctx.obj['AUTH']) as session:
+        client = SubscriptionsClient(session)
         sub = await client.cancel_subscription(subscription_id)
         echo_json(sub, pretty)
 
@@ -114,7 +105,8 @@ async def cancel_subscription_cmd(ctx, subscription_id, pretty):
 @coro
 async def update_subscription_cmd(ctx, subscription_id, request, pretty):
     """Cancels a subscription and prints the API response."""
-    async with subscriptions_client(ctx) as client:
+    async with Session(auth=ctx.obj['AUTH']) as session:
+        client = SubscriptionsClient(session)
         sub = await client.update_subscription(subscription_id, request)
         echo_json(sub, pretty)
 
@@ -134,7 +126,8 @@ async def describe_subscription_cmd(ctx, subscription_id, pretty):
     After we refactor we will change to mocking the API.
 
     """
-    async with subscriptions_client(ctx) as client:
+    async with Session(auth=ctx.obj['AUTH']) as session:
+        client = SubscriptionsClient(session)
         sub = await client.get_subscription(subscription_id)
         echo_json(sub, pretty)
 
@@ -169,7 +162,8 @@ async def list_subscription_results_cmd(ctx,
                                         status,
                                         limit):
     """Gets results of a subscription and prints the API response."""
-    async with subscriptions_client(ctx) as client:
+    async with Session(auth=ctx.obj['AUTH']) as session:
+        client = SubscriptionsClient(session)
         filtered_results = client.list_subscription_results(subscription_id,
                                                             status=status,
                                                             limit=limit)

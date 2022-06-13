@@ -20,6 +20,9 @@ class PlaceholderSubscriptionsClient:
 
     """
 
+    def __init__(self, session=None) -> None:
+        self._session = session
+
     async def list_subscriptions(self,
                                  status: Set[str] = None,
                                  limit: int = 100) -> AsyncIterator[dict]:
