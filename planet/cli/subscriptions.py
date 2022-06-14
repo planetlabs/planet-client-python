@@ -164,8 +164,8 @@ async def list_subscription_results_cmd(ctx,
     """Gets results of a subscription and prints the API response."""
     async with Session(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
-        filtered_results = client.list_subscription_results(subscription_id,
-                                                            status=status,
-                                                            limit=limit)
+        filtered_results = client.get_results(subscription_id,
+                                              status=status,
+                                              limit=limit)
         async for result in filtered_results:
             echo_json(result, pretty)
