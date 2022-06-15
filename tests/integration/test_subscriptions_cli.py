@@ -98,7 +98,7 @@ def test_subscriptions_create_failure(monkeypatch, subscription_count):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "Request lacks required members" in result.output
+    assert "Subscription failure" in result.output
     assert subscription_count() == 0
 
 

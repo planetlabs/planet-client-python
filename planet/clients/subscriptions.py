@@ -8,8 +8,8 @@ from planet.exceptions import ClientError
 
 # Collections of fake subscriptions and results for testing. Tests will
 # monkeypatch these attributes.
-_fake_subs: Optional[Dict[str, dict]] = None
-_fake_sub_results: Optional[Dict[str, list]] = None
+_fake_subs: Dict[str, dict] = {}
+_fake_sub_results: Dict[str, list] = {}
 
 
 class PlaceholderSubscriptionsClient:
@@ -47,9 +47,9 @@ class PlaceholderSubscriptionsClient:
 
         """
         try:
-            select_subs = filter(
-                lambda sub: status is None or sub['status'] in status,
-                (dict(**sub, id=sub_id) for sub_id, sub in _fake_subs.items()))
+            select_subs = (dict(**sub, id=sub_id) for sub_id,
+                           sub in _fake_subs.items()
+                           if not status or sub['status'] in status)
             filtered_subs = itertools.islice(select_subs, limit)
 
             for sub in filtered_subs:
@@ -158,7 +158,7 @@ class PlaceholderSubscriptionsClient:
 
     async def get_results(self,
                           subscription_id: str,
-                          status: Set[str] = None,
+                          status: Optional[Set[str]] = None,
                           limit: int = 100) -> AsyncIterator[dict]:
         """Get Results of a Subscription.
 
@@ -181,9 +181,9 @@ class PlaceholderSubscriptionsClient:
 
         """
         try:
-            select_results = filter(
-                lambda result: status is None or result['status'] in status,
-                _fake_sub_results[subscription_id])
+            select_results = (result
+                              for result in _fake_sub_results[subscription_id]
+                              if not status or result['status'] in status)
             filtered_results = itertools.islice(select_results, limit)
 
             for result in filtered_results:
