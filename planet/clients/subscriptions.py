@@ -24,7 +24,7 @@ class PlaceholderSubscriptionsClient:
         self._session = session
 
     async def list_subscriptions(self,
-                                 status: Set[str] = None,
+                                 status: Optional[Set[str]] = None,
                                  limit: int = 100) -> AsyncIterator[dict]:
         """Get account subscriptions with optional filtering.
 
@@ -46,22 +46,17 @@ class PlaceholderSubscriptionsClient:
             ClientError
 
         """
-        # Temporary marker for behavior of module with unpatched state.
-        if _fake_subs is None:
-            raise NotImplementedError
+        try:
+            select_subs = filter(
+                lambda sub: status is None or sub['status'] in status,
+                (dict(**sub, id=sub_id) for sub_id, sub in _fake_subs.items()))
+            filtered_subs = itertools.islice(select_subs, limit)
 
-        if status:
-            select_subs = (dict(**sub, id=sub_id) for sub_id,
-                           sub in _fake_subs.items()
-                           if sub['status'] in status)
-        else:
-            select_subs = (
-                dict(**sub, id=sub_id) for sub_id, sub in _fake_subs.items())
+            for sub in filtered_subs:
+                yield sub
 
-        filtered_subs = itertools.islice(select_subs, limit)
-
-        for sub in filtered_subs:
-            yield sub
+        except Exception as server_error:
+            raise ClientError("Subscription failure") from server_error
 
     async def create_subscription(self, request: dict) -> dict:
         """Create a Subscription.
@@ -76,19 +71,20 @@ class PlaceholderSubscriptionsClient:
             ClientError
 
         """
-        # Temporary marker for behavior of module with unpatched state.
-        if _fake_subs is None:
-            raise NotImplementedError
+        try:
+            missing_keys = {'name', 'delivery', 'source'} - request.keys()
+            if missing_keys:
+                raise RuntimeError(
+                    f"Request lacks required members: {missing_keys!r}")
 
-        missing_keys = {'name', 'delivery', 'source'} - request.keys()
-        if missing_keys:
-            raise ClientError(
-                f"Request lacks required members: {missing_keys!r}")
+            id = str(uuid.uuid4())
+            _fake_subs[id] = request
+            sub = _fake_subs[id].copy()
+            sub.update(id=id)
 
-        id = str(uuid.uuid4())
-        _fake_subs[id] = request
-        sub = _fake_subs[id].copy()
-        sub.update(id=id)
+        except Exception as server_error:
+            raise ClientError("Subscription failure") from server_error
+
         return sub
 
     async def cancel_subscription(self, subscription_id: str) -> dict:
@@ -104,14 +100,11 @@ class PlaceholderSubscriptionsClient:
             ClientError
 
         """
-        # Temporary marker for behavior of module with unpatched state.
-        if _fake_subs is None:
-            raise NotImplementedError
-
         try:
             sub = _fake_subs.pop(subscription_id)
-        except KeyError:
-            raise ClientError(f"No such subscription: {subscription_id!r}")
+        except Exception as server_error:
+            raise ClientError(
+                f"No such subscription: {subscription_id!r}") from server_error
 
         sub.update(id=subscription_id)
         return sub
@@ -131,15 +124,12 @@ class PlaceholderSubscriptionsClient:
             ClientError
 
         """
-        # Temporary marker for behavior of module with unpatched state.
-        if _fake_subs is None:
-            raise NotImplementedError
-
         try:
             _fake_subs[subscription_id].update(**request)
             sub = _fake_subs[subscription_id].copy()
-        except KeyError:
-            raise ClientError(f"No such subscription: {subscription_id!r}")
+        except Exception as server_error:
+            raise ClientError(
+                f"No such subscription: {subscription_id!r}") from server_error
 
         sub.update(id=subscription_id)
         return sub
@@ -157,14 +147,11 @@ class PlaceholderSubscriptionsClient:
             ClientError
 
         """
-        # Temporary marker for behavior of module with unpatched state.
-        if _fake_subs is None:
-            raise NotImplementedError
-
         try:
             sub = _fake_subs[subscription_id].copy()
-        except KeyError:
-            raise ClientError(f"No such subscription: {subscription_id!r}")
+        except Exception as server_error:
+            raise ClientError(
+                f"No such subscription: {subscription_id!r}") from server_error
 
         sub.update(id=subscription_id)
         return sub
@@ -193,22 +180,15 @@ class PlaceholderSubscriptionsClient:
             ClientError
 
         """
-        # Temporary marker for behavior of module with unpatched state.
-        if _fake_sub_results is None:
-            raise NotImplementedError
-
         try:
-            if status:
-                select_results = (
-                    result for result in _fake_sub_results[subscription_id]
-                    if result['status'] in status)
-            else:
-                select_results = (
-                    result for result in _fake_sub_results[subscription_id])
-
+            select_results = filter(
+                lambda result: status is None or result['status'] in status,
+                _fake_sub_results[subscription_id])
             filtered_results = itertools.islice(select_results, limit)
-        except KeyError:
-            raise ClientError(f"No such subscription: {subscription_id!r}")
 
-        for result in filtered_results:
-            yield result
+            for result in filtered_results:
+                yield result
+
+        except Exception as server_error:
+            raise ClientError(
+                f"No such subscription: {subscription_id!r}") from server_error
