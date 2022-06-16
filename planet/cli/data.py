@@ -5,7 +5,6 @@ from typing import List
 from contextlib import asynccontextmanager
 
 import click
-import planet
 from planet import DataClient, Session
 
 from .cmds import coro, translate_exceptions
@@ -31,7 +30,7 @@ async def data_client(ctx):
               help='Assign custom base Orders API URL.')
 def data(ctx, base_url):
     '''Commands for interacting with the Orders API'''
-    ctx.obj['AUTH'] = planet.Auth.from_file()
+    ctx.obj['AUTH'] = None
     ctx.obj['BASE_URL'] = base_url
 
 
