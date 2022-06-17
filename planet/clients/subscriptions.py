@@ -62,11 +62,11 @@ async def _server_subscriptions_id_results_get(subscription_id,
         yield result
 
 
-class PlaceholderSubscriptionsClient:
-    """A placeholder client.
+class SubscriptionsClient:
+    """The Planet Subscriptions API client.
 
-    This class and its methods are derived from tests of a skeleton
-    Subscriptions CLI. It is evolving into the real API client.
+    TODO: make requests to the production API. Currently, the backend
+    is fake and exists at the top of this class's module.
 
     """
 

@@ -22,7 +22,7 @@ import pytest
 
 from planet.cli import cli
 import planet.cli.subscriptions
-from planet.clients.subscriptions import PlaceholderSubscriptionsClient
+from planet.clients.subscriptions import SubscriptionsClient
 
 
 @pytest.fixture
@@ -33,8 +33,8 @@ def subscription_count():
 
         async def count_em():
             return len([
-                sub async for sub in
-                PlaceholderSubscriptionsClient().list_subscriptions()
+                sub
+                async for sub in SubscriptionsClient().list_subscriptions()
             ])
 
         return asyncio.run(count_em())

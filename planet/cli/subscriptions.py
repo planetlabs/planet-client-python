@@ -7,8 +7,7 @@ import click
 from planet import Session
 from planet.cli.cmds import coro, translate_exceptions
 from planet.cli.io import echo_json
-from planet.clients.subscriptions import (PlaceholderSubscriptionsClient as
-                                          SubscriptionsClient)
+from planet.clients.subscriptions import SubscriptionsClient
 
 
 @click.group()

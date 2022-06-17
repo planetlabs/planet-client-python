@@ -3,8 +3,7 @@
 import pytest
 
 import planet.clients.subscriptions
-from planet.clients.subscriptions import (PlaceholderSubscriptionsClient as
-                                          SubscriptionsClient)
+from planet.clients.subscriptions import SubscriptionsClient
 from planet.exceptions import ClientError
 from planet.http import Session
 
