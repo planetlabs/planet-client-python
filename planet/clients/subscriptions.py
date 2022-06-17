@@ -12,6 +12,18 @@ _fake_subs: Dict[str, dict] = {}
 _fake_sub_results: Dict[str, list] = {}
 
 
+async def _server_subscriptions_post(request):
+    missing_keys = {'name', 'delivery', 'source'} - request.keys()
+    if missing_keys:
+        raise RuntimeError(f"Request lacks required members: {missing_keys!r}")
+
+    id = str(uuid.uuid4())
+    _fake_subs[id] = request
+    sub = _fake_subs[id].copy()
+    sub.update(id=id)
+    return sub
+
+
 class PlaceholderSubscriptionsClient:
     """A placeholder client.
 
@@ -72,17 +84,10 @@ class PlaceholderSubscriptionsClient:
 
         """
         try:
-            missing_keys = {'name', 'delivery', 'source'} - request.keys()
-            if missing_keys:
-                raise RuntimeError(
-                    f"Request lacks required members: {missing_keys!r}")
-
-            id = str(uuid.uuid4())
-            _fake_subs[id] = request
-            sub = _fake_subs[id].copy()
-            sub.update(id=id)
-
+            # TODO: replace with httpx request.
+            sub = await _server_subscriptions_post(request)
         except Exception as server_error:
+            # TODO: remove "from server_error" clause.
             raise ClientError("Subscription failure") from server_error
 
         return sub
