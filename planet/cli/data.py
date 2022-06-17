@@ -121,66 +121,66 @@ def _parse_geom(ctx, param, value: str) -> dict:
     return json_value
 
 
-class FieldType(click.ParamType):
-    name = 'field'
-    help = 'FIELD is the name of the field to filter on.'
-
-    def convert(self, value, param, ctx):
-        return value
-
-
-class ComparisonType(click.ParamType):
-    name = 'comp'
-    valid = ['lt', 'lte', 'gt', 'gte']
-    help = 'COMP can be lt, lte, gt, or gte.'
-
-    def convert(self, value, param, ctx):
-        if value not in self.valid:
-            self.fail(f'COMP ({value}) must be one of {",".join(self.valid)}',
-                      param,
-                      ctx)
-        return value
-
-
-class DateTimeType(click.ParamType):
-    name = 'datetime'
-    help = 'DATETIME can be an RFC 3339 or ISO 8601 string.'
-
-    def convert(self, value, param, ctx):
-        if isinstance(value, datetime):
-            return value
-        else:
-            return io.str_to_datetime(value)
-
-
-class DateRangeFilter(click.Tuple):
-    help = ('Filter by date range in field. ' +
-            f'{FieldType.help} {ComparisonType.help} {DateTimeType.help}')
-
-    def __init__(self) -> None:
-        super().__init__([FieldType(), ComparisonType(), DateTimeType()])
-
-    def convert(self, value, param, ctx):
-        vals = super().convert(value, param, ctx)
-
-        field, comp, value = vals
-        kwargs = {'field_name': field, comp: value}
-        return data_filter.date_range_filter(**kwargs)
-
-
-class RangeFilter(click.Tuple):
-    help = ('Filter by number range in field. ' +
-            f'{FieldType.help} {ComparisonType.help}')
-
-    def __init__(self) -> None:
-        super().__init__([FieldType(), ComparisonType(), float])
-
-    def convert(self, value, param, ctx):
-        vals = super().convert(value, param, ctx)
-
-        field, comp, value = vals
-        kwargs = {'field_name': field, comp: value}
-        return data_filter.range_filter(**kwargs)
+# class FieldType(click.ParamType):
+#     name = 'field'
+#     help = 'FIELD is the name of the field to filter on.'
+#
+#     def convert(self, value, param, ctx):
+#         return value
+#
+#
+# class ComparisonType(click.ParamType):
+#     name = 'comp'
+#     valid = ['lt', 'lte', 'gt', 'gte']
+#     help = 'COMP can be lt, lte, gt, or gte.'
+#
+#     def convert(self, value, param, ctx):
+#         if value not in self.valid:
+#             self.fail(f'COMP ({value}) must be one of {",".join(self.valid)}',
+#                       param,
+#                       ctx)
+#         return value
+#
+#
+# class DateTimeType(click.ParamType):
+#     name = 'datetime'
+#     help = 'DATETIME can be an RFC 3339 or ISO 8601 string.'
+#
+#     def convert(self, value, param, ctx):
+#         if isinstance(value, datetime):
+#             return value
+#         else:
+#             return io.str_to_datetime(value)
+#
+#
+# class DateRangeFilter(click.Tuple):
+#     help = ('Filter by date range in field. ' +
+#             f'{FieldType.help} {ComparisonType.help} {DateTimeType.help}')
+#
+#     def __init__(self) -> None:
+#         super().__init__([FieldType(), ComparisonType(), DateTimeType()])
+#
+#     def convert(self, value, param, ctx):
+#         vals = super().convert(value, param, ctx)
+#
+#         field, comp, value = vals
+#         kwargs = {'field_name': field, comp: value}
+#         return data_filter.date_range_filter(**kwargs)
+#
+#
+# class RangeFilter(click.Tuple):
+#     help = ('Filter by number range in field. ' +
+#             f'{FieldType.help} {ComparisonType.help}')
+#
+#     def __init__(self) -> None:
+#         super().__init__([FieldType(), ComparisonType(), float])
+#
+#     def convert(self, value, param, ctx):
+#         vals = super().convert(value, param, ctx)
+#
+#         field, comp, value = vals
+#         kwargs = {'field_name': field, comp: value}
+#         return data_filter.range_filter(**kwargs)
 
 
 @data.command()
