@@ -24,6 +24,44 @@ async def _server_subscriptions_post(request):
     return sub
 
 
+async def _server_subscriptions_get(status=None, limit=None):
+    select_subs = (dict(**sub, id=sub_id) for sub_id,
+                   sub in _fake_subs.items()
+                   if not status or sub['status'] in status)
+    filtered_subs = itertools.islice(select_subs, limit)
+    for sub in filtered_subs:
+        yield sub
+
+
+async def _server_subscriptions_id_cancel_post(subscription_id):
+    sub = _fake_subs.pop(subscription_id)
+    sub.update(id=subscription_id)
+    return sub
+
+
+async def _server_subscriptions_id_put(subscription_id, request):
+    _fake_subs[subscription_id].update(**request)
+    sub = _fake_subs[subscription_id].copy()
+    sub.update(id=subscription_id)
+    return sub
+
+
+async def _server_subscriptions_id_get(subscription_id):
+    sub = _fake_subs[subscription_id].copy()
+    sub.update(id=subscription_id)
+    return sub
+
+
+async def _server_subscriptions_id_results_get(subscription_id,
+                                               status=None,
+                                               limit=None):
+    select_results = (result for result in _fake_sub_results[subscription_id]
+                      if not status or result['status'] in status)
+    filtered_results = itertools.islice(select_results, limit)
+    for result in filtered_results:
+        yield result
+
+
 class PlaceholderSubscriptionsClient:
     """A placeholder client.
 
@@ -40,9 +78,10 @@ class PlaceholderSubscriptionsClient:
                                  limit: int = 100) -> AsyncIterator[dict]:
         """Get account subscriptions with optional filtering.
 
-        The name of this method is based on the API's method name. This
-        method provides iteration over subcriptions, it does not return
-        a list.
+        Note:
+            The name of this method is based on the API's method name. This
+            method provides iteration over subcriptions, it does not return
+            a list.
 
         Args:
             status (Set[str]): pass subscriptions with status in this
@@ -50,6 +89,7 @@ class PlaceholderSubscriptionsClient:
                 set.
             limit (int): limit the number of subscriptions in the
                 results.
+            TODO: user_id
 
         Yields:
             dict: a description of a subscription.
@@ -59,15 +99,14 @@ class PlaceholderSubscriptionsClient:
 
         """
         try:
-            select_subs = (dict(**sub, id=sub_id) for sub_id,
-                           sub in _fake_subs.items()
-                           if not status or sub['status'] in status)
-            filtered_subs = itertools.islice(select_subs, limit)
-
-            for sub in filtered_subs:
+            # TODO: replace with httpx request.
+            async for sub in _server_subscriptions_get(status=status,
+                                                       limit=limit):
                 yield sub
-
         except Exception as server_error:
+            # TODO: remove "from server_error" clause. It's useful
+            # during development but may invite users to depend on the
+            # value of server_error.
             raise ClientError("Subscription failure") from server_error
 
     async def create_subscription(self, request: dict) -> dict:
@@ -87,10 +126,12 @@ class PlaceholderSubscriptionsClient:
             # TODO: replace with httpx request.
             sub = await _server_subscriptions_post(request)
         except Exception as server_error:
-            # TODO: remove "from server_error" clause.
+            # TODO: remove "from server_error" clause. It's useful
+            # during development but may invite users to depend on the
+            # value of server_error.
             raise ClientError("Subscription failure") from server_error
-
-        return sub
+        else:
+            return sub
 
     async def cancel_subscription(self, subscription_id: str) -> dict:
         """Cancel a Subscription.
@@ -106,13 +147,15 @@ class PlaceholderSubscriptionsClient:
 
         """
         try:
-            sub = _fake_subs.pop(subscription_id)
+            # TODO: replace with httpx request.
+            sub = await _server_subscriptions_id_cancel_post(subscription_id)
         except Exception as server_error:
-            raise ClientError(
-                f"No such subscription: {subscription_id!r}") from server_error
-
-        sub.update(id=subscription_id)
-        return sub
+            # TODO: remove "from server_error" clause. It's useful
+            # during development but may invite users to depend on the
+            # value of server_error.
+            raise ClientError("Subscription failure.") from server_error
+        else:
+            return sub
 
     async def update_subscription(self, subscription_id: str,
                                   request: dict) -> dict:
@@ -130,14 +173,15 @@ class PlaceholderSubscriptionsClient:
 
         """
         try:
-            _fake_subs[subscription_id].update(**request)
-            sub = _fake_subs[subscription_id].copy()
+            # TODO: replace with httpx request.
+            sub = await _server_subscriptions_id_put(subscription_id, request)
         except Exception as server_error:
-            raise ClientError(
-                f"No such subscription: {subscription_id!r}") from server_error
-
-        sub.update(id=subscription_id)
-        return sub
+            # TODO: remove "from server_error" clause. It's useful
+            # during development but may invite users to depend on the
+            # value of server_error.
+            raise ClientError("Subscription failure.") from server_error
+        else:
+            return sub
 
     async def get_subscription(self, subscription_id: str) -> dict:
         """Get a description of a Subscription.
@@ -153,13 +197,15 @@ class PlaceholderSubscriptionsClient:
 
         """
         try:
-            sub = _fake_subs[subscription_id].copy()
+            # TODO: replace with httpx request.
+            sub = await _server_subscriptions_id_get(subscription_id)
         except Exception as server_error:
-            raise ClientError(
-                f"No such subscription: {subscription_id!r}") from server_error
-
-        sub.update(id=subscription_id)
-        return sub
+            # TODO: remove "from server_error" clause. It's useful
+            # during development but may invite users to depend on the
+            # value of server_error.
+            raise ClientError("Subscription failure.") from server_error
+        else:
+            return sub
 
     async def get_results(self,
                           subscription_id: str,
@@ -167,9 +213,10 @@ class PlaceholderSubscriptionsClient:
                           limit: int = 100) -> AsyncIterator[dict]:
         """Get Results of a Subscription.
 
-        The name of this method is based on the API's method name. This
-        method provides iteration over results, it does not get a
-        single result description or return a list of descriptions.
+        Note:
+            The name of this method is based on the API's method name. This
+            method provides iteration over results, it does not get a
+            single result description or return a list of descriptions.
 
         Args:
             subscription_id (str): id of a subscription.
@@ -177,6 +224,7 @@ class PlaceholderSubscriptionsClient:
                 filter out results with status not in this set.
             limit (int): limit the number of subscriptions in the
                 results.
+            TODO: created, updated, completed, user_id
 
         Yields:
             dict: description of a subscription results.
@@ -186,14 +234,12 @@ class PlaceholderSubscriptionsClient:
 
         """
         try:
-            select_results = (result
-                              for result in _fake_sub_results[subscription_id]
-                              if not status or result['status'] in status)
-            filtered_results = itertools.islice(select_results, limit)
-
-            for result in filtered_results:
+            # TODO: replace with httpx request.
+            async for result in _server_subscriptions_id_results_get(
+                    subscription_id, status=status, limit=limit):
                 yield result
-
         except Exception as server_error:
-            raise ClientError(
-                f"No such subscription: {subscription_id!r}") from server_error
+            # TODO: remove "from server_error" clause. It's useful
+            # during development but may invite users to depend on the
+            # value of server_error.
+            raise ClientError("Subscription failure.") from server_error

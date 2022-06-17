@@ -174,7 +174,7 @@ def test_subscriptions_cancel_failure(monkeypatch):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "No such subscription" in result.output
+    assert "Subscription failure" in result.output
 
 
 def test_subscriptions_cancel_success(monkeypatch, subscription_count):
@@ -213,7 +213,7 @@ def test_subscriptions_update_failure(monkeypatch):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "No such subscription" in result.output
+    assert "Subscription failure" in result.output
 
 
 def test_subscriptions_update_success(monkeypatch):
@@ -251,7 +251,7 @@ def test_subscriptions_describe_failure(monkeypatch):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "No such subscription" in result.output
+    assert "Subscription failure" in result.output
 
 
 def test_subscriptions_describe_success(monkeypatch):
@@ -286,7 +286,7 @@ def test_subscriptions_results_failure(monkeypatch):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "No such subscription" in result.output
+    assert "Subscription failure." in result.output
 
 
 @pytest.mark.parametrize('options,expected_count',
