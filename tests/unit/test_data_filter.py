@@ -173,13 +173,9 @@ def test_update_filter_noconditionals():
         data_filter.update_filter('acquired')
 
 
-@pytest.mark.parametrize(
-    "geom_fixture",
-    [
-        ('geom_geojson'),
-        ('feature_geojson'),
-        ('featurecollection_geojson')
-    ])
+@pytest.mark.parametrize("geom_fixture",
+                         [('geom_geojson'), ('feature_geojson'),
+                          ('featurecollection_geojson')])
 def test_geometry_filter(geom_fixture, request, geom_geojson):
     geom = request.getfixturevalue(geom_fixture)
     res = data_filter.geometry_filter(geom)
