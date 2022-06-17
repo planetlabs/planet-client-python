@@ -136,7 +136,7 @@ def _parse_geom(ctx, param, value: str) -> dict:
 #
 #     def convert(self, value, param, ctx):
 #         if value not in self.valid:
-#             self.fail(f'COMP ({value}) must be one of {",".join(self.valid)}',
+#            self.fail(f'COMP ({value}) must be one of {",".join(self.valid)}',
 #                       param,
 #                       ctx)
 #         return value
