@@ -1,12 +1,25 @@
+# Copyright 2022 Planet Labs PBC.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not
+# use this file except in compliance with the License. You may obtain a copy of
+# the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations under
+# the License.
 """The Planet Data CLI."""
-
+from datetime import datetime
 import json
 from typing import List
 from contextlib import asynccontextmanager
 
 import click
 import planet
-from planet import DataClient, Session
+from planet import data_filter, io, DataClient, Session
 
 from .cmds import coro, translate_exceptions
 from .io import echo_json
@@ -67,7 +80,158 @@ def parse_filter(ctx, param, value: str) -> dict:
         return json_value
 
 
-# TODO: filter().
+def assets_to_filter(ctx, param, value: str) -> dict:
+    if value is None:
+        return value
+
+    # manage assets as comma-separated names
+    assets = [part.strip() for part in value.split(",")]
+    return data_filter.asset_filter(assets)
+
+
+def geom_to_filter(ctx, param, value: str) -> dict:
+    if value is None:
+        return value
+
+    geom = _parse_geom(ctx, param, value)
+    return data_filter.geometry_filter(geom)
+
+
+def _parse_geom(ctx, param, value: str) -> dict:
+    """Turn geom JSON into a dict."""
+    # read from raw json
+    if value.startswith('{'):
+        try:
+            json_value = json.loads(value)
+        except json.decoder.JSONDecodeError:
+            raise click.BadParameter('geom does not contain valid json.',
+                                     ctx=ctx,
+                                     param=param)
+        if json_value == {}:
+            raise click.BadParameter('geom is empty.', ctx=ctx, param=param)
+    # read from stdin or file
+    else:
+        try:
+            with click.open_file(value) as f:
+                json_value = json.load(f)
+        except json.decoder.JSONDecodeError:
+            raise click.BadParameter('geom does not contain valid json.',
+                                     ctx=ctx,
+                                     param=param)
+    return json_value
+
+
+class FieldType(click.ParamType):
+    name = 'field'
+    help = 'FIELD is the name of the field to filter on.'
+
+    def convert(self, value, param, ctx):
+        return value
+
+
+class ComparisonType(click.ParamType):
+    name = 'comp'
+    valid = ['lt', 'lte', 'gt', 'gte']
+    help = 'COMP can be lt, lte, gt, or gte.'
+
+    def convert(self, value, param, ctx):
+        if value not in self.valid:
+            self.fail(f'COMP ({value}) must be one of {",".join(self.valid)}',
+                      param,
+                      ctx)
+        return value
+
+
+class DateTimeType(click.ParamType):
+    name = 'datetime'
+    help = 'DATETIME can be an RFC 3339 or ISO 8601 string.'
+
+    def convert(self, value, param, ctx):
+        if isinstance(value, datetime):
+            return value
+        else:
+            return io.str_to_datetime(value)
+
+
+class DateRangeFilter(click.Tuple):
+    help = ('Filter by date range in field. ' +
+            f'{FieldType.help} {ComparisonType.help} {DateTimeType.help}')
+
+    def __init__(self) -> None:
+        super().__init__([FieldType(), ComparisonType(), DateTimeType()])
+
+    def convert(self, value, param, ctx):
+        vals = super().convert(value, param, ctx)
+
+        field, comp, value = vals
+        kwargs = {'field_name': field, comp: value}
+        return data_filter.date_range_filter(**kwargs)
+
+
+class RangeFilter(click.Tuple):
+    help = ('Filter by number range in field. ' +
+            f'{FieldType.help} {ComparisonType.help}')
+
+    def __init__(self) -> None:
+        super().__init__([FieldType(), ComparisonType(), float])
+
+    def convert(self, value, param, ctx):
+        vals = super().convert(value, param, ctx)
+
+        field, comp, value = vals
+        kwargs = {'field_name': field, comp: value}
+        return data_filter.range_filter(**kwargs)
+
+
+@data.command()
+@click.pass_context
+@translate_exceptions
+@pretty
+@click.option('--asset',
+              type=str,
+              default=None,
+              callback=assets_to_filter,
+              help='Filter to items with one or more of specified assets.')
+# @click.option('--date-range',
+#               type=DateRangeFilter(),
+#               multiple=True,
+#               help=DateRangeFilter.help)
+@click.option('--geom',
+              type=str,
+              default=None,
+              callback=geom_to_filter,
+              help='Filter to items that overlap a given geometry.')
+# @click.option('--range', 'nrange',
+#               type=RangeFilter(),
+#               multiple=True,
+#               help=RangeFilter.help)
+@click.option('--permission',
+              type=bool,
+              default=True,
+              help='Filter to assets with download permissions.')
+def filter(ctx, asset, geom, permission, pretty):
+    """Create a structured item search filter.
+
+    This command provides basic functionality for specifying a filter by
+    creating an AndFilter with the filters identified with the options as
+    inputs. This is only a subset of the complex filtering supported by the
+    API. For advanced filter creation, either create the filter by hand or use
+    the Python API.
+    """
+    permission = data_filter.permission_filter() if permission else None
+
+    # options allowing multiples are broken up so one filter is created for
+    # each time the option is specified
+    filter_args = (asset, geom, permission)
+
+    filters = [f for f in filter_args if f]
+
+    if filters:
+        if len(filters) > 1:
+            filt = data_filter.and_filter(filters)
+        else:
+            filt = filters[0]
+        echo_json(filt, pretty)
 
 
 @data.command()
@@ -86,8 +250,11 @@ def parse_filter(ctx, param, value: str) -> dict:
               default=100,
               help='Maximum number of results to return. Defaults to 100.')
 async def search_quick(ctx, item_types, filter, name, limit, pretty):
-    """This function executes a structured item search using the item_types,
+    """Execute a structured item search.
+
+    This function executes a structured item search using the item_types,
     and json filter specified (using file or stdin).
+
     Quick searches are stored for approximately 30 days and the --name
     parameter will be applied to the stored quick search. This function
     outputs a series of GeoJSON descriptions, one for each of the returned
@@ -119,13 +286,14 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
               is_flag=True,
               help='Send a daily email when new results are added.')
 async def search_create(ctx, name, item_types, filter, daily_email, pretty):
-    """ This function creates a new saved structured item search, using the
+    """Create a new saved structured item search.
+
+    This function creates a new saved structured item search, using the
     name of the search, item_types, and json filter specified (using file or
     stdin). If specified, the "--daily_email" option enables users to recieve
     an email when new results are available each day. This function outputs a
     full JSON description of the created search. The output can also be
     optionally pretty-printed using "--pretty".
-
     """
     async with data_client(ctx) as cl:
         items = await cl.create_search(name=name,
@@ -142,7 +310,7 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
 @pretty
 @click.argument('search_id')
 async def search_get(ctx, search_id, pretty):
-    """Get saved search.
+    """Get a saved search.
 
     This function obtains an existing saved search, using the search_id.
     This function outputs a full JSON description of the identified saved

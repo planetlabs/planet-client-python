@@ -1,3 +1,16 @@
+# Copyright 2022 Planet Labs PBC.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not
+# use this file except in compliance with the License. You may obtain a copy of
+# the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations under
+# the License.
 """Tests of the Data CLI."""
 from click.testing import CliRunner
 import pytest
@@ -33,6 +46,92 @@ def test_data_command_registered(invoke):
     assert "search-create" in result.output
     assert "search-get" in result.output
     # Add other sub-commands here.
+
+
+permission_filter = {"type": "PermissionFilter", "config": ["assets:download"]}
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("permission, expected",
+                         [(False, ''),
+                          (True, json.dumps(permission_filter) + '\n')])
+def test_data_filter_permission(invoke, permission, expected):
+    """Test that the proper filter is created when zero and one subfilters
+    are specified."""
+    runner = CliRunner()
+    result = invoke(["filter", f'--permission={permission}'], runner=runner)
+
+    assert result.exit_code == 0
+    assert result.output == expected
+
+
+@pytest.fixture
+def assert_and_filters_equal():
+    """Check for equality when the order of the config list doesn't matter"""
+
+    def _func(filter1, filter2):
+        assert filter1.keys() == filter2.keys()
+        assert filter1['type'] == filter2['type']
+
+        assert len(filter1['config']) == len(filter2['config'])
+        for c in filter1['config']:
+            assert c in filter2['config']
+
+    return _func
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("asset, expected",
+                         [('ortho_analytic_8b_sr', ['ortho_analytic_8b_sr']),
+                          ('ortho_analytic_8b_sr,ortho_analytic_4b_sr',
+                           ['ortho_analytic_8b_sr', 'ortho_analytic_4b_sr']),
+                          ('ortho_analytic_8b_sr , ortho_analytic_4b_sr',
+                           ['ortho_analytic_8b_sr', 'ortho_analytic_4b_sr'])])
+def test_data_filter_asset(asset, expected, invoke, assert_and_filters_equal):
+    runner = CliRunner()
+
+    result = invoke(["filter", f'--asset={asset}'], runner=runner)
+    assert result.exit_code == 0
+
+    asset_filter = {"type": "AssetFilter", "config": expected}
+    expected_filt = {
+        "type": "AndFilter", "config": [asset_filter, permission_filter]
+    }
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("geom_fixture",
+                         [('geom_geojson'), ('feature_geojson'),
+                          ('featurecollection_geojson')])
+def test_data_filter_geom(geom_fixture,
+                          request,
+                          invoke,
+                          geom_geojson,
+                          assert_and_filters_equal):
+    """Ensure that all GeoJSON forms of describing a geometry are handled
+    and all result in the same, valid GeometryFilter being created"""
+    runner = CliRunner()
+
+    geom = request.getfixturevalue(geom_fixture)
+    geom_str = json.dumps(geom)
+    result = invoke(["filter", f'--geom={geom_str}'], runner=runner)
+    assert result.exit_code == 0
+
+    geom_filter = {
+        "type": "GeometryFilter",
+        "field_name": "geometry",
+        "config": geom_geojson
+    }
+
+    expected_filt = {
+        "type": "AndFilter", "config": [permission_filter, geom_filter]
+    }
+
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
 @respx.mock
