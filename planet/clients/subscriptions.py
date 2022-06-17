@@ -4,7 +4,7 @@ import itertools
 from typing import AsyncIterator, Dict, Optional, Set
 import uuid
 
-from planet.exceptions import ClientError
+from planet.exceptions import APIError
 
 # Collections of fake subscriptions and results for testing. Tests will
 # monkeypatch these attributes.
@@ -95,7 +95,8 @@ class PlaceholderSubscriptionsClient:
             dict: a description of a subscription.
 
         Raises:
-            ClientError
+            APIError: on an API server error.
+            ClientError: on a client error.
 
         """
         try:
@@ -107,7 +108,7 @@ class PlaceholderSubscriptionsClient:
             # TODO: remove "from server_error" clause. It's useful
             # during development but may invite users to depend on the
             # value of server_error.
-            raise ClientError("Subscription failure") from server_error
+            raise APIError("Subscription failure") from server_error
 
     async def create_subscription(self, request: dict) -> dict:
         """Create a Subscription.
@@ -119,7 +120,8 @@ class PlaceholderSubscriptionsClient:
             dict: description of created subscription.
 
         Raises:
-            ClientError
+            APIError: on an API server error.
+            ClientError: on a client error.
 
         """
         try:
@@ -129,7 +131,7 @@ class PlaceholderSubscriptionsClient:
             # TODO: remove "from server_error" clause. It's useful
             # during development but may invite users to depend on the
             # value of server_error.
-            raise ClientError("Subscription failure") from server_error
+            raise APIError("Subscription failure") from server_error
         else:
             return sub
 
@@ -143,7 +145,8 @@ class PlaceholderSubscriptionsClient:
             dict: description of cancelled subscription.
 
         Raises:
-            ClientError
+            APIError: on an API server error.
+            ClientError: on a client error.
 
         """
         try:
@@ -153,7 +156,7 @@ class PlaceholderSubscriptionsClient:
             # TODO: remove "from server_error" clause. It's useful
             # during development but may invite users to depend on the
             # value of server_error.
-            raise ClientError("Subscription failure.") from server_error
+            raise APIError("Subscription failure.") from server_error
         else:
             return sub
 
@@ -169,7 +172,8 @@ class PlaceholderSubscriptionsClient:
             dict: description of the updated subscription.
 
         Raises:
-            ClientError
+            APIError: on an API server error.
+            ClientError: on a client error.
 
         """
         try:
@@ -179,7 +183,7 @@ class PlaceholderSubscriptionsClient:
             # TODO: remove "from server_error" clause. It's useful
             # during development but may invite users to depend on the
             # value of server_error.
-            raise ClientError("Subscription failure.") from server_error
+            raise APIError("Subscription failure.") from server_error
         else:
             return sub
 
@@ -193,7 +197,8 @@ class PlaceholderSubscriptionsClient:
             dict: description of the subscription.
 
         Raises:
-            ClientError
+            APIError: on an API server error.
+            ClientError: on a client error.
 
         """
         try:
@@ -203,7 +208,7 @@ class PlaceholderSubscriptionsClient:
             # TODO: remove "from server_error" clause. It's useful
             # during development but may invite users to depend on the
             # value of server_error.
-            raise ClientError("Subscription failure.") from server_error
+            raise APIError("Subscription failure.") from server_error
         else:
             return sub
 
@@ -230,7 +235,8 @@ class PlaceholderSubscriptionsClient:
             dict: description of a subscription results.
 
         Raises:
-            ClientError
+            APIError: on an API server error.
+            ClientError: on a client error.
 
         """
         try:
@@ -242,4 +248,4 @@ class PlaceholderSubscriptionsClient:
             # TODO: remove "from server_error" clause. It's useful
             # during development but may invite users to depend on the
             # value of server_error.
-            raise ClientError("Subscription failure.") from server_error
+            raise APIError("Subscription failure.") from server_error
