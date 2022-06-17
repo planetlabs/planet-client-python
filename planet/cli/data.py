@@ -12,14 +12,14 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """The Planet Data CLI."""
-from datetime import datetime
+# from datetime import datetime
 import json
 from typing import List
 from contextlib import asynccontextmanager
 
 import click
 
-from planet import data_filter, io, DataClient, Session
+from planet import data_filter, DataClient, Session
 
 from .cmds import coro, translate_exceptions
 from .io import echo_json
