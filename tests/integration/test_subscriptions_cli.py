@@ -22,7 +22,7 @@ import pytest
 
 from planet.cli import cli
 import planet.cli.subscriptions
-from planet.clients.subscriptions import PlaceholderSubscriptionsClient
+from planet.clients.subscriptions import SubscriptionsClient
 
 
 @pytest.fixture
@@ -33,8 +33,8 @@ def subscription_count():
 
         async def count_em():
             return len([
-                sub async for sub in
-                PlaceholderSubscriptionsClient().list_subscriptions()
+                sub
+                async for sub in SubscriptionsClient().list_subscriptions()
             ])
 
         return asyncio.run(count_em())
@@ -98,7 +98,7 @@ def test_subscriptions_create_failure(monkeypatch, subscription_count):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "Request lacks required members" in result.output
+    assert "Subscription failure" in result.output
     assert subscription_count() == 0
 
 
@@ -174,7 +174,7 @@ def test_subscriptions_cancel_failure(monkeypatch):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "No such subscription" in result.output
+    assert "Subscription failure" in result.output
 
 
 def test_subscriptions_cancel_success(monkeypatch, subscription_count):
@@ -213,7 +213,7 @@ def test_subscriptions_update_failure(monkeypatch):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "No such subscription" in result.output
+    assert "Subscription failure" in result.output
 
 
 def test_subscriptions_update_success(monkeypatch):
@@ -251,7 +251,7 @@ def test_subscriptions_describe_failure(monkeypatch):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "No such subscription" in result.output
+    assert "Subscription failure" in result.output
 
 
 def test_subscriptions_describe_success(monkeypatch):
@@ -286,7 +286,7 @@ def test_subscriptions_results_failure(monkeypatch):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "No such subscription" in result.output
+    assert "Subscription failure." in result.output
 
 
 @pytest.mark.parametrize('options,expected_count',
