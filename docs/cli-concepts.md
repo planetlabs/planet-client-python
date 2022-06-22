@@ -22,6 +22,8 @@ stringing several together
 
 ### Running a command within another
 
+### variables
+
 ## JQ
 
 ## curl
