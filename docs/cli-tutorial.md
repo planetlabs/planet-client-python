@@ -274,42 +274,83 @@ Save this as geometry.json
 $ planet data filter --geom geometry.json | planet data search-quick PSScene -
 ```
 
-And turn into GeoJSON
+And turn into GeoJSON (many gis programs do better with 'real' geojson, the default output is newline delimited geojson)
 
 ```console
 $ planet data filter --geom geometry.json | planet data search-quick PSScene - | planet collect
 ```
 
+Search just for 8-band assets
+
+```console
+$ planet data filter --asset ortho_analytic_8b_sr | planet data search-quick PSScene -
+```
+
+Search for 8-band assets that also have a UDM
+
+```console
+$ planet data filter --asset ortho_analytic_8b_sr --asset udm2 | planet data search-quick PSScene -
+```
+
+Search for any 8 band data, not just ones that you have download access to (default is only those you have access to)
+
+```console
+$ planet data filter --permission false --asset ortho_analytic_8b_sr | planet data search-quick PSScene -
+```
+
+Make a filter for data acquired in July 2021
+
+```console
+$ planet data filter --date-range acquired gte 2021-07-01 --date-range acquired lt 2021-08-01
+```
+
+Make a filter for data with clear pixels greater than 90%
+
+```console
+$ planet data filter --range clear_percent gt 90
+```
+
+Search for all landsat 8, sentinel 2 and planetscope images in an area of interest
+
+```console
+$ planet data filter --geom geometry.json  | planet data search-quick PSScene,Sentinel2L1C,Landsat8L1G
+```
+
+Get the id of the most recent skysat image taken (that you have download access to)
+
+```console
+$ planet data filter | planet data search-quick SkySatCollect --limit 1 - | jq -r .id
+```
+
+Order the most recent skysat image taken.
+
+```console
+$ planet orders request --name "SkySat Latest" --item-type SkySatCollect --bundle analytic \
+--id `planet data filter | planet data search-quick SkySatCollect --limit 1 - | jq -r .id` \
+| planet orders create
+```
+
+Get the 5 latest cloud free images in an area and create an order that clips to that area, using 
+[geometry.geojson](https://gist.github.com/cholmes/378d050a263ae433ddbbb91c3439994b) from above:
+(this one uses variables in unix)
+(note that you need the tr and sd to format the output of jq into the comma delimited list we need as input. There is likely some better way to do this...)
+(currently lists two options, but only because range isn't yet working, so once that is we'll take it away. May also switch to PSScene)
+
+
+```console
+$ ids=`planet data filter --geom geometry.geojson | planet data search-quick SkySatCollect --limit 5 - | jq -r .id | tr '\n' , | sed 's/.$//'`
+$ ids=`planet data filter --geom geometry.geojson --range clear_percent gt 90 | planet data search-quick SkySatCollect --limit 5 - | jq -r .id | tr '\n' , | sed 's/.$//'`
+$ planet orders request -- "Clipped Scenes" --item-type SkySatCollect --bundle analytic --id $ids | planet orders create --clip geometry.geojson
+
+```
+
 ```console
 $ 
 ```
 
-
 ```console
 $ 
 ```
-
-```console
-$ 
-```
-
-```console
-$ 
-```
-
-
-```console
-$ 
-```
-
-```console
-$ 
-```
-
-```console
-$ 
-```
-
 
 Run a search for planetscope data on a bounding box in Iowa
 
