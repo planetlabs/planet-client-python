@@ -98,7 +98,6 @@ def test_subscriptions_create_failure(monkeypatch, subscription_count):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "Subscription failure" in result.output
     assert subscription_count() == 0
 
 
@@ -131,7 +130,6 @@ def test_subscriptions_create_success(cmd_arg,
         catch_exceptions=True)
 
     assert result.exit_code == 0  # success.
-    assert "Request lacks required members" not in result.output
     assert uuid.UUID(json.loads(result.output)['id'])
     assert subscription_count() == 1
 
@@ -174,7 +172,6 @@ def test_subscriptions_cancel_failure(monkeypatch):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "Subscription failure" in result.output
 
 
 def test_subscriptions_cancel_success(monkeypatch, subscription_count):
@@ -213,7 +210,6 @@ def test_subscriptions_update_failure(monkeypatch):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "Subscription failure" in result.output
 
 
 def test_subscriptions_update_success(monkeypatch):
@@ -251,7 +247,6 @@ def test_subscriptions_describe_failure(monkeypatch):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "Subscription failure" in result.output
 
 
 def test_subscriptions_describe_success(monkeypatch):

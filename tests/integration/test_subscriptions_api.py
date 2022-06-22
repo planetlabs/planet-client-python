@@ -4,16 +4,16 @@ import pytest
 
 import planet.clients.subscriptions
 from planet.clients.subscriptions import SubscriptionsClient
-from planet.exceptions import ClientError
+from planet.exceptions import APIError
 from planet.http import Session
 
 
 @pytest.mark.xfail(reason="Client/server interaction not yet implemented")
 @pytest.mark.asyncio
 async def test_list_subscriptions_failure(monkeypatch):
-    """ClientError is raised if there is a server error."""
+    """APIError is raised if there is a server error."""
     monkeypatch.setattr(planet.clients.subscriptions, "_fake_subs", 0)
-    with pytest.raises(ClientError):
+    with pytest.raises(APIError):
         async with Session() as session:
             client = SubscriptionsClient(session)
             _ = [sub async for sub in client.list_subscriptions()]
@@ -41,9 +41,9 @@ async def test_list_subscriptions_success(status, count, monkeypatch):
 @pytest.mark.xfail(reason="Client/server interaction not yet implemented")
 @pytest.mark.asyncio
 async def test_create_subscription_failure(monkeypatch):
-    """ClientError is raised if there is a server error."""
+    """APIError is raised if there is a server error."""
     monkeypatch.setattr(planet.clients.subscriptions, "_fake_subs", {})
-    with pytest.raises(ClientError):
+    with pytest.raises(APIError):
         async with Session() as session:
             client = SubscriptionsClient(session)
             _ = await client.create_subscription({"lol": "wut"})
@@ -65,9 +65,9 @@ async def test_create_subscription_success(monkeypatch):
 @pytest.mark.xfail(reason="Client/server interaction not yet implemented")
 @pytest.mark.asyncio
 async def test_cancel_subscription_failure(monkeypatch):
-    """ClientError is raised if there is a server error."""
+    """APIError is raised if there is a server error."""
     monkeypatch.setattr(planet.clients.subscriptions, "_fake_subs", {})
-    with pytest.raises(ClientError):
+    with pytest.raises(APIError):
         async with Session() as session:
             client = SubscriptionsClient(session)
             _ = await client.cancel_subscription("lolwut")
@@ -93,9 +93,9 @@ async def test_cancel_subscription_success(monkeypatch):
 @pytest.mark.xfail(reason="Client/server interaction not yet implemented")
 @pytest.mark.asyncio
 async def test_update_subscription_failure(monkeypatch):
-    """ClientError is raised if there is a server error."""
+    """APIError is raised if there is a server error."""
     monkeypatch.setattr(planet.clients.subscriptions, "_fake_subs", {})
-    with pytest.raises(ClientError):
+    with pytest.raises(APIError):
         async with Session() as session:
             client = SubscriptionsClient(session)
             _ = await client.update_subscription("lolwut", {})
@@ -124,9 +124,9 @@ async def test_update_subscription_success(monkeypatch):
 @pytest.mark.xfail(reason="Client/server interaction not yet implemented")
 @pytest.mark.asyncio
 async def test_get_subscription_failure(monkeypatch):
-    """ClientError is raised if there is a server error."""
+    """APIError is raised if there is a server error."""
     monkeypatch.setattr(planet.clients.subscriptions, "_fake_subs", {})
-    with pytest.raises(ClientError):
+    with pytest.raises(APIError):
         async with Session() as session:
             client = SubscriptionsClient(session)
             _ = await client.get_subscription("lolwut")
@@ -152,9 +152,9 @@ async def test_get_subscription_success(monkeypatch):
 @pytest.mark.xfail(reason="Client/server interaction not yet implemented")
 @pytest.mark.asyncio
 async def test_get_results_failure(monkeypatch):
-    """ClientError is raised if there is a server error."""
+    """APIError is raised if there is a server error."""
     monkeypatch.setattr(planet.clients.subscriptions, "_fake_sub_results", {})
-    with pytest.raises(ClientError):
+    with pytest.raises(APIError):
         async with Session() as session:
             client = SubscriptionsClient(session)
             _ = [res async for res in client.get_results("lolwut")]
