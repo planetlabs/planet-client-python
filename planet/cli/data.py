@@ -12,14 +12,14 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """The Planet Data CLI."""
-# from datetime import datetime
+from datetime import datetime
 import json
 from typing import List
 from contextlib import asynccontextmanager
 
 import click
 
-from planet import data_filter, DataClient, Session
+from planet import data_filter, io, DataClient, Session
 
 from .cmds import coro, translate_exceptions
 from .io import echo_json
@@ -121,66 +121,66 @@ def _parse_geom(ctx, param, value: str) -> dict:
     return json_value
 
 
-# class FieldType(click.ParamType):
-#     name = 'field'
-#     help = 'FIELD is the name of the field to filter on.'
-#
-#     def convert(self, value, param, ctx):
-#         return value
-#
-#
-# class ComparisonType(click.ParamType):
-#     name = 'comp'
-#     valid = ['lt', 'lte', 'gt', 'gte']
-#     help = 'COMP can be lt, lte, gt, or gte.'
-#
-#     def convert(self, value, param, ctx):
-#         if value not in self.valid:
-#            self.fail(f'COMP ({value}) must be one of {",".join(self.valid)}',
-#                       param,
-#                       ctx)
-#         return value
-#
-#
-# class DateTimeType(click.ParamType):
-#     name = 'datetime'
-#     help = 'DATETIME can be an RFC 3339 or ISO 8601 string.'
-#
-#     def convert(self, value, param, ctx):
-#         if isinstance(value, datetime):
-#             return value
-#         else:
-#             return io.str_to_datetime(value)
-#
-#
-# class DateRangeFilter(click.Tuple):
-#     help = ('Filter by date range in field. ' +
-#             f'{FieldType.help} {ComparisonType.help} {DateTimeType.help}')
-#
-#     def __init__(self) -> None:
-#         super().__init__([FieldType(), ComparisonType(), DateTimeType()])
-#
-#     def convert(self, value, param, ctx):
-#         vals = super().convert(value, param, ctx)
-#
-#         field, comp, value = vals
-#         kwargs = {'field_name': field, comp: value}
-#         return data_filter.date_range_filter(**kwargs)
-#
-#
-# class RangeFilter(click.Tuple):
-#     help = ('Filter by number range in field. ' +
-#             f'{FieldType.help} {ComparisonType.help}')
-#
-#     def __init__(self) -> None:
-#         super().__init__([FieldType(), ComparisonType(), float])
-#
-#     def convert(self, value, param, ctx):
-#         vals = super().convert(value, param, ctx)
-#
-#         field, comp, value = vals
-#         kwargs = {'field_name': field, comp: value}
-#         return data_filter.range_filter(**kwargs)
+class FieldType(click.ParamType):
+    name = 'field'
+    help = 'FIELD is the name of the field to filter on.'
+
+    def convert(self, value, param, ctx):
+        return value
+
+
+class ComparisonType(click.ParamType):
+    name = 'comp'
+    valid = ['lt', 'lte', 'gt', 'gte']
+    help = 'COMP can be lt, lte, gt, or gte.'
+
+    def convert(self, value, param, ctx):
+        if value not in self.valid:
+            self.fail(f'COMP ({value}) must be one of {",".join(self.valid)}',
+                      param,
+                      ctx)
+        return value
+
+
+class DateTimeType(click.ParamType):
+    name = 'datetime'
+    help = 'DATETIME can be an RFC 3339 or ISO 8601 string.'
+
+    def convert(self, value, param, ctx):
+        if isinstance(value, datetime):
+            return value
+        else:
+            return io.str_to_datetime(value)
+
+
+class DateRangeFilter(click.Tuple):
+    help = ('Filter by date range in field. ' +
+            f'{FieldType.help} {ComparisonType.help} {DateTimeType.help}')
+
+    def __init__(self) -> None:
+        super().__init__([FieldType(), ComparisonType(), DateTimeType()])
+
+    def convert(self, value, param, ctx):
+        vals = super().convert(value, param, ctx)
+
+        field, comp, value = vals
+        kwargs = {'field_name': field, comp: value}
+        return data_filter.date_range_filter(**kwargs)
+
+
+class RangeFilter(click.Tuple):
+    help = ('Filter by number range in field. ' +
+            f'{FieldType.help} {ComparisonType.help}')
+
+    def __init__(self) -> None:
+        super().__init__([FieldType(), ComparisonType(), float])
+
+    def convert(self, value, param, ctx):
+        vals = super().convert(value, param, ctx)
+
+        field, comp, value = vals
+        kwargs = {'field_name': field, comp: value}
+        return data_filter.range_filter(**kwargs)
 
 
 @data.command()
@@ -192,24 +192,25 @@ def _parse_geom(ctx, param, value: str) -> dict:
               default=None,
               callback=assets_to_filter,
               help='Filter to items with one or more of specified assets.')
-# @click.option('--date-range',
-#               type=DateRangeFilter(),
-#               multiple=True,
-#               help=DateRangeFilter.help)
+@click.option('--date-range',
+              type=DateRangeFilter(),
+              multiple=True,
+              help=DateRangeFilter.help)
 @click.option('--geom',
               type=str,
               default=None,
               callback=geom_to_filter,
               help='Filter to items that overlap a given geometry.')
-# @click.option('--range', 'nrange',
-#               type=RangeFilter(),
-#               multiple=True,
-#               help=RangeFilter.help)
+@click.option('--range',
+              'nrange',
+              type=RangeFilter(),
+              multiple=True,
+              help=RangeFilter.help)
 @click.option('--permission',
               type=bool,
               default=True,
               help='Filter to assets with download permissions.')
-def filter(ctx, asset, geom, permission, pretty):
+def filter(ctx, asset, date_range, geom, nrange, permission, pretty):
     """Create a structured item search filter.
 
     This command provides basic functionality for specifying a filter by
@@ -222,7 +223,7 @@ def filter(ctx, asset, geom, permission, pretty):
 
     # options allowing multiples are broken up so one filter is created for
     # each time the option is specified
-    filter_args = (asset, geom, permission)
+    filter_args = (asset, *date_range, geom, *nrange, permission)
 
     filters = [f for f in filter_args if f]
 

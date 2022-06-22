@@ -12,12 +12,15 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """Tests of the Data CLI."""
-from click.testing import CliRunner
-import pytest
+from http import HTTPStatus
 import json
+
 import httpx
 import respx
-from http import HTTPStatus
+
+from click.testing import CliRunner
+import pytest
+
 from planet.cli import cli
 
 TEST_URL = 'https://api.planet.com/data/v1'
@@ -104,6 +107,41 @@ def test_data_filter_asset(asset, expected, invoke, assert_and_filters_equal):
 
 @respx.mock
 @pytest.mark.asyncio
+def test_data_filter_date_range(invoke, assert_and_filters_equal):
+    """Check filter is created correctly and that multiple options results in
+    multiple filters"""
+    runner = CliRunner()
+
+    result = invoke(["filter"] + '--date-range field gt 2021-01-01'.split() +
+                    '--date-range field2 lt 2022-01-01'.split(),
+                    runner=runner)
+    assert result.exit_code == 0
+
+    date_range_filter1 = {
+        "type": "DateRangeFilter",
+        "field_name": "field",
+        "config": {
+            "gt": "2021-01-01T00:00:00Z"
+        }
+    }
+    date_range_filter2 = {
+        "type": "DateRangeFilter",
+        "field_name": "field2",
+        "config": {
+            "lt": "2022-01-01T00:00:00Z"
+        }
+    }
+
+    expected_filt = {
+        "type": "AndFilter",
+        "config": [permission_filter, date_range_filter1, date_range_filter2]
+    }
+
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
 @pytest.mark.parametrize("geom_fixture",
                          [('geom_geojson'), ('feature_geojson'),
                           ('featurecollection_geojson')])
@@ -129,6 +167,39 @@ def test_data_filter_geom(geom_fixture,
 
     expected_filt = {
         "type": "AndFilter", "config": [permission_filter, geom_filter]
+    }
+
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
+def test_data_filter_range(invoke, assert_and_filters_equal):
+    """Check filter is created correctly, that multiple options results in
+    multiple filters, and that floats are processed correctly."""
+    runner = CliRunner()
+
+    result = invoke(["filter"] + '--range field gt 70'.split() +
+                    '--range cloud_cover lt 0.5'.split(),
+                    runner=runner)
+    assert result.exit_code == 0
+
+    range_filter1 = {
+        "type": "RangeFilter", "field_name": "field", "config": {
+            "gt": 70.0
+        }
+    }
+    range_filter2 = {
+        "type": "RangeFilter",
+        "field_name": "cloud_cover",
+        "config": {
+            "lt": 0.5
+        }
+    }
+
+    expected_filt = {
+        "type": "AndFilter",
+        "config": [permission_filter, range_filter1, range_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
