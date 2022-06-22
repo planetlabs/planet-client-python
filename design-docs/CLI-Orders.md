@@ -142,9 +142,8 @@ User Story: As a CLI user I would like to create an order, wait for it to be
 ready to download, then download the order. 
 
 ```
-$ planet orders create –like order_description.json \
-| jq -r ‘.id’ | planet orders wait - \
-| jq -r ‘.id’ | planet orders download -
+$ id=`planet orders create request-1.json | jq -r '.id'` \
+&& planet orders wait $id && planet orders download $id
 <ANSI download status reporting>
 ```
 
