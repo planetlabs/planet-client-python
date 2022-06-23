@@ -207,6 +207,41 @@ def test_data_filter_range(invoke, assert_and_filters_equal):
 
 @respx.mock
 @pytest.mark.asyncio
+def test_data_filter_update(invoke, assert_and_filters_equal):
+    """Check filter is created correctly and that multiple options results in
+    multiple filters"""
+    runner = CliRunner()
+
+    result = invoke(["filter"] + '--update field gt 2021-01-01'.split() +
+                    '--update field2 gte 2022-01-01'.split(),
+                    runner=runner)
+    assert result.exit_code == 0
+
+    update_filter1 = {
+        "type": "UpdateFilter",
+        "field_name": "field",
+        "config": {
+            "gt": "2021-01-01T00:00:00Z"
+        }
+    }
+    update_filter2 = {
+        "type": "UpdateFilter",
+        "field_name": "field2",
+        "config": {
+            "gte": "2022-01-01T00:00:00Z"
+        }
+    }
+
+    expected_filt = {
+        "type": "AndFilter",
+        "config": [permission_filter, update_filter1, update_filter2]
+    }
+
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
 @pytest.mark.parametrize(
     "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])

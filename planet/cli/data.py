@@ -142,6 +142,12 @@ class ComparisonType(click.ParamType):
         return value
 
 
+class GTComparisonType(ComparisonType):
+    """Only support gt or gte comparison"""
+    valid = ['gt', 'gte']
+    help = 'COMP can be gt, or gte.'
+
+
 class DateTimeType(click.ParamType):
     name = 'datetime'
     help = 'DATETIME can be an RFC 3339 or ISO 8601 string.'
@@ -183,6 +189,22 @@ class RangeFilter(click.Tuple):
         return data_filter.range_filter(**kwargs)
 
 
+class UpdateFilter(click.Tuple):
+    help = ('Filter to items with changes to a specified field value made ' +
+            'after a specified date.' +
+            f'{FieldType.help} {GTComparisonType.help} {DateTimeType.help}')
+
+    def __init__(self) -> None:
+        super().__init__([FieldType(), GTComparisonType(), DateTimeType()])
+
+    def convert(self, value, param, ctx):
+        vals = super().convert(value, param, ctx)
+
+        field, comp, value = vals
+        kwargs = {'field_name': field, comp: value}
+        return data_filter.update_filter(**kwargs)
+
+
 @data.command()
 @click.pass_context
 @translate_exceptions
@@ -201,16 +223,28 @@ class RangeFilter(click.Tuple):
               default=None,
               callback=geom_to_filter,
               help='Filter to items that overlap a given geometry.')
+# @click.option('--number-in',
+#               type=RangeFilter(),
+#               multiple=True,
+#               help=RangeFilter.help)
 @click.option('--range',
               'nrange',
               type=RangeFilter(),
               multiple=True,
               help=RangeFilter.help)
+# @click.option('--string-in',
+#               type=RangeFilter(),
+#               multiple=True,
+#               help=RangeFilter.help)
+@click.option('--update',
+              type=UpdateFilter(),
+              multiple=True,
+              help=UpdateFilter.help)
 @click.option('--permission',
               type=bool,
               default=True,
               help='Filter to assets with download permissions.')
-def filter(ctx, asset, date_range, geom, nrange, permission, pretty):
+def filter(ctx, asset, date_range, geom, nrange, update, permission, pretty):
     """Create a structured item search filter.
 
     This command provides basic functionality for specifying a filter by
@@ -223,7 +257,7 @@ def filter(ctx, asset, date_range, geom, nrange, permission, pretty):
 
     # options allowing multiples are broken up so one filter is created for
     # each time the option is specified
-    filter_args = (asset, *date_range, geom, *nrange, permission)
+    filter_args = (asset, *date_range, geom, *nrange, *update, permission)
 
     filters = [f for f in filter_args if f]
 
