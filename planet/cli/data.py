@@ -221,6 +221,16 @@ def number_in_to_filter(ctx, param, values) -> Union[dict, None]:
         return [_func(v) for v in values]
 
 
+def string_in_to_filter(ctx, param, values) -> Union[dict, None]:
+
+    def _func(obj):
+        field, values = obj
+        return data_filter.string_in_filter(field_name=field, values=values)
+
+    if values:
+        return [_func(v) for v in values]
+
+
 @data.command()
 @click.pass_context
 @translate_exceptions
@@ -231,7 +241,7 @@ def number_in_to_filter(ctx, param, values) -> Union[dict, None]:
               callback=assets_to_filter,
               help="""Filter to items with one or more of specified assets.
     VALUE is a comma-separated list of entries.
-    When multiple entries are specified  an implicit 'or' logic is applied.""")
+    When multiple entries are specified, an implicit 'or' logic is applied.""")
 @click.option('--date-range',
               type=click.Tuple([FieldType(), ComparisonType(),
                                 DateTimeType()]),
@@ -253,7 +263,7 @@ def number_in_to_filter(ctx, param, values) -> Union[dict, None]:
               help="""Filter field by numeric in.
     FIELD is the name of the field to filter on.
     VALUE is a comma-separated list of entries.
-    When multiple entries are specified  an implicit 'or' logic is applied.""")
+    When multiple entries are specified, an implicit 'or' logic is applied.""")
 @click.option('--range',
               'nrange',
               type=click.Tuple([FieldType(), ComparisonType(), float]),
@@ -263,10 +273,14 @@ def number_in_to_filter(ctx, param, values) -> Union[dict, None]:
     FIELD is the name of the field to filter on.
     COMP can be lt, lte, gt, or gte.
     DATETIME can be an RFC3339 or ISO 8601 string.""")
-# @click.option('--string-in',
-#               type=RangeFilter(),
-#               multiple=True,
-#               help=RangeFilter.help)
+@click.option('--string-in',
+              type=click.Tuple([FieldType(), CommaSeparatedString()]),
+              multiple=True,
+              callback=string_in_to_filter,
+              help="""Filter field by numeric in.
+    FIELD is the name of the field to filter on.
+    VALUE is a comma-separated list of entries.
+    When multiple entries are specified, an implicit 'or' logic is applied.""")
 @click.option(
     '--update',
     type=click.Tuple([FieldType(), GTComparisonType(), DateTimeType()]),
@@ -287,6 +301,7 @@ def filter(ctx,
            geom,
            number_in,
            nrange,
+           string_in,
            update,
            permission,
            pretty):
@@ -305,6 +320,7 @@ def filter(ctx,
                       geom,
                       number_in,
                       nrange,
+                      string_in,
                       update,
                       permission)
 
