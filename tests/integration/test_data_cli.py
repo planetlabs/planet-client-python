@@ -172,6 +172,36 @@ def test_data_filter_geom(geom_fixture,
     assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
+# @pytest.mark.skip
+@respx.mock
+@pytest.mark.asyncio
+def test_data_filter_number_in(
+                          invoke,
+                          assert_and_filters_equal):
+    runner = CliRunner()
+
+    result = invoke(["filter"] + '--number-in field 1'.split() +
+                    '--number-in field2 2,3.5'.split(),
+                    runner=runner)
+    assert result.exit_code == 0
+
+    number_in_filter1 = {
+        "type": "NumberInFilter", "field_name": "field", "config": [1.0]
+    }
+    number_in_filter2 = {
+        "type": "NumberInFilter",
+        "field_name": "field2",
+        "config": [2.0, 3.5]
+        }
+
+    expected_filt = {
+        "type": "AndFilter",
+        "config": [permission_filter, number_in_filter1, number_in_filter2]
+    }
+
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
 @respx.mock
 @pytest.mark.asyncio
 def test_data_filter_range(invoke, assert_and_filters_equal):
