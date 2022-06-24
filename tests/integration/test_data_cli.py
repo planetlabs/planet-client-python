@@ -14,6 +14,7 @@
 """Tests of the Data CLI."""
 from http import HTTPStatus
 import json
+import logging
 
 import httpx
 import respx
@@ -22,6 +23,8 @@ from click.testing import CliRunner
 import pytest
 
 from planet.cli import cli
+
+LOGGER = logging.getLogger(__name__)
 
 TEST_URL = 'https://api.planet.com/data/v1'
 TEST_QUICKSEARCH_URL = f'{TEST_URL}/quick-search'
@@ -51,22 +54,17 @@ def test_data_command_registered(invoke):
     # Add other sub-commands here.
 
 
-permission_filter = {"type": "PermissionFilter", "config": ["assets:download"]}
+PERMISSION_FILTER = {"type": "PermissionFilter", "config": ["assets:download"]}
+STD_QUALITY_FILTER = {
+    "type": "StringInFilter",
+    "field_name": "quality_category",
+    "config": ["standard"]
+}
 
 
-@respx.mock
-@pytest.mark.asyncio
-@pytest.mark.parametrize("permission, expected",
-                         [(False, ''),
-                          (True, json.dumps(permission_filter) + '\n')])
-def test_data_filter_permission(invoke, permission, expected):
-    """Test that the proper filter is created when zero and one subfilters
-    are specified."""
-    runner = CliRunner()
-    result = invoke(["filter", f'--permission={permission}'], runner=runner)
-
-    assert result.exit_code == 0
-    assert result.output == expected
+@pytest.fixture()
+def default_filters():
+    return [PERMISSION_FILTER, STD_QUALITY_FILTER]
 
 
 @pytest.fixture
@@ -86,13 +84,48 @@ def assert_and_filters_equal():
 
 @respx.mock
 @pytest.mark.asyncio
+@pytest.mark.parametrize("permission, p_remove",
+                         [(None, None),
+                          ('--permission=False', PERMISSION_FILTER)])
+@pytest.mark.parametrize("std_quality, s_remove",
+                         [(None, None),
+                          ('--std-quality=False', STD_QUALITY_FILTER)])
+def test_data_filter_defaults(permission,
+                              p_remove,
+                              std_quality,
+                              s_remove,
+                              invoke,
+                              default_filters,
+                              assert_and_filters_equal):
+    runner = CliRunner()
+
+    args = [arg for arg in [permission, std_quality] if arg]
+    result = invoke(["filter", *args], runner=runner)
+    assert result.exit_code == 0
+
+    [default_filters.remove(rem) for rem in [p_remove, s_remove] if rem]
+    if len(default_filters) > 1:
+        expected_filt = {"type": "AndFilter", "config": default_filters}
+        assert_and_filters_equal(json.loads(result.output), expected_filt)
+    elif len(default_filters) == 1:
+        assert json.loads(result.output) == default_filters[0]
+    else:
+        assert result.output == ''
+
+
+@respx.mock
+@pytest.mark.asyncio
 @pytest.mark.parametrize("asset, expected",
                          [('ortho_analytic_8b_sr', ['ortho_analytic_8b_sr']),
                           ('ortho_analytic_8b_sr,ortho_analytic_4b_sr',
                            ['ortho_analytic_8b_sr', 'ortho_analytic_4b_sr']),
                           ('ortho_analytic_8b_sr , ortho_analytic_4b_sr',
                            ['ortho_analytic_8b_sr', 'ortho_analytic_4b_sr'])])
-def test_data_filter_asset(asset, expected, invoke, assert_and_filters_equal):
+def test_data_filter_asset(asset,
+                           expected,
+                           invoke,
+                           default_filters,
+                           assert_and_filters_equal):
     runner = CliRunner()
 
     result = invoke(["filter", f'--asset={asset}'], runner=runner)
@@ -100,14 +133,16 @@ def test_data_filter_asset(asset, expected, invoke, assert_and_filters_equal):
 
     asset_filter = {"type": "AssetFilter", "config": expected}
     expected_filt = {
-        "type": "AndFilter", "config": [asset_filter, permission_filter]
+        "type": "AndFilter", "config": default_filters + [asset_filter]
     }
     assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_date_range(invoke, assert_and_filters_equal):
+def test_data_filter_date_range(invoke,
+                                assert_and_filters_equal,
+                                default_filters):
     """Check filter is created correctly and that multiple options results in
     multiple filters"""
     runner = CliRunner()
@@ -134,7 +169,7 @@ def test_data_filter_date_range(invoke, assert_and_filters_equal):
 
     expected_filt = {
         "type": "AndFilter",
-        "config": [permission_filter, date_range_filter1, date_range_filter2]
+        "config": default_filters + [date_range_filter1, date_range_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
@@ -149,7 +184,8 @@ def test_data_filter_geom(geom_fixture,
                           request,
                           invoke,
                           geom_geojson,
-                          assert_and_filters_equal):
+                          assert_and_filters_equal,
+                          default_filters):
     """Ensure that all GeoJSON forms of describing a geometry are handled
     and all result in the same, valid GeometryFilter being created"""
     runner = CliRunner()
@@ -166,7 +202,7 @@ def test_data_filter_geom(geom_fixture,
     }
 
     expected_filt = {
-        "type": "AndFilter", "config": [permission_filter, geom_filter]
+        "type": "AndFilter", "config": default_filters + [geom_filter]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
@@ -174,7 +210,9 @@ def test_data_filter_geom(geom_fixture,
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_number_in(invoke, assert_and_filters_equal):
+def test_data_filter_number_in(invoke,
+                               assert_and_filters_equal,
+                               default_filters):
     runner = CliRunner()
 
     result = invoke(["filter"] + '--number-in field 1'.split() +
@@ -191,7 +229,7 @@ def test_data_filter_number_in(invoke, assert_and_filters_equal):
 
     expected_filt = {
         "type": "AndFilter",
-        "config": [permission_filter, number_in_filter1, number_in_filter2]
+        "config": default_filters + [number_in_filter1, number_in_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
@@ -199,7 +237,7 @@ def test_data_filter_number_in(invoke, assert_and_filters_equal):
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_range(invoke, assert_and_filters_equal):
+def test_data_filter_range(invoke, assert_and_filters_equal, default_filters):
     """Check filter is created correctly, that multiple options results in
     multiple filters, and that floats are processed correctly."""
     runner = CliRunner()
@@ -224,7 +262,7 @@ def test_data_filter_range(invoke, assert_and_filters_equal):
 
     expected_filt = {
         "type": "AndFilter",
-        "config": [permission_filter, range_filter1, range_filter2]
+        "config": default_filters + [range_filter1, range_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
@@ -232,7 +270,9 @@ def test_data_filter_range(invoke, assert_and_filters_equal):
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_string_in(invoke, assert_and_filters_equal):
+def test_data_filter_string_in(invoke,
+                               assert_and_filters_equal,
+                               default_filters):
     runner = CliRunner()
 
     result = invoke(["filter"] + '--string-in field foo'.split() +
@@ -251,7 +291,7 @@ def test_data_filter_string_in(invoke, assert_and_filters_equal):
 
     expected_filt = {
         "type": "AndFilter",
-        "config": [permission_filter, string_in_filter1, string_in_filter2]
+        "config": default_filters + [string_in_filter1, string_in_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
@@ -259,7 +299,7 @@ def test_data_filter_string_in(invoke, assert_and_filters_equal):
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_update(invoke, assert_and_filters_equal):
+def test_data_filter_update(invoke, assert_and_filters_equal, default_filters):
     """Check filter is created correctly and that multiple options results in
     multiple filters"""
     runner = CliRunner()
@@ -286,7 +326,7 @@ def test_data_filter_update(invoke, assert_and_filters_equal):
 
     expected_filt = {
         "type": "AndFilter",
-        "config": [permission_filter, update_filter1, update_filter2]
+        "config": default_filters + [update_filter1, update_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)

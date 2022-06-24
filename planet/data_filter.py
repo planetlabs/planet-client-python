@@ -300,3 +300,12 @@ def permission_filter() -> dict:
     download.
     """
     return {'type': 'PermissionFilter', 'config': ['assets:download']}
+
+
+def std_quality_filter() -> dict:
+    """Create a filter for standard-quality items.
+
+    This is a custom filter which filters to items that are categorized as
+    standard quality.
+    """
+    return string_in_filter('quality_category', ['standard'])

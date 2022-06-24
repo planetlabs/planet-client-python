@@ -294,7 +294,13 @@ def string_in_to_filter(ctx, param, values) -> Union[dict, None]:
 @click.option('--permission',
               type=bool,
               default=True,
+              show_default=True,
               help='Filter to assets with download permissions.')
+@click.option('--std-quality',
+              type=bool,
+              default=True,
+              show_default=True,
+              help='Filter to standard quality.')
 def filter(ctx,
            asset,
            date_range,
@@ -304,7 +310,8 @@ def filter(ctx,
            string_in,
            update,
            permission,
-           pretty):
+           pretty,
+           std_quality):
     """Create a structured item search filter.
 
     This command provides basic functionality for specifying a filter by
@@ -314,6 +321,7 @@ def filter(ctx,
     the Python API.
     """
     permission = data_filter.permission_filter() if permission else None
+    std_quality = data_filter.std_quality_filter() if std_quality else None
 
     filter_options = (asset,
                       date_range,
@@ -322,7 +330,8 @@ def filter(ctx,
                       nrange,
                       string_in,
                       update,
-                      permission)
+                      permission,
+                      std_quality)
 
     # options allowing multiples are broken up so one filter is created for
     # each time the option is specified

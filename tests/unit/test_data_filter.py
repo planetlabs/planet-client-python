@@ -215,3 +215,13 @@ def test_permission_filter():
     res = data_filter.permission_filter()
     expected = {'type': 'PermissionFilter', 'config': ['assets:download']}
     assert res == expected
+
+
+def test_std_quality_filter():
+    res = data_filter.std_quality_filter()
+    expected = {
+        'type': 'StringInFilter',
+        'field_name': 'quality_category',
+        'config': ['standard']
+    }
+    assert res == expected
