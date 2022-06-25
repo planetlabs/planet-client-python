@@ -14,7 +14,7 @@
 """The Planet Data CLI."""
 from datetime import datetime
 import json
-from typing import List, Union
+from typing import List, Optional
 from contextlib import asynccontextmanager
 
 import click
@@ -138,13 +138,13 @@ class DateTimeType(click.ParamType):
     name = 'datetime'
 
     def convert(self, value, param, ctx) -> datetime:
-        if isinstance(value, datetime):
-            return value
-        else:
+        if not isinstance(value, datetime):
             try:
-                return io.str_to_datetime(value)
+                value = io.str_to_datetime(value)
             except exceptions.PlanetError as e:
                 self.fail(str(e))
+
+        return value
 
 
 class CommaSeparatedString(click.types.StringParamType):
@@ -153,82 +153,78 @@ class CommaSeparatedString(click.types.StringParamType):
     def convert(self, value, param, ctx) -> List[str]:
         value = super().convert(value, param, ctx)
 
-        if isinstance(value, list):
-            return value
-        else:
-            return [part.strip() for part in value.split(",")]
+        if not isinstance(value, list):
+            value = [part.strip() for part in value.split(",")]
+
+        return value
 
 
-class CommaSeparatedFloat(CommaSeparatedString):
+class CommaSeparatedFloat(click.types.StringParamType):
     """A list of floats that is extracted from a comma-separated string."""
     name = 'VALUE'
 
-    def convert(self, value, param, ctx):
-        values = super().convert(value, param, ctx)
+    def convert(self, value, param, ctx) -> List[float]:
+        values = CommaSeparatedString().convert(value, param, ctx)
 
         try:
-            return [float(v) for v in values]
+            ret = [float(v) for v in values]
         except ValueError:
             self.fail(f'Cound not convert all entries in {value} to float.')
 
-
-def assets_to_filter(ctx, param, assets: str) -> dict:
-    if assets:
-        # TODO: validate and normalize
-        return data_filter.asset_filter(assets)
+        return ret
 
 
-def date_range_to_filter(ctx, param, values) -> Union[List[dict], None]:
+def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
+    # TODO: validate and normalize
+    return data_filter.asset_filter(assets) if assets else None
+
+
+def date_range_to_filter(ctx, param, values) -> Optional[List[dict]]:
 
     def _func(obj):
         field, comp, value = obj
         kwargs = {'field_name': field, comp: value}
         return data_filter.date_range_filter(**kwargs)
 
-    if values:
-        return [_func(v) for v in values]
+    return [_func(v) for v in values] if values else None
 
 
-def range_to_filter(ctx, param, values) -> Union[List[dict], None]:
+def range_to_filter(ctx, param, values) -> Optional[List[dict]]:
 
     def _func(obj):
         field, comp, value = obj
         kwargs = {'field_name': field, comp: value}
         return data_filter.range_filter(**kwargs)
 
-    if values:
-        return [_func(v) for v in values]
+    return [_func(v) for v in values] if values else None
 
 
-def update_to_filter(ctx, param, values) -> Union[List[dict], None]:
+def update_to_filter(ctx, param, values) -> Optional[List[dict]]:
 
     def _func(obj):
         field, comp, value = obj
         kwargs = {'field_name': field, comp: value}
         return data_filter.update_filter(**kwargs)
 
-    if values:
-        return [_func(v) for v in values]
+    return [_func(v) for v in values] if values else None
 
 
-def number_in_to_filter(ctx, param, values) -> Union[dict, None]:
+def number_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
 
     def _func(obj):
         field, values = obj
         return data_filter.number_in_filter(field_name=field, values=values)
 
-    if values:
-        return [_func(v) for v in values]
+    return [_func(v) for v in values] if values else None
 
 
-def string_in_to_filter(ctx, param, values) -> Union[dict, None]:
+def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
 
     def _func(obj):
         field, values = obj
         return data_filter.string_in_filter(field_name=field, values=values)
 
-    if values:
-        return [_func(v) for v in values]
+    return [_func(v) for v in values] if values else None
 
 
 @data.command()
