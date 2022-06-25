@@ -1,10 +1,16 @@
 """Planet Subscriptions API Python client."""
 
 import itertools
+import logging
 from typing import AsyncIterator, Dict, Optional, Set
 import uuid
 
-from planet.exceptions import APIError
+from httpx import Request, URL
+
+from planet.exceptions import APIError, PagingError
+from planet.models import Paged
+
+LOGGER = logging.getLogger()
 
 # Collections of fake subscriptions and results for testing. Tests will
 # monkeypatch these attributes.
@@ -99,16 +105,59 @@ class SubscriptionsClient:
             ClientError: on a client error.
 
         """
+
+        class SubscriptionsPager(Paged):
+            ITEMS_KEY = 'subscriptions'
+
+            def __init__(self, client, request, limit=None):
+                self.request = request
+                self.client = client
+                self._pages = None
+                self._items = []
+                self.i = 0
+                self.limit = limit
+
+            async def _get_pages(self):
+                LOGGER.debug('getting first page')
+                resp = await self.client.send(self.request)
+                page = resp.json()
+                yield page
+
+                next_url = self._next_link(page)
+
+                while (next_url):
+                    LOGGER.debug('getting next page')
+                    request = self.client.build_request('GET', next_url)
+                    resp = await self.client.send(request)
+                    page = resp.json()
+                    yield page
+
+                    # If the next URL is the same as the previous URL we will
+                    # get the same response and be stuck in a page cycle. This
+                    # has happened in development and could happen in the case
+                    # of a bug in the production API.
+                    prev_url = next_url
+                    next_url = self._next_link(page)
+
+                    if next_url == prev_url:
+                        raise PagingError(
+                            "Page cycle detected at {!r}".format(next_url))
+
         try:
-            # TODO: replace with httpx request.
-            async for sub in _server_subscriptions_get(status=status,
-                                                       limit=limit):
+            params = [('status', val) for val in status or {}]
+            url = URL('https://api.planet.com/subscriptions/v1', params=params)
+            req = self._session._client.build_request('GET', url)
+            async for sub in SubscriptionsPager(self._session._client,
+                                                req,
+                                                limit=limit):
                 yield sub
+
         except Exception as server_error:
             # TODO: remove "from server_error" clause. It's useful
             # during development but may invite users to depend on the
             # value of server_error.
-            raise APIError("Subscription failure") from server_error
+            raise
+            # raise APIError("Subscription failure") from server_error
 
     async def create_subscription(self, request: dict) -> dict:
         """Create a Subscription.

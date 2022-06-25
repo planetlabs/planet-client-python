@@ -1,6 +1,14 @@
 """Tests of the Planet Subscriptions API client."""
 
+from datetime import datetime
+from itertools import zip_longest
+from turtle import pd
+from unittest.mock import ANY
+
+from httpx import Response
 import pytest
+import respx
+from respx.patterns import M
 
 import planet.clients.subscriptions
 from planet.clients.subscriptions import SubscriptionsClient
@@ -19,18 +27,64 @@ async def test_list_subscriptions_failure(monkeypatch):
             _ = [sub async for sub in client.list_subscriptions()]
 
 
-@pytest.mark.xfail(reason="Client/server interaction not yet implemented")
+# Mock the responses of a server which has 100 subscriptions in the
+# 'created' state and serves them in pages of 40.
+all_subs = [{'id': str(i), 'status': 'created'} for i in range(1, 101)]
+
+
+def grouper(iterable, n, *, incomplete='fill', fillvalue=None):
+    "Collect data into non-overlapping fixed-length chunks or blocks"
+    # grouper('ABCDEFG', 3, fillvalue='x') --> ABC DEF Gxx
+    # grouper('ABCDEFG', 3, incomplete='strict') --> ABC DEF ValueError
+    # grouper('ABCDEFG', 3, incomplete='ignore') --> ABC DEF
+    args = [iter(iterable)] * n
+    if incomplete == 'fill':
+        return zip_longest(*args, fillvalue=fillvalue)
+    if incomplete == 'strict':
+        return zip(*args, strict=True)
+    if incomplete == 'ignore':
+        return zip(*args)
+    else:
+        raise ValueError('Expected fill, strict, or ignore')
+
+
+def sub_pages(status=None, size=40):
+    select_subs = (sub for sub in all_subs
+                   if not status or sub['status'] in status)
+    pages = []
+    for group in grouper(select_subs, size):
+        subs = list(sub for sub in group if sub is not None)
+        page = {'subscriptions': subs, '_links': {}}
+        if len(subs) == size:
+            page['_links'][
+                'next'] = f'https://api.planet.com/subscriptions/v1?page_marker={datetime.now().isoformat()}'
+        pages.append(page)
+    return pages
+
+
+api_mock = respx.mock(assert_all_called=False)
+
+api_mock.route(M(url__startswith='https://api.planet.com/subscriptions/v1'),
+               M(params__contains={'status': 'created'})).mock(side_effect=[
+                   Response(200, json=page)
+                   for page in sub_pages(status={'created'}, size=40)
+               ])
+# 2. Request for status: anything but created. Response has a single page.
+api_mock.route(M(url__startswith='https://api.planet.com/subscriptions/v1'),
+               M(params__contains={'status': 'failed'})).mock(
+                   side_effect=[Response(200, json={'subscriptions': []})])
+# 3. No status requested. Response is the same as for 1.
+api_mock.route(
+    M(url__startswith='https://api.planet.com/subscriptions/v1')).mock(
+        side_effect=[Response(200, json=page) for page in sub_pages(size=40)])
+
+
 @pytest.mark.parametrize("status, count", [({"created"}, 100), ({"failed"}, 0),
                                            (None, 100)])
 @pytest.mark.asyncio
+@api_mock
 async def test_list_subscriptions_success(status, count, monkeypatch):
     """Account subscriptions iterator yields expected descriptions."""
-    monkeypatch.setattr(planet.clients.subscriptions,
-                        '_fake_subs',
-                        {str(i): {
-                            'status': 'created'
-                        }
-                         for i in range(101)})
     async with Session() as session:
         client = SubscriptionsClient(session)
         assert len([
