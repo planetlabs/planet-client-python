@@ -173,8 +173,12 @@ def test_update_filter_noconditionals():
         data_filter.update_filter('acquired')
 
 
-def test_geometry_filter(geom_geojson):
-    res = data_filter.geometry_filter(geom_geojson)
+@pytest.mark.parametrize("geom_fixture",
+                         [('geom_geojson'), ('feature_geojson'),
+                          ('featurecollection_geojson')])
+def test_geometry_filter(geom_fixture, request, geom_geojson):
+    geom = request.getfixturevalue(geom_fixture)
+    res = data_filter.geometry_filter(geom)
     expected = {
         'type': 'GeometryFilter',
         'field_name': 'geometry',
@@ -210,4 +214,14 @@ def test_asset_filter():
 def test_permission_filter():
     res = data_filter.permission_filter()
     expected = {'type': 'PermissionFilter', 'config': ['assets:download']}
+    assert res == expected
+
+
+def test_std_quality_filter():
+    res = data_filter.std_quality_filter()
+    expected = {
+        'type': 'StringInFilter',
+        'field_name': 'quality_category',
+        'config': ['standard']
+    }
     assert res == expected

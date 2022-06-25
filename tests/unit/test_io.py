@@ -11,10 +11,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
+from datetime import datetime
 import logging
 import pytest
 
-from planet import io
+from planet import exceptions, io
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,3 +53,22 @@ async def test_collect_features(feature_geojson, make_aiter):
     res = await io.collect(values_aiter)
     expected = {'type': 'FeatureCollection', 'features': values}
     assert res == expected
+
+
+@pytest.mark.parametrize(
+    "string, expected",
+    [
+        # RFC 3339 string from API response
+        ("2021-02-03T01:40:07.359Z", datetime(2021, 2, 3, 1, 40, 7, 359000)),
+        # date-only ISO 8601
+        ("2021-01-01", datetime(2021, 1, 1)),
+        # date-time ISO 8601
+        ("2021-01-01", datetime(2021, 1, 1))
+    ])
+def test_str_to_datetime_success(string, expected):
+    assert io.str_to_datetime(string) == expected
+
+
+def test_str_to_datetime_failure():
+    with pytest.raises(exceptions.PlanetError):
+        io.str_to_datetime('20210101')
