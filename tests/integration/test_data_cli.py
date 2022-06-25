@@ -210,9 +210,9 @@ def test_data_filter_geom(geom_fixture,
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_number_in(invoke,
-                               assert_and_filters_equal,
-                               default_filters):
+def test_data_filter_number_in_success(invoke,
+                                       assert_and_filters_equal,
+                                       default_filters):
     runner = CliRunner()
 
     result = invoke(["filter"] + '--number-in field 1'.split() +
@@ -233,6 +233,18 @@ def test_data_filter_number_in(invoke,
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
+def test_data_filter_number_in_badparam(invoke,
+                                        assert_and_filters_equal,
+                                        default_filters):
+    runner = CliRunner()
+
+    result = invoke(["filter"] + '--number-in field 1,str'.split(),
+                    runner=runner)
+    assert result.exit_code == 2
 
 
 @respx.mock
