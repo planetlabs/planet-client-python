@@ -1,11 +1,30 @@
+# Copyright 2022 Planet Labs PBC.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not
+# use this file except in compliance with the License. You may obtain a copy of
+# the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations under
+# the License.
 """Tests of the Data CLI."""
-from click.testing import CliRunner
-import pytest
+from http import HTTPStatus
 import json
+import logging
+
 import httpx
 import respx
-from http import HTTPStatus
+
+from click.testing import CliRunner
+import pytest
+
 from planet.cli import cli
+
+LOGGER = logging.getLogger(__name__)
 
 TEST_URL = 'https://api.planet.com/data/v1'
 TEST_QUICKSEARCH_URL = f'{TEST_URL}/quick-search'
@@ -33,6 +52,296 @@ def test_data_command_registered(invoke):
     assert "search-create" in result.output
     assert "search-get" in result.output
     # Add other sub-commands here.
+
+
+PERMISSION_FILTER = {"type": "PermissionFilter", "config": ["assets:download"]}
+STD_QUALITY_FILTER = {
+    "type": "StringInFilter",
+    "field_name": "quality_category",
+    "config": ["standard"]
+}
+
+
+@pytest.fixture()
+def default_filters():
+    return [PERMISSION_FILTER, STD_QUALITY_FILTER]
+
+
+@pytest.fixture
+def assert_and_filters_equal():
+    """Check for equality when the order of the config list doesn't matter"""
+
+    def _func(filter1, filter2):
+        assert filter1.keys() == filter2.keys()
+        assert filter1['type'] == filter2['type']
+
+        assert len(filter1['config']) == len(filter2['config'])
+        for c in filter1['config']:
+            assert c in filter2['config']
+
+    return _func
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("permission, p_remove",
+                         [(None, None),
+                          ('--permission=False', PERMISSION_FILTER)])
+@pytest.mark.parametrize("std_quality, s_remove",
+                         [(None, None),
+                          ('--std-quality=False', STD_QUALITY_FILTER)])
+def test_data_filter_defaults(permission,
+                              p_remove,
+                              std_quality,
+                              s_remove,
+                              invoke,
+                              default_filters,
+                              assert_and_filters_equal):
+    runner = CliRunner()
+
+    args = [arg for arg in [permission, std_quality] if arg]
+    result = invoke(["filter", *args], runner=runner)
+    assert result.exit_code == 0
+
+    [default_filters.remove(rem) for rem in [p_remove, s_remove] if rem]
+    if len(default_filters) > 1:
+        expected_filt = {"type": "AndFilter", "config": default_filters}
+        assert_and_filters_equal(json.loads(result.output), expected_filt)
+    elif len(default_filters) == 1:
+        assert json.loads(result.output) == default_filters[0]
+    else:
+        assert result.output == ''
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("asset, expected",
+                         [('ortho_analytic_8b_sr', ['ortho_analytic_8b_sr']),
+                          ('ortho_analytic_8b_sr,ortho_analytic_4b_sr',
+                           ['ortho_analytic_8b_sr', 'ortho_analytic_4b_sr']),
+                          ('ortho_analytic_8b_sr , ortho_analytic_4b_sr',
+                           ['ortho_analytic_8b_sr', 'ortho_analytic_4b_sr'])])
+def test_data_filter_asset(asset,
+                           expected,
+                           invoke,
+                           default_filters,
+                           assert_and_filters_equal):
+    runner = CliRunner()
+
+    result = invoke(["filter", f'--asset={asset}'], runner=runner)
+    assert result.exit_code == 0
+
+    asset_filter = {"type": "AssetFilter", "config": expected}
+    expected_filt = {
+        "type": "AndFilter", "config": default_filters + [asset_filter]
+    }
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
+def test_data_filter_date_range(invoke,
+                                assert_and_filters_equal,
+                                default_filters):
+    """Check filter is created correctly and that multiple options results in
+    multiple filters"""
+    runner = CliRunner()
+
+    result = invoke(["filter"] + '--date-range field gt 2021-01-01'.split() +
+                    '--date-range field2 lt 2022-01-01'.split(),
+                    runner=runner)
+    assert result.exit_code == 0
+
+    date_range_filter1 = {
+        "type": "DateRangeFilter",
+        "field_name": "field",
+        "config": {
+            "gt": "2021-01-01T00:00:00Z"
+        }
+    }
+    date_range_filter2 = {
+        "type": "DateRangeFilter",
+        "field_name": "field2",
+        "config": {
+            "lt": "2022-01-01T00:00:00Z"
+        }
+    }
+
+    expected_filt = {
+        "type": "AndFilter",
+        "config": default_filters + [date_range_filter1, date_range_filter2]
+    }
+
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("geom_fixture",
+                         [('geom_geojson'), ('feature_geojson'),
+                          ('featurecollection_geojson')])
+def test_data_filter_geom(geom_fixture,
+                          request,
+                          invoke,
+                          geom_geojson,
+                          assert_and_filters_equal,
+                          default_filters):
+    """Ensure that all GeoJSON forms of describing a geometry are handled
+    and all result in the same, valid GeometryFilter being created"""
+    runner = CliRunner()
+
+    geom = request.getfixturevalue(geom_fixture)
+    geom_str = json.dumps(geom)
+    result = invoke(["filter", f'--geom={geom_str}'], runner=runner)
+    assert result.exit_code == 0
+
+    geom_filter = {
+        "type": "GeometryFilter",
+        "field_name": "geometry",
+        "config": geom_geojson
+    }
+
+    expected_filt = {
+        "type": "AndFilter", "config": default_filters + [geom_filter]
+    }
+
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
+def test_data_filter_number_in_success(invoke,
+                                       assert_and_filters_equal,
+                                       default_filters):
+    runner = CliRunner()
+
+    result = invoke(["filter"] + '--number-in field 1'.split() +
+                    '--number-in field2 2,3.5'.split(),
+                    runner=runner)
+    assert result.exit_code == 0
+
+    number_in_filter1 = {
+        "type": "NumberInFilter", "field_name": "field", "config": [1.0]
+    }
+    number_in_filter2 = {
+        "type": "NumberInFilter", "field_name": "field2", "config": [2.0, 3.5]
+    }
+
+    expected_filt = {
+        "type": "AndFilter",
+        "config": default_filters + [number_in_filter1, number_in_filter2]
+    }
+
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
+def test_data_filter_number_in_badparam(invoke,
+                                        assert_and_filters_equal,
+                                        default_filters):
+    runner = CliRunner()
+
+    result = invoke(["filter"] + '--number-in field 1,str'.split(),
+                    runner=runner)
+    assert result.exit_code == 2
+
+
+@respx.mock
+@pytest.mark.asyncio
+def test_data_filter_range(invoke, assert_and_filters_equal, default_filters):
+    """Check filter is created correctly, that multiple options results in
+    multiple filters, and that floats are processed correctly."""
+    runner = CliRunner()
+
+    result = invoke(["filter"] + '--range field gt 70'.split() +
+                    '--range cloud_cover lt 0.5'.split(),
+                    runner=runner)
+    assert result.exit_code == 0
+
+    range_filter1 = {
+        "type": "RangeFilter", "field_name": "field", "config": {
+            "gt": 70.0
+        }
+    }
+    range_filter2 = {
+        "type": "RangeFilter",
+        "field_name": "cloud_cover",
+        "config": {
+            "lt": 0.5
+        }
+    }
+
+    expected_filt = {
+        "type": "AndFilter",
+        "config": default_filters + [range_filter1, range_filter2]
+    }
+
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
+def test_data_filter_string_in(invoke,
+                               assert_and_filters_equal,
+                               default_filters):
+    runner = CliRunner()
+
+    result = invoke(["filter"] + '--string-in field foo'.split() +
+                    '--string-in field2 foo,bar'.split(),
+                    runner=runner)
+    assert result.exit_code == 0
+
+    string_in_filter1 = {
+        "type": "StringInFilter", "field_name": "field", "config": ["foo"]
+    }
+    string_in_filter2 = {
+        "type": "StringInFilter",
+        "field_name": "field2",
+        "config": ["foo", "bar"]
+    }
+
+    expected_filt = {
+        "type": "AndFilter",
+        "config": default_filters + [string_in_filter1, string_in_filter2]
+    }
+
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
+def test_data_filter_update(invoke, assert_and_filters_equal, default_filters):
+    """Check filter is created correctly and that multiple options results in
+    multiple filters"""
+    runner = CliRunner()
+
+    result = invoke(["filter"] + '--update field gt 2021-01-01'.split() +
+                    '--update field2 gte 2022-01-01'.split(),
+                    runner=runner)
+    assert result.exit_code == 0
+
+    update_filter1 = {
+        "type": "UpdateFilter",
+        "field_name": "field",
+        "config": {
+            "gt": "2021-01-01T00:00:00Z"
+        }
+    }
+    update_filter2 = {
+        "type": "UpdateFilter",
+        "field_name": "field2",
+        "config": {
+            "gte": "2022-01-01T00:00:00Z"
+        }
+    }
+
+    expected_filt = {
+        "type": "AndFilter",
+        "config": default_filters + [update_filter1, update_filter2]
+    }
+
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
 @respx.mock

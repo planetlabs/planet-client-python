@@ -12,12 +12,15 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """Functionality for processing inputs and outputs."""
+from datetime import datetime
 import logging
 import typing
 
 from . import exceptions, geojson
 
 LOGGER = logging.getLogger(__name__)
+
+RFC3339_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 async def collect(
@@ -40,3 +43,22 @@ async def collect(
         ret = as_list
 
     return ret
+
+
+def str_to_datetime(string: str) -> datetime:
+    """Convert a string to a datetime.
+
+    First, tries parsing the string as a RFC 3339 format as returned from the
+    Planet APIs (e.g. '2021-01-01T01:40:07.359Z'), then tries parsing
+    as an IS0 8601 format using `datetime.fromisoformat()`.
+    """
+    try:
+        dt = datetime.strptime(string, RFC3339_FORMAT)
+    except ValueError:
+        LOGGER.debug(f'{string} does not match format {RFC3339_FORMAT}')
+        try:
+            dt = datetime.fromisoformat(string)
+        except ValueError:
+            raise exceptions.PlanetError(
+                f'{string} does not match RFC 3339 or ISO 8601 formats')
+    return dt

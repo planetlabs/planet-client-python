@@ -16,6 +16,8 @@
 import os
 from pathlib import Path
 
+# NOTE: entries are given in alphabetical order
+
 DATA_DIR = Path(os.path.dirname(__file__)) / 'data'
 
 PLANET_BASE_URL = 'https://api.planet.com'
