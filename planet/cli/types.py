@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """CLI Parameter types"""
+import json
 from typing import List
 
 import click
@@ -51,3 +52,37 @@ class CommaSeparatedFloat(click.types.StringParamType):
             self.fail(f'Cound not convert all entries in "{value}" to float.')
 
         return ret
+
+
+class JSON(click.ParamType):
+    """JSON specified as a string, json file filename, or stdin."""
+    name = 'JSON'
+
+    def convert(self, value, param, ctx) -> dict:
+        if isinstance(value, dict):
+            convdict = value
+        else:
+            # read from raw json
+            if value.startswith('{') or value.startswith('['):
+                try:
+                    convdict = json.loads(value)
+                except json.decoder.JSONDecodeError:
+                    self.fail(
+                        'JSON string is not valid JSON. Make sure the entire '
+                        'JSON string is single-quoted and string entries are '
+                        'double-quoted.')
+
+            # read from stdin or file
+            else:
+                try:
+                    with click.open_file(value) as f:
+                        convdict = json.load(f)
+                except FileNotFoundError:
+                    self.fail('File not found.')
+                except json.decoder.JSONDecodeError:
+                    self.fail('JSON file does not contain valid JSON.')
+
+        if convdict == {}:
+            self.fail('JSON cannot be empty.')
+
+        return convdict

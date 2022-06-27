@@ -49,3 +49,38 @@ def test_cli_CommaSeparatedFloat(input, expectation, expected):
 
     if expected:
         assert res == expected
+
+
+parametrize_json = pytest.mark.parametrize("input, expectation, expected", [
+    ('{"a":["b", "c"], "c":5}', does_not_raise(), {'a': ['b', 'c'], 'c': 5}),
+    ('["b", {"c":5}]', does_not_raise(), ['b', {'c': 5}]),
+    ('{"a":"b", foo:bar}', pytest.raises(BadParameter), None),
+    ('{}', pytest.raises(BadParameter), None),
+])
+
+
+@parametrize_json
+def test_cli_JSON_str(input, expectation, expected):
+    with expectation:
+        res = types.JSON().convert(input, None, None)
+
+    if expected:
+        assert res == expected
+
+
+@parametrize_json
+def test_cli_JSON_file_content(input, expectation, expected, tmp_path):
+    filename = tmp_path / 'temp.json'
+    with open(filename, 'w') as fp:
+        fp.write(input)
+
+    with expectation:
+        res = types.JSON().convert(str(filename), None, None)
+
+    if expected:
+        assert res == expected
+
+
+def test_cli_JSON_file_doesnotexist():
+    with pytest.raises(BadParameter):
+        types.JSON().convert('nonexistant.json', None, None)

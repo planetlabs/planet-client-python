@@ -81,35 +81,7 @@ def parse_filter(ctx, param, value: str) -> dict:
 
 
 def geom_to_filter(ctx, param, value: str) -> dict:
-    if value is None:
-        return value
-
-    geom = _parse_geom(ctx, param, value)
-    return data_filter.geometry_filter(geom)
-
-
-def _parse_geom(ctx, param, value: str) -> dict:
-    """Turn geom JSON into a dict."""
-    # read from raw json
-    if value.startswith('{'):
-        try:
-            json_value = json.loads(value)
-        except json.decoder.JSONDecodeError:
-            raise click.BadParameter('geom does not contain valid json.',
-                                     ctx=ctx,
-                                     param=param)
-        if json_value == {}:
-            raise click.BadParameter('geom is empty.', ctx=ctx, param=param)
-    # read from stdin or file
-    else:
-        try:
-            with click.open_file(value) as f:
-                json_value = json.load(f)
-        except json.decoder.JSONDecodeError:
-            raise click.BadParameter('geom does not contain valid json.',
-                                     ctx=ctx,
-                                     param=param)
-    return json_value
+    return data_filter.geometry_filter(value) if value else None
 
 
 class FieldType(click.ParamType):
@@ -221,10 +193,10 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     COMP can be lt, lte, gt, or gte.
     DATETIME can be an RFC3339 or ISO 8601 string.""")
 @click.option('--geom',
-              type=str,
-              default=None,
+              type=types.JSON(),
               callback=geom_to_filter,
-              help='Filter to items that overlap a given geometry.')
+              help="""Filter to items that overlap a given geometry. Can be a
+              json string, filename, or '-' for stdin.""")
 @click.option('--number-in',
               type=click.Tuple([FieldType(), types.CommaSeparatedFloat()]),
               multiple=True,
@@ -327,7 +299,7 @@ def filter(ctx,
 @coro
 @pretty
 @click.argument("item_types", callback=parse_item_types)
-@click.argument("filter", callback=parse_filter)
+@click.argument("filter", type=types.JSON(), default="-", required=False)
 @click.option('--name',
               type=str,
               default=False,
@@ -339,17 +311,20 @@ def filter(ctx,
 async def search_quick(ctx, item_types, filter, name, limit, pretty):
     """Execute a structured item search.
 
-    This function executes a structured item search using the item_types,
-    and json filter specified (using file or stdin).
+    FILTER must be JSON and can be specified a json string, filename, or '-'
+    for stdin.
+
+    This function outputs a series of GeoJSON descriptions, one for each of the
+    returned items, optionally pretty-printed.
 
     Quick searches are stored for approximately 30 days and the --name
-    parameter will be applied to the stored quick search. This function
-    outputs a series of GeoJSON descriptions, one for each of the returned
-    items. The limit on the number of output items can be controlled using
+    parameter will be applied to the stored quick search.
+
+    The limit on the number of output items can be controlled using
     the "--limit" option, which defaults to 100 if limit is set to None or
     if the option is not used at all. If "--limit" is set to zero, no limit
     is applied and all results (a potentially large number) are returned.
-    The output can also be optionally pretty-printed using "--pretty".
+
     """
     async with data_client(ctx) as cl:
         items = await cl.quick_search(name=name,
@@ -368,19 +343,18 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
 @pretty
 @click.argument('name')
 @click.argument("item_types", callback=parse_item_types)
-@click.argument("filter", callback=parse_filter)
-@click.option('--daily_email',
+@click.argument("filter", type=types.JSON())
+@click.option('--daily-email',
               is_flag=True,
               help='Send a daily email when new results are added.')
 async def search_create(ctx, name, item_types, filter, daily_email, pretty):
     """Create a new saved structured item search.
 
-    This function creates a new saved structured item search, using the
-    name of the search, item_types, and json filter specified (using file or
-    stdin). If specified, the "--daily_email" option enables users to recieve
-    an email when new results are available each day. This function outputs a
-    full JSON description of the created search. The output can also be
-    optionally pretty-printed using "--pretty".
+    FILTER is a JSON blob and can be specified a json string, filename, or '-'
+    for stdin.
+
+    This function outputs a full JSON description of the created search,
+    optionally pretty-printed.
     """
     async with data_client(ctx) as cl:
         items = await cl.create_search(name=name,
@@ -399,9 +373,8 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
 async def search_get(ctx, search_id, pretty):
     """Get a saved search.
 
-    This function obtains an existing saved search, using the search_id.
     This function outputs a full JSON description of the identified saved
-    search. The output can also be optionally pretty-printed using "--pretty".
+    search, optionally pretty-printed.
     """
     async with data_client(ctx) as cl:
         items = await cl.get_search(search_id)

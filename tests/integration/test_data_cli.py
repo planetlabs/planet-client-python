@@ -506,7 +506,7 @@ def test_search_create_daily_email(invoke, search_result):
         'temp',
         'SkySatScene',
         json.dumps(filter),
-        '--daily_email'
+        '--daily-email'
     ])
 
     search_request = {
