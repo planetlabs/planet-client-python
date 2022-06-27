@@ -21,10 +21,10 @@ import click
 
 from planet import data_filter, exceptions, io, DataClient, Session
 
+from . import types
 from .cmds import coro, translate_exceptions
 from .io import echo_json
-
-pretty = click.option('--pretty', is_flag=True, help='Pretty-print output.')
+from .options import pretty
 
 
 @asynccontextmanager
@@ -147,33 +147,6 @@ class DateTimeType(click.ParamType):
         return value
 
 
-class CommaSeparatedString(click.types.StringParamType):
-    """A list of strings that is extracted from a comma-separated string."""
-
-    def convert(self, value, param, ctx) -> List[str]:
-        value = super().convert(value, param, ctx)
-
-        if not isinstance(value, list):
-            value = [part.strip() for part in value.split(",")]
-
-        return value
-
-
-class CommaSeparatedFloat(click.types.StringParamType):
-    """A list of floats that is extracted from a comma-separated string."""
-    name = 'VALUE'
-
-    def convert(self, value, param, ctx) -> List[float]:
-        values = CommaSeparatedString().convert(value, param, ctx)
-
-        try:
-            ret = [float(v) for v in values]
-        except ValueError:
-            self.fail(f'Cound not convert all entries in {value} to float.')
-
-        return ret
-
-
 def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
     # TODO: validate and normalize
     return data_filter.asset_filter(assets) if assets else None
@@ -232,7 +205,7 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
 @translate_exceptions
 @pretty
 @click.option('--asset',
-              type=CommaSeparatedString(),
+              type=types.CommaSeparatedString(),
               default=None,
               callback=assets_to_filter,
               help="""Filter to items with one or more of specified assets.
@@ -253,7 +226,7 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
               callback=geom_to_filter,
               help='Filter to items that overlap a given geometry.')
 @click.option('--number-in',
-              type=click.Tuple([FieldType(), CommaSeparatedFloat()]),
+              type=click.Tuple([FieldType(), types.CommaSeparatedFloat()]),
               multiple=True,
               callback=number_in_to_filter,
               help="""Filter field by numeric in.
@@ -270,7 +243,7 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     COMP can be lt, lte, gt, or gte.
     DATETIME can be an RFC3339 or ISO 8601 string.""")
 @click.option('--string-in',
-              type=click.Tuple([FieldType(), CommaSeparatedString()]),
+              type=click.Tuple([FieldType(), types.CommaSeparatedString()]),
               multiple=True,
               callback=string_in_to_filter,
               help="""Filter field by numeric in.

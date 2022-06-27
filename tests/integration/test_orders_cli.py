@@ -19,7 +19,6 @@ import json
 from pathlib import Path
 from unittest.mock import Mock
 
-import click
 from click.testing import CliRunner
 import httpx
 import pytest
@@ -43,15 +42,6 @@ def invoke():
         return runner.invoke(cli.main, args=args)
 
     return _invoke
-
-
-def test_split_list_arg_empty_string():
-    with pytest.raises(click.exceptions.BadParameter):
-        cli.orders.split_list_arg(None, None, '')
-
-
-def test_split_list_arg_None():
-    assert cli.orders.split_list_arg(None, None, None) is None
 
 
 @respx.mock

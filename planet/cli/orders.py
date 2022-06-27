@@ -21,6 +21,8 @@ import click
 
 import planet
 from planet import OrdersClient, Session  # allow mocking
+
+from . import types
 from .cmds import coro, translate_exceptions
 from .io import echo_json
 from .options import pretty
@@ -109,21 +111,21 @@ async def cancel(ctx, order_id):
     click.echo(json_resp)
 
 
-def split_list_arg(ctx, param, value):
-    if value is None:
-        return None
-    elif value == '':
-        # note, this is specifically checking for an empty string
-        click.BadParameter('Entry cannot be an empty string.')
-
-    # split list by ',' and remove whitespace
-    entries = [i.strip() for i in value.split(',')]
-
-    # validate passed entries
-    for e in entries:
-        if not e:
-            raise click.BadParameter('Entry cannot be an empty string.')
-    return entries
+# def split_list_arg(ctx, param, value):
+#     if value is None:
+#         return None
+#     elif value == '':
+#         # note, this is specifically checking for an empty string
+#         click.BadParameter('Entry cannot be an empty string.')
+#
+#     # split list by ',' and remove whitespace
+#     entries = [i.strip() for i in value.split(',')]
+#
+#     # validate passed entries
+#     for e in entries:
+#         if not e:
+#             raise click.BadParameter('Entry cannot be an empty string.')
+#     return entries
 
 
 @orders.command()
@@ -286,8 +288,7 @@ async def create(ctx, request: str, pretty):
 )
 @click.option('--id',
               help='One or more comma-separated item IDs',
-              type=click.STRING,
-              callback=split_list_arg,
+              type=types.CommaSeparatedString(),
               required=True)
 @click.option('--item-type',
               multiple=False,
