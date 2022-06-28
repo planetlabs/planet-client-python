@@ -46,7 +46,7 @@ The Planet SDK for Python requires Python 3.7+.
 
 ### Installing from PyPi
 
-(Note this is not yet working, as the pre-release has not happened yet, but will soon)
+This route is recommended for most users.
 
 To get version 2 of the Planet SDK you just use pip with the `--pre` command:
 
@@ -54,8 +54,14 @@ To get version 2 of the Planet SDK you just use pip with the `--pre` command:
 $ pip install planet --pre 
 ```
 
+If you've already got a v1 on your command-line you may need to use `--upgrade` as well:
+
+```console
+$ pip install --upgrade planet --pre
+
 ### Installing from source
 
+This option enables you to get all the latest changes, but things might also be a bit less stable.
 To install you must [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
 the [planet-client-python](https://github.com/planetlabs/planet-client-python) repository 
 to your local computer. After you have the repo local just navigate to the root
@@ -70,7 +76,8 @@ $ pip install .
 ### Confirming its working
 
 After installation you should be able to use the command-line interface. Just type
-`planet` into the command-line and the usage and options should appear. If it doesn't 
+`planet` into the command-line and the usage and options should appear. To confirm that
+it's v2 run `planet --version` and it should report 2.0a1 or above. If it doesn't 
 work don't hesitate to ask for help in the [discussions](https://github.com/planetlabs/planet-client-python/discussions/categories/q-a)
 forum.
 
