@@ -35,7 +35,7 @@ class BaseSession:
 
     @staticmethod
     def _get_user_agent():
-        return 'planet-client-python/' + __version__
+        return 'planet-sdk-python/' + __version__
 
     @staticmethod
     def _log_request(request):
