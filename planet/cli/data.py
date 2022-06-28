@@ -106,13 +106,12 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
 @data.command()
 @click.pass_context
 @translate_exceptions
-@pretty
 @click.option('--asset',
               type=types.CommaSeparatedString(),
               default=None,
               callback=assets_to_filter,
               help="""Filter to items with one or more of specified assets.
-    VALUE is a comma-separated list of entries.
+    TEXT is a comma-separated list of entries.
     When multiple entries are specified, an implicit 'or' logic is applied.""")
 @click.option('--date-range',
               type=click.Tuple(
@@ -136,15 +135,24 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     FIELD is the name of the field to filter on.
     VALUE is a comma-separated list of entries.
     When multiple entries are specified, an implicit 'or' logic is applied.""")
+@click.option('--permission',
+              type=bool,
+              default=True,
+              show_default=True,
+              help='Filter to assets with download permissions.')
 @click.option('--range',
               'nrange',
               type=click.Tuple([types.Field(), types.Comparison(), float]),
               callback=range_to_filter,
               multiple=True,
-              help="""Filter by date range in field.
+              help="""Filter by number range in field.
     FIELD is the name of the field to filter on.
-    COMP can be lt, lte, gt, or gte.
-    DATETIME can be an RFC3339 or ISO 8601 string.""")
+    COMP can be lt, lte, gt, or gte.""")
+@click.option('--std-quality',
+              type=bool,
+              default=True,
+              show_default=True,
+              help='Filter to standard quality.')
 @click.option('--string-in',
               type=click.Tuple([types.Field(), types.CommaSeparatedString()]),
               multiple=True,
@@ -163,16 +171,7 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     FIELD is the name of the field to filter on.
     COMP can be gt or gte.
     DATETIME can be an RFC3339 or ISO 8601 string.""")
-@click.option('--permission',
-              type=bool,
-              default=True,
-              show_default=True,
-              help='Filter to assets with download permissions.')
-@click.option('--std-quality',
-              type=bool,
-              default=True,
-              show_default=True,
-              help='Filter to standard quality.')
+@pretty
 def filter(ctx,
            asset,
            date_range,
@@ -228,7 +227,6 @@ def filter(ctx,
 @click.pass_context
 @translate_exceptions
 @coro
-@pretty
 @click.argument("item_types", type=types.CommaSeparatedString())
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 @click.option('--name',
@@ -236,6 +234,7 @@ def filter(ctx,
               default=False,
               help=('Name of the saved search.'))
 @limit
+@pretty
 async def search_quick(ctx, item_types, filter, name, limit, pretty):
     """Execute a structured item search.
 
@@ -245,7 +244,7 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
     ITEM_TYPES is a comma-separated list of item-types to search.
 
     FILTER must be JSON and can be specified a json string, filename, or '-'
-    for stdin.
+    for stdin. It defaults to reading from stdin.
 
     Quick searches are stored for approximately 30 days and the --name
     parameter will be applied to the stored quick search.
@@ -264,23 +263,25 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-@pretty
 @click.argument('name')
 @click.argument("item_types", type=types.CommaSeparatedString())
-@click.argument("filter", type=types.JSON())
+@click.argument("filter", type=types.JSON(), default="-", required=False)
 @click.option('--daily-email',
               is_flag=True,
               help='Send a daily email when new results are added.')
+@pretty
 async def search_create(ctx, name, item_types, filter, daily_email, pretty):
     """Create a new saved structured item search.
 
     This function outputs a full JSON description of the created search,
     optionally pretty-printed.
 
+    NAME is the name to give the search.
+
     ITEM_TYPES is a comma-separated list of item-types to search.
 
     FILTER must be JSON and can be specified a json string, filename, or '-'
-    for stdin.
+    for stdin. It defaults to reading from stdin.
     """
     async with data_client(ctx) as cl:
         items = await cl.create_search(name=name,

@@ -22,14 +22,18 @@ planet data filter [OPTIONS]
 Create a structured search criteria. This command provides basic functionality for specifying a filter by creating an AndFilter with the filters identified with the options as inputs. This is only a subset of the complex filtering supported by the API. For advanced filter creation, either create the filter by hand or use the Python API.
 
 Options:
--asset (str). Filter to items with one or more of specified assets
--date-range FIELD COMP VALUE (str, str, str). Filter field by date. COMP can be lt, lte, gt, or gte. VALUE is an RFC 3339 date.
--geom GEOM (json). Specify a geometry filter as geojson.
--number-in FIELD VALUES... (str, list of float) Filter field by numeric in.
--permission, boolean. Filter to assets with download permissions. Defaults to true
--range FIELD COMP VALUE... (str, str, float) Filter field by numeric range. COMP can be lt, lte, gt, or gte.
--string-in FIELD VALUES... (str, list of str) Filter field by string in.
--update FIELD COMP VALUE (str, str, str) Filter to items with changes to a specified field value made after a specified date. COMP can be gt or gte. VALUE is an RFC 3339 date.
+- asset TEXT    Filter to items with one or more of
+                                  specified assets. VALUE is a comma-separated
+                                  list of entries. When multiple entries are
+                                  specified, an implicit 'or' logic is
+                                  applied.
+- date-range FIELD COMP VALUE (str, str, str). Filter field by date. COMP can be lt, lte, gt, or gte. VALUE is an RFC 3339 date.
+- geom GEOM (json). Specify a geometry filter as geojson.
+- number-in FIELD VALUES... (str, list of float) Filter field by numeric in.
+- permission, boolean. Filter to assets with download permissions. Defaults to true
+- range FIELD COMP VALUE... (str, str, float) Filter field by numeric range. COMP can be lt, lte, gt, or gte.
+- string-in FIELD VALUES... (str, list of str) Filter field by string in.
+- update FIELD COMP VALUE (str, str, str) Filter to items with changes to a specified field value made after a specified date. COMP can be gt or gte. VALUE is an RFC 3339 date.
 
 Output:
 A full JSON description of the search criteria.
