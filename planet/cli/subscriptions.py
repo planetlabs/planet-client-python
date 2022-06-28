@@ -35,7 +35,7 @@ def subscriptions(ctx):
               default=100,
               help='Maximum number of results to return. Defaults to 100.')
 @click.pass_context
-# @translate_exceptions
+@translate_exceptions
 @coro
 async def list_subscriptions_cmd(ctx, status, limit, pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
