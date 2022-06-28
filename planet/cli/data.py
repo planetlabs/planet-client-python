@@ -31,7 +31,7 @@ pretty = click.option('--pretty', is_flag=True, help='Pretty-print output.')
 async def data_client(ctx):
     auth = ctx.obj['AUTH']
     base_url = ctx.obj['BASE_URL']
-    async with Session(auth=auth) as sess:
+    async with Session(auth=auth, origin='cli') as sess:
         cl = DataClient(sess, base_url=base_url)
         yield cl
 

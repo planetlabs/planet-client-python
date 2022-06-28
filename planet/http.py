@@ -114,11 +114,12 @@ class Session(BaseSession):
     ```
     '''
 
-    def __init__(self, auth: AuthType = None):
+    def __init__(self, auth: AuthType = None, origin="sdk"):
         """Initialize a Session.
 
         Parameters:
             auth: Planet server authentication.
+            origin: Origin of request (CLI or SDK).
 
         """
         if auth is None:
@@ -130,8 +131,14 @@ class Session(BaseSession):
             except exceptions.PlanetError:
                 auth = Auth.from_file()
 
+        if origin in ('cli', 'sdk'):
+            x_planet_app = "python-" + origin
+        else:
+            x_planet_app = "unknown"
+
         self._client = httpx.AsyncClient(auth=auth)
         self._client.headers.update({'User-Agent': self._get_user_agent()})
+        self._client.headers.update({'X-Planet-App': x_planet_app})
 
         async def alog_request(*args, **kwargs):
             return self._log_request(*args, **kwargs)
