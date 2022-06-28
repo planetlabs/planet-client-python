@@ -12,7 +12,10 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 from contextlib import nullcontext as does_not_raise
+import json
 
+import click
+from click.testing import CliRunner
 from click.exceptions import BadParameter
 import pytest
 
@@ -51,12 +54,54 @@ def test_cli_CommaSeparatedFloat(input, expectation, expected):
         assert res == expected
 
 
-parametrize_json = pytest.mark.parametrize("input, expectation, expected", [
-    ('{"a":["b", "c"], "c":5}', does_not_raise(), {'a': ['b', 'c'], 'c': 5}),
-    ('["b", {"c":5}]', does_not_raise(), ['b', {'c': 5}]),
-    ('{"a":"b", foo:bar}', pytest.raises(BadParameter), None),
-    ('{}', pytest.raises(BadParameter), None),
-])
+@pytest.fixture(params=["stdin", "str", "file"])
+def json_input_test_params(request, write_to_tmp_json_file):
+
+    def _func(input_json):
+        if request.param == 'file':
+            filename = write_to_tmp_json_file(input_json, 'tmp.json')
+            arg = str(filename)
+            input = None
+        elif request.param == 'str':
+            arg = json.dumps(input_json)
+            input = None
+        elif request.param == 'stdin':
+            arg = '-'
+            input = json.dumps(input_json)
+
+        return arg, input
+
+    return _func
+
+
+def test_cli_JSON_inputs(json_input_test_params):
+    """Confirm that file, stdin, and str inputs are all supported"""
+
+    @click.option('--foo', type=types.JSON())
+    @click.command()
+    def test(foo):
+        click.echo(json.dumps(foo))
+
+    test_json = {'a': 'b'}
+    arg, input = json_input_test_params(test_json)
+    result = CliRunner().invoke(test, args=[f'--foo={arg}'], input=input)
+    assert result.exit_code == 0
+    assert json.loads(result.output) == test_json
+
+
+parametrize_json = pytest.mark.parametrize(
+    "input, expectation, expected",
+    [
+        ('{"a":["b", "c"], "c":5}',
+         does_not_raise(), {
+             'a': ['b', 'c'], 'c': 5
+         }),
+        ('["b", {"c":5}]', does_not_raise(), ['b', {
+            'c': 5
+        }]),
+        ('{"a":"b", foo:bar}', pytest.raises(BadParameter), None),
+        ('{}', pytest.raises(BadParameter), None),
+    ])
 
 
 @parametrize_json
