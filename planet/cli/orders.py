@@ -20,10 +20,11 @@ from pathlib import Path
 import click
 
 import planet
-from planet import OrdersClient, Session  # allow mocking
+from planet import OrdersClient  # allow mocking
 from .cmds import coro, translate_exceptions
 from .io import echo_json
 from .options import pretty
+from .session import CliSession
 
 LOGGER = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ LOGGER = logging.getLogger(__name__)
 async def orders_client(ctx):
     auth = ctx.obj['AUTH']
     base_url = ctx.obj['BASE_URL']
-    async with Session(auth=auth) as sess:
+    async with CliSession(auth=auth) as sess:
         cl = OrdersClient(sess, base_url=base_url)
         yield cl
 

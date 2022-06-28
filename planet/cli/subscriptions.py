@@ -4,9 +4,9 @@ import json
 
 import click
 
-from planet.cli.cmds import coro, translate_exceptions
-from planet.cli.io import echo_json
-from planet.cli.session import CliSession
+from .cmds import coro, translate_exceptions
+from .io import echo_json
+from .session import CliSession
 from planet.clients.subscriptions import SubscriptionsClient
 
 
