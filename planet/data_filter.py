@@ -16,7 +16,7 @@ from datetime import datetime
 import logging
 from typing import Any, Callable, List, Union
 
-from planet import exceptions
+from planet import exceptions, geojson
 
 LOGGER = logging.getLogger(__name__)
 
@@ -219,6 +219,9 @@ def geometry_filter(geom: dict) -> dict:
     The GeometryFilter can be used to search for items with a footprint
     geometry which intersects with the specified geometry.
 
+    In cases where a GeoJSON Feature or FeatureCollection are provided, the
+    GeoJSON geometry will be extracted and used in the filter definition.
+
     The filter's configuration supports Point, MultiPoint, LineString,
     MultiLineString, Polygon, and MultiPolygon GeoJSON object. For best
     results, the geometry should meet OpenGIS Simple Features Interface
@@ -227,9 +230,12 @@ def geometry_filter(geom: dict) -> dict:
     search results.
 
     Parameters:
-        geom: GeoJSON describing the filter geometry.
+        geom: GeoJSON describing the filter geometry, feature, or feature
+            collection.
     """
-    return _field_filter('GeometryFilter', field_name='geometry', config=geom)
+    return _field_filter('GeometryFilter',
+                         field_name='geometry',
+                         config=geojson.as_geom(geom))
 
 
 def number_in_filter(field_name: str, values: List[float]) -> dict:
@@ -294,3 +300,12 @@ def permission_filter() -> dict:
     download.
     """
     return {'type': 'PermissionFilter', 'config': ['assets:download']}
+
+
+def std_quality_filter() -> dict:
+    """Create a filter for standard-quality items.
+
+    This is a custom filter which filters to items that are categorized as
+    standard quality.
+    """
+    return string_in_filter('quality_category', ['standard'])
