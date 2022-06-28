@@ -19,10 +19,10 @@ from contextlib import asynccontextmanager
 
 import click
 
-from planet import data_filter, exceptions, io, DataClient, Session
-
+from planet import data_filter, exceptions, io, DataClient
 from .cmds import coro, translate_exceptions
 from .io import echo_json
+from .session import CliSession
 
 pretty = click.option('--pretty', is_flag=True, help='Pretty-print output.')
 
@@ -31,7 +31,7 @@ pretty = click.option('--pretty', is_flag=True, help='Pretty-print output.')
 async def data_client(ctx):
     auth = ctx.obj['AUTH']
     base_url = ctx.obj['BASE_URL']
-    async with Session(auth=auth) as sess:
+    async with CliSession(auth=auth) as sess:
         cl = DataClient(sess, base_url=base_url)
         yield cl
 
