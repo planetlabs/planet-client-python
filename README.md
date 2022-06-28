@@ -33,7 +33,8 @@ stage, with not all functionality implemented, we strongly recommend installing 
 virtual environment - either [venv](https://python.land/virtual-environments/virtualenv) 
 or [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html). 
 If you've never worked with either then check out our [getting started with venv and Planet 
-SDK](docs/venv-tutorial.md).
+SDK](docs/venv-tutorial.md). For anyone planning to contribute to the SDK the instructuctions
+are a bit different, see the [testing section of CONTRIBUTING.md](https://github.com/planetlabs/planet-client-python/blob/main/CONTRIBUTING.md#testing).
 
 Both installation routes use [pip](https://pip.pypa.io/en/stable/getting-started/), Python's
 package installer.
