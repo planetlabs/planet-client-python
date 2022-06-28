@@ -50,8 +50,9 @@ setup(
     version=version,
     description=u"Planet SDK for Python",
     long_description=Path("README.md").read_text("utf-8"),
+    long_description_content_type="text/markdown",
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
