@@ -481,3 +481,33 @@ Example: `tools.json`
 ]
 ```
 
+### Data API
+
+Most `data` cli commands are simple wrappers around the
+[Planet Data API](https://developers.planet.com/docs/apis/data/reference/)
+commands with the only difference being the addition of functionality to create
+a search filter, activate an asset, poll for when activation is complete, and
+download the asset.
+
+
+#### Filter
+
+The search-related Data API CLI commands require a search filter. The filter
+CLI command provides basic functionality for generating this filter. For
+more advanced functionality, use the Python API `data_filter` commands.
+
+The following is an example of using the filter command to generate a filter
+that specifies an aquired date range and AOI:
+
+```console
+$ planet data filter \
+    --date-range acquired gte 2022-01-01 \
+    --date-range acquired lt 2022-02-01 \
+    --geom aoi.json
+```
+
+This can be fed directly into a search command e.g.:
+
+```console
+$ planet data filter --geom aoi.json | planet data search-quick PSScene -
+```
