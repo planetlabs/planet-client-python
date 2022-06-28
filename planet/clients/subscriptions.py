@@ -1,13 +1,12 @@
 """Planet Subscriptions API Python client."""
 
-import itertools
 import logging
-from typing import AsyncIterator, Dict, Optional, Set
+from typing import AsyncIterator, Optional, Set
 
 from httpx import URL
 
-from planet import Session
 from planet.exceptions import APIError, ClientError, PagingError
+from planet.http import Session
 from planet.models import Paged
 
 LOGGER = logging.getLogger()
