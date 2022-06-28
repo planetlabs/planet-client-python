@@ -19,12 +19,12 @@ from click.testing import CliRunner
 import pytest
 
 from planet.cli import cli
-import planet.cli.subscriptions
 
 from test_subscriptions_api import (api_mock,
                                     failing_api_mock,
                                     modify_api_mock,
-                                    sub_api_mock)
+                                    sub_api_mock,
+                                    res_api_mock)
 
 
 # CliRunner doesn't agree with empty options, so a list of option
@@ -58,7 +58,6 @@ def test_subscriptions_list_options(options, expected_count):
 @failing_api_mock
 def test_subscriptions_create_failure():
     """An invalid subscription request fails to create a new subscription."""
-
     # This subscription request lacks the required "delivery" and
     # "source" members.
     sub = {'name': 'lol'}
@@ -90,7 +89,6 @@ GOOD_SUB_REQUEST = {'name': 'lol', 'delivery': True, 'source': 'wut'}
 @modify_api_mock
 def test_subscriptions_create_success(cmd_arg, runner_input):
     """Subscriptions creation succeeds with a valid subscription request."""
-
     # The "-" argument says "read from stdin" and the input keyword
     # argument specifies what bytes go to the runner's stdin.
     result = CliRunner().invoke(
@@ -113,7 +111,6 @@ BAD_SUB_REQUEST = '{0: "lolwut"}'
                                                    (BAD_SUB_REQUEST, None)])
 def test_subscriptions_bad_request(cmd_arg, runner_input):
     """Short circuit and print help message if request is bad."""
-
     # The "-" argument says "read from stdin" and the input keyword
     # argument specifies what bytes go to the runner's stdin.
     result = CliRunner().invoke(
@@ -132,7 +129,6 @@ def test_subscriptions_bad_request(cmd_arg, runner_input):
 @failing_api_mock
 def test_subscriptions_cancel_failure():
     """Cancel command exits gracefully from an API error."""
-
     result = CliRunner().invoke(
         cli.main,
         args=['subscriptions', 'cancel', '42'],
@@ -219,11 +215,9 @@ def test_subscriptions_describe_success():
     assert json.loads(result.output)['id'] == '42'
 
 
-def test_subscriptions_results_failure(monkeypatch):
+@failing_api_mock
+def test_subscriptions_results_failure():
     """Results command exits gracefully from an API error."""
-
-    monkeypatch.setattr(planet.clients.subscriptions, '_fake_sub_results', {})
-
     result = CliRunner().invoke(
         cli.main,
         args=['subscriptions', 'results', '42'],
@@ -233,7 +227,6 @@ def test_subscriptions_results_failure(monkeypatch):
         catch_exceptions=True)
 
     assert result.exit_code == 1  # failure.
-    assert "Subscription failure." in result.output
 
 
 @pytest.mark.parametrize('options,expected_count',
@@ -241,17 +234,10 @@ def test_subscriptions_results_failure(monkeypatch):
                           (['--limit=1', '--status=created'], 1),
                           (['--limit=2', '--pretty', '--status=created'], 2),
                           (['--limit=1', '--status=queued'], 0)])
+@res_api_mock
 # Remember, parameters come before fixtures in the function definition.
-def test_subscriptions_results_success(options, expected_count, monkeypatch):
+def test_subscriptions_results_success(options, expected_count):
     """Describe command succeeds."""
-
-    monkeypatch.setattr(
-        planet.clients.subscriptions,
-        '_fake_sub_results',
-        {'42': [{
-            'id': f'r{i}', 'status': 'created'
-        } for i in range(101)]})
-
     result = CliRunner().invoke(
         cli.main,
         args=['subscriptions', 'results', '42'] + options,

@@ -9,7 +9,6 @@ import pytest
 import respx
 from respx.patterns import M
 
-import planet.clients.subscriptions
 from planet.clients.subscriptions import SubscriptionsClient
 from planet.exceptions import APIError, PagingError, ServerError
 from planet.http import Session
@@ -25,7 +24,7 @@ failing_api_mock.route(
         }))
 
 
-def sub_pages(status=None, size=40):
+def result_pages(status=None, size=40):
     """Helper for creating fake subscriptions listing pages."""
     all_subs = [{'id': str(i), 'status': 'created'} for i in range(1, 101)]
     select_subs = (sub for sub in all_subs
@@ -52,7 +51,7 @@ api_mock = respx.mock(assert_all_called=False)
 api_mock.route(M(url__startswith='https://api.planet.com/subscriptions/v1'),
                M(params__contains={'status': 'created'})).mock(side_effect=[
                    Response(200, json=page)
-                   for page in sub_pages(status={'created'}, size=40)
+                   for page in result_pages(status={'created'}, size=40)
                ])
 
 # 2. Request for status: failed. Response has a single empty page.
@@ -67,8 +66,9 @@ api_mock.route(M(url__startswith='https://api.planet.com/subscriptions/v1'),
 
 # 4. No status requested. Response is the same as for 1.
 api_mock.route(
-    M(url__startswith='https://api.planet.com/subscriptions/v1')).mock(
-        side_effect=[Response(200, json=page) for page in sub_pages(size=40)])
+    M(url__startswith='https://api.planet.com/subscriptions/v1')
+).mock(
+    side_effect=[Response(200, json=page) for page in result_pages(size=40)])
 
 
 # This mock API returns posted data to the caller. It's used to test
@@ -96,6 +96,50 @@ sub_api_mock.route(
                                   'delivery': 'yes, please',
                                   'source': 'test'
                               }))
+
+
+def result_pages(status=None, size=40):
+    """Helper for creating fake result listing pages."""
+    all_results = [{'id': str(i), 'status': 'created'} for i in range(1, 101)]
+    select_results = (result for result in all_results
+                      if not status or result['status'] in status)
+    pages = []
+    for group in zip_longest(*[iter(select_results)] * size):
+        results = list(result for result in group if result is not None)
+        page = {'results': results, '_links': {}}
+        pm = datetime.now().isoformat()
+        if len(results) == size:
+            page['_links'][
+                '_next'] = f'https://api.planet.com/subscriptions/v1/42/results?pm={pm}'
+        pages.append(page)
+    return pages
+
+
+# By default, respx's mock router asserts that all configured routes
+# are followed in a test. Each of our parameterized tests follows only
+# one route, so if we want to configure routes once and reuse them, we
+# must disable the default.
+res_api_mock = respx.mock(assert_all_called=False)
+
+# 1. Request for status: created. Response has three pages.
+res_api_mock.route(
+    M(url__startswith='https://api.planet.com/subscriptions/v1'),
+    M(params__contains={'status': 'created'})).mock(side_effect=[
+        Response(200, json=page)
+        for page in result_pages(status={'created'}, size=40)
+    ])
+
+# 2. Request for status: queued. Response has a single empty page.
+res_api_mock.route(
+    M(url__startswith='https://api.planet.com/subscriptions/v1'),
+    M(params__contains={'status': 'queued'})).mock(
+        side_effect=[Response(200, json={'results': []})])
+
+# 3. No status requested. Response is the same as for 1.
+res_api_mock.route(
+    M(url__startswith='https://api.planet.com/subscriptions/v1')
+).mock(
+    side_effect=[Response(200, json=page) for page in result_pages(size=40)])
 
 
 @pytest.mark.asyncio
@@ -208,27 +252,20 @@ async def test_get_subscription_success(monkeypatch):
         assert sub['delivery'] == "yes, please"
 
 
-@pytest.mark.xfail(reason="Client/server interaction not yet implemented")
 @pytest.mark.asyncio
-async def test_get_results_failure(monkeypatch):
+@failing_api_mock
+async def test_get_results_failure():
     """APIError is raised if there is a server error."""
-    monkeypatch.setattr(planet.clients.subscriptions, "_fake_sub_results", {})
     with pytest.raises(APIError):
         async with Session() as session:
             client = SubscriptionsClient(session)
             _ = [res async for res in client.get_results("lolwut")]
 
 
-@pytest.mark.xfail(reason="Client/server interaction not yet implemented")
 @pytest.mark.asyncio
-async def test_get_results_success(monkeypatch):
+@res_api_mock
+async def test_get_results_success():
     """Subscription description fetched, has the expected items."""
-    monkeypatch.setattr(
-        planet.clients.subscriptions,
-        '_fake_sub_results',
-        {'42': [{
-            'id': f'r{i}', 'status': 'created'
-        } for i in range(101)]})
     async with Session() as session:
         client = SubscriptionsClient(session)
         results = [res async for res in client.get_results("42")]
