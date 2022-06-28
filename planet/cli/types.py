@@ -63,7 +63,9 @@ class JSON(click.ParamType):
             convdict = value
         else:
             # read from raw json
-            if value.startswith('{') or value.startswith('['):
+            # skip this if value is a Path object or something else
+            if isinstance(value, str) and (value.startswith('{')
+                                           or value.startswith('[')):
                 try:
                     convdict = json.loads(value)
                 except json.decoder.JSONDecodeError:
