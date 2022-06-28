@@ -140,7 +140,7 @@ def test_data_filter_asset(asset,
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_date_range(invoke,
+def test_data_filter_date_range_success(invoke,
                                 assert_and_filters_equal,
                                 default_filters):
     """Check filter is created correctly and that multiple options results in
@@ -173,6 +173,16 @@ def test_data_filter_date_range(invoke,
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
+def test_data_filter_date_range_invalid(invoke):
+    runner = CliRunner()
+
+    result = invoke(["filter"] + '--date-range field gt 2021'.split(),
+                    runner=runner)
+    assert result.exit_code == 2
 
 
 @respx.mock

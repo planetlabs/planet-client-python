@@ -13,7 +13,6 @@
 # the License.
 """The Planet Data CLI."""
 from datetime import datetime
-import json
 from typing import List, Optional
 from contextlib import asynccontextmanager
 
@@ -46,42 +45,6 @@ def data(ctx, base_url):
     '''Commands for interacting with the Orders API'''
     ctx.obj['AUTH'] = None
     ctx.obj['BASE_URL'] = base_url
-
-
-def parse_item_types(ctx, param, value: str) -> List[str]:
-    """Turn a string of comma-separated names into a list of names."""
-    # Note: we could also normalize case and validate the names against
-    # our schema here.
-    return [part.strip() for part in value.split(",")]
-
-
-def parse_filter(ctx, param, value: str) -> dict:
-    """Turn filter JSON into a dict."""
-    # read filter using raw json
-    if value.startswith('{'):
-        try:
-            json_value = json.loads(value)
-        except json.decoder.JSONDecodeError:
-            raise click.BadParameter('Filter does not contain valid json.',
-                                     ctx=ctx,
-                                     param=param)
-        if json_value == {}:
-            raise click.BadParameter('Filter is empty.', ctx=ctx, param=param)
-        return json_value
-    # read filter using click pipe option
-    else:
-        try:
-            with click.open_file(value) as f:
-                json_value = json.load(f)
-        except json.decoder.JSONDecodeError:
-            raise click.BadParameter('Filter does not contain valid json.',
-                                     ctx=ctx,
-                                     param=param)
-        return json_value
-
-
-def geom_to_filter(ctx, param, value: str) -> dict:
-    return data_filter.geometry_filter(value) if value else None
 
 
 class FieldType(click.ParamType):
@@ -117,6 +80,10 @@ class DateTimeType(click.ParamType):
                 self.fail(str(e))
 
         return value
+
+
+def geom_to_filter(ctx, param, value: Optional[dict]) -> Optional[dict]:
+    return data_filter.geometry_filter(value) if value else None
 
 
 def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
@@ -298,7 +265,7 @@ def filter(ctx,
 @translate_exceptions
 @coro
 @pretty
-@click.argument("item_types", callback=parse_item_types)
+@click.argument("item_types", type=types.CommaSeparatedString())
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 @click.option('--name',
               type=str,
@@ -311,11 +278,13 @@ def filter(ctx,
 async def search_quick(ctx, item_types, filter, name, limit, pretty):
     """Execute a structured item search.
 
-    FILTER must be JSON and can be specified a json string, filename, or '-'
-    for stdin.
-
     This function outputs a series of GeoJSON descriptions, one for each of the
     returned items, optionally pretty-printed.
+
+    ITEM_TYPES is a comma-separated list of item-types to search.
+
+    FILTER must be JSON and can be specified a json string, filename, or '-'
+    for stdin.
 
     Quick searches are stored for approximately 30 days and the --name
     parameter will be applied to the stored quick search.
@@ -342,7 +311,7 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
 @coro
 @pretty
 @click.argument('name')
-@click.argument("item_types", callback=parse_item_types)
+@click.argument("item_types", type=types.CommaSeparatedString())
 @click.argument("filter", type=types.JSON())
 @click.option('--daily-email',
               is_flag=True,
@@ -350,11 +319,13 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
 async def search_create(ctx, name, item_types, filter, daily_email, pretty):
     """Create a new saved structured item search.
 
-    FILTER is a JSON blob and can be specified a json string, filename, or '-'
-    for stdin.
-
     This function outputs a full JSON description of the created search,
     optionally pretty-printed.
+
+    ITEM_TYPES is a comma-separated list of item-types to search.
+
+    FILTER must be JSON and can be specified a json string, filename, or '-'
+    for stdin.
     """
     async with data_client(ctx) as cl:
         items = await cl.create_search(name=name,
