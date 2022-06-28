@@ -1,4 +1,8 @@
 
+## About
+
+This tutorial is designed to show off the core Planet command-line interface capabilities, without
+requiring 
 
 ## Commands
 
@@ -127,7 +131,6 @@ $ planet orders wait 65df4eb0-e416-4243-a4d2-38afcf382c30 \
 ```
 
 Create an order from a request, wait for it and download when ready 
-(TODO: this works, but doesn't match usage examples, so should align to that.)
 
 ```console
 $ id=`planet orders create request-1.json | jq -r '.id'` && planet orders wait $id && planet orders download $id
@@ -310,6 +313,12 @@ Make a filter for data with clear pixels greater than 90%
 $ planet data filter --range clear_percent gt 90
 ```
 
+Make a filter for all data in a single strip:
+
+```console
+$ planet data filter --string-in strip_id 5743640
+```
+
 Search for all landsat 8, sentinel 2 and planetscope images in an area of interest
 
 ```console
@@ -322,7 +331,8 @@ Get the id of the most recent skysat image taken (that you have download access 
 $ planet data filter | planet data search-quick SkySatCollect --limit 1 - | jq -r .id
 ```
 
-Order the most recent skysat image taken.
+Order the most recent skysat image published 
+(TODO: we need 'sort' to be able to show most recent acquired)
 
 ```console
 $ planet orders request --name "SkySat Latest" --item-type SkySatCollect --bundle analytic \
@@ -334,143 +344,22 @@ Get the 5 latest cloud free images in an area and create an order that clips to 
 [geometry.geojson](https://gist.github.com/cholmes/378d050a263ae433ddbbb91c3439994b) from above:
 (this one uses variables in unix)
 (note that you need the tr and sd to format the output of jq into the comma delimited list we need as input. There is likely some better way to do this...)
-(currently lists two options, but only because range isn't yet working, so once that is we'll take it away. May also switch to PSScene)
 
 
 ```console
-$ ids=`planet data filter --geom geometry.geojson | planet data search-quick SkySatCollect --limit 5 - | jq -r .id | tr '\n' , | sed 's/.$//'`
-$ ids=`planet data filter --geom geometry.geojson --range clear_percent gt 90 | planet data search-quick SkySatCollect --limit 5 - | jq -r .id | tr '\n' , | sed 's/.$//'`
-$ planet orders request -- "Clipped Scenes" --item-type SkySatCollect --bundle analytic --id $ids | planet orders create --clip geometry.geojson
-
+$ ids=`planet data filter --geom geometry.geojson --range clear_percent gt 90 | planet data \
+search-quick PSScene --limit 5 - | jq -r .id | tr '\n' , | sed 's/.$//'`
+$ planet orders request --name "Clipped Scenes" --item-type PSScene --bundle analytic_sr_udm2  \
+--id $ids --clip geometry.geojson | planet orders create -
 ```
 
-```console
-$ 
-```
-
-```console
-$ 
-```
-
-Run a search for planetscope data on a bounding box in Iowa
 
 
+### Future workflows to support
 
-```json
-{
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {},
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -93.7353,
-              41.6236
-            ],
-            [
-              -92.2741,
-              41.6236
-            ],
-            [
-              -92.2741,
-              42.3747
-            ],
-            [
-              -93.7353,
-              42.3747
-            ],
-            [
-              -93.7353,
-              41.6236
-            ]
-          ]
-        ]
-      }
-    }
-  ]
-}
-```
+* Get the last 5 strips for an AOI, clipped & composited to the AOI (need either 'composite by strip' or some client-side code
+  to sort which results are in the same strip)
+* STAC output
+* Cloud delivery (could do this today with editing JSON, but should wait till we have it a bit better)
+* Get most recent acquired (using sort)
 
-Run search for planetscope with cloud cover less than 20
-Run search with permission filter to just be data that can be downloaded
-Run search with just good sun angles
-Run search for sentinel 2 images
-Run search for landsat8 images
-Run search for sentinel 1 images
-Run search for all data from Planet & public satellites for the last 5 grow seasons in Iowa (April 15 - October 15th)
-Get it into a shapefile for use by naive GIS people
-Get stats of number of images captured by satellite, show in chart
-Get stats of number of cloud free images by satellite
-Run search with a geojson of 7 small to moderate sized fields, try out a few filters
-Run search and turn results into STAC output, to:
-Understand results with stac-terminal
-Add to an existing stac catalog with stactools
-
-planet orders list
-
-` --pretty or | jq`
-
-```
-
-Order and download a scene id found from explorer
-
-```console
-20220605_124027_64_242b
-```
-
-```console
-$ 
-```
-
-```console
-$ 
-```
-
-```console
-$ 
-```
-
-As surface reflectance
-Order and download the results of 3-4 of the first set of searches above
-Order and download the above as STAC to:
-Add to an existing STAC catalog with stactools
-Browse resulting catalog with STAC Browser
-Visualize results in Unfolded Studio
-Do this with both surface reflectance data as well as clipped, composite, harmonized data.
-Run search of geojson of 7 moderate-sized fields, download clipped, cloud-free imagery of each.
-Do clip & composite of them
-Clip, composite & harmonize
-Clip, composite and NDVI
-COG’s for each of the outputs
-
-
-Run a search for planetscope data on a bounding box in Iowa
-Run search for planetscope with cloud cover less than 20
-Run search with permission filter to just be data that can be downloaded
-Run search with just good sun angles
-Run search for sentinel 2 images
-Run search for landsat8 images
-Run search for sentinel 1 images
-Run search for all data from Planet & public satellites for the last 5 grow seasons in Iowa (April 15 - October 15th)
-Get it into a shapefile for use by naive GIS people
-Get stats of number of images captured by satellite, show in chart
-Get stats of number of cloud free images by satellite
-Run search with a geojson of 7 small to moderate sized fields, try out a few filters
-Run search and turn results into STAC output, to:
-Understand results with stac-terminal
-Add to an existing stac catalog with stactools
-
-
-
-Download 3 months of imagery over a small field stored in a shapefile, but only download the imagery that is 90% cloud free over the field.
-https://hello.planet.com/code/benjamin/cloud_free_order can help us
-Set up a subscription of planetscope data over a bound box in iowa
-With cloud cover less than 25%
-Set up a subscription clipped to the 7 small to moderate-sized fields
-And then do it with harmonization & composites
-Only use those that are 90% cloud-free over the actual AOI
-Backfill a subscription for the previous 6 months
