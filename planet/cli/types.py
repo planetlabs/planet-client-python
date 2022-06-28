@@ -12,10 +12,13 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """CLI Parameter types"""
+from datetime import datetime
 import json
 from typing import List
 
 import click
+
+from planet import exceptions, io
 
 
 class CommaSeparatedString(click.types.StringParamType):
@@ -88,3 +91,38 @@ class JSON(click.ParamType):
             self.fail('JSON cannot be empty.')
 
         return convdict
+
+
+class Field(click.ParamType):
+    """Clarify that this entry is for a field"""
+    name = 'field'
+
+
+class Comparison(click.ParamType):
+    name = 'comp'
+    valid = ['lt', 'lte', 'gt', 'gte']
+
+    def convert(self, value, param, ctx) -> str:
+        if value not in self.valid:
+            self.fail(f'COMP ({value}) must be one of {",".join(self.valid)}',
+                      param,
+                      ctx)
+        return value
+
+
+class GTComparison(Comparison):
+    """Only support gt or gte comparison"""
+    valid = ['gt', 'gte']
+
+
+class DateTime(click.ParamType):
+    name = 'datetime'
+
+    def convert(self, value, param, ctx) -> datetime:
+        if not isinstance(value, datetime):
+            try:
+                value = io.str_to_datetime(value)
+            except exceptions.PlanetError as e:
+                self.fail(str(e))
+
+        return value

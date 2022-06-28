@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 from contextlib import nullcontext as does_not_raise
+from datetime import datetime
 import json
 
 import click
@@ -129,3 +130,38 @@ def test_cli_JSON_file_content(input, expectation, expected, tmp_path):
 def test_cli_JSON_file_doesnotexist():
     with pytest.raises(BadParameter):
         types.JSON().convert('nonexistant.json', None, None)
+
+
+@pytest.mark.parametrize("input, expectation",
+                         [('gt', does_not_raise()), ('lt', does_not_raise()),
+                          ('foobar', pytest.raises(BadParameter))])
+def test_cli_Comparison(input, expectation):
+    with expectation:
+        res = types.Comparison().convert(input, None, None)
+        assert res == input
+
+
+@pytest.mark.parametrize("input, expectation",
+                         [('gt', does_not_raise()),
+                          ('lt', pytest.raises(BadParameter)),
+                          ('foobar', pytest.raises(BadParameter))])
+def test_cli_GTComparison(input, expectation):
+    with expectation:
+        res = types.GTComparison().convert(input, None, None)
+        assert res == input
+
+
+@pytest.mark.parametrize(
+    "input, expectation, expected",
+    [('2020-02-02', does_not_raise(), datetime(2020, 2, 2)),
+     ('2021-02-03T01:40:07.359Z',
+      does_not_raise(),
+      datetime(2021, 2, 3, 1, 40, 7, 359000)),
+     ('2022', pytest.raises(BadParameter), None),
+     (datetime(2020, 2, 2), does_not_raise(), datetime(2020, 2, 2))])
+def test_cli_DateTime(input, expectation, expected):
+    with expectation:
+        res = types.DateTime().convert(input, None, None)
+
+    if expected:
+        assert res == expected

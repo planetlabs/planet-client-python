@@ -24,7 +24,7 @@ from planet import OrdersClient, Session  # allow mocking
 from . import types
 from .cmds import coro, translate_exceptions
 from .io import echo_json
-from .options import pretty
+from .options import limit, pretty
 
 LOGGER = logging.getLogger(__name__)
 
@@ -58,11 +58,7 @@ def orders(ctx, base_url):
               help='Filter orders to given state.',
               type=click.Choice(planet.clients.orders.ORDER_STATE_SEQUENCE,
                                 case_sensitive=False))
-@click.option('--limit',
-              help='Maximum number of results to return. Default is 100. A '
-              'value of 0 means no limit.',
-              default=100,
-              type=int)
+@limit
 @pretty
 async def list(ctx, state, limit, pretty):
     '''List orders
@@ -122,6 +118,7 @@ async def cancel(ctx, order_id):
 @click.option('--max-attempts',
               type=int,
               default=200,
+              show_default=True,
               help='Maximum number of polls. Set to zero for no limit.')
 @click.option('--state',
               help='State prior to a final state that will end polling.',

@@ -12,18 +12,17 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """The Planet Data CLI."""
-from datetime import datetime
 from typing import List, Optional
 from contextlib import asynccontextmanager
 
 import click
 
-from planet import data_filter, exceptions, io, DataClient, Session
+from planet import data_filter, DataClient, Session
 
 from . import types
 from .cmds import coro, translate_exceptions
 from .io import echo_json
-from .options import pretty
+from .options import limit, pretty
 
 
 @asynccontextmanager
@@ -45,41 +44,6 @@ def data(ctx, base_url):
     '''Commands for interacting with the Orders API'''
     ctx.obj['AUTH'] = None
     ctx.obj['BASE_URL'] = base_url
-
-
-class FieldType(click.ParamType):
-    """Clarify that this entry is for a field"""
-    name = 'field'
-
-
-class ComparisonType(click.ParamType):
-    name = 'comp'
-    valid = ['lt', 'lte', 'gt', 'gte']
-
-    def convert(self, value, param, ctx) -> str:
-        if value not in self.valid:
-            self.fail(f'COMP ({value}) must be one of {",".join(self.valid)}',
-                      param,
-                      ctx)
-        return value
-
-
-class GTComparisonType(ComparisonType):
-    """Only support gt or gte comparison"""
-    valid = ['gt', 'gte']
-
-
-class DateTimeType(click.ParamType):
-    name = 'datetime'
-
-    def convert(self, value, param, ctx) -> datetime:
-        if not isinstance(value, datetime):
-            try:
-                value = io.str_to_datetime(value)
-            except exceptions.PlanetError as e:
-                self.fail(str(e))
-
-        return value
 
 
 def geom_to_filter(ctx, param, value: Optional[dict]) -> Optional[dict]:
@@ -151,8 +115,8 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     VALUE is a comma-separated list of entries.
     When multiple entries are specified, an implicit 'or' logic is applied.""")
 @click.option('--date-range',
-              type=click.Tuple([FieldType(), ComparisonType(),
-                                DateTimeType()]),
+              type=click.Tuple(
+                  [types.Field(), types.Comparison(), types.DateTime()]),
               callback=date_range_to_filter,
               multiple=True,
               help="""Filter by date range in field.
@@ -165,7 +129,7 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
               help="""Filter to items that overlap a given geometry. Can be a
               json string, filename, or '-' for stdin.""")
 @click.option('--number-in',
-              type=click.Tuple([FieldType(), types.CommaSeparatedFloat()]),
+              type=click.Tuple([types.Field(), types.CommaSeparatedFloat()]),
               multiple=True,
               callback=number_in_to_filter,
               help="""Filter field by numeric in.
@@ -174,7 +138,7 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     When multiple entries are specified, an implicit 'or' logic is applied.""")
 @click.option('--range',
               'nrange',
-              type=click.Tuple([FieldType(), ComparisonType(), float]),
+              type=click.Tuple([types.Field(), types.Comparison(), float]),
               callback=range_to_filter,
               multiple=True,
               help="""Filter by date range in field.
@@ -182,7 +146,7 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     COMP can be lt, lte, gt, or gte.
     DATETIME can be an RFC3339 or ISO 8601 string.""")
 @click.option('--string-in',
-              type=click.Tuple([FieldType(), types.CommaSeparatedString()]),
+              type=click.Tuple([types.Field(), types.CommaSeparatedString()]),
               multiple=True,
               callback=string_in_to_filter,
               help="""Filter field by numeric in.
@@ -191,7 +155,7 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     When multiple entries are specified, an implicit 'or' logic is applied.""")
 @click.option(
     '--update',
-    type=click.Tuple([FieldType(), GTComparisonType(), DateTimeType()]),
+    type=click.Tuple([types.Field(), types.GTComparison(), types.DateTime()]),
     callback=update_to_filter,
     multiple=True,
     help="""Filter to items with changes to a specified field value made after
@@ -271,10 +235,7 @@ def filter(ctx,
               type=str,
               default=False,
               help=('Name of the saved search.'))
-@click.option('--limit',
-              type=int,
-              default=100,
-              help='Maximum number of results to return. Defaults to 100.')
+@limit
 async def search_quick(ctx, item_types, filter, name, limit, pretty):
     """Execute a structured item search.
 
@@ -288,12 +249,6 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
 
     Quick searches are stored for approximately 30 days and the --name
     parameter will be applied to the stored quick search.
-
-    The limit on the number of output items can be controlled using
-    the "--limit" option, which defaults to 100 if limit is set to None or
-    if the option is not used at all. If "--limit" is set to zero, no limit
-    is applied and all results (a potentially large number) are returned.
-
     """
     async with data_client(ctx) as cl:
         items = await cl.quick_search(name=name,

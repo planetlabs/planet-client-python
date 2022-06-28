@@ -141,8 +141,8 @@ def test_data_filter_asset(asset,
 @respx.mock
 @pytest.mark.asyncio
 def test_data_filter_date_range_success(invoke,
-                                assert_and_filters_equal,
-                                default_filters):
+                                        assert_and_filters_equal,
+                                        default_filters):
     """Check filter is created correctly and that multiple options results in
     multiple filters"""
     runner = CliRunner()
