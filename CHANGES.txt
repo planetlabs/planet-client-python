@@ -1,3 +1,14 @@
+2.0a1 (2022-06-28)
+
+This is the first pre-release of the new features and interfaces coming in
+version 2.0.0 later this year. A more complete listing of changes in this
+package is coming soon. The highlights are
+
+- Requirement of Python version 3.7 or newer.
+- Support for Planet Data, Orders, and Subscription APIs.
+- A Python package (the SDK) with asyncio support.
+- A new and improved command line interface (the CLI). 
+
 1.4.6 (2020-05-18)
 
 - New: you can now pass a search string to the Orders CLI via `--ids_from_search`
