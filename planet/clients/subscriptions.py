@@ -1,36 +1,89 @@
 """Planet Subscriptions API Python client."""
 
-import itertools
-from typing import AsyncIterator, Dict, Optional, Set
-import uuid
+import logging
+from typing import AsyncIterator, Optional, Set
 
-from planet.exceptions import ClientError
+from httpx import URL
 
-# Collections of fake subscriptions and results for testing. Tests will
-# monkeypatch these attributes.
-_fake_subs: Optional[Dict[str, dict]] = None
-_fake_sub_results: Optional[Dict[str, list]] = None
+from planet.exceptions import APIError, ClientError, PagingError
+from planet.http import Session
+from planet.models import Paged
+
+LOGGER = logging.getLogger()
 
 
-class PlaceholderSubscriptionsClient:
-    """A placeholder client.
+class _Pager(Paged):
+    """Navigates pages of messages about subscriptions or results."""
 
-    This class and its methods are derived from tests of a skeleton
-    Subscriptions CLI. It is evolving into the real API client.
+    # This constructor overrides Paged's and takes an httpx
+    # async client as the first argument.
+    def __init__(self, client, request, limit=None):
+        self.request = request
+        self.client = client
+        self._pages = None
+        self._items = []
+        self.i = 0
+        self.limit = limit
 
+    # This method uses the instance's httpx client to build and
+    # send requests. It's less abstracted than Paged's method.
+    async def _get_pages(self):
+        LOGGER.debug('getting first page')
+        resp = await self.client.send(self.request)
+        page = resp.json()
+        yield page
+
+        next_url = self._next_link(page)
+
+        while (next_url):  # pragma: no branch
+            LOGGER.debug('getting next page')
+            request = self.client.build_request('GET', next_url)
+            resp = await self.client.send(request)
+            page = resp.json()
+            yield page
+
+            # If the next URL is the same as the previous URL we will
+            # get the same response and be stuck in a page cycle. This
+            # has happened in development and could happen in the case
+            # of a bug in the production API.
+            prev_url = next_url
+            next_url = self._next_link(page)
+
+            if next_url == prev_url:
+                raise PagingError(
+                    "Page cycle detected at {!r}".format(next_url))
+
+
+class SubscriptionsClient:
+    """A Planet Subscriptions Service API 1.0.0 client.
+
+    The methods of this class forward request parameters to the
+    operations described in the Planet Subscriptions Service API 1.0.0
+    (https://api.planet.com/subscriptions/v1/spec) using HTTP 1.1.
+
+    The methods generally return or yield Python dicts with the same
+    structure as the JSON messages used by the service API. Many of the
+    exceptions raised by this class are categorized by HTTP client
+    (4xx) or server (5xx) errors. This client's level of abstraction is
+    low.
+
+    Attributes:
+        session (Session): an authenticated session which wraps the
+            low-level HTTP client.
     """
 
-    def __init__(self, session=None) -> None:
-        self._session = session
+    def __init__(self, session: Session) -> None:
+        self.session = session
 
     async def list_subscriptions(self,
-                                 status: Set[str] = None,
+                                 status: Optional[Set[str]] = None,
                                  limit: int = 100) -> AsyncIterator[dict]:
         """Get account subscriptions with optional filtering.
 
-        The name of this method is based on the API's method name. This
-        method provides iteration over subcriptions, it does not return
-        a list.
+        Note:
+            The name of this method is based on the API's method name.
+            This method provides iteration over subcriptions, it does
+            not return a list.
 
         Args:
             status (Set[str]): pass subscriptions with status in this
@@ -38,30 +91,35 @@ class PlaceholderSubscriptionsClient:
                 set.
             limit (int): limit the number of subscriptions in the
                 results.
+            TODO: user_id
 
         Yields:
             dict: a description of a subscription.
 
         Raises:
-            ClientError
-
+            APIError: on an API server error.
+            ClientError: on a client error.
         """
-        # Temporary marker for behavior of module with unpatched state.
-        if _fake_subs is None:
-            raise NotImplementedError
 
-        if status:
-            select_subs = (dict(**sub, id=sub_id) for sub_id,
-                           sub in _fake_subs.items()
-                           if sub['status'] in status)
-        else:
-            select_subs = (
-                dict(**sub, id=sub_id) for sub_id, sub in _fake_subs.items())
+        class _SubscriptionsPager(_Pager):
+            """Navigates pages of messages about subscriptions."""
+            ITEMS_KEY = 'subscriptions'
 
-        filtered_subs = itertools.islice(select_subs, limit)
+        params = {'status': [val for val in status or {}]}
+        url = URL('https://api.planet.com/subscriptions/v1', params=params)
+        req = self.session._client.build_request('GET', url)
 
-        for sub in filtered_subs:
-            yield sub
+        try:
+            async for sub in _SubscriptionsPager(self.session._client,
+                                                 req,
+                                                 limit=limit):
+                yield sub
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
 
     async def create_subscription(self, request: dict) -> dict:
         """Create a Subscription.
@@ -73,48 +131,51 @@ class PlaceholderSubscriptionsClient:
             dict: description of created subscription.
 
         Raises:
-            ClientError
-
+            APIError: on an API server error.
+            ClientError: on a client error.
         """
-        # Temporary marker for behavior of module with unpatched state.
-        if _fake_subs is None:
-            raise NotImplementedError
 
-        missing_keys = {'name', 'delivery', 'source'} - request.keys()
-        if missing_keys:
-            raise ClientError(
-                f"Request lacks required members: {missing_keys!r}")
+        url = URL('https://api.planet.com/subscriptions/v1')
+        req = self.session._client.build_request('POST', url, json=request)
 
-        id = str(uuid.uuid4())
-        _fake_subs[id] = request
-        sub = _fake_subs[id].copy()
-        sub.update(id=id)
-        return sub
+        try:
+            resp = await self.session._client.send(req)
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
+        else:
+            sub = resp.json()
+            return sub
 
-    async def cancel_subscription(self, subscription_id: str) -> dict:
+    async def cancel_subscription(self, subscription_id: str) -> None:
         """Cancel a Subscription.
 
         Args:
             subscription_id (str): id of subscription to cancel.
 
         Returns:
-            dict: description of cancelled subscription.
+            None
 
         Raises:
-            ClientError
-
+            APIError: on an API server error.
+            ClientError: on a client error.
         """
-        # Temporary marker for behavior of module with unpatched state.
-        if _fake_subs is None:
-            raise NotImplementedError
+        url = URL(
+            f'https://api.planet.com/subscriptions/v1/{subscription_id}/cancel'
+        )
+        req = self.session._client.build_request('POST', url)
 
         try:
-            sub = _fake_subs.pop(subscription_id)
-        except KeyError:
-            raise ClientError(f"No such subscription: {subscription_id!r}")
-
-        sub.update(id=subscription_id)
-        return sub
+            _ = await self.session._client.send(req)
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
 
     async def update_subscription(self, subscription_id: str,
                                   request: dict) -> dict:
@@ -128,21 +189,23 @@ class PlaceholderSubscriptionsClient:
             dict: description of the updated subscription.
 
         Raises:
-            ClientError
-
+            APIError: on an API server error.
+            ClientError: on a client error.
         """
-        # Temporary marker for behavior of module with unpatched state.
-        if _fake_subs is None:
-            raise NotImplementedError
+        url = URL(f'https://api.planet.com/subscriptions/v1/{subscription_id}')
+        req = self.session._client.build_request('PUT', url, json=request)
 
         try:
-            _fake_subs[subscription_id].update(**request)
-            sub = _fake_subs[subscription_id].copy()
-        except KeyError:
-            raise ClientError(f"No such subscription: {subscription_id!r}")
-
-        sub.update(id=subscription_id)
-        return sub
+            resp = await self.session._client.send(req)
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
+        else:
+            sub = resp.json()
+            return sub
 
     async def get_subscription(self, subscription_id: str) -> dict:
         """Get a description of a Subscription.
@@ -154,30 +217,34 @@ class PlaceholderSubscriptionsClient:
             dict: description of the subscription.
 
         Raises:
-            ClientError
-
+            APIError: on an API server error.
+            ClientError: on a client error.
         """
-        # Temporary marker for behavior of module with unpatched state.
-        if _fake_subs is None:
-            raise NotImplementedError
+        url = URL(f'https://api.planet.com/subscriptions/v1/{subscription_id}')
+        req = self.session._client.build_request('GET', url)
 
         try:
-            sub = _fake_subs[subscription_id].copy()
-        except KeyError:
-            raise ClientError(f"No such subscription: {subscription_id!r}")
-
-        sub.update(id=subscription_id)
-        return sub
+            resp = await self.session._client.send(req)
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
+        else:
+            sub = resp.json()
+            return sub
 
     async def get_results(self,
                           subscription_id: str,
-                          status: Set[str] = None,
+                          status: Optional[Set[str]] = None,
                           limit: int = 100) -> AsyncIterator[dict]:
         """Get Results of a Subscription.
 
-        The name of this method is based on the API's method name. This
-        method provides iteration over results, it does not get a
-        single result description or return a list of descriptions.
+        Note:
+            The name of this method is based on the API's method name. This
+            method provides iteration over results, it does not get a
+            single result description or return a list of descriptions.
 
         Args:
             subscription_id (str): id of a subscription.
@@ -185,30 +252,35 @@ class PlaceholderSubscriptionsClient:
                 filter out results with status not in this set.
             limit (int): limit the number of subscriptions in the
                 results.
+            TODO: created, updated, completed, user_id
 
         Yields:
             dict: description of a subscription results.
 
         Raises:
-            ClientError
-
+            APIError: on an API server error.
+            ClientError: on a client error.
         """
-        # Temporary marker for behavior of module with unpatched state.
-        if _fake_sub_results is None:
-            raise NotImplementedError
+
+        class _ResultsPager(_Pager):
+            """Navigates pages of messages about subscription results."""
+            NEXT_KEY = '_next'
+            ITEMS_KEY = 'results'
+
+        params = {'status': [val for val in status or {}]}
+        url = URL(
+            'https://api.planet.com/subscriptions/v1/{subscription_id}/results',
+            params=params)
+        req = self.session._client.build_request('GET', url)
 
         try:
-            if status:
-                select_results = (
-                    result for result in _fake_sub_results[subscription_id]
-                    if result['status'] in status)
-            else:
-                select_results = (
-                    result for result in _fake_sub_results[subscription_id])
-
-            filtered_results = itertools.islice(select_results, limit)
-        except KeyError:
-            raise ClientError(f"No such subscription: {subscription_id!r}")
-
-        for result in filtered_results:
-            yield result
+            async for sub in _ResultsPager(self.session._client,
+                                           req,
+                                           limit=limit):
+                yield sub
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise

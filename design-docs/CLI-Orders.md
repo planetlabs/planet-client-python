@@ -206,6 +206,15 @@ $ planet orders wait 65df4eb0-e416-4243-a4d2-38afcf382c30 \
 && planet orders download 65df4eb0-e416-4243-a4d2-38afcf382c30
 ```
 
+User Story: As a CLI user I would like to create an order, wait for it to be 
+ready to download, then download the order. 
+
+```
+$ id=`planet orders create request-1.json | jq -r '.id'` \
+&& planet orders wait $id && planet orders download $id
+<ANSI download status reporting>
+```
+
 
 ## download
 

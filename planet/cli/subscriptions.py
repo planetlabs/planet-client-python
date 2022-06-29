@@ -4,11 +4,10 @@ import json
 
 import click
 
-from planet import Session
-from planet.cli.cmds import coro, translate_exceptions
-from planet.cli.io import echo_json
-from planet.clients.subscriptions import (PlaceholderSubscriptionsClient as
-                                          SubscriptionsClient)
+from .cmds import coro, translate_exceptions
+from .io import echo_json
+from .session import CliSession
+from planet.clients.subscriptions import SubscriptionsClient
 
 
 @click.group()
@@ -40,7 +39,7 @@ def subscriptions(ctx):
 @coro
 async def list_subscriptions_cmd(ctx, status, limit, pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
-    async with Session(auth=ctx.obj['AUTH']) as session:
+    async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
         filtered_subs = client.list_subscriptions(status=status, limit=limit)
         async for sub in filtered_subs:
@@ -76,7 +75,7 @@ def parse_request(ctx, param, value: str) -> dict:
 @coro
 async def create_subscription_cmd(ctx, request, pretty):
     """Submits a subscription request and prints the API response."""
-    async with Session(auth=ctx.obj['AUTH']) as session:
+    async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
         sub = await client.create_subscription(request)
         echo_json(sub, pretty)
@@ -90,7 +89,7 @@ async def create_subscription_cmd(ctx, request, pretty):
 @coro
 async def cancel_subscription_cmd(ctx, subscription_id, pretty):
     """Cancels a subscription and prints the API response."""
-    async with Session(auth=ctx.obj['AUTH']) as session:
+    async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
         sub = await client.cancel_subscription(subscription_id)
         echo_json(sub, pretty)
@@ -105,7 +104,7 @@ async def cancel_subscription_cmd(ctx, subscription_id, pretty):
 @coro
 async def update_subscription_cmd(ctx, subscription_id, request, pretty):
     """Cancels a subscription and prints the API response."""
-    async with Session(auth=ctx.obj['AUTH']) as session:
+    async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
         sub = await client.update_subscription(subscription_id, request)
         echo_json(sub, pretty)
@@ -126,7 +125,7 @@ async def describe_subscription_cmd(ctx, subscription_id, pretty):
     After we refactor we will change to mocking the API.
 
     """
-    async with Session(auth=ctx.obj['AUTH']) as session:
+    async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
         sub = await client.get_subscription(subscription_id)
         echo_json(sub, pretty)
@@ -162,7 +161,7 @@ async def list_subscription_results_cmd(ctx,
                                         status,
                                         limit):
     """Gets results of a subscription and prints the API response."""
-    async with Session(auth=ctx.obj['AUTH']) as session:
+    async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
         filtered_results = client.get_results(subscription_id,
                                               status=status,
