@@ -12,20 +12,27 @@ for planet versions < 2 will remain on the Python Package Index indefinitely.
 Version 2 will be packaged as "planet" and its command line programs will also
 use the name "planet". Thus it will replace version 1. Version 2 will not be
 backwards compatible with version 1. That is to say that applications which
-depend on version 1 will not work with version 2. Users of version 1 who do
-not wish to upgrade to version 2 should ensure that their project requirements
-specify "planet<2", because when 2.0.0 is published to the Python Package
-Index "pip install planet" (for example) will download and install 2.0.0.
+depend on version 1 will not work with version 2. This goes for the command
+line programs as well. Version 2's "planet orders", for example, has usage
+changes that will likely have impact on scripts written for version 1.
+
+Users of version 1 who do not wish to upgrade to version 2 should ensure that
+their project requirements specify "planet<2", because when 2.0.0 is published
+to the Python Package Index "pip install planet" (for example) will download
+and install 2.0.0.
 
 A 2.0a1 pre-release is available now on PyPI. The Python package installer pip
 requires that you opt in to pre-releases by executing
 "pip install --pre planet" or be specifying the pre-release version precisely
 as in "pip install planet==2.0a1".
 
-We encourage all to begin to plan to migrate to the new and improved version 2
-API. Please email the Planet Dev Rel team for help at developers@planet.com
-or join the project discussions at
-https://github.com/planetlabs/planet-client-python/discussions.
+All that said, we want migration to 2.0.0 to be a win for users. Early
+feedback on the new Python API and CLI are critical to making it so. How can
+we support your existing workflows and systems while providing new features
+and more powerful abstractions? Please send the Planet Dev Rel email at
+developers@planet.com or join the project discussions at
+https://github.com/planetlabs/planet-client-python/discussions. You can have a
+say on what 2.0.0 looks like. We're eager to hear from you.
 
 Importing the planet.api module from version 1.5.x will result in a warning
 about the removal of planet.api in version 2.0.0. Running any command line
