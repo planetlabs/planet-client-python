@@ -19,7 +19,6 @@ import json
 from pathlib import Path
 from unittest.mock import Mock
 
-import click
 from click.testing import CliRunner
 import httpx
 import pytest
@@ -43,15 +42,6 @@ def invoke():
         return runner.invoke(cli.main, args=args)
 
     return _invoke
-
-
-def test_split_list_arg_empty_string():
-    with pytest.raises(click.exceptions.BadParameter):
-        cli.orders.split_list_arg(None, None, '')
-
-
-def test_split_list_arg_None():
-    assert cli.orders.split_list_arg(None, None, None) is None
 
 
 @respx.mock
@@ -171,7 +161,7 @@ def test_cli_orders_get(invoke, oid, order_description):
     respx.get(get_url).return_value = mock_resp
 
     result = invoke(['get', oid])
-    assert not result.exception
+    assert result.exit_code == 0
     assert order_description == json.loads(result.output)
 
 
@@ -183,7 +173,7 @@ def test_cli_orders_get_id_not_found(invoke, oid):
     respx.get(get_url).return_value = mock_resp
 
     result = invoke(['get', oid])
-    assert result.exception
+    assert result.exit_code == 1
     assert 'Error: {"message": "Error message"}\n' == result.output
 
 
@@ -196,7 +186,7 @@ def test_cli_orders_cancel(invoke, oid, order_description):
     respx.put(cancel_url).return_value = mock_resp
 
     result = invoke(['cancel', oid])
-    assert not result.exception
+    assert result.exit_code == 0
     assert str(mock_resp.json()) + '\n' == result.output
 
 
@@ -208,7 +198,7 @@ def test_cli_orders_cancel_id_not_found(invoke, oid):
     respx.put(cancel_url).return_value = mock_resp
 
     result = invoke(['cancel', oid])
-    assert result.exception
+    assert result.exit_code == 1
     assert 'Error: {"message": "Error message"}\n' == result.output
 
 
@@ -228,7 +218,7 @@ def test_cli_orders_wait_default(invoke, order_description, oid):
 
     runner = CliRunner()
     result = invoke(['wait', '--delay', '0', oid], runner=runner)
-    assert not result.exception
+    assert result.exit_code == 0
     assert result.output.endswith('success\n')
 
 
@@ -247,7 +237,7 @@ def test_cli_orders_wait_max_attempts(invoke, order_description, oid):
     runner = CliRunner()
     result = invoke(['wait', '--delay', '0', '--max-attempts', '1', oid],
                     runner=runner)
-    assert result.exception
+    assert result.exit_code == 1
     assert result.output.endswith(
         'Error: Maximum number of attempts (1) reached.\n')
 
@@ -334,7 +324,7 @@ def test_cli_orders_download_default(invoke, mock_download_response, oid):
     runner = CliRunner()
     with runner.isolated_filesystem() as folder:
         result = invoke(['download', oid], runner=runner)
-        assert not result.exception
+        assert result.exit_code == 0
 
         # basic check of progress reporting
         assert 'm1.json' in result.output
@@ -353,7 +343,7 @@ def test_cli_orders_download_checksum(invoke, mock_download_response, oid):
     runner = CliRunner()
     with runner.isolated_filesystem() as folder:
         result = invoke(['download', oid], runner=runner)
-        assert not result.exception
+        assert result.exit_code == 0
 
         # basic check of progress reporting
         assert 'm1.json' in result.output
@@ -375,7 +365,7 @@ def test_cli_orders_download_dest(invoke, mock_download_response, oid):
         dest_dir.mkdir()
         result = invoke(['download', '--directory', 'foobar', oid],
                         runner=runner)
-        assert not result.exception
+        assert result.exit_code == 0
 
         # Check that the files were downloaded to the custom directory
         f1_path = dest_dir / 'oid/itemtype/m1.json'
@@ -399,12 +389,12 @@ def test_cli_orders_download_overwrite(invoke,
 
         # check the file doesn't get overwritten by default
         result = invoke(['download', oid], runner=runner)
-        assert not result.exception
+        assert result.exit_code == 0
         assert json.load(open(filepath)) == {'foo': 'bar'}
 
         # check the file gets overwritten
         result = invoke(['download', '--overwrite', oid], runner=runner)
-        assert not result.exception
+        assert result.exit_code == 0
         assert json.load(open(filepath)) == {'key': 'value'}
 
 
@@ -419,12 +409,43 @@ def test_cli_orders_download_state(invoke, order_description, oid):
     runner = CliRunner()
     result = invoke(['download', oid], runner=runner)
 
-    assert result.exception
+    assert result.exit_code == 1
     assert 'order state (running) is not a final state.' in result.output
 
 
-# # TODO: add tests of "create --like" (gh-557).
-# # TODO: add tests of "create --pretty" (gh-491).
+# TODO: add tests of "create --pretty" (gh-491).
+@pytest.mark.parametrize(
+    "id_string, expected_ids",
+    [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
+     ('4500474_2133707_2021-05-20_2419,4500474_2133707_2021-05-20_2420',
+      ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])])
+@respx.mock
+def test_cli_orders_create_basic_success(expected_ids,
+                                         id_string,
+                                         invoke,
+                                         order_description):
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.post(TEST_ORDERS_URL).return_value = mock_resp
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": expected_ids,
+            "item_type": "PSOrthoTile",
+            "product_bundle": "analytic"
+        }],
+    }
+
+    result = CliRunner().invoke(
+        cli.main, ['orders', 'create', json.dumps(order_request)],
+        catch_exceptions=True)
+
+    assert result.exit_code == 0
+    assert json.loads(
+        result.output)['_links']['results'][0]['delivery'] == 'success'
+
+
 @pytest.mark.parametrize(
     "id_string, expected_ids",
     [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
@@ -452,7 +473,7 @@ def test_cli_orders_request_basic_success(expected_ids, id_string, invoke):
     assert order_request == json.loads(result.output)
 
 
-def test_cli_orders_request_basic_item_type_invalid(invoke):
+def test_cli_orders_request_item_type_invalid(invoke):
     result = invoke([
         'request',
         '--name=test',
@@ -460,146 +481,41 @@ def test_cli_orders_request_basic_item_type_invalid(invoke):
         '--bundle=analytic',
         '--item-type=invalid'
     ])
-    assert result.exception
+    assert result.exit_code == 2
     assert 'Error: Invalid value: item_type' in result.output
 
 
 def test_cli_orders_request_id_empty(invoke):
     result = invoke([
         'request',
-        '--name',
-        'test',
-        '--id',
-        '',
-        '--bundle',
-        'analytic',
-        '--item-type',
-        'PSOrthoTile'
+        '--name=test',
+        '--id=',
+        '--bundle=analytic',
+        '--item-type=PSOrthoTile',
     ])
-    assert result.exit_code
+    assert result.exit_code == 2
     assert 'Entry cannot be an empty string.' in result.output
 
 
-def test_cli_orders_request_clip(invoke, geom_geojson, write_to_tmp_json_file):
-    aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
-
-    result = invoke([
-        'request',
-        '--name',
-        'test',
-        '--id',
-        '4500474_2133707_2021-05-20_2419',
-        '--bundle',
-        'analytic',
-        '--item-type',
-        'PSOrthoTile',
-        '--clip',
-        aoi_file
-    ])
-    assert not result.exception
-
-    order_request = {
-        "name":
-        "test",
-        "products": [{
-            "item_ids": ["4500474_2133707_2021-05-20_2419"],
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic",
-        }],
-        "tools": [{
-            'clip': {
-                'aoi': geom_geojson
-            }
-        }]
-    }
-    assert order_request == json.loads(result.output)
-
-
-# TODO: add tests of "create --pretty" (gh-491).
-@pytest.mark.parametrize(
-    "id_string, expected_ids",
-    [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
-     ('4500474_2133707_2021-05-20_2419,4500474_2133707_2021-05-20_2420',
-      ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])])
-@respx.mock
-def test_cli_orders_create_basic_success(expected_ids,
-                                         id_string,
+@pytest.mark.parametrize("geom_fixture",
+                         [('geom_geojson'), ('feature_geojson'),
+                          ('featurecollection_geojson')])
+def test_cli_orders_request_clip_success(geom_fixture,
+                                         request,
                                          invoke,
-                                         order_description,
-                                         write_to_tmp_json_file):
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.post(TEST_ORDERS_URL).return_value = mock_resp
+                                         geom_geojson):
 
-    request_result = invoke([
-        'request',
-        '--name=test',
-        f'--id={id_string}',
-        '--bundle=analytic',
-        '--item-type=PSOrthoTile'
-    ])
-    request_file = write_to_tmp_json_file(json.loads(request_result.output),
-                                          'orders.json')
-
-    result = CliRunner().invoke(cli.main,
-                                ['orders', 'create', str(request_file)],
-                                catch_exceptions=True)
-
-    assert result.exit_code == 0
-    assert json.loads(
-        result.output)['_links']['results'][0]['delivery'] == 'success'
-
-
-@pytest.mark.parametrize(
-    "id_string, expected_ids",
-    [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
-     ('4500474_2133707_2021-05-20_2419,4500474_2133707_2021-05-20_2420',
-      ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])])
-@respx.mock
-def test_cli_orders_create_basic_stdin_success(expected_ids,
-                                               id_string,
-                                               invoke,
-                                               order_description):
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
-    request_result = invoke([
-        'request',
-        '--name=test',
-        f'--id={id_string}',
-        '--bundle=analytic',
-        '--item-type=PSOrthoTile'
-    ])
-
-    result = CliRunner().invoke(cli.main, ['orders', 'create', '-'],
-                                input=request_result.output,
-                                catch_exceptions=True)
-
-    assert result.exit_code == 0
-    assert json.loads(
-        result.output)['_links']['results'][0]['delivery'] == 'success'
-
-
-def test_cli_orders_request_clip_featureclass(invoke,
-                                              feature_geojson,
-                                              geom_geojson,
-                                              write_to_tmp_json_file):
-    """Tests that the clip option takes in feature class geojson as well"""
-    fc_file = write_to_tmp_json_file(feature_geojson, 'fc.geojson')
+    geom = request.getfixturevalue(geom_fixture)
 
     result = invoke([
         'request',
-        '--name',
-        'test',
-        '--id',
-        '4500474_2133707_2021-05-20_2419',
-        '--bundle',
-        'analytic',
-        '--item-type',
-        'PSOrthoTile',
-        '--clip',
-        fc_file
+        '--name=test',
+        '--id=4500474_2133707_2021-05-20_2419',
+        '--bundle=analytic',
+        '--item-type=PSOrthoTile',
+        f'--clip={json.dumps(geom)}',
     ])
-    assert not result.exception
+    assert result.exit_code == 0
 
     order_request = {
         "name":
@@ -618,139 +534,39 @@ def test_cli_orders_request_clip_featureclass(invoke,
     assert order_request == json.loads(result.output)
 
 
-def test_cli_orders_create_clip_featurecollection(invoke,
-                                                  featurecollection_geojson,
-                                                  geom_geojson,
-                                                  order_description,
-                                                  write_to_tmp_json_file):
-    """Tests that the clip option takes in feature class geojson as well"""
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
-    fc_file = write_to_tmp_json_file(featurecollection_geojson, 'fc.geojson')
-
+def test_cli_orders_request_clip_invalid_geometry(invoke, point_geom_geojson):
     result = invoke([
         'request',
-        '--name',
-        'test',
-        '--id',
-        '4500474_2133707_2021-05-20_2419',
-        '--bundle',
-        'analytic',
-        '--item-type',
-        'PSOrthoTile',
-        '--clip',
-        fc_file
+        '--name=test',
+        '--id=4500474_2133707_2021-05-20_2419',
+        '--bundle=analytic',
+        '--item-type=PSOrthoTile',
+        f'--clip={json.dumps(point_geom_geojson)}'
     ])
-    assert not result.exception
-
-    order_request = {
-        "name":
-        "test",
-        "products": [{
-            "item_ids": ["4500474_2133707_2021-05-20_2419"],
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic",
-        }],
-        "tools": [{
-            'clip': {
-                'aoi': geom_geojson
-            }
-        }]
-    }
-    assert order_request == json.loads(result.output)
-
-
-@respx.mock
-def test_cli_orders_create_clip_featureclass(invoke,
-                                             feature_geojson,
-                                             geom_geojson,
-                                             order_description,
-                                             write_to_tmp_json_file):
-    """Tests that the clip option takes in feature class geojson as well"""
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
-    fc_file = write_to_tmp_json_file(feature_geojson, 'fc.geojson')
-
-    request_result = invoke([
-        'request',
-        '--name',
-        'test',
-        '--id',
-        '4500474_2133707_2021-05-20_2419',
-        '--bundle',
-        'analytic',
-        '--item-type',
-        'PSOrthoTile',
-        '--clip',
-        fc_file
-    ])
-
-    request_file = write_to_tmp_json_file(json.loads(request_result.output),
-                                          'orders.json')
-
-    # Invoke the create call
-    result = CliRunner().invoke(cli.main,
-                                ['orders', 'create', str(request_file)],
-                                catch_exceptions=True)
-
-    assert result.exit_code == 0
-    assert json.loads(
-        result.output)['_links']['results'][0]['delivery'] == 'success'
-
-
-def test_cli_orders_request_clip_invalid_geometry(invoke,
-                                                  point_geom_geojson,
-                                                  write_to_tmp_json_file):
-    aoi_file = write_to_tmp_json_file(point_geom_geojson, 'aoi.geojson')
-
-    result = invoke([
-        'request',
-        '--name',
-        'test',
-        '--id',
-        '4500474_2133707_2021-05-20_2419',
-        '--bundle',
-        'analytic',
-        '--item-type',
-        'PSOrthoTile',
-        '--clip',
-        aoi_file
-    ])
-    assert result.exception
+    assert result.exit_code == 2
     error_msg = ('Error: Invalid value: Invalid geometry type: ' +
                  'Point is not Polygon.')
     assert error_msg in result.output
 
 
-def test_cli_orders_request_clip_and_tools(invoke,
-                                           geom_geojson,
-                                           write_to_tmp_json_file):
+def test_cli_orders_request_both_clip_and_tools(invoke, geom_geojson):
     # interestingly, it is important that both clip and tools
-    # option values lead to valid json files
-    aoi_file = write_to_tmp_json_file(geom_geojson, 'aoi.geojson')
-
+    # option values are valid json
     result = invoke([
         'request',
-        '--name',
-        'test',
-        '--id',
-        '4500474_2133707_2021-05-20_2419',
-        '--bundle',
-        'analytic',
-        '--item-type',
-        'PSOrthoTile',
-        '--clip',
-        aoi_file,
-        '--tools',
-        aoi_file
+        '--name=test',
+        '--id=4500474_2133707_2021-05-20_2419',
+        '--bundle=analytic',
+        '--item-type=PSOrthoTile',
+        f'--clip={json.dumps(geom_geojson)}',
+        f'--tools={json.dumps(geom_geojson)}'
     ])
-    assert result.exception
+
+    assert result.exit_code == 2
     assert "Specify only one of '--clip' or '--tools'" in result.output
 
 
-def test_cli_orders_request_cloudconfig(invoke, write_to_tmp_json_file):
+def test_cli_orders_request_cloudconfig(invoke):
     config_json = {
         'amazon_s3': {
             'aws_access_key_id': 'aws_access_key_id',
@@ -760,22 +576,16 @@ def test_cli_orders_request_cloudconfig(invoke, write_to_tmp_json_file):
         },
         'archive_type': 'zip'
     }
-    config_file = write_to_tmp_json_file(config_json, 'config.json')
 
     result = invoke([
         'request',
-        '--name',
-        'test',
-        '--id',
-        '4500474_2133707_2021-05-20_2419',
-        '--bundle',
-        'analytic',
-        '--item-type',
-        'PSOrthoTile',
-        '--cloudconfig',
-        config_file
+        '--name=test',
+        '--id=4500474_2133707_2021-05-20_2419',
+        '--bundle=analytic',
+        '--item-type=PSOrthoTile',
+        f'--cloudconfig={json.dumps(config_json)}',
     ])
-    assert not result.exception
+    assert result.exit_code == 0
 
     order_request = {
         "name":
@@ -791,66 +601,16 @@ def test_cli_orders_request_cloudconfig(invoke, write_to_tmp_json_file):
     assert order_request == json.loads(result.output)
 
 
-@respx.mock
-def test_cli_orders_create_cloudconfig(invoke,
-                                       order_description,
-                                       write_to_tmp_json_file):
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
-    config_json = {
-        'amazon_s3': {
-            'aws_access_key_id': 'aws_access_key_id',
-            'aws_secret_access_key': 'aws_secret_access_key',
-            'bucket': 'bucket',
-            'aws_region': 'aws_region'
-        },
-        'archive_type': 'zip'
-    }
-    config_file = write_to_tmp_json_file(config_json, 'config.json')
-
-    request_result = invoke([
-        'request',
-        '--name',
-        'test',
-        '--id',
-        '4500474_2133707_2021-05-20_2419',
-        '--bundle',
-        'analytic',
-        '--item-type',
-        'PSOrthoTile',
-        '--cloudconfig',
-        config_file
-    ])
-
-    request_file = write_to_tmp_json_file(json.loads(request_result.output),
-                                          'orders.json')
-
-    # Invoke the create call
-    # Invoke the create call
-    result = CliRunner().invoke(cli.main,
-                                ['orders', 'create', str(request_file)],
-                                catch_exceptions=True)
-
-    assert result.exit_code == 0
-    assert json.loads(
-        result.output)['_links']['results'][0]['delivery'] == 'success'
-
-
 def test_cli_orders_request_email(invoke):
     result = invoke([
         'request',
-        '--name',
-        'test',
-        '--id',
-        '4500474_2133707_2021-05-20_2419',
-        '--bundle',
-        'analytic',
-        '--item-type',
-        'PSOrthoTile',
+        '--name=test',
+        '--id=4500474_2133707_2021-05-20_2419',
+        '--bundle=analytic',
+        '--item-type=PSOrthoTile',
         '--email'
     ])
-    assert not result.exception
+    assert result.exit_code == 0
 
     order_request = {
         "name":
@@ -868,43 +628,8 @@ def test_cli_orders_request_email(invoke):
 
 
 @respx.mock
-def test_cli_orders_create_email(invoke,
-                                 order_description,
-                                 write_to_tmp_json_file):
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
-    request_result = invoke([
-        'request',
-        '--name',
-        'test',
-        '--id',
-        '4500474_2133707_2021-05-20_2419',
-        '--bundle',
-        'analytic',
-        '--item-type',
-        'PSOrthoTile',
-        '--email'
-    ])
-
-    request_file = write_to_tmp_json_file(json.loads(request_result.output),
-                                          'orders.json')
-
-    # Invoke the create call
-    # Invoke the create call
-    result = CliRunner().invoke(cli.main,
-                                ['orders', 'create', str(request_file)],
-                                catch_exceptions=True)
-
-    assert result.exit_code == 0
-    assert json.loads(
-        result.output)['_links']['results'][0]['delivery'] == 'success'
-
-
-def test_cli_orders_request_tools(invoke, geom_geojson,
-                                  write_to_tmp_json_file):
+def test_cli_orders_request_tools(invoke, geom_geojson):
     tools_json = [{'clip': {'aoi': geom_geojson}}, {'composite': {}}]
-    tools_file = write_to_tmp_json_file(tools_json, 'tools.json')
 
     result = invoke([
         'request',
@@ -912,9 +637,8 @@ def test_cli_orders_request_tools(invoke, geom_geojson,
         '--id=4500474_2133707_2021-05-20_2419',
         '--bundle=analytic',
         '--item-type=PSOrthoTile',
-        f'--tools={tools_file}'
+        f'--tools={json.dumps(tools_json)}'
     ])
-    assert not result.exception
 
     order_request = {
         "name":
@@ -928,70 +652,3 @@ def test_cli_orders_request_tools(invoke, geom_geojson,
         tools_json
     }
     assert order_request == json.loads(result.output)
-
-
-@respx.mock
-def test_cli_orders_create_tools(invoke,
-                                 geom_geojson,
-                                 order_description,
-                                 write_to_tmp_json_file):
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.post(TEST_ORDERS_URL).return_value = mock_resp
-
-    tools_json = [{'clip': {'aoi': geom_geojson}}, {'composite': {}}]
-    tools_file = write_to_tmp_json_file(tools_json, 'tools.json')
-
-    request_result = invoke([
-        'request',
-        '--name=test',
-        '--id=4500474_2133707_2021-05-20_2419',
-        '--bundle=analytic',
-        '--item-type=PSOrthoTile',
-        f'--tools={tools_file}'
-    ])
-
-    request_file = write_to_tmp_json_file(json.loads(request_result.output),
-                                          'orders.json')
-
-    # Invoke the create call
-    # Invoke the create call
-    result = CliRunner().invoke(cli.main,
-                                ['orders', 'create', str(request_file)],
-                                catch_exceptions=True)
-
-    assert result.exit_code == 0
-    assert json.loads(
-        result.output)['_links']['results'][0]['delivery'] == 'success'
-
-
-def test_cli_orders_read_file_json_doesnotexist(invoke):
-    result = invoke([
-        'request',
-        '--name=test',
-        '--id=4500474_2133707_2021-05-20_2419',
-        '--bundle=analytic',
-        '--item-type=PSOrthoTile',
-        '--tools=doesnnotexist.json'
-    ])
-    assert result.exception
-    error_msg = ("Error: Invalid value for '--tools': 'doesnnotexist.json': " +
-                 "No such file or directory")
-    assert error_msg in result.output
-
-
-def test_cli_orders_read_file_json_invalidjson(invoke, tmp_path):
-    invalid_filename = tmp_path / 'invalid.json'
-    with open(invalid_filename, 'w') as fp:
-        fp.write('[Invali]d j*son')
-
-    result = invoke([
-        'request',
-        '--name=test',
-        '--id=4500474_2133707_2021-05-20_2419',
-        '--bundle=analytic',
-        '--item-type=PSOrthoTile',
-        f'--tools={invalid_filename}'
-    ])
-    assert result.exception
-    error_msg = "Error: File does not contain valid json."
-    assert error_msg in result.output

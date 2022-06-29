@@ -140,9 +140,9 @@ def test_data_filter_asset(asset,
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_date_range(invoke,
-                                assert_and_filters_equal,
-                                default_filters):
+def test_data_filter_date_range_success(invoke,
+                                        assert_and_filters_equal,
+                                        default_filters):
     """Check filter is created correctly and that multiple options results in
     multiple filters"""
     runner = CliRunner()
@@ -173,6 +173,16 @@ def test_data_filter_date_range(invoke,
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
+def test_data_filter_date_range_invalid(invoke):
+    runner = CliRunner()
+
+    result = invoke(["filter"] + '--date-range field gt 2021'.split(),
+                    runner=runner)
+    assert result.exit_code == 2
 
 
 @respx.mock
@@ -506,7 +516,7 @@ def test_search_create_daily_email(invoke, search_result):
         'temp',
         'SkySatScene',
         json.dumps(filter),
-        '--daily_email'
+        '--daily-email'
     ])
 
     search_request = {
