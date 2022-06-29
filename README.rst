@@ -2,6 +2,9 @@
 Planet API Client
 =================
 
+.. attention:: Work on version 1 has ended. Version 2 is in development.
+   See CHANGES.txt for more information.
+
 Python client library and CLI for Planet's public API.
 
 .. image:: https://github.com/planetlabs/planet-client-python/actions/workflows/tests.yaml/badge.svg?branch=master
