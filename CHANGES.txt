@@ -2,15 +2,34 @@
 
 1.5.0 (2022-06-29)
 
-Deprecations:
+Work on new features for version 1 of this software has ceased. Version 2 is
+under development and the final 2.0.0 release is expected at the end of 2022.
+There will not be a 1.6.0 release. Releases in the 1.5.x series will be made
+to fix major bugs on a quarterly cadence. There may be one such bug fix
+release for version 1 after 2.0.0 is released, but probably not more. Packages
+for planet versions < 2 will remain on the Python Package Index indefinitely. 
 
-The planet.api module is deprecated and will be removed in version 2.0.0 (end
-of 2022, approximately). Applications which use that module will not be
-compatible with version 2.0.0 of the Planet Python client.
+Version 2 will be packaged as "planet" and its command line programs will also
+use the name "planet". Thus it will replace version 1. Version 2 will not be
+backwards compatible with version 1. That is to say that applications which
+depend on version 1 will not work with version 2. Users of version 1 who do
+not wish to upgrade to version 2 should ensure that their project requirements
+specify "planet<2", because when 2.0.0 is published to the Python Package
+Index "pip install planet" (for example) will download and install 2.0.0.
 
-A 2.0a1 pre-release of the Planet Python client is available on PyPI. Please
-begin to plan to migrate to the new and improved API and contact the Planet
-Dev Rel team for help in doing so: developers@planet.com.
+A 2.0a1 pre-release is available now on PyPI. The Python package installer pip
+requires that you opt in to pre-releases by executing
+"pip install --pre planet" or be specifying the pre-release version precisely
+as in "pip install planet==2.0a1".
+
+We encourage all to begin to plan to migrate to the new and improved version 2
+API. Please email the Planet Dev Rel team for help at developers@planet.com
+or join the project discussions at
+https://github.com/planetlabs/planet-client-python/discussions.
+
+Importing the planet.api module from version 1.5.x will result in a warning
+about the removal of planet.api in version 2.0.0. Running any command line
+program from version 1.5.x will show the same warning.
 
 1.4.10 (2022-05-18)
 
