@@ -31,7 +31,7 @@ __all__ = [
 ]
 
 
-class ClientV1DeprecationWarning(FutureWarning):
+class ClientV1DeprecationWarning(UserWarning):
     """Warn about deprecation of ClientV1."""
 
 
