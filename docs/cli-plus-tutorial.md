@@ -20,6 +20,7 @@ GeoJSON, has a nice CLI.
 * **[STACTools](https://github.com/stac-utils/stactools)** - CLI for working with STAC data. There
 is also a [planet plugin](https://github.com/stactools-packages/planet) that may be useful in the
 future.
+* **[Github commandline](https://cli.github.com/)** - Nice CLI for quickly posting things to gists.
 
 ## Workflows
 
@@ -77,7 +78,7 @@ Copy output to clipboard.
  - paste to placemark (not quite working at the moment)
 
 ```console
-$ planet data filter --string-in strip_id 5743640 | planet data search-quick PSScene - | planet collect - | pbcopy
+$ planet data filter --string-in strip_id 5743669 | planet data search-quick PSScene - | planet collect - | pbcopy
 ```
 
 Show the latest skysat image on github as a gist.
