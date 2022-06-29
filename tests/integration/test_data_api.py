@@ -110,7 +110,7 @@ async def test_quick_search_sort(item_descriptions,
                                  search_response,
                                  session):
 
-    sort = 'created asc'
+    sort = 'acquired asc'
     quick_search_url = f'{TEST_URL}/quick-search?sort={sort}'
 
     item1, _, _ = item_descriptions

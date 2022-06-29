@@ -24,8 +24,14 @@ BASE_URL = f'{PLANET_BASE_URL}/data/v1/'
 SEARCHES_PATH = '/searches'
 STATS_PATH = '/stats'
 
+# TODO: get these values from the spec directly gh-619
 LIST_SORT_ORDER = ('created desc', 'created asc')
 LIST_SEARCH_TYPE = ('any', 'saved', 'quick')
+SEARCH_SORT = ('published desc',
+               'published asc',
+               'acquired desc',
+               'acquired asc')
+SEARCH_SORT_DEFAULT = 'published desc'
 STATS_INTERVAL = ('hour', 'day', 'week', 'month', 'year')
 
 WAIT_DELAY = 5
@@ -102,8 +108,8 @@ class DataClient:
         """Execute a quick search.
 
         Quick searches are saved for a short period of time (~month). The
-        `name` parameter of the search defaults to the search id if `name`
-        is not given.
+        `name` parameter of the search defaults to the id of the generated
+        search id if `name` is not specified.
 
         Example:
 
@@ -132,10 +138,8 @@ class DataClient:
         Parameters:
             item_types: The item types to include in the search.
             search_filter: Structured search criteria.
-            sort: Override default of 'published desc' for field and direction
-                to order results by. Specified as '<field> <direction>' where
-                direction is either 'desc' for descending direction or 'asc'
-                for ascending direction.
+            sort: Field and direction to order results by. Valid options are
+            given in SEARCH_SORT.
             name: The name of the saved search.
             limit: Maximum number of items to return.
 
@@ -157,8 +161,11 @@ class DataClient:
             request_json['name'] = name
 
         params = {}
-        if sort:
-            # TODO: validate sort
+        if sort and sort != SEARCH_SORT_DEFAULT:
+            sort = sort.lower()
+            if sort not in SEARCH_SORT:
+                raise exceptions.ClientError(
+                    f'{sort} must be one of {SEARCH_SORT}')
             params['sort'] = sort
 
         request = self._request(url,

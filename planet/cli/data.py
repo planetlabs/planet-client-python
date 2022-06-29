@@ -18,6 +18,7 @@ from contextlib import asynccontextmanager
 import click
 
 from planet import data_filter, DataClient
+from planet.clients.data import SEARCH_SORT, SEARCH_SORT_DEFAULT
 
 from . import types
 from .cmds import coro, translate_exceptions
@@ -230,13 +231,15 @@ def filter(ctx,
 @coro
 @click.argument("item_types", type=types.CommaSeparatedString())
 @click.argument("filter", type=types.JSON(), default="-", required=False)
-@click.option('--name',
-              type=str,
-              default=False,
-              help=('Name of the saved search.'))
 @limit
+@click.option('--name', type=str, help='Name of the saved search.')
+@click.option('--sort',
+              type=click.Choice(SEARCH_SORT),
+              default=SEARCH_SORT_DEFAULT,
+              show_default=True,
+              help='Field and direction to order results by.')
 @pretty
-async def search_quick(ctx, item_types, filter, name, limit, pretty):
+async def search_quick(ctx, item_types, filter, limit, name, sort, pretty):
     """Execute a structured item search.
 
     This function outputs a series of GeoJSON descriptions, one for each of the
@@ -251,11 +254,11 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
     parameter will be applied to the stored quick search.
     """
     async with data_client(ctx) as cl:
-        items = await cl.quick_search(name=name,
-                                      item_types=item_types,
-                                      search_filter=filter,
-                                      limit=limit,
-                                      sort=None)
+        items = await cl.quick_search(item_types,
+                                      filter,
+                                      name=name,
+                                      sort=sort,
+                                      limit=limit)
         async for item in items:
             echo_json(item, pretty)
 
