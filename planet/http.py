@@ -132,6 +132,7 @@ class Session(BaseSession):
 
         self._client = httpx.AsyncClient(auth=auth)
         self._client.headers.update({'User-Agent': self._get_user_agent()})
+        self._client.headers.update({'X-Planet-App': 'python-sdk'})
 
         async def alog_request(*args, **kwargs):
             return self._log_request(*args, **kwargs)
