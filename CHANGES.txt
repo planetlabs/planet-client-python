@@ -1,5 +1,17 @@
 # Changes.txt
 
+1.5.0 (2022-06-29)
+
+Deprecations:
+
+The planet.api module is deprecated and will be removed in version 2.0.0 (end
+of 2022, approximately). Applications which use that module will not be
+compatible with version 2.0.0 of the Planet Python client.
+
+A 2.0a1 pre-release of the Planet Python client is available on PyPI. Please
+begin to plan to migrate to the new and improved API and contact the Planet
+Dev Rel team for help in doing so: developers@planet.com.
+
 1.4.10 (2022-05-18)
 
 - Fix: restore compatibility with click versions >= 8.1.0.
