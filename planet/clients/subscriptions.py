@@ -3,55 +3,25 @@
 import logging
 from typing import AsyncIterator, Optional, Set
 
-from httpx import URL
-
-from planet.exceptions import APIError, ClientError, PagingError
+from planet.exceptions import APIError, ClientError
+from ..constants import PLANET_BASE_URL
 from planet.http import Session
-from planet.models import Paged
+from planet.models import Paged, Request, Response
+
+BASE_URL = f'{PLANET_BASE_URL}/subscriptions/v1'
 
 LOGGER = logging.getLogger()
 
 
-class _Pager(Paged):
-    """Navigates pages of messages about subscriptions or results."""
+class Results(Paged):
+    """Navigates pages of messages about subscription results."""
+    NEXT_KEY = '_next'
+    ITEMS_KEY = 'results'
 
-    # This constructor overrides Paged's and takes an httpx
-    # async client as the first argument.
-    def __init__(self, client, request, limit=None):
-        self.request = request
-        self.client = client
-        self._pages = None
-        self._items = []
-        self.i = 0
-        self.limit = limit
 
-    # This method uses the instance's httpx client to build and
-    # send requests. It's less abstracted than Paged's method.
-    async def _get_pages(self):
-        LOGGER.debug('getting first page')
-        resp = await self.client.send(self.request)
-        page = resp.json()
-        yield page
-
-        next_url = self._next_link(page)
-
-        while (next_url):  # pragma: no branch
-            LOGGER.debug('getting next page')
-            request = self.client.build_request('GET', next_url)
-            resp = await self.client.send(request)
-            page = resp.json()
-            yield page
-
-            # If the next URL is the same as the previous URL we will
-            # get the same response and be stuck in a page cycle. This
-            # has happened in development and could happen in the case
-            # of a bug in the production API.
-            prev_url = next_url
-            next_url = self._next_link(page)
-
-            if next_url == prev_url:
-                raise PagingError(
-                    "Page cycle detected at {!r}".format(next_url))
+class Subscriptions(Paged):
+    """Navigates pages of messages about subscriptions."""
+    ITEMS_KEY = 'subscriptions'
 
 
 class SubscriptionsClient:
@@ -73,7 +43,22 @@ class SubscriptionsClient:
     """
 
     def __init__(self, session: Session) -> None:
-        self.session = session
+        self._session = session
+
+        self._base_url = BASE_URL
+        if self._base_url.endswith('/'):
+            self._base_url = self._base_url[:-1]
+
+    def _request(self, url, method, data=None, params=None, json=None):
+        return Request(url, method=method, data=data, params=params, json=json)
+
+    async def _do_request(self, request: Request) -> Response:
+        """Submit a request and get response.
+
+        Parameters:
+            request: request to submit
+        """
+        return await self._session.request(request)
 
     async def list_subscriptions(self,
                                  status: Optional[Set[str]] = None,
@@ -82,38 +67,29 @@ class SubscriptionsClient:
 
         Note:
             The name of this method is based on the API's method name.
-            This method provides iteration over subcriptions, it does
+            This method returns an iterator over subcriptions, it does
             not return a list.
 
         Args:
-            status (Set[str]): pass subscriptions with status in this
+            status: pass subscriptions with status in this
                 set, filter out subscriptions with status not in this
                 set.
-            limit (int): limit the number of subscriptions in the
-                results.
+            limit: Maximum number of results to return.
             TODO: user_id
 
-        Yields:
-            dict: a description of a subscription.
+        Returns:
+            An iterator over descriptions of subscriptions.
 
         Raises:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-
-        class _SubscriptionsPager(_Pager):
-            """Navigates pages of messages about subscriptions."""
-            ITEMS_KEY = 'subscriptions'
-
         params = {'status': [val for val in status or {}]}
-        url = URL('https://api.planet.com/subscriptions/v1', params=params)
-        req = self.session._client.build_request('GET', url)
+        url = 'https://api.planet.com/subscriptions/v1'
+        request = self._request(url, method='GET', params=params)
 
         try:
-            async for sub in _SubscriptionsPager(self.session._client,
-                                                 req,
-                                                 limit=limit):
-                yield sub
+            return Subscriptions(request, self._do_request, limit=limit)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:
@@ -134,12 +110,12 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-
-        url = URL('https://api.planet.com/subscriptions/v1')
-        req = self.session._client.build_request('POST', url, json=request)
-
+        url = 'https://api.planet.com/subscriptions/v1'
+        url = 'http://www.MockNotRealURL.com/api/path'
+        req = self._request('POST', url, json=request)
+        # LOGGER.warning(BASE_URL)
         try:
-            resp = await self.session._client.send(req)
+            resp = await self._do_request(req)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:
@@ -163,13 +139,10 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        url = URL(
-            f'https://api.planet.com/subscriptions/v1/{subscription_id}/cancel'
-        )
-        req = self.session._client.build_request('POST', url)
+        req = self._request('POST', f'{BASE_URL}/{subscription_id}/cancel')
 
         try:
-            _ = await self.session._client.send(req)
+            _ = await self._do_request(req)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:
@@ -192,11 +165,11 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        url = URL(f'https://api.planet.com/subscriptions/v1/{subscription_id}')
-        req = self.session._client.build_request('PUT', url, json=request)
+        url = f'{BASE_URL}{subscription_id}'
+        req = self._request('PUT', url)
 
         try:
-            resp = await self.session._client.send(req)
+            resp = await self._do_request(req)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:
@@ -220,11 +193,11 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        url = URL(f'https://api.planet.com/subscriptions/v1/{subscription_id}')
-        req = self.session._client.build_request('GET', url)
+        url = f'{BASE_URL}/{subscription_id}'
 
+        req = self._request(url, method='GET')
         try:
-            resp = await self.session._client.send(req)
+            resp = await self._do_request(req)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:
@@ -247,37 +220,26 @@ class SubscriptionsClient:
             single result description or return a list of descriptions.
 
         Args:
-            subscription_id (str): id of a subscription.
-            status (Set[str]): pass result with status in this set,
+            subscription_id: id of a subscription.
+            status: pass result with status in this set,
                 filter out results with status not in this set.
-            limit (int): limit the number of subscriptions in the
-                results.
+            limit: Maximum number of results to return. Set to zero to return
+                all results.
             TODO: created, updated, completed, user_id
 
-        Yields:
-            dict: description of a subscription results.
+        Returns:
+            Iterator over descriptions of a subscription results.
 
         Raises:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-
-        class _ResultsPager(_Pager):
-            """Navigates pages of messages about subscription results."""
-            NEXT_KEY = '_next'
-            ITEMS_KEY = 'results'
-
         params = {'status': [val for val in status or {}]}
-        url = URL(
-            'https://api.planet.com/subscriptions/v1/{subscription_id}/results',
-            params=params)
-        req = self.session._client.build_request('GET', url)
+        url = f'{BASE_URL}/{subscription_id}/results'
 
+        request = self._request(url, method='GET', params=params)
         try:
-            async for sub in _ResultsPager(self.session._client,
-                                           req,
-                                           limit=limit):
-                yield sub
+            return Results(request, self._do_request, limit=limit)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:

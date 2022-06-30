@@ -6,6 +6,7 @@ import click
 
 from .cmds import coro, translate_exceptions
 from .io import echo_json
+from .options import limit, pretty
 from .session import CliSession
 from planet.clients.subscriptions import SubscriptionsClient
 
@@ -22,7 +23,7 @@ def subscriptions(ctx):
 # don't want to clobber Python's built-in "list". We'll define the
 # command function as "list_subscriptions".
 @subscriptions.command(name="list")
-@click.option('--pretty', is_flag=True, help='Pretty-print output.')
+@limit
 @click.option(
     '--status',
     type=click.Choice(["created", "queued", "processing", "failed",
@@ -30,10 +31,7 @@ def subscriptions(ctx):
     multiple=True,
     default=None,
     help="Select subscriptions in one or more states. Default is all.")
-@click.option('--limit',
-              type=int,
-              default=100,
-              help='Maximum number of results to return. Defaults to 100.')
+@pretty
 @click.pass_context
 @translate_exceptions
 @coro
@@ -41,7 +39,8 @@ async def list_subscriptions_cmd(ctx, status, limit, pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
     async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
-        filtered_subs = client.list_subscriptions(status=status, limit=limit)
+        filtered_subs = await client.list_subscriptions(status=status,
+                                                        limit=limit)
         async for sub in filtered_subs:
             echo_json(sub, pretty)
 
@@ -69,7 +68,7 @@ def parse_request(ctx, param, value: str) -> dict:
 
 @subscriptions.command(name='create')
 @click.argument('request', callback=parse_request)
-@click.option('--pretty', is_flag=True, help='Pretty-print output.')
+@pretty
 @click.pass_context
 @translate_exceptions
 @coro
@@ -83,7 +82,7 @@ async def create_subscription_cmd(ctx, request, pretty):
 
 @subscriptions.command(name='cancel')
 @click.argument('subscription_id')
-@click.option('--pretty', is_flag=True, help='Pretty-print output.')
+@pretty
 @click.pass_context
 @translate_exceptions
 @coro
@@ -98,7 +97,7 @@ async def cancel_subscription_cmd(ctx, subscription_id, pretty):
 @subscriptions.command(name='update')
 @click.argument('subscription_id')
 @click.argument('request', callback=parse_request)
-@click.option('--pretty', is_flag=True, help='Pretty-print output.')
+@pretty
 @click.pass_context
 @translate_exceptions
 @coro
@@ -112,7 +111,7 @@ async def update_subscription_cmd(ctx, subscription_id, request, pretty):
 
 @subscriptions.command(name='describe')
 @click.argument('subscription_id')
-@click.option('--pretty', is_flag=True, help='Pretty-print output.')
+@pretty
 @click.pass_context
 @translate_exceptions
 @coro
@@ -133,7 +132,7 @@ async def describe_subscription_cmd(ctx, subscription_id, pretty):
 
 @subscriptions.command(name='results')
 @click.argument('subscription_id')
-@click.option('--pretty', is_flag=True, help='Pretty-print output.')
+@limit
 @click.option(
     '--status',
     type=click.Choice(["created", "queued", "processing", "failed",
@@ -144,10 +143,7 @@ async def describe_subscription_cmd(ctx, subscription_id, pretty):
     param,
     value: set(value),
     help="Select subscription results in one or more states. Default: all.")
-@click.option('--limit',
-              type=int,
-              default=100,
-              help='Maximum number of results to return. Defaults to 100.')
+@pretty
 # TODO: the following 3 options.
 # –created: timestamp instant or range.
 # –updated: timestamp instant or range.
@@ -163,8 +159,8 @@ async def list_subscription_results_cmd(ctx,
     """Gets results of a subscription and prints the API response."""
     async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
-        filtered_results = client.get_results(subscription_id,
-                                              status=status,
-                                              limit=limit)
+        filtered_results = await client.get_results(subscription_id,
+                                                    status=status,
+                                                    limit=limit)
         async for result in filtered_results:
             echo_json(result, pretty)
