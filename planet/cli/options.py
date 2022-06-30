@@ -19,7 +19,7 @@ limit = click.option(
     type=int,
     default=100,
     show_default=True,
-    help="""Maximum number of results to return. A value of zero or None means
-    all results (a potentially large number) are returned.""")
+    help="""Maximum number of results to return. When set to 0, no maximum is
+        applied.""")
 
 pretty = click.option('--pretty', is_flag=True, help='Format JSON output.')
