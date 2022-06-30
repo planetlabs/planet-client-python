@@ -406,7 +406,7 @@ def test_data_search_quick_sort_success(invoke):
     # this cannot be the default value or else the sort param will not be
     # added to the url
     sort = 'published asc'
-    search_url = f'{TEST_QUICKSEARCH_URL}?sort={sort}'
+    search_url = f'{TEST_QUICKSEARCH_URL}?_sort={sort}'
 
     filter = {
         "type": "DateRangeFilter",
