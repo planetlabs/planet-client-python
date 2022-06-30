@@ -166,7 +166,7 @@ class DataClient:
             if sort not in SEARCH_SORT:
                 raise exceptions.ClientError(
                     f'{sort} must be one of {SEARCH_SORT}')
-            params['sort'] = sort
+            params['_sort'] = sort
 
         request = self._request(url,
                                 method='POST',
