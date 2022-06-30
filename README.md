@@ -58,6 +58,7 @@ If you've already got a v1 on your command-line you may need to use `--upgrade` 
 
 ```console
 $ pip install --upgrade planet --pre
+```
 
 ### Installing from source
 
