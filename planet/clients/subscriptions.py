@@ -95,10 +95,9 @@ class SubscriptionsClient:
 
         url = 'https://api.planet.com/subscriptions/v1'
         req = Request(url, method='POST', json=request)
-        # self.session._client.build_request('POST', url, json=request)
 
         try:
-            resp = await self.session.request(req)  # _client.send(req)
+            resp = await self.session.request(req)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:
@@ -122,13 +121,11 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        url = URL(
-            f'https://api.planet.com/subscriptions/v1/{subscription_id}/cancel'
-        )
-        req = self.session._client.build_request('POST', url)
+        url = 'https://api.planet.com/subscriptions/v1/{subscription_id}/cancel'
+        req = Request(url, method='POST')
 
         try:
-            _ = await self.session._client.send(req)
+            _ = await self.session.request(req)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:
@@ -151,11 +148,11 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        url = URL(f'https://api.planet.com/subscriptions/v1/{subscription_id}')
-        req = self.session._client.build_request('PUT', url, json=request)
+        url = 'https://api.planet.com/subscriptions/v1/{subscription_id}'
+        req = Request(url, method='PUT', json=request)
 
         try:
-            resp = await self.session._client.send(req)
+            resp = await self.session.request(req)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:
@@ -179,11 +176,11 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        url = URL(f'https://api.planet.com/subscriptions/v1/{subscription_id}')
-        req = self.session._client.build_request('GET', url)
+        'https://api.planet.com/subscriptions/v1/{subscription_id}'
+        req = Request(url, method='GET')
 
         try:
-            resp = await self.session._client.send(req)
+            resp = await self.session.request(req)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:
