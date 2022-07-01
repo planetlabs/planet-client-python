@@ -5,11 +5,53 @@ from typing import AsyncIterator, Optional, Set
 
 from httpx import URL
 
-from planet.exceptions import APIError, ClientError
+from planet.exceptions import APIError, ClientError, PagingError
 from planet.http import Session
-from planet.models import Paged, Request
+from planet.models import Paged
 
 LOGGER = logging.getLogger()
+
+
+class _Pager(Paged):
+    """Navigates pages of messages about subscriptions or results."""
+
+    # This constructor overrides Paged's and takes an httpx
+    # async client as the first argument.
+    def __init__(self, client, request, limit=None):
+        self.request = request
+        self.client = client
+        self._pages = None
+        self._items = []
+        self.i = 0
+        self.limit = limit
+
+    # This method uses the instance's httpx client to build and
+    # send requests. It's less abstracted than Paged's method.
+    async def _get_pages(self):
+        LOGGER.debug('getting first page')
+        resp = await self.client.send(self.request)
+        page = resp.json()
+        yield page
+
+        next_url = self._next_link(page)
+
+        while (next_url):  # pragma: no branch
+            LOGGER.debug('getting next page')
+            request = self.client.build_request('GET', next_url)
+            resp = await self.client.send(request)
+            page = resp.json()
+            yield page
+
+            # If the next URL is the same as the previous URL we will
+            # get the same response and be stuck in a page cycle. This
+            # has happened in development and could happen in the case
+            # of a bug in the production API.
+            prev_url = next_url
+            next_url = self._next_link(page)
+
+            if next_url == prev_url:
+                raise PagingError(
+                    "Page cycle detected at {!r}".format(next_url))
 
 
 class SubscriptionsClient:
@@ -59,17 +101,17 @@ class SubscriptionsClient:
             ClientError: on a client error.
         """
 
-        class _SubscriptionsPager(Paged):
+        class _SubscriptionsPager(_Pager):
             """Navigates pages of messages about subscriptions."""
             ITEMS_KEY = 'subscriptions'
 
         params = {'status': [val for val in status or {}]}
-        url = 'https://api.planet.com/subscriptions/v1'
-        req = Request(url, params=params)
+        url = URL('https://api.planet.com/subscriptions/v1', params=params)
+        req = self.session._client.build_request('GET', url)
 
         try:
-            async for sub in _SubscriptionsPager(req,
-                                                 self.session.request,
+            async for sub in _SubscriptionsPager(self.session._client,
+                                                 req,
                                                  limit=limit):
                 yield sub
         # Forward APIError. We don't strictly need this clause, but it
@@ -93,12 +135,11 @@ class SubscriptionsClient:
             ClientError: on a client error.
         """
 
-        url = 'https://api.planet.com/subscriptions/v1'
-        req = Request(url, method='POST', json=request)
-        # self.session._client.build_request('POST', url, json=request)
+        url = URL('https://api.planet.com/subscriptions/v1')
+        req = self.session._client.build_request('POST', url, json=request)
 
         try:
-            resp = await self.session.request(req)  # _client.send(req)
+            resp = await self.session._client.send(req)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:
@@ -221,18 +262,20 @@ class SubscriptionsClient:
             ClientError: on a client error.
         """
 
-        class _ResultsPager(Paged):
+        class _ResultsPager(_Pager):
             """Navigates pages of messages about subscription results."""
             NEXT_KEY = '_next'
             ITEMS_KEY = 'results'
 
         params = {'status': [val for val in status or {}]}
-        url = 'https://api.planet.com/subscriptions/v1/{subscription_id}/results'
-        req = Request(url, params=params)
+        url = URL(
+            'https://api.planet.com/subscriptions/v1/{subscription_id}/results',
+            params=params)
+        req = self.session._client.build_request('GET', url)
 
         try:
-            async for sub in _ResultsPager(req,
-                                           self.session.request,
+            async for sub in _ResultsPager(self.session._client,
+                                           req,
                                            limit=limit):
                 yield sub
         # Forward APIError. We don't strictly need this clause, but it
