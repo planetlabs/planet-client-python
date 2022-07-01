@@ -130,6 +130,14 @@ $ planet orders wait 65df4eb0-e416-4243-a4d2-38afcf382c30 \
 && planet orders download 65df4eb0-e416-4243-a4d2-38afcf382c30 
 ```
 
+You can also use a unix variable to store the order id of your most recently placed order, 
+and then use that for the wait and download commands:
+
+```console
+$ orderid=`planet orders list --limit 1 | jq -r .id`
+$ planet orders wait $orderid && planet orders download $orderid
+```
+
 Create an order from a request, wait for it and download when ready 
 
 ```console
