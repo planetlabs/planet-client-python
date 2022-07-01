@@ -3,8 +3,6 @@
 import logging
 from typing import AsyncIterator, Optional, Set
 
-from httpx import URL
-
 from planet.exceptions import APIError, ClientError
 from planet.http import Session
 from planet.models import Paged, Request
@@ -176,7 +174,7 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        'https://api.planet.com/subscriptions/v1/{subscription_id}'
+        url = 'https://api.planet.com/subscriptions/v1/{subscription_id}'
         req = Request(url, method='GET')
 
         try:
