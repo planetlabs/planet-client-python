@@ -97,14 +97,12 @@ class DataClient:
         """
         return await self._session.request(request)
 
-    async def quick_search(
-            self,
-            item_types: typing.List[str],
-            search_filter: dict,
-            name: str = None,
-            sort: str = None,
-            limit: typing.Union[int,
-                                None] = 100) -> typing.AsyncIterator[dict]:
+    async def quick_search(self,
+                           item_types: typing.List[str],
+                           search_filter: dict,
+                           name: str = None,
+                           sort: str = None,
+                           limit: int = 100) -> typing.AsyncIterator[dict]:
         """Execute a quick search.
 
         Quick searches are saved for a short period of time (~month). The
@@ -141,7 +139,8 @@ class DataClient:
             sort: Field and direction to order results by. Valid options are
             given in SEARCH_SORT.
             name: The name of the saved search.
-            limit: Maximum number of items to return.
+            limit: Maximum number of results to return. When set to 0, no
+                maximum is applied.
 
         Returns:
             Returns an iterator over all items matching the search.
@@ -150,10 +149,6 @@ class DataClient:
             planet.exceptions.APIError: On API error.
         """
         url = f'{self._base_url}/quick-search'
-
-        # Set no limit
-        if limit == 0:
-            limit = None
 
         # TODO: validate item_types
         request_json = {'filter': search_filter, 'item_types': item_types}
@@ -238,12 +233,10 @@ class DataClient:
         response = await self._do_request(request)
         return response.json()
 
-    async def list_searches(
-            self,
-            sort: str = 'created desc',
-            search_type: str = 'any',
-            limit: typing.Union[int,
-                                None] = 100) -> typing.AsyncIterator[dict]:
+    async def list_searches(self,
+                            sort: str = 'created desc',
+                            search_type: str = 'any',
+                            limit: int = 100) -> typing.AsyncIterator[dict]:
         """List all saved searches available to the authenticated user.
 
         NOTE: the term 'saved' is overloaded here. We want to list saved
@@ -254,7 +247,8 @@ class DataClient:
         Parameters:
             sort: Field and direction to order results by.
             search_type: Search type filter.
-            limit: Maximum number of items to return.
+            limit: Maximum number of results to return. When set to 0, no
+                maximum is applied.
 
         Returns:
             An iterator over all searches that match filter.
@@ -309,16 +303,15 @@ class DataClient:
         resp = await self._do_request(req)
         return resp.json()
 
-    async def run_search(
-            self,
-            search_id: str,
-            limit: typing.Union[int,
-                                None] = 100) -> typing.AsyncIterator[dict]:
+    async def run_search(self,
+                         search_id: str,
+                         limit: int = 100) -> typing.AsyncIterator[dict]:
         """Execute a saved search.
 
         Parameters:
             search_id: Stored search identifier.
-            limit: Maximum number of items to return.
+            limit: Maximum number of results to return. When set to 0, no
+                maximum is applied.
 
         Returns:
             Returns an iterator over all items matching the search.
@@ -518,7 +511,8 @@ class DataClient:
         Parameters:
             asset: Description of the asset.
             delay: Time (in seconds) between polls.
-            max_attempts: Maximum number of polls. Set to zero for no limit.
+            max_attempts: Maximum number of polls. When set to 0, no limit
+                is applied.
             callback: Function that handles state progress updates.
 
         Returns:
