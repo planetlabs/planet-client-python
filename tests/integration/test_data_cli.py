@@ -586,8 +586,6 @@ def test_search_create_daily_email(invoke, search_result):
 @respx.mock
 @pytest.mark.asyncio
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
-@pytest.mark.parametrize(
-    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
 def test_data_stats_invalid_filter(invoke, item_types, filter):
     """Test for planet data search_create. Test with multiple item_types.
     Test should fail as filter does not contain valid JSON."""
@@ -597,10 +595,10 @@ def test_data_stats_invalid_filter(invoke, item_types, filter):
                                }]})
     respx.post(TEST_STATS_URL).return_value = mock_resp
     interval = "hour"
-    utc_offset = "+1h"
+    item_type = 'PSScene'
     runner = CliRunner()
     result = invoke(
-        ["stats", item_types, interval, filter, "--utc_offset", utc_offset],
+        ["stats", item_type, interval, filter],
         runner=runner)
     assert result.exit_code == 2
 
@@ -626,16 +624,12 @@ def test_data_stats_invalid_interval(invoke, item_types, interval):
                                }]})
     respx.post(TEST_STATS_URL).return_value = mock_resp
 
-    utc_offset = "+1h"
-
     runner = CliRunner()
     result = invoke([
         "stats",
         item_types,
         interval,
-        json.dumps(filter),
-        "--utc_offset",
-        utc_offset
+        json.dumps(filter)
     ],
                     runner=runner)
 
@@ -646,8 +640,7 @@ def test_data_stats_invalid_interval(invoke, item_types, interval):
 @pytest.mark.parametrize(
     "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
 @pytest.mark.parametrize("interval", ['hour', 'day', 'week', 'month', 'year'])
-@pytest.mark.parametrize("utc_offset", ['+1h', '-4h', '+10h', '-6h', '-3.5h'])
-def test_data_stats_success(invoke, item_types, interval, utc_offset):
+def test_data_stats_success(invoke, item_types, interval):
     """Test for planet data search_create. Test with multiple item_types.
     Test should succeed as filter contains valid JSON."""
     filter = {
@@ -669,9 +662,7 @@ def test_data_stats_success(invoke, item_types, interval, utc_offset):
         "stats",
         item_types,
         interval,
-        json.dumps(filter),
-        "--utc_offset",
-        utc_offset
+        json.dumps(filter)
     ],
                     runner=runner)
     assert result.exit_code == 0
