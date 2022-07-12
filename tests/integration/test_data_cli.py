@@ -587,7 +587,7 @@ def test_search_create_daily_email(invoke, search_result):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
 def test_data_stats_invalid_filter(invoke, filter):
-    """Test for planet data search_create. Test with multiple item_types.
+    """Test for planet data stats. Test with multiple item_types.
     Test should fail as filter does not contain valid JSON."""
     mock_resp = httpx.Response(HTTPStatus.OK,
                                json={'features': [{
@@ -606,8 +606,8 @@ def test_data_stats_invalid_filter(invoke, filter):
     "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
 @pytest.mark.parametrize("interval, exit_code", [('hou', 2), ('hour', 0)])
 def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
-    """Test for planet data search_create. Test with multiple item_types.
-    Test should succeed as filter contains valid JSON."""
+    """Test for planet data stats. Test with multiple item_types.
+    Test should succeed with valid interval, and fail with invalid interval."""
     filter = {
         "type": "DateRangeFilter",
         "field_name": "acquired",
@@ -634,8 +634,8 @@ def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
     "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
 @pytest.mark.parametrize("interval", ['hour', 'day', 'week', 'month', 'year'])
 def test_data_stats_success(invoke, item_types, interval):
-    """Test for planet data search_create. Test with multiple item_types.
-    Test should succeed as filter contains valid JSON."""
+    """Test for planet data stats. Test with multiple item_types.
+    Test should succeed as filter contains valid JSON, item_types, and intervals."""
     filter = {
         "type": "DateRangeFilter",
         "field_name": "acquired",
