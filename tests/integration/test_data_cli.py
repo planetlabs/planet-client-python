@@ -586,7 +586,7 @@ def test_search_create_daily_email(invoke, search_result):
 @respx.mock
 @pytest.mark.asyncio
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
-def test_data_stats_invalid_filter(invoke, item_types, filter):
+def test_data_stats_invalid_filter(invoke, filter):
     """Test for planet data search_create. Test with multiple item_types.
     Test should fail as filter does not contain valid JSON."""
     mock_resp = httpx.Response(HTTPStatus.OK,
