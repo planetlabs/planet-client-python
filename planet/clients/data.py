@@ -327,8 +327,7 @@ class DataClient:
     async def get_stats(self,
                         item_types: typing.List[str],
                         search_filter: dict,
-                        interval: str,
-                        utc_offset: str = None) -> dict:
+                        interval: str) -> dict:
         """Get item search statistics.
 
         Parameters:
@@ -350,19 +349,12 @@ class DataClient:
 
         url = f'{self._base_url}{STATS_PATH}'
 
-        if utc_offset is None:
-            request_json = {
-                'interval': interval,
-                'filter': search_filter,
-                'item_types': item_types
-            }
-        else:
-            request_json = {
-                'interval': interval,
-                'filter': search_filter,
-                'item_types': item_types,
-                'utc_offset': utc_offset
-            }
+        request_json = {
+            'interval': interval,
+            'filter': search_filter,
+            'item_types': item_types
+        }
+
         request = self._request(url, method='POST', json=request_json)
         response = await self._do_request(request)
         return response.json()

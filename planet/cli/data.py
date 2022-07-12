@@ -352,7 +352,7 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
                 type=click.Choice(['hour', 'day', 'week', 'month', 'year'],
                                   case_sensitive=False))
 @click.argument("filter", callback=parse_filter)
-async def stats(ctx, item_types, interval, filter, utc_offset):
+async def stats(ctx, item_types, interval, filter):
     """Get a bucketed histogram of items matching the filter.
 
     This function returns a bucketed histogram of results based on the
