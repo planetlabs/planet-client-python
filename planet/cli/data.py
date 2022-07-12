@@ -352,19 +352,11 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
                 type=click.Choice(['hour', 'day', 'week', 'month', 'year'],
                                   case_sensitive=False))
 @click.argument("filter", callback=parse_filter)
-@click.option('--utc_offset',
-              type=str,
-              default=None,
-              help=('An elasticsearch offset that can be used to adjust the \
-                    buckets to a users time zone. Please specify in \
-                    elasticsearch time units (e.g. +1h or -10h, etc. )'))
 async def stats(ctx, item_types, interval, filter, utc_offset):
     """Get a bucketed histogram of items matching the filter.
 
     This function returns a bucketed histogram of results based on the
     item_types, interval, and json filter specified (using file or stdin).
-    The "--utc-offset" option is an elasticsearch offset (e.g. +1h or
-    -8h) that can be used to adjust the buckets to a user's time zone.
     This function outputs a full JSON description of the returned statistics
     result.
 
@@ -372,8 +364,7 @@ async def stats(ctx, item_types, interval, filter, utc_offset):
     async with data_client(ctx) as cl:
         items = await cl.get_stats(item_types=item_types,
                                    interval=interval,
-                                   search_filter=filter,
-                                   utc_offset=utc_offset)
+                                   search_filter=filter)
         echo_json(items)
 
 
