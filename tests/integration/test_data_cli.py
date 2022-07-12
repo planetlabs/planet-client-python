@@ -597,9 +597,7 @@ def test_data_stats_invalid_filter(invoke, item_types, filter):
     interval = "hour"
     item_type = 'PSScene'
     runner = CliRunner()
-    result = invoke(
-        ["stats", item_type, interval, filter],
-        runner=runner)
+    result = invoke(["stats", item_type, interval, filter], runner=runner)
     assert result.exit_code == 2
 
 
@@ -625,12 +623,7 @@ def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
     respx.post(TEST_STATS_URL).return_value = mock_resp
 
     runner = CliRunner()
-    result = invoke([
-        "stats",
-        item_types,
-        interval,
-        json.dumps(filter)
-    ],
+    result = invoke(["stats", item_types, interval, json.dumps(filter)],
                     runner=runner)
 
     assert result.exit_code == exit_code
@@ -658,12 +651,7 @@ def test_data_stats_success(invoke, item_types, interval):
     respx.post(TEST_STATS_URL).return_value = mock_resp
 
     runner = CliRunner()
-    result = invoke([
-        "stats",
-        item_types,
-        interval,
-        json.dumps(filter)
-    ],
+    result = invoke(["stats", item_types, interval, json.dumps(filter)],
                     runner=runner)
     assert result.exit_code == 0
 
