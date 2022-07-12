@@ -476,16 +476,15 @@ class OrdersClient:
 
         return current_state
 
-    async def list_orders(
-            self,
-            state: str = None,
-            limit: typing.Union[int,
-                                None] = 100) -> typing.AsyncIterator[dict]:
+    async def list_orders(self,
+                          state: str = None,
+                          limit: int = 100) -> typing.AsyncIterator[dict]:
         """Get all order requests.
 
         Parameters:
             state: Filter orders to given state.
-            limit: Limit orders to given limit.
+            limit: Maximum number of results to return. When set to 0, no
+                maximum is applied.
 
         Returns:
             User orders that match the query
@@ -495,10 +494,6 @@ class OrdersClient:
             planet.exceptions.ClientError: If state is not valid.
         """
         url = self._orders_url()
-
-        # Set no limit
-        if limit == 0:
-            limit = None
 
         if state:
             if state not in ORDER_STATE_SEQUENCE:

@@ -140,9 +140,9 @@ def test_data_filter_asset(asset,
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_date_range(invoke,
-                                assert_and_filters_equal,
-                                default_filters):
+def test_data_filter_date_range_success(invoke,
+                                        assert_and_filters_equal,
+                                        default_filters):
     """Check filter is created correctly and that multiple options results in
     multiple filters"""
     runner = CliRunner()
@@ -173,6 +173,16 @@ def test_data_filter_date_range(invoke,
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
+def test_data_filter_date_range_invalid(invoke):
+    runner = CliRunner()
+
+    result = invoke(["filter"] + '--date-range field gt 2021'.split(),
+                    runner=runner)
+    assert result.exit_code == 2
 
 
 @respx.mock
@@ -392,6 +402,51 @@ def test_data_search_quick_filter_success(invoke, item_types):
 
 
 @respx.mock
+def test_data_search_quick_sort_success(invoke):
+    # this cannot be the default value or else the sort param will not be
+    # added to the url
+    sort = 'published asc'
+    search_url = f'{TEST_QUICKSEARCH_URL}?_sort={sort}'
+
+    filter = {
+        "type": "DateRangeFilter",
+        "field_name": "acquired",
+        "config": {
+            "gt": "2019-12-31T00:00:00Z"
+        }
+    }
+
+    feature = {"key": "value"}
+    mock_resp = httpx.Response(HTTPStatus.OK, json={'features': [feature]})
+    respx.post(search_url).return_value = mock_resp
+
+    runner = CliRunner()
+    result = invoke(
+        ['search-quick', 'PSScene', json.dumps(filter), f'--sort={sort}'],
+        runner=runner)
+    assert result.exit_code == 0
+    assert json.loads(result.output) == feature
+
+
+@respx.mock
+def test_data_search_quick_sort_invalid(invoke):
+    filter = {
+        "type": "DateRangeFilter",
+        "field_name": "acquired",
+        "config": {
+            "gt": "2019-12-31T00:00:00Z"
+        }
+    }
+
+    runner = CliRunner()
+    result = invoke(
+        ['search-quick', 'PSScene', json.dumps(filter), '--sort=invalid'],
+        runner=runner)
+
+    assert result.exit_code == 2
+
+
+@respx.mock
 @pytest.mark.parametrize("limit,limited_list_length", [(None, 100), (0, 102),
                                                        (1, 1)])
 def test_data_search_quick_limit(invoke,
@@ -506,7 +561,7 @@ def test_search_create_daily_email(invoke, search_result):
         'temp',
         'SkySatScene',
         json.dumps(filter),
-        '--daily_email'
+        '--daily-email'
     ])
 
     search_request = {

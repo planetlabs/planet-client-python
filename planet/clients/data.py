@@ -24,8 +24,14 @@ BASE_URL = f'{PLANET_BASE_URL}/data/v1/'
 SEARCHES_PATH = '/searches'
 STATS_PATH = '/stats'
 
+# TODO: get these values from the spec directly gh-619
 LIST_SORT_ORDER = ('created desc', 'created asc')
 LIST_SEARCH_TYPE = ('any', 'saved', 'quick')
+SEARCH_SORT = ('published desc',
+               'published asc',
+               'acquired desc',
+               'acquired asc')
+SEARCH_SORT_DEFAULT = 'published desc'
 STATS_INTERVAL = ('hour', 'day', 'week', 'month', 'year')
 
 WAIT_DELAY = 5
@@ -91,19 +97,17 @@ class DataClient:
         """
         return await self._session.request(request)
 
-    async def quick_search(
-            self,
-            item_types: typing.List[str],
-            search_filter: dict,
-            name: str = None,
-            sort: str = None,
-            limit: typing.Union[int,
-                                None] = 100) -> typing.AsyncIterator[dict]:
+    async def quick_search(self,
+                           item_types: typing.List[str],
+                           search_filter: dict,
+                           name: str = None,
+                           sort: str = None,
+                           limit: int = 100) -> typing.AsyncIterator[dict]:
         """Execute a quick search.
 
         Quick searches are saved for a short period of time (~month). The
-        `name` parameter of the search defaults to the search id if `name`
-        is not given.
+        `name` parameter of the search defaults to the id of the generated
+        search id if `name` is not specified.
 
         Example:
 
@@ -132,12 +136,11 @@ class DataClient:
         Parameters:
             item_types: The item types to include in the search.
             search_filter: Structured search criteria.
-            sort: Override default of 'published desc' for field and direction
-                to order results by. Specified as '<field> <direction>' where
-                direction is either 'desc' for descending direction or 'asc'
-                for ascending direction.
+            sort: Field and direction to order results by. Valid options are
+            given in SEARCH_SORT.
             name: The name of the saved search.
-            limit: Maximum number of items to return.
+            limit: Maximum number of results to return. When set to 0, no
+                maximum is applied.
 
         Returns:
             Returns an iterator over all items matching the search.
@@ -147,19 +150,18 @@ class DataClient:
         """
         url = f'{self._base_url}/quick-search'
 
-        # Set no limit
-        if limit == 0:
-            limit = None
-
         # TODO: validate item_types
         request_json = {'filter': search_filter, 'item_types': item_types}
         if name:
             request_json['name'] = name
 
         params = {}
-        if sort:
-            # TODO: validate sort
-            params['sort'] = sort
+        if sort and sort != SEARCH_SORT_DEFAULT:
+            sort = sort.lower()
+            if sort not in SEARCH_SORT:
+                raise exceptions.ClientError(
+                    f'{sort} must be one of {SEARCH_SORT}')
+            params['_sort'] = sort
 
         request = self._request(url,
                                 method='POST',
@@ -231,12 +233,10 @@ class DataClient:
         response = await self._do_request(request)
         return response.json()
 
-    async def list_searches(
-            self,
-            sort: str = 'created desc',
-            search_type: str = 'any',
-            limit: typing.Union[int,
-                                None] = 100) -> typing.AsyncIterator[dict]:
+    async def list_searches(self,
+                            sort: str = 'created desc',
+                            search_type: str = 'any',
+                            limit: int = 100) -> typing.AsyncIterator[dict]:
         """List all saved searches available to the authenticated user.
 
         NOTE: the term 'saved' is overloaded here. We want to list saved
@@ -247,7 +247,8 @@ class DataClient:
         Parameters:
             sort: Field and direction to order results by.
             search_type: Search type filter.
-            limit: Maximum number of items to return.
+            limit: Maximum number of results to return. When set to 0, no
+                maximum is applied.
 
         Returns:
             An iterator over all searches that match filter.
@@ -302,16 +303,15 @@ class DataClient:
         resp = await self._do_request(req)
         return resp.json()
 
-    async def run_search(
-            self,
-            search_id: str,
-            limit: typing.Union[int,
-                                None] = 100) -> typing.AsyncIterator[dict]:
+    async def run_search(self,
+                         search_id: str,
+                         limit: int = 100) -> typing.AsyncIterator[dict]:
         """Execute a saved search.
 
         Parameters:
             search_id: Stored search identifier.
-            limit: Maximum number of items to return.
+            limit: Maximum number of results to return. When set to 0, no
+                maximum is applied.
 
         Returns:
             Returns an iterator over all items matching the search.
@@ -511,7 +511,8 @@ class DataClient:
         Parameters:
             asset: Description of the asset.
             delay: Time (in seconds) between polls.
-            max_attempts: Maximum number of polls. Set to zero for no limit.
+            max_attempts: Maximum number of polls. When set to 0, no limit
+                is applied.
             callback: Function that handles state progress updates.
 
         Returns:

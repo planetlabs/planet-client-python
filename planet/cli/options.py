@@ -14,4 +14,12 @@
 """CLI options"""
 import click
 
+limit = click.option(
+    '--limit',
+    type=int,
+    default=100,
+    show_default=True,
+    help="""Maximum number of results to return. When set to 0, no maximum is
+        applied.""")
+
 pretty = click.option('--pretty', is_flag=True, help='Format JSON output.')

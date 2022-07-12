@@ -78,7 +78,7 @@ class AuthException(ClientError):
     pass
 
 
-class PagingError(PlanetError):
+class PagingError(ClientError):
     '''For errors that occur during paging.'''
     pass
 

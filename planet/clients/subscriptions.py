@@ -1,77 +1,35 @@
 """Planet Subscriptions API Python client."""
 
-import itertools
-from typing import AsyncIterator, Dict, Optional, Set
-import uuid
+import logging
+from typing import AsyncIterator, Optional, Set
 
-from planet.exceptions import APIError
+from planet.exceptions import APIError, ClientError
+from planet.http import Session
+from planet.models import Paged, Request
 
-# Collections of fake subscriptions and results for testing. Tests will
-# monkeypatch these attributes.
-_fake_subs: Dict[str, dict] = {}
-_fake_sub_results: Dict[str, list] = {}
-
-
-async def _server_subscriptions_post(request):
-    missing_keys = {'name', 'delivery', 'source'} - request.keys()
-    if missing_keys:
-        raise RuntimeError(f"Request lacks required members: {missing_keys!r}")
-
-    id = str(uuid.uuid4())
-    _fake_subs[id] = request
-    sub = _fake_subs[id].copy()
-    sub.update(id=id)
-    return sub
-
-
-async def _server_subscriptions_get(status=None, limit=None):
-    select_subs = (dict(**sub, id=sub_id) for sub_id,
-                   sub in _fake_subs.items()
-                   if not status or sub['status'] in status)
-    filtered_subs = itertools.islice(select_subs, limit)
-    for sub in filtered_subs:
-        yield sub
-
-
-async def _server_subscriptions_id_cancel_post(subscription_id):
-    sub = _fake_subs.pop(subscription_id)
-    sub.update(id=subscription_id)
-    return sub
-
-
-async def _server_subscriptions_id_put(subscription_id, request):
-    _fake_subs[subscription_id].update(**request)
-    sub = _fake_subs[subscription_id].copy()
-    sub.update(id=subscription_id)
-    return sub
-
-
-async def _server_subscriptions_id_get(subscription_id):
-    sub = _fake_subs[subscription_id].copy()
-    sub.update(id=subscription_id)
-    return sub
-
-
-async def _server_subscriptions_id_results_get(subscription_id,
-                                               status=None,
-                                               limit=None):
-    select_results = (result for result in _fake_sub_results[subscription_id]
-                      if not status or result['status'] in status)
-    filtered_results = itertools.islice(select_results, limit)
-    for result in filtered_results:
-        yield result
+LOGGER = logging.getLogger()
 
 
 class SubscriptionsClient:
-    """The Planet Subscriptions API client.
+    """A Planet Subscriptions Service API 1.0.0 client.
 
-    TODO: make requests to the production API. Currently, the backend
-    is fake and exists at the top of this class's module.
+    The methods of this class forward request parameters to the
+    operations described in the Planet Subscriptions Service API 1.0.0
+    (https://api.planet.com/subscriptions/v1/spec) using HTTP 1.1.
 
+    The methods generally return or yield Python dicts with the same
+    structure as the JSON messages used by the service API. Many of the
+    exceptions raised by this class are categorized by HTTP client
+    (4xx) or server (5xx) errors. This client's level of abstraction is
+    low.
+
+    Attributes:
+        session (Session): an authenticated session which wraps the
+            low-level HTTP client.
     """
 
-    def __init__(self, session=None) -> None:
-        self._session = session
+    def __init__(self, session: Session) -> None:
+        self.session = session
 
     async def list_subscriptions(self,
                                  status: Optional[Set[str]] = None,
@@ -79,9 +37,9 @@ class SubscriptionsClient:
         """Get account subscriptions with optional filtering.
 
         Note:
-            The name of this method is based on the API's method name. This
-            method provides iteration over subcriptions, it does not return
-            a list.
+            The name of this method is based on the API's method name.
+            This method provides iteration over subcriptions, it does
+            not return a list.
 
         Args:
             status (Set[str]): pass subscriptions with status in this
@@ -97,18 +55,27 @@ class SubscriptionsClient:
         Raises:
             APIError: on an API server error.
             ClientError: on a client error.
-
         """
+
+        class _SubscriptionsPager(Paged):
+            """Navigates pages of messages about subscriptions."""
+            ITEMS_KEY = 'subscriptions'
+
+        params = {'status': [val for val in status or {}]}
+        url = 'https://api.planet.com/subscriptions/v1'
+        req = Request(url, params=params)
+
         try:
-            # TODO: replace with httpx request.
-            async for sub in _server_subscriptions_get(status=status,
-                                                       limit=limit):
+            async for sub in _SubscriptionsPager(req,
+                                                 self.session.request,
+                                                 limit=limit):
                 yield sub
-        except Exception as server_error:
-            # TODO: remove "from server_error" clause. It's useful
-            # during development but may invite users to depend on the
-            # value of server_error.
-            raise APIError("Subscription failure") from server_error
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
 
     async def create_subscription(self, request: dict) -> dict:
         """Create a Subscription.
@@ -122,43 +89,47 @@ class SubscriptionsClient:
         Raises:
             APIError: on an API server error.
             ClientError: on a client error.
-
         """
+
+        url = 'https://api.planet.com/subscriptions/v1'
+        req = Request(url, method='POST', json=request)
+
         try:
-            # TODO: replace with httpx request.
-            sub = await _server_subscriptions_post(request)
-        except Exception as server_error:
-            # TODO: remove "from server_error" clause. It's useful
-            # during development but may invite users to depend on the
-            # value of server_error.
-            raise APIError("Subscription failure") from server_error
+            resp = await self.session.request(req)
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
         else:
+            sub = resp.json()
             return sub
 
-    async def cancel_subscription(self, subscription_id: str) -> dict:
+    async def cancel_subscription(self, subscription_id: str) -> None:
         """Cancel a Subscription.
 
         Args:
             subscription_id (str): id of subscription to cancel.
 
         Returns:
-            dict: description of cancelled subscription.
+            None
 
         Raises:
             APIError: on an API server error.
             ClientError: on a client error.
-
         """
+        url = 'https://api.planet.com/subscriptions/v1/{subscription_id}/cancel'
+        req = Request(url, method='POST')
+
         try:
-            # TODO: replace with httpx request.
-            sub = await _server_subscriptions_id_cancel_post(subscription_id)
-        except Exception as server_error:
-            # TODO: remove "from server_error" clause. It's useful
-            # during development but may invite users to depend on the
-            # value of server_error.
-            raise APIError("Subscription failure.") from server_error
-        else:
-            return sub
+            _ = await self.session.request(req)
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
 
     async def update_subscription(self, subscription_id: str,
                                   request: dict) -> dict:
@@ -174,17 +145,20 @@ class SubscriptionsClient:
         Raises:
             APIError: on an API server error.
             ClientError: on a client error.
-
         """
+        url = 'https://api.planet.com/subscriptions/v1/{subscription_id}'
+        req = Request(url, method='PUT', json=request)
+
         try:
-            # TODO: replace with httpx request.
-            sub = await _server_subscriptions_id_put(subscription_id, request)
-        except Exception as server_error:
-            # TODO: remove "from server_error" clause. It's useful
-            # during development but may invite users to depend on the
-            # value of server_error.
-            raise APIError("Subscription failure.") from server_error
+            resp = await self.session.request(req)
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
         else:
+            sub = resp.json()
             return sub
 
     async def get_subscription(self, subscription_id: str) -> dict:
@@ -199,17 +173,20 @@ class SubscriptionsClient:
         Raises:
             APIError: on an API server error.
             ClientError: on a client error.
-
         """
+        url = 'https://api.planet.com/subscriptions/v1/{subscription_id}'
+        req = Request(url, method='GET')
+
         try:
-            # TODO: replace with httpx request.
-            sub = await _server_subscriptions_id_get(subscription_id)
-        except Exception as server_error:
-            # TODO: remove "from server_error" clause. It's useful
-            # during development but may invite users to depend on the
-            # value of server_error.
-            raise APIError("Subscription failure.") from server_error
+            resp = await self.session.request(req)
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
         else:
+            sub = resp.json()
             return sub
 
     async def get_results(self,
@@ -237,15 +214,25 @@ class SubscriptionsClient:
         Raises:
             APIError: on an API server error.
             ClientError: on a client error.
-
         """
+
+        class _ResultsPager(Paged):
+            """Navigates pages of messages about subscription results."""
+            NEXT_KEY = '_next'
+            ITEMS_KEY = 'results'
+
+        params = {'status': [val for val in status or {}]}
+        url = 'https://api.planet.com/subscriptions/v1/{subscription_id}/results'
+        req = Request(url, params=params)
+
         try:
-            # TODO: replace with httpx request.
-            async for result in _server_subscriptions_id_results_get(
-                    subscription_id, status=status, limit=limit):
-                yield result
-        except Exception as server_error:
-            # TODO: remove "from server_error" clause. It's useful
-            # during development but may invite users to depend on the
-            # value of server_error.
-            raise APIError("Subscription failure.") from server_error
+            async for sub in _ResultsPager(req,
+                                           self.session.request,
+                                           limit=limit):
+                yield sub
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
