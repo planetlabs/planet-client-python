@@ -81,7 +81,7 @@ def geom_from_geojson(data: dict) -> dict:
                 # FeatureCollection
                 features = data['features']
             except KeyError:
-                raise GeoJSONError('Invalid GeoJSON: {data}')
+                raise GeoJSONError(f'Invalid GeoJSON: {data}')
 
             if len(features) > 1:
                 raise GeoJSONError(

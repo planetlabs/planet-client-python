@@ -119,11 +119,20 @@ class Session(BaseSession):
 
         Parameters:
             auth: Planet server authentication.
+
         """
-        auth = auth or Auth.from_file()
+        if auth is None:
+            # Try getting credentials from environment before checking
+            # in the secret file, this is the conventional order (AWS
+            # CLI, for example.)
+            try:
+                auth = Auth.from_env()
+            except exceptions.PlanetError:
+                auth = Auth.from_file()
 
         self._client = httpx.AsyncClient(auth=auth)
         self._client.headers.update({'User-Agent': self._get_user_agent()})
+        self._client.headers.update({'X-Planet-App': 'python-sdk'})
 
         async def alog_request(*args, **kwargs):
             return self._log_request(*args, **kwargs)

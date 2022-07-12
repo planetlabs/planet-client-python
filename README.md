@@ -17,17 +17,75 @@ The Planet SDK for Python is in 'pre-release' stages, working towards an
 initial release around July. Active development is tracked in the [Planet SDK 
 for Python Project](https://github.com/planetlabs/planet-client-python/projects/2). 
 The initial release will support Orders, Data and Subscription API's in the 
-command-line interface, with corresponding Python libraries. We expect 'beta' 
-milestones to be released in some form for each of the API's. After the 
+command-line interface, with corresponding Python libraries. After the 
 initial July release there will be additional work to support the remaining 
 Planet API's ([analytics](https://developers.planet.com/docs/analytics/), 
 [basemaps](https://developers.planet.com/docs/basemaps/) and 
 [tasking](https://developers.planet.com/docs/tasking/)).
 
+## Installation
+
+There are two options for installation: installing from PyPi or installing from source.
+
+Be aware that using either route will by default update your `planet` command-line and
+python library to v2, so you will no longer be able to use v1. As v2 is in a pre-release
+stage, with not all functionality implemented, we strongly recommend installing it in a 
+virtual environment - either [venv](https://python.land/virtual-environments/virtualenv) 
+or [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html). 
+If you've never worked with either then check out our [getting started with venv and Planet 
+SDK](docs/venv-tutorial.md). For anyone planning to contribute to the SDK the instructuctions
+are a bit different, see the [testing section of CONTRIBUTING.md](https://github.com/planetlabs/planet-client-python/blob/main/CONTRIBUTING.md#testing).
+
+Both installation routes use [pip](https://pip.pypa.io/en/stable/getting-started/), Python's
+package installer.
+
+The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs)
+flag is highly recommended for those new to pip.
+
+The Planet SDK for Python requires Python 3.7+.
+
+### Installing from PyPi
+
+This route is recommended for most users.
+
+To get version 2 of the Planet SDK you just use pip with the `--pre` command:
+
+```console
+$ pip install planet --pre 
+```
+
+If you've already got a v1 on your command-line you may need to use `--upgrade` as well:
+
+```console
+$ pip install --upgrade planet --pre
+```
+
+### Installing from source
+
+This option enables you to get all the latest changes, but things might also be a bit less stable.
+To install you must [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
+the [planet-client-python](https://github.com/planetlabs/planet-client-python) repository 
+to your local computer. After you have the repo local just navigate to the root
+directory, where this readme lives.
+
+Then you can install locally with pip:
+
+```console
+$ pip install . 
+```
+
+### Confirming its working
+
+After installation you should be able to use the command-line interface. Just type
+`planet` into the command-line and the usage and options should appear. To confirm that
+it's v2 run `planet --version` and it should report 2.0a1 or above. If it doesn't 
+work don't hesitate to ask for help in the [discussions](https://github.com/planetlabs/planet-client-python/discussions/categories/q-a)
+forum.
+
 ## Documentation
 
 Documentation is currently [hosted online](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/)
-It should be considered 'in progress', with many updated to come. It can also
+It should be considered 'in progress', with many updates to come. It can also
 be built and hosted locally (see [CONTRIBUTING.md](CONTRIBUTING.md)) or can be 
 read from source in the `[docs](docs/)` directory.
 
@@ -37,9 +95,8 @@ The Planet SDK includes both a Python API and a command-line interface (CLI)
 to make use of the following Planet APIs:
 
 * [orders](https://developers.planet.com/docs/orders/)
-* [data](https://developers.planet.com/docs/data/) (in progress)
-* [subscriptions](https://developers.planet.com/docs/subscriptions/) (not 
- yet implemented)
+* [data](https://developers.planet.com/docs/data/) (mostly complete)
+* [subscriptions](https://developers.planet.com/docs/subscriptions/) (in progress)
 
 This quickstart focuses on getting started with the CLI to place an order.
 For information on the Python API see the 
@@ -114,32 +171,11 @@ also lots of good information in the docs, in the
 [User Guide](https://planet-sdk-for-python.readthedocs.io/en/latest/guide/#cli)
 and the [CLI Reference](https://planet-sdk-for-python.readthedocs.io/en/latest/cli/).
 
-## Installation
-
-This repository is not yet available on PyPi or any other distribution channels. To 
-install you must [clone this repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
-to your local computer. After you have the repo local just navigate to the root
-directory.
-
-Then you can install locally with [pip](https://pip.pypa.io):
-
-```console
-$ python -m pip install . 
-```
-
-The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs)
-flag is highly recommended for those new to pip.
-
-The Planet SDK for Python requires Python 3.7+.
-
-After installation you should be able to use the command-line interface. Just type
-`planet` into the command-line and the usage and options should appear. If it doesn't 
-work don't hesitate to ask for help in the [discussions](https://github.com/planetlabs/planet-client-python/discussions/categories/q-a)
-
 ## Authentication
 
 Planet's APIs require an account for use.
-[Sign up here](https://www.planet.com/explorer/?signup).
+[Sign up here](https://www.planet.com/signup/) or if you are developer try the 
+[developer trial](https://developers.planet.com/devtrial/).
 
 ## Development
 

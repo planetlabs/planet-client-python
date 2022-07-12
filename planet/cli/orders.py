@@ -13,17 +13,18 @@
 # limitations under the License.
 """Orders API CLI"""
 from contextlib import asynccontextmanager
-import json
 import logging
 from pathlib import Path
 
 import click
 
 import planet
-from planet import OrdersClient, Session  # allow mocking
+from planet import OrdersClient  # allow mocking
+from . import types
 from .cmds import coro, translate_exceptions
 from .io import echo_json
-from .options import pretty
+from .options import limit, pretty
+from .session import CliSession
 
 LOGGER = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ LOGGER = logging.getLogger(__name__)
 async def orders_client(ctx):
     auth = ctx.obj['AUTH']
     base_url = ctx.obj['BASE_URL']
-    async with Session(auth=auth) as sess:
+    async with CliSession(auth=auth) as sess:
         cl = OrdersClient(sess, base_url=base_url)
         yield cl
 
@@ -45,7 +46,7 @@ async def orders_client(ctx):
               help='Assign custom base Orders API URL.')
 def orders(ctx, base_url):
     '''Commands for interacting with the Orders API'''
-    ctx.obj['AUTH'] = planet.Auth.from_file()
+    ctx.obj['AUTH'] = None
     ctx.obj['BASE_URL'] = base_url
 
 
@@ -57,11 +58,7 @@ def orders(ctx, base_url):
               help='Filter orders to given state.',
               type=click.Choice(planet.clients.orders.ORDER_STATE_SEQUENCE,
                                 case_sensitive=False))
-@click.option('--limit',
-              help='Maximum number of results to return. Default is 100. A '
-              'value of 0 means no limit.',
-              default=100,
-              type=int)
+@limit
 @pretty
 async def list(ctx, state, limit, pretty):
     '''List orders
@@ -109,23 +106,6 @@ async def cancel(ctx, order_id):
     click.echo(json_resp)
 
 
-def split_list_arg(ctx, param, value):
-    if value is None:
-        return None
-    elif value == '':
-        # note, this is specifically checking for an empty string
-        click.BadParameter('Entry cannot be an empty string.')
-
-    # split list by ',' and remove whitespace
-    entries = [i.strip() for i in value.split(',')]
-
-    # validate passed entries
-    for e in entries:
-        if not e:
-            raise click.BadParameter('Entry cannot be an empty string.')
-    return entries
-
-
 @orders.command()
 @click.pass_context
 @translate_exceptions
@@ -138,6 +118,7 @@ def split_list_arg(ctx, param, value):
 @click.option('--max-attempts',
               type=int,
               default=200,
+              show_default=True,
               help='Maximum number of polls. Set to zero for no limit.')
 @click.option('--state',
               help='State prior to a final state that will end polling.',
@@ -219,51 +200,23 @@ async def download(ctx, order_id, overwrite, directory, checksum):
             cl.validate_checksum(Path(directory, str(order_id)), checksum)
 
 
-def read_file_geojson(ctx, param, value):
-    # skip this if the filename is None
-    if not value:
-        return value
-
-    json_value = read_file_json(ctx, param, value)
-    geo = planet.geojson.as_geom(json_value)
-    return geo
-
-
-def read_file_json(ctx, param, value):
-    # skip this if the filename is None
-    if not value:
-        return value
-
-    try:
-        LOGGER.debug('reading json from file')
-        json_value = json.load(value)
-    except json.decoder.JSONDecodeError:
-        raise click.ClickException('File does not contain valid json.')
-
-    return json_value
-
-
 @orders.command()
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("request", default="-", required=False)
+@click.argument("request", type=types.JSON(), default="-", required=False)
 @pretty
 async def create(ctx, request: str, pretty):
-    '''  Create an order.
+    '''Create an order.
 
-    This command creates an order from an order request.
-    It outputs the created order description, optionally pretty-printed.
+    This command outputs the created order description, optionally
+    pretty-printed.
 
-    Arguments:
-
-    Order request as stdin, str, or file name. Full description of order
-    to be created.
+    REQUEST is the full description of the order to be created. It must be JSON
+    and can be specified a json string, filename, or '-' for stdin.
     '''
-    request_json = json.load(click.open_file(request))
-
     async with orders_client(ctx) as cl:
-        order = await cl.create_order(request_json)
+        order = await cl.create_order(request)
 
     echo_json(order, pretty)
 
@@ -285,33 +238,31 @@ async def create(ctx, request: str, pretty):
                       case_sensitive=False),
 )
 @click.option('--id',
-              help='One or more comma-separated item IDs',
-              type=click.STRING,
-              callback=split_list_arg,
+              help='One or more comma-separated item IDs.',
+              type=types.CommaSeparatedString(),
               required=True)
 @click.option('--item-type',
-              multiple=False,
               required=True,
               help='Specify an item type',
               type=click.STRING)
 @click.option('--clip',
-              help='Clip GeoJSON file.',
-              type=click.File('rb'),
-              callback=read_file_geojson)
-@click.option('--tools',
-              help='Toolchain json file.',
-              type=click.File('rb'),
-              callback=read_file_json)
+              type=types.JSON(),
+              help="""Clip feature GeoJSON. Can be a json string, filename,
+              or '-' for stdin.""")
+@click.option(
+    '--tools',
+    type=types.JSON(),
+    help="""Toolchain JSON. Can be a json string, filename, or '-' for
+    stdin.""")
 @click.option('--email',
               default=False,
               is_flag=True,
-              help='Send email notification when Order is complete')
+              help='Send email notification when order is complete.')
 @click.option(
     '--cloudconfig',
-    help='Credentials for cloud storage provider to enable cloud delivery'
-    'of data.',
-    type=click.File('rb'),
-    callback=read_file_json)
+    type=types.JSON(),
+    help="""Credentials for cloud storage provider to enable cloud delivery of
+    data. Can be a json string, filename, or '-' for stdin.""")
 @pretty
 async def request(ctx,
                   name,
