@@ -51,8 +51,6 @@ def data(ctx, base_url):
 
 def parse_item_types(ctx, param, value: str) -> List[str]:
     """Turn a string of comma-separated names into a list of names."""
-    # convert user-input strings to match our naming schema
-    update_value = value.lower()
 
     dict = {
         "psscene": "PSScene",
