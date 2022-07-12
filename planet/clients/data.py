@@ -337,7 +337,7 @@ class DataClient:
             interval: The size of the histogram date buckets.
 
         Returns:
-            A full JSON description of the returned statistics result.
+            A full JSON description of the returned statistics result histogram.
 
         Raises:
             planet.exceptions.APIError: On API error.
