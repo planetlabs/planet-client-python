@@ -64,7 +64,7 @@ def parse_item_types(ctx, param, value: str) -> List[str]:
         "sentinel2l1c": "Sentinel2L1C"
     }
     for original, validated in dict.items():
-        update_value = update_value.replace(original, validated)
+        update_value = value.replace(original, validated)
 
     return [part.strip() for part in update_value.split(",")]
 
