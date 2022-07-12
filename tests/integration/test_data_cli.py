@@ -606,8 +606,8 @@ def test_data_stats_invalid_filter(invoke, item_types, filter):
 @respx.mock
 @pytest.mark.parametrize(
     "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
-@pytest.mark.parametrize("interval", ['hou', 'da', 'wek', 'moth', 'yr'])
-def test_data_stats_invalid_interval(invoke, item_types, interval):
+@pytest.mark.parametrize("interval, exit_code", [('hou', 2), ('hour', 0)])
+def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
     """Test for planet data search_create. Test with multiple item_types.
     Test should succeed as filter contains valid JSON."""
     filter = {
@@ -633,7 +633,7 @@ def test_data_stats_invalid_interval(invoke, item_types, interval):
     ],
                     runner=runner)
 
-    assert result.exit_code == 2
+    assert result.exit_code == exit_code
 
 
 @respx.mock
