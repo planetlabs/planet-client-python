@@ -21,7 +21,6 @@ import logging
 import random
 import time
 
-# import asyncio_throttle
 import httpx
 
 from .auth import Auth, AuthType
@@ -29,7 +28,12 @@ from . import exceptions, models
 from .__version__ import __version__
 
 RETRY_EXCEPTIONS = [
-    httpx.ReadError, httpx.RemoteProtocolError, exceptions.TooManyRequests
+    httpx.ConnectError,
+    httpx.ReadError,
+    httpx.ReadTimeout,
+    httpx.RemoteProtocolError,
+    exceptions.BadGateway,
+    exceptions.TooManyRequests
 ]
 MAX_RETRIES = 5
 MAX_RETRY_BACKOFF = 64  # seconds
@@ -73,7 +77,8 @@ class BaseSession:
             HTTPStatus.NOT_FOUND: exceptions.MissingResource,
             HTTPStatus.CONFLICT: exceptions.Conflict,
             HTTPStatus.TOO_MANY_REQUESTS: exceptions.TooManyRequests,
-            HTTPStatus.INTERNAL_SERVER_ERROR: exceptions.ServerError
+            HTTPStatus.INTERNAL_SERVER_ERROR: exceptions.ServerError,
+            HTTPStatus.BAD_GATEWAY: exceptions.BadGateway
         }.get(status, exceptions.APIError)
         LOGGER.debug(f"Exception type: {exception}")
 
@@ -113,7 +118,8 @@ class _Limiter:
             while True:
                 now = time.monotonic()
                 if now - self.last_call >= (self.cadence + self.epsilon):
-                    LOGGER.debug(f'Throught throttle, delta: {now-self.last_call}')
+                    LOGGER.debug(
+                        f'Throught throttle, delta: {now-self.last_call}')
                     self.last_call = now
                     break
                 await asyncio.sleep(self.retry_interval)
@@ -255,8 +261,6 @@ class Session(BaseSession):
                 resp = await func(*a, **kw)
                 break
             except Exception as e:
-                # LOGGER.warning('here')
-                # LOGGER.warning(type(e))
                 if type(e) in RETRY_EXCEPTIONS:
                     if num_tries > self.max_retries:
                         raise e
@@ -270,20 +274,6 @@ class Session(BaseSession):
                         await asyncio.sleep(wait_time)
                 else:
                     raise e
-            # except httpx.RemoteProtocolError as e:
-            #     if num_tries > self.max_retries:
-            #         raise e
-            #     else:
-            #         self._handled_exceptions.append('RemoteProtocolError')
-            #         LOGGER.debug(f'Try {num_tries}')
-            #         LOGGER.info('RemoteProtocolError: retrying')
-            # except httpx.ReadError as e:
-            #     if num_tries > self.max_retries:
-            #         raise e
-            #     else:
-            #         self.outcomes.update.append('ReadError')
-            #         LOGGER.debug(f'Try {num_tries}')
-            #         LOGGER.info('ReadError: retrying')
 
         self.outcomes.update(['Successful'])
         return resp
