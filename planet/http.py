@@ -21,6 +21,7 @@ import logging
 import random
 import time
 
+import httpcore
 import httpx
 
 from .auth import Auth, AuthType
@@ -28,6 +29,7 @@ from . import exceptions, models
 from .__version__ import __version__
 
 RETRY_EXCEPTIONS = [
+    httpcore.CloseError,  # this is actually a httpx bug, will go away with a httpx upgrade - see https://github.com/encode/httpcore/pull/310
     httpx.ConnectError,
     httpx.ReadError,
     httpx.ReadTimeout,
