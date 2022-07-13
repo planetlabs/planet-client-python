@@ -71,6 +71,30 @@ def test_basesession__raise_for_status(mock_response):
         http.BaseSession._raise_for_status(
             mock_response(HTTPStatus.METHOD_NOT_ALLOWED, json={}))
 
+import asyncio
+import time
+@pytest.mark.asyncio
+async def test__Limiter_rate_limit():
+    # test_limiter = http._Limiter(rate_limit=1, max_workers=5)
+    test_limiter = http._Limiter(rate_limit=5, max_workers=10)
+    calls = []
+
+    async def _func():
+        async with test_limiter:
+            calls.append(time.time())
+            await asyncio.sleep(1)
+            # time.sleep(0.1)
+
+    num_concurrent = 20
+    tasks = [_func() for _ in range(num_concurrent)]
+    await asyncio.gather(*tasks, return_exceptions=False)
+
+    deltas = [y - x for x, y in zip(calls[0::], calls[1::])]
+    LOGGER.warning(sorted(deltas))
+    LOGGER.warning(deltas)
+    min_delta = sorted(deltas)[0]
+    assert min_delta == 0
+
 
 @pytest.mark.asyncio
 async def test_session_contextmanager():

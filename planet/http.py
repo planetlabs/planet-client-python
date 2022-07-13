@@ -15,18 +15,29 @@
 """Functionality to perform HTTP requests"""
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import asyncio
+from collections import Counter
 from http import HTTPStatus
 import logging
 import random
+import time
 
+# import asyncio_throttle
 import httpx
 
 from .auth import Auth, AuthType
 from . import exceptions, models
 from .__version__ import __version__
 
+RETRY_EXCEPTIONS = [
+    httpx.ReadError, httpx.RemoteProtocolError, exceptions.TooManyRequests
+]
 MAX_RETRIES = 5
 MAX_RETRY_BACKOFF = 64  # seconds
+
+READ_TIMEOUT = 60.0
+MAX_CONNECTIONS = 100
+RATE_LIMIT = 4  # per second
+MAX_ACTIVE = 100
 
 LOGGER = logging.getLogger(__name__)
 
@@ -77,6 +88,58 @@ class BaseSession:
         raise exception(msg)
 
 
+class _Limiter:
+    # The Data API gets mad if 2 calls are made too close to each other. It
+    # wants the calls to be spaced apart
+    def __init__(self, rate_limit=0, max_workers=0):
+        # LOGGER.warning(f'hey {rate_limit} {max_workers}')
+        if rate_limit > 0:
+            self.cadence = 1.0 / rate_limit
+            LOGGER.debug(f'Throttling cadence set to {self.cadence}s.')
+        else:
+            self.cadence = 0
+        self.last_call = time.monotonic() - self.cadence
+
+        self.limit = max_workers
+        if self.limit:
+            LOGGER.debug(f'Workers capped at {self.limit}.')
+
+        self.running = 0
+        self.retry_interval = 0.01
+        self.epsilon = 0.01
+
+    async def throttle(self):
+        if self.cadence:
+            while True:
+                now = time.monotonic()
+                if now - self.last_call >= (self.cadence + self.epsilon):
+                    LOGGER.debug(f'Throught throttle, delta: {now-self.last_call}')
+                    self.last_call = now
+                    break
+                await asyncio.sleep(self.retry_interval)
+
+    async def acquire(self):
+        if self.limit:
+            while True:
+                if self.running < self.limit:
+                    self.running += 1
+                    LOGGER.debug('Worker acquired.')
+                    break
+                await asyncio.sleep(self.retry_interval)
+
+    def release(self):
+        if self.limit and self.running:
+            LOGGER.debug('Worker released.')
+            self.running -= 1
+
+    async def __aenter__(self):
+        await self.acquire()
+        await self.throttle()
+
+    async def __aexit__(self, exc_type, exc, tb):
+        self.release()
+
+
 class Session(BaseSession):
     '''Context manager for asynchronous communication with the Planet service.
 
@@ -119,7 +182,6 @@ class Session(BaseSession):
 
         Parameters:
             auth: Planet server authentication.
-
         """
         if auth is None:
             # Try getting credentials from environment before checking
@@ -130,7 +192,14 @@ class Session(BaseSession):
             except exceptions.PlanetError:
                 auth = Auth.from_file()
 
-        self._client = httpx.AsyncClient(auth=auth)
+        LOGGER.debug(f'Session read timeout set to {READ_TIMEOUT}, '
+                     f'max_connections set to {MAX_CONNECTIONS}')
+        timeout = httpx.Timeout(10.0, read=READ_TIMEOUT)
+        limits = httpx.Limits(max_connections=MAX_CONNECTIONS)
+        self._client = httpx.AsyncClient(auth=auth,
+                                         timeout=timeout,
+                                         limits=limits)
+
         self._client.headers.update({'User-Agent': self._get_user_agent()})
         self._client.headers.update({'X-Planet-App': 'python-sdk'})
 
@@ -150,6 +219,9 @@ class Session(BaseSession):
 
         self.max_retries = MAX_RETRIES
         self.max_retry_backoff = MAX_RETRY_BACKOFF
+
+        self._limiter = _Limiter(rate_limit=RATE_LIMIT, max_workers=MAX_ACTIVE)
+        self.outcomes = Counter()
 
     async def __aenter__(self):
         return self
@@ -182,15 +254,38 @@ class Session(BaseSession):
             try:
                 resp = await func(*a, **kw)
                 break
-            except exceptions.TooManyRequests as e:
-                if num_tries > self.max_retries:
-                    raise e
+            except Exception as e:
+                # LOGGER.warning('here')
+                # LOGGER.warning(type(e))
+                if type(e) in RETRY_EXCEPTIONS:
+                    if num_tries > self.max_retries:
+                        raise e
+                    else:
+                        self.outcomes.update([type(e)])
+                        LOGGER.info(f'Try {num_tries}')
+                        LOGGER.info(f'Retrying: caught {type(e)}: {e}')
+                        wait_time = self._calculate_wait(
+                            num_tries, self.max_retry_backoff)
+                        LOGGER.info(f'Retrying: sleeping {wait_time}s')
+                        await asyncio.sleep(wait_time)
                 else:
-                    LOGGER.debug(f'Try {num_tries}')
-                    wait_time = self._calculate_wait(num_tries,
-                                                     self.max_retry_backoff)
-                    LOGGER.info(f'Too Many Requests: sleeping {wait_time}s')
-                    await asyncio.sleep(wait_time)
+                    raise e
+            # except httpx.RemoteProtocolError as e:
+            #     if num_tries > self.max_retries:
+            #         raise e
+            #     else:
+            #         self._handled_exceptions.append('RemoteProtocolError')
+            #         LOGGER.debug(f'Try {num_tries}')
+            #         LOGGER.info('RemoteProtocolError: retrying')
+            # except httpx.ReadError as e:
+            #     if num_tries > self.max_retries:
+            #         raise e
+            #     else:
+            #         self.outcomes.update.append('ReadError')
+            #         LOGGER.debug(f'Try {num_tries}')
+            #         LOGGER.info('ReadError: retrying')
+
+        self.outcomes.update(['Successful'])
         return resp
 
     @staticmethod
@@ -239,9 +334,10 @@ class Session(BaseSession):
         return await self._retry(self._request, request, stream=stream)
 
     async def _request(self, request, stream=False):
-        """Submit a request"""
-        http_resp = await self._client.send(request.http_request,
-                                            stream=stream)
+        """Submit a request with rate/worker limiting."""
+        async with self._limiter:
+            http_resp = await self._client.send(request.http_request,
+                                                stream=stream)
         return models.Response(request, http_resp)
 
     def stream(self, request: models.Request) -> Stream:
