@@ -95,81 +95,148 @@ planet orders list | jq -s length
 This uses `-s` to collect the output into a single array, and `length` then tells the
 length of the array.
 
+#### Info on an Order
 
-
-Get more info on a single order
+For a bit more information about an order, including the location of any downloads, use
+the `get` command, using the order id.
 
 ```console
 planet orders get 782b414e-4e34-4f31-86f4-5b757bd062d7
 ```
 
-Download the order
+#### Create an Order Request
 
-```console
-planet orders download 782b414e-4e34-4f31-86f4-5b757bd062d7
-```
-
-Download it to a different directory (relative to where the command is run)
-
-
-```console
-mkdir psscene
-planet orders download 782b414e-4e34-4f31-86f4-5b757bd062d7 --directory psscene
-```
-
-Download to a directory specified absolutely (in this case to my desktop)
-
-```console
-planet orders download 782b414e-4e34-4f31-86f4-5b757bd062d7 --directory /Users/cholmes/Desktop/
-```
-
-Verify the checksum to make sure the file I got wasn't corrupted along the way (during download, etc)
-
-```console
-planet orders download 782b414e-4e34-4f31-86f4-5b757bd062d7 --checksum MD5
-```
-
-Create a new order request from a scene ID found in Explorer
-(Note that \ just tells the console to treat the next line as the same one - used here to be a bit easier to read)
+To create an order you need a name, a [bundle](https://developers.planet.com/apis/orders/product-bundles-reference/),
+ one or more id's, and an [item type](https://developers.planet.com/docs/apis/data/items-assets/#item-types):
 
 ```console
 planet orders request --name "My First Order" --bundle analytic_sr_udm2 --id 20220605_124027_64_242b \
  --item-type PSScene
 ```
 
-Save to a file in the directory where the command was run
+This should output the JSON needed to create an order:
+
+```json
+{"name": "My First Order", "products": [{"item_ids": ["20220605_124027_64_242b"], "item_type": "PSScene", "product_bundle": "analytic_sr_udm2"}]}
+```
+
+Note that `\` just tells the command-line to treat the next line as the same one. It's used here so it's 
+easier to read, but you can still copy and paste the full line into your command-line and it should work.
+
+You can also use `jq` here to make it a bit more readable:
 
 ```console
 planet orders request --name "My First Order" --bundle analytic_sr_udm2 --id 20220605_124027_64_242b \
+ --item-type PSScene | jq
+```
+
+```json
+{
+  "name": "My First Order",
+  "products": [
+    {
+      "item_ids": [
+        "20220605_124027_64_242b"
+      ],
+      "item_type": "PSScene",
+      "product_bundle": "analytic_sr_udm2"
+    }
+  ]
+}
+```
+
+#### Save an Order Request
+
+The above command just prints out the necessary JSON to create an order. To actually use it you can
+save the output into a file:
+
+```console
+planet orders request --name "My first Order" --bundle analytic_sr_udm2 --id 20220605_124027_64_242b \
  --item-type PSScene > request-1.json
 ```
 
-Make a new order with that request (should be the same as 
-[this one](https://gist.githubusercontent.com/cholmes/892f851d5c55f7cf93e210595750ecfe/raw/4c255dcdf0973e0f72d43d82c776d8251fb7545e/request-1.json))
+This saves the above JSON in a file called `request-1.json`
+
+#### Create an Order
+
+From there you can create the order with the request you just saved: 
 
 ```console
 planet orders create request-1.json
 ```
 
-Create the request and make a new order with it all in one call
+The output of that command is the JSON returned from the server, that reports the status:
+
+```json
+{
+  "_links": {
+    "_self": "https://api.planet.com/compute/ops/orders/v2/3b1f250e-72a0-41bb-94ea-8109b6b34e44"
+  },
+  "created_on": "2022-07-16T05:04:36.998Z",
+  "error_hints": [],
+  "id": "3b1f250e-72a0-41bb-94ea-8109b6b34e44",
+  "last_message": "Preparing order",
+  "last_modified": "2022-07-16T05:04:36.998Z",
+  "name": "My Second Order",
+  "products": [
+    {
+      "item_ids": [
+        "20220605_124027_64_242b",
+        "20220605_124025_34_242b"
+      ],
+      "item_type": "PSScene",
+      "product_bundle": "analytic_sr_udm2"
+    }
+  ],
+  "state": "queued"
+}
+```
+
+Note the default output will be a bit more 'flat' - if you'd like the above formatting in your
+command-line just use `jq` as above: `planet orders create request-1.json` (but remember
+if you run that command again it will create a second order).
+
+#### Create Request and Order in One Call.
+
+Using a unix command called a 'pipe', which looks like `|`, you can skip the step of saving to disk,
+passing the output of the `orders request` command directly to be the input of the `orders create`
+command:
 
 ```console
-planet orders request --name "My First Order" --bundle analytic_sr_udm2 --id 20220605_124027_64_242b \
+planet orders request --name "My Second Order" --bundle analytic_sr_udm2 --id 20220605_124027_64_242b,20220605_124025_34_242b \
  --item-type PSScene | planet orders create
 ```
 
-Download the order. Note this only works when the order is ready:
+The Planet CLI is designed to work well with piping, as it aims at small commands that can be 
+combined in powerful ways, so you'll see it used in a number of the examples.
+
+#### Download an order
+
+To download all files in an order you use the `download` command:
 
 ```console
 planet orders download 65df4eb0-e416-4243-a4d2-38afcf382c30
 ```
+Note this only works when the order is ready for download. To do that you can
+keep running `orders get` until the `state` is `success`. Or for a better
+way see the next example.
 
-Wait until the order is ready for download, then order it:
+#### Wait then download an order
+
+The `wait` command is a small, dedicated command that polls the server to 
+see if an order is ready for downloading, showing the status. It's not
+so useful by itself, but can be combined with the `download` command to
+only start the download once the order is ready:
 
 ```console
 planet orders wait 65df4eb0-e416-4243-a4d2-38afcf382c30 \
 && planet orders download 65df4eb0-e416-4243-a4d2-38afcf382c30 
 ```
+
+This uses the logical AND operator (`&&`) to say "don't run the second command
+until the first is done".
+
+#### Save order ID
 
 You can also use a unix variable to store the order id of your most recently placed order, 
 and then use that for the wait and download commands:
@@ -179,16 +246,69 @@ orderid=`planet orders list --limit 1 | jq -r .id`
 planet orders wait $orderid && planet orders download $orderid
 ```
 
-Create an order from a request, wait for it and download when ready 
+This can be nicer than copying and pasting it in.
+
+You could also save the id right when you place the order:
 
 ```console
-id=`planet orders create request-1.json | jq -r '.id'` && planet orders wait $id && planet orders download $id
+orderid=`planet orders create request-1.json | jq -r .id`
 ```
 
-Create an order clipped to a geometry
+To check the current value of `orderid` just run `echo $orderid`.
 
-(download [raw json](https://gist.githubusercontent.com/cholmes/c7736ac5241d77605524d01ed2dc57a1/raw/7d24e02ba894e64c4c737c253a0cce4cac54167c/geometry.geojson) 
-from github, or [preview](https://gist.github.com/cholmes/c7736ac5241d77605524d01ed2dc57a1))
+#### Create an order and download when ready
+
+You can then combine these all into one call, to create the order and 
+download it when it's available:
+
+```console
+id=`planet orders create request-1.json | jq -r '.id'` && \
+planet orders wait $id && planet orders download $id
+```
+
+#### Download to a different directory
+
+You can use the `--directory` flag to save the output to a specific directory. This
+call saves it to a directory called `psscene`, at whatever location you are at
+currently:
+
+```console
+mkdir psscene
+planet orders download 782b414e-4e34-4f31-86f4-5b757bd062d7 --directory psscene
+```
+
+You can also specify absolute directories (int his case to my desktop):
+
+```console
+planet orders download 782b414e-4e34-4f31-86f4-5b757bd062d7 --directory /Users/cholmes/Desktop/
+```
+
+#### Verify checksum
+
+The `--checksum` command will do an extra step to make sure the file you got 
+wasn't corrupted along the way (during download, etc). It checks that the bytes
+downloaded are the same as the ones on the server. By default it doesn't show
+anything if the checksums match.
+
+```console
+planet orders download 782b414e-4e34-4f31-86f4-5b757bd062d7 --checksum MD5
+```
+
+This command isn't often necessary in single download commands, but is quite 
+useful if you are downloading thousands of files with a script, as the likelihood 
+of at least one being corrupted in creases
+
+#### Create an order clipped to a geometry
+
+Now we'll dive into the variety of ways to customize your order. These can all be
+combined with all the commands listed above.
+
+We'll work with a geojson saved online. You should download the 
+[raw json](https://gist.githubusercontent.com/cholmes/c7736ac5241d77605524d01ed2dc57a1/raw/7d24e02ba894e64c4c737c253a0cce4cac54167c/geometry.geojson) 
+from github. If you want to see what it looks like check the 
+[preview](https://gist.github.com/cholmes/c7736ac5241d77605524d01ed2dc57a1)).
+
+Use that saved geometry to clip the scene.
 
 ```console
 planet orders request --item-type PSScene --clip geometry.geojson --name clipped-geom \
@@ -272,7 +392,9 @@ request. So the following call is a quick way to exactly redo a previous order r
 planet orders get <order-id> | planet orders create -
 ```
 
-Realistically you'd more likely want to 
+Realistically you'd more likely want to get a previous order and then change it in some way (new id's, different 
+tools, etc.). You can remove the 'extra' JSON fields that report on status if you'd like, but the Orders
+API will just ignore them if they are included in a request.
 
 ### Data
 
@@ -419,5 +541,7 @@ planet orders request --name "Clipped Scenes" --item-type PSScene --bundle analy
   to sort which results are in the same strip)
 * STAC output
 * Cloud delivery (could do this today with editing JSON, but should wait till we have it a bit better)
-* Get most recent acquired (using sort)
+* Use jq to show a list of order id's, names and created time, to more easily grab the id. 
+* get the id of the most recently created order using jq
+* use jq to get the id of the an order by it's name
 
