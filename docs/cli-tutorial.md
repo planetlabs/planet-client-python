@@ -734,7 +734,5 @@ of what's possible.
   to sort which results are in the same strip)
 * STAC output
 * Cloud delivery (could do this today with editing JSON, but should wait till we have it a bit better)
-* Use jq to show just orders that have a given item type, like just skysat.
-* get the id of the most recently created order using jq
-* use jq to get the id of the an order by it's name
+
 

@@ -1,8 +1,9 @@
 ## About
 
 This document shows off a range of more advanced command-line workflows, making use of a wider range
-of tools in the geospatial ecosystem. Some of them can be a pain to install,like GDAL/OGR, and 
-several pop in and out of web tools, so these are kept out of the main tutorial section. 
+of tools in the command-line & geospatial ecosystem. Some of them can be a pain to install, like 
+GDAL/OGR, and several pop in and out of web tools, so these are kept out of the main tutorial 
+section. 
 
 ## Tools used
 
@@ -31,29 +32,65 @@ getting the geometry input for searching or clipping. Hand-editing GeoJSON is a 
 people will open up a desktop tool like QGIS or ArcGIS Pro and save the file. But there are a few 
 tools that can get you back into the CLI workflow more quickly.
 
-Draw on geojson.io, copy the geojson as input to search
-(pbpaste on mac. other options for windows and linux TODO: figure these out)
+#### Draw with GeoJSON.io
+
+One great tool for quickly drawing on a map and getting GeoJSON output is 
+[GeoJSON.io](https://geojson.io). You can draw and save the file, but an even faster workflow
+is to use your operating system's clipboard to command-line tools.
+
+Just draw with the tools, then copy (with right click and 'copy' from the menu or 'ctrl c') the
+JSON from the text box:
+
+![Select on GeoJSON.io](https://user-images.githubusercontent.com/407017/179411184-fe3061aa-32ad-4bf7-bf6a-18c59bfdfff7.png)
+
+On a mac you can use `pbpaste` to grab whatever is currently in your clipboard:
 
 ```console
 pbpaste | planet data filter --geom -  | planet data search-quick SkySatCollect -
 ```
 
-placemark
+(TODO: Find alternatives for windows and linux)
+
+#### Draw with Placemark
+
+A really fantastic tool for working with GeoJSON is [Placemark](https://placemark.io). It is a
+commercial tool that you'll have to pay for, but it's got a really nice feature that makes it very
+compatible with command-line workflows. You can easily grab the URL of any individual GeoJSON 
+feature and stream it in as your geometry using `curl`:
+
+![Stream from Placemark](https://user-images.githubusercontent.com/407017/179412209-2365d79a-9260-47e5-9b08-9bc5b84b6ddc.gif)
 
 ```console
-curl -s https://api.placemark.io/api/v1/map/Dse5hjAzfrLyXDU9WiFn7/feature/11b80520-f672-11ec-98c0-5b51b58d2b56 | planet data filter --geom - | planet data search-quick SkySatCollect -
+curl -s https://api.placemark.io/api/v1/map/a0BWUEErqU9A1EDHZWHez/feature/278cd610-05ee-11ed-8fdd-15633e4f8f01 | \
+planet data filter --geom - | jq
 ```
 
 ### Geometry Visualization
 
+Looking at a big list of GeoJSON is a lot less useful then actually being able to see the footprints. This is often
+done by saving the output files and opening with a desktop GIS program, but there are some nice alternatives that
+let you pipe (`|`) the output more directly.
 
-Copy output to clipboard.
- - paste to geojson.io
- - paste to placemark (not quite working at the moment)
+#### Copy GeoJSON to clipboard
+
+One of the quicker routes to visualizing search output is to copy the output to your clipboard and paste into a 
+tool that will take GeoJSON and visualize it. 
+
+You can do this on GeoJSON.io
+
+(TODO: record example)
+
+Or also on Placemark, which tends to perform a bit better (especially when you get above 1000 features)
+
+For both it's recommended to pass the output through `planet collect` to get properly formatted GeoJSON:
 
 ```console
 planet data filter --string-in strip_id 5743669 | planet data search-quick PSScene - | planet collect - | pbcopy
 ```
+
+(TODO: Get pbcopy equivalents for windows and linux)
+
+#### Kepler
 
 Show the latest 2500 collects for the state, across assets.
   - filter by provider, and instrument, gsd
@@ -129,11 +166,24 @@ strip-id=`planet data filter | planet data search-quick PSScene - --limit 1 | jq
 planet data filter --string-in strip_id $stripid | planet data search-quick PSScene -
 ```
 
+### Advanced jq
 
+- get id by array number
 
 ```console
-
+planet orders list | jq -rs '.[3] | "\(.id) \(.created_on) \(.name) \(.state)"' 
 ```
+(limit can get the most recent, but not a second or third)
+
+* Use jq to show just orders that have a given item type, like just skysat.
+
+planet orders list | jq -rs '.[] | "\(.id) \(.created_on) \(.state) \(.products[0].item_type)"'  will show the item type
+
+https://gist.github.com/ipbastola/2c955d8bf2e96f9b1077b15f995bdae3 has ideas for contains, but haven't got it right yet
+
+* use jq to get the id of the an order by it's name
+
+* get total number of items, add up each year of `stats`
 
 ```console
 
