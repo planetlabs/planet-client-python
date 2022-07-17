@@ -24,12 +24,35 @@ future.
 
 ## Workflows
 
+### Geometry Inputs
 
-Draw in placemark and run a search in area you made, visualize output in Kepler.
- - filter by acquistion, show animation of time.
+While the command-line can often be quicker than using a UI, one place that can be slower is 
+getting the geometry input for searching or clipping. Hand-editing GeoJSON is a huge pain, so most
+people will open up a desktop tool like QGIS or ArcGIS Pro and save the file. But there are a few 
+tools that can get you back into the CLI workflow more quickly.
+
+Draw on geojson.io, copy the geojson as input to search
+(pbpaste on mac. other options for windows and linux TODO: figure these out)
 
 ```console
-curl -s https://api.placemark.io/api/v1/map/Dse5hjAzfrLyXDU9WiFn7/feature/11b80520-f672-11ec-98c0-5b51b58d2b56 | planet data filter --geom - | planet data search-quick SkySatCollect - | kepler
+pbpaste | planet data filter --geom -  | planet data search-quick SkySatCollect -
+```
+
+placemark
+
+```console
+curl -s https://api.placemark.io/api/v1/map/Dse5hjAzfrLyXDU9WiFn7/feature/11b80520-f672-11ec-98c0-5b51b58d2b56 | planet data filter --geom - | planet data search-quick SkySatCollect -
+```
+
+### Geometry Visualization
+
+
+Copy output to clipboard.
+ - paste to geojson.io
+ - paste to placemark (not quite working at the moment)
+
+```console
+planet data filter --string-in strip_id 5743669 | planet data search-quick PSScene - | planet collect - | pbcopy
 ```
 
 Show the latest 2500 collects for the state, across assets.
@@ -39,6 +62,17 @@ Show the latest 2500 collects for the state, across assets.
 ```console
 curl -s https://raw.githubusercontent.com/ropensci/geojsonio/master/inst/examples/california.geojson | planet data filter --geom -  | planet data search-quick PSScene,Sentinel2L1C,Landsat8L1G,SkySatCollect,Sentinel1 --limit 2500 - | kepler
 ```
+
+Draw in placemark and run a search in area you made, visualize output in Kepler.
+ - filter by acquistion, show animation of time.
+
+```console
+curl -s https://api.placemark.io/api/v1/map/Dse5hjAzfrLyXDU9WiFn7/feature/11b80520-f672-11ec-98c0-5b51b58d2b56 | planet data filter --geom - | planet data search-quick SkySatCollect - | kepler
+```
+
+
+
+#### Large Dataset Visualization
 
 Download lots of scenes (current version of CLI may crap out before it gets there, will take like 10 minutes)
 
@@ -73,13 +107,6 @@ Draw on geojson.io, copy the geojson as input to search
 pbpaste | planet data filter --geom -  | planet data search-quick SkySatCollect -
 ```
 
-Copy output to clipboard.
- - paste to geojson.io
- - paste to placemark (not quite working at the moment)
-
-```console
-planet data filter --string-in strip_id 5743669 | planet data search-quick PSScene - | planet collect - | pbcopy
-```
 
 Show the latest skysat image on github as a gist.
 
