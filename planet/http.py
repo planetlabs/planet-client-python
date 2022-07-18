@@ -99,10 +99,27 @@ class BaseSession:
 
 
 class _Limiter:
-    # The Data API returns a TooManyRequestsError if 2 calls are made too close
-    # to each other. Therefore, this enforces a delay between calls.
-    # Setting rate_limit to zero disables rate limiting
-    # Setting max_workers to zero disables capping maximum workers
+    """Limit number of workers and rate of requests.
+
+    Avoids clobbering the API with thousands of async requests.
+
+    Setting rate_limit to zero disables rate (cadence) limiting.
+    Setting max_workers to zero disables capping maximum workers.
+
+    This is inspired by aiolimiter[1] but altered to enforce cadence based on
+    finding that the API returns TooManyRequestError if 2 calls are made too
+    close to eachother (even though max rate limit is 5 calls per second)[2].
+
+    In investigating options, aiometer[3] was also looked at but it seems to
+    have odd behavior with httpx [4].
+
+    References:
+    [1] https://github.com/mjpieters/aiolimiter
+    [2] https://github.com/planetlabs/planet-client-python/issues/580#issuecomment-1182752851
+    [3] https://github.com/florimondmanca/aiometer
+    [4] https://github.com/florimondmanca/aiometer/issues/24
+    """
+
     def __init__(self, rate_limit=0, max_workers=0):
         # Configuration
         if rate_limit > 0:
