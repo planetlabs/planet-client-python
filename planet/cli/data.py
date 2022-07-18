@@ -239,7 +239,7 @@ def filter(ctx,
               show_default=True,
               help='Field and direction to order results by.')
 @pretty
-async def search_quick(ctx, item_types, filter, limit, name, sort, pretty):
+async def search(ctx, item_types, filter, limit, name, sort, pretty):
     """Execute a structured item search.
 
     This function outputs a series of GeoJSON descriptions, one for each of the
@@ -254,11 +254,11 @@ async def search_quick(ctx, item_types, filter, limit, name, sort, pretty):
     parameter will be applied to the stored quick search.
     """
     async with data_client(ctx) as cl:
-        items = await cl.quick_search(item_types,
-                                      filter,
-                                      name=name,
-                                      sort=sort,
-                                      limit=limit)
+        items = await cl.search(item_types,
+                                filter,
+                                name=name,
+                                sort=sort,
+                                limit=limit)
         async for item in items:
             echo_json(item, pretty)
 
