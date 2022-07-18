@@ -28,6 +28,8 @@ from .auth import Auth, AuthType
 from . import exceptions, models
 from .__version__ import __version__
 
+# For how this list was determined, see
+# https://github.com/planetlabs/planet-client-python/issues/580
 RETRY_EXCEPTIONS = [
     httpcore.CloseError,  # this is actually a httpx bug, will go away with a httpx upgrade - see https://github.com/encode/httpcore/pull/310
     httpx.ConnectError,
@@ -40,10 +42,11 @@ RETRY_EXCEPTIONS = [
 MAX_RETRIES = 5
 MAX_RETRY_BACKOFF = 64  # seconds
 
-READ_TIMEOUT = 60.0
-MAX_CONNECTIONS = 100
-RATE_LIMIT = 4  # per second
-MAX_ACTIVE = 100
+# For how these settings were determined, see
+# https://github.com/planetlabs/planet-client-python/issues/580
+READ_TIMEOUT = 30.0
+RATE_LIMIT = 10  # per second
+MAX_ACTIVE = 50
 
 LOGGER = logging.getLogger(__name__)
 
@@ -96,49 +99,56 @@ class BaseSession:
 
 
 class _Limiter:
-    # The Data API gets mad if 2 calls are made too close to each other. It
-    # wants the calls to be spaced apart
+    # The Data API returns a TooManyRequestsError if 2 calls are made too close
+    # to each other. Therefore, this enforces a delay between calls.
+    # Setting rate_limit to zero disables rate limiting
+    # Setting max_workers to zero disables capping maximum workers
     def __init__(self, rate_limit=0, max_workers=0):
-        # LOGGER.warning(f'hey {rate_limit} {max_workers}')
+        # Configuration
         if rate_limit > 0:
             self.cadence = 1.0 / rate_limit
             LOGGER.debug(f'Throttling cadence set to {self.cadence}s.')
         else:
             self.cadence = 0
-        self.last_call = time.monotonic() - self.cadence
 
         self.limit = max_workers
         if self.limit:
             LOGGER.debug(f'Workers capped at {self.limit}.')
 
-        self.running = 0
         self.retry_interval = 0.01
-        self.epsilon = 0.01
+
+        # State
+        self._running = 0
+        self._last_call = self._get_now() - self.cadence
+
+    @staticmethod
+    def _get_now():
+        return time.monotonic()
 
     async def throttle(self):
         if self.cadence:
             while True:
-                now = time.monotonic()
-                if now - self.last_call >= (self.cadence + self.epsilon):
+                now = self._get_now()
+                if now - self._last_call > self.cadence:
                     LOGGER.debug(
-                        f'Throught throttle, delta: {now-self.last_call}')
-                    self.last_call = now
+                        f'Throught throttle, delta: {now-self._last_call}')
+                    self._last_call = now
                     break
                 await asyncio.sleep(self.retry_interval)
 
     async def acquire(self):
         if self.limit:
             while True:
-                if self.running < self.limit:
-                    self.running += 1
+                if self._running < self.limit:
+                    self._running += 1
                     LOGGER.debug('Worker acquired.')
                     break
                 await asyncio.sleep(self.retry_interval)
 
     def release(self):
-        if self.limit and self.running:
+        if self.limit and self._running:
             LOGGER.debug('Worker released.')
-            self.running -= 1
+            self._running -= 1
 
     async def __aenter__(self):
         await self.acquire()
@@ -200,13 +210,10 @@ class Session(BaseSession):
             except exceptions.PlanetError:
                 auth = Auth.from_file()
 
-        LOGGER.debug(f'Session read timeout set to {READ_TIMEOUT}, '
-                     f'max_connections set to {MAX_CONNECTIONS}')
+        LOGGER.info(f'Session read timeout set to {READ_TIMEOUT}.')
         timeout = httpx.Timeout(10.0, read=READ_TIMEOUT)
-        limits = httpx.Limits(max_connections=MAX_CONNECTIONS)
         self._client = httpx.AsyncClient(auth=auth,
-                                         timeout=timeout,
-                                         limits=limits)
+                                         timeout=timeout)
 
         self._client.headers.update({'User-Agent': self._get_user_agent()})
         self._client.headers.update({'X-Planet-App': 'python-sdk'})
