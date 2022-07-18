@@ -90,24 +90,48 @@ planet data filter --string-in strip_id 5743669 | planet data search-quick PSSce
 
 (TODO: Get pbcopy equivalents for windows and linux)
 
-#### Kepler
+#### Kepler.gl
 
-Show the latest 2500 collects for the state, across assets.
-  - filter by provider, and instrument, gsd
-  - show customizing the pop-up of properties
+One of the best tools to visualize large amounts of imagery footprints is a tool called [kepler.gl](https://kepler.gl/),
+which has a really awesome command-line version which is perfect for working with Planet's CLI. To get the CLI go to
+[keplergl_cli](https://github.com/kylebarron/keplergl_cli) and follow the 
+[installation instructions](https://github.com/kylebarron/keplergl_cli#install). Be sure to get a Mapbox API key (from
+the [access tokens](https://account.mapbox.com/access-tokens/) page) - just sign up for a free account if you don't have
+one already. The kepler CLI won't work at all without getting one and setting it as the `MAPBOX_API_KEY` environment
+variable.
+
+Once it's set up you can just pipe any search command directly to `kepler` (it usually does fine even without 
+`planet collect` to go from ndgeojson to geojson). For example:
 
 ```console
-curl -s https://raw.githubusercontent.com/ropensci/geojsonio/master/inst/examples/california.geojson | planet data filter --geom -  | planet data search-quick PSScene,Sentinel2L1C,Landsat8L1G,SkySatCollect,Sentinel1 --limit 2500 - | kepler
+curl -s https://storage.googleapis.com/open-geodata/ch/vermont.json | planet data filter --permission false --geom -  \
+| planet data search-quick PSScene - | kepler
 ```
 
-Draw in placemark and run a search in area you made, visualize output in Kepler.
- - filter by acquistion, show animation of time.
+Note `--permission false` is added to these examples so that anyone with Planet access can try them, even if you don't
+have download permission for the area shown.
+
+(TODO: Add animated gif, showing some options)
+
+Kepler really excels at larger amounts of data, so try it out with larger limits:
 
 ```console
-curl -s https://api.placemark.io/api/v1/map/Dse5hjAzfrLyXDU9WiFn7/feature/11b80520-f672-11ec-98c0-5b51b58d2b56 | planet data filter --geom - | planet data search-quick SkySatCollect - | kepler
+curl -s https://storage.googleapis.com/open-geodata/ch/vermont.json | planet data filter --permission false --geom - \
+| planet data search-quick PSScene,Sentinel2L1C,Landsat8L1G,SkySatCollect,Sentinel1 \
+--sort 'acquired desc' --limit 1500 - | kepler
 ```
 
+(show animated gif with 600 - lower amount so it takes less time to load).
 
+And you can bring it all together using Placemark for input and Kepler for output:
+
+![Placemark & Kepler with Planet CLI](https://storage.googleapis.com/open-geodata/ch/planet-cli-pm-kepler.gif)
+
+```console
+curl -s https://api.placemark.io/api/v1/map/a0BWUEErqU9A1EDHZWHez/feature/91a07390-0652-11ed-8fdd-15633e4f8f01 \
+| planet data filter --permission false --geom - \
+| planet data search-quick PSScene,Landsat8L1G,SkySatCollect,Sentinel1 - | kepler
+```
 
 #### Large Dataset Visualization
 
