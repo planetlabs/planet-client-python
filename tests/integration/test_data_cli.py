@@ -48,7 +48,7 @@ def test_data_command_registered(invoke):
     result = invoke(["--help"], runner=runner)
     assert result.exit_code == 0
     assert "Usage" in result.output
-    assert "search-quick" in result.output
+    assert "search" in result.output
     assert "search-create" in result.output
     assert "search-get" in result.output
     # Add other sub-commands here.
@@ -359,7 +359,7 @@ def test_data_filter_update(invoke, assert_and_filters_equal, default_filters):
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
 @pytest.mark.parametrize(
     "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
-def test_data_search_quick_filter_invalid_json(invoke, item_types, filter):
+def test_data_search_cmd_filter_invalid_json(invoke, item_types, filter):
     """Test for planet data search_quick. Test with multiple item_types.
     Test should fail as filter does not contain valid JSON."""
     mock_resp = httpx.Response(HTTPStatus.OK,
@@ -369,14 +369,14 @@ def test_data_search_quick_filter_invalid_json(invoke, item_types, filter):
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
 
     runner = CliRunner()
-    result = invoke(["search-quick", item_types, filter], runner=runner)
+    result = invoke(["search", item_types, filter], runner=runner)
     assert result.exit_code == 2
 
 
 @respx.mock
 @pytest.mark.parametrize(
     "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
-def test_data_search_quick_filter_success(invoke, item_types):
+def test_data_search_cmd_filter_success(invoke, item_types):
     """Test for planet data search_quick. Test with multiple item_types.
     Test should succeed as filter contains valid JSON."""
     filter = {
@@ -394,15 +394,14 @@ def test_data_search_quick_filter_success(invoke, item_types):
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
 
     runner = CliRunner()
-    result = invoke(["search-quick", item_types, json.dumps(filter)],
-                    runner=runner)
+    result = invoke(["search", item_types, json.dumps(filter)], runner=runner)
 
     assert result.exit_code == 0
     assert len(result.output.strip().split('\n')) == 1  # we have 1 feature
 
 
 @respx.mock
-def test_data_search_quick_sort_success(invoke):
+def test_data_search_cmd_sort_success(invoke):
     # this cannot be the default value or else the sort param will not be
     # added to the url
     sort = 'published asc'
@@ -422,14 +421,14 @@ def test_data_search_quick_sort_success(invoke):
 
     runner = CliRunner()
     result = invoke(
-        ['search-quick', 'PSScene', json.dumps(filter), f'--sort={sort}'],
+        ['search', 'PSScene', json.dumps(filter), f'--sort={sort}'],
         runner=runner)
     assert result.exit_code == 0
     assert json.loads(result.output) == feature
 
 
 @respx.mock
-def test_data_search_quick_sort_invalid(invoke):
+def test_data_search_cmd_sort_invalid(invoke):
     filter = {
         "type": "DateRangeFilter",
         "field_name": "acquired",
@@ -440,7 +439,7 @@ def test_data_search_quick_sort_invalid(invoke):
 
     runner = CliRunner()
     result = invoke(
-        ['search-quick', 'PSScene', json.dumps(filter), '--sort=invalid'],
+        ['search', 'PSScene', json.dumps(filter), '--sort=invalid'],
         runner=runner)
 
     assert result.exit_code == 2
@@ -449,10 +448,10 @@ def test_data_search_quick_sort_invalid(invoke):
 @respx.mock
 @pytest.mark.parametrize("limit,limited_list_length", [(None, 100), (0, 102),
                                                        (1, 1)])
-def test_data_search_quick_limit(invoke,
-                                 search_results,
-                                 limit,
-                                 limited_list_length):
+def test_data_search_cmd_limit(invoke,
+                               search_results,
+                               limit,
+                               limited_list_length):
     """Test for planet data search_quick limit option. If no value is specified,
     make sure the result contains at most 100 entries."""
     filter = {
@@ -486,7 +485,7 @@ def test_data_search_quick_limit(invoke,
 
     runner = CliRunner()
     result = invoke(
-        ["search-quick", item_types, json.dumps(filter), "--limit", limit],
+        ["search", item_types, json.dumps(filter), "--limit", limit],
         runner=runner)
     assert result.exit_code == 0
     assert result.output.count('"id"') == limited_list_length

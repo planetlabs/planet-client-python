@@ -204,11 +204,11 @@ response (pretty-printed)
 }
 ```
 
-## search-quick
+## search
 
 ### Interface
 
-planet data search-quick [OPTIONS] ITEM_TYPES [FILTER]
+planet data search [OPTIONS] ITEM_TYPES [FILTER]
 
 Execute a structured item search.
 
@@ -237,7 +237,7 @@ with clear pixel percent greater than 98% acquired in July 2021.
 $ planet data filter \
 --range clear_percent gt 98 \
 --date-range acquired gte 2021-07-01 \
---date-range acquired lt 2021-08-01 | planet data search-quick --limit 1 PSScene
+--date-range acquired lt 2021-08-01 | planet data search --limit 1 PSScene
 ```
 response (pretty-printed)
 ```

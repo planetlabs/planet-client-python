@@ -97,12 +97,12 @@ class DataClient:
         """
         return await self._session.request(request)
 
-    async def quick_search(self,
-                           item_types: typing.List[str],
-                           search_filter: dict,
-                           name: str = None,
-                           sort: str = None,
-                           limit: int = 100) -> typing.AsyncIterator[dict]:
+    async def search(self,
+                     item_types: typing.List[str],
+                     search_filter: dict,
+                     name: str = None,
+                     sort: str = None,
+                     limit: int = 100) -> typing.AsyncIterator[dict]:
         """Execute a quick search.
 
         Quick searches are saved for a short period of time (~month). The
