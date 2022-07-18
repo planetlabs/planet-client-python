@@ -1,5 +1,7 @@
 import asyncio
+from collections import Counter
 import logging
+import sys
 
 import pytest
 
@@ -9,7 +11,6 @@ from planet import data_filter
 LOGGER = logging.getLogger(__name__)
 
 
-# @pytest.mark.live
 @pytest.mark.asyncio
 @pytest.mark.parametrize('execution_number', range(3))
 @pytest.mark.parametrize('rate_limit, max_active', [(10, 50), (10, 100),
@@ -41,7 +42,6 @@ async def test_configuration(execution_number,
                  max_active=max_active)
 
 
-# @pytest.mark.live
 @pytest.mark.asyncio
 @pytest.mark.parametrize('execution_number', range(1))
 @pytest.mark.parametrize('rate_limit, max_active', [(0, 0)])
@@ -126,7 +126,22 @@ async def _runit(func,
 
         exceptions = [r for r in res if isinstance(r, BaseException)]
         if len(exceptions):
-            from collections import Counter
             task_exceptions = Counter([type(e) for e in exceptions])
             LOGGER.warning(f'Task exceptions: {task_exceptions}')
             raise exceptions[0]
+
+
+if __name__ == "__main__":
+    cmds = [
+        '--tb=line',
+        '--log-format=%(asctime)s.%(msecs)03d %(levelname)s %(message)s',
+        '--log-date-format=%Y-%m-%d %H:%M:%S',
+        '--log-cli-level=warning',
+        '--durations=0',
+        __file__
+    ]
+
+    extras = sys.argv[1:]
+    cmds += extras
+    print(cmds)
+    sys.exit(pytest.main(cmds))
