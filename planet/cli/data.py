@@ -48,50 +48,6 @@ def data(ctx, base_url):
     ctx.obj['BASE_URL'] = base_url
 
 
-# def parse_item_types(ctx, param, value: str) -> List[str]:
-#     """Turn a string of comma-separated names into a list of names."""
-
-#     dict = {
-#         "psscene": "PSScene",
-#         "psorthotile": "PSOrthoTile",
-#         "reorthotile": "REOrthoTile",
-#         "rescene": "REScene",
-#         "skysatscene": "SkySatScene",
-#         "skysatcollect": "SkySatCollect",
-#         "skysatvideo": "SkySatVideo",
-#         "landsat8l1g": "Landsat8L1G",
-#         "sentinel2l1c": "Sentinel2L1C"
-#     }
-#     for original, validated in dict.items():
-#         update_value = value.replace(original, validated)
-
-#     return [part.strip() for part in update_value.split(",")]
-
-# def parse_filter(ctx, param, value: str) -> dict:
-#     """Turn filter JSON into a dict."""
-#     # read filter using raw json
-#     if value.startswith('{'):
-#         try:
-#             json_value = json.loads(value)
-#         except json.decoder.JSONDecodeError:
-#             raise click.BadParameter('Filter does not contain valid json.',
-#                                      ctx=ctx,
-#                                      param=param)
-#         if json_value == {}:
-#             raise click.BadParameter('Filter is empty.', ctx=ctx, param=param)
-#         return json_value
-#     # read filter using click pipe option
-#     else:
-#         try:
-#             with click.open_file(value) as f:
-#                 json_value = json.load(f)
-#         except json.decoder.JSONDecodeError:
-#             raise click.BadParameter('Filter does not contain valid json.',
-#                                      ctx=ctx,
-#                                      param=param)
-#         return json_value
-
-
 # TODO: filter().
 def geom_to_filter(ctx, param, value: Optional[dict]) -> Optional[dict]:
     return data_filter.geometry_filter(value) if value else None
