@@ -19,7 +19,7 @@ import click
 import json
 
 from planet import data_filter, DataClient
-from planet.clients.data import SEARCH_SORT, SEARCH_SORT_DEFAULT
+from planet.clients.data import SEARCH_SORT, SEARCH_SORT_DEFAULT, STATS_INTERVAL
 
 from . import types
 from .cmds import coro, translate_exceptions
@@ -49,49 +49,48 @@ def data(ctx, base_url):
     ctx.obj['BASE_URL'] = base_url
 
 
-def parse_item_types(ctx, param, value: str) -> List[str]:
-    """Turn a string of comma-separated names into a list of names."""
+# def parse_item_types(ctx, param, value: str) -> List[str]:
+#     """Turn a string of comma-separated names into a list of names."""
 
-    dict = {
-        "psscene": "PSScene",
-        "psorthotile": "PSOrthoTile",
-        "reorthotile": "REOrthoTile",
-        "rescene": "REScene",
-        "skysatscene": "SkySatScene",
-        "skysatcollect": "SkySatCollect",
-        "skysatvideo": "SkySatVideo",
-        "landsat8l1g": "Landsat8L1G",
-        "sentinel2l1c": "Sentinel2L1C"
-    }
-    for original, validated in dict.items():
-        update_value = value.replace(original, validated)
+#     dict = {
+#         "psscene": "PSScene",
+#         "psorthotile": "PSOrthoTile",
+#         "reorthotile": "REOrthoTile",
+#         "rescene": "REScene",
+#         "skysatscene": "SkySatScene",
+#         "skysatcollect": "SkySatCollect",
+#         "skysatvideo": "SkySatVideo",
+#         "landsat8l1g": "Landsat8L1G",
+#         "sentinel2l1c": "Sentinel2L1C"
+#     }
+#     for original, validated in dict.items():
+#         update_value = value.replace(original, validated)
 
-    return [part.strip() for part in update_value.split(",")]
+#     return [part.strip() for part in update_value.split(",")]
 
-
-def parse_filter(ctx, param, value: str) -> dict:
-    """Turn filter JSON into a dict."""
-    # read filter using raw json
-    if value.startswith('{'):
-        try:
-            json_value = json.loads(value)
-        except json.decoder.JSONDecodeError:
-            raise click.BadParameter('Filter does not contain valid json.',
-                                     ctx=ctx,
-                                     param=param)
-        if json_value == {}:
-            raise click.BadParameter('Filter is empty.', ctx=ctx, param=param)
-        return json_value
-    # read filter using click pipe option
-    else:
-        try:
-            with click.open_file(value) as f:
-                json_value = json.load(f)
-        except json.decoder.JSONDecodeError:
-            raise click.BadParameter('Filter does not contain valid json.',
-                                     ctx=ctx,
-                                     param=param)
-        return json_value
+# def parse_filter(ctx, param, value: str) -> dict:
+#     """Turn filter JSON into a dict."""
+#     # read filter using raw json
+#     if value.startswith('{'):
+#         try:
+#             json_value = json.loads(value)
+#         except json.decoder.JSONDecodeError:
+#             raise click.BadParameter('Filter does not contain valid json.',
+#                                      ctx=ctx,
+#                                      param=param)
+#         if json_value == {}:
+#             raise click.BadParameter('Filter is empty.', ctx=ctx, param=param)
+#         return json_value
+#     # read filter using click pipe option
+#     else:
+#         try:
+#             with click.open_file(value) as f:
+#                 json_value = json.load(f)
+#         except json.decoder.JSONDecodeError:
+#             raise click.BadParameter('Filter does not contain valid json.',
+#                                      ctx=ctx,
+#                                      param=param)
+#         return json_value
 
 
 # TODO: filter().
@@ -346,12 +345,10 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("item_types", callback=parse_item_types)
+@click.argument("item_types", type=types.CommaSeparatedString())
 @click.argument('interval',
-                default=None,
-                type=click.Choice(['hour', 'day', 'week', 'month', 'year'],
-                                  case_sensitive=False))
-@click.argument("filter", callback=parse_filter)
+                type=click.Choice([STATS_INTERVAL], case_sensitive=False))
+@click.argument("filter", type=types.JSON(), default="-", required=False)
 async def stats(ctx, item_types, interval, filter):
     """Get a bucketed histogram of items matching the filter.
 
