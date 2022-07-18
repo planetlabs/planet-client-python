@@ -16,7 +16,6 @@ from typing import List, Optional
 from contextlib import asynccontextmanager
 
 import click
-import json
 
 from planet import data_filter, DataClient
 from planet.clients.data import SEARCH_SORT, SEARCH_SORT_DEFAULT, STATS_INTERVAL
@@ -346,8 +345,7 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
 @translate_exceptions
 @coro
 @click.argument("item_types", type=types.CommaSeparatedString())
-@click.argument('interval',
-                type=click.Choice([STATS_INTERVAL], case_sensitive=False))
+@click.argument('interval', type=click.Choice(STATS_INTERVAL))
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 async def stats(ctx, item_types, interval, filter):
     """Get a bucketed histogram of items matching the filter.

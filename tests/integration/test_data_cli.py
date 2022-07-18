@@ -604,7 +604,8 @@ def test_data_stats_invalid_filter(invoke, filter):
 @respx.mock
 @pytest.mark.parametrize(
     "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
-@pytest.mark.parametrize("interval, exit_code", [(None, 1), ('hou', 2), ('hour', 0)])
+@pytest.mark.parametrize("interval, exit_code", [(None, 1), ('hou', 2),
+                                                 ('hour', 0)])
 def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
     """Test for planet data stats. Test with multiple item_types.
     Test should succeed with valid interval, and fail with invalid interval."""
