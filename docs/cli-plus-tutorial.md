@@ -104,8 +104,10 @@ Once it's set up you can just pipe any search command directly to `kepler` (it u
 `planet collect` to go from ndgeojson to geojson). For example:
 
 ```console
-curl -s https://storage.googleapis.com/open-geodata/ch/vermont.json | planet data filter --permission false --geom -  \
-| planet data search-quick PSScene - | kepler
+curl -s https://storage.googleapis.com/open-geodata/ch/vermont.json \
+| planet data filter --permission false --geom -  \
+| planet data search-quick PSScene - \
+| kepler
 ```
 
 Note `--permission false` is added to these examples so that anyone with Planet access can try them, even if you don't
@@ -116,16 +118,18 @@ have download permission for the area shown.
 Kepler really excels at larger amounts of data, so try it out with larger limits:
 
 ```console
-curl -s https://storage.googleapis.com/open-geodata/ch/vermont.json | planet data filter --permission false --geom - \
+curl -s https://storage.googleapis.com/open-geodata/ch/vermont.json \
+| planet data filter --permission false --geom - \
 | planet data search-quick PSScene,Sentinel2L1C,Landsat8L1G,SkySatCollect,Sentinel1 \
---sort 'acquired desc' --limit 1500 - | kepler
+--sort 'acquired desc' --limit 1500 - \
+| kepler
 ```
 
 (show animated gif with 600 - lower amount so it takes less time to load).
 
 And you can bring it all together using Placemark for input and Kepler for output:
 
-![Placemark & Kepler with Planet CLI](https://storage.googleapis.com/open-geodata/ch/planet-cli-pm-kepler.gif)
+![Placemark and Kepler with Planet CLI](https://storage.googleapis.com/open-geodata/ch/planet-cli-pm-kepler.gif)
 
 ```console
 curl -s https://api.placemark.io/api/v1/map/a0BWUEErqU9A1EDHZWHez/feature/91a07390-0652-11ed-8fdd-15633e4f8f01 \
@@ -168,6 +172,7 @@ Draw on geojson.io, copy the geojson as input to search
 pbpaste | planet data filter --geom -  | planet data search-quick SkySatCollect -
 ```
 
+### Post to Github as gist
 
 Show the latest skysat image on github as a gist.
 
