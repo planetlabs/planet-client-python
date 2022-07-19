@@ -466,18 +466,18 @@ There are a lot of options for what you can do with the command, and we recommen
 `planet data filter --help` often to get a reference of how the commands work. And we'll try to 
 give lots of examples below as well.
 
-So you can run the filter command and save it, and then use that file with the `search-quick`
+So you can run the filter command and save it, and then use that file with the `search`
 command:
 
 ```console
 planet data filter > filter.json
-planet data search-quick PSScene filter.json
+planet data search PSScene filter.json
 ```
 
 Or the recommended route is to use a pipe (`|`), as mentioned above [above](#create-request-and-order-in-one-call):
 
 ```console
-planet data filter | planet data search-quick PSScene -
+planet data filter | planet data search PSScene -
 ```
 
 Note the dash (`-`), which explicitly tells the CLI to use the output from the call that is piped into it.
@@ -486,11 +486,11 @@ Note the dash (`-`), which explicitly tells the CLI to use the output from the c
 
 These first searches were done on the [PSScene](https://developers.planet.com/docs/data/psscene/) 'item type', but you
 can use any [Item Type](https://developers.planet.com/docs/apis/data/items-assets/#item-types) that Planet offers in 
-its catalog. The item type is the first argument of the `search-quick` command, followed by the 'filter'. Note that
+its catalog. The item type is the first argument of the `search` command, followed by the 'filter'. Note that
 you can specify any number of item types here:
 
 ```console
-planet data filter | planet data search-quick PSScene,Sentinel2L1C,Landsat8L1G,SkySatCollect, -
+planet data filter | planet data search PSScene,Sentinel2L1C,Landsat8L1G,SkySatCollect, -
 ```
 
 This will search for all the most recent images captured by PlanetScope, SkySat, Sentinel 2 and Landsat 8 satellites. 
@@ -545,14 +545,14 @@ of Iowa. You can copy it and save as a file called `geometry.json`
 And then run it with this command:
 
 ```console
-planet data filter --geom geometry.json | planet data search-quick PSScene -
+planet data filter --geom geometry.json | planet data search PSScene -
 ```
 
 Note that by default all searches with the command-line return 100 results, but you can easily increase that with
 the `--limit` flag:
 
 ```console
-planet data filter --geom geometry.json | planet data search-quick --limit 500 PSScene -
+planet data filter --geom geometry.json | planet data search --limit 500 PSScene -
 ```
 
 Creating geometries for search can be annoying in a command-line workflow, but there are some ideas in the
@@ -566,13 +566,13 @@ the `planet collect` method to transform the output from the Data API to valid G
 output to it:
 
 ```console
-planet data filter --geom geometry.json | planet data search-quick PSScene - | planet collect -
+planet data filter --geom geometry.json | planet data search PSScene - | planet collect -
 ```
 
 If you want to visualize this you can save it as a file:
 
 ```console
-planet data filter --geom geometry.json | planet data search-quick PSScene - | planet collect - > planet-search.geojson
+planet data filter --geom geometry.json | planet data search PSScene - | planet collect - > planet-search.geojson
 ```
 
 This you can then open with your favorite GIS program, or see this 
@@ -584,7 +584,7 @@ the command-line.
 Some of the most common filtering is by date. You could get all imagery acquired before August 2021:
 
 ```console
-planet data filter --date-range acquired lt 2021-08-01 | planet data search-quick PSScene -
+planet data filter --date-range acquired lt 2021-08-01 | planet data search PSScene -
 ```
 
 The 'operator' in this case is 'less than' (`lt`). The options are:
@@ -600,7 +600,7 @@ do a search for all images in July of 2021:
 
 ```console
 planet data filter --date-range acquired gte 2021-07-01 --date-range acquired lt 2021-08-01 | \
-planet data search-quick PSScene -
+planet data search PSScene -
 ```
 
 The date input understands [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339) and 
@@ -610,7 +610,7 @@ on July 1st 2021:
 
 ```console
 planet data filter --date-range acquired gte 2021-07-01:06:20:10 --date-range acquired lt 2021-07-01:06:20:15 | \
-planet data search-quick PSScene - 
+planet data search PSScene - 
 ```
 
 #### Range Filter
@@ -628,19 +628,19 @@ For properties that are strings you can use the `string-in` filter. For example 
 with PS2 instrument:
 
 ```console
-planet data filter --string-in instrument PS2 | planet data search-quick PSScene -
+planet data filter --string-in instrument PS2 | planet data search PSScene -
 ```
 
 You can specify multiple strings to match, with a comma:
 
 ```console
-planet data filter --string-in instrument PS2,PSB.SD | planet data search-quick PSScene -
+planet data filter --string-in instrument PS2,PSB.SD | planet data search PSScene -
 ```
 
 Another example is to select all data in a single strip:
 
 ```console
-planet data filter --string-in strip_id 5743640 | planet data search-quick PSScene -
+planet data filter --string-in strip_id 5743640 | planet data search PSScene -
 ```
 
 Note that in all these commands we are piping the results into the search. If you don't include the pipe then you'll
@@ -651,13 +651,13 @@ get the filter output, which can be interested to inspect to see exactly what is
 You can limit your search to only data with a particular asset, for example search just for 8-band analytic assets:
 
 ```console
-planet data filter --asset ortho_analytic_8b_sr | planet data search-quick PSScene -
+planet data filter --asset ortho_analytic_8b_sr | planet data search PSScene -
 ```
 
 Or 8-band assets that also have a UDM.
 
 ```console
-planet data filter --asset ortho_analytic_8b_sr --asset udm2 | planet data search-quick PSScene -
+planet data filter --asset ortho_analytic_8b_sr --asset udm2 | planet data search PSScene -
 ```
 
 You can find the list of available assets in each Item Type Page, like 
@@ -675,7 +675,7 @@ and are able to download. But if you'd like to just get search Planet's catalog 
 you can set the permission filter to false:
 
 ```console
-planet data filter --permission false --asset ortho_analytic_8b_sr | planet data search-quick PSScene -
+planet data filter --permission false --asset ortho_analytic_8b_sr | planet data search PSScene -
 ```
 
 #### Sort
@@ -692,13 +692,13 @@ descending order. The options are are:
 The lets you do things like get the id of the most recent skysat image taken (that you have download access to):
 
 ```console
-planet data filter | planet data search-quick SkySatCollect --sort 'acquired desc' --limit 1 - 
+planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 - 
 ```
 
 And you can also just get the ID, using `jq`
 
 ```console
-planet data filter | planet data search-quick SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id
+planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id
 ```
 
 #### Bringing it all together
@@ -709,7 +709,7 @@ image that was published:
 
 ```console
 planet orders request --name "SkySat Latest" --item-type SkySatCollect --bundle analytic \
---id `planet data filter | planet data search-quick SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id` \
+--id `planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id` \
 | planet orders create
 ```
 
@@ -718,7 +718,7 @@ Or get the 5 latest cloud free images in an area and create an order that clips 
 
 ```console
 ids=`planet data filter --geom geometry.geojson --range clear_percent gt 90 | planet data \
-search-quick PSScene --limit 5 - | jq -r .id | tr '\n' , | sed 's/.$//'`
+search PSScene --limit 5 - | jq -r .id | tr '\n' , | sed 's/.$//'`
 planet orders request --name "Clipped Scenes" --item-type PSScene --bundle analytic_sr_udm2  \
 --id $ids --clip geometry.geojson | planet orders create -
 ```
