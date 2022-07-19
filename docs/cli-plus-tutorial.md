@@ -129,6 +129,8 @@ curl -s https://storage.googleapis.com/open-geodata/ch/vermont.json \
 
 And you can bring it all together using Placemark for input and Kepler for output:
 
+(TODO: Figure out why this link isn't working... Maybe needs to be smaller?)
+
 ![Placemark and Kepler with Planet CLI](https://storage.googleapis.com/open-geodata/ch/planet-cli-pm-kepler.gif)
 
 ```console
@@ -139,24 +141,35 @@ curl -s https://api.placemark.io/api/v1/map/a0BWUEErqU9A1EDHZWHez/feature/91a073
 
 #### Large Dataset Visualization
 
-Download lots of scenes (current version of CLI may crap out before it gets there, will take like 10 minutes)
+Oftentimes it can be useful to visualize a large amount of data, to really get a sense of the 
+coverage and then do some filtering of the output. For this we recommend downloading the output 
+to disk. Getting 200,000 skysat collects will take around 10 minutes, and will be over 800 megabytes
+in GeoJSON.
 
 ```console
-planet data filter | planet data search-quick SkySatCollect --limit 200000 > skysat-large.json
+planet data filter | planet data search-quick SkySatCollect --limit 200000 > skysat-large.geojson
 ```
 
-Put into a feature collection - often this will clean things up if other programs can't open it (but not always):
+Many GIS programs will open that geojson file by default. But if you have any trouble it can be useful to run it
+through `planet collect`:
 
 ```console
 planet data collect skysat-large.json > skysat-large-clean.json
 ```
+
+This turns it into a real GeoJSON, instead of a newline-delimited one, which more programs understand.
+
+GeoJSON is an amazing format for communicating online, but is less good with really large amounts of data, so 
+we recommend converting it to a format that has a spatial index. We recommend a geopackage, but a shapefile can work
+as well. The `ogr2ogr` of [GDAL/OGR](https://gdal.org/) is a great tool for this. We recommend using the 
+[binaries](https://gdal.org/download.html#binaries), or if you're on a Mac then use [homebrew]
 
 Turn into geopackage (or shapefile) for a spatial index, and simplify (don't need so many points to visualize)
  - simplify .001 matches fidelity very close, mostly just removes points from lines. .008 drops a bit of info but generally good. .1 
    messes with things a lot, but still good for visualization.
 
 ```console
-ogr2ogr skysat-large.gpkg skysat-large-clean.json -simplify .008
+ogr2ogr skysat-large.gpkg skysat-large.json -simplify .008
 ```
 
 Can open `skysat-large.gpkg` with kepler, or other tools. 
@@ -185,13 +198,16 @@ Show all ps-scenes in a strip on github gist.
 (may need to reload the page, for some reason it wasn't showing up immediately after open)
 
 ```console
-planet data filter --string-in strip_id 5743640 | planet data search-quick PSScene - | gh gist create -f ps-search.geojson -w
+planet data filter --string-in strip_id 5743640 | planet data search-quick PSScene - \
+| gh gist create -f ps-search.geojson -w
 ```
 
-TODO: get command that gets the latest strip id and uses that as input in one line. May need to update filter commands to take stdin?
+TODO: get a command that gets the latest strip id and uses that as input in one line. May need to update filter commands to take stdin?
+This current command doesn't quite work.
 
 ```console
-strip-id=`planet data filter | planet data search-quick PSScene - --limit 1 | jq -r '.properties.strip_id' | sed 's/\\[tn]//g'`
+strip-id=`planet data filter | planet data search-quick PSScene - --limit 1 \
+| jq -r '.properties.strip_id' | sed 's/\\[tn]//g'`
 planet data filter --string-in strip_id $stripid | planet data search-quick PSScene -
 ```
 
@@ -213,6 +229,27 @@ https://gist.github.com/ipbastola/2c955d8bf2e96f9b1077b15f995bdae3 has ideas for
 * use jq to get the id of the an order by it's name
 
 * get total number of items, add up each year of `stats`
+
+### Simplify Geometries to 500 vertices
+
+One of the limits of Planet's API's is that they demand geometries have less than 500 vertices. This section shows some
+tools that can help
+
+#### Mapshaper
+
+- simplify CLI
+- simplify UI, download and use
+- count number of resulting vertices
+`ogrinfo -al simplify_test.geojson | grep POLYGON | sed 's/$/,/' | tr -d -c "," | wc`
+But there should be a JQ way to do the same...
+
+#### Placemark
+
+- see count of vertices
+- union together
+- buffer and union
+- simplify
+
 
 ```console
 
