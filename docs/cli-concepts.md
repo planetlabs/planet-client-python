@@ -4,6 +4,9 @@ Planet's command-line interface is built of composable pieces that combine in po
 To take full advantage of all that Planet's CLI offers there are a few concepts and tools
 that are worth explaining. 
 
+**NOTE:** This document is still a work in progress, but we'll work to flesh it out. We'll
+leave it up since there's still a bit of good information.
+
 ## Core Unix Concepts
 
 If you are completely new to the command-line we recommend starting with a real introductory
@@ -39,23 +42,25 @@ then referring to it you can just do it all in one call:
 planet data filter --range cloud_percent lt 10 | planet data search-quick PSScene -
 ```
 
-The pipe says to take 
+The pipe says to take the output of the first command and pass it to the input of 
+the second. You'll notice that the planet command has a dash (`-`), this is a convention
+that is often used by different CLI programs to explicitly say 'read from
+standard out'. Most Planet CLI commands require it, but one or two will implicitly
+read from standard out if it's not explicitly included. Using the dash to mean
+'read from standard out' is a general convention used by many programs, but it's 
+not universal, so check the docs of the program you're using as to how it reads 
+from piped input. For example GDAL/OGR uses a specific `/vsistdin/` convention to 
+read from a pipe.
 
-There's a good tutorial on https://ryanstutorials.net/linuxtutorial/piping.php
+If you'd like to learn more about these topics then check out 
+[this tutorial](https://ryanstutorials.net/linuxtutorial/piping.php). And if you'd
+like to learn more about the dash (`-`) see 
+[this tutorial](https://www.baeldung.com/linux/dash-in-command-line-parameters).
 
-
-
-incuding reading from a pipe with -
-
-https://www.baeldung.com/linux/dash-in-command-line-parameters
-
-stringing several together
-
-### Output to file
-
-> 
 
 ### head & tail
+
+Also less/more?
 
 ### Running a command within another
 

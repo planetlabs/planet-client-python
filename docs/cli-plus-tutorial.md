@@ -238,6 +238,12 @@ render the results. `ogr2ogr` includes the ability to simplify any output:
 ogr2ogr skysat-large.gpkg skysat-large.json -simplify .008
 ```
 
+Alternative - use convex hull. TODO: test this, write it up
+
+```console
+ogr2ogr skysat-convex.gpkg skysat.geojson ogr2ogr -sql "select st_convexhull(geometry) from skysat" -dialect sqlite
+```
+
 #### Simplification with Mapshaper
 
 Another great tool is [Mapshaper](https://github.com/mbloch/mapshaper), which excels at simplification. It offers a 
