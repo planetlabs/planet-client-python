@@ -21,7 +21,7 @@ or [Cygwin](https://www.cygwin.com/).
 Several commands in the Planet CLI are used to create files that are used as input to 
 other commands. The default of these commands is to just print the output on your screen.
 Seeing it on the screen can be useful for making sure it's right, but you'll most likely
-want to make use of it. This is where the concept of 'redirection' in. If you use the 
+want to make use of it. This is where the concept of 'redirection' comes in. If you use the 
 `>` character and then specify a file name the command-line will save its output to that file.
 So if you say:
 
