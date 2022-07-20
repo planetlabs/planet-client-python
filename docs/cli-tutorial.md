@@ -703,7 +703,7 @@ planet data filter | planet data search SkySatCollect --sort 'acquired desc' --l
 
 #### Bringing it all together
 
-The cool thing is you can combine the data and search commands, to make calls like ordering the most recent skysat
+The cool thing is you can combine the data and order commands, to make calls like ordering the most recent skysat
 image that was published:
 
 
