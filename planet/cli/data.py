@@ -308,8 +308,6 @@ async def stats(ctx, item_types, interval, filter):
 
     This function returns a bucketed histogram of results based on the
     item_types, interval, and json filter specified (using file or stdin).
-    This function outputs a full JSON description of the returned statistics
-    result.
 
     """
     async with data_client(ctx) as cl:
