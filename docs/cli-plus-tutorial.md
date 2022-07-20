@@ -244,6 +244,9 @@ Alternative - use convex hull. TODO: test this, write it up
 ogr2ogr skysat-convex.gpkg skysat.geojson ogr2ogr -sql "select st_convexhull(geometry) from skysat" -dialect sqlite
 ```
 
+Other alternative for really big ones, centroid. GDAL should be able to do this, need to figure out the similar 
+sql.
+
 #### Simplification with Mapshaper
 
 Another great tool is [Mapshaper](https://github.com/mbloch/mapshaper), which excels at simplification. It offers a 
