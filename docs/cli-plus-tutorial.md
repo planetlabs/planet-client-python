@@ -129,7 +129,7 @@ planet data filter --string-in strip_id $stripid | planet data search PSScene -
 
 #### Kepler.gl
 
-One of the best tools to visualize large amounts of imagery footprints is a tool called [kepler.gl](https://kepler.gl/),
+One of the best tools to visualize large numbers of imagery footprints is a tool called [kepler.gl](https://kepler.gl/),
 which has a really awesome command-line version which is perfect for working with Planet's CLI. To get the CLI go to
 [keplergl_cli](https://github.com/kylebarron/keplergl_cli) and follow the 
 [installation instructions](https://github.com/kylebarron/keplergl_cli#install). Be sure to get a Mapbox API key (from
