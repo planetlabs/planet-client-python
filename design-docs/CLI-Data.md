@@ -726,9 +726,6 @@ ITEM_TYPES - string. Comma-separated item type identifier(s).
 INTERVAL - string. The size of the histogram buckets (<hour, day, week, month, year>)
 FILTER - string. A full JSON description filter. Supports file and stdin.
 
-Options:
---utc-offset - string. A "ISO 8601 UTC offset" (e.g. +01:00 or -08:00) that can be used to adjust the buckets to a users time zone.
-
 Output:
 A full JSON description of the returned statistics result.
 ```
