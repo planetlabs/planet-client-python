@@ -106,18 +106,19 @@ class _Limiter:
     Setting rate_limit to zero disables rate (cadence) limiting.
     Setting max_workers to zero disables capping maximum workers.
 
-    This is inspired by aiolimiter[1] but altered to enforce cadence based on
-    finding that the API returns TooManyRequestError if 2 calls are made too
-    close to eachother (even though max rate limit is 5 calls per second)[2].
+    This is inspired by asyncio-throttle[1] but altered to enforce cadence
+    based on finding that the API returns TooManyRequestError if 2 calls are
+    made too close to eachother (even though max rate limit is 5 calls per
+    second)[2].
 
-    In investigating options, aiometer[3] was also looked at but it seems to
+    In investigating options, aiolimiter[3] was also looked at but it seems to
     have odd behavior with httpx [4].
 
     References:
-    [1] https://github.com/mjpieters/aiolimiter
+    [1] https://github.com/hallazzang/asyncio-throttle
     [2] https://github.com/planetlabs/planet-client-python/issues/580#issuecomment-1182752851
-    [3] https://github.com/florimondmanca/aiometer
-    [4] https://github.com/florimondmanca/aiometer/issues/24
+    [3] https://github.com/mjpieters/aiolimiter
+    [4] https://github.com/mjpieters/aiolimiter/issues/73
     """
 
     def __init__(self, rate_limit=0, max_workers=0):
