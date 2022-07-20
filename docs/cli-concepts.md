@@ -26,7 +26,7 @@ want to make use of it. This is where the concept of 'redirection' comes in. If 
 So if you say:
 
 ```
- $ planet data filter  --range cloud_percent lt 10 > filter.json
+ planet data filter --range cloud_percent lt 10 > filter.json
 ```
 
 Then the output will be saved. This output is referred to as STDOUT, or 'standard output'. 
