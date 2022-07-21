@@ -35,8 +35,13 @@ nav:
     - User Guide: 'guide.md'
     - Upgrading: 'upgrading.md'
     - Early Access: 'v2_earlyaccess.md'
+    - venv Tutorial: 'venv-tutorial.md'
     - API Reference: 'api.md'
+    - CLI Tutorial: 'cli-tutorial.md'
+    - CLI Concepts: 'cli-concepts.md'
+    - CLI Workflows: 'cli-plus-tutorial.md'
     - CLI Reference: 'cli.md'
+
 
 markdown_extensions:
   - pymdownx.highlight
