@@ -29,6 +29,7 @@ LOGGER = logging.getLogger(__name__)
 TEST_URL = 'https://api.planet.com/data/v1'
 TEST_QUICKSEARCH_URL = f'{TEST_URL}/quick-search'
 TEST_SEARCHES_URL = f'{TEST_URL}/searches'
+TEST_STATS_URL = f'{TEST_URL}/stats'
 
 
 @pytest.fixture
@@ -579,6 +580,80 @@ def test_search_create_daily_email(invoke, search_result):
     assert result.exit_code == 0
     assert sent_request == search_request
     assert json.loads(result.output) == search_result
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
+def test_data_stats_invalid_filter(invoke, filter):
+    """Test for planet data stats. Test with multiple item_types.
+    Test should fail as filter does not contain valid JSON."""
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               json={'features': [{
+                                   "key": "value"
+                               }]})
+    respx.post(TEST_STATS_URL).return_value = mock_resp
+    interval = "hour"
+    item_type = 'PSScene'
+    runner = CliRunner()
+    result = invoke(["stats", item_type, interval, filter], runner=runner)
+    assert result.exit_code == 2
+
+
+@respx.mock
+@pytest.mark.parametrize(
+    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+@pytest.mark.parametrize("interval, exit_code", [(None, 1), ('hou', 2),
+                                                 ('hour', 0)])
+def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
+    """Test for planet data stats. Test with multiple item_types.
+    Test should succeed with valid interval, and fail with invalid interval."""
+    filter = {
+        "type": "DateRangeFilter",
+        "field_name": "acquired",
+        "config": {
+            "gt": "2019-12-31T00:00:00Z", "lte": "2020-01-31T00:00:00Z"
+        }
+    }
+
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               json={'features': [{
+                                   "key": "value"
+                               }]})
+    respx.post(TEST_STATS_URL).return_value = mock_resp
+
+    runner = CliRunner()
+    result = invoke(["stats", item_types, interval, json.dumps(filter)],
+                    runner=runner)
+
+    assert result.exit_code == exit_code
+
+
+@respx.mock
+@pytest.mark.parametrize(
+    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+@pytest.mark.parametrize("interval", ['hour', 'day', 'week', 'month', 'year'])
+def test_data_stats_success(invoke, item_types, interval):
+    """Test for planet data stats. Test with multiple item_types.
+    Test should succeed as filter contains valid JSON, item_types, and intervals."""
+    filter = {
+        "type": "DateRangeFilter",
+        "field_name": "acquired",
+        "config": {
+            "gt": "2019-12-31T00:00:00Z", "lte": "2020-01-31T00:00:00Z"
+        }
+    }
+
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               json={'features': [{
+                                   "key": "value"
+                               }]})
+    respx.post(TEST_STATS_URL).return_value = mock_resp
+
+    runner = CliRunner()
+    result = invoke(["stats", item_types, interval, json.dumps(filter)],
+                    runner=runner)
+    assert result.exit_code == 0
 
 
 # TODO: basic test for "planet data filter".
