@@ -335,8 +335,7 @@ Now we'll dive into the variety of ways to customize your order. These can all b
 combined with all the commands listed above.
 
 We'll work with a geojson saved online. You should download the 
-[geometry](data/geometry.geojson). If you want to see what it looks like check the 
-[preview](https://gist.github.com/cholmes/c7736ac5241d77605524d01ed2dc57a1)).
+[geometry](data/geometry.geojson). 
 
 You can move that geometry to your current directory and use the following command, or
 tweak the geometry.geojson to refer to where you downloaded it.
@@ -409,7 +408,7 @@ planet orders request --item-type PSScene --name "Two Scenes Composited" \
 
 To clip and composite you need to specify the clip in the tools (instead of `--clip`), as you can
 not use `--clip` and `--tools` in the same call. You can see the full JSON for the tools in 
-[this gist](https://gist.github.com/cholmes/378d050a263ae433ddbbb91c3439994b).
+[here](data/tools-clip-composite.json).
 
 ```console
 planet orders request --item-type PSScene --name "Two Scenes Clipped and Composited" \
@@ -713,7 +712,7 @@ planet orders request --name "SkySat Latest" --item-type SkySatCollect --bundle 
 ```
 
 Or get the 5 latest cloud free images in an area and create an order that clips to that area, using 
-[geometry.geojson](https://gist.github.com/cholmes/378d050a263ae433ddbbb91c3439994b) from above:
+[geometry.geojson](data/geometry.json) from above:
 
 ```console
 ids=`planet data filter --geom geometry.geojson --range clear_percent gt 90 | planet data \
