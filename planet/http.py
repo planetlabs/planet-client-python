@@ -135,9 +135,9 @@ class _Limiter:
 
         self.retry_interval = 0.01
 
-        # State
+        # track state
         self._running = 0
-        self._last_call = self._get_now() - self.cadence
+        self._last_call = None
 
     @staticmethod
     def _get_now():
@@ -147,9 +147,13 @@ class _Limiter:
         if self.cadence:
             while True:
                 now = self._get_now()
-                if now - self._last_call > self.cadence:
+                if self._last_call is None:
+                    # first call, no need to throttle
+                    self._last_call = now
+                    break
+                elif now - self._last_call >= self.cadence:
                     LOGGER.debug(
-                        f'Throught throttle, delta: {now-self._last_call}')
+                        f'Throught throttle, delta: {now - self._last_call}')
                     self._last_call = now
                     break
                 await asyncio.sleep(self.retry_interval)
@@ -230,8 +234,7 @@ class Session(BaseSession):
 
         LOGGER.info(f'Session read timeout set to {READ_TIMEOUT}.')
         timeout = httpx.Timeout(10.0, read=READ_TIMEOUT)
-        self._client = httpx.AsyncClient(auth=auth,
-                                         timeout=timeout)
+        self._client = httpx.AsyncClient(auth=auth, timeout=timeout)
 
         self._client.headers.update({'User-Agent': self._get_user_agent()})
         self._client.headers.update({'X-Planet-App': 'python-sdk'})
@@ -254,7 +257,7 @@ class Session(BaseSession):
         self.max_retry_backoff = MAX_RETRY_BACKOFF
 
         self._limiter = _Limiter(rate_limit=RATE_LIMIT, max_workers=MAX_ACTIVE)
-        self.outcomes = Counter()
+        self.outcomes: Counter[str] = Counter()
 
     async def __aenter__(self):
         return self

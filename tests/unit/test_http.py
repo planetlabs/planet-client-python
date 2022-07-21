@@ -74,7 +74,7 @@ def test_basesession__raise_for_status(mock_response):
 
 
 @pytest.mark.asyncio
-async def test__Limiter_workers(monkeypatch):
+async def test__Limiter_max_workers(monkeypatch):
     """Test that the worker cap is enforced.
 
     This test async queues up more tasks than the limiter worker cap. Each task
@@ -88,7 +88,11 @@ async def test__Limiter_workers(monkeypatch):
     max_workers = 2
     limiter = http._Limiter(rate_limit=0, max_workers=max_workers)
 
-    limiter.retry_interval = 0
+    # this value seems small enough to speed up the test but large enough
+    # to avoid undue CPU churn
+    short_wait = 0.001
+
+    limiter.retry_interval = short_wait
 
     active = 0
     calls = 0
@@ -102,14 +106,15 @@ async def test__Limiter_workers(monkeypatch):
 
             # wait until hold is released
             while hold_flag:
-                await asyncio.sleep(.001)
+                await asyncio.sleep(short_wait)
 
             active -= 1
 
     async def control():
         nonlocal active, hold_flag
 
-        # give test functions some time to start
+        # this value seems large enough to allow test functions to start
+        # but small enough to not noticeably slow down tests
         await asyncio.sleep(.01)
 
         # confirm number of workers is capped
@@ -118,7 +123,7 @@ async def test__Limiter_workers(monkeypatch):
         # release hold so workers can complete
         hold_flag = False
 
-    total_calls = 2 * max_workers
+    total_calls = 2 * max_workers  # just needs to be more than worker cap
     test_functions = [test_func() for _ in range(total_calls)]
     await asyncio.gather(*test_functions, control())
     assert calls == total_calls
@@ -126,34 +131,66 @@ async def test__Limiter_workers(monkeypatch):
 
 @pytest.mark.asyncio
 async def test__Limiter_rate_limit(monkeypatch):
-    '''Test that function is called at or below rate limit'''
-    # current_time = 0
-    #
-    # def _mock_now(x):
-    #     return current_time
-    
-    _mock_now = Mock()
-    _mock_now.side_effect = [.1*n for n in range(100)]
+    """Test that the rate limit is enforced.
 
-    monkeypatch.setattr(http._Limiter, '_get_now', _mock_now)
-    limiter = http._Limiter(rate_limit=5, max_workers=0)
-    limiter.retry_interval = 0.000  # speed it up
+    This test async queues up tasks and then adjusts the time seen by
+    _Limiter, checking that tasks are called according to the rate limit.
+    """
+    rate_limit = 5  # calls per second
+    cadence = .2  # rate of 5/s -> period (cadence) of 200ms
+    limiter = http._Limiter(rate_limit=rate_limit, max_workers=0)
 
-    calls = []
+    # this value seems small enough to speed up the test but large enough
+    # to avoid undue CPU churn
+    limiter.retry_interval = 0.001
 
-    LOGGER.warning(limiter._last_call)
+    # this value seems large enough for one async function to wait for others
+    # to progress to the next stage but small enough to not noticeably slow
+    # down tests. It needs to be larger than limiter.retry_interval
+    other_fcns_wait = 0.01
 
-    # current_time = 0
-    async def _func():
-        calls.append(time.time())
+    # establish control over the time _Limiter reads
+    current_time = 0
+    monkeypatch.setattr(http._Limiter, '_get_now', lambda x: current_time)
 
+    calls = 0
 
-    for _ in range(5):
+    async def test_func():
         async with limiter:
-            await _func()
+            nonlocal calls
+            calls += 1
 
-    LOGGER.warning(calls)
-    assert calls == []
+    async def control():
+        nonlocal calls, current_time
+
+        # on call gets made right out of the gate
+        await asyncio.sleep(other_fcns_wait)
+        assert calls == 1
+
+        # we haven't reached cadence delay, no new calls should be made
+        current_time = 0.9 * cadence
+        await asyncio.sleep(other_fcns_wait)
+        assert calls == 1
+
+        # we passed cadence delay, a new call should have been made
+        current_time = cadence
+        await asyncio.sleep(other_fcns_wait)
+        assert calls == 2
+
+        # we passed cadence delay again, a new call should have been made
+        current_time = 2 * cadence
+        await asyncio.sleep(other_fcns_wait)
+        assert calls == 3
+
+        # we skip forward 2 * cadence delay, only one more call should have
+        # been made
+        current_time = 4 * cadence
+        await asyncio.sleep(other_fcns_wait)
+        assert calls == 4
+
+    total_calls = 5  # needs to be greater than the number of calls in control()
+    test_functions = [test_func() for _ in range(total_calls)]
+    await asyncio.gather(*test_functions, control())
 
 
 @pytest.mark.asyncio

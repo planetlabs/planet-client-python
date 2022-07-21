@@ -15,7 +15,7 @@ LOGGER = logging.getLogger(__name__)
 @pytest.mark.parametrize('execution_number', range(3))
 @pytest.mark.parametrize('rate_limit, max_active', [(10, 50), (10, 100),
                                                     (0, 0)])
-@pytest.mark.parametrize('limit, num_concurrent', [(100, 1000)])
+@pytest.mark.parametrize('limit, num_concurrent', [(100, 3)])
 async def test_configuration(execution_number,
                              limit,
                              num_concurrent,
@@ -84,6 +84,8 @@ async def test_reliability(execution_number,
                            rate_limit,
                            max_active,
                            monkeypatch):
+    """Stress test the reliability of the communication with Planet services.
+    """
     LOGGER.warning(
         'order: limit, num_concurrent, rate_limit, max_active, execution_number'
     )
