@@ -16,9 +16,9 @@ Great for things like format conversion and basic simplification.
 awesome kepler.gl library from the commandline. Useful for visualization of large amounts of 
 geojson.
 * **[GeoJSON.io](https://geojson.io/)** - Simple tool to do editing of geojson, useful for creating
-AOI's. Integrates with github, but doesn't seem to work so well.
-* **[Placemark.io](https://placemark.io)** - More advanced tool from the creator of GeoJSON, very
-nice for creating AOI's and piping them in. 
+AOI's. It integrates with github, but the ability to save a GeoJSON to github doesn't seem to work so well.
+* **[Placemark.io](https://placemark.io)** - More advanced tool from the creator of GeoJSON.io, very
+nice for creating AOI's and piping them in, with lots of rich geometry editing features. 
 * **[MapShaper](https://github.com/mbloch/mapshaper)** - Tool to do interactive simplification of
 GeoJSON, has a nice CLI.
 * **[STACTools](https://github.com/stac-utils/stactools)** - CLI for working with STAC data. There

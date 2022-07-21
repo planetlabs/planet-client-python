@@ -335,8 +335,7 @@ Now we'll dive into the variety of ways to customize your order. These can all b
 combined with all the commands listed above.
 
 We'll work with a geojson saved online. You should download the 
-[raw json](https://gist.githubusercontent.com/cholmes/c7736ac5241d77605524d01ed2dc57a1/raw/7d24e02ba894e64c4c737c253a0cce4cac54167c/geometry.geojson) 
-from github. If you want to see what it looks like check the 
+[geometry](data/geometry.geojson). If you want to see what it looks like check the 
 [preview](https://gist.github.com/cholmes/c7736ac5241d77605524d01ed2dc57a1)).
 
 You can move that geometry to your current directory and use the following command, or
