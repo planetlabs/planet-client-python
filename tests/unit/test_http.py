@@ -12,6 +12,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
+import asyncio
 import logging
 from http import HTTPStatus
 import math
@@ -71,29 +72,88 @@ def test_basesession__raise_for_status(mock_response):
         http.BaseSession._raise_for_status(
             mock_response(HTTPStatus.METHOD_NOT_ALLOWED, json={}))
 
-import asyncio
-import time
+
 @pytest.mark.asyncio
-async def test__Limiter_rate_limit():
-    # test_limiter = http._Limiter(rate_limit=1, max_workers=5)
-    test_limiter = http._Limiter(rate_limit=5, max_workers=10)
+async def test__Limiter_workers(monkeypatch):
+    """Test that the worker cap is enforced.
+
+    This test async queues up more tasks than the limiter worker cap. Each task
+    registers itself as running, continues to run until an external flag
+    is changed, then registers itself as done. Along with the tasks, a
+    controller task is run asynchronously. This task waits for the other tasks
+    to queue up, checks that the number of tasks running is equal to the
+    limiter worker cap, then changes the state of the external flag, releasing
+    the tasks.
+    """
+    max_workers = 2
+    limiter = http._Limiter(rate_limit=0, max_workers=max_workers)
+
+    limiter.retry_interval = 0
+
+    active = 0
+    calls = 0
+    hold_flag = True
+
+    async def test_func():
+        async with limiter:
+            nonlocal active, calls, hold_flag
+            active += 1
+            calls += 1
+
+            # wait until hold is released
+            while hold_flag:
+                await asyncio.sleep(.001)
+
+            active -= 1
+
+    async def control():
+        nonlocal active, hold_flag
+
+        # give test functions some time to start
+        await asyncio.sleep(.01)
+
+        # confirm number of workers is capped
+        assert active == max_workers
+
+        # release hold so workers can complete
+        hold_flag = False
+
+    total_calls = 2 * max_workers
+    test_functions = [test_func() for _ in range(total_calls)]
+    await asyncio.gather(*test_functions, control())
+    assert calls == total_calls
+
+
+@pytest.mark.asyncio
+async def test__Limiter_rate_limit(monkeypatch):
+    '''Test that function is called at or below rate limit'''
+    # current_time = 0
+    #
+    # def _mock_now(x):
+    #     return current_time
+    
+    _mock_now = Mock()
+    _mock_now.side_effect = [.1*n for n in range(100)]
+
+    monkeypatch.setattr(http._Limiter, '_get_now', _mock_now)
+    limiter = http._Limiter(rate_limit=5, max_workers=0)
+    limiter.retry_interval = 0.000  # speed it up
+
     calls = []
 
+    LOGGER.warning(limiter._last_call)
+
+    # current_time = 0
     async def _func():
-        async with test_limiter:
-            calls.append(time.time())
-            await asyncio.sleep(1)
-            # time.sleep(0.1)
+        calls.append(time.time())
 
-    num_concurrent = 20
-    tasks = [_func() for _ in range(num_concurrent)]
-    await asyncio.gather(*tasks, return_exceptions=False)
 
-    deltas = [y - x for x, y in zip(calls[0::], calls[1::])]
-    LOGGER.warning(sorted(deltas))
-    LOGGER.warning(deltas)
-    min_delta = sorted(deltas)[0]
-    assert min_delta == 0
+    for _ in range(5):
+        async with limiter:
+            await _func()
+
+    LOGGER.warning(calls)
+    assert calls == []
 
 
 @pytest.mark.asyncio
