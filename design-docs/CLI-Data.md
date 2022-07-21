@@ -204,11 +204,11 @@ response (pretty-printed)
 }
 ```
 
-## search-quick
+## search
 
 ### Interface
 
-planet data search-quick [OPTIONS] ITEM_TYPES [FILTER]
+planet data search [OPTIONS] ITEM_TYPES [FILTER]
 
 Execute a structured item search.
 
@@ -237,7 +237,7 @@ with clear pixel percent greater than 98% acquired in July 2021.
 $ planet data filter \
 --range clear_percent gt 98 \
 --date-range acquired gte 2021-07-01 \
---date-range acquired lt 2021-08-01 | planet data search-quick --limit 1 PSScene
+--date-range acquired lt 2021-08-01 | planet data search --limit 1 PSScene
 ```
 response (pretty-printed)
 ```
@@ -725,9 +725,6 @@ Arguments:
 ITEM_TYPES - string. Comma-separated item type identifier(s).
 INTERVAL - string. The size of the histogram buckets (<hour, day, week, month, year>)
 FILTER - string. A full JSON description filter. Supports file and stdin.
-
-Options:
---utc-offset - string. A "ISO 8601 UTC offset" (e.g. +01:00 or -08:00) that can be used to adjust the buckets to a users time zone.
 
 Output:
 A full JSON description of the returned statistics result.

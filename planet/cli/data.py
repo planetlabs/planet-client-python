@@ -18,7 +18,7 @@ from contextlib import asynccontextmanager
 import click
 
 from planet import data_filter, DataClient
-from planet.clients.data import SEARCH_SORT, SEARCH_SORT_DEFAULT
+from planet.clients.data import SEARCH_SORT, SEARCH_SORT_DEFAULT, STATS_INTERVAL
 
 from . import types
 from .cmds import coro, translate_exceptions
@@ -48,6 +48,7 @@ def data(ctx, base_url):
     ctx.obj['BASE_URL'] = base_url
 
 
+# TODO: filter().
 def geom_to_filter(ctx, param, value: Optional[dict]) -> Optional[dict]:
     return data_filter.geometry_filter(value) if value else None
 
@@ -239,7 +240,7 @@ def filter(ctx,
               show_default=True,
               help='Field and direction to order results by.')
 @pretty
-async def search_quick(ctx, item_types, filter, limit, name, sort, pretty):
+async def search(ctx, item_types, filter, limit, name, sort, pretty):
     """Execute a structured item search.
 
     This function outputs a series of GeoJSON descriptions, one for each of the
@@ -254,11 +255,11 @@ async def search_quick(ctx, item_types, filter, limit, name, sort, pretty):
     parameter will be applied to the stored quick search.
     """
     async with data_client(ctx) as cl:
-        items = await cl.quick_search(item_types,
-                                      filter,
-                                      name=name,
-                                      sort=sort,
-                                      limit=limit)
+        items = await cl.search(item_types,
+                                filter,
+                                name=name,
+                                sort=sort,
+                                limit=limit)
         async for item in items:
             echo_json(item, pretty)
 
@@ -299,6 +300,27 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
+@click.argument("item_types", type=types.CommaSeparatedString())
+@click.argument('interval', type=click.Choice(STATS_INTERVAL))
+@click.argument("filter", type=types.JSON(), default="-", required=False)
+async def stats(ctx, item_types, interval, filter):
+    """Get a bucketed histogram of items matching the filter.
+
+    This function returns a bucketed histogram of results based on the
+    item_types, interval, and json filter specified (using file or stdin).
+
+    """
+    async with data_client(ctx) as cl:
+        items = await cl.get_stats(item_types=item_types,
+                                   interval=interval,
+                                   search_filter=filter)
+        echo_json(items)
+
+
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
 @pretty
 @click.argument('search_id')
 async def search_get(ctx, search_id, pretty):
@@ -319,4 +341,3 @@ async def search_get(ctx, search_id, pretty):
 # TODO: asset_activate()".
 # TODO: asset_wait()".
 # TODO: asset_download()".
-# TODO: stats()".

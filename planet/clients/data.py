@@ -97,12 +97,12 @@ class DataClient:
         """
         return await self._session.request(request)
 
-    async def quick_search(self,
-                           item_types: typing.List[str],
-                           search_filter: dict,
-                           name: str = None,
-                           sort: str = None,
-                           limit: int = 100) -> typing.AsyncIterator[dict]:
+    async def search(self,
+                     item_types: typing.List[str],
+                     search_filter: dict,
+                     name: str = None,
+                     sort: str = None,
+                     limit: int = 100) -> typing.AsyncIterator[dict]:
         """Execute a quick search.
 
         Quick searches are saved for a short period of time (~month). The
@@ -336,7 +336,7 @@ class DataClient:
             interval: The size of the histogram date buckets.
 
         Returns:
-            Returns a date bucketed histogram of items matching the filter.
+            A full JSON description of the returned statistics result histogram.
 
         Raises:
             planet.exceptions.APIError: On API error.
@@ -348,11 +348,13 @@ class DataClient:
                 f'{interval} must be one of {STATS_INTERVAL}')
 
         url = f'{self._base_url}{STATS_PATH}'
+
         request_json = {
             'interval': interval,
             'filter': search_filter,
             'item_types': item_types
         }
+
         request = self._request(url, method='POST', json=request_json)
         response = await self._do_request(request)
         return response.json()

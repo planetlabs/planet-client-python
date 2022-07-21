@@ -329,7 +329,7 @@ the context of a `Session` with the `DataClient`:
 >>> async def main():
 ...     async with Session() as sess:
 ...         cl = DataClient(sess)
-...         items = await cl.quick_search(['PSScene'], sfilter)
+...         items = await cl.search(['PSScene'], sfilter)
 ...
 >>> asyncio.run(main())
 ```
@@ -364,7 +364,7 @@ represent GeoJSON features, the JSON blob is a GeoJSON FeatureCollection.
 Otherwise, the JSON blob is a list of the individual results.
 
 ```console
-$ planet data search-quick PSScene filter.json | planet collect -
+$ planet data search PSScene filter.json | planet collect -
 ```
 
 contents of `filter.json`:
@@ -509,5 +509,5 @@ $ planet data filter \
 This can be fed directly into a search command e.g.:
 
 ```console
-$ planet data filter --geom aoi.json | planet data search-quick PSScene -
+$ planet data filter --geom aoi.json | planet data search PSScene -
 ```
