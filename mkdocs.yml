@@ -7,6 +7,10 @@ theme:
     logo: img/logo.svg
     favicon: img/logo.svg
 
+extra:
+  version:
+    provider: mike
+    
 plugins:
   - search
   - mkdocstrings:
