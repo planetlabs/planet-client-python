@@ -30,8 +30,9 @@ from .__version__ import __version__
 
 # For how this list was determined, see
 # https://github.com/planetlabs/planet-client-python/issues/580
+# httpcore.CloseError is actually a httpx bug, will go away with a httpx upgrade - see https://github.com/encode/httpcore/pull/310
 RETRY_EXCEPTIONS = [
-    httpcore.CloseError,  # this is actually a httpx bug, will go away with a httpx upgrade - see https://github.com/encode/httpcore/pull/310
+    httpcore.CloseError,
     httpx.ConnectError,
     httpx.ReadError,
     httpx.ReadTimeout,
