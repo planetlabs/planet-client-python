@@ -87,7 +87,7 @@ planet orders --state running
 
 The other options are queued, failed, success, partial and cancelled.
 
-Note you can also get a nice list online as well, at https://www.planet.com/account/#/orders
+Note you can also view a nice list of your orders online as well, at https://www.planet.com/account/#/orders
 
 #### Recent Orders with Formatting
 
@@ -334,8 +334,10 @@ of at least one being corrupted in creases
 Now we'll dive into the variety of ways to customize your order. These can all be
 combined with all the commands listed above.
 
-We'll work with a geojson saved online. You should download the 
-[geometry](data/geometry.geojson). 
+We'll work with a geojson that is already saved. You should download the 
+[geometry](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/data/geometry.geojson)
+(and you can see it [on github](https://github.com/planetlabs/planet-client-python/blob/main/docs/data/geometry.geojson)
+or it is also stored in the repo in the [data/](data/) directory. 
 
 You can move that geometry to your current directory and use the following command, or
 tweak the geometry.geojson to refer to where you downloaded it.
@@ -407,8 +409,8 @@ planet orders request --item-type PSScene --name "Two Scenes Composited" \
 #### Clip & Composite
 
 To clip and composite you need to specify the clip in the tools (instead of `--clip`), as you can
-not use `--clip` and `--tools` in the same call. You can see the full JSON for the tools in 
-[here](data/tools-clip-composite.json).
+not use `--clip` and `--tools` in the same call. There is not yet CLI calls to generate the `tools.json`,
+so you can just grab the [full tools.json](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/data/tools-clip-composite.json)
 
 ```console
 planet orders request --item-type PSScene --name "Two Scenes Clipped and Composited" \
@@ -418,8 +420,8 @@ planet orders request --item-type PSScene --name "Two Scenes Clipped and Composi
 One cool little trick is that you can even stream in the JSON directly with `curl`, piping it into the request:
 
 ```console
-curl -s https://gist.githubusercontent.com/cholmes/378d050a263ae433ddbbb91c3439994b/raw/ebcaa54cacdc6f696a0506705785f8ff8dae9af1/ \
-tools-clip-composite.json | planet orders request --item-type PSScene --name "Streaming Clip & Composite" \
+curl -s https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/data/tools-clip-composite.json \
+| planet orders request --item-type PSScene --name "Streaming Clip & Composite" \
  --bundle analytic_sr_udm2 --id 20220605_124027_64_242b,20220605_124025_34_242b --tools - | planet orders create
 ```
 
