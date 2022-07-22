@@ -173,22 +173,23 @@ async def test__Limiter_rate_limit(monkeypatch):
         assert calls == 1
 
         # we passed cadence delay, a new call should have been made
-        current_time = cadence
+        current_time = 1.1 * cadence
         await asyncio.sleep(other_fcns_wait)
         assert calls == 2
 
-        # we passed cadence delay again, a new call should have been made
-        current_time = 2 * cadence
-        await asyncio.sleep(other_fcns_wait)
-        assert calls == 3
-
         # we skip forward 2 * cadence delay, only one more call should have
         # been made
-        current_time = 4 * cadence
+        current_time = 3.2 * cadence
+        await asyncio.sleep(other_fcns_wait)
+        assert calls == 3
+        LOGGER.debug('here')
+
+        # final call should have been made
+        current_time = 5 * cadence
         await asyncio.sleep(other_fcns_wait)
         assert calls == 4
 
-    total_calls = 5  # needs to be greater than the number of calls in control()
+    total_calls = 4  # needs to equal the highest number of calls in control()
     test_functions = [test_func() for _ in range(total_calls)]
     await asyncio.gather(*test_functions, control())
 
