@@ -28,6 +28,10 @@ from .auth import Auth, AuthType
 from . import exceptions, models
 from .__version__ import __version__
 
+# NOTE: configuration of the session was performed using the data API quick
+# search endpoint. These values can be re-tested, tested with a new endpoint or
+# refined using session_configuration.py in the scripts directory.
+
 # For how this list was determined, see
 # https://github.com/planetlabs/planet-client-python/issues/580
 # httpcore.CloseError is actually a httpx bug, will go away with a httpx upgrade - see https://github.com/encode/httpcore/pull/310
@@ -120,6 +124,9 @@ class _Limiter:
     [2] https://github.com/planetlabs/planet-client-python/issues/580#issuecomment-1182752851
     [3] https://github.com/mjpieters/aiolimiter
     [4] https://github.com/mjpieters/aiolimiter/issues/73
+
+    The behavior of limiting in communication with live servers can be tested
+    and refined using session_configuration.py in the scripts directory.
     """
 
     def __init__(self, rate_limit=0, max_workers=0):
