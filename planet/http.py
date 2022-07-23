@@ -15,18 +15,43 @@
 """Functionality to perform HTTP requests"""
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import asyncio
+from collections import Counter
 from http import HTTPStatus
 import logging
 import random
+import time
 
+import httpcore
 import httpx
 
 from .auth import Auth, AuthType
 from . import exceptions, models
 from .__version__ import __version__
 
+# NOTE: configuration of the session was performed using the data API quick
+# search endpoint. These values can be re-tested, tested with a new endpoint or
+# refined using session_configuration.py in the scripts directory.
+
+# For how this list was determined, see
+# https://github.com/planetlabs/planet-client-python/issues/580
+# httpcore.CloseError is actually a httpx bug, will go away with a httpx upgrade - see https://github.com/encode/httpcore/pull/310
+RETRY_EXCEPTIONS = [
+    httpcore.CloseError,
+    httpx.ConnectError,
+    httpx.ReadError,
+    httpx.ReadTimeout,
+    httpx.RemoteProtocolError,
+    exceptions.BadGateway,
+    exceptions.TooManyRequests
+]
 MAX_RETRIES = 5
 MAX_RETRY_BACKOFF = 64  # seconds
+
+# For how these settings were determined, see
+# https://github.com/planetlabs/planet-client-python/issues/580
+READ_TIMEOUT = 30.0
+RATE_LIMIT = 10  # per second
+MAX_ACTIVE = 50
 
 LOGGER = logging.getLogger(__name__)
 
@@ -62,7 +87,8 @@ class BaseSession:
             HTTPStatus.NOT_FOUND: exceptions.MissingResource,
             HTTPStatus.CONFLICT: exceptions.Conflict,
             HTTPStatus.TOO_MANY_REQUESTS: exceptions.TooManyRequests,
-            HTTPStatus.INTERNAL_SERVER_ERROR: exceptions.ServerError
+            HTTPStatus.INTERNAL_SERVER_ERROR: exceptions.ServerError,
+            HTTPStatus.BAD_GATEWAY: exceptions.BadGateway
         }.get(status, exceptions.APIError)
         LOGGER.debug(f"Exception type: {exception}")
 
@@ -75,6 +101,91 @@ class BaseSession:
                 exception = exceptions.OverQuota
 
         raise exception(msg)
+
+
+class _Limiter:
+    """Limit number of workers and rate of requests.
+
+    Avoids clobbering the API with thousands of async requests.
+
+    Setting rate_limit to zero disables rate (cadence) limiting.
+    Setting max_workers to zero disables capping maximum workers.
+
+    This is inspired by asyncio-throttle[1] but altered to enforce cadence
+    based on finding that the API returns TooManyRequestError if 2 calls are
+    made too close to eachother (even though max rate limit is 5 calls per
+    second)[2].
+
+    In investigating options, aiolimiter[3] was also looked at but it seems to
+    have odd behavior with httpx [4].
+
+    References:
+    [1] https://github.com/hallazzang/asyncio-throttle
+    [2] https://github.com/planetlabs/planet-client-python/issues/580#issuecomment-1182752851
+    [3] https://github.com/mjpieters/aiolimiter
+    [4] https://github.com/mjpieters/aiolimiter/issues/73
+
+    The behavior of limiting in communication with live servers can be tested
+    and refined using session_configuration.py in the scripts directory.
+    """
+
+    def __init__(self, rate_limit=0, max_workers=0):
+        # Configuration
+        if rate_limit > 0:
+            self.cadence = 1.0 / rate_limit
+            LOGGER.debug(f'Throttling cadence set to {self.cadence}s.')
+        else:
+            self.cadence = 0
+
+        self.limit = max_workers
+        if self.limit:
+            LOGGER.debug(f'Workers capped at {self.limit}.')
+
+        self.retry_interval = 0.01
+
+        # track state
+        self._running = 0
+        self._last_call = None
+
+    @staticmethod
+    def _get_now():
+        return time.monotonic()
+
+    async def throttle(self):
+        if self.cadence:
+            while True:
+                now = self._get_now()
+                if self._last_call is None:
+                    # first call, no need to throttle
+                    self._last_call = now
+                    break
+                elif now - self._last_call >= self.cadence:
+                    LOGGER.debug(
+                        f'Throught throttle, delta: {now - self._last_call}')
+                    self._last_call = now
+                    break
+                await asyncio.sleep(self.retry_interval)
+
+    async def acquire(self):
+        if self.limit:
+            while True:
+                if self._running < self.limit:
+                    self._running += 1
+                    LOGGER.debug('Worker acquired.')
+                    break
+                await asyncio.sleep(self.retry_interval)
+
+    def release(self):
+        if self.limit and self._running:
+            LOGGER.debug('Worker released.')
+            self._running -= 1
+
+    async def __aenter__(self):
+        await self.acquire()
+        await self.throttle()
+
+    async def __aexit__(self, exc_type, exc, tb):
+        self.release()
 
 
 class Session(BaseSession):
@@ -119,7 +230,6 @@ class Session(BaseSession):
 
         Parameters:
             auth: Planet server authentication.
-
         """
         if auth is None:
             # Try getting credentials from environment before checking
@@ -130,7 +240,10 @@ class Session(BaseSession):
             except exceptions.PlanetError:
                 auth = Auth.from_file()
 
-        self._client = httpx.AsyncClient(auth=auth)
+        LOGGER.info(f'Session read timeout set to {READ_TIMEOUT}.')
+        timeout = httpx.Timeout(10.0, read=READ_TIMEOUT)
+        self._client = httpx.AsyncClient(auth=auth, timeout=timeout)
+
         self._client.headers.update({'User-Agent': self._get_user_agent()})
         self._client.headers.update({'X-Planet-App': 'python-sdk'})
 
@@ -150,6 +263,9 @@ class Session(BaseSession):
 
         self.max_retries = MAX_RETRIES
         self.max_retry_backoff = MAX_RETRY_BACKOFF
+
+        self._limiter = _Limiter(rate_limit=RATE_LIMIT, max_workers=MAX_ACTIVE)
+        self.outcomes: Counter[str] = Counter()
 
     async def __aenter__(self):
         return self
@@ -182,15 +298,22 @@ class Session(BaseSession):
             try:
                 resp = await func(*a, **kw)
                 break
-            except exceptions.TooManyRequests as e:
-                if num_tries > self.max_retries:
-                    raise e
+            except Exception as e:
+                if type(e) in RETRY_EXCEPTIONS:
+                    if num_tries > self.max_retries:
+                        raise e
+                    else:
+                        self.outcomes.update([type(e)])
+                        LOGGER.info(f'Try {num_tries}')
+                        LOGGER.info(f'Retrying: caught {type(e)}: {e}')
+                        wait_time = self._calculate_wait(
+                            num_tries, self.max_retry_backoff)
+                        LOGGER.info(f'Retrying: sleeping {wait_time}s')
+                        await asyncio.sleep(wait_time)
                 else:
-                    LOGGER.debug(f'Try {num_tries}')
-                    wait_time = self._calculate_wait(num_tries,
-                                                     self.max_retry_backoff)
-                    LOGGER.info(f'Too Many Requests: sleeping {wait_time}s')
-                    await asyncio.sleep(wait_time)
+                    raise e
+
+        self.outcomes.update(['Successful'])
         return resp
 
     @staticmethod
@@ -239,9 +362,10 @@ class Session(BaseSession):
         return await self._retry(self._request, request, stream=stream)
 
     async def _request(self, request, stream=False):
-        """Submit a request"""
-        http_resp = await self._client.send(request.http_request,
-                                            stream=stream)
+        """Submit a request with rate/worker limiting."""
+        async with self._limiter:
+            http_resp = await self._client.send(request.http_request,
+                                                stream=stream)
         return models.Response(request, http_resp)
 
     def stream(self, request: models.Request) -> Stream:

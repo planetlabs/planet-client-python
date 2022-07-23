@@ -63,6 +63,11 @@ class ServerError(APIError):
     pass
 
 
+class BadGateway(APIError):
+    '''Bad gateway, HTTP 502'''
+    pass
+
+
 class InvalidIdentity(APIError):
     '''Raised when logging in with invalid credentials'''
     pass

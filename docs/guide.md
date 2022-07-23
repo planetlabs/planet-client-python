@@ -329,7 +329,7 @@ the context of a `Session` with the `DataClient`:
 >>> async def main():
 ...     async with Session() as sess:
 ...         cl = DataClient(sess)
-...         items = await cl.search(sfilter)
+...         items = await cl.search(['PSScene'], sfilter)
 ...
 >>> asyncio.run(main())
 ```
