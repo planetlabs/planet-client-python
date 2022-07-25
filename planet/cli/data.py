@@ -19,12 +19,15 @@ import click
 
 from planet import data_filter, DataClient
 from planet.clients.data import SEARCH_SORT, SEARCH_SORT_DEFAULT, STATS_INTERVAL
+from planet.specs import get_item_types
 
 from . import types
 from .cmds import coro, translate_exceptions
 from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
+
+ITEM_TYPES = get_item_types('analytic')
 
 
 @asynccontextmanager
