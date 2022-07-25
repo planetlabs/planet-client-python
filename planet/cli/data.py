@@ -19,7 +19,7 @@ import click
 
 from planet import data_filter, DataClient
 from planet.clients.data import SEARCH_SORT, SEARCH_SORT_DEFAULT, STATS_INTERVAL
-from planet.specs import get_item_types
+from planet.specs import get_item_types, get_product_bundles
 
 from . import types
 from .cmds import coro, translate_exceptions
@@ -27,7 +27,11 @@ from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
 
-ITEM_TYPES = get_item_types('analytic')
+BUNDLES = get_product_bundles()
+all_item_types = []
+for bundle in BUNDLES:
+    all_item_types += [*get_item_types(bundle)]
+ITEM_TYPES = set(all_item_types)
 
 
 @asynccontextmanager
@@ -233,7 +237,7 @@ def filter(ctx,
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("item_types", type=types.CommaSeparatedString())
+@click.argument('item_types', type=click.Choice(ITEM_TYPES))
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 @limit
 @click.option('--name', type=str, help='Name of the saved search.')
@@ -272,7 +276,7 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
 @translate_exceptions
 @coro
 @click.argument('name')
-@click.argument("item_types", type=types.CommaSeparatedString())
+@click.argument('item_types', type=click.Choice(ITEM_TYPES))
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 @click.option('--daily-email',
               is_flag=True,
@@ -303,7 +307,7 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("item_types", type=types.CommaSeparatedString())
+@click.argument('item_types', type=click.Choice(ITEM_TYPES))
 @click.argument('interval', type=click.Choice(STATS_INTERVAL))
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 async def stats(ctx, item_types, interval, filter):
