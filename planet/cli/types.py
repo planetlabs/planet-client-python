@@ -32,13 +32,11 @@ class CommaSeparatedString(click.types.StringParamType):
 
             if convstr == '':
                 self.fail('Entry cannot be an empty string.')
-
             convlist = [part.strip() for part in convstr.split(",")]
 
             for v in convlist:
                 if not v:
                     self.fail(f'Empty entry encountered in "{value}".')
-
         return convlist
 
 
@@ -55,6 +53,24 @@ class CommaSeparatedFloat(click.types.StringParamType):
             self.fail(f'Cound not convert all entries in "{value}" to float.')
 
         return ret
+
+
+class CommaSeparatedChoice(click.types.StringParamType):
+    def __init__(self, *args, **kwargs):
+        self.choice = click.types.Choice(*args, **kwargs)
+
+    def get_metavar(self, param: "click.Parameter"):
+        self.choice.get_metavar(param)
+
+    def convert(self, value, param, ctx) -> List[float]:
+        bad_values = CommaSeparatedString().convert(value, param, ctx)
+        # import pdb; pdb.set_trace()
+        if len(bad_values) > 1:
+            values = [v.strip().split("'")[1] for v in bad_values]
+        else:
+            values = bad_values
+        converted = [self.choice.convert(v, param, ctx) for v in values]
+        return converted
 
 
 class JSON(click.ParamType):
