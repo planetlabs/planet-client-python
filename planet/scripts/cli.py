@@ -15,6 +15,14 @@
 import click
 import logging
 import sys
+import textwrap
+import warnings
+
+# Importing planet.api triggers a deprecation warning. In the planet
+# command and its sub-commands we will intercept and ignore the
+# warning and instead show users a detailed warning in the command
+# usage text, and a short warning on command execution.
+warnings.filterwarnings("ignore", module="planet.api")
 
 from planet import api
 from planet.api.__version__ import __version__
@@ -64,7 +72,35 @@ def configure_logging(verbosity):
                    ' - Default https://api.planet.com/')
 @click.version_option(version=__version__, message='%(version)s')
 def cli(context, verbose, api_key, base_url, workers):
-    '''Planet API Client'''
+    """Planet API Client
+
+    Attention!
+
+    You are using version 1 of the Planet CLI. A pre-release of version
+    2 is available at https://pypi.org/project/planet/. Version 2 will
+    not be backward compatible. Changes are planned for the arguments,
+    options, and return values of subcommands. For more information
+    about the new version, please join the discussion at
+    https://github.com/planetlabs/planet-client- python/discussions.
+
+    """
+    warnmsg = click.style(
+        "\n".join(
+            textwrap.wrap(
+                "Attention! You are using version 1 of the Planet CLI. "
+                "Version 2 will not be backward compatible. "
+                "Please see `planet --help` for details. "
+                "This warning may be disabled by setting "
+                "`PYTHONWARNINGS=ignore` in your environment.",
+                width=80,
+            )
+        ),
+        fg="yellow",
+    )
+    prev_formatwarning = warnings.formatwarning
+    warnings.formatwarning = lambda msg, *args, **kwargs: "{}\n".format(msg)
+    warnings.warn(warnmsg, UserWarning)
+    warnings.formatwarning = prev_formatwarning
 
     configure_logging(verbose)
 
