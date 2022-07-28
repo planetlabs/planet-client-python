@@ -1,0 +1,2 @@
+sphinx
+jinja2<3.1
