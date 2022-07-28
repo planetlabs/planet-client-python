@@ -78,7 +78,7 @@ def cli(context, verbose, api_key, base_url, workers):
 
     You are using version 1 of the Planet CLI. A pre-release of version
     2 is available at https://pypi.org/project/planet/. Version 2 will
-    not be backwards-compatible. Changes are planned for the arguments,
+    not be backward compatible. Changes are planned for the arguments,
     options, and return values of subcommands. For more information
     about the new version, please join the discussion at
     https://github.com/planetlabs/planet-client- python/discussions.
@@ -98,7 +98,7 @@ def cli(context, verbose, api_key, base_url, workers):
         fg="yellow",
     )
     prev_formatwarning = warnings.formatwarning
-    warnings.formatwarning = lambda msg, *args, **kwargs: f"{msg}\n"
+    warnings.formatwarning = lambda msg, *args, **kwargs: "{}\n".format(msg)
     warnings.warn(warnmsg, UserWarning)
     warnings.formatwarning = prev_formatwarning
 

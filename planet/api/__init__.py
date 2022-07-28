@@ -40,4 +40,5 @@ warnings.warn(
     "For more details please see the discussion at "
     "https://github.com/planetlabs/planet-client-python/discussions.",
     ClientV1DeprecationWarning,
+    stacklevel=2
 )
