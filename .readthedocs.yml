@@ -13,5 +13,5 @@ python:
   - requirements: docs/source/requirements.txt
   - method: pip
     path: .
-      extra_req:
-      - dev
+    extra_requirements:
+    - dev
