@@ -42,6 +42,7 @@ dev_requires = [
     'pex',
     'pytest-cov',
     'sphinx',
+    'jinja2<3.1',
     'wheel',
     'mock',
     'requests-mock',

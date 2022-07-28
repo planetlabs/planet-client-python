@@ -1,5 +1,13 @@
 # Changes.txt
 
+1.5.1 (2022-07-28)
+
+- Fix: execution of the v1 CLI now prints a more clear, yellow colored warning
+  message aimed at CLI users. A more detailed version of the same warning is
+  also printed in the planet commands usage message (#652).
+- Fix: the deprecation warning emitted on import of planet.api now uses
+  stacklevel=2 and thus points at the module which imports planet.api (#652).
+
 1.5.0 (2022-06-29)
 
 Work on new features for version 1 of this software has ceased. Version 2 is
