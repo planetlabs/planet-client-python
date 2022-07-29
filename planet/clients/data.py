@@ -109,6 +109,21 @@ class DataClient:
         `name` parameter of the search defaults to the id of the generated
         search id if `name` is not specified.
 
+        To filter to items you have access to download which are of standard
+        (aka not test) quality, use the following:
+
+        ```python
+        >>> from planet import data_filter
+        >>> data_filter.and_filter([
+        ...     data_filter.permission_filter(),
+        ...     data_filter.std_quality_filter()
+        >>> ])
+
+        ```
+
+        To avoid filtering out any imagery, supply a blank AndFilter, which can
+        be created with `data_filter.and_filter([])`.
+
         Example:
 
         ```python
@@ -175,6 +190,22 @@ class DataClient:
                             search_filter: dict,
                             enable_email: bool = False) -> dict:
         """Create a new saved structured item search.
+
+        To filter to items you have access to download which are of standard
+        (aka not test) quality, use the following:
+
+        ```python
+        >>> from planet import data_filter
+        >>> data_filter.and_filter([
+        ...     data_filter.permission_filter(),
+        ...     data_filter.std_quality_filter()
+        >>> ])
+
+        ```
+
+        To avoid filtering out any imagery, supply a blank AndFilter, which can
+        be created with `data_filter.and_filter([])`.
+
 
         Parameters:
             name: The name of the saved search.

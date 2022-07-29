@@ -218,12 +218,8 @@ def filter(ctx,
             else:
                 filters.append(f)
 
-    if filters:
-        if len(filters) > 1:
-            filt = data_filter.and_filter(filters)
-        else:
-            filt = filters[0]
-        echo_json(filt, pretty)
+    filt = data_filter.and_filter(filters)
+    echo_json(filt, pretty)
 
 
 @data.command()
