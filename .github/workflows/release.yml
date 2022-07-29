@@ -1,7 +1,5 @@
 on:
   push:
-    branches: ["main"]
-    tags: ["*"]
 
 jobs:
   package:
@@ -18,11 +16,13 @@ jobs:
       - run: python -m build --sdist --wheel .
       - run: ls -l dist
       - run: check-wheel-contents dist/*.whl
+
       - name: Check long_description
         run: python -m twine check dist/*
-      - name: Upload to PyPI
+
+      - name: Upload to Test PyPI
         uses: pypa/gh-action-pypi-publish@v1.4.2
         with:
+          repository_url: https://test.pypi.org/legacy/
           user: __token__
-          password: ${{ secrets.pypi_password }}
-          skip_existing: true
+          password: ${{ secrets.TEST_PYPI_PASSWORD }}
