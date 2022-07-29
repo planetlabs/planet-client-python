@@ -1,9 +1,12 @@
+name: Release to GitHub and PyPI
+
 on:
   workflow_dispatch:
     inputs:
       prerelease:
-        description: 'Is this a pre-release?'
+        description: 'Is this a pre-release?'     
         required: true
+        type: boolean
 
 jobs:
   package:
