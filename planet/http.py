@@ -21,7 +21,6 @@ import logging
 import random
 import time
 
-import httpcore
 import httpx
 
 from .auth import Auth, AuthType
@@ -34,9 +33,7 @@ from .__version__ import __version__
 
 # For how this list was determined, see
 # https://github.com/planetlabs/planet-client-python/issues/580
-# httpcore.CloseError is actually a httpx bug, will go away with a httpx upgrade - see https://github.com/encode/httpcore/pull/310
 RETRY_EXCEPTIONS = [
-    httpcore.CloseError,
     httpx.ConnectError,
     httpx.ReadError,
     httpx.ReadTimeout,
@@ -64,23 +61,24 @@ class BaseSession:
 
     @staticmethod
     def _log_request(request):
-        LOGGER.info(f'{request.method} {request.url} - Sent')
+        request_pre = f'{request.method} {request.url}'
+        LOGGER.info(f'{request_pre} - Sent')
+        LOGGER.debug(f'{request_pre} - {request.headers}')
+        request.read()
+        LOGGER.debug(f'{request_pre} - {request.content}')
 
     @staticmethod
     def _log_response(response):
         request = response.request
         LOGGER.info(f'{request.method} {request.url} - '
                     f'Status {response.status_code}')
+        LOGGER.debug(response.headers)
 
     @classmethod
-    def _raise_for_status(cls, response):
-        status = response.status_code
+    def _convert_and_raise(cls, error):
+        response = error.response
 
-        miminum_bad_request_code = HTTPStatus.MOVED_PERMANENTLY
-        if status < miminum_bad_request_code:
-            return
-
-        exception = {
+        error_types = {
             HTTPStatus.BAD_REQUEST: exceptions.BadQuery,
             HTTPStatus.UNAUTHORIZED: exceptions.InvalidAPIKey,
             HTTPStatus.FORBIDDEN: exceptions.NoPermission,
@@ -89,18 +87,19 @@ class BaseSession:
             HTTPStatus.TOO_MANY_REQUESTS: exceptions.TooManyRequests,
             HTTPStatus.INTERNAL_SERVER_ERROR: exceptions.ServerError,
             HTTPStatus.BAD_GATEWAY: exceptions.BadGateway
-        }.get(status, exceptions.APIError)
-        LOGGER.debug(f"Exception type: {exception}")
+        }
+        error_type = error_types.get(response.status_code, exceptions.APIError)
+        raise error_type(response.text)
 
-        msg = response.text
-        LOGGER.debug(f"Response text: {msg}")
+    @classmethod
+    def _raise_for_status(cls, response):
+        try:
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            e.response.read()
+            cls._convert_and_raise(e)
 
-        if exception == exceptions.TooManyRequests:
-            # differentiate between over quota and rate-limiting
-            if 'quota' in msg.lower():
-                exception = exceptions.OverQuota
-
-        raise exception(msg)
+        return
 
 
 class _Limiter:
@@ -253,12 +252,9 @@ class Session(BaseSession):
         async def alog_response(*args, **kwargs):
             return self._log_response(*args, **kwargs)
 
-        async def araise_for_status(*args, **kwargs):
-            return self._raise_for_status(*args, **kwargs)
-
         self._client.event_hooks['request'] = [alog_request]
         self._client.event_hooks['response'] = [
-            alog_response, araise_for_status
+            alog_response, self._raise_for_status
         ]
 
         self.max_retries = MAX_RETRIES
@@ -266,6 +262,16 @@ class Session(BaseSession):
 
         self._limiter = _Limiter(rate_limit=RATE_LIMIT, max_workers=MAX_ACTIVE)
         self.outcomes: Counter[str] = Counter()
+
+    @classmethod
+    async def _raise_for_status(cls, response):
+        try:
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            await e.response.aread()
+            cls._convert_and_raise(e)
+
+        return
 
     async def __aenter__(self):
         return self
