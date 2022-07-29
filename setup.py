@@ -32,9 +32,7 @@ install_requires = [
     'tqdm>=4.56',
 ]
 
-test_requires = [
-    'pytest', 'pytest-asyncio==0.16', 'pytest-cov', 'respx==0.19'
-]
+test_requires = ['pytest', 'pytest-asyncio==0.16', 'pytest-cov', 'respx==0.19']
 
 lint_requires = ['flake8', 'mypy', 'yapf']
 
