@@ -41,11 +41,10 @@ def mock_request():
 def mock_response():
 
     def mocker(code, text='', json={"message": "nope"}):
-        r = Mock()
-        r.status_code = code
-        r.text = text
-        r.json = Mock(return_value=json)
-        return r
+        mock_request = httpx.Request('GET', 'url')
+        return httpx.Response(status_code=code,
+                              json=json,
+                              request=mock_request)
 
     return mocker
 
@@ -62,11 +61,8 @@ def test_basesession__raise_for_status(mock_response):
         http.BaseSession._raise_for_status(
             mock_response(HTTPStatus.TOO_MANY_REQUESTS, text='', json={}))
 
-    with pytest.raises(exceptions.OverQuota):
-        http.BaseSession._raise_for_status(
-            mock_response(HTTPStatus.TOO_MANY_REQUESTS,
-                          text='exceeded QUOTA"',
-                          json={}))
+    with pytest.raises(exceptions.APIError):
+        http.BaseSession._raise_for_status(mock_response(HTTPStatus.FORBIDDEN))
 
     with pytest.raises(exceptions.APIError):
         http.BaseSession._raise_for_status(
