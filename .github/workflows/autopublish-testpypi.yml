@@ -29,7 +29,6 @@ jobs:
       - name: Build, verify, and upload to TestPyPI
         run: |
           pip install --upgrade nox
-          nox -s build publish
+          nox -s build publish-testpypi
         env:
-          TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
