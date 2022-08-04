@@ -3,70 +3,21 @@
 Thank you for your interest in contributing to the Planet SDK for Python! This
 document explains how to contribute successfully.
 
-## Workflows
+## Pull Requests and Continuous Integration
 
-### Reporting Bugs
-
-To report a bug, open a new issue with the 'bug' label.
-
-In the issue, provide the following:
-1. Code snippet reproducing the behavior, reduced to the simplest possible case
-1. Operating System and Python version
-1. Installed dependencies / versions
-1. Error traceback
-
-### Pull Requests
-
-Pull Request (PR) Requirements:
-
-1. Must include updates to relative documentation in docstrings and `docs` folder. See Documentation section for information on docstring formatting and building/
-1. Must pass all Continuous Integration (CI) checks. See below for more information on CI checks.
-
-1. Must have at least one approval by a planet maintainer.
-  * For Planet team, **FYI** can be used to specify cases when all that is needed is indication that changes have been noted.
-1. Should be driven by an issue. Reference the issue in the PR.
-1. Should be as small and focused as possible.
+When a Pull Request (PR) is created, the Continuous Integration (CI) runs a
+series of checks. Before a PR can be considered, all checks must pass.
 
 The CI checks:
-
 * all tests on all supported versions of Python
-* test coverage
 * linting / formatting
-* type annotation
 * docs build successfully
 
-To minimize the feedback loop, we have configured Nox so that it can be used to run all of the CI checks on the local machine. See the [Development Tools](#development-tools) section for information on running CI checks locally with Nox.
+To minimize the feedback loop, we have configured Nox so that it can be used
+to run all of these checks on the local machine. See the Tools section for
+information on how to run Nox.
 
-### Releasing
-
-*Planet maintainers only*
-
-Releasing is a two-step process: (1) releasing on Github and test.pypi and (2) releasing to pypi. Releasing on Github will automatically trigger a release on test.pypi via a Github Action. Following manual confirmation of a successful and satisfactory release on test.py, release on pypi is triggered manually with the Github Action "Automatically Publish on TestPyPi".
-
-###### Step 1: Release on Github
-
-1. Create a PR with the following:
-  * Update `docs/CHANGELOG.md`
-    * Include added, changed, depricated or removed features and bug fixes.
-    * Sort according to importance
-    * Adhere to [Keep a Changelog](https://keepachangelog.com/)
-  * Bump version in `planet/__version__.py`
-    * Version number is determined by [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
-1. Merge the PR
-1. Create a new github release:
-  * Set Tag to the version number specified in `planet/__version__.py`
-  * Set Release to Tag with the prefix v, aka v2.0.0-beta.1
-  * Copy Description from the new entry in `docs/CHANGELOG.md`
-  * Select "This is a pre-release" if applicable
-  * Select "Create a discussion for this release"
-
-###### Step 2: Release on pypi
-
-1. Verify the test release on [test.pypi.org](https://test.pypi.org/project/planet/)
-1. Run the Github Action "Publish on PyPi"
-
-
-## <a name="development-tools"></a>Development Tools
+## Tools
 
 This repository uses two primary tools for development:
 * [Nox](https://nox.thea.codes/) to automate testing
@@ -103,18 +54,6 @@ speed up the run by reusing the environment:
 
 ```console
     $ nox -r
-```
-
-If only one test is desired, specify it with `-s`. To only run linting:
-
-```console
-$ nox -s lint
-```
-
-To determine which tests are available:
-
-```console
-    $ nox --list
 ```
 
 The configuration for Nox is given in `noxfile.py`. See the Nox link above for
@@ -155,17 +94,6 @@ To reformat the file:
     $ yapf --in-place [file]
 ```
 
-These commands can be performed on the entire repository, when run from the repository root directory, with:
-
-```console
-    $ yapf --diff -r .
-```
-
-and
-
-```console
-    $ yapf --diff -r .
-```
 The configuration for YAPF is given in `setup.cfg` and `.yapfignore`.
 See the YAPF link above for advanced usage.
 
@@ -201,20 +129,6 @@ To run tests on python 3.7:
 
 ```console
     $ nox -s test-3.7
-```
-
-Configuration can be passed onto pytest through Nox.
-
-To only run tests in a specific file:
-
-```console
-    $ nox -s test3.7 -- tests/unit/test_http.py
-```
-
-Or to only run tests filtered by keyword:
-
-```console
-   $ nox -s test3.7 -- -k test__Limiter
 ```
 
 ## Code coverage
@@ -270,8 +184,6 @@ To build and host an automatically-updated local version of the documentation:
 ```console
     $ nox -s watch
 ```
-
-Copy the local url from the console output and paste it into your browser to view the live rendered docs.
 
 In addition to verifying that the documentation renders correctly locally,
 the accuracy of the code examples must be verified. See Testing Documentation
