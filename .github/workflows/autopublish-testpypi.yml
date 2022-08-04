@@ -1,0 +1,35 @@
+name: Autopublish to TestPyPi
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  publish:
+    name: Build, verify, & upload package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.7
+
+      - name: Pip cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip
+          restore-keys: |
+            ${{ runner.os }}-pip
+
+      - name: Build, verify, and upload to TestPyPI
+        run: |
+          pip install --upgrade nox
+          nox -s build publish
+          env:
+            TWINE_USERNAME: __token__
+            TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
