@@ -146,4 +146,8 @@ def _publish(session, repository):
 
     files = [str(f) for f in Path('dist').iterdir()]
     session.run("twine", "check", *files)
-    session.run("twine", "upload", f"--repository={repository}", '-u=__token__', *files)
+    session.run("twine",
+                "upload",
+                f"--repository={repository}",
+                '-u=__token__',
+                *files)
