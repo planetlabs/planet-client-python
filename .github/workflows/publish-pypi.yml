@@ -1,13 +1,11 @@
-name: Autopublish to TestPyPi
+name: Publish to PyPi
 
 on:
-  push:
-    tags:
-      - '*'
+  workflow_dispatch:
 
 jobs:
   publish:
-    name: Build, verify, & upload package
+    name: Build, verify, & upload package to PyPi
     runs-on: ubuntu-latest
 
     steps:
@@ -29,6 +27,6 @@ jobs:
       - name: Build, verify, and upload to TestPyPI
         run: |
           pip install --upgrade nox
-          nox -s build publish_testpypi
+          nox -s build publish_pypi
         env:
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
