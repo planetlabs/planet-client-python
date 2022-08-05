@@ -376,7 +376,7 @@ def test_data_search_cmd_filter_invalid_json(invoke, item_types, filter):
 
 @respx.mock
 @pytest.mark.parametrize(
-    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+    "item_types", ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 def test_data_search_cmd_filter_success(invoke, item_types):
     """Test for planet data search_quick. Test with multiple item_types.
     Test should succeed as filter contains valid JSON."""
