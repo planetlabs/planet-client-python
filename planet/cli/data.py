@@ -27,7 +27,8 @@ from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
 
-valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(get_item_types())
+valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(
+    get_item_types())
 
 
 @asynccontextmanager
