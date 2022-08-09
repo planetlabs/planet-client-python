@@ -649,7 +649,7 @@ def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
 
 @respx.mock
 @pytest.mark.parametrize(
-    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+    "item_types", ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 @pytest.mark.parametrize("interval", ['hour', 'day', 'week', 'month', 'year'])
 def test_data_stats_success(invoke, item_types, interval):
     """Test for planet data stats. Test with multiple item_types.
