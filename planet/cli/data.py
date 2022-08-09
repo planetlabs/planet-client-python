@@ -234,7 +234,7 @@ def filter(ctx,
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument('item_types', type=types.CommaSeparatedString())
+@click.argument("item_types", type=types.CommaSeparatedString())
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 @limit
 @click.option('--name', type=str, help='Name of the saved search.')
@@ -273,7 +273,7 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
 @translate_exceptions
 @coro
 @click.argument('name')
-@click.argument('item_types', type=types.CommaSeparatedString())
+@click.argument("item_types", type=types.CommaSeparatedString())
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 @click.option('--daily-email',
               is_flag=True,
@@ -304,7 +304,7 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument('item_types', type=types.CommaSeparatedString())
+@click.argument("item_types", type=types.CommaSeparatedString())
 @click.argument('interval', type=click.Choice(STATS_INTERVAL))
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 async def stats(ctx, item_types, interval, filter):
