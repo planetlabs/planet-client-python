@@ -64,7 +64,8 @@ def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
 
 def check_item_types(ctx, param, value):
     all_item_types = get_item_types()
-    set_diff = set([v.lower() for v in value]) - set([a.lower() for a in all_item_types])
+    set_diff = set([v.lower()
+                    for v in value]) - set([a.lower() for a in all_item_types])
     if set_diff:
         raise click.BadParameter(f'{value} should be one of {all_item_types}')
     else:
