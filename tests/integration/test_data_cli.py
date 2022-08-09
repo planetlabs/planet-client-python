@@ -377,7 +377,7 @@ def test_data_filter_update(invoke, assert_and_filters_equal, default_filters):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
 @pytest.mark.parametrize(
-    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+    "item_types", ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 def test_data_search_cmd_filter_invalid_json(invoke, item_types, filter):
     """Test for planet data search_quick. Test with multiple item_types.
     Test should fail as filter does not contain valid JSON."""
@@ -514,7 +514,7 @@ def test_data_search_cmd_limit(invoke,
 @pytest.mark.asyncio
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
 @pytest.mark.parametrize(
-    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+    "item_types", ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 def test_data_search_create_filter_invalid_json(invoke, item_types, filter):
     """Test for planet data search_create. Test with multiple item_types.
     Test should fail as filter does not contain valid JSON."""
@@ -533,7 +533,7 @@ def test_data_search_create_filter_invalid_json(invoke, item_types, filter):
 
 @respx.mock
 @pytest.mark.parametrize(
-    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+    "item_types", ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 def test_data_search_create_filter_success(invoke, item_types):
     """Test for planet data search_create. Test with multiple item_types.
     Test should succeed as filter contains valid JSON."""
@@ -620,7 +620,7 @@ def test_data_stats_invalid_filter(invoke, filter):
 
 @respx.mock
 @pytest.mark.parametrize(
-    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+    "item_types", ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 @pytest.mark.parametrize("interval, exit_code", [(None, 1), ('hou', 2),
                                                  ('hour', 0)])
 def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
