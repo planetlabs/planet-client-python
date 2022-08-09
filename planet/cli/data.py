@@ -62,6 +62,15 @@ def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
     return data_filter.asset_filter(assets) if assets else None
 
 
+def check_item_types(ctx, param, value):
+    all_item_types = get_item_types()
+    set_diff = set([v.lower() for v in value]) - set([a.lower() for a in all_item_types])
+    if set_diff:
+        raise click.BadParameter(f'{value} should be one of {all_item_types}')
+    else:
+        return value
+
+
 def date_range_to_filter(ctx, param, values) -> Optional[List[dict]]:
 
     def _func(obj):
@@ -234,7 +243,9 @@ def filter(ctx,
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("item_types", type=types.CommaSeparatedString())
+@click.argument("item_types",
+                type=types.CommaSeparatedString(),
+                callback=check_item_types)
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 @limit
 @click.option('--name', type=str, help='Name of the saved search.')
@@ -273,7 +284,9 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
 @translate_exceptions
 @coro
 @click.argument('name')
-@click.argument("item_types", type=types.CommaSeparatedString())
+@click.argument("item_types",
+                type=types.CommaSeparatedString(),
+                callback=check_item_types)
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 @click.option('--daily-email',
               is_flag=True,
@@ -304,7 +317,9 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("item_types", type=types.CommaSeparatedString())
+@click.argument("item_types",
+                type=types.CommaSeparatedString(),
+                callback=check_item_types)
 @click.argument('interval', type=click.Choice(STATS_INTERVAL))
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 async def stats(ctx, item_types, interval, filter):
