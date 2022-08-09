@@ -23,6 +23,7 @@ from click.testing import CliRunner
 import pytest
 
 from planet.cli import cli
+from planet.specs import get_item_types
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,6 +53,23 @@ def test_data_command_registered(invoke):
     assert "search" in result.output
     assert "search-create" in result.output
     assert "search-get" in result.output
+    # Add other sub-commands here.
+
+
+def test_data_search_command_registered(invoke):
+    """planet-data command prints help and usage message."""
+    runner = CliRunner()
+    result = invoke(["search", "--help"], runner=runner)
+    all_item_types = [a for a in get_item_types()]
+    assert result.exit_code == 0
+    assert "Usage" in result.output
+    assert "limit" in result.output
+    assert "name" in result.output
+    assert "sort" in result.output
+    assert "pretty" in result.output
+    assert "help" in result.output
+    for a in all_item_types:
+        assert a in result.output.replace('\n', '').replace(' ', '')
     # Add other sub-commands here.
 
 
