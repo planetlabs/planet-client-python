@@ -43,7 +43,7 @@ async def data_client(ctx):
               default=None,
               help='Assign custom base Orders API URL.')
 def data(ctx, base_url):
-    '''Commands for interacting with the Orders API'''
+    '''Commands for interacting with the Data API'''
     ctx.obj['AUTH'] = None
     ctx.obj['BASE_URL'] = base_url
 
