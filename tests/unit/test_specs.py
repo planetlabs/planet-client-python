@@ -108,7 +108,7 @@ def test_get_product_bundles():
 
 
 def test_get_item_types_with_bundle():
-    item_types = specs.get_item_types(TEST_PRODUCT_BUNDLE)
+    item_types = specs.get_item_types(product_bundle=TEST_PRODUCT_BUNDLE)
     assert TEST_ITEM_TYPE in item_types
 
 
