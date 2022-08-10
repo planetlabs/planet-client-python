@@ -25,28 +25,28 @@ class MockContext:
         self.obj = {}
 
 
-@pytest.mark.parametrize("item_type",
+@pytest.mark.parametrize("item_types",
                          [
-                             'myd09ga',
-                             'sentinel1',
-                             'rescene',
-                             'myd09gq',
-                             'psorthotile',
-                             'landsat8l1g',
-                             'reorthotile',
-                             'sentinel2l1c',
-                             'skysatscene',
-                             'skysatcollect',
-                             'mod09ga',
-                             'psscene3band',
-                             'mod09gq',
-                             'psscene4band',
-                             'psscene'
+                             'PSScene3Band',
+                             'MOD09GQ',
+                             'MYD09GA',
+                             'REOrthoTile',
+                             'SkySatCollect',
+                             'SkySatScene',
+                             'MYD09GQ',
+                             'Landsat8L1G',
+                             'Sentinel2L1C',
+                             'MOD09GA',
+                             'Sentinel1',
+                             'PSScene',
+                             'PSOrthoTile',
+                             'PSScene4Band',
+                             'REScene'
                          ])
-def test_item_type_success(item_type):
+def test_item_type_success(item_types):
     ctx = MockContext()
-    with pytest.raises(click.BadParameter):
-        check_item_types(ctx, 'item_type', item_type)
+    result = check_item_types(ctx, 'item_types', [item_types])
+    assert result == [item_types]
 
 
 def test_item_type_fail():
