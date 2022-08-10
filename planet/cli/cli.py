@@ -27,20 +27,17 @@ LOGGER = logging.getLogger(__name__)
 
 @click.group()
 @click.pass_context
-@click.option('--verbosity',
-              default="warning",
-              help=("Optional: set verbosity level to warning, info, or debug.\
-                  Defaults to warning."))
 @click.option('--quiet',
               is_flag=True,
               default=False,
               help='Disable ANSI control output.')
 @click.version_option(version=planet.__version__)
+@click.option('--verbosity',
+              default="warning",
+              help=("Optional: set verbosity level to warning, info, or debug.\
+                  Defaults to warning."))
 def main(ctx, verbosity, quiet):
-    """Planet API Client
-    Parameters:
-        ctx -- context object
-        verbosity -- user input for verbosity."""
+    """Planet API Client"""
     _configure_logging(verbosity)
 
     # ensure that ctx.obj exists and is a dict (in case `cli()` is called
