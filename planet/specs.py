@@ -108,7 +108,8 @@ def get_product_bundles():
 
 
 def get_item_types(product_bundle=None):
-    '''If given product bundle, get specific item types supported by Orders API. Otherwise, get all item types supported by Orders API.'''
+    '''If given product bundle, get specific item types supported by Orders
+    API. Otherwise, get all item types supported by Orders API.'''
     spec = _get_product_bundle_spec()
     if product_bundle:
         item_types = spec['bundles'][product_bundle]['assets'].keys()
