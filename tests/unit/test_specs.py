@@ -22,7 +22,7 @@ LOGGER = logging.getLogger(__name__)
 
 TEST_PRODUCT_BUNDLE = 'visual'
 # must be a valid item type for TEST_PRODUCT_BUNDLE
-TEST_ITEM_TYPE = 'PSScene''
+TEST_ITEM_TYPE = 'PSScene'
 ALL_ITEM_TYPES = [
     'PSOrthoTile',
     'Sentinel1',
