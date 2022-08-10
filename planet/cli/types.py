@@ -29,12 +29,16 @@ class CommaSeparatedString(click.types.StringParamType):
             convlist = value
         else:
             convstr = super().convert(value, param, ctx)
+
             if convstr == '':
                 self.fail('Entry cannot be an empty string.')
+
             convlist = [part.strip() for part in convstr.split(",")]
+
             for v in convlist:
                 if not v:
                     self.fail(f'Empty entry encountered in "{value}".')
+
         return convlist
 
 
