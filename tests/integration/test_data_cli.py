@@ -57,7 +57,7 @@ def test_data_command_registered(invoke):
 
 
 def test_data_search_command_registered(invoke):
-    """planet-data command prints help and usage message."""
+    """planet-data search command prints help and usage message."""
     runner = CliRunner()
     result = invoke(["search", "--help"], runner=runner)
     all_item_types = [a for a in get_item_types()]
