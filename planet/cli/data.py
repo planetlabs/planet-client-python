@@ -19,12 +19,16 @@ import click
 
 from planet import data_filter, DataClient
 from planet.clients.data import SEARCH_SORT, SEARCH_SORT_DEFAULT, STATS_INTERVAL
+from planet.specs import get_item_types
 
 from . import types
 from .cmds import coro, translate_exceptions
 from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
+
+ALL_ITEM_TYPES = get_item_types()
+valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(ALL_ITEM_TYPES)
 
 
 @asynccontextmanager
@@ -56,6 +60,17 @@ def geom_to_filter(ctx, param, value: Optional[dict]) -> Optional[dict]:
 def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
     # TODO: validate and normalize
     return data_filter.asset_filter(assets) if assets else None
+
+
+def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
+    # Set difference between given item types and all item types
+    set_diff = set([item.lower() for item in item_types]) - set(
+        [a.lower() for a in ALL_ITEM_TYPES])
+    if set_diff:
+        raise click.BadParameter(
+            f'{item_types} should be one of {ALL_ITEM_TYPES}')
+    else:
+        return item_types
 
 
 def date_range_to_filter(ctx, param, values) -> Optional[List[dict]]:
@@ -226,11 +241,13 @@ def filter(ctx,
         echo_json(filt, pretty)
 
 
-@data.command()
+@data.command(epilog=valid_item_string)
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("item_types", type=types.CommaSeparatedString())
+@click.argument("item_types",
+                type=types.CommaSeparatedString(),
+                callback=check_item_types)
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 @limit
 @click.option('--name', type=str, help='Name of the saved search.')
@@ -264,12 +281,14 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
             echo_json(item, pretty)
 
 
-@data.command()
+@data.command(epilog=valid_item_string)
 @click.pass_context
 @translate_exceptions
 @coro
 @click.argument('name')
-@click.argument("item_types", type=types.CommaSeparatedString())
+@click.argument("item_types",
+                type=types.CommaSeparatedString(),
+                callback=check_item_types)
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 @click.option('--daily-email',
               is_flag=True,
@@ -296,11 +315,13 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
         echo_json(items, pretty)
 
 
-@data.command()
+@data.command(epilog=valid_item_string)
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("item_types", type=types.CommaSeparatedString())
+@click.argument("item_types",
+                type=types.CommaSeparatedString(),
+                callback=check_item_types)
 @click.argument('interval', type=click.Choice(STATS_INTERVAL))
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 async def stats(ctx, item_types, interval, filter):

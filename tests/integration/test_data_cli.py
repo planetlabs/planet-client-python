@@ -23,6 +23,7 @@ from click.testing import CliRunner
 import pytest
 
 from planet.cli import cli
+from planet.specs import get_item_types
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,6 +53,23 @@ def test_data_command_registered(invoke):
     assert "search" in result.output
     assert "search-create" in result.output
     assert "search-get" in result.output
+    # Add other sub-commands here.
+
+
+def test_data_search_command_registered(invoke):
+    """planet-data search command prints help and usage message."""
+    runner = CliRunner()
+    result = invoke(["search", "--help"], runner=runner)
+    all_item_types = [a for a in get_item_types()]
+    assert result.exit_code == 0
+    assert "Usage" in result.output
+    assert "limit" in result.output
+    assert "name" in result.output
+    assert "sort" in result.output
+    assert "pretty" in result.output
+    assert "help" in result.output
+    for a in all_item_types:
+        assert a in result.output.replace('\n', '').replace(' ', '')
     # Add other sub-commands here.
 
 
@@ -358,8 +376,8 @@ def test_data_filter_update(invoke, assert_and_filters_equal, default_filters):
 @respx.mock
 @pytest.mark.asyncio
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
-@pytest.mark.parametrize(
-    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+@pytest.mark.parametrize("item_types",
+                         ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 def test_data_search_cmd_filter_invalid_json(invoke, item_types, filter):
     """Test for planet data search_quick. Test with multiple item_types.
     Test should fail as filter does not contain valid JSON."""
@@ -375,8 +393,8 @@ def test_data_search_cmd_filter_invalid_json(invoke, item_types, filter):
 
 
 @respx.mock
-@pytest.mark.parametrize(
-    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+@pytest.mark.parametrize("item_types",
+                         ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 def test_data_search_cmd_filter_success(invoke, item_types):
     """Test for planet data search_quick. Test with multiple item_types.
     Test should succeed as filter contains valid JSON."""
@@ -495,8 +513,8 @@ def test_data_search_cmd_limit(invoke,
 @respx.mock
 @pytest.mark.asyncio
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
-@pytest.mark.parametrize(
-    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+@pytest.mark.parametrize("item_types",
+                         ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 def test_data_search_create_filter_invalid_json(invoke, item_types, filter):
     """Test for planet data search_create. Test with multiple item_types.
     Test should fail as filter does not contain valid JSON."""
@@ -514,8 +532,8 @@ def test_data_search_create_filter_invalid_json(invoke, item_types, filter):
 
 
 @respx.mock
-@pytest.mark.parametrize(
-    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+@pytest.mark.parametrize("item_types",
+                         ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 def test_data_search_create_filter_success(invoke, item_types):
     """Test for planet data search_create. Test with multiple item_types.
     Test should succeed as filter contains valid JSON."""
@@ -601,8 +619,8 @@ def test_data_stats_invalid_filter(invoke, filter):
 
 
 @respx.mock
-@pytest.mark.parametrize(
-    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+@pytest.mark.parametrize("item_types",
+                         ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 @pytest.mark.parametrize("interval, exit_code", [(None, 1), ('hou', 2),
                                                  ('hour', 0)])
 def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
@@ -630,8 +648,8 @@ def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
 
 
 @respx.mock
-@pytest.mark.parametrize(
-    "item_types", ['PSScene', 'SkySatScene', ('PSScene', 'SkySatScene')])
+@pytest.mark.parametrize("item_types",
+                         ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 @pytest.mark.parametrize("interval", ['hour', 'day', 'week', 'month', 'year'])
 def test_data_stats_success(invoke, item_types, interval):
     """Test for planet data stats. Test with multiple item_types.

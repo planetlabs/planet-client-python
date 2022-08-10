@@ -93,10 +93,10 @@ def get_match(test_entry, spec_entries):
     is hard to remember but must be exact otherwise the API throws an
     exception.'''
     try:
-        match = next(t for t in spec_entries
-                     if t.lower() == test_entry.lower())
+        match = next(e for e in spec_entries
+                     if e.lower() == test_entry.lower())
     except (StopIteration):
-        raise NoMatchException
+        raise NoMatchException('{test_entry} should be one of {spec_entries}')
 
     return match
 
@@ -107,10 +107,19 @@ def get_product_bundles():
     return spec['bundles'].keys()
 
 
-def get_item_types(product_bundle):
-    '''Get item types supported by Orders API for the given product bundle.'''
+def get_item_types(product_bundle=None):
+    '''If given product bundle, get specific item types supported by Orders
+    API. Otherwise, get all item types supported by Orders API.'''
     spec = _get_product_bundle_spec()
-    return spec['bundles'][product_bundle]['assets'].keys()
+    if product_bundle:
+        item_types = spec['bundles'][product_bundle]['assets'].keys()
+    else:
+        product_bundle = get_product_bundles()
+        all_item_types = []
+        for bundle in product_bundle:
+            all_item_types += [*spec['bundles'][bundle]['assets'].keys()]
+        item_types = set(all_item_types)
+    return item_types
 
 
 def _get_product_bundle_spec():
