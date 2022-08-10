@@ -62,14 +62,17 @@ def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
     return data_filter.asset_filter(assets) if assets else None
 
 
-def check_item_types(ctx, param, value):
+def check_item_types(ctx, param, item_types):
+    # Get all item types available
     all_item_types = get_item_types()
-    set_diff = set([v.lower()
-                    for v in value]) - set([a.lower() for a in all_item_types])
+    # Set difference between given item types and all item types
+    set_diff = set([item.lower() for item in item_types]) - set(
+        [a.lower() for a in all_item_types])
     if set_diff:
-        raise click.BadParameter(f'{value} should be one of {all_item_types}')
+        raise click.BadParameter(
+            f'{item_types} should be one of {all_item_types}')
     else:
-        return value
+        return item_types
 
 
 def date_range_to_filter(ctx, param, values) -> Optional[List[dict]]:
