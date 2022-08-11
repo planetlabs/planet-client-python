@@ -28,7 +28,8 @@ def build_request(name: str,
                   delivery: dict = None,
                   notifications: dict = None,
                   order_type: str = None,
-                  tools: List[dict] = None) -> dict:
+                  tools: List[dict] = None,
+                  stac: dict = None) -> dict:
     '''Prepare an order request.
 
     ```python
@@ -85,6 +86,9 @@ def build_request(name: str,
 
     if tools:
         details['tools'] = tools
+
+    if stac:
+        details['metadata'] = {'stac': {}}
 
     return details
 
