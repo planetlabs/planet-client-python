@@ -37,7 +37,7 @@ LOGGER = logging.getLogger(__name__)
               help=("Optional: set verbosity level to warning, info, or debug.\
                   Defaults to warning."))
 def main(ctx, verbosity, quiet):
-    """Planet API Client"""
+    """Planet SDK for Python CLI"""
     _configure_logging(verbosity)
 
     # ensure that ctx.obj exists and is a dict (in case `cli()` is called
