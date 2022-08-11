@@ -263,6 +263,12 @@ async def create(ctx, request: str, pretty):
     type=types.JSON(),
     help="""Credentials for cloud storage provider to enable cloud delivery of
     data. Can be a json string, filename, or '-' for stdin.""")
+@click.option(
+    '--stac',
+    default=False,
+    is_flag=True,
+    help='Request metadata to be in SpatioTemporal Asset Catalog (STAC) format.'
+)
 @pretty
 async def request(ctx,
                   name,
@@ -273,6 +279,7 @@ async def request(ctx,
                   item_type,
                   email,
                   cloudconfig,
+                  stac,
                   pretty):
     """Generate an order request.
 
@@ -309,6 +316,7 @@ async def request(ctx,
                                                  products=[product],
                                                  delivery=delivery,
                                                  notifications=notifications,
-                                                 tools=tools)
+                                                 tools=tools,
+                                                 stac=stac)
 
     echo_json(request, pretty)
