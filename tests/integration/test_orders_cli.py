@@ -652,3 +652,31 @@ def test_cli_orders_request_tools(invoke, geom_geojson):
         tools_json
     }
     assert order_request == json.loads(result.output)
+
+
+@respx.mock
+def test_cli_orders_request_stac(invoke):
+
+    stac_json = {'stac': {}}
+
+    result = invoke([
+        'request',
+        '--name=test',
+        '--id=4500474_2133707_2021-05-20_2419',
+        '--bundle=analytic',
+        '--item-type=PSOrthoTile',
+        '--stac'
+    ])
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": ["4500474_2133707_2021-05-20_2419"],
+            "item_type": "PSOrthoTile",
+            "product_bundle": "analytic",
+        }],
+        "metadata":
+        stac_json
+    }
+    assert order_request == json.loads(result.output)
