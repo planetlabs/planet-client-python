@@ -44,6 +44,11 @@ def invoke():
     return _invoke
 
 
+@pytest.fixture
+def stac_json():
+    return {'stac': {}}
+
+
 @respx.mock
 def test_cli_orders_list_basic(invoke, order_descriptions):
     next_page_url = TEST_ORDERS_URL + '/blob/?page_marker=IAmATest'
@@ -451,7 +456,10 @@ def test_cli_orders_create_basic_success(expected_ids,
     [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
      ('4500474_2133707_2021-05-20_2419,4500474_2133707_2021-05-20_2420',
       ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])])
-def test_cli_orders_request_basic_success(expected_ids, id_string, invoke):
+def test_cli_orders_request_basic_success(expected_ids,
+                                          id_string,
+                                          invoke,
+                                          stac_json):
     result = invoke([
         'request',
         '--name=test',
@@ -469,6 +477,8 @@ def test_cli_orders_request_basic_success(expected_ids, id_string, invoke):
             "item_type": "PSOrthoTile",
             "product_bundle": "analytic"
         }],
+        "metadata":
+        stac_json
     }
     assert order_request == json.loads(result.output)
 
@@ -503,7 +513,8 @@ def test_cli_orders_request_id_empty(invoke):
 def test_cli_orders_request_clip_success(geom_fixture,
                                          request,
                                          invoke,
-                                         geom_geojson):
+                                         geom_geojson,
+                                         stac_json):
 
     geom = request.getfixturevalue(geom_fixture)
 
@@ -529,7 +540,9 @@ def test_cli_orders_request_clip_success(geom_fixture,
             'clip': {
                 'aoi': geom_geojson
             }
-        }]
+        }],
+        "metadata":
+        stac_json
     }
     assert order_request == json.loads(result.output)
 
@@ -566,7 +579,7 @@ def test_cli_orders_request_both_clip_and_tools(invoke, geom_geojson):
     assert "Specify only one of '--clip' or '--tools'" in result.output
 
 
-def test_cli_orders_request_cloudconfig(invoke):
+def test_cli_orders_request_cloudconfig(invoke, stac_json):
     config_json = {
         'amazon_s3': {
             'aws_access_key_id': 'aws_access_key_id',
@@ -596,12 +609,14 @@ def test_cli_orders_request_cloudconfig(invoke):
             "product_bundle": "analytic",
         }],
         "delivery":
-        config_json
+        config_json,
+        "metadata":
+        stac_json
     }
     assert order_request == json.loads(result.output)
 
 
-def test_cli_orders_request_email(invoke):
+def test_cli_orders_request_email(invoke, stac_json):
     result = invoke([
         'request',
         '--name=test',
@@ -621,14 +636,16 @@ def test_cli_orders_request_email(invoke):
             "product_bundle": "analytic",
         }],
         "notifications": {
-            "email": True
-        }
+            "email": True,
+        },
+        "metadata":
+        stac_json
     }
     assert order_request == json.loads(result.output)
 
 
 @respx.mock
-def test_cli_orders_request_tools(invoke, geom_geojson):
+def test_cli_orders_request_tools(invoke, geom_geojson, stac_json):
     tools_json = [{'clip': {'aoi': geom_geojson}}, {'composite': {}}]
 
     result = invoke([
@@ -649,23 +666,22 @@ def test_cli_orders_request_tools(invoke, geom_geojson):
             "product_bundle": "analytic",
         }],
         "tools":
-        tools_json
+        tools_json,
+        "metadata":
+        stac_json
     }
     assert order_request == json.loads(result.output)
 
 
 @respx.mock
-def test_cli_orders_request_stac(invoke):
-
-    stac_json = {'stac': {}}
+def test_cli_orders_request_stac(invoke, stac_json):
 
     result = invoke([
         'request',
         '--name=test',
         '--id=4500474_2133707_2021-05-20_2419',
         '--bundle=analytic',
-        '--item-type=PSOrthoTile',
-        '--stac'
+        '--item-type=PSOrthoTile'
     ])
 
     order_request = {
