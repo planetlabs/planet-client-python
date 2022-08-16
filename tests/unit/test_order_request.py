@@ -52,7 +52,7 @@ def test_build_request():
     }
     order_type = 'partial'
     tool = {'band_math': 'jsonstring'}
-    stac = {'stac': {}}
+    stac_json = {'stac': {}}
 
     request = order_request.build_request('test_name', [product],
                                           subscription_id=subscription_id,
@@ -60,7 +60,7 @@ def test_build_request():
                                           notifications=notifications,
                                           order_type=order_type,
                                           tools=[tool],
-                                          stac=True)
+                                          stac=stac_json)
     expected = {
         'name': 'test_name',
         'products': [product],
@@ -69,7 +69,7 @@ def test_build_request():
         'notifications': notifications,
         'order_type': order_type,
         'tools': [tool],
-        'metadata': stac
+        'metadata': stac_json
     }
     assert request == expected
 
@@ -81,7 +81,7 @@ def test_build_request():
                                         notifications=notifications,
                                         order_type=order_type,
                                         tools=[tool],
-                                        stac=True)
+                                        stac=False)
 
 
 def test_product():
