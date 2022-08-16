@@ -88,7 +88,7 @@ def build_request(name: str,
         details['tools'] = tools
 
     if stac:
-        details['metadata'] = {'stac': {}}
+        details['metadata'] = stac
 
     return details
 
