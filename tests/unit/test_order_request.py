@@ -81,7 +81,7 @@ def test_build_request():
                                         notifications=notifications,
                                         order_type=order_type,
                                         tools=[tool],
-                                        stac=False)
+                                        stac=stac_json)
 
 
 def test_product():
