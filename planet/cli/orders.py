@@ -264,8 +264,8 @@ async def create(ctx, request: str, pretty):
     help="""Credentials for cloud storage provider to enable cloud delivery of
     data. Can be a json string, filename, or '-' for stdin.""")
 @click.option(
-    '--no-stac',
-    default=False,
+    '--stac/--no-stac',
+    default=True,
     is_flag=True,
     help="""Do not request metadata to be in SpatioTemporal Asset Catalog
     (STAC) format.""")
@@ -279,7 +279,7 @@ async def request(ctx,
                   item_type,
                   email,
                   cloudconfig,
-                  no_stac,
+                  stac,
                   pretty):
     """Generate an order request.
 
@@ -312,10 +312,10 @@ async def request(ctx,
     else:
         delivery = None
 
-    if no_stac:
-        stac_json = {}
-    else:
+    if stac:
         stac_json = {'stac': {}}
+    else:
+        stac_json = {}
 
     request = planet.order_request.build_request(name,
                                                  products=[product],
