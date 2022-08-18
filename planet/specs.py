@@ -48,8 +48,8 @@ def validate_bundle(bundle):
 
 
 def validate_item_type(item_type, bundle):
-    bundle = validate_bundle(bundle)
     supported = get_item_types(bundle)
+    bundle = validate_bundle(bundle)
     return _validate_field(item_type, supported, 'item_type')
 
 
@@ -111,15 +111,18 @@ def get_item_types(product_bundle=None):
     '''If given product bundle, get specific item types supported by Orders
     API. Otherwise, get all item types supported by Orders API.'''
     spec = _get_product_bundle_spec()
-    if product_bundle:
-        item_types = spec['bundles'][product_bundle]['assets'].keys()
-    else:
-        product_bundle = get_product_bundles()
-        all_item_types = []
-        for bundle in product_bundle:
-            all_item_types += [*spec['bundles'][bundle]['assets'].keys()]
-        item_types = set(all_item_types)
-    return item_types
+    try:
+        if product_bundle:
+            item_types = spec['bundles'][product_bundle]['assets'].keys()
+        else:
+            product_bundle = get_product_bundles()
+            all_item_types = []
+            for bundle in product_bundle:
+                all_item_types += [*spec['bundles'][bundle]['assets'].keys()]
+            item_types = set(all_item_types)
+        return item_types
+    except KeyError:
+        raise SpecificationException()
 
 
 def _get_product_bundle_spec():
