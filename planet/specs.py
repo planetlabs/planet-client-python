@@ -15,7 +15,7 @@
 """Functionality for validating against the Planet API specification."""
 import json
 import logging
-
+import itertools
 from .constants import DATA_DIR
 
 PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2022_02_02.json'
@@ -49,7 +49,6 @@ def validate_bundle(bundle):
 
 def validate_item_type(item_type, bundle):
     supported = get_item_types(bundle)
-    bundle = validate_bundle(bundle)
     return _validate_field(item_type, supported, 'item_type')
 
 
@@ -111,18 +110,19 @@ def get_item_types(product_bundle=None):
     '''If given product bundle, get specific item types supported by Orders
     API. Otherwise, get all item types supported by Orders API.'''
     spec = _get_product_bundle_spec()
+
     try:
         if product_bundle:
-            item_types = spec['bundles'][product_bundle]['assets'].keys()
+            item_types = set(spec['bundles'][product_bundle]['assets'].keys())
         else:
-            product_bundle = get_product_bundles()
-            all_item_types = []
-            for bundle in product_bundle:
-                all_item_types += [*spec['bundles'][bundle]['assets'].keys()]
-            item_types = set(all_item_types)
-        return item_types
+            item_types = set(
+                itertools.chain.from_iterable(
+                    spec['bundles'][bundle]['assets'].keys()
+                    for bundle in get_product_bundles()))
     except KeyError:
-        raise SpecificationException()
+        raise validate_bundle(product_bundle)
+
+    return item_types
 
 
 def _get_product_bundle_spec():
