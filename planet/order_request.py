@@ -113,8 +113,8 @@ def product(item_ids: List[str],
             are not valid bundles or if item_type is not valid for the given
             bundle or fallback bundle.
     '''
-    item_type = specs.validate_item_type(item_type, product_bundle)
     validated_product_bundle = specs.validate_bundle(product_bundle)
+    item_type = specs.validate_item_type(item_type, validated_product_bundle)
 
     if fallback_bundle is not None:
         validated_fallback_bundle = specs.validate_bundle(fallback_bundle)
