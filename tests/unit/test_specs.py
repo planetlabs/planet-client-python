@@ -46,10 +46,11 @@ def test_get_type_match():
     spec_list = ['Locket', 'drop', 'DEER']
 
     test_entry = 'locket'
-    assert 'Locket' == specs.get_match(test_entry, spec_list)
+    field_name = 'field_name'
+    assert 'Locket' == specs.get_match(test_entry, spec_list, field_name)
 
-    with pytest.raises(specs.NoMatchException):
-        specs.get_match('a', ['b'])
+    with pytest.raises(specs.SpecificationException):
+        specs.get_match('a', ['b'], field_name)
 
 
 def test_validate_bundle_supported():
