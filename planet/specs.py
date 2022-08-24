@@ -60,9 +60,8 @@ def validate_bundle(bundle):
     return _validate_field(bundle, supported, 'product_bundle')
 
 
-def validate_item_type(item_type, bundle):
-    validated_bundle = validate_bundle(bundle)
-    supported = get_item_types(validated_bundle)
+def validate_item_type(item_type):
+    supported = get_supported_bundles(item_type)
     return _validate_field(item_type, supported, 'item_type')
 
 
@@ -127,6 +126,20 @@ def get_item_types(product_bundle=None):
                 for bundle in get_product_bundles()))
 
     return item_types
+
+
+def get_supported_bundles(item_type):
+    spec = _get_product_bundle_spec()
+
+    all_product_bundles = set(spec['bundles'].keys())
+
+    supported_bundles = []
+    for bundle in all_product_bundles:
+        availible_item_types = set(spec['bundles'][bundle]['assets'].keys())
+        if item_type.lower() in [x.lower() for x in availible_item_types]:
+            supported_bundles.append(bundle)
+
+    return supported_bundles
 
 
 def _get_product_bundle_spec():
