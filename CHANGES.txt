@@ -1,5 +1,11 @@
 # Changes.txt
 
+1.5.2 (2022-09-01)
+
+- Revert to requiring exactly requests-futures==0.9.7 as in version 1.4.9.
+  Version 1.0.0 of requests-futures breaks order downloads for an unknown
+  reason.
+
 1.5.1 (2022-07-28)
 
 - Fix: execution of the v1 CLI now prints a more clear, yellow colored warning

@@ -76,7 +76,7 @@ setup(name='planet',
       install_requires=[
           'click',
           'requests',
-          'requests_futures',
+          'requests_futures==0.9.7',
           'pywin32 >= 1.0;platform_system=="Windows"'
       ],
       extras_require={
