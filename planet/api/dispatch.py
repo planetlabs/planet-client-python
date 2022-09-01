@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from contextlib import contextmanager
 import logging
 import os
 import re
@@ -150,8 +151,20 @@ class RequestsDispatcher(object):
         return Response(request, self)
 
     def _dispatch_async(self, request, callback):
-        return _do_request(self._asyncpool, request, stream=True,
-                           background_callback=callback)
+
+        @contextmanager
+        def no_futuressession_logging():
+            logger = logging.getLogger("FuturesSession")
+            prev_level = logger.getEffectiveLevel()
+            try:
+                logger.setLevel(logging.CRITICAL)
+                yield
+            finally:
+                logger.setLevel(prev_level)
+
+        with no_futuressession_logging():
+            return _do_request(self._asyncpool, request, stream=True,
+                               background_callback=callback)
 
     def _dispatch(self, request, callback=None):
         return _do_request(self.session, request)

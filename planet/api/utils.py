@@ -71,7 +71,7 @@ def geometry_from_json(obj):
 def check_status(response):
     '''check the status of the response and if needed raise an APIException'''
     status = response.status_code
-    if status < 300:
+    if status < 400:
         return
     exception = {
         400: exceptions.BadQuery,
