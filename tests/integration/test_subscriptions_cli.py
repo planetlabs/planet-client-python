@@ -22,7 +22,9 @@ from planet.cli import cli
 
 from test_subscriptions_api import (api_mock,
                                     failing_api_mock,
-                                    create_mock, update_mock, cancel_mock,
+                                    create_mock,
+                                    update_mock,
+                                    cancel_mock,
                                     describe_mock,
                                     res_api_mock)
 

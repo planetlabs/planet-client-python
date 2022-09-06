@@ -82,24 +82,32 @@ def modify_response(request):
 
 
 create_mock = respx.mock()
-create_mock.route(host='api.planet.com', path='/subscriptions/v1', method='POST').mock(side_effect=modify_response)
+create_mock.route(host='api.planet.com',
+                  path='/subscriptions/v1',
+                  method='POST').mock(side_effect=modify_response)
 
 update_mock = respx.mock()
-update_mock.route(host='api.planet.com', path__regex=r'^/subscriptions/v1/(\w+)', method='PUT').mock(side_effect=modify_response)
+update_mock.route(host='api.planet.com',
+                  path__regex=r'^/subscriptions/v1/(\w+)',
+                  method='PUT').mock(side_effect=modify_response)
 
 cancel_mock = respx.mock()
-cancel_mock.route(host='api.planet.com', path__regex=r'^/subscriptions/v1/(\w+)/cancel', method='POST').mock(side_effect=modify_response)
+cancel_mock.route(host='api.planet.com',
+                  path__regex=r'^/subscriptions/v1/(\w+)/cancel',
+                  method='POST').mock(side_effect=modify_response)
 
 # Mock the subscription description API endpoint.
 describe_mock = respx.mock()
-describe_mock.route(host='api.planet.com', path__regex=r'^/subscriptions/v1/(\w+)', method='GET').mock(
-        return_value=Response(200,
-                              json={
-                                  'id': '42',
-                                  'name': 'test',
-                                  'delivery': 'yes, please',
-                                  'source': 'test'
-                              }))
+describe_mock.route(
+    host='api.planet.com',
+    path__regex=r'^/subscriptions/v1/(\w+)',
+    method='GET').mock(return_value=Response(200,
+                                             json={
+                                                 'id': '42',
+                                                 'name': 'test',
+                                                 'delivery': 'yes, please',
+                                                 'source': 'test'
+                                             }))
 
 
 def result_pages(status=None, size=40):
