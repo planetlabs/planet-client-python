@@ -1,3 +1,10 @@
+2.0a3 (TBD)
+
+- Subscriptions API methods communicating with particular subscription
+  endpoints (cancel_subscription, update_subscription, get_subscription, and
+  get_results) were broken due to missing 'f' prefixes (#687). The prefixes
+  have been added.
+
 2.0a2 (2022-07-04)
 
 - Upgrade httpx to 0.23, change how quota exceptions are caught
