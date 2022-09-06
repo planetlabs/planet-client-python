@@ -97,7 +97,6 @@ class BaseSession:
             try:
                 response.raise_for_status()
             except httpx.HTTPStatusError as e:
-                import pdb; pdb.set_trace()
                 e.response.read()
                 cls._convert_and_raise(e)
 
@@ -243,7 +242,9 @@ class Session(BaseSession):
 
         LOGGER.info(f'Session read timeout set to {READ_TIMEOUT}.')
         timeout = httpx.Timeout(10.0, read=READ_TIMEOUT)
-        self._client = httpx.AsyncClient(auth=auth, timeout=timeout, follow_redirects=True)
+        self._client = httpx.AsyncClient(auth=auth,
+                                         timeout=timeout,
+                                         follow_redirects=True)
 
         self._client.headers.update({'User-Agent': self._get_user_agent()})
         self._client.headers.update({'X-Planet-App': 'python-sdk'})
@@ -271,7 +272,6 @@ class Session(BaseSession):
             try:
                 response.raise_for_status()
             except httpx.HTTPStatusError as e:
-                import pdb; pdb.set_trace()
                 await e.response.aread()
                 cls._convert_and_raise(e)
 
