@@ -93,7 +93,7 @@ class BaseSession:
 
     @classmethod
     def _raise_for_status(cls, response):
-        if response.status_code >= 400:
+        if response.is_error:
             try:
                 response.raise_for_status()
             except httpx.HTTPStatusError as e:
@@ -268,7 +268,7 @@ class Session(BaseSession):
 
     @classmethod
     async def _raise_for_status(cls, response):
-        if response.status_code >= 400:
+        if response.is_error:
             try:
                 response.raise_for_status()
             except httpx.HTTPStatusError as e:
