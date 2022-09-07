@@ -93,11 +93,12 @@ class BaseSession:
 
     @classmethod
     def _raise_for_status(cls, response):
-        try:
-            response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            e.response.read()
-            cls._convert_and_raise(e)
+        if response.is_error:
+            try:
+                response.raise_for_status()
+            except httpx.HTTPStatusError as e:
+                e.response.read()
+                cls._convert_and_raise(e)
 
         return
 
@@ -241,7 +242,9 @@ class Session(BaseSession):
 
         LOGGER.info(f'Session read timeout set to {READ_TIMEOUT}.')
         timeout = httpx.Timeout(10.0, read=READ_TIMEOUT)
-        self._client = httpx.AsyncClient(auth=auth, timeout=timeout)
+        self._client = httpx.AsyncClient(auth=auth,
+                                         timeout=timeout,
+                                         follow_redirects=True)
 
         self._client.headers.update({'User-Agent': self._get_user_agent()})
         self._client.headers.update({'X-Planet-App': 'python-sdk'})
@@ -265,11 +268,12 @@ class Session(BaseSession):
 
     @classmethod
     async def _raise_for_status(cls, response):
-        try:
-            response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            await e.response.aread()
-            cls._convert_and_raise(e)
+        if response.is_error:
+            try:
+                response.raise_for_status()
+            except httpx.HTTPStatusError as e:
+                await e.response.aread()
+                cls._convert_and_raise(e)
 
         return
 
