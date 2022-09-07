@@ -1,5 +1,7 @@
 2.0a3 (TBD)
 
+- Help for planet-subscriptions-describe and update commands has been
+  corrected, resolving the issue reported in #658.
 - Subscriptions API methods communicating with particular subscription
   endpoints (cancel_subscription, update_subscription, get_subscription, and
   get_results) were broken due to missing 'f' prefixes (#687). The prefixes
