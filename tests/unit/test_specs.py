@@ -21,6 +21,37 @@ from planet import specs
 LOGGER = logging.getLogger(__name__)
 
 TEST_PRODUCT_BUNDLE = 'visual'
+ALL_PRODUCT_BUNDLES = [
+    'analytic',
+    'analytic_udm2',
+    'analytic_3b_udm2',
+    'analytic_5b',
+    'analytic_5b_udm2',
+    'analytic_8b_udm2',
+    'visual',
+    'uncalibrated_dn',
+    'uncalibrated_dn_udm2',
+    'basic_analytic',
+    'basic_analytic_udm2',
+    'basic_analytic_8b_udm2',
+    'basic_uncalibrated_dn',
+    'basic_uncalibrated_dn_udm2',
+    'analytic_sr',
+    'analytic_sr_udm2',
+    'analytic_8b_sr_udm2',
+    'basic_uncalibrated_dn_nitf',
+    'basic_uncalibrated_dn_nitf_udm2',
+    'basic_analytic_nitf',
+    'basic_analytic_nitf_udm2',
+    'basic_panchromatic',
+    'basic_panchromatic_dn',
+    'panchromatic',
+    'panchromatic_dn',
+    'panchromatic_dn_udm2',
+    'pansharpened',
+    'pansharpened_udm2',
+    'basic_l1a_dn'
+]
 # must be a valid item type for TEST_PRODUCT_BUNDLE
 TEST_ITEM_TYPE = 'PSScene'
 ALL_ITEM_TYPES = [
@@ -117,3 +148,16 @@ def test_get_item_types_without_bundle():
     item_types = specs.get_item_types()
     for item in item_types:
         assert item in ALL_ITEM_TYPES
+
+
+def test_validate_supported_bundles_success():
+    validated_bundle = specs.validate_supported_bundles(
+        TEST_ITEM_TYPE, TEST_PRODUCT_BUNDLE, ALL_PRODUCT_BUNDLES)
+    assert validated_bundle in ALL_PRODUCT_BUNDLES
+
+
+def test_validate_supported_bundles_fail():
+    with pytest.raises(specs.SpecificationException):
+        specs.validate_supported_bundles(TEST_ITEM_TYPE,
+                                         'analytic',
+                                         ALL_PRODUCT_BUNDLES)
