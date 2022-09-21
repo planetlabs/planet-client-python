@@ -55,9 +55,10 @@ class SpecificationException(Exception):
         return f'{self.field_name} - \'{self.value}\' is not one of {self.opts}.'
 
 
-def validate_bundle(bundle):
-    supported = get_product_bundles()
-    return _validate_field(bundle, supported, 'product_bundle')
+def validate_bundle(item_type, bundle):
+    all_product_bundles = get_product_bundles()
+    validate_supported_bundles(item_type, bundle, all_product_bundles)
+    return _validate_field(bundle, all_product_bundles, 'product_bundle')
 
 
 def validate_item_type(item_type):
@@ -91,10 +92,8 @@ def _validate_field(value, supported, field_name):
     return value
 
 
-def validate_supported_bundles(item_type, bundle):
+def validate_supported_bundles(item_type, bundle, all_product_bundles):
     spec = _get_product_bundle_spec()
-
-    all_product_bundles = set(spec['bundles'].keys())
 
     supported_bundles = []
     for product_bundle in all_product_bundles:
