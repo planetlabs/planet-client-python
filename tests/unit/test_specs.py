@@ -85,26 +85,26 @@ def test_get_type_match():
 
 
 def test_validate_bundle_supported():
-    assert 'analytic' == specs.validate_bundle('ANALYTIC')
+    assert 'visual' == specs.validate_bundle(TEST_ITEM_TYPE, 'VISUAL')
 
 
 def test_validate_bundle_notsupported():
     with pytest.raises(specs.SpecificationException):
-        specs.validate_bundle('notsupported')
+        specs.validate_bundle(TEST_ITEM_TYPE, 'notsupported')
+
+
+def test_validate_bundle_notsupported_item_type():
+    with pytest.raises(specs.SpecificationException):
+        specs.validate_item_type('wha')
 
 
 def test_validate_item_type_supported():
-    assert 'PSOrthoTile' == specs.validate_item_type('psorthotile', 'analytic')
-
-
-def test_validate_item_type_notsupported_bundle():
-    with pytest.raises(specs.SpecificationException):
-        specs.validate_item_type('psorthotile', 'wha')
+    assert 'PSOrthoTile' == specs.validate_item_type('psorthotile')
 
 
 def test_validate_item_type_notsupported_itemtype():
     with pytest.raises(specs.SpecificationException):
-        specs.validate_item_type('notsupported', 'analytic')
+        specs.validate_item_type('notsupported')
 
 
 def test_validate_order_type_supported():
