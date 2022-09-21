@@ -14,9 +14,6 @@ from planet.clients.subscriptions import SubscriptionsClient
 @click.pass_context
 def subscriptions(ctx):
     '''Commands for interacting with the Subscriptions API'''
-    # None means that order of precedence is 1) environment variable,
-    # 2) secret file.
-    ctx.obj['AUTH'] = None
 
 
 # We want our command to be known as "list" on the command line but

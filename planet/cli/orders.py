@@ -46,7 +46,6 @@ async def orders_client(ctx):
               help='Assign custom base Orders API URL.')
 def orders(ctx, base_url):
     '''Commands for interacting with the Orders API'''
-    ctx.obj['AUTH'] = None
     ctx.obj['BASE_URL'] = base_url
 
 

@@ -19,6 +19,8 @@ import sys
 import click
 
 import planet
+from planet.auth import Auth
+from planet.exceptions import PlanetError
 
 from . import auth, collect, data, orders, subscriptions
 
@@ -44,6 +46,20 @@ def main(ctx, verbosity, quiet):
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
     ctx.obj['QUIET'] = quiet
+
+    # Check authentication sources and store the highest priority in ctx.
+    # 1. Environment.
+    try:
+        auth_env = Auth.from_env()
+    except PlanetError:
+        auth_env = None
+    # 2. Secret file.
+    try:
+        auth_file = Auth.from_file()
+    except PlanetError:
+        auth_file = None
+
+    ctx.obj['AUTH'] = auth_env or auth_file
 
 
 def _configure_logging(verbosity):

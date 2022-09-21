@@ -17,6 +17,7 @@ import logging
 import click
 
 import planet
+from planet.exceptions import AuthException
 from .cmds import translate_exceptions
 
 LOGGER = logging.getLogger(__name__)
@@ -53,7 +54,11 @@ def init(ctx, email, password):
 
 
 @auth.command()
+@click.pass_context
 @translate_exceptions
-def value():
+def value(ctx):
     '''Print the stored authentication information'''
-    click.echo(planet.Auth.from_file().value)
+    try:
+        click.echo(ctx.obj['AUTH'].value)
+    except (AttributeError, KeyError):
+        raise AuthException('Command context lacks auth information.')
