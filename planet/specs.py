@@ -62,8 +62,8 @@ def validate_bundle(bundle):
 
 
 def validate_item_type(item_type):
-    supported = get_supported_bundles(item_type)
-    return _validate_field(item_type, supported, 'item_type')
+    supported_item_types = get_item_types()
+    return _validate_field(item_type, supported_item_types, 'item_type')
 
 
 def validate_order_type(order_type):
@@ -90,6 +90,27 @@ def _validate_field(value, supported, field_name):
     except (NoMatchException):
         raise SpecificationException(value, supported, field_name)
     return value
+
+
+def validate_supported_bundles(item_type, bundle):
+    spec = _get_product_bundle_spec()
+
+    all_product_bundles = set(spec['bundles'].keys())
+
+    supported_bundles = []
+    for product_bundle in all_product_bundles:
+        availible_item_types = set(
+            spec['bundles'][product_bundle]['assets'].keys())
+        if item_type.lower() in [x.lower() for x in availible_item_types]:
+            supported_bundles.append(product_bundle)
+
+    return _validate_field(bundle, supported_bundles, 'bundle')
+
+
+def _get_product_bundle_spec():
+    with open(DATA_DIR / PRODUCT_BUNDLE_SPEC_NAME) as f:
+        data = json.load(f)
+    return data
 
 
 def get_match(test_entry, spec_entries, field_name):
@@ -127,23 +148,3 @@ def get_item_types(product_bundle=None):
                 for bundle in get_product_bundles()))
 
     return item_types
-
-
-def get_supported_bundles(item_type):
-    spec = _get_product_bundle_spec()
-
-    all_product_bundles = set(spec['bundles'].keys())
-
-    supported_bundles = []
-    for bundle in all_product_bundles:
-        availible_item_types = set(spec['bundles'][bundle]['assets'].keys())
-        if item_type.lower() in [x.lower() for x in availible_item_types]:
-            supported_bundles.append(bundle)
-
-    return supported_bundles
-
-
-def _get_product_bundle_spec():
-    with open(DATA_DIR / PRODUCT_BUNDLE_SPEC_NAME) as f:
-        data = json.load(f)
-    return data
