@@ -492,7 +492,7 @@ def test_cli_orders_request_item_type_invalid(invoke):
         '--item-type=invalid'
     ])
     assert result.exit_code == 2
-    assert 'Error: Invalid value: item_type' in result.output
+    assert "Error: Invalid value for '--item-type':" in result.output
 
 
 def test_cli_orders_request_id_empty(invoke):
