@@ -230,8 +230,9 @@ def bundle_cb(ctx, param, value):
     item_type = ctx.obj['item_type']
     choices = planet.specs.get_product_bundles(item_type)
     if value is None:
-        raise click.ClickException(
-            f"Missing option '--{param.name}': Choose from: {choices}.")
+        msg = ("Choose from:\n\t{choices}").format(
+            choices=",\n\t".join(choices))
+        raise click.ClickException(f"Missing option '--{param.name}'. {msg}")
     else:
         return value
 
@@ -253,6 +254,10 @@ class Bundle(click.Choice):
 @click.pass_context
 @translate_exceptions
 @coro
+@click.option('--name',
+              required=True,
+              help='Order name. Does not need to be unique.',
+              type=click.STRING)
 @click.option('--item-type',
               required=True,
               help='Specify an item type',
@@ -272,10 +277,6 @@ class Bundle(click.Choice):
               help='One or more comma-separated item IDs.',
               type=types.CommaSeparatedString(),
               required=True)
-@click.option('--name',
-              required=True,
-              help='Order name. Does not need to be unique.',
-              type=click.STRING)
 @click.option('--clip',
               type=types.JSON(),
               help="""Clip feature GeoJSON. Can be a json string, filename,
@@ -303,11 +304,11 @@ class Bundle(click.Choice):
 @pretty
 async def request(ctx,
                   name,
+                  item_type,
                   bundle,
                   id,
                   clip,
                   tools,
-                  item_type,
                   email,
                   cloudconfig,
                   stac,
