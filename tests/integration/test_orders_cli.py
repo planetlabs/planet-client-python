@@ -495,6 +495,30 @@ def test_cli_orders_request_item_type_invalid(invoke):
     assert "Error: Invalid value for '--item-type':" in result.output
 
 
+def test_cli_orders_request_product_bundle_invalid(invoke):
+    result = invoke([
+        'request',
+        '--name=test',
+        '--id=4500474_2133707_2021-05-20_2419',
+        '--bundle=invalid',
+        '--item-type=PSScene'
+    ])
+    assert result.exit_code == 2
+    assert "Error: Invalid value for '--bundle':" in result.output
+
+
+def test_cli_orders_request_product_bundle_incompatible(invoke):
+    result = invoke([
+        'request',
+        '--name=test',
+        '--id=4500474_2133707_2021-05-20_2419',
+        '--bundle=analytic',
+        '--item-type=PSScene'
+    ])
+    assert result.exit_code == 2
+    assert "Error: Invalid value for '--bundle':" in result.output
+
+
 def test_cli_orders_request_id_empty(invoke):
     result = invoke([
         'request',
