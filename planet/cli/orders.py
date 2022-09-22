@@ -247,7 +247,7 @@ class Bundle(click.Choice):
     def convert(self, value, param, ctx):
         item_type = ctx.obj['item_type']
         self.choices = planet.specs.get_product_bundles(item_type)
-        super().convert(value, param, ctx)
+        return super().convert(value, param, ctx)
 
 
 @orders.command()
