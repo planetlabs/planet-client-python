@@ -77,6 +77,7 @@ def validate_archive_type(archive_type):
                            'archive_type')
 
 
+
 def validate_tool(tool):
     return _validate_field(tool, SUPPORTED_TOOLS, 'tool')
 
