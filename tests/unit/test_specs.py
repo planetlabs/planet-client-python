@@ -134,9 +134,15 @@ def test_validate_file_format_notsupported():
         specs.validate_archive_type('notsupported')
 
 
-def test_get_product_bundles():
-    bundles = specs.get_product_bundles()
+def test_get_product_bundles_with_item_type():
+    bundles = specs.get_product_bundles(item_type=TEST_ITEM_TYPE)
     assert TEST_PRODUCT_BUNDLE in bundles
+
+
+def test_get_product_bundles_without_item_type():
+    bundles = specs.get_product_bundles()
+    for bundle in bundles:
+        assert bundle in ALL_PRODUCT_BUNDLES
 
 
 def test_get_item_types_with_bundle():
