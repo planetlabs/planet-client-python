@@ -227,9 +227,9 @@ async def create(ctx, request: str, pretty):
 @coro
 @click.option('--item-type',
               required=True,
-              eager=True,
               help='Specify an item type',
-              type=click.STRING)
+              type=click.Choice(planet.specs.get_item_types(),
+                                case_sensitive=False))
 @click.option(
     '--bundle',
     multiple=False,
