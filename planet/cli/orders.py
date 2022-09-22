@@ -225,9 +225,10 @@ async def create(ctx, request: str, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.option('--name',
+@click.option('--item-type',
               required=True,
-              help='Order name. Does not need to be unique.',
+              eager=True,
+              help='Specify an item type',
               type=click.STRING)
 @click.option(
     '--bundle',
@@ -241,9 +242,9 @@ async def create(ctx, request: str, pretty):
               help='One or more comma-separated item IDs.',
               type=types.CommaSeparatedString(),
               required=True)
-@click.option('--item-type',
+@click.option('--name',
               required=True,
-              help='Specify an item type',
+              help='Order name. Does not need to be unique.',
               type=click.STRING)
 @click.option('--clip',
               type=types.JSON(),
