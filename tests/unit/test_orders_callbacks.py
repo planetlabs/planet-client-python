@@ -39,7 +39,8 @@ def test_stash_item_type_success():
     assert ctx.obj['item_type'] = TEST_ITEM_TYPE
 
 
-def test_bundle_cb_success():
+def test_bundle_cb_pass_through():
+    """Do nothing if the bundle value is defined."""
     ctx = MockContext()
     ctx.obj['item_type'] = TEST_ITEM_TYPE
     result = bundle_cb(ctx, 'bundle', TEST_ITEM_TYPE)
