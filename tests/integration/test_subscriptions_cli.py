@@ -22,8 +22,10 @@ from planet.cli import cli
 
 from test_subscriptions_api import (api_mock,
                                     failing_api_mock,
-                                    modify_api_mock,
-                                    sub_api_mock,
+                                    create_mock,
+                                    update_mock,
+                                    cancel_mock,
+                                    describe_mock,
                                     res_api_mock)
 
 
@@ -86,7 +88,7 @@ GOOD_SUB_REQUEST = {'name': 'lol', 'delivery': True, 'source': 'wut'}
 @pytest.mark.parametrize('cmd_arg, runner_input',
                          [('-', json.dumps(GOOD_SUB_REQUEST)),
                           (json.dumps(GOOD_SUB_REQUEST), None)])
-@modify_api_mock
+@create_mock
 def test_subscriptions_create_success(cmd_arg, runner_input):
     """Subscriptions creation succeeds with a valid subscription request."""
     # The "-" argument says "read from stdin" and the input keyword
@@ -140,7 +142,7 @@ def test_subscriptions_cancel_failure():
     assert result.exit_code == 1  # failure.
 
 
-@modify_api_mock
+@cancel_mock
 def test_subscriptions_cancel_success():
     """Cancel command succeeds."""
     result = CliRunner().invoke(
@@ -168,7 +170,7 @@ def test_subscriptions_update_failure():
     assert result.exit_code == 1  # failure.
 
 
-@modify_api_mock
+@update_mock
 def test_subscriptions_update_success():
     """Update command succeeds."""
     request = GOOD_SUB_REQUEST.copy()
@@ -200,7 +202,7 @@ def test_subscriptions_describe_failure():
     assert result.exit_code == 1  # failure.
 
 
-@sub_api_mock
+@describe_mock
 def test_subscriptions_describe_success():
     """Describe command succeeds."""
     result = CliRunner().invoke(

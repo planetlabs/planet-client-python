@@ -13,7 +13,7 @@
 # limitations under the License.
 import logging
 import pytest
-import click
+from planet.specs import SpecificationException
 from planet.cli.data import check_item_types
 
 LOGGER = logging.getLogger(__name__)
@@ -51,5 +51,5 @@ def test_item_type_success(item_types):
 
 def test_item_type_fail():
     ctx = MockContext()
-    with pytest.raises(click.BadParameter):
+    with pytest.raises(SpecificationException):
         check_item_types(ctx, 'item_type', "bad_item_type")

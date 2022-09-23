@@ -71,8 +71,9 @@ api_mock.route(
     side_effect=[Response(200, json=page) for page in result_pages(size=40)])
 
 
-# This mock API returns posted data to the caller. It's used to test
-# methods that rely on POST or PUT.
+# The "creation", "update", and "cancel" mock APIs return submitted
+# data to the caller. They are used to test methods that rely on POST
+# or PUT.
 def modify_response(request):
     if request.content:
         return Response(200, json=json.loads(request.content))
@@ -80,22 +81,33 @@ def modify_response(request):
         return Response(200)
 
 
-modify_api_mock = respx.mock()
-modify_api_mock.route(
-    M(url__startswith='https://api.planet.com/subscriptions/v1'),
-    M(method__in=['POST', 'PUT'])).mock(side_effect=modify_response)
+create_mock = respx.mock()
+create_mock.route(host='api.planet.com',
+                  path='/subscriptions/v1',
+                  method='POST').mock(side_effect=modify_response)
 
-sub_api_mock = respx.mock()
-sub_api_mock.route(
-    M(url__startswith='https://api.planet.com/subscriptions/v1'),
-    M(method__in=['GET'])).mock(
-        return_value=Response(200,
-                              json={
-                                  'id': '42',
-                                  'name': 'test',
-                                  'delivery': 'yes, please',
-                                  'source': 'test'
-                              }))
+update_mock = respx.mock()
+update_mock.route(host='api.planet.com',
+                  path__regex=r'^/subscriptions/v1/(\w+)',
+                  method='PUT').mock(side_effect=modify_response)
+
+cancel_mock = respx.mock()
+cancel_mock.route(host='api.planet.com',
+                  path__regex=r'^/subscriptions/v1/(\w+)/cancel',
+                  method='POST').mock(side_effect=modify_response)
+
+# Mock the subscription description API endpoint.
+describe_mock = respx.mock()
+describe_mock.route(
+    host='api.planet.com',
+    path__regex=r'^/subscriptions/v1/(\w+)',
+    method='GET').mock(return_value=Response(200,
+                                             json={
+                                                 'id': '42',
+                                                 'name': 'test',
+                                                 'delivery': 'yes, please',
+                                                 'source': 'test'
+                                             }))
 
 
 def result_pages(status=None, size=40):
@@ -179,7 +191,7 @@ async def test_create_subscription_failure():
 
 
 @pytest.mark.asyncio
-@modify_api_mock
+@create_mock
 async def test_create_subscription_success():
     """Subscription is created, description has the expected items."""
     async with Session() as session:
@@ -201,7 +213,7 @@ async def test_cancel_subscription_failure():
 
 
 @pytest.mark.asyncio
-@modify_api_mock
+@cancel_mock
 async def test_cancel_subscription_success():
     """Subscription is canceled, description has the expected items."""
     async with Session() as session:
@@ -220,7 +232,7 @@ async def test_update_subscription_failure():
 
 
 @pytest.mark.asyncio
-@modify_api_mock
+@update_mock
 async def test_update_subscription_success():
     """Subscription is created, description has the expected items."""
     async with Session() as session:
@@ -243,7 +255,7 @@ async def test_get_subscription_failure():
 
 
 @pytest.mark.asyncio
-@sub_api_mock
+@describe_mock
 async def test_get_subscription_success(monkeypatch):
     """Subscription description fetched, has the expected items."""
     async with Session() as session:

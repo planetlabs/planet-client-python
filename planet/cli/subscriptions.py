@@ -104,7 +104,7 @@ async def cancel_subscription_cmd(ctx, subscription_id, pretty):
 @translate_exceptions
 @coro
 async def update_subscription_cmd(ctx, subscription_id, request, pretty):
-    """Cancels a subscription and prints the API response."""
+    """Updates a subscription and prints the API response."""
     async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
         sub = await client.update_subscription(subscription_id, request)
@@ -118,14 +118,7 @@ async def update_subscription_cmd(ctx, subscription_id, request, pretty):
 @translate_exceptions
 @coro
 async def describe_subscription_cmd(ctx, subscription_id, pretty):
-    """Cancels a subscription and prints the API response.
-
-    This implementation is only a placeholder. To begin, instead
-    of mocking calls to the Subscriptions API, we'll use a
-    collection of fake subscriptions (the all_subs object).
-    After we refactor we will change to mocking the API.
-
-    """
+    """Gets the description of a subscription and prints the API response."""
     async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
         sub = await client.get_subscription(subscription_id)

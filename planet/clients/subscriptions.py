@@ -119,7 +119,7 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        url = 'https://api.planet.com/subscriptions/v1/{subscription_id}/cancel'
+        url = f'https://api.planet.com/subscriptions/v1/{subscription_id}/cancel'
         req = Request(url, method='POST')
 
         try:
@@ -146,7 +146,7 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        url = 'https://api.planet.com/subscriptions/v1/{subscription_id}'
+        url = f'https://api.planet.com/subscriptions/v1/{subscription_id}'
         req = Request(url, method='PUT', json=request)
 
         try:
@@ -174,7 +174,7 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        url = 'https://api.planet.com/subscriptions/v1/{subscription_id}'
+        url = f'https://api.planet.com/subscriptions/v1/{subscription_id}'
         req = Request(url, method='GET')
 
         try:
@@ -222,7 +222,7 @@ class SubscriptionsClient:
             ITEMS_KEY = 'results'
 
         params = {'status': [val for val in status or {}]}
-        url = 'https://api.planet.com/subscriptions/v1/{subscription_id}/results'
+        url = f'https://api.planet.com/subscriptions/v1/{subscription_id}/results'
         req = Request(url, params=params)
 
         try:
