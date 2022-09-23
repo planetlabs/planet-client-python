@@ -46,7 +46,8 @@ def test_bundle_cb_success():
     assert result == TEST_ITEM_TYPE
 
 
-def test_bundle_cb_fail():
+def test_bundle_cb_missing_parameter():
+    """If bundle option is missing, print helpful error using item type information."""
     ctx = MockContext()
     ctx.obj['item_type'] = TEST_ITEM_TYPE
     param = Param()
