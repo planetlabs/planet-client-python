@@ -15,10 +15,42 @@ import logging
 import pytest
 import click
 from planet.cli.orders import stash_item_type, bundle_cb
+from planet.specs import get_product_bundles
 
 LOGGER = logging.getLogger(__name__)
 
 TEST_ITEM_TYPE = 'psscene'
+ALL_PRODUCT_BUNDLES = [
+    'analytic',
+    'analytic_udm2',
+    'analytic_3b_udm2',
+    'analytic_5b',
+    'analytic_5b_udm2',
+    'analytic_8b_udm2',
+    'visual',
+    'uncalibrated_dn',
+    'uncalibrated_dn_udm2',
+    'basic_analytic',
+    'basic_analytic_udm2',
+    'basic_analytic_8b_udm2',
+    'basic_uncalibrated_dn',
+    'basic_uncalibrated_dn_udm2',
+    'analytic_sr',
+    'analytic_sr_udm2',
+    'analytic_8b_sr_udm2',
+    'basic_uncalibrated_dn_nitf',
+    'basic_uncalibrated_dn_nitf_udm2',
+    'basic_analytic_nitf',
+    'basic_analytic_nitf_udm2',
+    'basic_panchromatic',
+    'basic_panchromatic_dn',
+    'panchromatic',
+    'panchromatic_dn',
+    'panchromatic_dn_udm2',
+    'pansharpened',
+    'pansharpened_udm2',
+    'basic_l1a_dn'
+]
 
 
 class MockContext:
@@ -36,15 +68,14 @@ class Param(object):
 def test_stash_item_type_success():
     ctx = MockContext()
     stash_item_type(ctx, 'item_type', TEST_ITEM_TYPE)
-    assert ctx.obj['item_type'] = TEST_ITEM_TYPE
+    assert ctx.obj['item_type'] == TEST_ITEM_TYPE
 
 
 def test_bundle_cb_pass_through():
     """Do nothing if the bundle value is defined."""
     ctx = MockContext()
     ctx.obj['item_type'] = TEST_ITEM_TYPE
-    result = bundle_cb(ctx, 'bundle', TEST_ITEM_TYPE)
-    assert result == TEST_ITEM_TYPE
+    assert bundle_cb(ctx, 'bundle', 'anything')
 
 
 def test_bundle_cb_missing_parameter():
@@ -52,5 +83,10 @@ def test_bundle_cb_missing_parameter():
     ctx = MockContext()
     ctx.obj['item_type'] = TEST_ITEM_TYPE
     param = Param()
-    with pytest.raises(click.ClickException):
+
+    all_bundles = get_product_bundles()
+    all_bundles_formatted = [bundle + "\n\t" for bundle in all_bundles]
+    msg = f"Missing option '--bundle'. Choose from:\n{all_bundles_formatted}."
+
+    with pytest.raises(click.ClickException, match=msg):
         bundle_cb(ctx, param, None)
