@@ -14,7 +14,7 @@
 import logging
 import pytest
 import click
-from planet.cli.orders import stash_item_type, bundle_cb, Bundle
+from planet.cli.orders import stash_item_type, bundle_cb
 
 LOGGER = logging.getLogger(__name__)
 
@@ -27,7 +27,28 @@ class MockContext:
         self.obj = {}
 
 
+class Param(object):
+
+    def __init__(self):
+        self.name = 'bundle'
+
+
 def test_stash_item_type_success():
     ctx = MockContext()
-    stash_item_type(ctx, [], TEST_ITEM_TYPE)
+    stash_item_type(ctx, 'item_type', TEST_ITEM_TYPE)
     assert ctx.obj == {'item_type': TEST_ITEM_TYPE}
+
+
+def test_bundle_cb_success():
+    ctx = MockContext()
+    ctx.obj['item_type'] = TEST_ITEM_TYPE
+    result = bundle_cb(ctx, 'bundle', TEST_ITEM_TYPE)
+    assert result == TEST_ITEM_TYPE
+
+
+def test_bundle_cb_fail():
+    ctx = MockContext()
+    ctx.obj['item_type'] = TEST_ITEM_TYPE
+    param = Param()
+    with pytest.raises(click.ClickException):
+        bundle_cb(ctx, param, None)
