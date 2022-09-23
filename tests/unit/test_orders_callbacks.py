@@ -36,7 +36,7 @@ class Param(object):
 def test_stash_item_type_success():
     ctx = MockContext()
     stash_item_type(ctx, 'item_type', TEST_ITEM_TYPE)
-    assert ctx.obj == {'item_type': TEST_ITEM_TYPE}
+    assert ctx.obj['item_type'] = TEST_ITEM_TYPE
 
 
 def test_bundle_cb_success():
