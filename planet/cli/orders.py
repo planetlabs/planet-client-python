@@ -263,8 +263,8 @@ async def create(ctx, request: str, pretty):
     '--stac/--no-stac',
     default=True,
     is_flag=True,
-    help="""Do not request metadata to be in SpatioTemporal Asset Catalog
-    (STAC) format.""")
+    help="""Include or exclude metadata in SpatioTemporal Asset Catalog (STAC)
+    format. Not specifying either defaults to including it (--stac).""")
 @pretty
 async def request(ctx,
                   item_type,

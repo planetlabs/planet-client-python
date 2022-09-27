@@ -123,13 +123,8 @@ def test_data_filter_defaults(permission,
     assert result.exit_code == 0
 
     [default_filters.remove(rem) for rem in [p_remove, s_remove] if rem]
-    if len(default_filters) > 1:
-        expected_filt = {"type": "AndFilter", "config": default_filters}
-        assert_and_filters_equal(json.loads(result.output), expected_filt)
-    elif len(default_filters) == 1:
-        assert json.loads(result.output) == default_filters[0]
-    else:
-        assert result.output == ''
+    expected_filt = {"type": "AndFilter", "config": default_filters}
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
 @respx.mock
