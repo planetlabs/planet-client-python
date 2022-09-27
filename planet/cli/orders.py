@@ -221,58 +221,22 @@ async def create(ctx, request: str, pretty):
     echo_json(order, pretty)
 
 
-def stash_item_type(ctx, param, value):
-    ctx.obj['item_type'] = value
-    return value
-
-
-def bundle_cb(ctx, param, value):
-    item_type = ctx.obj['item_type']
-    choices = planet.specs.get_product_bundles(item_type)
-    if value is None:
-        msg = ("Choose from:\n\t{choices}").format(
-            choices=",\n\t".join(choices))
-        raise click.ClickException(f"Missing option '--{param.name}'. {msg}")
-    else:
-        return value
-
-
-class Bundle(click.Choice):
-    name = "bundle"
-
-    def __init__(self, case_sensitive: bool = True) -> None:
-        self.choices = []
-        self.case_sensitive = case_sensitive
-
-    def convert(self, value, param, ctx):
-        item_type = ctx.obj['item_type']
-        self.choices = planet.specs.get_product_bundles(item_type)
-        return super().convert(value, param, ctx)
-
-
 @orders.command()
 @click.pass_context
 @translate_exceptions
 @coro
+@click.argument('item_type',
+                metavar='ITEM_TYPE',
+                type=click.Choice(planet.specs.get_item_types(),
+                                  case_sensitive=False))
+@click.argument('bundle',
+                metavar='BUNDLE',
+                type=click.Choice(planet.specs.get_product_bundles(),
+                                  case_sensitive=False))
 @click.option('--name',
               required=True,
               help='Order name. Does not need to be unique.',
               type=click.STRING)
-@click.option('--item-type',
-              required=True,
-              help='Specify an item type',
-              type=click.Choice(planet.specs.get_item_types(),
-                                case_sensitive=False),
-              callback=stash_item_type,
-              is_eager=True)
-@click.option(
-    '--bundle',
-    multiple=False,
-    required=False,
-    callback=bundle_cb,
-    help='Product bundle.',
-    type=Bundle(case_sensitive=False),
-)
 @click.option('--id',
               help='One or more comma-separated item IDs.',
               type=types.CommaSeparatedString(),
@@ -303,9 +267,9 @@ class Bundle(click.Choice):
     format. Not specifying either defaults to including it (--stac).""")
 @pretty
 async def request(ctx,
-                  name,
                   item_type,
                   bundle,
+                  name,
                   id,
                   clip,
                   tools,
