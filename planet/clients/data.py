@@ -12,7 +12,9 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """Functionality for interacting with the data api"""
+import asyncio
 import logging
+import time
 import typing
 
 from .. import exceptions
@@ -527,8 +529,7 @@ class DataClient:
         except KeyError:
             valid = list(assets.keys())
             raise exceptions.ClientError(
-                f'asset_type_id ({asset_type_id}) must be one of {valid}'
-            )
+                f'asset_type_id ({asset_type_id}) must be one of {valid}')
 
         return asset
 
@@ -546,16 +547,13 @@ class DataClient:
         try:
             status = asset['status']
         except KeyError:
-            raise exceptions.ClientError(
-                'asset missing ["status"] entry.'
-            )
+            raise exceptions.ClientError('asset missing ["status"] entry.')
 
         try:
             url = asset['_links']['activate']
         except KeyError:
             raise exceptions.ClientError(
-                'asset missing ["_links"]["activate"] entry'
-            )
+                'asset missing ["_links"]["activate"] entry')
 
         # lets not try to activate an asset already activating or active
         if status == 'inactive':
@@ -572,10 +570,8 @@ class DataClient:
                          callback: typing.Callable[[str], None] = None) -> str:
         """Wait for an item asset to be active.
 
-        Asset description is obtained from get_asset().
-
         Parameters:
-            asset: Description of the asset.
+            asset: Description of the asset. Obtained from get_asset().
             delay: Time (in seconds) between polls.
             max_attempts: Maximum number of polls. When set to 0, no limit
                 is applied.
@@ -595,7 +591,47 @@ class DataClient:
         # the asset is active
         # NOTE: use the url at asset['_links']['_self'] to get the current
         # asset status
-        raise NotImplementedError
+
+        # loop without end if max_attempts is zero
+        # otherwise, loop until num_attempts reaches max_attempts
+        num_attempts = 0
+        while not max_attempts or num_attempts < max_attempts:
+            t = time.time()
+
+            try:
+                current_status = asset['status']
+            except KeyError:
+                raise exceptions.ClientError('asset missing ["status"] entry.')
+
+            LOGGER.debug(current_status)
+
+            if callback:
+                callback(current_status)
+
+            if current_status == 'active':
+                break
+
+            sleep_time = max(delay - (time.time() - t), 0)
+            LOGGER.debug(f'sleeping {sleep_time}s')
+            await asyncio.sleep(sleep_time)
+
+            num_attempts += 1
+
+            try:
+                asset_url = asset['_links']['_self']
+            except KeyError:
+                raise exceptions.ClientError(
+                    'asset missing ["_links"]["_self"] entry.')
+
+            request = self._request(asset_url, method='GET')
+            response = await self._do_request(request)
+            asset = response.json()
+
+        if max_attempts and num_attempts >= max_attempts:
+            raise exceptions.ClientError(
+                f'Maximum number of attempts ({max_attempts}) reached.')
+
+        return asset
 
     async def download_asset(self,
                              asset: dict,

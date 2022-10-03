@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 from contextlib import nullcontext as does_not_raise
+import copy
 from http import HTTPStatus
 import json
 import logging
@@ -589,9 +590,63 @@ async def test_activate_asset_invalid_asset(session):
 @respx.mock
 @pytest.mark.asyncio
 async def test_wait_asset_success(session):
+    asset_url = f'{TEST_URL}/asset'
+
+    basic_udm2_asset = {
+            "_links": {
+                "_self": asset_url,
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": 'activating',
+            "type": "basic_udm2"
+        }
+
+    basic_udm2_asset_active = copy.deepcopy(basic_udm2_asset)
+    basic_udm2_asset_active['status'] = 'active'
+
+    route = respx.get(asset_url)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset),
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset),
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset_active)
+    ]
+
+    cl = DataClient(session, base_url=TEST_URL)
+    asset = await cl.wait_asset(basic_udm2_asset, delay=0)
+
+    assert asset == basic_udm2_asset_active
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_wait_asset_max_attempts(session):
+    asset_url = f'{TEST_URL}/asset'
+
+    basic_udm2_asset = {
+            "_links": {
+                "_self": asset_url,
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": 'activating',
+            "type": "basic_udm2"
+        }
+
+    route = respx.get(asset_url)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset),
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset),
+    ]
+
     cl = DataClient(session, base_url=TEST_URL)
 
-    raise NotImplementedError
+    with pytest.raises(exceptions.ClientError):
+        await cl.wait_asset(basic_udm2_asset, delay=0, max_attempts=1)
 
 
 @respx.mock
