@@ -52,7 +52,8 @@ class SpecificationException(Exception):
         self.opts = ', '.join(["'" + s + "'" for s in supported])
 
     def __str__(self):
-        return f'{self.field_name} - \'{self.value}\' is not one of {self.opts}.'
+        return (f'{self.field_name} - \'{self.value}\' is not one of '
+                f'{self.opts}.')
 
 
 def validate_bundle(bundle):
