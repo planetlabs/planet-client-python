@@ -520,11 +520,17 @@ class DataClient:
             planet.exceptions.ClientError: If asset type identifier is not
             valid.
         """
-        # NOTE: this is not an API endpoint
-        # this is getting an asset by name from the dict returned by
-        # list_item_assets()
-        # TODO: 499
-        raise NotImplementedError
+        assets = await self.list_item_assets(item_type_id, item_id)
+
+        try:
+            asset = assets[asset_type_id]
+        except KeyError:
+            valid = list(assets.keys())
+            raise exceptions.ClientError(
+                f'asset_type_id ({asset_type_id}) must be one of {valid}'
+            )
+
+        return asset
 
     async def activate_asset(self, asset: dict):
         """Activate an item asset.
