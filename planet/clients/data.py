@@ -13,14 +13,16 @@
 # the License.
 """Functionality for interacting with the data api"""
 import asyncio
+import hashlib
 import logging
+from pathlib import Path
 import time
 import typing
 
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
-from ..models import Paged, Request, Response
+from ..models import Paged, Request, Response, StreamingBody
 
 BASE_URL = f'{PLANET_BASE_URL}/data/v1/'
 SEARCHES_PATH = '/searches'
@@ -570,6 +572,9 @@ class DataClient:
                          callback: typing.Callable[[str], None] = None) -> str:
         """Wait for an item asset to be active.
 
+        Prior to waiting for the asset to be active, be sure to activate the
+        asset with activate_asset().
+
         Parameters:
             asset: Description of the asset. Obtained from get_asset().
             delay: Time (in seconds) between polls.
@@ -586,12 +591,6 @@ class DataClient:
                 not available or if the maximum number of attempts is reached
                 before the asset is active.
         """
-        # NOTE: this is not an API endpoint
-        # This is getting and checking the asset status and waiting until
-        # the asset is active
-        # NOTE: use the url at asset['_links']['_self'] to get the current
-        # asset status
-
         # loop without end if max_attempts is zero
         # otherwise, loop until num_attempts reaches max_attempts
         num_attempts = 0
@@ -636,16 +635,20 @@ class DataClient:
     async def download_asset(self,
                              asset: dict,
                              filename: str = None,
-                             directory: str = None,
+                             directory: Path = Path('.'),
                              overwrite: bool = False,
                              progress_bar: bool = True) -> str:
         """Download an asset.
 
-        Asset description is obtained from get_asset() or wait_asset().
+        The asset must be active before it can be downloaded. This can be
+        achieved with activate_asset() followed by wait_asset().
+
+        If overwrite is False and the file already exists, download will be
+        skipped and the file path will be returned as usual.
 
         Parameters:
-            asset: Description of the asset.
-            location: Download location url including download token.
+            asset: Description of the asset. Obtained from get_asset() or
+                wait_asset().
             filename: Custom name to assign to downloaded file.
             directory: Base directory for file download.
             overwrite: Overwrite any existing files.
@@ -656,10 +659,53 @@ class DataClient:
 
         Raises:
             planet.exceptions.APIError: On API error.
-            planet.exceptions.ClientError: If asset is not activated or asset
+            planet.exceptions.ClientError: If asset is not active or asset
             description is not valid.
         """
-        # NOTE: this is not an API endpoint
-        # This is getting the download location from the asset description
-        # and then downloading the file at that location
-        raise NotImplementedError
+        try:
+            location = asset['location']
+        except KeyError:
+            raise exceptions.ClientError(
+                'asset missing ["location"] entry. Is asset active?')
+
+        req = self._request(location, method='GET')
+
+        async with self._session.stream(req) as resp:
+            body = StreamingBody(resp)
+            dl_path = Path(directory, filename or body.name)
+            dl_path.parent.mkdir(exist_ok=True, parents=True)
+            await body.write(dl_path,
+                             overwrite=overwrite,
+                             progress_bar=progress_bar)
+        return dl_path
+
+    @staticmethod
+    def validate_checksum(asset: dict, filename: Path):
+        """Validate checksum of downloaded file
+
+        Compares checksum calculated from the file against the value provided
+        in the asset.
+
+        Parameters:
+            asset: Description of the asset. Obtained from get_asset() or
+                wait_asset().
+            filename: Full path to downloaded file.
+
+        Raises:
+            planet.exceptions.ClientError: If the file does not exist or if
+                checksums do not match.
+        """
+        try:
+            file_hash = hashlib.md5(filename.read_bytes()).hexdigest()
+        except FileNotFoundError:
+            raise exceptions.ClientError(f'File ({filename}) does not exist.')
+
+        try:
+            origin_hash = asset['md5_digest']
+        except KeyError:
+            raise exceptions.ClientError(
+                'asset missing ["md5_digest"] entry. Is asset active?')
+
+        if origin_hash != file_hash:
+            raise exceptions.ClientError(
+                f'File ({filename}) checksums do not match.')
