@@ -535,22 +535,35 @@ class DataClient:
     async def activate_asset(self, asset: dict):
         """Activate an item asset.
 
-        Asset description is obtained from get_asset().
-
         Parameters:
-            asset: Description of the asset.
+            asset: Description of the asset. Obtained from get_asset().
 
         Raises:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If asset description is not
             valid.
         """
-        # NOTE: this is not an API endpoint
-        # This is getting the 'activate' link from the asset description
-        # and then sending the activate request to that link
-        # TODO: 499
+        try:
+            status = asset['status']
+        except KeyError:
+            raise exceptions.ClientError(
+                'asset missing ["status"] entry.'
+            )
 
-        raise NotImplementedError
+        try:
+            url = asset['_links']['activate']
+        except KeyError:
+            raise exceptions.ClientError(
+                'asset missing ["_links"]["activate"] entry'
+            )
+
+        # lets not try to activate an asset already activating or active
+        if status == 'inactive':
+            request = self._request(url, method='GET')
+            # no response is returned
+            await self._do_request(request)
+
+        return
 
     async def wait_asset(self,
                          asset: dict,
