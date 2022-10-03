@@ -121,7 +121,7 @@ class _Limiter:
 
     References:
     [1] https://github.com/hallazzang/asyncio-throttle
-    [2] https://github.com/planetlabs/planet-client-python/issues/580#issuecomment-1182752851
+    [2] https://github.com/planetlabs/planet-client-python/issues/580#issuecomment-1182752851 # noqa: E501
     [3] https://github.com/mjpieters/aiolimiter
     [4] https://github.com/mjpieters/aiolimiter/issues/73
 
