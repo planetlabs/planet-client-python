@@ -549,10 +549,41 @@ async def test_get_asset(asset_type_id, expectation, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_activate_asset_success(session):
+@pytest.mark.parametrize("status, expectation",
+                         [('inactive', True),
+                          ('active', False)])
+async def test_activate_asset_success(status, expectation, session):
+    activate_url = f'{TEST_URL}/activate'
+
+    mock_resp = httpx.Response(HTTPStatus.OK)
+    route = respx.get(activate_url)
+    route.return_value = mock_resp
+
+    basic_udm2_asset = {
+            "_links": {
+                "_self": "SELFURL",
+                "activate": activate_url,
+                "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": status,
+            "type": "basic_udm2"
+        }
+
+    cl = DataClient(session, base_url=TEST_URL)
+    await cl.activate_asset(basic_udm2_asset)
+
+    assert route.called == expectation
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_activate_asset_invalid_asset(session):
     cl = DataClient(session, base_url=TEST_URL)
 
-    raise NotImplementedError
+    with pytest.raises(exceptions.ClientError):
+        await cl.activate_asset({})
 
 
 @respx.mock
