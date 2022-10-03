@@ -435,3 +435,97 @@ async def test_get_stats_invalid_interval(search_filter, session):
 
     with pytest.raises(exceptions.ClientError):
         await cl.get_stats(['PSScene'], search_filter, 'invalid')
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_list_item_assets_success(session):
+    item_type_id = 'PSScene'
+    item_id = '20221003_002705_38_2461'
+    assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
+    LOGGER.warning(assets_url)
+
+    page_response = {
+        "basic_analytic_4b": {
+            "_links": {
+                "_self":
+                "SELFURL",
+                "activate":
+                "ACTIVATEURL",
+                "type":
+                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": "inactive",
+            "type": "basic_analytic_4b"
+        },
+        "basic_udm2": {
+            "_links": {
+                "_self": "SELFURL",
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": "inactive",
+            "type": "basic_udm2"
+        }
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.get(assets_url).return_value = mock_resp
+
+    cl = DataClient(session, base_url=TEST_URL)
+    assets = await cl.list_item_assets(item_type_id, item_id)
+
+    # check the response is returned unaltered
+    assert assets == page_response
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_list_item_assets_missing(session):
+    item_type_id = 'PSScene'
+    item_id = '20221003_002705_38_2461xx'
+    assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
+
+    mock_resp = httpx.Response(404)
+    respx.get(assets_url).return_value = mock_resp
+
+    cl = DataClient(session, base_url=TEST_URL)
+
+    with pytest.raises(exceptions.APIError):
+        await cl.list_item_assets(item_type_id, item_id)
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_get_asset_success(session):
+    cl = DataClient(session, base_url=TEST_URL)
+
+
+    raise NotImplementedError
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_activate_asset_success(session):
+    cl = DataClient(session, base_url=TEST_URL)
+
+    raise NotImplementedError
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_wait_asset_success(session):
+    cl = DataClient(session, base_url=TEST_URL)
+
+    raise NotImplementedError
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_download_asset_success(session):
+    cl = DataClient(session, base_url=TEST_URL)
+
+    raise NotImplementedError
