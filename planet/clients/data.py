@@ -86,6 +86,9 @@ class DataClient:
     def _searches_url(self):
         return f'{self._base_url}{SEARCHES_PATH}'
 
+    def _item_url(self, item_type, item_id):
+        return f'{self._base_url}/item-types/{item_type}/items/{item_id}'
+
     def _request(self, url, method, data=None, params=None, json=None):
         return Request(url, method=method, data=data, params=params, json=json)
 
@@ -493,7 +496,10 @@ class DataClient:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        raise NotImplementedError
+        url = f'{self._item_url(item_type_id, item_id)}/assets'
+        request = self._request(url, method='GET')
+        response = await self._do_request(request)
+        return response.json()
 
     async def get_asset(self,
                         item_type_id: str,
@@ -517,10 +523,13 @@ class DataClient:
         # NOTE: this is not an API endpoint
         # this is getting an asset by name from the dict returned by
         # list_item_assets()
+        # TODO: 499
         raise NotImplementedError
 
     async def activate_asset(self, asset: dict):
         """Activate an item asset.
+
+        Asset description is obtained from get_asset().
 
         Parameters:
             asset: Description of the asset.
@@ -533,6 +542,8 @@ class DataClient:
         # NOTE: this is not an API endpoint
         # This is getting the 'activate' link from the asset description
         # and then sending the activate request to that link
+        # TODO: 499
+
         raise NotImplementedError
 
     async def wait_asset(self,
@@ -541,6 +552,8 @@ class DataClient:
                          max_attempts: int = WAIT_MAX_ATTEMPTS,
                          callback: typing.Callable[[str], None] = None) -> str:
         """Wait for an item asset to be active.
+
+        Asset description is obtained from get_asset().
 
         Parameters:
             asset: Description of the asset.
