@@ -443,7 +443,6 @@ async def test_list_item_assets_success(session):
     item_type_id = 'PSScene'
     item_id = '20221003_002705_38_2461'
     assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
-    LOGGER.warning(assets_url)
 
     page_response = {
         "basic_analytic_4b": {
@@ -500,11 +499,52 @@ async def test_list_item_assets_missing(session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_get_asset_success(session):
+@pytest.mark.parametrize("asset_type_id, expectation",
+                         [('basic_udm2', does_not_raise()),
+                          ('invalid', pytest.raises(exceptions.ClientError))])
+async def test_get_asset(asset_type_id, expectation, session):
+    item_type_id = 'PSScene'
+    item_id = '20221003_002705_38_2461'
+    assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
+
+    basic_udm2_asset = {
+            "_links": {
+                "_self": "SELFURL",
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": "inactive",
+            "type": "basic_udm2"
+        }
+
+    page_response = {
+        "basic_analytic_4b": {
+            "_links": {
+                "_self":
+                "SELFURL",
+                "activate":
+                "ACTIVATEURL",
+                "type":
+                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": "inactive",
+            "type": "basic_analytic_4b"
+        },
+        "basic_udm2": basic_udm2_asset
+    }
+
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.get(assets_url).return_value = mock_resp
+
     cl = DataClient(session, base_url=TEST_URL)
 
-
-    raise NotImplementedError
+    with expectation:
+        asset = await cl.get_asset(item_type_id, item_id, asset_type_id)
+        assert asset == basic_udm2_asset
 
 
 @respx.mock
