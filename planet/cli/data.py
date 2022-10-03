@@ -18,7 +18,9 @@ from contextlib import asynccontextmanager
 import click
 
 from planet import data_filter, DataClient
-from planet.clients.data import SEARCH_SORT, SEARCH_SORT_DEFAULT, STATS_INTERVAL
+from planet.clients.data import (SEARCH_SORT,
+                                 SEARCH_SORT_DEFAULT,
+                                 STATS_INTERVAL)
 from planet.specs import get_item_types, SpecificationException
 
 from . import types

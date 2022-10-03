@@ -105,9 +105,8 @@ def build(session):
     # check preexisting
     exist_but_should_not = [p for p in BUILD_DIRS if Path(p).is_dir()]
     if exist_but_should_not:
-        session.error(
-            f"Pre-existing {', '.join(exist_but_should_not)}. Run clean session and try again"
-        )
+        session.error(f"Pre-existing {', '.join(exist_but_should_not)}. "
+                      "Run clean session and try again")
 
     session.install('build', 'twine', 'check-wheel-contents')
 
@@ -139,8 +138,8 @@ def _publish(session, repository):
     missing = [p for p in BUILD_DIRS if not Path(p).is_dir()]
     if missing:
         session.error(
-            f"Missing one or more build directories: {', '.join(missing)}. Run build session and try again"
-        )
+            f"Missing one or more build directories: {', '.join(missing)}. "
+            "Run build session and try again")
 
     session.install('twine')
 

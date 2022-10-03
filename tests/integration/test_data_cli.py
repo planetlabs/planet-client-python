@@ -466,8 +466,11 @@ def test_data_search_cmd_limit(invoke,
                                search_results,
                                limit,
                                limited_list_length):
-    """Test for planet data search_quick limit option. If no value is specified,
-    make sure the result contains at most 100 entries."""
+    """Test for planet data search_quick limit option.
+
+    If no value is specified, make sure the result contains at most 100
+    entries.
+    """
     filter = {
         "type": "DateRangeFilter",
         "field_name": "acquired",
@@ -648,7 +651,10 @@ def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
 @pytest.mark.parametrize("interval", ['hour', 'day', 'week', 'month', 'year'])
 def test_data_stats_success(invoke, item_types, interval):
     """Test for planet data stats. Test with multiple item_types.
-    Test should succeed as filter contains valid JSON, item_types, and intervals."""
+
+    Test should succeed as filter contains valid JSON, item_types, and
+    intervals.
+    """
     filter = {
         "type": "DateRangeFilter",
         "field_name": "acquired",
