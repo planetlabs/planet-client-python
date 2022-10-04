@@ -96,4 +96,4 @@ Planet's APIs require an account for use.
 ## Development
 
 To contribute or develop with this library, see
-[CONTRIBUTING](https://github.com/planetlabs/planet-client-python/CONTRIBUTING.md)
+[CONTRIBUTING](https://github.com/planetlabs/planet-client-python/CONTRIBUTING.md).
