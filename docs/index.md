@@ -61,7 +61,7 @@ and call from your synchronous code.
 >>> oid = sync_create_order(order_details)
 
 ```
-
+ 
 When using `asyncio.run` to develop synchronous code with the async library,
 keep in mind this excerpt from the
 [asyncio.run](https://docs.python.org/3/library/asyncio-task.html#asyncio.run)

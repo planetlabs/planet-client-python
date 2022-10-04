@@ -37,6 +37,8 @@ test_requires = ['pytest', 'pytest-asyncio==0.16', 'pytest-cov', 'respx==0.19']
 lint_requires = ['flake8', 'mypy', 'yapf']
 
 doc_requires = [
+    'pytest',
+    'pytest-cov',
     'mkdocs==1.3',
     'mkdocs-click==0.7.0',
     'mkdocs-material==8.2.11',
