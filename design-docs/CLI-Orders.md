@@ -339,7 +339,8 @@ IDS: One or more comma-separated item IDs.
 
 Generate an order request.
 
-This command builds an order description for use in creating an order. It outputs the order request, optionally pretty-printed.
+This command builds an order description for use in creating an order. It
+outputs the order request, optionally pretty-printed.
 
 Support for building an order description is provided however it
 has many limitations compared to what the Orders API supports. For creation
@@ -348,39 +349,21 @@ use the Python library to aid in creating the order description.
 
 Note that only one of --clip or --tools can be specified.
 
-Options:  
+Options:
 
   --clip JSON        -              Clip feature GeoJSON. Can be a json string,
-                                  filename, or '-' for stdin.  
+                                  filename, or '-' for stdin.
   --tools JSON         -           Toolchain JSON. Can be a json string,
-                                  filename, or '-' for stdin.  
+                                  filename, or '-' for stdin.
   --email BOOLEAN         -          Send email notification when order is
-                                  complete.  
+                                  complete.
   --cloudconfig JSON     -         Credentials for cloud storage provider to
                                   enable cloud delivery of data. Can be a json
-                                  string, filename, or '-' for stdin.  
+                                  string, filename, or '-' for stdin.
   --pretty                -        Format JSON output.
 
 
 ### Usage Examples
-
-  To create a clipped order request using a file:
-
-  $ planet orders request test_order PSScene analytic_sr  \
-      --id 20200922_183724_23_106a,20200922_183722_17_106a \
-      --clip aoi.geojson
-
-  To create a clipped order using stdin:
-
-  $ planet orders request test_order PSScene analytic_sr  \
-      --id 20200922_183724_23_106a,20200922_183722_17_106a \
-      --clip - < aoi.geojson
-
-or -
-
-  $ planet orders request test_order PSScene analytic_sr  \
-      --search-id 897802165e8d4bd587e342a4b399eda6 \
-      --clip - < aoi.geojson
 
 User Story: As a CLI user I would like to create a request for a basic order for
 multiple scenes.
@@ -405,11 +388,10 @@ User Story: As a CLI user I would like to create a request for an order which
 clips the scenes to a geojson geometry specified in a file.
 
 ```
-$ planet orders request \
---name test_order \
---id 20200922_183724_23_106a,20200922_183722_17_106a \
---bundle analytic \
---clip aoi.geojson
+$ planet orders request test_order PSScene analytic_sr \
+    20200922_183724_23_106a,20200922_183722_17_106a \
+    --clip aoi.geojson
+
 {"name":"test_order",...}
 ```
 
@@ -417,11 +399,10 @@ User Story: As a CLI user I would like to create an order which clips the scenes
 to a geojson geometry entered on the command line.
 
 ```
-$ planet orders request \
---name test_order \
---id 20200922_183724_23_106a,20200922_183722_17_106a \
---bundle analytic \
---clip  - < aoi.geojson
+$ planet orders request test_order PSScene analytic_sr \
+    20200922_183724_23_106a,20200922_183722_17_106a \
+    --clip - < aoi.geojson
+
 {"name":"test_order",...}
 ```
 
@@ -429,11 +410,10 @@ User Story: As a CLI user I would like to create a request for an order with a
 toolchain specified in a file. NOTE: --tools and --clip cannot both be used.
 
 ```
-$ planet orders request \
---name test_order \
---id 20200922_183724_23_106a,20200922_183722_17_106a \
---bundle analytic \
---tools tools.json
+$ planet orders request test_order PSScene analytic_sr \
+    20200922_183724_23_106a,20200922_183722_17_106a \
+    --tools tools.json
+
 {"name":"test_order",...}
 ```
 
@@ -441,11 +421,10 @@ User Story: As a CLI user I would like to create a request for an order with a
 cloud configuration specified in a file.
 
 ```
-$ planet orders request \
---name test_order \
---id 20200922_183724_23_106a,20200922_183722_17_106a \
---bundle analytic \
---cloudconfig cloudconfig.json
+$ planet orders request test_order PSScene analytic_sr \
+    20200922_183724_23_106a,20200922_183722_17_106a \
+    --cloudconfig cloudconfig.json
+
 {"name":"test_order",...}
 ```
 
@@ -465,8 +444,7 @@ required options, which are a bit annoying from a user's perspective.
 
 Usage: planet orders request-update [OPTIONS] REQUEST
 
-REQUEST: order request to be updated. JSON can be str, filename, or stdin.
-Defaults to reading from stdin.
+REQUEST: order request to be updated. Can be string, filename, or '-' for stdin.
 
 Update an order request.
 
@@ -483,14 +461,14 @@ Note that if the order description contains a tool chain with more tools
 than just clip, using --clip will override the entire tool chain, not just
 the clip tool.
 
-Options:  
+Options:
 
   --clip JSON        -              Clip feature GeoJSON. Can be a json string,
-                                  filename, or '-' for stdin.  
+                                  filename, or '-' for stdin.
   --tools JSON         -           Toolchain JSON. Can be a json string,
                                   filename, or '-' for stdin.  
   --email BOOLEAN         -          Send email notification when order is
-                                  complete.  
+                                  complete.
   --cloudconfig JSON     -         Credentials for cloud storage provider to
                                   enable cloud delivery of data. Can be a json
                                   string, filename, or '-' for stdin.  
@@ -503,19 +481,19 @@ To create an order using an order id and override the item IDs:
 ```
 $ planet orders get 49b8d32e-2fba-4924-bd38-f7344aa48d91 > \
   planet orders request-update \
-  --id 20200922_183724_23_106a,20200922_183722_17_106a
+  --id 20200922_183724_23_106a,20200922_183722_17_106a -
 ```
   To create an order using an order id and clip to an AOI:
 ```
 $ planet orders get 49b8d32e-2fba-4924-bd38-f7344aa48d91 > \
-  planet orders request-update --clip aoi.geojson
+  planet orders request-update --clip aoi.geojson -
 ```
 
 User Story: As a CLI user I would like to create a request for an order from a
 template, overriding the name.
 
 ```
-$ planet orders request-update --name IAmACopy < request.json
+$ planet orders request-update --name IAmACopy -  < request.json
 ```
 
 User Story: As a CLI user I would like to create a new order that is just like
@@ -523,5 +501,5 @@ an order that has already been submitted but has an updated name.
 
 ```
 $ planet orders get 49b8d32e-2fba-4924-bd38-f7344aa48d91 > \
-planet orders request-update --name IAmACopy
+planet orders request-update --name IAmACopy - 
 ```
