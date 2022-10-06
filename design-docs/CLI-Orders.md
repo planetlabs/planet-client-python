@@ -479,13 +479,13 @@ Options:
 To create an order using an order id and override the item IDs:
 
 ```
-$ planet orders get 49b8d32e-2fba-4924-bd38-f7344aa48d91 > \
+$ planet orders get 49b8d32e-2fba-4924-bd38-f7344aa48d91 | \
   planet orders request-update \
   --id 20200922_183724_23_106a,20200922_183722_17_106a -
 ```
   To create an order using an order id and clip to an AOI:
 ```
-$ planet orders get 49b8d32e-2fba-4924-bd38-f7344aa48d91 > \
+$ planet orders get 49b8d32e-2fba-4924-bd38-f7344aa48d91 | \
   planet orders request-update --clip aoi.geojson -
 ```
 
@@ -500,6 +500,6 @@ User Story: As a CLI user I would like to create a new order that is just like
 an order that has already been submitted but has an updated name.
 
 ```
-$ planet orders get 49b8d32e-2fba-4924-bd38-f7344aa48d91 > \
+$ planet orders get 49b8d32e-2fba-4924-bd38-f7344aa48d91 | \
 planet orders request-update --name IAmACopy - 
 ```
