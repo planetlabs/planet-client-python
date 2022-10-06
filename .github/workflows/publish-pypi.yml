@@ -1,0 +1,32 @@
+name: Publish to PyPi
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Build, verify, & upload package to PyPi
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.7
+
+      - name: Pip cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip
+          restore-keys: |
+            ${{ runner.os }}-pip
+
+      - name: Build, verify, and upload to TestPyPI
+        run: |
+          pip install --upgrade nox
+          nox -s build publish_pypi
+        env:
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}

@@ -168,18 +168,6 @@ async def test_StreamingBody_write_img(tmpdir, mocked_request, open_test_img):
     assert os.stat(filename).st_size == 527
 
 
-@pytest.fixture
-def get_pages():
-    p1 = {'_links': {'next': 'blah'}, 'items': [1, 2]}
-    p2 = {'_links': {}, 'items': [3, 4]}
-    responses = [mock_http_response(json=p1), mock_http_response(json=p2)]
-
-    async def do_get(req):
-        return responses.pop(0)
-
-    return do_get
-
-
 def test_StreamingBody_last_modified_emptyheader():
     '''This function tests the last_modified function for an empty header, by
     seeing if the last_modified is None.
@@ -225,6 +213,18 @@ def test_StreamingBody_last_modified_completeheader():
     assert output == expected
 
 
+@pytest.fixture
+def get_pages():
+    p1 = {'_links': {'next': 'blah'}, 'items': [1, 2]}
+    p2 = {'_links': {}, 'items': [3, 4]}
+    responses = [mock_http_response(json=p1), mock_http_response(json=p2)]
+
+    async def do_get(req):
+        return responses.pop(0)
+
+    return do_get
+
+
 @pytest.mark.asyncio
 async def test_Paged_iterator(get_pages):
     req = MagicMock()
@@ -233,14 +233,15 @@ async def test_Paged_iterator(get_pages):
 
 
 @pytest.mark.asyncio
-async def test_Paged_limit(get_pages):
+@pytest.mark.parametrize('limit, expected', [(0, [1, 2, 3, 4]), (1, [1])])
+async def test_Paged_limit(limit, expected, get_pages):
     req = MagicMock()
-    paged = models.Paged(req, get_pages, limit=3)
-    assert [1, 2, 3] == [i async for i in paged]
+    paged = models.Paged(req, get_pages, limit=limit)
+    assert [i async for i in paged] == expected
 
 
 @pytest.mark.asyncio
-async def test_break_page_cycle():
+async def test_Paged_break_page_cycle():
     """Check that we break out of a page cycle."""
 
     async def func(req):
@@ -255,3 +256,23 @@ async def test_break_page_cycle():
 
     with pytest.raises(PagingError):
         [item async for item in paged]
+
+
+@pytest.mark.skip('not implemented')
+@pytest.mark.asyncio
+async def test_Paged_first_page_error():
+    """Check that we identify an error thrown by the first page upon
+    initialization."""
+
+    async def func(req):
+        return mock_http_response(404,
+                                  json={
+                                      '_links': {
+                                          'next': 'blah'
+                                      },
+                                      'items': [1, 2]
+                                  })
+
+    req = MagicMock()
+    with pytest.raises(Exception):
+        models.Paged(req, func, limit=None)

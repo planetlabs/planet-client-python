@@ -20,6 +20,7 @@ from pathlib import Path
 import random
 import re
 import string
+import typing
 
 import httpx
 from tqdm.asyncio import tqdm
@@ -268,28 +269,32 @@ def _get_random_filename(content_type=None):
 
 
 class Paged:
-    '''Asynchronous iterator over results in a paged resource from the Planet
-    server.
-    Each returned result is a json dict.
+    """Asynchronous iterator over results in a paged resource.
 
-    :param request: Open session connected to server
-    :type request: planet.api.http.ASession
-    :param do_request_fcn: Function for submitting a request. Takes as input
-        a planet.api.models.Request and returns planet.api.models.Response.
-    :type do_request_fcn: function
-    :param limit: Limit orders to given limit. Defaults to None
-    :type limit: int, optional
-    '''
+    Each returned result is a JSON dict.
+    """
     LINKS_KEY = '_links'
     NEXT_KEY = 'next'
     ITEMS_KEY = 'items'
 
-    def __init__(self, request, do_request_fcn, limit=None):
+    def __init__(self,
+                 request: Request,
+                 do_request_fcn: typing.Callable,
+                 limit: int = 0):
+        """
+        Parameters:
+            request: Request to send to server for first page.
+            do_request_fcn: Function for submitting a request. Must take in
+                Request object and return Response.
+            limit: Maximum number of results to return. When set to 0, no
+                maximum is applied.
+        """
         self.request = request
         self._do_request = do_request_fcn
 
-        self._pages = None
-        self._items = []
+        self._pages = self._get_pages()
+
+        self._items: typing.List[dict] = []
 
         self.i = 0
         self.limit = limit
@@ -301,23 +306,18 @@ class Paged:
     def __aiter__(self):
         return self
 
-    async def __anext__(self):
-        '''Asynchronous next.
-        :returns: next item as json
-        :rtype: dict
-        '''
+    async def __anext__(self) -> dict:
         # This was implemented because traversing _get_pages()
         # in an async generator was resulting in retrieving all the
         # pages, when the goal is to stop retrieval when the limit
         # is reached
-        if self.limit is not None and self.i >= self.limit:
+        if self.limit and self.i >= self.limit:
             raise StopAsyncIteration
 
         try:
             item = self._items.pop(0)
             self.i += 1
         except IndexError:
-            self._pages = self._pages or self._get_pages()
             page = await self._pages.__anext__()
             self._items = page[self.ITEMS_KEY]
             try:
@@ -328,7 +328,7 @@ class Paged:
 
         return item
 
-    async def _get_pages(self):
+    async def _get_pages(self) -> typing.AsyncGenerator:
         LOGGER.debug('getting first page')
         resp = await self._do_request(self.request)
         page = resp.json()

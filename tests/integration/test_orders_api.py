@@ -33,6 +33,7 @@ from planet.clients.orders import OrderStates
 TEST_URL = 'http://www.MockNotRealURL.com/api/path'
 TEST_BULK_CANCEL_URL = f'{TEST_URL}/bulk/orders/v2/cancel'
 TEST_DOWNLOAD_URL = f'{TEST_URL}/download'
+TEST_DOWNLOAD_ACTUAL_URL = f'{TEST_URL}/download_actual'
 TEST_ORDERS_URL = f'{TEST_URL}/orders/v2'
 TEST_STATS_URL = f'{TEST_URL}/stats/orders/v2'
 
@@ -540,8 +541,16 @@ async def test_download_asset_md(tmpdir, session):
         'Content-Type': 'application/json',
         'Content-Disposition': 'attachment; filename="metadata.json"'
     }
+
+    mock_redirect = httpx.Response(HTTPStatus.FOUND,
+                                   headers={
+                                       'Location': TEST_DOWNLOAD_ACTUAL_URL,
+                                       'Content-Length': '0'
+                                   })
     mock_resp = httpx.Response(HTTPStatus.OK, json=md_json, headers=md_headers)
-    respx.get(dl_url).return_value = mock_resp
+
+    respx.get(dl_url).return_value = mock_redirect
+    respx.get(TEST_DOWNLOAD_ACTUAL_URL).return_value = mock_resp
 
     cl = OrdersClient(session, base_url=TEST_URL)
     filename = await cl.download_asset(dl_url, directory=str(tmpdir))

@@ -1,3 +1,27 @@
+2.0a3 (2022-09-07)
+
+- A change in behavior of httpx affected download of order assets in 2.0a2.
+  We're working around this change in behavior (#685).
+- Subscriptions API methods communicating with particular subscription
+  endpoints (cancel_subscription, update_subscription, get_subscription, and
+  get_results) were broken due to missing 'f' prefixes (#687). The prefixes
+  have been added.
+- STAC metadata can now be added to Orders requests (#676).
+- More help and better error messages around bundles and asset types have been
+  added to the Orders API (#650, #675).
+- Help for planet-subscriptions-describe and update commands has been
+  corrected, resolving the issue reported in #658.
+
+2.0a2 (2022-07-04)
+
+- Upgrade httpx to 0.23, change how quota exceptions are caught
+- Increase reliability of communication with Planet servers and avoid clobbering them
+- Add CLI data stats
+- CLI search-quick -> search, API quick-search -> search
+- limit option: remove None as a possibility, value of zero means no limit
+- fix sort param field
+- add sort option to planet data search-quick
+
 2.0a1 (2022-06-28)
 
 This is the first pre-release of the new features and interfaces coming in

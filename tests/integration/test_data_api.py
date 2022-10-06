@@ -63,10 +63,10 @@ def search_response(item_descriptions):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_quick_search_basic(item_descriptions,
-                                  search_filter,
-                                  search_response,
-                                  session):
+async def test_search_basic(item_descriptions,
+                            search_filter,
+                            search_response,
+                            session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
@@ -85,9 +85,7 @@ async def test_quick_search_basic(item_descriptions,
     respx.get(next_page_url).return_value = mock_resp2
 
     cl = DataClient(session, base_url=TEST_URL)
-    items = await cl.quick_search(['PSScene'],
-                                  search_filter,
-                                  name='quick_search')
+    items = await cl.search(['PSScene'], search_filter, name='quick_search')
     items_list = [i async for i in items]
 
     # check that request is correct
@@ -105,13 +103,13 @@ async def test_quick_search_basic(item_descriptions,
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_quick_search_sort(item_descriptions,
-                                 search_filter,
-                                 search_response,
-                                 session):
+async def test_search_sort(item_descriptions,
+                           search_filter,
+                           search_response,
+                           session):
 
-    sort = 'created asc'
-    quick_search_url = f'{TEST_URL}/quick-search?sort={sort}'
+    sort = 'acquired asc'
+    quick_search_url = f'{TEST_URL}/quick-search?_sort={sort}'
 
     item1, _, _ = item_descriptions
     page1_response = {"_links": {}, "features": [item1]}
@@ -121,7 +119,7 @@ async def test_quick_search_sort(item_descriptions,
     # if the sort parameter is not used correctly, the client will not send
     # the request to the mocked endpoint and this test will fail
     cl = DataClient(session, base_url=TEST_URL)
-    items = await cl.quick_search(['PSScene'], search_filter, sort=sort)
+    items = await cl.search(['PSScene'], search_filter, sort=sort)
 
     # run through the iterator to actually initiate the call
     [i async for i in items]
@@ -129,10 +127,10 @@ async def test_quick_search_sort(item_descriptions,
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_quick_search_limit(item_descriptions,
-                                  search_filter,
-                                  search_response,
-                                  session):
+async def test_search_limit(item_descriptions,
+                            search_filter,
+                            search_response,
+                            session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
 
@@ -144,7 +142,7 @@ async def test_quick_search_limit(item_descriptions,
     respx.post(quick_search_url).return_value = mock_resp
 
     cl = DataClient(session, base_url=TEST_URL)
-    items = await cl.quick_search(['PSScene'], search_filter, limit=2)
+    items = await cl.search(['PSScene'], search_filter, limit=2)
     items_list = [i async for i in items]
 
     # check only the first two results were returned
@@ -231,7 +229,6 @@ async def test_get_search_success(search_id, search_result, session):
     get_url = f'{TEST_SEARCHES_URL}/{search_id}'
     mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
     respx.get(get_url).return_value = mock_resp
-
     cl = DataClient(session, base_url=TEST_URL)
     search = await cl.get_search(search_id)
     assert search_result == search
@@ -248,7 +245,6 @@ async def test_get_search_id_doesnt_exist(search_id, session):
     }
     mock_resp = httpx.Response(404, json=resp)
     respx.get(get_url).return_value = mock_resp
-
     cl = DataClient(session, base_url=TEST_URL)
 
     with pytest.raises(exceptions.MissingResource):

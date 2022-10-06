@@ -23,16 +23,34 @@ LOGGER = logging.getLogger(__name__)
 TEST_PRODUCT_BUNDLE = 'visual'
 # must be a valid item type for TEST_PRODUCT_BUNDLE
 TEST_ITEM_TYPE = 'PSScene'
+ALL_ITEM_TYPES = [
+    'PSOrthoTile',
+    'Sentinel1',
+    'REOrthoTile',
+    'PSScene',
+    'PSScene4Band',
+    'Landsat8L1G',
+    'PSScene3Band',
+    'REScene',
+    'MOD09GA',
+    'MYD09GA',
+    'MOD09GQ',
+    'SkySatCollect',
+    'Sentinel2L1C',
+    'MYD09GQ',
+    'SkySatScene'
+]
 
 
 def test_get_type_match():
     spec_list = ['Locket', 'drop', 'DEER']
 
     test_entry = 'locket'
-    assert 'Locket' == specs.get_match(test_entry, spec_list)
+    field_name = 'field_name'
+    assert 'Locket' == specs.get_match(test_entry, spec_list, field_name)
 
-    with pytest.raises(specs.NoMatchException):
-        specs.get_match('a', ['b'])
+    with pytest.raises(specs.SpecificationException):
+        specs.get_match('a', ['b'], field_name)
 
 
 def test_validate_bundle_supported():
@@ -90,6 +108,12 @@ def test_get_product_bundles():
     assert TEST_PRODUCT_BUNDLE in bundles
 
 
-def test_get_item_types():
-    item_types = specs.get_item_types(TEST_PRODUCT_BUNDLE)
+def test_get_item_types_with_bundle():
+    item_types = specs.get_item_types(product_bundle=TEST_PRODUCT_BUNDLE)
     assert TEST_ITEM_TYPE in item_types
+
+
+def test_get_item_types_without_bundle():
+    item_types = specs.get_item_types()
+    for item in item_types:
+        assert item in ALL_ITEM_TYPES

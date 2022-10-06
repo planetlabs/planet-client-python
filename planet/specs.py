@@ -15,7 +15,7 @@
 """Functionality for validating against the Planet API specification."""
 import json
 import logging
-
+import itertools
 from .constants import DATA_DIR
 
 PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2022_02_02.json'
@@ -37,9 +37,23 @@ SUPPORTED_FILE_FORMATS = ['COG', 'PL_NITF']
 LOGGER = logging.getLogger(__name__)
 
 
-class SpecificationException(Exception):
+class NoMatchException(Exception):
     '''No match was found'''
     pass
+
+
+class SpecificationException(Exception):
+    '''No match was found'''
+
+    def __init__(self, value, supported, field_name):
+        self.value = value
+        self.supported = supported
+        self.field_name = field_name
+        self.opts = ', '.join(["'" + s + "'" for s in supported])
+
+    def __str__(self):
+        return (f'{self.field_name} - \'{self.value}\' is not one of '
+                f'{self.opts}.')
 
 
 def validate_bundle(bundle):
@@ -48,8 +62,8 @@ def validate_bundle(bundle):
 
 
 def validate_item_type(item_type, bundle):
-    bundle = validate_bundle(bundle)
-    supported = get_item_types(bundle)
+    validated_bundle = validate_bundle(bundle)
+    supported = get_item_types(validated_bundle)
     return _validate_field(item_type, supported, 'item_type')
 
 
@@ -73,30 +87,23 @@ def validate_file_format(file_format):
 
 def _validate_field(value, supported, field_name):
     try:
-        value = get_match(value, supported)
+        value = get_match(value, supported, field_name)
     except (NoMatchException):
-        opts = ', '.join(["'" + s + "'" for s in supported])
-        msg = f'{field_name} - \'{value}\' is not one of {opts}.'
-        raise SpecificationException(msg)
+        raise SpecificationException(value, supported, field_name)
     return value
 
 
-class NoMatchException(Exception):
-    '''No match was found'''
-    pass
-
-
-def get_match(test_entry, spec_entries):
+def get_match(test_entry, spec_entries, field_name):
     '''Find and return matching spec entry regardless of capitalization.
 
     This is helpful for working with the API spec, where the capitalization
     is hard to remember but must be exact otherwise the API throws an
     exception.'''
     try:
-        match = next(t for t in spec_entries
-                     if t.lower() == test_entry.lower())
+        match = next(e for e in spec_entries
+                     if e.lower() == test_entry.lower())
     except (StopIteration):
-        raise NoMatchException
+        raise SpecificationException(test_entry, spec_entries, field_name)
 
     return match
 
@@ -107,10 +114,20 @@ def get_product_bundles():
     return spec['bundles'].keys()
 
 
-def get_item_types(product_bundle):
-    '''Get item types supported by Orders API for the given product bundle.'''
+def get_item_types(product_bundle=None):
+    '''If given product bundle, get specific item types supported by Orders
+    API. Otherwise, get all item types supported by Orders API.'''
     spec = _get_product_bundle_spec()
-    return spec['bundles'][product_bundle]['assets'].keys()
+
+    if product_bundle:
+        item_types = set(spec['bundles'][product_bundle]['assets'].keys())
+    else:
+        item_types = set(
+            itertools.chain.from_iterable(
+                spec['bundles'][bundle]['assets'].keys()
+                for bundle in get_product_bundles()))
+
+    return item_types
 
 
 def _get_product_bundle_spec():

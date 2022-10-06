@@ -18,12 +18,19 @@ from contextlib import asynccontextmanager
 import click
 
 from planet import data_filter, DataClient
+from planet.clients.data import (SEARCH_SORT,
+                                 SEARCH_SORT_DEFAULT,
+                                 STATS_INTERVAL)
+from planet.specs import get_item_types, SpecificationException
 
 from . import types
 from .cmds import coro, translate_exceptions
 from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
+
+ALL_ITEM_TYPES = get_item_types()
+valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(ALL_ITEM_TYPES)
 
 
 @asynccontextmanager
@@ -42,11 +49,12 @@ async def data_client(ctx):
               default=None,
               help='Assign custom base Orders API URL.')
 def data(ctx, base_url):
-    '''Commands for interacting with the Orders API'''
+    '''Commands for interacting with the Data API'''
     ctx.obj['AUTH'] = None
     ctx.obj['BASE_URL'] = base_url
 
 
+# TODO: filter().
 def geom_to_filter(ctx, param, value: Optional[dict]) -> Optional[dict]:
     return data_filter.geometry_filter(value) if value else None
 
@@ -54,6 +62,18 @@ def geom_to_filter(ctx, param, value: Optional[dict]) -> Optional[dict]:
 def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
     # TODO: validate and normalize
     return data_filter.asset_filter(assets) if assets else None
+
+
+def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
+    # Set difference between given item types and all item types
+    invalid_item_types = set([item.lower() for item in item_types]) - set(
+        [a.lower() for a in ALL_ITEM_TYPES])
+    if invalid_item_types:
+        raise SpecificationException(invalid_item_types,
+                                     ALL_ITEM_TYPES,
+                                     'item_type')
+    else:
+        return item_types
 
 
 def date_range_to_filter(ctx, param, values) -> Optional[List[dict]]:
@@ -216,27 +236,27 @@ def filter(ctx,
             else:
                 filters.append(f)
 
-    if filters:
-        if len(filters) > 1:
-            filt = data_filter.and_filter(filters)
-        else:
-            filt = filters[0]
-        echo_json(filt, pretty)
+    filt = data_filter.and_filter(filters)
+    echo_json(filt, pretty)
 
 
-@data.command()
+@data.command(epilog=valid_item_string)
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("item_types", type=types.CommaSeparatedString())
+@click.argument("item_types",
+                type=types.CommaSeparatedString(),
+                callback=check_item_types)
 @click.argument("filter", type=types.JSON(), default="-", required=False)
-@click.option('--name',
-              type=str,
-              default=False,
-              help=('Name of the saved search.'))
 @limit
+@click.option('--name', type=str, help='Name of the saved search.')
+@click.option('--sort',
+              type=click.Choice(SEARCH_SORT),
+              default=SEARCH_SORT_DEFAULT,
+              show_default=True,
+              help='Field and direction to order results by.')
 @pretty
-async def search_quick(ctx, item_types, filter, name, limit, pretty):
+async def search(ctx, item_types, filter, limit, name, sort, pretty):
     """Execute a structured item search.
 
     This function outputs a series of GeoJSON descriptions, one for each of the
@@ -251,21 +271,23 @@ async def search_quick(ctx, item_types, filter, name, limit, pretty):
     parameter will be applied to the stored quick search.
     """
     async with data_client(ctx) as cl:
-        items = await cl.quick_search(name=name,
-                                      item_types=item_types,
-                                      search_filter=filter,
-                                      limit=limit,
-                                      sort=None)
+        items = await cl.search(item_types,
+                                filter,
+                                name=name,
+                                sort=sort,
+                                limit=limit)
         async for item in items:
             echo_json(item, pretty)
 
 
-@data.command()
+@data.command(epilog=valid_item_string)
 @click.pass_context
 @translate_exceptions
 @coro
 @click.argument('name')
-@click.argument("item_types", type=types.CommaSeparatedString())
+@click.argument("item_types",
+                type=types.CommaSeparatedString(),
+                callback=check_item_types)
 @click.argument("filter", type=types.JSON(), default="-", required=False)
 @click.option('--daily-email',
               is_flag=True,
@@ -292,6 +314,29 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
         echo_json(items, pretty)
 
 
+@data.command(epilog=valid_item_string)
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument("item_types",
+                type=types.CommaSeparatedString(),
+                callback=check_item_types)
+@click.argument('interval', type=click.Choice(STATS_INTERVAL))
+@click.argument("filter", type=types.JSON(), default="-", required=False)
+async def stats(ctx, item_types, interval, filter):
+    """Get a bucketed histogram of items matching the filter.
+
+    This function returns a bucketed histogram of results based on the
+    item_types, interval, and json filter specified (using file or stdin).
+
+    """
+    async with data_client(ctx) as cl:
+        items = await cl.get_stats(item_types=item_types,
+                                   interval=interval,
+                                   search_filter=filter)
+        echo_json(items)
+
+
 @data.command()
 @click.pass_context
 @translate_exceptions
@@ -316,4 +361,3 @@ async def search_get(ctx, search_id, pretty):
 # TODO: asset_activate()".
 # TODO: asset_wait()".
 # TODO: asset_download()".
-# TODO: stats()".

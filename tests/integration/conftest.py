@@ -16,13 +16,21 @@ import copy
 
 import pytest
 
-from planet import Session
+import planet
+
+
+@pytest.fixture(autouse=True, scope='function')
+def test_disable_limiter(monkeypatch):
+    """Disable rate/max worker limiting on Session requests to avoid
+    slowing down tests"""
+    monkeypatch.setattr(planet.http, 'RATE_LIMIT', 0)
+    monkeypatch.setattr(planet.http, 'MAX_ACTIVE', 0)
 
 
 @pytest.fixture
 @pytest.mark.asyncio
 async def session():
-    async with Session() as ps:
+    async with planet.Session() as ps:
         yield ps
 
 
