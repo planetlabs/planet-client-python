@@ -561,6 +561,41 @@ async def test_download_asset_md(tmpdir, session):
 
 @respx.mock
 @pytest.mark.asyncio
+async def test_download_asset_img(tmpdir, open_test_img, session):
+    dl_url = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
+
+    img_headers = {
+        'Content-Type': 'image/tiff',
+        'Content-Length': '527',
+        'Content-Disposition': 'attachment; filename="img.tif"'
+    }
+
+    async def _stream_img():
+        data = open_test_img.read()
+        v = memoryview(data)
+
+        chunksize = 100
+        for i in range(math.ceil(len(v) / (chunksize))):
+            yield v[i * chunksize:min((i + 1) * chunksize, len(v))]
+
+    # populate request parameter to avoid respx cloning, which throws
+    # an error caused by respx and not this code
+    # https://github.com/lundberg/respx/issues/130
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               stream=_stream_img(),
+                               headers=img_headers,
+                               request='donotcloneme')
+    respx.get(dl_url).return_value = mock_resp
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+    filename = await cl.download_asset(dl_url, directory=str(tmpdir))
+
+    assert Path(filename).name == 'img.tif'
+    assert os.path.isfile(filename)
+
+
+@respx.mock
+@pytest.mark.asyncio
 @pytest.mark.parametrize("checksum", [("MD5"), ("SHA256")])
 @pytest.mark.parametrize(
     "asset1_bytes, expectation",
@@ -642,41 +677,6 @@ async def test_validate_checksum_manifest(
 
     with expectation:
         OrdersClient.validate_checksum(Path(tmpdir), 'md5')
-
-
-@respx.mock
-@pytest.mark.asyncio
-async def test_download_asset_img(tmpdir, open_test_img, session):
-    dl_url = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
-
-    img_headers = {
-        'Content-Type': 'image/tiff',
-        'Content-Length': '527',
-        'Content-Disposition': 'attachment; filename="img.tif"'
-    }
-
-    async def _stream_img():
-        data = open_test_img.read()
-        v = memoryview(data)
-
-        chunksize = 100
-        for i in range(math.ceil(len(v) / (chunksize))):
-            yield v[i * chunksize:min((i + 1) * chunksize, len(v))]
-
-    # populate request parameter to avoid respx cloning, which throws
-    # an error caused by respx and not this code
-    # https://github.com/lundberg/respx/issues/130
-    mock_resp = httpx.Response(HTTPStatus.OK,
-                               stream=_stream_img(),
-                               headers=img_headers,
-                               request='donotcloneme')
-    respx.get(dl_url).return_value = mock_resp
-
-    cl = OrdersClient(session, base_url=TEST_URL)
-    filename = await cl.download_asset(dl_url, directory=str(tmpdir))
-
-    assert Path(filename).name == 'img.tif'
-    assert os.path.isfile(filename)
 
 
 @respx.mock

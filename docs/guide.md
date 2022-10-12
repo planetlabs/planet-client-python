@@ -334,6 +334,42 @@ the context of a `Session` with the `DataClient`:
 >>> asyncio.run(main())
 ```
 
+#### Downloading an Asset
+
+Downloading an asset is a multi-step process involving: activating the asset,
+waiting for the asset to be active, downloading the asset, and, optionally,
+validating the downloaded file.
+
+
+With wait and download, it is often desired to track progress as these
+processes can take a long time. Therefore, in this example, we use a simple 
+print command to report wait status. `download_asset` has reporting built in.
+
+```python
+>>> async def download_and_validate():
+...     async with Session() as sess:
+...         cl = DataClient(sess)
+... 
+...         # get asset description
+...         item_type_id = 'PSScene'
+...         item_id = '20221003_002705_38_2461'
+...         asset_type_id = 'ortho_analytic_4b'
+...         asset = await cl.get_asset(item_type_id, item_id, asset_type_id)
+...         
+...         # activate asset
+...         await cl.activate_asset(asset)
+... 
+...         # wait for asset to become active
+...         asset = await cl.wait_asset(asset, callback=print)
+... 
+...         # download asset
+...         path = await cl.download_asset(asset)
+... 
+...         # validate download file
+...         cl.validate_checksum(asset, path)
+```
+
+
 ## CLI
 
 ### Authentication

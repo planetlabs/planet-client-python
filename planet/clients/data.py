@@ -12,13 +12,17 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """Functionality for interacting with the data api"""
+import asyncio
+import hashlib
 import logging
+from pathlib import Path
+import time
 import typing
 
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
-from ..models import Paged, Request, Response
+from ..models import Paged, Request, Response, StreamingBody
 
 BASE_URL = f'{PLANET_BASE_URL}/data/v1/'
 SEARCHES_PATH = '/searches'
@@ -85,6 +89,9 @@ class DataClient:
 
     def _searches_url(self):
         return f'{self._base_url}{SEARCHES_PATH}'
+
+    def _item_url(self, item_type, item_id):
+        return f'{self._base_url}/item-types/{item_type}/items/{item_id}'
 
     def _request(self, url, method, data=None, params=None, json=None):
         return Request(url, method=method, data=data, params=params, json=json)
@@ -493,7 +500,10 @@ class DataClient:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        raise NotImplementedError
+        url = f'{self._item_url(item_type_id, item_id)}/assets'
+        request = self._request(url, method='GET')
+        response = await self._do_request(request)
+        return response.json()
 
     async def get_asset(self,
                         item_type_id: str,
@@ -514,26 +524,46 @@ class DataClient:
             planet.exceptions.ClientError: If asset type identifier is not
             valid.
         """
-        # NOTE: this is not an API endpoint
-        # this is getting an asset by name from the dict returned by
-        # list_item_assets()
-        raise NotImplementedError
+        assets = await self.list_item_assets(item_type_id, item_id)
+
+        try:
+            asset = assets[asset_type_id]
+        except KeyError:
+            valid = list(assets.keys())
+            raise exceptions.ClientError(
+                f'asset_type_id ({asset_type_id}) must be one of {valid}')
+
+        return asset
 
     async def activate_asset(self, asset: dict):
         """Activate an item asset.
 
         Parameters:
-            asset: Description of the asset.
+            asset: Description of the asset. Obtained from get_asset().
 
         Raises:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If asset description is not
             valid.
         """
-        # NOTE: this is not an API endpoint
-        # This is getting the 'activate' link from the asset description
-        # and then sending the activate request to that link
-        raise NotImplementedError
+        try:
+            status = asset['status']
+        except KeyError:
+            raise exceptions.ClientError('asset missing ["status"] entry.')
+
+        try:
+            url = asset['_links']['activate']
+        except KeyError:
+            raise exceptions.ClientError(
+                'asset missing ["_links"]["activate"] entry')
+
+        # lets not try to activate an asset already activating or active
+        if status == 'inactive':
+            request = self._request(url, method='GET')
+            # no response is returned
+            await self._do_request(request)
+
+        return
 
     async def wait_asset(self,
                          asset: dict,
@@ -542,8 +572,11 @@ class DataClient:
                          callback: typing.Callable[[str], None] = None) -> str:
         """Wait for an item asset to be active.
 
+        Prior to waiting for the asset to be active, be sure to activate the
+        asset with activate_asset().
+
         Parameters:
-            asset: Description of the asset.
+            asset: Description of the asset. Obtained from get_asset().
             delay: Time (in seconds) between polls.
             max_attempts: Maximum number of polls. When set to 0, no limit
                 is applied.
@@ -558,26 +591,64 @@ class DataClient:
                 not available or if the maximum number of attempts is reached
                 before the asset is active.
         """
-        # NOTE: this is not an API endpoint
-        # This is getting and checking the asset status and waiting until
-        # the asset is active
-        # NOTE: use the url at asset['_links']['_self'] to get the current
-        # asset status
-        raise NotImplementedError
+        # loop without end if max_attempts is zero
+        # otherwise, loop until num_attempts reaches max_attempts
+        num_attempts = 0
+        while not max_attempts or num_attempts < max_attempts:
+            t = time.time()
+
+            try:
+                current_status = asset['status']
+            except KeyError:
+                raise exceptions.ClientError('asset missing ["status"] entry.')
+
+            LOGGER.debug(current_status)
+
+            if callback:
+                callback(current_status)
+
+            if current_status == 'active':
+                break
+
+            sleep_time = max(delay - (time.time() - t), 0)
+            LOGGER.debug(f'sleeping {sleep_time}s')
+            await asyncio.sleep(sleep_time)
+
+            num_attempts += 1
+
+            try:
+                asset_url = asset['_links']['_self']
+            except KeyError:
+                raise exceptions.ClientError(
+                    'asset missing ["_links"]["_self"] entry.')
+
+            request = self._request(asset_url, method='GET')
+            response = await self._do_request(request)
+            asset = response.json()
+
+        if max_attempts and num_attempts >= max_attempts:
+            raise exceptions.ClientError(
+                f'Maximum number of attempts ({max_attempts}) reached.')
+
+        return asset
 
     async def download_asset(self,
                              asset: dict,
                              filename: str = None,
-                             directory: str = None,
+                             directory: Path = Path('.'),
                              overwrite: bool = False,
                              progress_bar: bool = True) -> str:
         """Download an asset.
 
-        Asset description is obtained from get_asset() or wait_asset().
+        The asset must be active before it can be downloaded. This can be
+        achieved with activate_asset() followed by wait_asset().
+
+        If overwrite is False and the file already exists, download will be
+        skipped and the file path will be returned as usual.
 
         Parameters:
-            asset: Description of the asset.
-            location: Download location url including download token.
+            asset: Description of the asset. Obtained from get_asset() or
+                wait_asset().
             filename: Custom name to assign to downloaded file.
             directory: Base directory for file download.
             overwrite: Overwrite any existing files.
@@ -588,10 +659,53 @@ class DataClient:
 
         Raises:
             planet.exceptions.APIError: On API error.
-            planet.exceptions.ClientError: If asset is not activated or asset
+            planet.exceptions.ClientError: If asset is not active or asset
             description is not valid.
         """
-        # NOTE: this is not an API endpoint
-        # This is getting the download location from the asset description
-        # and then downloading the file at that location
-        raise NotImplementedError
+        try:
+            location = asset['location']
+        except KeyError:
+            raise exceptions.ClientError(
+                'asset missing ["location"] entry. Is asset active?')
+
+        req = self._request(location, method='GET')
+
+        async with self._session.stream(req) as resp:
+            body = StreamingBody(resp)
+            dl_path = Path(directory, filename or body.name)
+            dl_path.parent.mkdir(exist_ok=True, parents=True)
+            await body.write(dl_path,
+                             overwrite=overwrite,
+                             progress_bar=progress_bar)
+        return dl_path
+
+    @staticmethod
+    def validate_checksum(asset: dict, filename: Path):
+        """Validate checksum of downloaded file
+
+        Compares checksum calculated from the file against the value provided
+        in the asset.
+
+        Parameters:
+            asset: Description of the asset. Obtained from get_asset() or
+                wait_asset().
+            filename: Full path to downloaded file.
+
+        Raises:
+            planet.exceptions.ClientError: If the file does not exist or if
+                checksums do not match.
+        """
+        try:
+            file_hash = hashlib.md5(filename.read_bytes()).hexdigest()
+        except FileNotFoundError:
+            raise exceptions.ClientError(f'File ({filename}) does not exist.')
+
+        try:
+            origin_hash = asset['md5_digest']
+        except KeyError:
+            raise exceptions.ClientError(
+                'asset missing ["md5_digest"] entry. Is asset active?')
+
+        if origin_hash != file_hash:
+            raise exceptions.ClientError(
+                f'File ({filename}) checksums do not match.')

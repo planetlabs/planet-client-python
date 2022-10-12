@@ -12,9 +12,13 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 from contextlib import nullcontext as does_not_raise
+import copy
 from http import HTTPStatus
+import hashlib
 import json
 import logging
+import math
+from pathlib import Path
 
 import httpx
 import pytest
@@ -435,3 +439,314 @@ async def test_get_stats_invalid_interval(search_filter, session):
 
     with pytest.raises(exceptions.ClientError):
         await cl.get_stats(['PSScene'], search_filter, 'invalid')
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_list_item_assets_success(session):
+    item_type_id = 'PSScene'
+    item_id = '20221003_002705_38_2461'
+    assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
+
+    page_response = {
+        "basic_analytic_4b": {
+            "_links": {
+                "_self":
+                "SELFURL",
+                "activate":
+                "ACTIVATEURL",
+                "type":
+                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": "inactive",
+            "type": "basic_analytic_4b"
+        },
+        "basic_udm2": {
+            "_links": {
+                "_self": "SELFURL",
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": "inactive",
+            "type": "basic_udm2"
+        }
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.get(assets_url).return_value = mock_resp
+
+    cl = DataClient(session, base_url=TEST_URL)
+    assets = await cl.list_item_assets(item_type_id, item_id)
+
+    # check the response is returned unaltered
+    assert assets == page_response
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_list_item_assets_missing(session):
+    item_type_id = 'PSScene'
+    item_id = '20221003_002705_38_2461xx'
+    assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
+
+    mock_resp = httpx.Response(404)
+    respx.get(assets_url).return_value = mock_resp
+
+    cl = DataClient(session, base_url=TEST_URL)
+
+    with pytest.raises(exceptions.APIError):
+        await cl.list_item_assets(item_type_id, item_id)
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("asset_type_id, expectation",
+                         [('basic_udm2', does_not_raise()),
+                          ('invalid', pytest.raises(exceptions.ClientError))])
+async def test_get_asset(asset_type_id, expectation, session):
+    item_type_id = 'PSScene'
+    item_id = '20221003_002705_38_2461'
+    assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
+
+    basic_udm2_asset = {
+        "_links": {
+            "_self": "SELFURL",
+            "activate": "ACTIVATEURL",
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "md5_digest": None,
+        "status": "inactive",
+        "type": "basic_udm2"
+    }
+
+    page_response = {
+        "basic_analytic_4b": {
+            "_links": {
+                "_self":
+                "SELFURL",
+                "activate":
+                "ACTIVATEURL",
+                "type":
+                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": "inactive",
+            "type": "basic_analytic_4b"
+        },
+        "basic_udm2": basic_udm2_asset
+    }
+
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.get(assets_url).return_value = mock_resp
+
+    cl = DataClient(session, base_url=TEST_URL)
+
+    with expectation:
+        asset = await cl.get_asset(item_type_id, item_id, asset_type_id)
+        assert asset == basic_udm2_asset
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("status, expectation", [('inactive', True),
+                                                 ('active', False)])
+async def test_activate_asset_success(status, expectation, session):
+    activate_url = f'{TEST_URL}/activate'
+
+    mock_resp = httpx.Response(HTTPStatus.OK)
+    route = respx.get(activate_url)
+    route.return_value = mock_resp
+
+    basic_udm2_asset = {
+        "_links": {
+            "_self": "SELFURL",
+            "activate": activate_url,
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "md5_digest": None,
+        "status": status,
+        "type": "basic_udm2"
+    }
+
+    cl = DataClient(session, base_url=TEST_URL)
+    await cl.activate_asset(basic_udm2_asset)
+
+    assert route.called == expectation
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_activate_asset_invalid_asset(session):
+    cl = DataClient(session, base_url=TEST_URL)
+
+    with pytest.raises(exceptions.ClientError):
+        await cl.activate_asset({})
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_wait_asset_success(session):
+    asset_url = f'{TEST_URL}/asset'
+
+    basic_udm2_asset = {
+        "_links": {
+            "_self": asset_url,
+            "activate": "ACTIVATEURL",
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "md5_digest": None,
+        "status": 'activating',
+        "type": "basic_udm2"
+    }
+
+    basic_udm2_asset_active = copy.deepcopy(basic_udm2_asset)
+    basic_udm2_asset_active['status'] = 'active'
+
+    route = respx.get(asset_url)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset),
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset),
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset_active)
+    ]
+
+    cl = DataClient(session, base_url=TEST_URL)
+    asset = await cl.wait_asset(basic_udm2_asset, delay=0)
+
+    assert asset == basic_udm2_asset_active
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_wait_asset_max_attempts(session):
+    asset_url = f'{TEST_URL}/asset'
+
+    basic_udm2_asset = {
+        "_links": {
+            "_self": asset_url,
+            "activate": "ACTIVATEURL",
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "md5_digest": None,
+        "status": 'activating',
+        "type": "basic_udm2"
+    }
+
+    route = respx.get(asset_url)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset),
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset),
+    ]
+
+    cl = DataClient(session, base_url=TEST_URL)
+
+    with pytest.raises(exceptions.ClientError):
+        await cl.wait_asset(basic_udm2_asset, delay=0, max_attempts=1)
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("exists, overwrite",
+                         [(False, False), (True, False), (True, True),
+                          (False, True)])
+async def test_download_asset(exists,
+                              overwrite,
+                              tmpdir,
+                              open_test_img,
+                              session):
+    # NOTE: this is a slightly edited version of test_download_asset_img from
+    # tests/integration/test_orders_api
+    dl_url = f'{TEST_URL}/1?token=IAmAToken'
+
+    img_headers = {
+        'Content-Type': 'image/tiff',
+        'Content-Length': '527',
+        'Content-Disposition': 'attachment; filename="img.tif"'
+    }
+
+    async def _stream_img():
+        data = open_test_img.read()
+        v = memoryview(data)
+
+        chunksize = 100
+        for i in range(math.ceil(len(v) / (chunksize))):
+            yield v[i * chunksize:min((i + 1) * chunksize, len(v))]
+
+    # populate request parameter to avoid respx cloning, which throws
+    # an error caused by respx and not this code
+    # https://github.com/lundberg/respx/issues/130
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               stream=_stream_img(),
+                               headers=img_headers,
+                               request='donotcloneme')
+    respx.get(dl_url).return_value = mock_resp
+
+    basic_udm2_asset = {
+        "_links": {
+            "_self": "SELFURL",
+            "activate": "ACTIVATEURL",
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "md5_digest": None,
+        "status": 'active',
+        "location": dl_url,
+        "type": "basic_udm2"
+    }
+
+    cl = DataClient(session, base_url=TEST_URL)
+
+    if exists:
+        Path(tmpdir, 'img.tif').write_text('i exist')
+
+    path = await cl.download_asset(basic_udm2_asset,
+                                   directory=tmpdir,
+                                   overwrite=overwrite)
+    assert path.name == 'img.tif'
+    assert path.is_file()
+
+    if exists and not overwrite:
+        assert path.read_text() == 'i exist'
+    else:
+        assert len(path.read_bytes()) == 527
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("hashes_match, md5_entry, expectation",
+                         [(True, True, does_not_raise()),
+                          (False, True, pytest.raises(exceptions.ClientError)),
+                          (True, False, pytest.raises(exceptions.ClientError))]
+                         )
+async def test_validate_checksum(hashes_match, md5_entry, expectation, tmpdir):
+    test_bytes = b'foo bar'
+    testfile = Path(tmpdir / 'test.txt')
+    testfile.write_bytes(test_bytes)
+
+    hash_md5 = hashlib.md5(test_bytes).hexdigest()
+
+    basic_udm2_asset = {
+        "_links": {
+            "_self": "SELFURL",
+            "activate": "ACTIVATEURL",
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "status": 'active',
+        "location": "DOWNLOADURL",
+        "type": "basic_udm2"
+    }
+
+    if md5_entry:
+        asset_hash = hash_md5 if hashes_match else 'invalid'
+        basic_udm2_asset["md5_digest"] = asset_hash
+
+    with expectation:
+        DataClient.validate_checksum(basic_udm2_asset, testfile)
