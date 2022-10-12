@@ -21,7 +21,7 @@ from planet import data_filter, DataClient
 from planet.clients.data import (SEARCH_SORT,
                                  SEARCH_SORT_DEFAULT,
                                  STATS_INTERVAL)
-from planet.specs import get_item_types, SpecificationException
+from planet.specs import get_item_types, validate_item_type
 
 from . import types
 from .cmds import coro, translate_exceptions
@@ -65,15 +65,9 @@ def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
 
 
 def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
-    # Set difference between given item types and all item types
-    invalid_item_types = set([item.lower() for item in item_types]) - set(
-        [a.lower() for a in ALL_ITEM_TYPES])
-    if invalid_item_types:
-        raise SpecificationException(invalid_item_types,
-                                     ALL_ITEM_TYPES,
-                                     'item_type')
-    else:
-        return item_types
+    for item_type in item_types:
+        validate_item_type(item_type)
+    return item_types
 
 
 def date_range_to_filter(ctx, param, values) -> Optional[List[dict]]:
