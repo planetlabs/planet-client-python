@@ -490,8 +490,9 @@ def test_cli_orders_request_item_type_invalid(invoke):
         '--name=test',
         '--id=4500474_2133707_2021-05-20_2419',
     ])
+    error_msg = "Usage: main orders request [OPTIONS] ITEM_TYPE BUNDLE"
     assert result.exit_code == 2
-    assert "Usage: main orders request [OPTIONS] ITEM_TYPE BUNDLE" in result.output
+    assert error_msg in result.output
 
 
 def test_cli_orders_request_product_bundle_invalid(invoke):
@@ -502,8 +503,9 @@ def test_cli_orders_request_product_bundle_invalid(invoke):
         '--name=test',
         '--id=4500474_2133707_2021-05-20_2419',
     ])
+    error_msg = "Usage: main orders request [OPTIONS] ITEM_TYPE BUNDLE"
     assert result.exit_code == 2
-    assert "Usage: main orders request [OPTIONS] ITEM_TYPE BUNDLE" in result.output
+    assert error_msg in result.output
 
 
 def test_cli_orders_request_product_bundle_incompatible(invoke):
@@ -514,8 +516,9 @@ def test_cli_orders_request_product_bundle_incompatible(invoke):
         '--name=test',
         '--id=4500474_2133707_2021-05-20_2419',
     ])
+    error_msg = "Usage: main orders request [OPTIONS] ITEM_TYPE BUNDLE"
     assert result.exit_code == 2
-    assert "Usage: main orders request [OPTIONS] ITEM_TYPE BUNDLE" in result.output
+    assert error_msg in result.output
 
 
 def test_cli_orders_request_id_empty(invoke):
