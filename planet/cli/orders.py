@@ -225,26 +225,22 @@ async def create(ctx, request: str, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
+@click.argument('item_type',
+                metavar='ITEM_TYPE',
+                type=click.Choice(planet.specs.get_item_types(),
+                                  case_sensitive=False))
+@click.argument('bundle',
+                metavar='BUNDLE',
+                type=click.Choice(planet.specs.get_product_bundles(),
+                                  case_sensitive=False))
 @click.option('--name',
               required=True,
               help='Order name. Does not need to be unique.',
               type=click.STRING)
-@click.option(
-    '--bundle',
-    multiple=False,
-    required=True,
-    help='Product bundle.',
-    type=click.Choice(planet.specs.get_product_bundles(),
-                      case_sensitive=False),
-)
 @click.option('--id',
               help='One or more comma-separated item IDs.',
               type=types.CommaSeparatedString(),
               required=True)
-@click.option('--item-type',
-              required=True,
-              help='Specify an item type',
-              type=click.STRING)
 @click.option('--clip',
               type=types.JSON(),
               help="""Clip feature GeoJSON. Can be a json string, filename,
@@ -271,12 +267,12 @@ async def create(ctx, request: str, pretty):
     format. Not specifying either defaults to including it (--stac).""")
 @pretty
 async def request(ctx,
-                  name,
+                  item_type,
                   bundle,
+                  name,
                   id,
                   clip,
                   tools,
-                  item_type,
                   email,
                   cloudconfig,
                   stac,

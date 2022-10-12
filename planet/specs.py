@@ -56,15 +56,15 @@ class SpecificationException(Exception):
                 f'{self.opts}.')
 
 
-def validate_bundle(bundle):
-    supported = get_product_bundles()
-    return _validate_field(bundle, supported, 'product_bundle')
+def validate_bundle(item_type, bundle):
+    all_product_bundles = get_product_bundles()
+    validate_supported_bundles(item_type, bundle, all_product_bundles)
+    return _validate_field(bundle, all_product_bundles, 'product_bundle')
 
 
-def validate_item_type(item_type, bundle):
-    validated_bundle = validate_bundle(bundle)
-    supported = get_item_types(validated_bundle)
-    return _validate_field(item_type, supported, 'item_type')
+def validate_item_type(item_type):
+    supported_item_types = get_item_types()
+    return _validate_field(item_type, supported_item_types, 'item_type')
 
 
 def validate_order_type(order_type):
@@ -93,6 +93,25 @@ def _validate_field(value, supported, field_name):
     return value
 
 
+def validate_supported_bundles(item_type, bundle, all_product_bundles):
+    spec = _get_product_bundle_spec()
+
+    supported_bundles = []
+    for product_bundle in all_product_bundles:
+        availible_item_types = set(
+            spec['bundles'][product_bundle]['assets'].keys())
+        if item_type.lower() in [x.lower() for x in availible_item_types]:
+            supported_bundles.append(product_bundle)
+
+    return _validate_field(bundle, supported_bundles, 'bundle')
+
+
+def _get_product_bundle_spec():
+    with open(DATA_DIR / PRODUCT_BUNDLE_SPEC_NAME) as f:
+        data = json.load(f)
+    return data
+
+
 def get_match(test_entry, spec_entries, field_name):
     '''Find and return matching spec entry regardless of capitalization.
 
@@ -108,10 +127,22 @@ def get_match(test_entry, spec_entries, field_name):
     return match
 
 
-def get_product_bundles():
+def get_product_bundles(item_type=None):
     '''Get product bundles supported by Orders API.'''
     spec = _get_product_bundle_spec()
-    return spec['bundles'].keys()
+
+    if item_type:
+        all_product_bundles = get_product_bundles()
+
+        supported_bundles = []
+        for product_bundle in all_product_bundles:
+            availible_item_types = set(
+                spec['bundles'][product_bundle]['assets'].keys())
+            if item_type.lower() in [x.lower() for x in availible_item_types]:
+                supported_bundles.append(product_bundle)
+    else:
+        supported_bundles = spec['bundles'].keys()
+    return supported_bundles
 
 
 def get_item_types(product_bundle=None):
@@ -128,9 +159,3 @@ def get_item_types(product_bundle=None):
                 for bundle in get_product_bundles()))
 
     return item_types
-
-
-def _get_product_bundle_spec():
-    with open(DATA_DIR / PRODUCT_BUNDLE_SPEC_NAME) as f:
-        data = json.load(f)
-    return data
