@@ -21,7 +21,9 @@ from planet import data_filter, DataClient
 from planet.clients.data import (SEARCH_SORT,
                                  SEARCH_SORT_DEFAULT,
                                  STATS_INTERVAL)
-from planet.specs import get_item_types, validate_item_type
+from planet.specs import (get_item_types,
+                          validate_item_type,
+                          SpecificationException)
 
 from . import types
 from .cmds import coro, translate_exceptions
@@ -65,9 +67,12 @@ def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
 
 
 def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
-    for item_type in item_types:
-        validate_item_type(item_type)
-    return item_types
+    try:
+        for item_type in item_types:
+            validate_item_type(item_type)
+        return item_types
+    except SpecificationException as e:
+        raise click.BadParameter(e)
 
 
 def date_range_to_filter(ctx, param, values) -> Optional[List[dict]]:
