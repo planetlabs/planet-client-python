@@ -12,35 +12,33 @@ The following are the release naming conventions:
     * **PROPOSAL**: Version number is determined by [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 1. Release version: Remove `dev` from current dev version
 
-Example
-1. Last release version: `1.0.0`
-1. Current dev version: `1.0.1dev`
-1. Release version: `1.0.1`
-1. Next dev version: `1.0.2dev`
+Example:
+* If
+ * Previous Release Version ==  `1.0.0`
+* Then
+ * Current Dev Version: `1.0.1dev`
+ * Release Version: `1.0.1`
+ * Next Dev Version: `1.0.2dev`
 
 ## Release Workflow
 
 #### Step 1: Release on Github
-
-
-
-1. Create a release branch
-1. Make the following changes for the release:
+*NOTE: This section refers to version names given in Release Naming Conventions section above.*
+1. Create a release branch named `release-{Release Version}`
+1. Make the following changes for the release
   * Update `CHANGES.txt` (**PROPOSAL**: change this to `docs/CHANGELOG.md`)
     * Include added, changed, depricated or removed features and bug fixes.
        A list of merged PRs and their titles since the last release can be obtained with `git log <RELEASE_TAG>..HEAD | awk '/Merge pull request/{print;getline;getline;print}`
     * Sort according to importance
     * **PROPOSAL**: Adhere to [Keep a Changelog](https://keepachangelog.com/)
-  * Remove `dev` from version in `planet/__version__.py`
-1. Create a PR for the release branch, wait for CI to pass
+  * Update `planet/__version__.py` to Release Version
+1. Create a PR for the release branch (named after release branch), wait for CI to pass
 1. Create a new github release:
-  * Set Tag to the version number specified in `planet/__version__.py`
+  * Set Tag to the version number specified in `planet/__version__.py`, aka Release Version
   * Copy Description from the new entry in `docs/CHANGELOG.md`
   * Select "This is a pre-release" if applicable
   * Select "Create a discussion for this release"
-1. Make the following post-release changes:
-  * Bump version number and append `dev` in `planet/__version__.py`
-
+1. Update `planet/__version__.py` to Next Dev Version
 1. Merge PR for release branch
 
 ###### Step 2: Release on pypi
