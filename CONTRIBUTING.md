@@ -15,11 +15,32 @@ In the issue, provide the following:
 1. Installed dependencies / versions
 1. Error traceback
 
+### Development
+
+#### Development Branch
+
+Most work should start with the latest instance of the `main` branch and be performed in a development branch:
+
+```console
+git checkout main
+git pull
+git checkout -b new-branch-name
+```
+
+#### Branch Naming
+
+Please use the following naming convention for development branchs:
+
+`{up to 3-word summary of topic, separated by a dash)-{ticket number}`
+
+For example: `release-contributing-691` for [ticket 691](https://github.com/planetlabs/planet-client-python/issues/691).
+
 ### Pull Requests
 
 Pull Request (PR) Requirements:
 
 1. Must have a descriptive title. This populates the release changelog.
+1. Must provide a summary of changes and examples of usage input / output in the case of user-interface changes.
 1. Must include updates to relative documentation in docstrings and `docs` folder. See [Documentation](#documentation) section for information on docstring formatting and building.
 1. Must pass all Continuous Integration (CI) checks. See below for more information on CI checks.
 1. Must have at least one approval by a planet maintainer.
@@ -39,9 +60,7 @@ To minimize the feedback loop, we have configured Nox so that it can be used to 
 
 ### Releasing
 
-The release process is outlined in [RELEASE.md](RELEASE.md)
-
-
+The release process is outlined in [RELEASE.md](RELEASE.md).
 
 ## <a name="development-tools"></a>Development Tools
 
