@@ -67,6 +67,8 @@ def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
 
 
 def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
+    '''Validates the item type by comparing the inputted item type to all
+    supported item types.'''
     try:
         for item_type in item_types:
             validate_item_type(item_type)
