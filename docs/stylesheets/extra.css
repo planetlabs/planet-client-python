@@ -1,0 +1,10 @@
+:root > * {
+    --md-primary-fg-color:        #007f99;
+    --md-primary-fg-color--light: #99d8e0;
+    --md-primary-fg-color--dark:  #004352;
+    --md-accent-fg-color : #db3a25;
+
+}
+section.mdx-container {
+    background-image: linear-gradient(180deg, #004352, #007f99, transparent);
+}  

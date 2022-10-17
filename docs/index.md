@@ -1,3 +1,8 @@
+---
+title: Planet SDK CLI Landing
+template: home.html
+---
+
 # Planet SDK for Python
 
 [![Build Status](https://travis-ci.org/planetlabs/planet-client-python.svg?branch=master)](https://travis-ci.org/planetlabs/planet-client-python)

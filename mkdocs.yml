@@ -6,10 +6,14 @@ theme:
     name: 'material'
     logo: img/logo.svg
     favicon: img/logo.svg
+    custom_dir: 'custom_theme/'
 
 extra:
   version:
     provider: mike
+
+extra_css:
+  - stylesheets/extra.css
     
 plugins:
   - search
