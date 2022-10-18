@@ -168,8 +168,8 @@ And then use `planet download <id>` when the order is ready.
 There are many more options in the command-line interface. One of the best ways
 to explore is to just use `--help` after any command to see the options. There is
 also lots of good information in the docs, in the 
-[User Guide](https://planet-sdk-for-python.readthedocs.io/en/latest/guide/#cli)
-and the [CLI Reference](https://planet-sdk-for-python.readthedocs.io/en/latest/cli/).
+[User Guide](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/)
+and the [CLI Reference](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/cli/).
 
 ## Authentication
 
