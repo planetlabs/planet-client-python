@@ -1,4 +1,6 @@
-# CLI Guide
+---
+title: CLI Guide
+---
 
 ## Authentication
 

@@ -1,5 +1,4 @@
 site_name: Planet Earth Observation Toolkit
-site_description: Python client library for Planet Labs APIs.
 site_url: https://planetlabs.github.io/planet-client-python/
 site_author: https://developers.planet.com
 site_description: >-
@@ -25,11 +24,13 @@ theme:
   palette:
     - scheme: default
       primary: #007f99
+      accent: #db3a25
       toggle:
         icon: octicons/moon-24
         name: Switch to dark mode
     - scheme: slate
       primary: #004352
+      accent: #db3a25
       toggle: 
         icon: octicons/sun-24
         name: Switch to light mode
@@ -70,8 +71,8 @@ nav:
   - "No Code CLI":
     - cli/cli-concepts.md
     - cli/cli-guide.md
-    - cli/cli-plus-tutorial.md
     - cli/cli-tutorial.md
+    - cli/cli-plus-tutorial.md
     - cli/cli-reference.md
   - "SDK":
     - sdk/sdk-guide.md

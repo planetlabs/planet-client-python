@@ -1,6 +1,8 @@
-# CLI Reference
+---
+title: CLI Reference
+---
 
-This page provides documentation for our command line tools.
+This is the reference site for the Planet Earth Observation Toolkit Command Line Interface (CLI).
 
 ::: mkdocs-click
     :module: planet.cli.cli

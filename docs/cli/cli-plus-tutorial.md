@@ -1,4 +1,6 @@
-## About
+---
+title: More CLI Workflows
+---
 
 This document shows off a range of more advanced command-line workflows, making use of a wider range
 of tools in the command-line & geospatial ecosystem. Some of them can be a pain to install, like 

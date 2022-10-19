@@ -1,5 +1,6 @@
-
-## About
+---
+title: CLI Tutorial
+---
 
 This tutorial is designed to show off the core Planet command-line interface (CLI) capabilities. 
 The Planet depends on several more advanced command-line concepts, but this tutorial should let
