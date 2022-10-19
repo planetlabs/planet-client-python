@@ -1,6 +1,6 @@
 # Upgrading
 
-The Planet SDK for Python is Version 2 of what was previously referred to as
+The Planet Earth Observation Toolkit is Version 2 of what was previously referred to as
 the Planet API client. 
 
 Version 2 is essentially a complete rewrite and brings with it big changes to
@@ -16,3 +16,11 @@ In Version 2, a `Session` is used to manage all communication with the Planet
 APIs. This provides for multiple asynchronous connections. An API-specific
 client is created. This client manages polling and downloading, along with
 any other capabilities provided by the API.
+
+## How to upgrade to V2
+
+[****TBW****]
+
+## How to migrate your code to V2
+
+[****TBW****]

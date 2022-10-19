@@ -2,13 +2,19 @@
 
 !!! warning
 
-    The Planet SDK for Python is in active development, and usage is provided
+    The Planet Earth Observation Toolkit is in active development, and usage is provided
     as *early access* only. Use of the Planet SDK in production is **not
     recommended**.
 
-The Planet SDK for Python is Version 2 ("V2") of what was previously referred
+The Planet Earth Observation Toolkit is Version 2 ("V2") of what was previously referred
 to as the Planet API client ("V1"). For more information, see
 [Upgrading](upgrading.md).
+
+# Build Status
+
+[![Build Status](https://travis-ci.org/planetlabs/planet-client-python.svg?branch=master)](https://travis-ci.org/planetlabs/planet-client-python)
+
+[Planet](https://planet.com) Software Development Kit (SDK) for Python.
 
 ## Installing for Local Development
 
@@ -27,3 +33,4 @@ would love to hear from you.
 
   - To report a bug or suggest a feature, [raise an issue on GitHub](https://github.com/planetlabs/planet-client-python/issues/new)
   - To get in touch with the development team, email [developers@planet.com](mailto:developers@planet.com)
+

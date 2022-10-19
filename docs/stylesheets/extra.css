@@ -5,6 +5,56 @@
     --md-accent-fg-color : #db3a25;
 
 }
+
+section.md-header{position:initial}
+section.md-main__inner{margin:0}
+section.md-content{display:none}
+@media screen and (min-width:60em){
+  section.md-sidebar--secondary{display:none}
+}
+@media screen and (min-width:76.25em){
+  section.md-sidebar--primary{display:none}
+}
+
 section.mdx-container {
-    background-image: linear-gradient(180deg, #004352, #007f99, transparent);
-}  
+    background-image: linear-gradient(180deg, #004352,  #007f99, transparent);
+    position: relative;
+}
+
+section.mdx-container::before{
+
+    content: ' ';
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.5;
+    background-image: url(../img/SatelliteOrbits-main100Dove4RapidEye6Skysat-100mm01-pulsing.svg);
+    background-repeat: no-repeat;
+    background-position: right 10% bottom 45%;
+    background-size: auto;
+  
+}
+
+
+.mdx-hero {
+    position: relative;
+    height: 90vh;
+    width: 45vw;
+    padding: 5vw 2vw;
+    color: var(--md-primary-fg-color--light);
+}
+
+.mdx-hero__content > *{
+    color: var(--md-primary-fg-color--light) !important;
+}
+.mdx-hero__content > .md-button--secondary{
+        background-color:var(--md-primary-fg-color--dark);
+        border-color:var(--md-primary-fg-color--dark);
+        color:var(--md-primary-bg-color);
+}
+.mdx-hero__content > .md-button--primary{
+        border-color:var(--md-primary-fg-color--light);
+}
