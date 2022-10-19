@@ -1,6 +1,7 @@
-# Quick Start
+---
+title: Quick Start
+---
 
-[TOC]
 
 ## Step 1: Activate a virtual environment
 
