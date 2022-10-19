@@ -61,3 +61,7 @@ section.mdx-container::before{
 .mdx-hero__content > .md-button--primary{
         border-color:var(--md-primary-fg-color--light);
 }
+
+.mdx-hero__content > p {
+    margin-right: 2.5vw;
+}
