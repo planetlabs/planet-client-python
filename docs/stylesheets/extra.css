@@ -9,6 +9,7 @@
     --md-footer-bg-color: var(--md-primary-bg-color--dark);
 }
 
+<<<<<<< HEAD
 [data-md-color-scheme="slate"]{
     --md-default-bg-color:var(--md-primary-bg-color--dark);
     --md-code-bg-color: #21282B;
@@ -21,6 +22,18 @@
 section.md-header{position:initial}
 section.md-main__inner{margin:0}
 section.md-content{display:none}
+=======
+section.md-header{position:initial}
+section.md-main__inner{margin:0}
+section.md-content{display:none}
+@media screen and (min-width:60em){
+  section.md-sidebar--secondary{display:none}
+}
+@media screen and (min-width:76.25em){
+  section.md-sidebar--primary{display:none}
+}
+
+>>>>>>> 2fa3e4e (first docs reorg)
 section.mdx-container {
     background-image: linear-gradient(180deg, #004352,  #007f99, transparent);
     position: relative;
@@ -63,6 +76,7 @@ section.mdx-container::before{
 .mdx-hero__content > .md-button--primary{
         border-color:var(--md-primary-fg-color--light);
 }
+<<<<<<< HEAD
 
 .mdx-hero__content > p {
     margin-right: 2.5vw;
@@ -83,3 +97,5 @@ section.md-sidebar--primary{display:none}
 }
 }
 
+=======
+>>>>>>> 2fa3e4e (first docs reorg)

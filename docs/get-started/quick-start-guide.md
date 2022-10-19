@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 title: Quick Start
 ---
@@ -8,6 +9,17 @@ title: Quick Start
 This is a Python toolkit, so you'll need to install Python (version 3.7 or greater), and set up and install a virtual environment.
 
 Yep. Even if you're not writing code—and only using the "no code" CLI part of the Toolkit—you're using Python to communicate with the Planet Labs PBC servers. It's not too tricky, but it does require a presence of mind to complete. If you need help installing Python and setting up a virtual environment, read [Getting started with venv & Planet SDK](venv-tutorial.md).
+=======
+# Quick Start
+
+[TOC]
+
+## Step 1: Activate a virtual environment
+
+This is a Python toolkit, so you'll need to install Python (version 3.7 or greater), and setup and install a virtual environment.
+
+Yep. Even if you're not writing code—and only using the "no code" CLI part of the Toolkit—you're using Python to communicate with the Planet Labs PBC servers. It's not too tricky, but it does require a presence of mind to complete. If you need help with Python install and setting up a virtual environment, read [Getting started with venv & Planet SDK](venv-tutorial.md).
+>>>>>>> 2fa3e4e (first docs reorg)
 
 ## Step 2: Install the Planet Earth Observation Toolkit
 
@@ -22,7 +34,11 @@ flag is highly recommended for those new to pip.
 
 ## Step 3: Get your API Key ready
 
+<<<<<<< HEAD
 Planet's APIs require an account for use. For more information on where to find your API key, or to sign up to get one, see [Get Your API Key](get-your-api-key.md).
+=======
+Planet's APIs require an account for use. For more information on where to find your API key, or get one if you don't already have one, see [Get Your API Key](get-your-api-key.md).
+>>>>>>> 2fa3e4e (first docs reorg)
 
 ## Step 4: Check the toolkit version
 
@@ -30,7 +46,11 @@ Planet's APIs require an account for use. For more information on where to find 
 $ planet --version
 ```
 
+<<<<<<< HEAD
 You should be on some version 2 of the toolkit. If you're not, or you need more information about versioning, early access, and upgrading, see [Early Access to Planet SDK (aka "V2")](v2_earlyaccess.md).
+=======
+You should be on some version 2 of the toolkit. If you're not, or you need to 
+>>>>>>> 2fa3e4e (first docs reorg)
 
 ## Step 5: Sign on to your account
 
