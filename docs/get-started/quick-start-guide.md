@@ -21,7 +21,7 @@ flag is highly recommended for those new to pip.
 
 ## Step 3: Get your API Key ready
 
-Planet's APIs require an account for use. For more information on where to find your API key, or get one if you don't already have one, see [Get Your API Key](get-your-api-key.md).
+Planet's APIs require an account for use. For more information on where to find your API key, or to sign up to get one, see [Get Your API Key](get-your-api-key.md).
 
 ## Step 4: Check the toolkit version
 
@@ -29,7 +29,7 @@ Planet's APIs require an account for use. For more information on where to find 
 $ planet --version
 ```
 
-You should be on some version 2 of the toolkit. If you're not, or you need to 
+You should be on some version 2 of the toolkit. If you're not, or you need more information about versioning, early access, and upgrading, see [Early Access to Planet SDK (aka "V2")](v2_earlyaccess.md).
 
 ## Step 5: Sign on to your account
 
