@@ -138,8 +138,7 @@ To create an order you need a name, a [bundle](https://developers.planet.com/api
  one or more id's, and an [item type](https://developers.planet.com/docs/apis/data/items-assets/#item-types):
 
 ```console
-planet orders request --name "My First Order" --bundle analytic_sr_udm2 --id 20220605_124027_64_242b \
- --item-type PSScene
+planet orders request PSScene analytic_sr_udm2 --name "My First Order" --id 20220605_124027_64_242b 
 ```
 
 You should replace the `id` with a scene you have access to, using [Explorer](https://planet.com/explorer)
@@ -157,8 +156,7 @@ easier to read, but you can still copy and paste the full line into your command
 You can also use `jq` here to make it a bit more readable:
 
 ```console
-planet orders request --name "My First Order" --bundle analytic_sr_udm2 --id 20220605_124027_64_242b \
- --item-type PSScene | jq
+planet orders request PSScene analytic_sr_udm2 --name "My First Order" --id 20220605_124027_64_242b | jq
 ```
 
 ```json
@@ -182,8 +180,8 @@ The above command just prints out the necessary JSON to create an order. To actu
 save the output into a file:
 
 ```console
-planet orders request --name "My first Order" --bundle analytic_sr_udm2 --id 20220605_124027_64_242b \
- --item-type PSScene > request-1.json
+planet orders request PSScene analytic_sr_udm2 --name "My first Order" --id 20220605_124027_64_242b \
+ > request-1.json
 ```
 
 This saves the above JSON in a file called `request-1.json`
@@ -234,8 +232,8 @@ passing the output of the `orders request` command directly to be the input of t
 command:
 
 ```console
-planet orders request --name "My Second Order" --bundle analytic_sr_udm2 \ 
---id 20220605_124027_64_242b,20220605_124025_34_242b --item-type PSScene | planet orders create
+planet orders request PSScene analytic_sr_udm2 --name "My Second Order" \
+--id 20220605_124027_64_242b,20220605_124025_34_242b | planet orders create
 ```
 
 The Planet CLI is designed to work well with piping, as it aims at small commands that can be 
@@ -343,8 +341,8 @@ You can move that geometry to your current directory and use the following comma
 tweak the geometry.geojson to refer to where you downloaded it.
 
 ```console
-planet orders request --item-type PSScene --clip geometry.geojson --name clipped-geom \
- --bundle analytic_sr_udm2 --id 20220605_124027_64_242b | planet orders create
+planet orders request PSScene analytic_sr_udm2 --clip geometry.geojson --name clipped-geom \
+ --id 20220605_124027_64_242b | planet orders create
 ```
 
 #### Two Scenes, composited
@@ -352,8 +350,8 @@ planet orders request --item-type PSScene --clip geometry.geojson --name clipped
 Ordering two scenes is easy, just add another id:
 
 ```console
-planet orders request --item-type PSScene --name "Two Scenes" \
- --bundle analytic_sr_udm2 --id 20220605_124027_64_242b,20220605_124025_34_242b | planet orders create
+planet orders request PSScene analytic_sr_udm2 --name "Two Scenes" \
+ --id 20220605_124027_64_242b,20220605_124025_34_242b | planet orders create
 ```
 
 And then you can composite them together, using the 'tools' json. You can 
@@ -372,7 +370,7 @@ Once you've got it saved you call the `--tools` flag to refer to the JSON file, 
 can pipe that to `orders create`.
 
 ```console
-planet orders request --item-type PSScene --name "Two Scenes Composited" --bundle analytic_sr_udm2 \ 
+planet orders request PSScene analytic_sr_udm2 --name "Two Scenes Composited" \
 --id 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-composite.json | planet orders create
 ```
 
@@ -402,8 +400,8 @@ If you'd like the above order as a COG you Get the output as a cloud-optimized G
 The following command just shows the output, you can pipe into orders create if you'd like:
 
 ```console
-planet orders request --item-type PSScene --name "Two Scenes Composited" \
- --bundle analytic_sr_udm2 --id 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-cog.json
+planet orders request PSScene analytic_sr_udm2 --name "Two Scenes Composited" \
+ --id 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-cog.json
 ```
 
 #### Clip & Composite
@@ -413,16 +411,16 @@ not use `--clip` and `--tools` in the same call. There is not yet CLI calls to g
 so you can just grab the [full tools.json](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/data/tools-clip-composite.json)
 
 ```console
-planet orders request --item-type PSScene --name "Two Scenes Clipped and Composited" \
- --bundle analytic_sr_udm2 --id 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-clip-composite.json
+planet orders request PSScene analytic_sr_udm2 --name "Two Scenes Clipped and Composited" \
+ --id 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-clip-composite.json
 ```
 
 One cool little trick is that you can even stream in the JSON directly with `curl`, piping it into the request:
 
 ```console
 curl -s https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/data/tools-clip-composite.json \
-| planet orders request --item-type PSScene --name "Streaming Clip & Composite" \
- --bundle analytic_sr_udm2 --id 20220605_124027_64_242b,20220605_124025_34_242b --tools - | planet orders create
+| planet orders request PSScene analytic_sr_udm2 --name "Streaming Clip & Composite" \
+ --id 20220605_124027_64_242b,20220605_124025_34_242b --tools - | planet orders create
 ```
 
 #### Using Orders output as input
@@ -708,7 +706,7 @@ image that was published:
 
 
 ```console
-planet orders request --name "SkySat Latest" --item-type SkySatCollect --bundle analytic \
+planet orders request SkySatCollect analytic --name "SkySat Latest" \
 --id `planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id` \
 | planet orders create
 ```
@@ -719,7 +717,7 @@ Or get the 5 latest cloud free images in an area and create an order that clips 
 ```console
 ids=`planet data filter --geom geometry.geojson --range clear_percent gt 90 | planet data \
 search PSScene --limit 5 - | jq -r .id | tr '\n' , | sed 's/.$//'`
-planet orders request --name "Clipped Scenes" --item-type PSScene --bundle analytic_sr_udm2  \
+planet orders request PSScene analytic_sr_udm2 --name "Clipped Scenes"  \
 --id $ids --clip geometry.geojson | planet orders create -
 ```
 
