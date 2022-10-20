@@ -60,6 +60,7 @@ plugins:
               - "^__init__$"  # but always include __init__ modules and methods
       watch:
         - planet
+        - custom_theme
 
 nav:
   - "Get Started":

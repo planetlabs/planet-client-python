@@ -19,4 +19,27 @@
   </section>
 {% endblock %}
 {% block content %}{% endblock %}
-{% block footer %}{% endblock %}
+<!-- More minimal footer -->
+{% block footer %}
+<footer class="md-footer">
+    <div class="md-footer-meta md-typeset">
+        <div class="md-footer-meta__inner md-grid">
+            <!-- Copyright and theme information -->
+            <div class="md-footer-copyright">
+                &copy; {{ build_date_utc.strftime('%Y') }} <a href='https://planet.com' title="Planet Labs PBC" target='_blank'>Planet Labs PBC</a>
+            </div>
+            <div class="md-footer-right">
+                powered by
+                <a href="https://www.mkdocs.org" title="MkDocs">MkDocs</a>
+                and 
+                <a href="https://squidfunk.github.io/mkdocs-material/"
+                  title="Material for MkDocs">
+                    Material for MkDocs</a>
+            </div>            
+            {% block social %}
+            {% include "partials/social.html" %}
+            {% endblock %}
+        </div>
+    </div>
+</footer>
+{% endblock %}
