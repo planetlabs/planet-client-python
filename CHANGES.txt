@@ -1,3 +1,12 @@
+2.0a5 (2022-10-20)
+
+- Implement python api data client asset download and supporting functions (#707).
+- `planet data filter` cli command outputs a valid empty filter if all
+  subfilters are removed (#654).
+- 'planet orders request' cli command now provides supported bundles for a
+  given item type, bundle and item type are case-insensitive, and bundle and
+  item type are moved to positional arguments (#680).
+
 2.0a3 (2022-09-07)
 
 - A change in behavior of httpx affected download of order assets in 2.0a2.
@@ -12,7 +21,7 @@
 - Help for planet-subscriptions-describe and update commands has been
   corrected, resolving the issue reported in #658.
 
-2.0a2 (2022-07-04)
+2.0a2 (2022-08-04)
 
 - Upgrade httpx to 0.23, change how quota exceptions are caught
 - Increase reliability of communication with Planet servers and avoid clobbering them
