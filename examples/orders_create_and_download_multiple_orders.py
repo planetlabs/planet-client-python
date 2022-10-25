@@ -39,7 +39,7 @@ iowa_aoi = {
 iowa_images = ['20200925_161029_69_2223', '20200925_161027_48_2223']
 iowa_order = planet.order_request.build_request(
     'iowa_order',
-    [planet.order_request.product(iowa_images, 'analytic', 'PSScene4Band')],
+    [planet.order_request.product(iowa_images, 'analytic_udm2', 'PSScene')],
     tools=[planet.order_request.clip_tool(iowa_aoi)])
 
 oregon_aoi = {
@@ -53,7 +53,7 @@ oregon_aoi = {
 oregon_images = ['20200909_182525_1014', '20200909_182524_1014']
 oregon_order = planet.order_request.build_request(
     'oregon_order',
-    [planet.order_request.product(oregon_images, 'analytic', 'PSScene4Band')],
+    [planet.order_request.product(oregon_images, 'analytic_udm2', 'PSScene')],
     tools=[planet.order_request.clip_tool(oregon_aoi)])
 
 
@@ -61,13 +61,13 @@ async def create_and_download(order_detail, directory, client):
     with planet.reporting.StateBar(state='creating') as reporter:
         # create
         order = await client.create_order(order_detail)
-        reporter.update(state='created', order_id=order.id)
+        reporter.update(state='created', order_id=order['id'])
 
         # wait for completion
-        await client.wait(order.id, report=reporter.update_state)
+        await client.wait(order['id'], callback=reporter.update_state)
 
     # download
-    await client.download_order(order.id, progress_bar=True)
+    await client.download_order(order['id'], directory, progress_bar=True)
 
 
 async def main():
