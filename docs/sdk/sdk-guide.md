@@ -338,6 +338,7 @@ Downloading an asset is a multi-step process involving: activating the asset,
 waiting for the asset to be active, downloading the asset, and, optionally,
 validating the downloaded file.
 
+
 With wait and download, it is often desired to track progress as these
 processes can take a long time. Therefore, in this example, we use a simple 
 print command to report wait status. `download_asset` has reporting built in.
