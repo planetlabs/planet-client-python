@@ -423,7 +423,6 @@ commands.
 Creating an order supports JSON files as inputs and these need to follow certain
 formats.
 
-
 ##### --cloudconfig
 The file given with the `--cloudconfig` option should contain JSON that follows
 the options and format given in
