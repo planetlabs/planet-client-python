@@ -1,0 +1,22 @@
+{% extends "main.html" %}
+{% block tabs %}
+  {{ super() }}
+  <section class="mdx-container">
+    <div class="md-grid md-typeset">
+      <div class="mdx-hero">
+        <div class="mdx-hero__content">
+          <h1>Welcome to the Planet Earth Observation Toolkit</h1>
+          <p>{{ config.site_description }}</p>
+          <a href="{{ 'get-started/guide' | url }}" title="Get Started" class="md-button md-button--primary md-button--teriary">
+            Get started
+          </a>
+          <a href="{{ 'get-started/get-your-api-key' | url }}" title="Get Your API Key" class="md-button md-button--secondary">
+            Get Your API Key
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+{% block content %}{% endblock %}
+{% block footer %}{% endblock %}
