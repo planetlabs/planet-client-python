@@ -1,10 +1,59 @@
-# Planet SDK for Python
+---
+Quick Start
+---
 
-[![Build Status](https://travis-ci.org/planetlabs/planet-client-python.svg?branch=master)](https://travis-ci.org/planetlabs/planet-client-python)
+[TOC]
 
-[Planet](https://planet.com) Software Development Kit (SDK) for Python.
+## Step 1: Activate a virtual environment
 
-## Quick Start
+This is a Python toolkit, so you'll need to install Python (version 3.7 or greater), and setup and install a virtual environment.
+
+Yep. Even if you're not writing code—and only using the "no code" CLI part of the Toolkit—you're using Python to communicate with the Planet Labs PBC servers. It's not too tricky, but it does require a presence of mind to complete. If you need help with Python install and setting up a virtual environment, read [Getting started with venv & Planet SDK](venv-tutorial.md).
+
+## Step 2: Install the Planet Earth Observation Toolkit
+
+Install with [pip](https://pip.pypa.io):
+
+```console
+$ pip install planet --user
+```
+
+The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs)
+flag is highly recommended for those new to pip.
+
+## Step 3: Get your API Key ready
+
+Planet's APIs require an account for use. For more information on where to find your API key, or get one if you don't already have one, see [Get Your API Key](get-your-api-key.md).
+
+## Step 4: Check the toolkit version
+
+```console
+$ planet --version
+```
+
+You should be on some version 2 of the toolkit. If you're not, or you need to 
+
+## Step 5: Sign on to your account
+
+Just as you log in when you browse to https://account.planet.com, you'll want to sign on to your account so you have access to your account and orders.
+
+## Step 6: Use the Toolkit to authenticate against the Planet servers
+
+```console
+$ planet auth init
+```
+
+You'll be prompted for the email and password you use to access [your account](https://account.planet.com).
+
+When you type in your password, you won't see any indication that the characters are being accepted. But when you hit enter, you'll know that you've succeeded because you'll see on the command line:
+
+```console
+Initialized
+```
+
+## Step 7: Creating your first order
+
+[*****TBW*****]
 
 The Planet SDK for Python allows Python developers to write software that makes
 use of the following Planet APIs:
@@ -61,7 +110,7 @@ and call from your synchronous code.
 >>> oid = sync_create_order(order_details)
 
 ```
-
+ 
 When using `asyncio.run` to develop synchronous code with the async library,
 keep in mind this excerpt from the
 [asyncio.run](https://docs.python.org/3/library/asyncio-task.html#asyncio.run)
@@ -75,25 +124,3 @@ Do you have a use case where native synchronous support is essential? If so,
 please contribute to this
 [issue](https://github.com/planetlabs/planet-client-python/issues/251).
 
-## Installation
-
-Install with [pip](https://pip.pypa.io):
-
-```console
-$ pip install planet
-```
-
-The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs)
-flag is highly recommended for those new to pip.
-
-The Planet SDK for Python requires Python 3.7+.
-
-## Authentication
-
-Planet's APIs require an account for use.
-[Sign up here](https://www.planet.com/explorer/?signup).
-
-## Development
-
-To contribute or develop with this library, see
-[CONTRIBUTING](https://github.com/planetlabs/planet-client-python/CONTRIBUTING.md)
