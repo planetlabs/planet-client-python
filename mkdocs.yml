@@ -20,8 +20,12 @@ theme:
     - navigation.expand
     - navigation.indexes
     - navigation.top
+    - navigation.sections
+    - navigation.tracking
     - search.suggest
     - search.highlight
+    - toc.follow
+    - toc.integrate
   palette:
     - scheme: default
       primary: #007f99
