@@ -86,8 +86,8 @@
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --limit 10
 </pre></div>
 </div>
-<p>Get recently acquired PSScene3Band ItemType records:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type PSScene3Band --date acquired gt 2017-02-14
+<p>Get recently acquired PSScene ItemType records:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type PSScene --date acquired gt 2017-02-14
 </pre></div>
 </div>
 <p>Item types can be specified case-insensitively, with glob matching in the CLI:</p>
@@ -95,11 +95,11 @@
 </pre></div>
 </div>
 <p>Search for a month. Note: criteria are applied as an AND filter:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type PSScene3Band --date acquired gt 2017-02-14 --date acquired lt 2017-03-14
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type PSScene --date acquired gt 2017-02-14 --date acquired lt 2017-03-14
 </pre></div>
 </div>
-<p>Use the geometry defined in <cite>aoi.json</cite> to constrain a search for both PSScene3Band and PSScene4Band:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type PSScene3Band --item-type PSScene4Band --geom aoi.json
+<p>Use the geometry defined in <cite>aoi.json</cite> to constrain a search for PSScene:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data search --item-type PSScene --item-type PSScene --geom aoi.json
 </pre></div>
 </div>
 <p>Output a search filter to a file:</p>
@@ -107,7 +107,7 @@
 </pre></div>
 </div>
 <p>Create a saved search from a filter in a file with some additional options (this will output the search id for later use):</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data create-search --item-type PSScene3Band --string-in satellite_id 0c12 --name my-search --filter-json my-search.json
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data create-search --item-type PSScene --string-in satellite_id 0c12 --name my-search --filter-json my-search.json
 </pre></div>
 </div>
 <p>Execute a saved search:</p>
@@ -118,9 +118,9 @@
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data stats --item-type Sentinel2L1C --filter-json my-search.json
 </pre></div>
 </div>
-<p>Activate and download the latest 3 PSScene3Band items to <cite>images-download-directory</cite>.</p>
+<p>Activate and download the latest 3 PSScene items to <cite>images-download-directory</cite>.</p>
 <p>Note: this might take some time and directory must exist:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data download --item-type PSScene3Band --limit 3 --dest images-download-directory
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet data download --item-type PSScene --limit 3 --dest images-download-directory
 </pre></div>
 </div>
 </section>
@@ -250,7 +250,7 @@ output, each feed’s resources are varied:</p>
 <ul class="simple">
 <li><p><cite>source-quad</cite>: Download the mosaic quad used to derive a feature, only available for collections associated with feeds that operate on mosaics</p></li>
 <li><p><cite>target-quad</cite>: Download the mosaic quad that contains the raster output of a feed, only available for collections associated with feeds that output raster data</p></li>
-<li><p><cite>source-image-info</cite>: Get the metadata for the source Planet product (ex. PSScene3Band) used to derive a feature, only available for non-mosaic feeds</p></li>
+<li><p><cite>source-image-info</cite>: Get the metadata for the source Planet product (ex. PSScene) used to derive a feature, only available for non-mosaic feeds</p></li>
 </ul>
 <p>Requesting a resource for a feature in a collection:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet analytics collections features get source-quad &lt;collection_id or subscription_id&gt; &lt;feature_id&gt;
@@ -286,7 +286,7 @@ meant to be easily interoperable with other tools, e.g. <a class="reference exte
 <p>The minimal command to create a simple order looks something like:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders create --name &quot;my order&quot; \
   --id 20151119_025740_0c74,20151119_025741_0c74 \
-  --bundle visual --item-type psscene3band
+  --bundle visual --item-type psscene
 </pre></div>
 </div>
 <p>If no toolchain or delivery details are specified, a basic order with download
@@ -294,7 +294,7 @@ delivery will be placed for the requested bundle including the item id(s) specif
 <p>In the place of <cite>–id</cite>, you can insert a Data search string. This will populate
 the list of IDs from a search. For example:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders create --name &quot;my order&quot; \
-    --ids_from_search $&#39;--item-type PSScene3Band --date acquired gt 2017-02-14 --date acquired lt 2017-03-14 --limit 6 --geom \&#39;{
+    --ids_from_search $&#39;--item-type PSScene --date acquired gt 2017-02-14 --date acquired lt 2017-03-14 --limit 6 --geom \&#39;{
   &quot;type&quot;: &quot;FeatureCollection&quot;,
   &quot;features&quot;: [
     {
@@ -339,7 +339,7 @@ the list of IDs from a search. For example:</p>
   ]
 }\&#39;&#39; \
 --bundle visual \
---item-type psscene3band \
+--item-type psscene \
 --zip bundle --email \
 --clip &#39;{
     &quot;type&quot;: &quot;Polygon&quot;,
@@ -382,7 +382,7 @@ the list of IDs from a search. For example:</p>
 <p>Additionally, optional toolchain &amp; delivery details can be provided on the command line, e.g.:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders create --name &quot;my order&quot; \
   --id 20151119_025740_0c74,20151119_025741_0c74 \
-  --bundle visual --item-type psscene3band --zip order --email
+  --bundle visual --item-type psscene --zip order --email
 </pre></div>
 </div>
 <p>This places the same order as above, and will also provide a .zip archive
@@ -393,7 +393,7 @@ than the full order.</p>
 with the <cite>–clip</cite> parameter:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>planet orders create --name &quot;my order&quot; \
   --id 20151119_025740_0c74,20151119_025741_0c74 \
-  --bundle visual --item-type psscene3band
+  --bundle visual --item-type psscene
   --clip &#39;{
       &quot;type&quot;: &quot;Polygon&quot;,
       &quot;coordinates&quot;: [
