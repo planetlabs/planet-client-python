@@ -63,7 +63,7 @@ plugins:
 nav:
   - "Get Started":
     - get-started/quick-start-guide.md
-    - get-started/get-your-api-key.md
+    - get-started/get-a-planet-account.md
     - get-started/upgrading.md
     - get-started/v2_earlyaccess.md
     - get-started/venv-tutorial.md
@@ -80,7 +80,6 @@ nav:
     - resources/index.md
     - resources/upgrading.md
   - "Home": 'index.md'
-
 
 markdown_extensions:
   - pymdownx.highlight

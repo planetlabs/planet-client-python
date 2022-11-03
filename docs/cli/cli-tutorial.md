@@ -712,7 +712,7 @@ planet orders request SkySatCollect analytic --name "SkySat Latest" \
 ```
 
 Or get the 5 latest cloud free images in an area and create an order that clips to that area, using 
-[geometry.geojson](data/geometry.json) from above:
+[geometry.geojson](data/geometry.geojson) from above:
 
 ```console
 ids=`planet data filter --geom geometry.geojson --range clear_percent gt 90 | planet data \
