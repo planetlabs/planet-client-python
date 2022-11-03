@@ -1,4 +1,6 @@
-# Early Access to Planet SDK (aka "V2")
+---
+Early Access to Planet SDK (aka "V2")
+---
 
 !!! warning
 
@@ -9,6 +11,11 @@
 The Planet SDK for Python is Version 2 ("V2") of what was previously referred
 to as the Planet API client ("V1"). For more information, see
 [Upgrading](upgrading.md).
+
+## This Build
+
+[Planet](https://planet.com) Software Development Kit (SDK) for Python [![Build Status](https://travis-ci.org/planetlabs/planet-client-python.svg?branch=master)](https://travis-ci.org/planetlabs/planet-client-python)
+
 
 ## Installing for Local Development
 

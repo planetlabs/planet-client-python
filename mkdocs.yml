@@ -78,7 +78,6 @@ nav:
     - python/sdk-reference.md
   - "Resources":
     - resources/index.md
-    - resources/upgrading.md
   - "Home": 'index.md'
 
 markdown_extensions:
