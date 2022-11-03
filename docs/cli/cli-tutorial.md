@@ -1,3 +1,6 @@
+---
+title: CLI Tutorial
+---
 
 ## About
 

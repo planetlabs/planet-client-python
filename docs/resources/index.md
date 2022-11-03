@@ -1,4 +1,6 @@
-# Resources
+---
+title: Resources
+---
 
 ## This Build
 

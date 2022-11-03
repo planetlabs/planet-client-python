@@ -1,11 +1,13 @@
-## Getting started with venv & Planet SDK
+---
+title: Getting started with venv & Planet SDK
+---
 
 There are lots of great resources online about virtual environments for python.
 This tutorial is aimed at users of the Planet SDK who have little or no experience
 with virtual environments but want to be early users of v2 (and still use
 their v1 when testing).
 
-### Conda vs venv
+## Conda vs venv
 
 There are two main options in the Python world for virtual environments:
 
@@ -18,7 +20,7 @@ creates virtual environments for all libraries and languages (but was designed f
 recommend venv, as [GDAL](https://gdal.org/), arguably the most useful geospatial command-lines,
 can sometimes be a pain with Conda. And our releases are not (yet) targeting conda packaging.
 
-### venv pre-requisites
+## venv pre-requisites
 
 The main pre-requisite for venv is that you have Python 3.3 and above. To check your python
 version type:
@@ -30,7 +32,7 @@ version type:
  If you installed on Windows or Linux you most likely have python 3. Mac OS ships by default with
  python 2, so you'll need to install python 3. 
 
-#### Installing Python 3 on a Mac.
+### Installing Python 3 on a Mac.
 
  Our recommended route is to install [homebrew](https://brew.sh/). To do that you just run the 
  following on your command-line:
@@ -47,7 +49,7 @@ After it download and installs you just run:
 
  That will set up a command called `python3` that you can use to call python3.
 
-### Setting your venvs
+## Setting your venvs
 
 It's good to read up on how venv works, we recommend 
 [this tutorial](https://www.dataquest.io/blog/a-complete-guide-to-python-virtual-environments/)
@@ -107,7 +109,7 @@ Then you'll want to deactivate, and set up v2:
 
 And activate the same way. Then install as instructed in [the readme](../README.md#installation).
 
-### Working with virtual environments
+## Working with virtual environments
 
 It's easy to switch in and out of the virtual environments, just `activate` and `deactivate`. You can 
 install additional tools with pip on each. The core directories and files remain the same, so you can 

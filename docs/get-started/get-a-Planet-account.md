@@ -1,5 +1,5 @@
 ---
-Get a Planet Account
+title: Get a Planet Account
 ---
 
 Whenever you use this toolkit to connect to Planet Labs PBC, you'll need to authenticate with the Planet server. To do so, you need a Planet account. 

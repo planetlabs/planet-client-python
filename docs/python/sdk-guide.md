@@ -1,5 +1,5 @@
 ---
-User Guide
+title: Python SDK User Guide
 ---
 
 ## API

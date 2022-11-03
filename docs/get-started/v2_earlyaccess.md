@@ -1,5 +1,5 @@
 ---
-Early Access to Planet SDK (aka "V2")
+title: Early Access to Planet SDK (aka "V2")
 ---
 
 !!! warning

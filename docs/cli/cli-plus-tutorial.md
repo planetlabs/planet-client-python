@@ -1,3 +1,7 @@
+---
+title: More CLI Tips & Tricks
+---
+
 ## About
 
 This document shows off a range of more advanced command-line workflows, making use of a wider range

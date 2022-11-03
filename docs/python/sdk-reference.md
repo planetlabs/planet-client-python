@@ -1,4 +1,6 @@
-# API Reference 
+---
+title: Python SDK API Reference
+---
 
 ## ::: planet.Auth
     rendering:

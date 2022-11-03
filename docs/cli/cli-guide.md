@@ -1,5 +1,5 @@
 ---
-CLI
+title: No-Code CLI Guide
 ---
 
 

@@ -1,5 +1,5 @@
 ---
-Quick Start
+title: Quick Start
 ---
 
 [TOC]
