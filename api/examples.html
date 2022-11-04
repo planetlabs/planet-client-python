@@ -111,8 +111,8 @@
 <span class="n">query</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">and_filter</span><span class="p">(</span>
   <span class="n">api</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">geom_filter</span><span class="p">(</span><span class="n">aoi</span><span class="p">)</span>
 <span class="p">)</span>
-<span class="c1"># we are requesting PlanetScope 4 Band imagery</span>
-<span class="n">item_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PSScene4Band&#39;</span><span class="p">]</span>
+<span class="c1"># we are requesting PlanetScope imagery</span>
+<span class="n">item_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PSScene&#39;</span><span class="p">]</span>
 <span class="n">request</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">build_search_request</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">item_types</span><span class="p">)</span>
 <span class="c1"># this will cause an exception if there are any API related errors</span>
 <span class="n">results</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">quick_search</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
