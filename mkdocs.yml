@@ -25,7 +25,7 @@ theme:
     - search.suggest
     - search.highlight
     - toc.follow
-    - toc.integrate
+    - toc.integrate 
   palette:
     - scheme: default
       primary: #007f99
@@ -63,6 +63,7 @@ plugins:
               - "^__init__$"  # but always include __init__ modules and methods
       watch:
         - planet
+        - custom_theme
 
 nav:
   - "Get Started":
