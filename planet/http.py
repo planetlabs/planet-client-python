@@ -16,10 +16,12 @@
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import asyncio
 from collections import Counter
+from contextlib import asynccontextmanager
 from http import HTTPStatus
 import logging
 import random
 import time
+from typing import Union, List
 
 import httpx
 
@@ -242,12 +244,15 @@ class Session(BaseSession):
 
         LOGGER.info(f'Session read timeout set to {READ_TIMEOUT}.')
         timeout = httpx.Timeout(10.0, read=READ_TIMEOUT)
+
+        headers = {
+            'User-Agent': self._get_user_agent(), 'X-Planet-App': 'python-sdk'
+        }
+
         self._client = httpx.AsyncClient(auth=auth,
+                                         headers=headers,
                                          timeout=timeout,
                                          follow_redirects=True)
-
-        self._client.headers.update({'User-Agent': self._get_user_agent()})
-        self._client.headers.update({'X-Planet-App': 'python-sdk'})
 
         async def alog_request(*args, **kwargs):
             return self._log_request(*args, **kwargs)
@@ -348,13 +353,19 @@ class Session(BaseSession):
         return min(calc_wait, max_retry_backoff)
 
     async def request(self,
-                      request: models.Request,
-                      stream: bool = False) -> models.Response:
-        """Submit a request with retry.
+                      method: str,
+                      url: str,
+                      data: Union([dict, List[tuple], bytes]) = None,
+                      json: dict = None,
+                      params: dict = None) -> models.Response:
+        """Build a request and submit it with retry and limiting.
 
         Parameters:
-            request: Request to submit.
-            stream: Get the body as a stream.
+            method: HTTP request method.
+            url: Location of the API endpoint.
+            data: Object to send in the body.
+            json: JSON to send.
+            params: Values to send in the query string.
 
         Returns:
             Server response.
@@ -363,31 +374,46 @@ class Session(BaseSession):
             planet.exceptions.APIException: On API error.
             planet.exceptions.ClientError: When retry limit is exceeded.
         """
-        # TODO: retry will be provided in httpx v1 [1] with usage [2]
-        # 1. https://github.com/encode/httpcore/pull/221
-        # 2. https://github.com/encode/httpx/blob/
-        # 89fb0cbc69ea07b123dd7b36dc1ed9151c5d398f/docs/async.md#explicit-transport-instances # noqa
-        # TODO: if throttling is necessary, check out [1] once v1
-        # 1. https://github.com/encode/httpx/issues/984
-        return await self._retry(self._request, request, stream=stream)
+        if data or json:
+            headers = {'Content-Type': 'application/json'}
+        else:
+            headers = None
 
-    async def _request(self, request, stream=False):
-        """Submit a request with rate/worker limiting."""
+        request = self._client.build_request(method=method,
+                                             url=url,
+                                             data=data,
+                                             json=json,
+                                             params=params,
+                                             headers=headers)
+
+        http_response = await self._retry(self._send, request, stream=False)
+        return models.Response(http_response)
+
+    async def _send(self, request, stream=False) -> httpx.Request:
+        """Send request with with rate/worker limiting."""
         async with self._limiter:
-            http_resp = await self._client.send(request.http_request,
-                                                stream=stream)
-        return models.Response(request, http_resp)
+            http_resp = await self._client.send(request, stream=stream)
 
-    def stream(self, request: models.Request) -> Stream:
+        return http_resp
+
+    @asynccontextmanager
+    async def stream(self, method: str, url: str) -> models.StreamingResponse:
         """Submit a request and get the response as a stream context manager.
 
         Parameters:
-            request: Request to submit
+            method: HTTP request method.
+            url: Location of the API endpoint.
 
         Returns:
             Context manager providing the body as a stream.
         """
-        return Stream(session=self, request=request)
+        request = self._client.build_request(method=method, url=url)
+        http_response = await self._retry(self._send, request, stream=True)
+        response = models.StreamingResponse(http_response)
+        try:
+            yield response
+        finally:
+            await response.aclose()
 
 
 class AuthSession(BaseSession):
@@ -403,11 +429,13 @@ class AuthSession(BaseSession):
             self._log_response, self._raise_for_status
         ]
 
-    def request(self, request):
+    def request(self, method: str, url: str, json: dict):
         """Submit a request
 
         Parameters:
-            request: Request to submit.
+            method: HTTP request method.
+            url: Location of the API endpoint.
+            json: JSON to send.
 
         Returns:
             Server response.
@@ -415,9 +443,9 @@ class AuthSession(BaseSession):
         Raises:
             planet.exceptions.APIException: On API error.
         """
-
-        http_resp = self._client.send(request.http_request)
-        return models.Response(request, http_resp)
+        request = self._client.build_request(method=method, url=url, json=json)
+        http_resp = self._client.send(request)
+        return models.Response(http_resp)
 
     @classmethod
     def _raise_for_status(cls, response):
@@ -427,26 +455,3 @@ class AuthSession(BaseSession):
             raise exceptions.APIError('Not a valid email address.')
         except exceptions.InvalidAPIKey:
             raise exceptions.APIError('Incorrect email or password.')
-
-
-class Stream:
-    '''Context manager for asynchronous response stream from Planet server.'''
-
-    def __init__(self, session: Session, request: models.Request):
-        """
-        Parameters:
-            session: Open session to Planet server.
-            request:  Request to submit.
-        """
-        self.session = session
-        self.request = request
-
-    async def __aenter__(self):
-        self.response = await self.session.request(
-            request=self.request,
-            stream=True,
-        )
-        return self.response
-
-    async def __aexit__(self, exc_type=None, exc_value=None, traceback=None):
-        await self.response.aclose()

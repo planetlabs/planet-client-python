@@ -25,7 +25,7 @@ from pathlib import Path
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
-from ..models import Paged, Request, Response, StreamingBody
+from ..models import Paged, StreamingBody
 
 BASE_URL = f'{PLANET_BASE_URL}/compute/ops'
 STATS_PATH = '/stats/orders/v2'
@@ -112,16 +112,27 @@ class OrdersClient:
     def _stats_url(self):
         return f'{self._base_url}{STATS_PATH}'
 
-    def _request(self, url, method, data=None, params=None, json=None):
-        return Request(url, method=method, data=data, params=params, json=json)
-
-    async def _do_request(self, request: Request) -> Response:
-        '''Submit a request and get response.
+    async def _get_response(self,
+                            method,
+                            url,
+                            data=None,
+                            params=None,
+                            json=None) -> dict:
+        """Submit a request and get response as JSON.
 
         Parameters:
-            request: request to submit
-        '''
-        return await self._session.request(request)
+            method: HTTP request method.
+            url: Location of the API endpoint.
+            data: Object to send in the body.
+            json: JSON to send.
+            params: Values to send in the query string.
+            """
+        response = await self._session.request(method=method,
+                                               url=url,
+                                               data=data,
+                                               params=params,
+                                               json=json)
+        return response.json()
 
     async def create_order(self, request: dict) -> dict:
         '''Create an order request.
@@ -157,9 +168,7 @@ class OrdersClient:
         '''
         url = self._orders_url()
 
-        req = self._request(url, method='POST', json=request)
-        resp = await self._do_request(req)
-        return resp.json()
+        return await self._get_response(method='POST', url=url, json=request)
 
     async def get_order(self, order_id: str) -> dict:
         '''Get order details by Order ID.
@@ -177,9 +186,7 @@ class OrdersClient:
         self._check_order_id(order_id)
         url = f'{self._orders_url()}/{order_id}'
 
-        req = self._request(url, method='GET')
-        resp = await self._do_request(req)
-        return resp.json()
+        return await self._get_response(method='GET', url=url)
 
     async def cancel_order(self, order_id: str) -> dict:
         '''Cancel a queued order.
@@ -197,9 +204,7 @@ class OrdersClient:
         self._check_order_id(order_id)
         url = f'{self._orders_url()}/{order_id}'
 
-        req = self._request(url, method='PUT')
-        resp = await self._do_request(req)
-        return resp.json()
+        return await self._get_response(method='PUT', url=url)
 
     async def cancel_orders(self, order_ids: typing.List[str] = None) -> dict:
         '''Cancel queued orders in bulk.
@@ -223,9 +228,9 @@ class OrdersClient:
                 self._check_order_id(oid)
             cancel_body['order_ids'] = order_ids
 
-        req = self._request(url, method='POST', json=cancel_body)
-        resp = await self._do_request(req)
-        return resp.json()
+        return await self._get_response(method='POST',
+                                        url=url,
+                                        json=cancel_body)
 
     async def aggregated_order_stats(self) -> dict:
         '''Get aggregated counts of active orders.
@@ -237,9 +242,7 @@ class OrdersClient:
             planet.exceptions.APIError: On API error.
         '''
         url = self._stats_url()
-        req = self._request(url, method='GET')
-        resp = await self._do_request(req)
-        return resp.json()
+        return await self._get_response(method='GET', url=url)
 
     async def download_asset(self,
                              location: str,
@@ -263,9 +266,7 @@ class OrdersClient:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        req = self._request(location, method='GET')
-
-        async with self._session.stream(req) as resp:
+        async with self._session.stream(method='GET', url=location) as resp:
             body = StreamingBody(resp)
             dl_path = Path(directory, filename or body.name)
             dl_path.parent.mkdir(exist_ok=True, parents=True)
@@ -504,5 +505,7 @@ class OrdersClient:
         else:
             params = None
 
-        request = self._request(url, 'GET', params=params)
-        return Orders(request, self._do_request, limit=limit)
+        first_page = await self._get_response(method='GET',
+                                              url=url,
+                                              params=params)
+        return Orders(first_page, self._get_response, limit=limit)

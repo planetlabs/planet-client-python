@@ -58,6 +58,7 @@ class Response:
 
 
 class StreamingResponse(Response):
+
     @property
     def headers(self) -> list:
         return self._http_response.headers
