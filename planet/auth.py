@@ -53,7 +53,8 @@ class Auth(metaclass=abc.ABCMeta):
 
     @staticmethod
     def from_file(
-            filename: Optional[typing.Union[str, pathlib.Path]] = None) -> AuthType:
+        filename: Optional[typing.Union[str,
+                                        pathlib.Path]] = None) -> AuthType:
         '''Create authentication from secret file.
 
         The secret file is named `.planet.json` and is stored in the user
@@ -134,7 +135,8 @@ class Auth(metaclass=abc.ABCMeta):
     def to_dict(self) -> dict:
         pass
 
-    def write(self, filename: Optional[typing.Union[str, pathlib.Path]] = None):
+    def write(self,
+              filename: Optional[typing.Union[str, pathlib.Path]] = None):
         '''Write authentication information.
 
         Parameters:

@@ -17,13 +17,12 @@ import hashlib
 import logging
 from pathlib import Path
 import time
-import typing
+from typing import Any, AsyncIterator, Callable, Dict, List, Optional
 
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
 from ..models import Paged, Request, Response, StreamingBody
-from typing import Optional
 
 BASE_URL = f'{PLANET_BASE_URL}/data/v1/'
 SEARCHES_PATH = '/searches'
@@ -106,11 +105,11 @@ class DataClient:
         return await self._session.request(request)
 
     async def search(self,
-                     item_types: typing.List[str],
+                     item_types: List[str],
                      search_filter: dict,
                      name: Optional[str] = None,
                      sort: Optional[str] = None,
-                     limit: int = 100) -> typing.AsyncIterator[dict]:
+                     limit: int = 100) -> AsyncIterator[dict]:
         """Execute a quick search.
 
         Quick searches are saved for a short period of time (~month). The
@@ -194,7 +193,7 @@ class DataClient:
 
     async def create_search(self,
                             name: str,
-                            item_types: typing.List[str],
+                            item_types: List[str],
                             search_filter: dict,
                             enable_email: bool = False) -> dict:
         """Create a new saved structured item search.
@@ -244,7 +243,7 @@ class DataClient:
     async def update_search(self,
                             search_id: str,
                             name: str,
-                            item_types: typing.List[str],
+                            item_types: List[str],
                             search_filter: dict,
                             enable_email: bool = False) -> dict:
         """Update an existing saved search.
@@ -275,7 +274,7 @@ class DataClient:
     async def list_searches(self,
                             sort: str = 'created desc',
                             search_type: str = 'any',
-                            limit: int = 100) -> typing.AsyncIterator[dict]:
+                            limit: int = 100) -> AsyncIterator[dict]:
         """List all saved searches available to the authenticated user.
 
         NOTE: the term 'saved' is overloaded here. We want to list saved
@@ -344,7 +343,7 @@ class DataClient:
 
     async def run_search(self,
                          search_id: str,
-                         limit: int = 100) -> typing.AsyncIterator[dict]:
+                         limit: int = 100) -> AsyncIterator[dict]:
         """Execute a saved search.
 
         Parameters:
@@ -364,7 +363,7 @@ class DataClient:
         return Items(request, self._do_request, limit=limit)
 
     async def get_stats(self,
-                        item_types: typing.List[str],
+                        item_types: List[str],
                         search_filter: dict,
                         interval: str) -> dict:
         """Get item search statistics.
@@ -399,7 +398,7 @@ class DataClient:
         response = await self._do_request(request)
         return response.json()
 
-    async def list_asset_types(self) -> typing.List[dict]:
+    async def list_asset_types(self) -> List[dict]:
         """List all asset types available to the authenticated user.
 
         Returns:
@@ -428,7 +427,7 @@ class DataClient:
         """
         raise NotImplementedError
 
-    async def list_item_types(self) -> typing.List[dict]:
+    async def list_item_types(self) -> List[dict]:
         """List all item types available to the authenticated user.
 
         Returns:
@@ -482,8 +481,7 @@ class DataClient:
         """
         raise NotImplementedError
 
-    async def list_item_assets(self, item_type_id: str,
-                               item_id: str) -> typing.List[dict]:
+    async def list_item_assets(self, item_type_id: str, item_id: str) -> dict:
         """List all assets available for an item.
 
         An asset describes a product that can be derived from an item's source
@@ -566,11 +564,13 @@ class DataClient:
 
         return
 
-    async def wait_asset(self,
-                         asset: dict,
-                         delay: int = WAIT_DELAY,
-                         max_attempts: int = WAIT_MAX_ATTEMPTS,
-                         callback: Optional[typing.Callable[[str], None]] = None) -> str:
+    async def wait_asset(
+            self,
+            asset: dict,
+            delay: int = WAIT_DELAY,
+            max_attempts: int = WAIT_MAX_ATTEMPTS,
+            callback: Optional[Callable[[str],
+                                        None]] = None) -> Dict[Any, Any]:
         """Wait for an item asset to be active.
 
         Prior to waiting for the asset to be active, be sure to activate the
@@ -638,7 +638,7 @@ class DataClient:
                              filename: Optional[str] = None,
                              directory: Path = Path('.'),
                              overwrite: bool = False,
-                             progress_bar: bool = True) -> str:
+                             progress_bar: bool = True) -> Path:
         """Download an asset.
 
         The asset must be active before it can be downloaded. This can be

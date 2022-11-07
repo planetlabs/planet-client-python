@@ -14,9 +14,10 @@
 # the License.
 """Functionality for reporting progress."""
 import logging
+from typing import Optional
 
 from tqdm.asyncio import tqdm
-from typing import Optional
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -89,7 +90,9 @@ class StateBar(ProgressBar):
         """Simple function to be used as a callback for state reporting"""
         self.update(state=state)
 
-    def update(self, state: Optional[str] = None, order_id: Optional[str] = None):
+    def update(self,
+               state: Optional[str] = None,
+               order_id: Optional[str] = None):
         if state:
             self.state = state
             if self.bar is not None:
