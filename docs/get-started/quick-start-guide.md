@@ -8,7 +8,7 @@ title: Quick Start
 
 This is a Python toolkit, so you'll need to install Python (version 3.7 or greater), and setup and install a virtual environment.
 
-Yep. Even if you're not writing code—and only using the "no code" CLI part of the Toolkit—you're using Python to communicate with the Planet Labs PBC servers. It's not too tricky, but it does require a presence of mind to complete. If you need help with Python install and setting up a virtual environment, read [Getting started with venv & Planet SDK](venv-tutorial.md).
+Yes. Even if you're not writing code—and only using the "no code" CLI part of the Toolkit—you're using Python to communicate with the Planet Labs PBC servers. It's not too tricky, but it does require a presence of mind to complete. If you need help with Python install and setting up a virtual environment, read [Getting started with venv & Planet SDK](venv-tutorial.md).
 
 ## Step 2: Install the Planet Earth Observation Toolkit
 
