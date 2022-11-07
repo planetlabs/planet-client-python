@@ -23,6 +23,7 @@ from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
 from ..models import Paged, Request, Response, StreamingBody
+from typing import Optional
 
 BASE_URL = f'{PLANET_BASE_URL}/data/v1/'
 SEARCHES_PATH = '/searches'
@@ -74,7 +75,7 @@ class DataClient:
         ```
     """
 
-    def __init__(self, session: Session, base_url: str = None):
+    def __init__(self, session: Session, base_url: Optional[str] = None):
         """
         Parameters:
             session: Open session connected to server.
@@ -107,8 +108,8 @@ class DataClient:
     async def search(self,
                      item_types: typing.List[str],
                      search_filter: dict,
-                     name: str = None,
-                     sort: str = None,
+                     name: Optional[str] = None,
+                     sort: Optional[str] = None,
                      limit: int = 100) -> typing.AsyncIterator[dict]:
         """Execute a quick search.
 
@@ -569,7 +570,7 @@ class DataClient:
                          asset: dict,
                          delay: int = WAIT_DELAY,
                          max_attempts: int = WAIT_MAX_ATTEMPTS,
-                         callback: typing.Callable[[str], None] = None) -> str:
+                         callback: Optional[typing.Callable[[str], None]] = None) -> str:
         """Wait for an item asset to be active.
 
         Prior to waiting for the asset to be active, be sure to activate the
@@ -634,7 +635,7 @@ class DataClient:
 
     async def download_asset(self,
                              asset: dict,
-                             filename: str = None,
+                             filename: Optional[str] = None,
                              directory: Path = Path('.'),
                              overwrite: bool = False,
                              progress_bar: bool = True) -> str:
