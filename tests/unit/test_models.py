@@ -160,36 +160,43 @@ async def test_StreamingBody_write_img(tmpdir, open_test_img):
 
 @pytest.mark.asyncio
 async def test_Paged_iterator():
-    first_page = {'_links': {'next': 'blah'}, 'items': [1, 2]}
+    resp = MagicMock(name='response')
+    resp.json = lambda: {'_links': {'next': 'blah'}, 'items': [1, 2]}
 
-    async def get_page(url, method):
-        return {'_links': {}, 'items': [3, 4]}
+    async def get_response(url, method):
+        resp = MagicMock(name='response')
+        resp.json = lambda: {'_links': {}, 'items': [3, 4]}
+        return resp
 
-    paged = models.Paged(first_page, get_page)
+    paged = models.Paged(resp, get_response)
     assert [1, 2, 3, 4] == [i async for i in paged]
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('limit, expected', [(0, [1, 2, 3, 4]), (1, [1])])
 async def test_Paged_limit(limit, expected):
-    first_page = {'_links': {'next': 'blah'}, 'items': [1, 2]}
+    resp = MagicMock(name='response')
+    resp.json = lambda: {'_links': {'next': 'blah'}, 'items': [1, 2]}
 
-    async def get_page(url, method):
-        return {'_links': {}, 'items': [3, 4]}
+    async def get_response(url, method):
+        resp = MagicMock(name='response')
+        resp.json = lambda: {'_links': {}, 'items': [3, 4]}
+        return resp
 
-    paged = models.Paged(first_page, get_page, limit=limit)
+    paged = models.Paged(resp, get_response, limit=limit)
     assert [i async for i in paged] == expected
 
 
 @pytest.mark.asyncio
 async def test_Paged_break_page_cycle():
     """Check that we break out of a page cycle."""
-    first_page = {'_links': {'next': 'blah'}, 'items': [1, 2]}
+    resp = MagicMock(name='response')
+    resp.json = lambda: {'_links': {'next': 'blah'}, 'items': [1, 2]}
 
-    async def get_page(url, method):
-        return first_page
+    async def get_response(url, method):
+        return resp
 
-    paged = models.Paged(first_page, get_page, limit=None)
+    paged = models.Paged(resp, get_response, limit=None)
 
     with pytest.raises(PagingError):
         [item async for item in paged]

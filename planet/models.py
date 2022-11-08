@@ -19,7 +19,7 @@ from pathlib import Path
 import random
 import re
 import string
-import typing
+from typing import AsyncGenerator, Callable, List
 
 import httpx
 from tqdm.asyncio import tqdm
@@ -218,22 +218,22 @@ class Paged:
     ITEMS_KEY = 'items'
 
     def __init__(self,
-                 first_page: dict,
-                 get_page_fcn: typing.Callable,
+                 response: Response,
+                 request_fcn: Callable[[str, str], Response],
                  limit: int = 0):
         """
         Parameters:
             request: Request to send to server for first page.
-            get_page_fcn: Function for retrieving a page. Must take in
-                url and method parameters and return the page contents as JSON.
+            request_fcn: Function for submitting a request and retrieving a
+            result. Must take in url and method parameters.
             limit: Maximum number of results to return. When set to 0, no
                 maximum is applied.
         """
-        self._get_page_fcn = get_page_fcn
+        self._request_fcn = request_fcn
 
-        self._pages = self._get_pages(first_page)
+        self._pages = self._get_pages(response)
 
-        self._items: typing.List[dict] = []
+        self._items: List[dict] = []
 
         self.i = 0
         self.limit = limit
@@ -263,14 +263,15 @@ class Paged:
 
         return item
 
-    async def _get_pages(self, first_page) -> typing.AsyncGenerator:
-        page = first_page
+    async def _get_pages(self, response) -> AsyncGenerator:
+        page = response.json()
         yield page
 
         next_url = self._next_link(page)
         while (next_url):
             LOGGER.debug('getting next page')
-            page = await self._get_page_fcn(url=next_url, method='GET')
+            response = await self._request_fcn(url=next_url, method='GET')
+            page = response.json()
 
             # If the next URL is the same as the previous URL we will
             # get the same response and be stuck in a page cycle. This
