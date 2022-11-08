@@ -27,7 +27,6 @@ from ..constants import PLANET_BASE_URL
 from ..http import Session
 from ..models import Paged, Request, Response, StreamingBody
 
-
 BASE_URL = f'{PLANET_BASE_URL}/compute/ops'
 STATS_PATH = '/stats/orders/v2'
 ORDERS_PATH = '/orders/v2'
@@ -203,8 +202,7 @@ class OrdersClient:
         return resp.json()
 
     async def cancel_orders(self,
-                            order_ids: Optional[List[str]] = None
-                            ) -> dict:
+                            order_ids: Optional[List[str]] = None) -> dict:
         '''Cancel queued orders in bulk.
 
         Parameters:
@@ -277,13 +275,12 @@ class OrdersClient:
                              progress_bar=progress_bar)
         return dl_path
 
-    async def download_order(
-            self,
-            order_id: str,
-            directory: Path = Path('.'),
-            overwrite: bool = False,
-            progress_bar: bool = False,
-            checksum: Optional[str] = None) -> List[Path]:
+    async def download_order(self,
+                             order_id: str,
+                             directory: Path = Path('.'),
+                             overwrite: bool = False,
+                             progress_bar: bool = False,
+                             checksum: Optional[str] = None) -> List[Path]:
         """Download all assets in an order.
 
         Parameters:
@@ -395,13 +392,12 @@ class OrdersClient:
                 raise exceptions.ClientError(
                     f'File ({filename}) checksums do not match.')
 
-    async def wait(
-            self,
-            order_id: str,
-            state: Optional[str] = None,
-            delay: int = 5,
-            max_attempts: int = 200,
-            callback: Optional[Callable[[str], None]] = None) -> str:
+    async def wait(self,
+                   order_id: str,
+                   state: Optional[str] = None,
+                   delay: int = 5,
+                   max_attempts: int = 200,
+                   callback: Optional[Callable[[str], None]] = None) -> str:
         """Wait until order reaches desired state.
 
         Returns the state of the order on the last poll.

@@ -18,7 +18,6 @@ from typing import Optional
 
 from tqdm.asyncio import tqdm
 
-
 LOGGER = logging.getLogger(__name__)
 
 
