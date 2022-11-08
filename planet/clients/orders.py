@@ -112,28 +112,6 @@ class OrdersClient:
     def _stats_url(self):
         return f'{self._base_url}{STATS_PATH}'
 
-    async def _get_response(self,
-                            method,
-                            url,
-                            data=None,
-                            params=None,
-                            json=None) -> dict:
-        """Submit a request and get response as JSON.
-
-        Parameters:
-            method: HTTP request method.
-            url: Location of the API endpoint.
-            data: Object to send in the body.
-            json: JSON to send.
-            params: Values to send in the query string.
-            """
-        response = await self._session.request(method=method,
-                                               url=url,
-                                               data=data,
-                                               params=params,
-                                               json=json)
-        return response.json()
-
     async def create_order(self, request: dict) -> dict:
         '''Create an order request.
 
@@ -167,8 +145,8 @@ class OrdersClient:
             planet.exceptions.APIError: On API error.
         '''
         url = self._orders_url()
-
-        return await self._get_response(method='POST', url=url, json=request)
+        response = await self._session.request(method='POST', url=url)
+        return response.json()
 
     async def get_order(self, order_id: str) -> dict:
         '''Get order details by Order ID.
@@ -186,7 +164,8 @@ class OrdersClient:
         self._check_order_id(order_id)
         url = f'{self._orders_url()}/{order_id}'
 
-        return await self._get_response(method='GET', url=url)
+        response = await self._session.request(method='GET', url=url)
+        return response.json()
 
     async def cancel_order(self, order_id: str) -> dict:
         '''Cancel a queued order.
@@ -204,7 +183,8 @@ class OrdersClient:
         self._check_order_id(order_id)
         url = f'{self._orders_url()}/{order_id}'
 
-        return await self._get_response(method='PUT', url=url)
+        response = await self._session.request(method='PUT', url=url)
+        return response.json()
 
     async def cancel_orders(self, order_ids: typing.List[str] = None) -> dict:
         '''Cancel queued orders in bulk.
@@ -228,9 +208,11 @@ class OrdersClient:
                 self._check_order_id(oid)
             cancel_body['order_ids'] = order_ids
 
-        return await self._get_response(method='POST',
-                                        url=url,
-                                        json=cancel_body)
+        response = await self._session.request(method='POST',
+                                               url=url,
+                                               json=cancel_body)
+
+        return response.json()
 
     async def aggregated_order_stats(self) -> dict:
         '''Get aggregated counts of active orders.
@@ -242,7 +224,8 @@ class OrdersClient:
             planet.exceptions.APIError: On API error.
         '''
         url = self._stats_url()
-        return await self._get_response(method='GET', url=url)
+        response = await self._session.request(method='GET', url=url)
+        return response.json()
 
     async def download_asset(self,
                              location: str,
@@ -505,7 +488,7 @@ class OrdersClient:
         else:
             params = None
 
-        first_page = await self._get_response(method='GET',
-                                              url=url,
-                                              params=params)
-        return Orders(first_page, self._get_response, limit=limit)
+        response = await self._session.request(method='GET',
+                                               url=url,
+                                               params=params)
+        return Orders(response, self._session.request, limit=limit)
