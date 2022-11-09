@@ -76,7 +76,7 @@ The Planet SDK for Python allows Python developers to write software that makes
 use of the following Planet APIs:
 
 * [orders](https://developers.planet.com/docs/orders/)
-* [data](https://developers.planet.com/docs/data/) (not implemented)
+* [data](https://developers.planet.com/docs/data/)
 * [analytics](https://developers.planet.com/docs/analytics/) (not implemented)
 * [basemaps](https://developers.planet.com/docs/basemaps/) (referred to in the client as `mosaics`) (not implemented)
 
