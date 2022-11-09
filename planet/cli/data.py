@@ -74,7 +74,7 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
             validate_item_type(item_type)
         return item_types
     except SpecificationException as e:
-        raise click.BadParameter(e)
+        raise click.BadParameter(str(e))
 
 
 def date_range_to_filter(ctx, param, values) -> Optional[List[dict]]:

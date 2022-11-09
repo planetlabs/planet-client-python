@@ -16,7 +16,7 @@
 import asyncio
 import logging
 import time
-import typing
+from typing import AsyncIterator, Callable, List, Optional
 import uuid
 import json
 import hashlib
@@ -84,7 +84,7 @@ class OrdersClient:
         ```
     """
 
-    def __init__(self, session: Session, base_url: str = None):
+    def __init__(self, session: Session, base_url: Optional[str] = None):
         """
         Parameters:
             session: Open session connected to server.
@@ -186,7 +186,8 @@ class OrdersClient:
         response = await self._session.request(method='PUT', url=url)
         return response.json()
 
-    async def cancel_orders(self, order_ids: typing.List[str] = None) -> dict:
+    async def cancel_orders(self,
+                            order_ids: Optional[List[str]] = None) -> dict:
         '''Cancel queued orders in bulk.
 
         Parameters:
@@ -229,7 +230,7 @@ class OrdersClient:
 
     async def download_asset(self,
                              location: str,
-                             filename: str = None,
+                             filename: Optional[str] = None,
                              directory: Path = Path('.'),
                              overwrite: bool = False,
                              progress_bar: bool = True) -> Path:
@@ -263,7 +264,7 @@ class OrdersClient:
                              directory: Path = Path('.'),
                              overwrite: bool = False,
                              progress_bar: bool = False,
-                             checksum: str = None) -> typing.List[Path]:
+                             checksum: Optional[str] = None) -> List[Path]:
         """Download all assets in an order.
 
         Parameters:
@@ -377,10 +378,10 @@ class OrdersClient:
 
     async def wait(self,
                    order_id: str,
-                   state: str = None,
+                   state: Optional[str] = None,
                    delay: int = 5,
                    max_attempts: int = 200,
-                   callback: typing.Callable[[str], None] = None) -> str:
+                   callback: Optional[Callable[[str], None]] = None) -> str:
         """Wait until order reaches desired state.
 
         Returns the state of the order on the last poll.
@@ -461,8 +462,8 @@ class OrdersClient:
         return current_state
 
     async def list_orders(self,
-                          state: str = None,
-                          limit: int = 100) -> typing.AsyncIterator[dict]:
+                          state: Optional[str] = None,
+                          limit: int = 100) -> AsyncIterator[dict]:
         """Get all order requests.
 
         Parameters:
