@@ -32,7 +32,7 @@ The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs) flag ensur
 $ planet --version
 ```
 
-You should be on some version 2 of the Planet SDK for Python. If you’re not, or you need to 
+You should be on some version 2 of the Planet SDK for Python.
 
 ## Step 4: Sign on to your account
 
