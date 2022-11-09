@@ -195,11 +195,21 @@ async def test_session_request():
 
     async with http.Session() as ps:
         resp_json = {'foo': 'bar'}
-        mock_resp = httpx.Response(HTTPStatus.OK, json=resp_json)
-        respx.get(TEST_URL).return_value = mock_resp
+        route = respx.get(TEST_URL)
+        route.return_value = httpx.Response(HTTPStatus.OK, json=resp_json)
 
-        resp = await ps.request(method='GET', url=TEST_URL)
+        resp = await ps.request(method='GET',
+                                url=TEST_URL,
+                                json={'boo': 'baa'})
         assert resp.json() == resp_json
+
+        # the proper headers are included and they have the expected values
+        assert route.calls.last.request.headers['x-planet-app'] == 'python-sdk'
+        assert 'planet-client-python/' in route.calls.last.request.headers[
+            'user-agent']
+
+        # the data was included
+        assert route.calls.last.request.content == b'{"boo": "baa"}'
 
 
 @respx.mock
