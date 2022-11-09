@@ -29,10 +29,6 @@ from .exceptions import PagingError
 LOGGER = logging.getLogger(__name__)
 
 
-class Request:
-    pass
-
-
 class Response:
     """Handles the Planet server's response to a HTTP request."""
 
