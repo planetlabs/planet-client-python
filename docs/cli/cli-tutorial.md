@@ -1,3 +1,6 @@
+---
+title: CLI Tutorial
+---
 
 ## About
 
@@ -16,7 +19,7 @@ We start with the `auth` package of tools, to ensure you can get started.
 #### Initialize
 
 The main way to initialize the Planet CLI is to use `init`, which will prompt
-you for your Planet username and password, and then store your API key.
+you for your Planet user name and password, and then store your API key.
 
 ```console
 planet auth init
@@ -712,7 +715,7 @@ planet orders request SkySatCollect analytic --name "SkySat Latest" \
 ```
 
 Or get the 5 latest cloud free images in an area and create an order that clips to that area, using 
-[geometry.geojson](data/geometry.json) from above:
+[geometry.geojson](data/geometry.geojson) from above:
 
 ```console
 ids=`planet data filter --geom geometry.geojson --range clear_percent gt 90 | planet data \

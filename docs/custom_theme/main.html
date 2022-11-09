@@ -1,0 +1,38 @@
+<!-- Elements added to main will be displayed on all pages -->
+{% extends "base.html" %}
+
+<!-- Google Tag Manager -->
+{% block libs %}
+<script>
+var gtmId = 'GTM-NEED-TO-ADD';
+if (typeof window !== 'undefined' && window.location.href.includes('127.0.0.1')) {
+  gtmId = 'GTM-XXX'
+}
+(function(w,d,s,l,i){
+  w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer', gtmId);
+</script>
+{% endblock %}
+
+<!-- More minimal footer -->
+{% block footer %}
+<footer class="md-footer">
+    <div class="md-footer-meta__inner md-grid">
+        <!-- Copyright and theme information -->
+        <div class="md-footer-copyright">
+            &copy; {{ build_date_utc.strftime('%Y') }} <a href='https://planet.com' title="Planet Labs PBC" target='_blank'>Planet Labs PBC</a>
+        </div>
+        <div class="md-footer-right">
+            powered by
+            <a href="https://www.mkdocs.org" title="MkDocs">MkDocs</a>
+            and 
+            <a href="https://squidfunk.github.io/mkdocs-material/"
+              title="Material for MkDocs">
+                Material for MkDocs</a>
+        </div>    
+    </div>
+</footer>
+{% endblock %}

@@ -1,15 +1,53 @@
 site_name: Planet SDK for Python
-site_description: Python client library for Planet's APIs.
+site_description: Python client library for Planet Labs APIs.
 site_url: https://planetlabs.github.io/planet-client-python/
+site_author: https://developers.planet.com
+site_description: >-
+  A Python library to connect with Planet Labs PBC, and discover and retrieve earth observation data.
+
+repo_name: planetlabs/planet-client-python
+repo_url: https://github.com/planetlabs/planet-client-python
+edit_uri: ""
 
 theme:
-    name: 'material'
-    logo: img/logo.svg
-    favicon: img/logo.svg
+  name: 'material'
+  logo: img/Planet_primarymark_RGB_White.png
+  favicon: img/logo.svg
+  custom_dir: 'docs/custom_theme/'
+  features:
+    - navigation.tabs
+    # - navigation.instant # Not compatible with i18n plugin
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - navigation.sections
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - toc.follow
+    - toc.integrate 
+  palette:
+    - scheme: default
+      primary: #007f99
+      toggle:
+        icon: octicons/moon-24
+        name: Switch to dark mode
+    - scheme: slate
+      primary: #004352
+      toggle: 
+        icon: octicons/sun-24
+        name: Switch to light mode
 
 extra:
   version:
     provider: mike
+  company:
+    name: "Planet Labs PBC"
+  product:
+    name: "Planet SDK for Python"
+
+extra_css:
+  - stylesheets/extra.css
     
 plugins:
   - search
@@ -25,23 +63,27 @@ plugins:
               - "^__init__$"  # but always include __init__ modules and methods
       watch:
         - planet
-
-repo_name: planetlabs/planet-client-python
-repo_url: https://github.com/planetlabs/planet-client-python
-edit_uri: ""
+        - docs/custom_theme/
 
 nav:
-    - Introduction: 'index.md'
-    - User Guide: 'guide.md'
-    - Upgrading: 'upgrading.md'
-    - Early Access: 'v2_earlyaccess.md'
-    - venv Tutorial: 'venv-tutorial.md'
-    - API Reference: 'api.md'
-    - CLI Tutorial: 'cli-tutorial.md'
-    - CLI Concepts: 'cli-concepts.md'
-    - CLI Workflows: 'cli-plus-tutorial.md'
-    - CLI Reference: 'cli.md'
-
+  - "Get Started":
+    - get-started/quick-start-guide.md
+    - get-started/get-your-planet-account.md
+    - get-started/venv-tutorial.md
+    - get-started/v2_earlyaccess.md
+    - get-started/upgrading.md
+  - "No Code CLI":
+    - cli/cli-guide.md
+    - cli/cli-concepts.md
+    - cli/cli-tutorial.md
+    - cli/cli-plus-tutorial.md
+    - cli/cli-reference.md
+  - "Python":
+    - python/sdk-guide.md
+    - python/sdk-reference.md
+  - "Resources":
+    - resources/index.md
+  - "Home": 'index.md'
 
 markdown_extensions:
   - pymdownx.highlight

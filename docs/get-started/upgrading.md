@@ -1,4 +1,6 @@
-# Upgrading
+---
+title: Upgrading from V1 to V2
+---
 
 The Planet SDK for Python is Version 2 of what was previously referred to as
 the Planet API client. 

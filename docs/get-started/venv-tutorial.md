@@ -1,11 +1,16 @@
-## Getting started with venv & Planet SDK
+---
+title: Get started with venv & the Planet SDK for Python
+---
 
-There are lots of great resources online about virtual environments for python.
-This tutorial is aimed at users of the Planet SDK who have little or no experience
-with virtual environments but want to be early users of v2 (and still use
-their v1 when testing).
+This tutorial is aimed at Planet SDK for Python users who have little or no experience with virtual environments, especially those who want to be early users of v2 of the Planet SDK for Python (and still use v1 while evaluating v2).
 
-### Conda vs venv
+A virtual environment is a space you create to pull in the resources you need for a specific project. In Python, virtual environments are used to install tools that work well together in their own isolated area. While you may have Python installed already, this overview focuses on installing a version of Python in a way that ensures you have the right virtual environment for using this Planet SDK. 
+
+Using the default Python installation without a virtual environment is not recommended, because it’s so easy to get a combination of tools installed that don’t work well with each other. The great thing about installing a virtual environment is that if you get a combination of tools that don’t work well together, you can “throw away” that virtual environment and create a new one with a few lines in the terminal.
+
+So while it may feel awkward at first, spinning up virtual environments will be your go-to setup step for trying out a new idea, testing a routine, or repeating a process at scale.
+
+## Conda vs venv
 
 There are two main options in the Python world for virtual environments:
 
@@ -18,7 +23,7 @@ creates virtual environments for all libraries and languages (but was designed f
 recommend venv, as [GDAL](https://gdal.org/), arguably the most useful geospatial command-lines,
 can sometimes be a pain with Conda. And our releases are not (yet) targeting conda packaging.
 
-### venv pre-requisites
+## venv pre-requisites
 
 The main pre-requisite for venv is that you have Python 3.3 and above. To check your python
 version type:
@@ -30,7 +35,7 @@ version type:
  If you installed on Windows or Linux you most likely have python 3. Mac OS ships by default with
  python 2, so you'll need to install python 3. 
 
-#### Installing Python 3 on a Mac.
+### Installing Python 3 on a Mac.
 
  Our recommended route is to install [homebrew](https://brew.sh/). To do that you just run the 
  following on your command-line:
@@ -47,7 +52,7 @@ After it download and installs you just run:
 
  That will set up a command called `python3` that you can use to call python3.
 
-### Setting your venvs
+## Setting your venvs
 
 It's good to read up on how venv works, we recommend 
 [this tutorial](https://www.dataquest.io/blog/a-complete-guide-to-python-virtual-environments/)
@@ -107,7 +112,7 @@ Then you'll want to deactivate, and set up v2:
 
 And activate the same way. Then install as instructed in [the readme](../README.md#installation).
 
-### Working with virtual environments
+## Working with virtual environments
 
 It's easy to switch in and out of the virtual environments, just `activate` and `deactivate`. You can 
 install additional tools with pip on each. The core directories and files remain the same, so you can 
