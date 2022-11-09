@@ -78,7 +78,7 @@ use of the following Planet APIs:
 * [orders](https://developers.planet.com/docs/orders/)
 * [data](https://developers.planet.com/docs/data/)
 * [analytics](https://developers.planet.com/docs/analytics/) (not implemented)
-* [basemaps](https://developers.planet.com/docs/basemaps/) (referred to in the client as `mosaics`) (not implemented)
+* [basemaps](https://developers.planet.com/docs/basemaps/), [tasking](https://developers.planet.com/docs/tasking/) and [analytics](https://developers.planet.com/docs/analytics/) API's are not yet implemented.
 
 The client modules within the Python library are asynchronous, which greatly
 speeds up many interactions with Planet’s APIs. Support for asynchronous
