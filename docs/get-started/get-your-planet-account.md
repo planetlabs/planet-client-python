@@ -2,7 +2,7 @@
 title: Get Your Planet Account
 ---
 
-Whenever you use the Planet SDK for Python to connect to Planet Labs PBC, you’ll need to authenticate with the Planet server. To do so, you need a Planet account with your own user name and password.
+Whenever you use the Planet SDK for Python to connect to Planet's APIs, you’ll need to authenticate with the Planet server. To do so, you need a Planet account with your own user name and password.
 
 ## Confirm your Planet account
 
