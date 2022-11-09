@@ -2,8 +2,7 @@
 title: No-Code CLI Guide
 ---
 
-
-## Authentication
+## Authentication and your API key
 
 The `auth` command allows the CLI to authenticate with Planet servers. Before
 any other command is run, the CLI authentication should be initiated with
@@ -12,13 +11,17 @@ any other command is run, the CLI authentication should be initiated with
 $ planet auth init
 ```
 
-To store the authentication information in an environment variable, e.g.
+!!!note Note
+    For information on how to confirm your Planet Account, see [Get a Planet Account](../../get-started/get-your-planet-account/).
+
+You can store the API key associated with your account in an environment variable, e.g.
 for passing into a Docker instance:
 
 ```console
 $ export PL_API_KEY=$(planet auth value)
 ```
 
+The `auth value` returned is the same as the API key in your [Account](https://account.planet.com/) under My Settings. You can also retrieve it when viewing scenes in Planet Explorer by selecting "API {:}" at the bottom of the daily scene panel.
 
 ## Collecting Results
 

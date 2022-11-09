@@ -13,7 +13,7 @@ theme:
   name: 'material'
   logo: img/Planet_primarymark_RGB_White.png
   favicon: img/logo.svg
-  custom_dir: 'custom_theme/'
+  custom_dir: 'docs/custom_theme/'
   features:
     - navigation.tabs
     # - navigation.instant # Not compatible with i18n plugin
@@ -63,20 +63,20 @@ plugins:
               - "^__init__$"  # but always include __init__ modules and methods
       watch:
         - planet
-        - custom_theme
+        - docs/custom_theme/
 
 nav:
   - "Get Started":
     - get-started/quick-start-guide.md
-    - get-started/get-a-planet-account.md
-    - get-started/upgrading.md
-    - get-started/v2_earlyaccess.md
+    - get-started/get-your-planet-account.md
     - get-started/venv-tutorial.md
+    - get-started/v2_earlyaccess.md
+    - get-started/upgrading.md
   - "No Code CLI":
-    - cli/cli-concepts.md
     - cli/cli-guide.md
-    - cli/cli-plus-tutorial.md
+    - cli/cli-concepts.md
     - cli/cli-tutorial.md
+    - cli/cli-plus-tutorial.md
     - cli/cli-reference.md
   - "Python":
     - python/sdk-guide.md
