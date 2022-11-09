@@ -10,11 +10,88 @@ We'd like to make sure folks who come to the docs site can get started easily. W
 
 # A clear top nav will help with the GSX
 
+## Here are some mockups of the global nav changes:
+
+### Home splash screen
+
+<img src="./img/home_1.png"
+     style="
+     display: block;
+     margin-left: auto;
+     margin-right: auto;
+     width:50%;
+     "
+     alt="home mock" >
+
+<img src="./img/home_2.png"
+     style="
+     display: block;
+     margin-left: auto;
+     margin-right: auto;
+     width:50%;
+     "
+     alt="home mock" >
+
+<img src="./img/home_3.png"
+     style="
+     display: block;
+     margin-left: auto;
+     margin-right: auto;
+     width:50%;
+     "
+     alt="home mock" >
+
+### Getting started landing page
+
+<img src="./img/getting-started-docs.png"
+     style="
+     display: block;
+     margin-left: auto;
+     margin-right: auto;
+     width:50%;
+     "
+     alt="Getting started landing page mock" >
+
+### Python landing page
+
+<img src="./img/python-docs.png"
+     style="
+     display: block;
+     margin-left: auto;
+     margin-right: auto;
+     width:50%;
+     "
+     alt="Python landing page mock" >
+
+### CLI landing page
+
+<img src="./img/no-code-cli-docs.png"
+     style="
+     display: block;
+     margin-left: auto;
+     margin-right: auto;
+     width:50%;
+     "
+     alt="No Code CLI landing page mock" >
+
+### Resources landing page
+
+<img src="./img/resources-docs.png"
+     style="
+     display: block;
+     margin-left: auto;
+     margin-right: auto;
+     width:50%;
+     "
+     alt="Resources landing page mock" >
+
 ## Add a clear top nav to mkdocs materials using a custom home page
 
-[" if the theme.custom_dir configuration value is used in combination with an existing theme, the theme.custom_dir can be used to replace only specific parts of a built-in theme"](https://www.mkdocs.org/dev-guide/themes/)
+" if the theme.custom_dir configuration value is used in combination with an existing theme, the theme.custom_dir can be used to replace only specific parts of a built-in theme" 
 
-["built-in themes are implemented in a base.html file, which main.html extends"](https://www.mkdocs.org/dev-guide/themes/)
+"built-in themes are implemented in a base.html file, which main.html extends"
+
+[mkdocs.org dev-guide themes ](https://www.mkdocs.org/dev-guide/themes/)
 
 ### Create a custom theme
 
