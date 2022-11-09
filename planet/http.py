@@ -21,14 +21,12 @@ from http import HTTPStatus
 import logging
 import random
 import time
-from typing import Union, List
-
+from typing import AsyncGenerator, Optional
 import httpx
 
 from .auth import Auth, AuthType
 from . import exceptions, models
 from .__version__ import __version__
-from typing import Optional
 
 # NOTE: configuration of the session was performed using the data API quick
 # search endpoint. These values can be re-tested, tested with a new endpoint or
@@ -356,15 +354,13 @@ class Session(BaseSession):
     async def request(self,
                       method: str,
                       url: str,
-                      data: Union([dict, List[tuple], bytes]) = None,
-                      json: dict = None,
-                      params: dict = None) -> models.Response:
+                      json: Optional[dict] = None,
+                      params: Optional[dict] = None) -> models.Response:
         """Build a request and submit it with retry and limiting.
 
         Parameters:
             method: HTTP request method.
             url: Location of the API endpoint.
-            data: Object to send in the body.
             json: JSON to send.
             params: Values to send in the query string.
 
@@ -375,14 +371,13 @@ class Session(BaseSession):
             planet.exceptions.APIException: On API error.
             planet.exceptions.ClientError: When retry limit is exceeded.
         """
-        if data or json:
+        if json:
             headers = {'Content-Type': 'application/json'}
         else:
             headers = None
 
         request = self._client.build_request(method=method,
                                              url=url,
-                                             data=data,
                                              json=json,
                                              params=params,
                                              headers=headers)
@@ -390,7 +385,7 @@ class Session(BaseSession):
         http_response = await self._retry(self._send, request, stream=False)
         return models.Response(http_response)
 
-    async def _send(self, request, stream=False) -> httpx.Request:
+    async def _send(self, request, stream=False) -> httpx.Response:
         """Send request with with rate/worker limiting."""
         async with self._limiter:
             http_resp = await self._client.send(request, stream=stream)
@@ -398,7 +393,9 @@ class Session(BaseSession):
         return http_resp
 
     @asynccontextmanager
-    async def stream(self, method: str, url: str) -> models.StreamingResponse:
+    async def stream(
+            self, method: str,
+            url: str) -> AsyncGenerator[models.StreamingResponse, None]:
         """Submit a request and get the response as a stream context manager.
 
         Parameters:
@@ -406,7 +403,7 @@ class Session(BaseSession):
             url: Location of the API endpoint.
 
         Returns:
-            Context manager providing the body as a stream.
+            Context manager providing the streaming response.
         """
         request = self._client.build_request(method=method, url=url)
         http_response = await self._retry(self._send, request, stream=True)

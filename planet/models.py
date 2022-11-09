@@ -56,12 +56,12 @@ class Response:
 class StreamingResponse(Response):
 
     @property
-    def headers(self) -> list:
+    def headers(self) -> httpx.Headers:
         return self._http_response.headers
 
     @property
     def url(self) -> str:
-        return self._http_response.url
+        return str(self._http_response.url)
 
     @property
     def num_bytes_downloaded(self) -> int:
@@ -78,7 +78,7 @@ class StreamingResponse(Response):
 class StreamingBody:
     """A representation of a streaming resource from the API."""
 
-    def __init__(self, response: httpx.Response):
+    def __init__(self, response: StreamingResponse):
         """Initialize the object.
 
         Parameters:
@@ -104,12 +104,6 @@ class StreamingBody:
     def size(self) -> int:
         """The size of the body."""
         return int(self._response.headers['Content-Length'])
-
-    #
-    # @property
-    # def num_bytes_downloaded(self) -> int:
-    #     """The number of bytes downloaded."""
-    #     return self._response.num_bytes_downloaded
 
     async def write(self,
                     filename: Path,
@@ -215,7 +209,7 @@ class Paged:
 
     def __init__(self,
                  response: Response,
-                 request_fcn: Callable[[str, str], Response],
+                 request_fcn: Callable,
                  limit: int = 0):
         """
         Parameters:
