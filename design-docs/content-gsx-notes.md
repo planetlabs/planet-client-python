@@ -4,8 +4,8 @@ We'd like to make sure folks who come to the docs site can get started easily. W
 
 * Get an API key
 * Authenticate against the service
-* Search and download data with the CLI
-* Search and download data with the SDK
+* Search and download data using the CLI
+* Search and download data using the Python calls
 * Find key content and support
 
 # A clear top nav will help with the GSX
