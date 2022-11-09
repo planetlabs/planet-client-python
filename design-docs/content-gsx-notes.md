@@ -4,7 +4,7 @@ We'd like to make sure folks who come to the docs site can get started easily. W
 
 * Get an API key
 * Authenticate against the service
-* Search and download data with the cURL CLI
+* Search and download data with the CLI
 * Search and download data with the SDK
 * Find key content and support
 
