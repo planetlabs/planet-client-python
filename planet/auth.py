@@ -27,6 +27,7 @@ import jwt
 from . import http, models
 from .constants import PLANET_BASE_URL, SECRET_FILE_PATH
 from .exceptions import AuthException
+from typing import Optional
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,7 +53,8 @@ class Auth(metaclass=abc.ABCMeta):
 
     @staticmethod
     def from_file(
-            filename: typing.Union[str, pathlib.Path] = None) -> AuthType:
+        filename: Optional[typing.Union[str,
+                                        pathlib.Path]] = None) -> AuthType:
         '''Create authentication from secret file.
 
         The secret file is named `.planet.json` and is stored in the user
@@ -77,7 +79,7 @@ class Auth(metaclass=abc.ABCMeta):
         return auth
 
     @staticmethod
-    def from_env(variable_name: str = None) -> AuthType:
+    def from_env(variable_name: Optional[str] = None) -> AuthType:
         '''Create authentication from environment variable.
 
         Reads the `PL_API_KEY` environment variable
@@ -99,7 +101,7 @@ class Auth(metaclass=abc.ABCMeta):
     @staticmethod
     def from_login(email: str,
                    password: str,
-                   base_url: str = None) -> AuthType:
+                   base_url: Optional[str] = None) -> AuthType:
         '''Create authentication from login email and password.
 
         Note: To keep your password secure, the use of `getpass` is
@@ -133,7 +135,8 @@ class Auth(metaclass=abc.ABCMeta):
     def to_dict(self) -> dict:
         pass
 
-    def write(self, filename: typing.Union[str, pathlib.Path] = None):
+    def write(self,
+              filename: Optional[typing.Union[str, pathlib.Path]] = None):
         '''Write authentication information.
 
         Parameters:
@@ -146,7 +149,7 @@ class Auth(metaclass=abc.ABCMeta):
 
 class AuthClient:
 
-    def __init__(self, base_url: str = None):
+    def __init__(self, base_url: Optional[str] = None):
         """
         Parameters:
             base_url: The base URL to use. Defaults to production

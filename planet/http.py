@@ -26,6 +26,7 @@ import httpx
 from .auth import Auth, AuthType
 from . import exceptions, models
 from .__version__ import __version__
+from typing import Optional
 
 # NOTE: configuration of the session was performed using the data API quick
 # search endpoint. These values can be re-tested, tested with a new endpoint or
@@ -225,7 +226,7 @@ class Session(BaseSession):
     ```
     '''
 
-    def __init__(self, auth: AuthType = None):
+    def __init__(self, auth: Optional[AuthType] = None):
         """Initialize a Session.
 
         Parameters:
