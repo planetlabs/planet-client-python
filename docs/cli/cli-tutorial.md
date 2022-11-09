@@ -19,7 +19,7 @@ We start with the `auth` package of tools, to ensure you can get started.
 #### Initialize
 
 The main way to initialize the Planet CLI is to use `init`, which will prompt
-you for your Planet username and password, and then store your API key.
+you for your Planet user name and password, and then store your API key.
 
 ```console
 planet auth init

@@ -2,7 +2,7 @@
 title: Quick Start
 ---
 
-If you’re a Python developer, this SDK makes it easy to access Planet’s massive repository of satellite imagery and add Planet data to your data ops workflow.
+If you’re a Python developer, this Planet SDK for Python makes it easy to access Planet’s massive repository of satellite imagery and add Planet data to your data ops workflow.
 
 If you’re not a Python developer, you can use the Command Line Interface (CLI) to get Planet data, and to process and analyze that data.
 
@@ -18,20 +18,15 @@ Yes. Even if you’re not writing code—and only using the "no code" CLI part o
 
 ## Step 2: Install the Planet SDK for Python
 
-Install with [pip](https://pip.pypa.io):
+Install the Planet SDK for Python using [pip](https://pip.pypa.io):
 
 ```console
 $ pip install planet --user
 ```
 
-The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs)
-flag is highly recommended for those new to pip.
+The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs) flag ensures the Python packages are installed relative to your user home folder. It is recommended for those new to pip.
 
-## Step 3: Authenticate with the Planet server
-
-Planet’s APIs require an account for use. To confirm your Planet account, or to get one if you don’t already have one, see [Get a Planet Account](get-a-planet-account.md).
-
-## Step 4: Check the Planet SDK for Python version
+## Step 3: Check the Planet SDK for Python version
 
 ```console
 $ planet --version
@@ -39,23 +34,35 @@ $ planet --version
 
 You should be on some version 2 of the Planet SDK for Python. If you’re not, or you need to 
 
-## Step 5: Sign on to your account
+## Step 4: Sign on to your account
+
+Planet’s APIs require an account for use.
+
+### Have your Planet account user name and password ready
+
+To confirm your Planet account, or to get one if you don’t already have one, see [Get your Planet Account](get-your-planet-account.md).
+
+### Authenticate with the Planet server
 
 Just as you log in when you browse to https://account.planet.com, you’ll want to sign on to your account so you have access to your account and orders.
 
-## Step 6: Use the Planet SDK for Python to authenticate against the Planet servers
+At a terminal console, type the following Planet command:
 
 ```console
 $ planet auth init
 ```
 
-You’ll be prompted for the email and password you use to access [your account](https://account.planet.com).
-
-When you type in your password, you won’t see any indication that the characters are being accepted. But when you hit enter, you’ll know that you’ve succeeded because you’ll see on the command line:
+You’ll be prompted for the email and password you use to access [your account](https://account.planet.com). When you type in your password, you won’t see any indication that the characters are being accepted. But when you hit enter, you’ll know that you’ve succeeded because you’ll see on the command line:
 
 ```console
 Initialized
 ```
+
+### Get your API key
+
+
+
+## Step 5: Use the Planet SDK for Python to authenticate against the Planet servers
 
 ## Step 7: Creating your first order
 

@@ -1,14 +1,14 @@
 ---
-title: Get started with venv & Planet SDK for Python
+title: Get started with venv & the Planet SDK for Python
 ---
 
-This tutorial is aimed at Planet SDK for Python users who have little or no experience with virtual environments, especially those who want to be early users of v2 (and still use their v1 when testing).
+This tutorial is aimed at Planet SDK for Python users who have little or no experience with virtual environments, especially those who want to be early users of v2 of the Planet SDK for Python (and still use v1 while evaluating v2).
 
 A virtual environment is a space you create to pull in the resources you need for a specific project. In Python, virtual environments are used to install tools that work well together in their own isolated area. While you may have Python installed already, this overview focuses on installing a version of Python in a way that ensures you have the right virtual environment for using this Planet SDK. 
 
-Using a default Python installation without a virtual environment is not recommended, because it’s so easy to get a combination of tools installed that don’t work well with each other. The great thing about installing virtual environments is that if you get a combination of tools that don’t work well together, you can "throw away" that virtual environment and create a new one with a few lines in the terminal.
+Using the default Python installation without a virtual environment is not recommended, because it’s so easy to get a combination of tools installed that don’t work well with each other. The great thing about installing a virtual environment is that if you get a combination of tools that don’t work well together, you can “throw away” that virtual environment and create a new one with a few lines in the terminal.
 
-So while it may feel awkward at first, spinning up virtual environments will be your go-to setup step for trying out a new idea, testing a routine, or repeating a process to scale.
+So while it may feel awkward at first, spinning up virtual environments will be your go-to setup step for trying out a new idea, testing a routine, or repeating a process at scale.
 
 ## Conda vs venv
 
