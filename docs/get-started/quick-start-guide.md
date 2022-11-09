@@ -36,7 +36,7 @@ You should be on some version 2 of the Planet SDK for Python. If you’re not, o
 
 ## Step 4: Sign on to your account
 
-Planet SDK for Python, like the Planet APIs, require an account for use.
+Planet SDK for Python, like the Planet APIs, requires an account for use.
 
 ### Have your Planet account user name and password ready
 
