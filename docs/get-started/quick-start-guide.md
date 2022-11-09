@@ -21,7 +21,7 @@ Yes. Even if you’re not writing code—and only using the "no code" CLI part o
 Install the Planet SDK for Python using [pip](https://pip.pypa.io):
 
 ```console
-$ pip install planet --user
+$ pip install planet --pre --user
 ```
 
 The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs) flag ensures the Python packages are installed relative to your user home folder. It is recommended for those new to pip.
@@ -36,7 +36,7 @@ You should be on some version 2 of the Planet SDK for Python. If you’re not, o
 
 ## Step 4: Sign on to your account
 
-Planet’s APIs require an account for use.
+Planet SDK for Python, like the Planet APIs, require an account for use.
 
 ### Have your Planet account user name and password ready
 
@@ -60,11 +60,15 @@ Initialized
 
 ### Get your API key
 
+Now that you've logged in, you can easily retrieve your API key that is being used for requests with the following command:
 
+```console
+planet auth value
+```
 
-## Step 5: Use the Planet SDK for Python to authenticate against the Planet servers
+Many `planet` calls you make require an API key. This is a very convenient way to quickly grab your API key.
 
-## Step 7: Creating your first order
+## Step 5: Creating your first order
 
 [*****TBW*****]
 
