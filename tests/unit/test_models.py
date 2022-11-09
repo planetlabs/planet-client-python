@@ -28,15 +28,6 @@ from planet.exceptions import PagingError
 LOGGER = logging.getLogger(__name__)
 
 
-def mock_http_response(json=None, iter_content=None, text=None):
-    m = MagicMock(name='http_response')
-    m.headers = {}
-    m.json.return_value = json or {}
-    m.aiter_content = iter_content
-    m.text = text or ''
-    return m
-
-
 def test_StreamingBody_name_filename():
     r = MagicMock(name='response')
     r.url = URL('https://planet.com/path/to/example.tif?foo=f6f1')

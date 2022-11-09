@@ -16,7 +16,7 @@ import asyncio
 import logging
 from http import HTTPStatus
 import math
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import httpx
 import respx
@@ -28,13 +28,6 @@ from planet import exceptions, http
 TEST_URL = 'mock://fantastic.com'
 
 LOGGER = logging.getLogger(__name__)
-
-
-@pytest.fixture
-def mock_request():
-    r = Mock()
-    r.http_request = httpx.Request('GET', TEST_URL)
-    yield r
 
 
 @pytest.fixture
