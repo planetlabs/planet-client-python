@@ -14,6 +14,7 @@
 # the License.
 """Functionality for reporting progress."""
 import logging
+from typing import Optional
 
 from tqdm.asyncio import tqdm
 
@@ -57,8 +58,8 @@ class StateBar(ProgressBar):
 
     def __init__(
         self,
-        order_id: str = None,
-        state: str = None,
+        order_id: Optional[str] = None,
+        state: Optional[str] = None,
         disable: bool = False,
     ):
         """Initialize the object.
@@ -88,7 +89,9 @@ class StateBar(ProgressBar):
         """Simple function to be used as a callback for state reporting"""
         self.update(state=state)
 
-    def update(self, state: str = None, order_id: str = None):
+    def update(self,
+               state: Optional[str] = None,
+               order_id: Optional[str] = None):
         if state:
             self.state = state
             if self.bar is not None:

@@ -15,7 +15,7 @@
 """Functionality for preparing order details for use in creating an order"""
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import logging
-from typing import Any, Dict, List
+from typing import Optional, Any, Dict, List
 
 from . import geojson, specs
 
@@ -25,11 +25,11 @@ LOGGER = logging.getLogger(__name__)
 def build_request(name: str,
                   products: List[dict],
                   subscription_id: int = 0,
-                  delivery: dict = None,
-                  notifications: dict = None,
-                  order_type: str = None,
-                  tools: List[dict] = None,
-                  stac: dict = None) -> dict:
+                  delivery: Optional[dict] = None,
+                  notifications: Optional[dict] = None,
+                  order_type: Optional[str] = None,
+                  tools: Optional[List[dict]] = None,
+                  stac: Optional[dict] = None) -> dict:
     '''Prepare an order request.
 
     ```python
@@ -96,7 +96,7 @@ def build_request(name: str,
 def product(item_ids: List[str],
             product_bundle: str,
             item_type: str,
-            fallback_bundle: str = None) -> dict:
+            fallback_bundle: Optional[str] = None) -> dict:
     '''Product description for an order detail.
 
     Parameters:
@@ -131,9 +131,9 @@ def product(item_ids: List[str],
     return product_dict
 
 
-def notifications(email: bool = None,
-                  webhook_url: str = None,
-                  webhook_per_order: bool = None) -> dict:
+def notifications(email: Optional[bool] = None,
+                  webhook_url: Optional[str] = None,
+                  webhook_per_order: Optional[bool] = None) -> dict:
     '''Notifications description for an order detail.
 
     Parameters:
@@ -145,10 +145,10 @@ def notifications(email: bool = None,
     return dict((k, v) for k, v in locals().items() if v)
 
 
-def delivery(archive_type: str = None,
+def delivery(archive_type: Optional[str] = None,
              single_archive: bool = False,
-             archive_filename: str = None,
-             cloud_config: dict = None) -> dict:
+             archive_filename: Optional[str] = None,
+             cloud_config: Optional[dict] = None) -> dict:
     '''Order delivery configuration.
 
     Example:
@@ -196,7 +196,7 @@ def amazon_s3(aws_access_key_id: str,
               aws_secret_access_key: str,
               bucket: str,
               aws_region: str,
-              path_prefix: str = None) -> dict:
+              path_prefix: Optional[str] = None) -> dict:
     '''Amazon S3 Cloud configuration.
 
     Parameters:
@@ -224,8 +224,8 @@ def amazon_s3(aws_access_key_id: str,
 def azure_blob_storage(account: str,
                        container: str,
                        sas_token: str,
-                       storage_endpoint_suffix: str = None,
-                       path_prefix: str = None) -> dict:
+                       storage_endpoint_suffix: Optional[str] = None,
+                       path_prefix: Optional[str] = None) -> dict:
     '''Azure Blob Storage configuration.
 
     Parameters:
@@ -255,7 +255,7 @@ def azure_blob_storage(account: str,
 
 def google_cloud_storage(bucket: str,
                          credentials: str,
-                         path_prefix: str = None) -> dict:
+                         path_prefix: Optional[str] = None) -> dict:
     '''Google Cloud Storage configuration.
 
     Parameters:
@@ -368,8 +368,8 @@ def file_format_tool(file_format: str) -> dict:
 
 
 def reproject_tool(projection: str,
-                   resolution: float = None,
-                   kernel: str = None) -> dict:
+                   resolution: Optional[float] = None,
+                   kernel: Optional[str] = None) -> dict:
     '''Create the API spec representation of a reproject tool.
 
     Parameters:
@@ -389,11 +389,11 @@ def reproject_tool(projection: str,
 
 
 def tile_tool(tile_size: int,
-              origin_x: float = None,
-              origin_y: float = None,
-              pixel_size: float = None,
-              name_template: str = None,
-              conformal_x_scaling: bool = None) -> dict:
+              origin_x: Optional[float] = None,
+              origin_y: Optional[float] = None,
+              pixel_size: Optional[float] = None,
+              name_template: Optional[str] = None,
+              conformal_x_scaling: Optional[bool] = None) -> dict:
     '''Create the API spec representation of a reproject tool.
 
     Parameters:
@@ -414,7 +414,7 @@ def tile_tool(tile_size: int,
     return _tool('tile', parameters)
 
 
-def toar_tool(scale_factor: int = None, ) -> dict:
+def toar_tool(scale_factor: Optional[int] = None, ) -> dict:
     '''Create the API spec representation of a TOAR tool.
 
     Parameters:

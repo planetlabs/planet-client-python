@@ -14,7 +14,7 @@
 """Functionality for preparing a data search filter"""
 from datetime import datetime
 import logging
-from typing import Any, Callable, List, Union
+from typing import Optional, Any, Callable, List, Union
 
 from planet import exceptions, geojson
 
@@ -76,7 +76,7 @@ def _range_filter(
     lt: Any,
     gte: Any,
     lte: Any,
-    callback: Callable = None,
+    callback: Optional[Callable] = None,
 ) -> dict:
     """Base for creating range filters.
 
@@ -109,10 +109,10 @@ def _range_filter(
 
 
 def date_range_filter(field_name: str,
-                      gt: datetime = None,
-                      lt: datetime = None,
-                      gte: datetime = None,
-                      lte: datetime = None) -> dict:
+                      gt: Optional[datetime] = None,
+                      lt: Optional[datetime] = None,
+                      gte: Optional[datetime] = None,
+                      lte: Optional[datetime] = None) -> dict:
     """Create a DateRangeFilter
 
     The DateRangeFilter can be used to search on any property with a timestamp
@@ -151,10 +151,10 @@ def _datetime_to_rfc3339(value: datetime) -> str:
 
 
 def range_filter(field_name: str,
-                 gt: float = None,
-                 lt: float = None,
-                 gte: float = None,
-                 lte: float = None) -> dict:
+                 gt: Optional[float] = None,
+                 lt: Optional[float] = None,
+                 gte: Optional[float] = None,
+                 lte: Optional[float] = None) -> dict:
     """Create a RangeFilter
 
     The RangeFilter can be used to search for items with numerical properties.
@@ -179,10 +179,10 @@ def range_filter(field_name: str,
 
 
 def update_filter(field_name: str,
-                  gt: float = None,
-                  lt: float = None,
-                  gte: float = None,
-                  lte: float = None) -> dict:
+                  gt: Optional[float] = None,
+                  lt: Optional[float] = None,
+                  gte: Optional[float] = None,
+                  lte: Optional[float] = None) -> dict:
     """Create an UpdateFilter
 
     The UpdateFilter can be used to filter items by changes to a specified
