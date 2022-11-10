@@ -118,7 +118,7 @@ Then use that file with the search command and save the results to another file 
 planet data search PSScene filter.json > recent-psscene.json
 ```
 
-Open `recent-psscene.json` to see the most recent PSScene images you have permissions to actually download.
+Open `recent-psscene.json` to see the 100 most recent PSScene images you have permissions to actually download.
 
 ## Next steps
 
