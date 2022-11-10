@@ -1,3 +1,9 @@
+2.0a6 (2022-11-10)
+
+- Add SDK identification headers to communication with servers (#754).
+- Add new example (example subfolder): Downloading multiple assets in
+  parallel (#722).
+
 2.0a5 (2022-10-20)
 
 - Implement python api data client asset download and supporting functions (#707).
