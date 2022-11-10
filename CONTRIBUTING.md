@@ -5,16 +5,6 @@ document explains how to contribute successfully.
 
 ## Workflows
 
-### Reporting Bugs
-
-To report a bug, open a new issue with the 'bug' label.
-
-In the issue, provide the following:
-1. Code snippet reproducing the behavior, reduced to the simplest possible case
-1. Operating System and Python version
-1. Installed dependencies / versions
-1. Error traceback
-
 ### Development
 
 #### Development Branch
@@ -37,16 +27,9 @@ For example: `release-contributing-691` for [ticket 691](https://github.com/plan
 
 ### Pull Requests
 
-Pull Request (PR) Requirements:
+The Pull Request requirements are included in the pull request template as a list of checkboxes.
 
-1. Must have a descriptive title. This populates the release changelog.
-1. Must provide a summary of changes and examples of usage input / output in the case of user-interface changes.
-1. Must include updates to relative documentation in docstrings and `docs` folder. See [Documentation](#documentation) section for information on docstring formatting and building.
-1. Must pass all Continuous Integration (CI) checks. See below for more information on CI checks.
-1. Must have at least one approval by a planet maintainer.
-  * For Planet team, **FYI** can be used to specify cases when all that is needed is indication that changes have been noted.
-1. Should be driven by an issue. Reference the issue in the PR.
-1. Should be as small and focused as possible.
+Not listed in the PR template, but enforced by the system, are the additional requirements that the PR pass Continuous Integration (CI) checks and that the PR have at least one approval by a project maintainer.
 
 The CI checks:
 
