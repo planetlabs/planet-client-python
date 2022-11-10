@@ -13,6 +13,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 import asyncio
+import json
 import logging
 from http import HTTPStatus
 import math
@@ -191,25 +192,27 @@ async def test_session_contextmanager():
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session_request():
+@pytest.mark.parametrize('data', (None, {'boo': 'baa'}))
+async def test_session_request_success(data):
 
     async with http.Session() as ps:
         resp_json = {'foo': 'bar'}
         route = respx.get(TEST_URL)
         route.return_value = httpx.Response(HTTPStatus.OK, json=resp_json)
 
-        resp = await ps.request(method='GET',
-                                url=TEST_URL,
-                                json={'boo': 'baa'})
+        resp = await ps.request(method='GET', url=TEST_URL, json=data)
         assert resp.json() == resp_json
 
         # the proper headers are included and they have the expected values
-        assert route.calls.last.request.headers['x-planet-app'] == 'python-sdk'
-        assert 'planet-client-python/' in route.calls.last.request.headers[
+        received_request = route.calls.last.request
+        assert received_request.headers['x-planet-app'] == 'python-sdk'
+        assert 'planet-client-python/' in received_request.headers[
             'user-agent']
 
-        # the data was included
-        assert route.calls.last.request.content == b'{"boo": "baa"}'
+        if data:
+            assert received_request.headers[
+                'content-type'] == 'application/json'
+            assert json.loads(received_request.content) == data
 
 
 @respx.mock
