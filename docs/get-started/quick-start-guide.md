@@ -83,7 +83,7 @@ echo $PL_API_KEY
 ```
 
 !!!note "Planet SDK uses the API Key environment variable"
-    If you do create a `PL_API_KEY` environment variable, the SDK will use this value. `PL_API_KEY` overrides the value that was retrieved from the Planet server with a call to `planet auth value`. The initial `planet auth value` won’t be updated to reflect the new value.
+    If you do create a `PL_API_KEY` environment variable, the SDK will use this value. `PL_API_KEY` overrides the value that was retrieved using your Planet login with a call to `planet auth init`. The `planet auth value` call currently does not reflect that `PL_API_KEY` overrides the `auth init` value (this should be fixed in 2.0-beta.1 with [issue 643](https://github.com/planetlabs/planet-client-python/issues/643))
 
 ## Step 5: Search for Planet Imagery
 
