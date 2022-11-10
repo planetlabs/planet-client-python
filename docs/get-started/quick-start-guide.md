@@ -2,6 +2,7 @@
 title: Quick Start Guide
 ---
 
+
 If you’re a Python developer, this Planet SDK for Python makes it easy to access Planet’s massive repository of satellite imagery and add Planet data to your data ops workflow.
 
 If you’re not a Python developer, you can use the Command Line Interface (CLI) to get Planet data, and to process and analyze that data.
