@@ -145,7 +145,9 @@ class OrdersClient:
             planet.exceptions.APIError: On API error.
         '''
         url = self._orders_url()
-        response = await self._session.request(method='POST', url=url)
+        response = await self._session.request(method='POST',
+                                               url=url,
+                                               json=request)
         return response.json()
 
     async def get_order(self, order_id: str) -> dict:
