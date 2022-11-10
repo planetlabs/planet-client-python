@@ -33,34 +33,36 @@ wildfire_item_type = 'PSScene'
 wildfire_asset_type = 'basic_analytic_4b'
 
 
-async def download_and_validate(item_id, item_type_id, asset_type_id):
-    async with Session() as sess:
-        # Data client object
-        cl = DataClient(sess)
+async def download_and_validate(item_id, item_type_id, asset_type_id, client):
+    # Get asset description
+    asset = await client.get_asset(item_type_id, item_id, asset_type_id)
 
-        # Get asset description
-        asset = await cl.get_asset(item_type_id, item_id, asset_type_id)
+    # Activate asset
+    await client.activate_asset(asset)
 
-        # Activate asset
-        await cl.activate_asset(asset)
+    # Wait for asset to become active
+    asset = await client.wait_asset(asset, callback=print)
 
-        # Wait for asset to become active
-        asset = await cl.wait_asset(asset, callback=print)
+    # Download asset
+    path = await client.download_asset(asset)
 
-        # Download asset
-        path = await cl.download_asset(asset)
-
-        # Validate download file
-        cl.validate_checksum(asset, path)
+    # Validate download file
+    client.validate_checksum(asset, path)
 
 
 async def main():
-    await asyncio.gather(
-        download_and_validate(river_item_id, river_item_type,
-                              river_asset_type),
-        download_and_validate(wildfire_item_id,
-                              wildfire_item_type,
-                              wildfire_asset_type))
+    async with Session() as sess:
+        # Data client object
+        client = DataClient(sess)
+        await asyncio.gather(
+            download_and_validate(river_item_id,
+                                  river_item_type,
+                                  river_asset_type,
+                                  client),
+            download_and_validate(wildfire_item_id,
+                                  wildfire_item_type,
+                                  wildfire_asset_type,
+                                  client))
 
 
 if __name__ == '__main__':
