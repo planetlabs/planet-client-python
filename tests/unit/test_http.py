@@ -13,10 +13,11 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 import asyncio
+import json
 import logging
 from http import HTTPStatus
 import math
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import httpx
 import respx
@@ -28,13 +29,6 @@ from planet import exceptions, http
 TEST_URL = 'mock://fantastic.com'
 
 LOGGER = logging.getLogger(__name__)
-
-
-@pytest.fixture
-def mock_request():
-    r = Mock()
-    r.http_request = httpx.Request('GET', TEST_URL)
-    yield r
 
 
 @pytest.fixture
@@ -198,31 +192,44 @@ async def test_session_contextmanager():
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session_request(mock_request):
+@pytest.mark.parametrize('data', (None, {'boo': 'baa'}))
+async def test_session_request_success(data):
 
     async with http.Session() as ps:
-        mock_resp = httpx.Response(HTTPStatus.OK, text='bubba')
-        respx.get(TEST_URL).return_value = mock_resp
+        resp_json = {'foo': 'bar'}
+        route = respx.get(TEST_URL)
+        route.return_value = httpx.Response(HTTPStatus.OK, json=resp_json)
 
-        resp = await ps.request(mock_request)
-        assert resp.http_response.text == 'bubba'
+        resp = await ps.request(method='GET', url=TEST_URL, json=data)
+        assert resp.json() == resp_json
+
+        # the proper headers are included and they have the expected values
+        received_request = route.calls.last.request
+        assert received_request.headers['x-planet-app'] == 'python-sdk'
+        assert 'planet-client-python/' in received_request.headers[
+            'user-agent']
+
+        if data:
+            assert received_request.headers[
+                'content-type'] == 'application/json'
+            assert json.loads(received_request.content) == data
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session_stream(mock_request):
+async def test_session_stream():
     async with http.Session() as ps:
         mock_resp = httpx.Response(HTTPStatus.OK, text='bubba')
         respx.get(TEST_URL).return_value = mock_resp
 
-        async with ps.stream(mock_request) as resp:
-            txt = await resp.http_response.aread()
-            assert txt == b'bubba'
+        async with ps.stream(method='GET', url=TEST_URL) as resp:
+            chunks = [c async for c in resp.aiter_bytes()]
+            assert chunks[0] == b'bubba'
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_session_request_retry(mock_request):
+async def test_session_request_retry():
     """Test the retry in the Session.request method"""
     async with http.Session() as ps:
         route = respx.get(TEST_URL)
@@ -234,7 +241,7 @@ async def test_session_request_retry(mock_request):
         # let's not actually introduce a wait into the tests
         ps.max_retry_backoff = 0
 
-        resp = await ps.request(mock_request)
+        resp = await ps.request(method='GET', url=TEST_URL)
         assert resp
         assert route.call_count == 2
 
@@ -279,13 +286,14 @@ def test__calculate_wait():
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_authsession_request(mock_request):
+async def test_authsession_request():
     sess = http.AuthSession()
-    mock_resp = httpx.Response(HTTPStatus.OK, text='bubba')
+    resp_json = {'token': 'foobar'}
+    mock_resp = httpx.Response(HTTPStatus.OK, json=resp_json)
     respx.get(TEST_URL).return_value = mock_resp
 
-    resp = sess.request(mock_request)
-    assert resp.http_response.text == 'bubba'
+    resp = sess.request(method='GET', url=TEST_URL, json={'foo': 'bar'})
+    assert resp.json() == resp_json
 
 
 def test_authsession__raise_for_status(mock_response):

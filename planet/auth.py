@@ -24,7 +24,7 @@ import typing
 import httpx
 import jwt
 
-from . import http, models
+from . import http
 from .constants import PLANET_BASE_URL, SECRET_FILE_PATH
 from .exceptions import AuthException
 from typing import Optional
@@ -177,10 +177,8 @@ class AuthClient:
         data = {'email': email, 'password': password}
 
         sess = http.AuthSession()
-        req = models.Request(url, method='POST', json=data)
-        resp = sess.request(req)
-        auth_data = self.decode_response(resp)
-        return auth_data
+        resp = sess.request(url=url, method='POST', json=data)
+        return self.decode_response(resp)
 
     @staticmethod
     def decode_response(response):

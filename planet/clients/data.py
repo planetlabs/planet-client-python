@@ -22,7 +22,7 @@ from typing import Any, AsyncIterator, Callable, Dict, List, Optional
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
-from ..models import Paged, Request, Response, StreamingBody
+from ..models import Paged, StreamingBody
 
 BASE_URL = f'{PLANET_BASE_URL}/data/v1/'
 SEARCHES_PATH = '/searches'
@@ -92,17 +92,6 @@ class DataClient:
 
     def _item_url(self, item_type, item_id):
         return f'{self._base_url}/item-types/{item_type}/items/{item_id}'
-
-    def _request(self, url, method, data=None, params=None, json=None):
-        return Request(url, method=method, data=data, params=params, json=json)
-
-    async def _do_request(self, request: Request) -> Response:
-        """Submit a request and get response.
-
-        Parameters:
-            request: request to submit
-        """
-        return await self._session.request(request)
 
     async def search(self,
                      item_types: List[str],
@@ -185,11 +174,11 @@ class DataClient:
                     f'{sort} must be one of {SEARCH_SORT}')
             params['_sort'] = sort
 
-        request = self._request(url,
-                                method='POST',
-                                json=request_json,
-                                params=params)
-        return Items(request, self._do_request, limit=limit)
+        response = await self._session.request(method='POST',
+                                               url=url,
+                                               json=request_json,
+                                               params=params)
+        return Items(response, self._session.request, limit=limit)
 
     async def create_search(self,
                             name: str,
@@ -229,15 +218,16 @@ class DataClient:
         url = self._searches_url()
 
         # TODO: validate item_types
-        request_json = {
+        request = {
             'name': name,
             'filter': search_filter,
             'item_types': item_types,
             '__daily_email_enabled': enable_email
         }
 
-        request = self._request(url, method='POST', json=request_json)
-        response = await self._do_request(request)
+        response = await self._session.request(method='POST',
+                                               url=url,
+                                               json=request)
         return response.json()
 
     async def update_search(self,
@@ -260,15 +250,16 @@ class DataClient:
         """
         url = f'{self._searches_url()}/{search_id}'
 
-        request_json = {
+        request = {
             'name': name,
             'filter': search_filter,
             'item_types': item_types,
             '__daily_email_enabled': enable_email
         }
 
-        request = self._request(url, method='PUT', json=request_json)
-        response = await self._do_request(request)
+        response = await self._session.request(method='PUT',
+                                               url=url,
+                                               json=request)
         return response.json()
 
     async def list_searches(self,
@@ -307,8 +298,9 @@ class DataClient:
                 f'{search_type} must be one of {LIST_SEARCH_TYPE}')
 
         url = f'{self._searches_url()}'
-        request = self._request(url, method='GET')
-        return Searches(request, self._do_request, limit=limit)
+
+        response = await self._session.request(method='GET', url=url)
+        return Searches(response, self._session.request, limit=limit)
 
     async def delete_search(self, search_id: str):
         """Delete an existing saved search.
@@ -321,8 +313,7 @@ class DataClient:
         """
         url = f'{self._searches_url()}/{search_id}'
 
-        request = self._request(url, method='DELETE')
-        await self._do_request(request)
+        await self._session.request(method='DELETE', url=url)
 
     async def get_search(self, search_id: str) -> dict:
         """Get a saved search by id.
@@ -337,9 +328,9 @@ class DataClient:
             planet.exceptions.APIError: On API error.
         """
         url = f'{self._searches_url()}/{search_id}'
-        req = self._request(url, method='GET')
-        resp = await self._do_request(req)
-        return resp.json()
+
+        response = await self._session.request(method='GET', url=url)
+        return response.json()
 
     async def run_search(self,
                          search_id: str,
@@ -359,8 +350,8 @@ class DataClient:
         """
         url = f'{self._searches_url()}/{search_id}/results'
 
-        request = self._request(url, method='GET')
-        return Items(request, self._do_request, limit=limit)
+        response = await self._session.request(method='GET', url=url)
+        return Items(response, self._session.request, limit=limit)
 
     async def get_stats(self,
                         item_types: List[str],
@@ -388,14 +379,15 @@ class DataClient:
 
         url = f'{self._base_url}{STATS_PATH}'
 
-        request_json = {
+        request = {
             'interval': interval,
             'filter': search_filter,
             'item_types': item_types
         }
 
-        request = self._request(url, method='POST', json=request_json)
-        response = await self._do_request(request)
+        response = await self._session.request(method='POST',
+                                               url=url,
+                                               json=request)
         return response.json()
 
     async def list_asset_types(self) -> List[dict]:
@@ -500,8 +492,8 @@ class DataClient:
             planet.exceptions.APIError: On API error.
         """
         url = f'{self._item_url(item_type_id, item_id)}/assets'
-        request = self._request(url, method='GET')
-        response = await self._do_request(request)
+
+        response = await self._session.request(method='GET', url=url)
         return response.json()
 
     async def get_asset(self,
@@ -558,9 +550,8 @@ class DataClient:
 
         # lets not try to activate an asset already activating or active
         if status == 'inactive':
-            request = self._request(url, method='GET')
             # no response is returned
-            await self._do_request(request)
+            await self._session.request(method='GET', url=url)
 
         return
 
@@ -623,8 +614,7 @@ class DataClient:
                 raise exceptions.ClientError(
                     'asset missing ["_links"]["_self"] entry.')
 
-            request = self._request(asset_url, method='GET')
-            response = await self._do_request(request)
+            response = await self._session.request(method='GET', url=asset_url)
             asset = response.json()
 
         if max_attempts and num_attempts >= max_attempts:
@@ -669,9 +659,7 @@ class DataClient:
             raise exceptions.ClientError(
                 'asset missing ["location"] entry. Is asset active?')
 
-        req = self._request(location, method='GET')
-
-        async with self._session.stream(req) as resp:
+        async with self._session.stream(method='GET', url=location) as resp:
             body = StreamingBody(resp)
             dl_path = Path(directory, filename or body.name)
             dl_path.parent.mkdir(exist_ok=True, parents=True)

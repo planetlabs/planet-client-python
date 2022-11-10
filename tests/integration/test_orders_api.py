@@ -108,8 +108,8 @@ async def test_list_orders_basic(order_descriptions, session):
         },
         "orders": [order1, order2]
     }
-    mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
-    respx.get(TEST_ORDERS_URL).return_value = mock_resp1
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.get(TEST_ORDERS_URL).return_value = mock_resp
 
     page2_response = {"_links": {"_self": next_page_url}, "orders": [order3]}
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
@@ -188,14 +188,19 @@ async def test_list_orders_limit(order_descriptions,
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_create_order(oid, order_description, order_request, session):
-    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
-    respx.post(TEST_ORDERS_URL).return_value = mock_resp
+async def test_create_order_basic(oid,
+                                  order_description,
+                                  order_request,
+                                  session):
+    route = respx.post(TEST_ORDERS_URL)
+    route.return_value = httpx.Response(HTTPStatus.OK, json=order_description)
 
     cl = OrdersClient(session, base_url=TEST_URL)
     order = await cl.create_order(order_request)
 
     assert order == order_description
+
+    assert json.loads(route.calls.last.request.content) == order_request
 
 
 @respx.mock

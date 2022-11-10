@@ -5,7 +5,7 @@ from typing import AsyncIterator, Optional, Set
 
 from planet.exceptions import APIError, ClientError
 from planet.http import Session
-from planet.models import Paged, Request
+from planet.models import Paged
 
 LOGGER = logging.getLogger()
 
@@ -29,7 +29,7 @@ class SubscriptionsClient:
     """
 
     def __init__(self, session: Session) -> None:
-        self.session = session
+        self._session = session
 
     async def list_subscriptions(self,
                                  status: Optional[Set[str]] = None,
@@ -63,11 +63,13 @@ class SubscriptionsClient:
 
         params = {'status': [val for val in status or {}]}
         url = 'https://api.planet.com/subscriptions/v1'
-        req = Request(url, params=params)
 
         try:
-            async for sub in _SubscriptionsPager(req,
-                                                 self.session.request,
+            response = await self._session.request(method='GET',
+                                                   url=url,
+                                                   params=params)
+            async for sub in _SubscriptionsPager(response,
+                                                 self._session.request,
                                                  limit=limit):
                 yield sub
         # Forward APIError. We don't strictly need this clause, but it
@@ -92,10 +94,11 @@ class SubscriptionsClient:
         """
 
         url = 'https://api.planet.com/subscriptions/v1'
-        req = Request(url, method='POST', json=request)
 
         try:
-            resp = await self.session.request(req)
+            resp = await self._session.request(method='POST',
+                                               url=url,
+                                               json=request)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:
@@ -121,10 +124,9 @@ class SubscriptionsClient:
         """
         root_url = 'https://api.planet.com/subscriptions/v1'
         url = f'{root_url}/{subscription_id}/cancel'
-        req = Request(url, method='POST')
 
         try:
-            _ = await self.session.request(req)
+            _ = await self._session.request(method='POST', url=url)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:
@@ -148,10 +150,11 @@ class SubscriptionsClient:
             ClientError: on a client error.
         """
         url = f'https://api.planet.com/subscriptions/v1/{subscription_id}'
-        req = Request(url, method='PUT', json=request)
 
         try:
-            resp = await self.session.request(req)
+            resp = await self._session.request(method='PUT',
+                                               url=url,
+                                               json=request)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:
@@ -176,10 +179,9 @@ class SubscriptionsClient:
             ClientError: on a client error.
         """
         url = f'https://api.planet.com/subscriptions/v1/{subscription_id}'
-        req = Request(url, method='GET')
 
         try:
-            resp = await self.session.request(req)
+            resp = await self._session.request(method='GET', url=url)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
         except APIError:
@@ -225,11 +227,14 @@ class SubscriptionsClient:
         params = {'status': [val for val in status or {}]}
         root_url = 'https://api.planet.com/subscriptions/v1'
         url = f'{root_url}/{subscription_id}/results'
-        req = Request(url, params=params)
 
         try:
-            async for sub in _ResultsPager(req,
-                                           self.session.request,
+            resp = await self._session.request(method='GET',
+                                               url=url,
+                                               params=params)
+
+            async for sub in _ResultsPager(resp,
+                                           self._session.request,
                                            limit=limit):
                 yield sub
         # Forward APIError. We don't strictly need this clause, but it
