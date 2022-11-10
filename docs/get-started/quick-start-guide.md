@@ -12,7 +12,7 @@ Take the following steps to install the SDK and connect with the Planet Server.
 
 ## Step 1: Install Python 3.7+ and a virtual environment
 
-This is a Python package, so you’ll need to install Python (version 3.7 or greater), and setup and install a virtual environment.
+This is a Python package, so you’ll need to install Python (version 3.7 or greater), and set up and install a virtual environment.
 
 Yes. Even if you’re not writing code—and only using the "no code" CLI part of the Planet SDK for Python—you’re using Python to communicate with the Planet Labs PBC servers. It’s not too tricky, but it does require a presence of mind to complete. If you need help with Python install and setting up a virtual environment, read [Virtual Environments and the Planet SDK for Python](venv-tutorial.md).
 
@@ -38,7 +38,7 @@ You should be on some version 2 of the Planet SDK for Python.
 
 Planet SDK for Python, like the Planet APIs, requires an account for use.
 
-### Have your Planet account user name and password ready
+### Have your Planet account username and password ready
 
 To confirm your Planet account, or to get one if you don’t already have one, see [Get your Planet Account](get-your-planet-account.md).
 
@@ -60,7 +60,7 @@ Initialized
 
 ### Get your API key
 
-Now that you've logged in, you can easily retrieve your API key that is being used for requests with the following command:
+Now that you’ve logged in, you can easily retrieve your API key that is being used for requests with the following command:
 
 ```console
 planet auth value
@@ -68,76 +68,62 @@ planet auth value
 
 Many `planet` calls you make require an API key. This is a very convenient way to quickly grab your API key.
 
-## Step 5: Creating your first order
+#### Your API Key as an Environment Variable
 
-[*****TBW*****]
+You can also set the value of your API Key as an environment variable in your terminal at the command line:
 
-The Planet SDK for Python allows Python developers to write software that makes
-use of the following Planet APIs:
-
-* [orders](https://developers.planet.com/docs/orders/)
-* [data](https://developers.planet.com/docs/data/)
-* [subscriptions](https://developers.planet.com/docs/subscriptions/)
-* [basemaps](https://developers.planet.com/docs/basemaps/), [tasking](https://developers.planet.com/docs/tasking/) and [analytics](https://developers.planet.com/docs/analytics/) API's are not yet implemented.
-
-The client modules within the Python library are asynchronous, which greatly
-speeds up many interactions with Planet’s APIs. Support for asynchronous
-development is native to Python 3.6+ via the
-[`asyncio` module](https://docs.python.org/3/library/asyncio.html). A great
-resource for getting started with asynchronous programming in Python is
-https://project-awesome.org/timofurrer/awesome-asyncio. The Writings and Talks
-sections are particularly helpful in getting oriented.
-
-Let’s start with creating an order with the Orders API:
-
-```python
->>> import asyncio
->>> import os
->>> import planet
->>>
->>> request = {
-...   "name": "test_order",
-...   "products": [
-...     {
-...       "item_ids": [
-...         "3949357_1454705_2020-12-01_241c"
-...       ],
-...       "item_type": "PSOrthoTile",
-...       "product_bundle": "analytic"
-...     }
-...   ]
-... }
-...
->>> async def create_order(request):
-...     async with planet.Session() as ps:
-...         client = planet.OrdersClient(ps)
-...         return await client.create_order(request)
-...
->>> oid = asyncio.run(create_order(request))
-
+```console
+export PL_API_KEY=<your api key>
 ```
 
-Not into async? No problem. Just wrap the library and async operations together
-and call from your synchronous code.
+And you can see that the value was stored successfully as an environment variable with the following command:
 
-```python
->>> def sync_create_order(order_details):
-...     return asyncio.run(create_order(order_details))
->>>
->>> oid = sync_create_order(order_details)
-
+```console
+echo $PL_API_KEY
 ```
- 
-When using `asyncio.run` to develop synchronous code with the async library,
-keep in mind this excerpt from the
-[asyncio.run](https://docs.python.org/3/library/asyncio-task.html#asyncio.run)
-documentation:
 
-"*This function always creates a new event loop and closes it at the end. It
-should be used as a main entry point for asyncio programs, and should ideally
-only be called once.*"
+!!!note "Planet SDK uses the API Key environment variable"
+    If you do create a `PL_API_KEY` environment variable, the SDK will use this value. `PL_API_KEY` overrides the value that was retrieved from the Planet server with a call to `planet auth value`. The initial `planet auth value` won’t be updated to reflect the new value.
 
-Do you have a use case where native synchronous support is essential? If so,
-please contribute to this
-[issue](https://github.com/planetlabs/planet-client-python/issues/251).
+## Step 5: Search for Planet Imagery
 
+You’ve installed the environment, the SDK, and connected with the Planet server. You’re now ready to get your first bunch of data.
+
+In this step, you search for the most recent PSScene images available to download and filter the list based on those images you actually have permissions to download.
+
+### planet data filter
+
+One of the commands you’ll use most frequently is `planet data filter`. This “convenience method” creates the JSON you need to run other commands. Run it with no arguments to see how it works by default:
+
+```console
+planet data filter
+```
+
+Open the `filter.json` file to see some default filters. `PermissionFilter` filters the output to only contain imagery that you have permission to download. You’ll also see `quality_category`, which means the output lists only images in the `standard quality` category. 
+
+!!!note "The --help switch is your friend"
+    You can do a lot with this `filter` command. We recommend running `planet data filter --help` often to get a reference of how the commands work.
+
+### planet data search
+
+Run the filter command and save it to a file named `filter.json`:
+
+```console
+planet data filter > filter.json
+```
+
+Then use that file with the search command and save the results to another file named `recent-psscene.json`.
+
+```console
+planet data search PSScene filter.json > recent-psscene.json
+```
+
+Open `recent-psscene.json` to see the most recent PSScene images you have permissions to actually download.
+
+## Next steps
+
+Now that you have the quick setup for the Planet SDK for Python, you have a few options:
+
+* Continue to explore the [No-Code CLI Guide](../cli/cli-guide.md).
+* Start coding with the [Python SDK User Guide](../python/sdk-guide.md).
+* Check out some of the [examples in our GitHub repo](https://github.com/planetlabs/planet-client-python/tree/main/examples).
