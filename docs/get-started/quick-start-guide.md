@@ -1,5 +1,5 @@
 ---
-title: Quick Start
+title: Quick Start Guide
 ---
 
 If you’re a Python developer, this Planet SDK for Python makes it easy to access Planet’s massive repository of satellite imagery and add Planet data to your data ops workflow.
@@ -14,7 +14,7 @@ Take the following steps to install the SDK and connect with the Planet Server.
 
 This is a Python package, so you’ll need to install Python (version 3.7 or greater), and setup and install a virtual environment.
 
-Yes. Even if you’re not writing code—and only using the "no code" CLI part of the Planet SDK for Python—you’re using Python to communicate with the Planet Labs PBC servers. It’s not too tricky, but it does require a presence of mind to complete. If you need help with Python install and setting up a virtual environment, read [Get started with venv & Planet SDK](venv-tutorial.md).
+Yes. Even if you’re not writing code—and only using the "no code" CLI part of the Planet SDK for Python—you’re using Python to communicate with the Planet Labs PBC servers. It’s not too tricky, but it does require a presence of mind to complete. If you need help with Python install and setting up a virtual environment, read [Virtual Environments and the Planet SDK for Python](venv-tutorial.md).
 
 ## Step 2: Install the Planet SDK for Python
 
