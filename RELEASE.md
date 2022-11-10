@@ -9,8 +9,8 @@ Releasing is a two-step process: (1) releasing on Github and test.pypi and (2) r
 The following are the release naming conventions:
 
 1. Current Dev Version is obtained from `planet/__version__.py`
-1. Release Version: Remove `dev` from Current Dev Version
-1. Next Dev Version: Bumped version of last release with `dev` added to the end.
+3. Release Version: Remove `dev` from Current Dev Version
+4. Next Dev Version: Bumped version of last release with `dev` added to the end.
     * **PROPOSAL**: Version number is determined by [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 
@@ -30,7 +30,7 @@ The release on Github and PyPi performed from a release branch while the release
 1. Make the following changes for the release
   * Update `CHANGES.txt` (**PROPOSAL**: change this to `docs/CHANGELOG.md`)
     * Include added, changed, depricated or removed features and bug fixes.
-       A list of merged PRs and their titles since the last release can be obtained with `git log <RELEASE_TAG>..HEAD | awk '/Merge pull request/{print;getline;getline;print}`
+       A list of merged PRs and their titles since the last release can be obtained with `git log <LAST_RELEASE_TAG>..HEAD | awk '/Merge pull request/{print;getline;getline;print}`.
     * Sort according to importance
     * **PROPOSAL**: Adhere to [Keep a Changelog](https://keepachangelog.com/)
   * Update `planet/__version__.py` to Release Version
@@ -38,9 +38,9 @@ The release on Github and PyPi performed from a release branch while the release
 1. Create a new github release:
   * Set Tag Release Version
   * **!!!** Set Target to the release branch **!!!**
+  * Set Title to Tag Release Version
   * Copy Description from the new entry in `docs/CHANGELOG.md`
   * Select "This is a pre-release" if applicable
-  * Select "Create a discussion for this release"
 1. Verify the successful run of the Github Action "Autopublish to TestPyPi" and validate the test release on [test.pypi.org](https://test.pypi.org/project/planet/)
 1. Run the Github Action "Publish on PyPi", **!!!** Set Branch to the release branch **!!!**
 1. Verify the successful run of the Github Action "Publish on PyPi" and validate the release on [pypi.org](https://pypi.org/project/planet/)
