@@ -54,6 +54,7 @@ async def main():
     async with Session() as sess:
         # Data client object
         client = DataClient(sess)
+        # Download and validate assets in parallel
         await asyncio.gather(
             download_and_validate(river_item_id,
                                   river_item_type,
