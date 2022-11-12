@@ -1,74 +1,157 @@
 ---
-title: CLI for Planet Data API Tutorial
+title: CLI for Data API Tutorial
 ---
 
 ## Introduction
 
-The `planet data` commands enable interaction with the [Data API](https://developers.planet.com/docs/apis/data/),
+The `planet data` CLI commands enable interaction with the [Data API](https://developers.planet.com/docs/apis/data/),
 which lets you search Planet's catalog (including select public datasets like Sentinel 2 and Landsat 8).
-Most `data` cli commands are simple wrappers around the
-[Planet Data API](https://developers.planet.com/docs/apis/data/reference/)
-commands with the only difference being the addition of functionality to create
-a search filter, activate an asset, poll for when activation is complete, and
-download the asset.
+Currently the CLI has focused on the core search functionality, implementing
+[Quick Search](https://developers.planet.com/docs/apis/data/reference/#tag/Item-Search/operation/QuickSearch)
+and [stats](https://developers.planet.com/docs/apis/data/reference/#tag/Item-Stats/operation/Stats) plus some
+partial saved search functionality.
 
-### Filter
+## `data search` command basics
 
-The search-related Data API CLI commands require a search filter. The `planet data filter`
-command provides basic functionality for generating this filter. The command works similar to 
-`planet orders request` in that it is a convenience method to create the JSON you need to run
-other commands. You can run it with no arguments to see how it works:
+At this point you should have completed [Step 5](../get-started/quick-start-guide.md#step-5-search-for-planet-imagery)
+of the quick start guide, and run your first full data search command:
 
-```console
-planet data filter
+```
+planet data search PSScene filter.json > recent-psscene.json
 ```
 
-The output says that by default it will only show you imagery that you have permission to actually download,
-and that is of `standard` quality category. This provides some reasonable defaults, but they can be changed
-with flags, for example if you wanted to search all of Planet's catalog, or to look for `test` data that 
-is published by doesn't meet the standard quality level.
+This saves the latest 100 scenes in a file, that you can open and look at.
 
-There are a lot of options for what you can do with the command, and we recommend running
-`planet data filter --help` often to get a reference of how the commands work. And we'll try to 
-give lots of examples below as well.
+### Pretty printing
 
-So you can run the filter command and save it, and then use that file with the `search`
+You will likely notice that this file is quite wide, with one very long line for each Planet 
+item returned. You can make for a more readable file by using the `--pretty` flag:
+
+```
+planet data search --pretty PSScene filter.json > recent-psscene.json
+```
+
+The `--pretty` flag is built into most of the CLI calls. But you can also achieve the
+same effect by using another CLI program: `jq`. It is a very powerful library, providing
+extensive manipulation of JSON, but simply
+piping any JSON output through it prints it in a more readable form. So the following
+command will do the same thing as the previous one:
+
+```
+planet data search PSScene filter.json | jq > recent-psscene.json
+```
+
+You can read a bit [more about jq]((cli-intro.md#jq) in the CLI intro.
+
+### Output to stdin
+
+You also don't have to save the output to a file. If you don't redirect it into a file then
+it will just print out on the console.
+
+```
+planet data search PSScene filter.json 
+```
+
+If you enter this command you'll see the output stream by. Here you can use jq again, and
+it'll often give you nice syntax highlighting in addition to formatting.
+
+```
+planet data search PSScene filter.json | jq
+```
+
+### Create filter and search in one call
+
+Using a unix command called a 'pipe', which looks like `|`, you can skip the step of saving to disk,
+passing the output of the `data filter` command directly to be the input of the `data search`
 command:
 
-```console
-planet data filter > filter.json
-planet data search PSScene filter.json
 ```
-
-Or the recommended route is to use a pipe (`|`), as mentioned above [above](#create-request-and-order-in-one-call):
-
-```console
-planet data filter | planet data search PSScene -
+planet data filter | planet data search --pretty PSScene -
 ```
 
 Note the dash (`-`), which explicitly tells the CLI to use the output from the call that is piped into it.
 
-We'll explore the full `filter` CLI options below. Note that you do not *have* to use the filter command,
-you can always just create the [filter json](https://developers.planet.com/docs/apis/data/searches-filtering/)
-by any other means.
+You can learn more about the pipe command, as well as the `>` command above in the 
+[Piping & redirection section](cli-intro.md#piping-redirection) of the CLI Introduction.
 
-#### Search on Item Type
+### Search on Item Type
 
 These first searches were done on the [PSScene](https://developers.planet.com/docs/data/psscene/) 'item type', but you
 can use any [Item Type](https://developers.planet.com/docs/apis/data/items-assets/#item-types) that Planet offers in 
 its catalog. The item type is the first argument of the `search` command, followed by the 'filter'. Note that
 you can specify any number of item types here:
 
-```console
-planet data filter | planet data search PSScene,Sentinel2L1C,Landsat8L1G,SkySatCollect, -
+```
+planet data filter | planet data search PSScene,Sentinel2L1C,Landsat8L1G,SkySatCollect -
 ```
 
 This will search for all the most recent images captured by PlanetScope, SkySat, Sentinel 2 and Landsat 8 satellites. 
 Note that you'll likely mostly see PlanetScope results, as they generate far more individual images than the others.
 The filter you specify will apply to all item types, but not all filters work against all satellites, so you may 
-inadvertently filter some out if you do some specific properties.
+inadvertently filter some out if you are filtering specific properties.
 
-#### Run a search on a bounding box
+### Limits
+
+By default the `search` command returns only the 100 first scenes. But with the CLI you can set any limit, and the SDK
+under the hood will automatically page through all the results from the API. 
+
+```
+planet data filter | planet data search --limit 3000 PSScene
+```
+
+Note you can also do a call with no limits if you set the limit to `0`. Though don't use this haphazardly, or you'll be
+generating a lot of JSON from your request. It's best to use it with a number of filters to constrain the search, so
+you don't get hundreds of millions of results.
+
+### Output as valid GeoJSON
+
+By default the output of Planet's Data API is [newline-delimited GeoJSON](https://stevage.github.io/ndgeojson/), which
+is much better for streaming. While more and more programs will understand the format, the CLI also provides 
+the `planet collect` method to transform the output from the Data API to valid GeoJSON. You just pipe the end
+output to it:
+
+```console
+planet data filter --geom geometry.json | planet data search PSScene - | planet collect -
+```
+
+If you want to visualize this you can save it as a file:
+
+```console
+planet data filter --geom geometry.json | planet data search PSScene - | planet collect - > planet-search.geojson
+```
+
+This you can then open with your favorite GIS program, or see this 
+[geometry visualization](cli-plus-tutorial.md#geometry-inputs) section for some ideas that flow a bit better with 
+the command-line.
+
+### Sort
+
+You can also specify the sorting with your searches. The default sort is ordered by the most recent published
+images. But you can also sort by `acquired`, which is often more useful. You can sort in ascending or 
+descending order. The options are are:
+
+ * 'acquired asc'
+ * 'acquired desc'
+ * 'published asc'
+ * 'published desc'
+
+The lets you do things like get the id of the most recent skysat image taken (that you have download access to):
+
+```console
+planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 - 
+```
+
+And you can also just get the ID, using `jq`
+
+```console
+planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id
+```
+
+
+
+## Filtering
+
+### Run a search on a bounding box
 
 Most searches you'll likely want to run on a geometry. To try this out you can use the following bounding box
 of Iowa. You can copy it and save as a file called `geometry.json`
@@ -128,28 +211,7 @@ planet data filter --geom geometry.json | planet data search --limit 500 PSScene
 Creating geometries for search can be annoying in a command-line workflow, but there are some ideas in the
 [Advanced CLI Tutorial](cli-plus-tutorial.md#geometry-inputs).
 
-#### Output as valid GeoJSON
-
-By default the output of Planet's Data API is [newline-delimited GeoJSON](https://stevage.github.io/ndgeojson/), which
-is much better for streaming. While more and more programs will understand the format, the CLI also provides 
-the `planet collect` method to transform the output from the Data API to valid GeoJSON. You just pipe the end
-output to it:
-
-```console
-planet data filter --geom geometry.json | planet data search PSScene - | planet collect -
-```
-
-If you want to visualize this you can save it as a file:
-
-```console
-planet data filter --geom geometry.json | planet data search PSScene - | planet collect - > planet-search.geojson
-```
-
-This you can then open with your favorite GIS program, or see this 
-[geometry visualization](cli-plus-tutorial.md#geometry-inputs) section for some ideas that flow a bit better with 
-the command-line.
-
-#### Date Filter
+### Date Filter
 
 Some of the most common filtering is by date. You could get all imagery acquired before August 2021:
 
@@ -183,7 +245,7 @@ planet data filter --date-range acquired gte 2021-07-01:06:20:10 --date-range ac
 planet data search PSScene - 
 ```
 
-#### Range Filter
+### Range Filter
 
 The range filter uses the same operators as the date filter, but works against any numerical property. The most useful
 of these tend to be ones about cloudy pixels. For example you can search for data with clear pixels greater than 90%:
@@ -192,7 +254,7 @@ of these tend to be ones about cloudy pixels. For example you can search for dat
 planet data filter --range clear_percent gt 90
 ```
 
-#### String-In Filter
+### String-In Filter
 
 For properties that are strings you can use the `string-in` filter. For example search for all planetscope imagery
 with PS2 instrument:
@@ -216,7 +278,7 @@ planet data filter --string-in strip_id 5743640 | planet data search PSScene -
 Note that in all these commands we are piping the results into the search. If you don't include the pipe then you'll
 get the filter output, which can be interested to inspect to see exactly what is sent to the server.
 
-#### Filter by asset
+### Filter by asset
 
 You can limit your search to only data with a particular asset, for example search just for 8-band analytic assets:
 
@@ -238,7 +300,7 @@ the page for each with their list of asset types.
 Note that the asset filter doesn't perform any validation, so if your searches aren't returning anything check to make
 sure you got the asset right, and it's valid for the item-types you're searching.
 
-#### Permission Filter
+### Permission Filter
 
 The 'permission filter' is set to true by default, since most people want to search only for data they have access to
 and are able to download. But if you'd like to just get search Planet's catalog and get a sense of what is out there
@@ -248,25 +310,6 @@ you can set the permission filter to false:
 planet data filter --permission false --asset ortho_analytic_8b_sr | planet data search PSScene -
 ```
 
-#### Sort
+## Stats
 
-You can also specify the sorting with your searches. The default sort is ordered by the most recent published
-images. But you can also sort by `acquired`, which is often more useful. You can sort in ascending or 
-descending order. The options are are:
-
- * 'acquired asc'
- * 'acquired desc'
- * 'published asc'
- * 'published desc'
-
-The lets you do things like get the id of the most recent skysat image taken (that you have download access to):
-
-```console
-planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 - 
-```
-
-And you can also just get the ID, using `jq`
-
-```console
-planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id
-```
+TODO
