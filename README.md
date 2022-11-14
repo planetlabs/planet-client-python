@@ -57,7 +57,7 @@ $ pip install .
 Documentation is currently [hosted online](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/)
 It should be considered 'in progress', with many updates to come. It can also
 be built and hosted locally (see [CONTRIBUTING.md](CONTRIBUTING.md)) or can be 
-read from source in the `[docs](docs/)` directory.
+read from source in the [docs](/docs) directory.
 
 ## Authentication
 
