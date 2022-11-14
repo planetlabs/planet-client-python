@@ -85,7 +85,7 @@ def test_cli_orders_list_empty(invoke):
 
 @respx.mock
 def test_cli_orders_list_state(invoke, order_descriptions):
-    list_url = TEST_ORDERS_URL + '?state=failed'
+    list_url = TEST_ORDERS_URL + '?source_type=all&state=failed'
 
     order1, order2, _ = order_descriptions
 

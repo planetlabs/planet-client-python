@@ -123,7 +123,7 @@ async def test_list_orders_basic(order_descriptions, session):
 @respx.mock
 @pytest.mark.asyncio
 async def test_list_orders_state(order_descriptions, session):
-    list_url = TEST_ORDERS_URL + '?state=failed'
+    list_url = TEST_ORDERS_URL + '?source_type=all&state=failed'
 
     order1, order2, _ = order_descriptions
 
