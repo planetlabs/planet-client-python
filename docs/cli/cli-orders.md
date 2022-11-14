@@ -11,7 +11,7 @@ of the CLI for creating and downloading orders. It depends on several more advan
 command-line concepts, but this tutorial should let you get a sense of what you can do, 
 with enough examples that you should be able to adapt the commands for what you want to do. 
 If you're interested in deeper understanding what is going on
-then check out our [CLI Concepts](cli-concepts.md) guide.
+then check out our [CLI Concepts](cli-intro.md) guide.
 
 
 ### See Recent Orders
@@ -47,22 +47,28 @@ Note you can also get a nice list online as well, at https://www.planet.com/acco
 You can also print the list of orders more nicely:
 
 ```console
-planet orders list | jq
 planet orders list --pretty
 ```
 
-These are two different ways to do it. The `--pretty` tag is built into planet commands, while
-the `jq` command will format any JSON more nicely, and can be used for more advanced processing.
+The `--pretty` flag is built into most Planet CLI commands, and it formats the JSON to be
+more readable.
 
-This gives you a nicely formatted JSON. You can use `jq` to just show select information, which 
-can be useful for getting a quick sense of the state of the state of things and pull out
-id's for other operations:
+You can also use `jq`, a powerful command-line JSON-processing tool, that is mentioned in 
+the [CLI introduction]((cli-intro.md#jq).
+
+```console
+planet orders list | jq
+```
+
+Piping any output through jq will format it nicely and do syntax highlighting. You can 
+also `jq` to just show select information, which can be useful for getting a quick sense 
+of the state of the state of things and pull out id's for other operations:
 
 ```console
 planet orders list | jq -rs '.[] | "\(.id) \(.created_on) \(.state) \(.name)"'
 ```
 
-You can customize which fields you want to show.
+You can customize which fields you want to show by changing the values.
 
 ### Number of recent orders
 
@@ -90,21 +96,24 @@ planet orders get 782b414e-4e34-4f31-86f4-5b757bd062d7
 To create an order you need a name, a [bundle](https://developers.planet.com/apis/orders/product-bundles-reference/),
  one or more id's, and an [item type](https://developers.planet.com/docs/apis/data/items-assets/#item-types):
 
-```console
-planet orders request PSScene analytic_sr_udm2 --name "My First Order" --id 20220605_124027_64_242b 
+First lets get the ID of an item you have download access to, using the Data API: 
+
+```
+planet data filter | planet data search PSScene --limit 1 - | jq -r .id
 ```
 
-You should replace the `id` with a scene you have access to, using [Explorer](https://planet.com/explorer)
-is probably the easiest way to do so.
+If you don't have access to PlanetScope data then replace PSScene with SkySatCollect.
+Then make the following call:
+
+```console
+planet orders request PSScene visual --name "My First Order" --id 20220605_124027_64_242b 
+```
 
 Running the above command should output the JSON needed to create an order:
 
 ```json
 {"name": "My First Order", "products": [{"item_ids": ["20220605_124027_64_242b"], "item_type": "PSScene", "product_bundle": "analytic_sr_udm2"}]}
 ```
-
-Note that `\` just tells the command-line to treat the next line as the same one. It's used here so it's 
-easier to read, but you can still copy and paste the full line into your command-line and it should work.
 
 You can also use `jq` here to make it a bit more readable:
 
@@ -136,6 +145,9 @@ save the output into a file:
 planet orders request PSScene analytic_sr_udm2 --name "My first Order" --id 20220605_124027_64_242b \
  > request-1.json
 ```
+
+Note that `\` just tells the command-line to treat the next line as the same one. It's used here so it's 
+easier to read, but you can still copy and paste the full line into your command-line and it should work.
 
 This saves the above JSON in a file called `request-1.json`
 
@@ -175,7 +187,7 @@ The output of that command is the JSON returned from the server, that reports th
 ```
 
 Note the default output will be a bit more 'flat' - if you'd like the above formatting in your
-command-line just use `jq` as above: `planet orders create request-1.json` (but remember
+command-line just use `jq` as above: `planet orders create request-1.json | jq` (but remember
 if you run that command again it will create a second order).
 
 ### Create Request and Order in One Call
@@ -483,6 +495,9 @@ Example: `cloudconfig.json`
 }
 ```
 
+#### Basemaps Orders
+
+TODO
 
 
 #### Using Orders output as input
