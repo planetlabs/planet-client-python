@@ -292,6 +292,9 @@ Other simplification options for large datasets:
 
 ### Advanced jq
 
+- do a limit 0 (unlimited) on a constrained search (geom and time range) with jq count to see how many scenes are in the area
+ (note you can also do `stats`)
+
 - get id by array number
 
 ```console

@@ -73,9 +73,11 @@ nav:
     - get-started/upgrading.md
   - "No Code CLI":
     - cli/cli-guide.md
-    - cli/cli-concepts.md
-    - cli/cli-tutorial.md
-    - cli/cli-plus-tutorial.md
+    - cli/cli-intro.md
+    - cli/cli-data.md
+    - cli/cli-orders.md
+    - cli/cli-subscriptions.md
+    - cli/cli-tips-tricks.md
     - cli/cli-reference.md
   - "Python":
     - python/sdk-guide.md
