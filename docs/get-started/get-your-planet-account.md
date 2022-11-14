@@ -12,8 +12,7 @@ If you go to <a href="https://www.planet.com/explorer/#" target="_blank" >Planet
 
 Once in Explorer, you can select the user icon in the upper right corner to go to your Account page:
 
-<!-- img HTML tag src is generated in an index.html file with a folder name created from this filename. So there are 2 nodes to climb in order to be at the level of the /img folder. -->
-<img src="../../img/my-account-in-planet-explorer.png"
+<img src="../images/my-account-in-planet-explorer.png"
      style="
      display: block;
      margin-left: auto;

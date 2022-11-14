@@ -10,8 +10,8 @@ edit_uri: ""
 
 theme:
   name: 'material'
-  logo: img/Planet_primarymark_RGB_White.png
-  favicon: img/logo.svg
+  logo: 'images/Planet_primarymark_RGB_White.png'
+  favicon: 'images/logo.svg'
   custom_dir: 'docs/custom_theme/'
   features:
     - navigation.tabs
