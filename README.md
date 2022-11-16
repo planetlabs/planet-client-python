@@ -10,14 +10,14 @@ Everything you need to get started is found in our
 
 Version 2.0 includes support for the core workflows of the following APIs:
 
-* [orders](https://developers.planet.com/docs/orders/)
-* [data](https://developers.planet.com/docs/data/)
-* [subscriptions](https://developers.planet.com/docs/subscriptions/)
+* [Data](https://developers.planet.com/docs/data/) - Search for imagery from Planet's data catalog.
+* [Orders](https://developers.planet.com/docs/orders/) - Process and download or deliver imagery.
+* [Subscriptions](https://developers.planet.com/docs/subscriptions/) - Set up a search to auto-process and deliver imagery.
 
 After the initial 2.0 release there will be additional work to support the 
 remaining Planet APIs: [basemaps](https://developers.planet.com/docs/basemaps/),
 [tasking](https://developers.planet.com/docs/tasking/)) and 
-([analytics](https://developers.planet.com/docs/analytics/).
+[analytics](https://developers.planet.com/docs/analytics/).
 
 ## Versions and Stability
 
