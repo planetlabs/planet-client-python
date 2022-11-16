@@ -481,15 +481,14 @@ class OrdersClient:
             planet.exceptions.ClientError: If state is not valid.
         """
         url = self._orders_url()
+        params = {"source_type": "all"}
 
         if state:
             if state not in ORDER_STATE_SEQUENCE:
                 raise exceptions.ClientError(
                     f'Order state ({state}) is not a valid state. '
                     f'Valid states are {ORDER_STATE_SEQUENCE}')
-            params = {"state": state}
-        else:
-            params = None
+            params['state'] = state
 
         response = await self._session.request(method='GET',
                                                url=url,
