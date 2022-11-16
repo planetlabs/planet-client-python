@@ -43,8 +43,8 @@ A common case is searching for items in an AOI.
     query = api.filters.and_filter(
       api.filters.geom_filter(aoi)
     )
-    # we are requesting PlanetScope 4 Band imagery
-    item_types = ['PSScene4Band']
+    # we are requesting PlanetScope imagery
+    item_types = ['PSScene']
     request = api.filters.build_search_request(query, item_types)
     # this will cause an exception if there are any API related errors
     results = client.quick_search(request)

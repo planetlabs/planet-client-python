@@ -10,21 +10,21 @@ Get the latest 10 items from the API of any ItemType::
 
     planet data search --limit 10
 
-Get recently acquired PSScene3Band ItemType records::
+Get recently acquired PSScene ItemType records::
 
-    planet data search --item-type PSScene3Band --date acquired gt 2017-02-14
+    planet data search --item-type PSScene --date acquired gt 2017-02-14
 
 Item types can be specified case-insensitively, with glob matching in the CLI::
 
-    planet data search --item-type psscene* --date acquired gt 2017-02-14
+    planet data search --item-type skysat* --date acquired gt 2017-02-14
 
 Search for a month. Note: criteria are applied as an AND filter::
 
-    planet data search --item-type PSScene3Band --date acquired gt 2017-02-14 --date acquired lt 2017-03-14
+    planet data search --item-type PSScene --date acquired gt 2017-02-14 --date acquired lt 2017-03-14
 
-Use the geometry defined in `aoi.json` to constrain a search for both PSScene3Band and PSScene4Band::
+Use the geometry defined in `aoi.json` to constrain a search for PSScene::
 
-    planet data search --item-type PSScene3Band --item-type PSScene4Band --geom aoi.json
+    planet data search --item-type PSScene --geom aoi.json
 
 Output a search filter to a file::
 
@@ -32,7 +32,7 @@ Output a search filter to a file::
 
 Create a saved search from a filter in a file with some additional options (this will output the search id for later use)::
 
-    planet data create-search --item-type PSScene3Band --string-in satellite_id 0c12 --name my-search --filter-json my-search.json
+    planet data create-search --item-type PSScene --string-in satellite_id 0c12 --name my-search --filter-json my-search.json
 
 Execute a saved search::
 
@@ -42,11 +42,11 @@ Get statistics using a filter from a file::
 
     planet data stats --item-type Sentinel2L1C --filter-json my-search.json
 
-Activate and download the latest 3 PSScene3Band items to `images-download-directory`.
+Activate and download the latest 3 PSScene items to `images-download-directory`.
 
 Note: this might take some time and directory must exist::
 
-    planet data download --item-type PSScene3Band --limit 3 --dest images-download-directory
+    planet data download --item-type PSScene --limit 3 --dest images-download-directory
 
 Mosaic Examples
 ---------------
@@ -181,7 +181,7 @@ output, each feed’s resources are varied:
 
 * `source-quad`: Download the mosaic quad used to derive a feature, only available for collections associated with feeds that operate on mosaics
 * `target-quad`: Download the mosaic quad that contains the raster output of a feed, only available for collections associated with feeds that output raster data
-* `source-image-info`: Get the metadata for the source Planet product (ex. PSScene3Band) used to derive a feature, only available for non-mosaic feeds
+* `source-image-info`: Get the metadata for the source Planet product (ex. PSScene) used to derive a feature, only available for non-mosaic feeds
 
 Requesting a resource for a feature in a collection::
 
@@ -222,7 +222,7 @@ The minimal command to create a simple order looks something like::
 
     planet orders create --name "my order" \
       --id 20151119_025740_0c74,20151119_025741_0c74 \
-      --bundle visual --item-type psscene3band
+      --bundle visual --item-type psscene
 
 If no toolchain or delivery details are specified, a basic order with download
 delivery will be placed for the requested bundle including the item id(s) specified.
@@ -231,7 +231,7 @@ In the place of `--id`, you can insert a Data search string. This will populate
 the list of IDs from a search. For example::
 
     planet orders create --name "my order" \
-        --ids_from_search $'--item-type PSScene3Band --date acquired gt 2017-02-14 --date acquired lt 2017-03-14 --limit 6 --geom \'{
+        --ids_from_search $'--item-type PSScene --date acquired gt 2017-02-14 --date acquired lt 2017-03-14 --limit 6 --geom \'{
       "type": "FeatureCollection",
       "features": [
         {
@@ -276,7 +276,7 @@ the list of IDs from a search. For example::
       ]
     }\'' \
     --bundle visual \
-    --item-type psscene3band \
+    --item-type psscene \
     --zip bundle --email \
     --clip '{
         "type": "Polygon",
@@ -320,7 +320,7 @@ Additionally, optional toolchain & delivery details can be provided on the comma
 
     planet orders create --name "my order" \
       --id 20151119_025740_0c74,20151119_025741_0c74 \
-      --bundle visual --item-type psscene3band --zip order --email
+      --bundle visual --item-type psscene --zip order --email
 
 This places the same order as above, and will also provide a .zip archive
 download link for the full order, as well as email notification. If you change
@@ -332,7 +332,7 @@ with the `--clip` parameter::
 
     planet orders create --name "my order" \
       --id 20151119_025740_0c74,20151119_025741_0c74 \
-      --bundle visual --item-type psscene3band
+      --bundle visual --item-type psscene
       --clip '{
           "type": "Polygon",
           "coordinates": [

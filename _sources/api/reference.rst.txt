@@ -32,7 +32,7 @@ The general search request form is a Python dict, for example.
 .. code-block:: javascript
 
   {
-    "item_types": ['PSScene3Band'],
+    "item_types": ['PSScene'],
     "filter": {
       "type": "AndFilter",
       "config": [
