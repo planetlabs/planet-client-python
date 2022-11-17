@@ -429,10 +429,13 @@ def toar_tool(scale_factor: Optional[int] = None, ) -> dict:
     return _tool('toar', parameters)
 
 
-def harmonize_tool() -> dict:
+def harmonize_tool(target_sensor: str) -> dict:
     '''Create the API spec representation of a harmonize tool.
 
-    Currently, only "PS2" (Dove Classic) is supported as a target sensor, and
-    it will transform only items captured by “PS2.SD” (Dove-R).
+    Currently, only "PS2" (Dove Classic) and "Sentinel-2" are supported as 
+    target sensors. The Sentinel-2 target only harmonizes PSScene 
+    surface reflectance bundle types (analytic_8b_sr_udm2, analytic_sr_udm2). 
+    The PS2 target only works on analytic bundles
+     from Dove-R (PS2.SD).
     '''
-    return _tool('harmonize', {'target_sensor': 'PS2'})
+    return _tool('harmonize', {'target_sensor': target_sensor})
