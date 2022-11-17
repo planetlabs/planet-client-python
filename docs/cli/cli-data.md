@@ -194,6 +194,11 @@ of Iowa. You can copy it and save as a file called `geometry.geojson`
 }
 ```
 
+!!!note ".geojson and .json files both work"
+    Here we save it as .geojson, but you can also save it as .json. The CLI is happy with any file
+    extension, even .txt, but different extensions may make it easier to open the files with other
+    programs. What's important is that the text inside the file is valid geojson.
+
 And then run it with this command:
 
 ```console
