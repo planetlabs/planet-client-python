@@ -467,7 +467,23 @@ curl -s https://raw.githubusercontent.com/planetlabs/planet-client-python/main/d
 
 ### Harmonize
 
-TODO
+The harmonize tool allows you to compare data to different generations of satellites by radiometrically harmonizing imagery captured by one satellite instrument type to imagery captured by another. To harmonize with a sensor put the following in your `tools.json`.
+
+```json
+[
+  {
+    "harmonize": {
+      "target_sensor": "PS2"
+      }
+    }
+]
+```
+
+Then you may create your order request by calling your `tools.json` with `--tools`.
+
+```console
+planet orders request psscene analytic_udm2 --name "Harmonized data" --id 20200925_161029_69_2223 --tools tools.json
+```
 
 ### STAC Metadata
 
