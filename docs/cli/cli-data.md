@@ -111,13 +111,13 @@ the `planet collect` method to transform the output from the Data API to valid G
 output to it:
 
 ```console
-planet data filter --geom geometry.json | planet data search PSScene - | planet collect -
+planet data filter | planet data search PSScene - | planet collect -
 ```
 
 If you want to visualize this you can save it as a file:
 
 ```console
-planet data filter --geom geometry.json | planet data search PSScene - | planet collect - > planet-search.geojson
+planet data filter | planet data search PSScene - | planet collect - > planet-search.geojson
 ```
 
 This you can then open with your favorite GIS program, or see this 
@@ -148,13 +148,12 @@ planet data filter | planet data search SkySatCollect --sort 'acquired desc' --l
 ```
 
 
-
 ## Filtering
 
 ### Run a search on a bounding box
 
 Most searches you'll likely want to run on a geometry. To try this out you can use the following bounding box
-of Iowa. You can copy it and save as a file called `geometry.json`
+of Iowa. You can copy it and save as a file called `geometry.geojson`
 
 ```json
 {
@@ -198,14 +197,14 @@ of Iowa. You can copy it and save as a file called `geometry.json`
 And then run it with this command:
 
 ```console
-planet data filter --geom geometry.json | planet data search PSScene -
+planet data filter --geom geometry.geojson | planet data search PSScene -
 ```
 
 Note that by default all searches with the command-line return 100 results, but you can easily increase that with
 the `--limit` flag:
 
 ```console
-planet data filter --geom geometry.json | planet data search --limit 500 PSScene -
+planet data filter --geom geometry.geojson | planet data search --limit 500 PSScene -
 ```
 
 Creating geometries for search can be annoying in a command-line workflow, but there are some ideas in the

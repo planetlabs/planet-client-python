@@ -301,7 +301,7 @@ combined with all the commands listed above.
 ### Clipping
 
 The most used tool is the `clip` operation, which lets you pass a geometry to the
-Orders API and it creates new images that only have pixels within theh geometry you
+Orders API and it creates new images that only have pixels within the geometry you
 gave it. The file given with the `--clip` option should contain valid [GeoJSON](https://geojson.org/).
 It can be a Polygon geometry, a Feature, or a FeatureClass. If it is a FeatureClass,
 only the first Feature is used for the clip geometry.
