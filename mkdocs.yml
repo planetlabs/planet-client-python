@@ -92,4 +92,4 @@ markdown_extensions:
   - mkdocs-click
   - admonition
   - toc:
-    permalink: True
+      permalink: True
