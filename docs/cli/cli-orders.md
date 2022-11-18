@@ -467,7 +467,7 @@ curl -s https://raw.githubusercontent.com/planetlabs/planet-client-python/main/d
 
 ### Harmonize
 
-The harmonize tool allows you to compare data to different generations of satellites by radiometrically harmonizing imagery captured by one satellite instrument type to imagery captured by another. To harmonize with a sensor put the following in your `tools.json`.
+The harmonize tool allows you to compare data to different generations of satellites by radiometrically harmonizing imagery captured by one satellite instrument type to imagery captured by another. To harmonize your data to a sensor you must define the sensor you wish to harmonize with in your `tools.json`. Currently, only "PS2" (Dove Classic) and "Sentinel-2" are supported as target sensors. The Sentinel-2 target only harmonizes PSScene surface reflectance bundle types (`analytic_8b_sr_udm2`, `analytic_sr_udm2`). The PS2 target only works on analytic bundles from Dove-R (`PS2.SD`).
 
 ```json
 [
@@ -479,10 +479,10 @@ The harmonize tool allows you to compare data to different generations of satell
 ]
 ```
 
-Then you may create your order request by calling your `tools.json` with `--tools`.
+You may create an order request by calling `tools.json` with `--tools`.
 
 ```console
-planet orders request psscene analytic_udm2 --name "Harmonized data" --id 20200925_161029_69_2223 --tools tools.json
+planet orders request psscene analytic_sr_udm2 --name "Harmonized data" --id 20200925_161029_69_2223 --tools tools.json
 ```
 
 ### STAC Metadata
