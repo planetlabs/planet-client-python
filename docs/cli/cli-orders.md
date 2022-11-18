@@ -473,7 +473,7 @@ The harmonize tool allows you to compare data to different generations of satell
 [
   {
     "harmonize": {
-      "target_sensor": "PS2"
+      "target_sensor": "Sentinel-2"
       }
     }
 ]
