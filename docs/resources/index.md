@@ -12,6 +12,8 @@ The following examples were created specifically to show you how to use the SDK 
 * [orders_create_and_download_multiple_orders.py](https://github.com/planetlabs/planet-client-python/blob/main/examples/orders_create_and_download_multiple_orders.py) - this Python script creates two orders, each with unique Area of Interest (AoI), preventing a combined download
 * [Planet API Python Client](https://github.com/planetlabs/notebooks/blob/master/jupyter-notebooks/data-api-tutorials/planet_python_client_introduction.ipynb) - a Python notebook to introduce Planet's Data API and the `planet` module
 * [Orders API & Planet SDK](https://github.com/planetlabs/notebooks/blob/665f165e59f2c3584976ad2dde569c649e631c0b/jupyter-notebooks/orders_api_tutorials/Planet_SDK_Orders_demo.ipynb) - a Python notebook shows how to get started with Planet SDK and the Orders API.
+* [Analysis Ready Data Tutorial Part 1: Introduction and Best Practices](https://github.com/planetlabs/notebooks/blob/6cc220ff6db246353af4798be219ee1fe7e858b0/jupyter-notebooks/analysis-ready-data/ard_1_intro_and_best_practices.ipynb) - this Python notebook uses the SDK to prepare Analysis Ready Data.
+* [Analysis Ready Data Tutorial Part 2](https://github.com/planetlabs/notebooks/blob/6cc220ff6db246353af4798be219ee1fe7e858b0/jupyter-notebooks/analysis-ready-data/ard_2_use_case_1.ipynb) - the first use case in this Python notebook leverages the SDK's `order_request` feature to prepare an NDVI time stack and the second use case visualizes the NDVI imagery.
 
 ### Other examples
 
