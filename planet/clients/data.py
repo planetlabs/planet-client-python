@@ -93,56 +93,17 @@ class DataClient:
     def _item_url(self, item_type, item_id):
         return f'{self._base_url}/item-types/{item_type}/items/{item_id}'
 
-    async def search(self,
-                     item_types: List[str],
-                     search_filter: dict,
-                     name: Optional[str] = None,
-                     sort: Optional[str] = None,
-                     limit: int = 100) -> AsyncIterator[dict]:
-        """Execute a quick search.
+    async def search_aiter(self,
+                           item_types: List[str],
+                           search_filter: dict,
+                           name: Optional[str] = None,
+                           sort: Optional[str] = None,
+                           limit: int = 100) -> AsyncIterator[dict]:
+        """Iterate over results from a quick search.
 
         Quick searches are saved for a short period of time (~month). The
         `name` parameter of the search defaults to the id of the generated
         search id if `name` is not specified.
-
-        To filter to items you have access to download which are of standard
-        (aka not test) quality, use the following:
-
-        ```python
-        >>> from planet import data_filter
-        >>> data_filter.and_filter([
-        ...     data_filter.permission_filter(),
-        ...     data_filter.std_quality_filter()
-        >>> ])
-
-        ```
-
-        To avoid filtering out any imagery, supply a blank AndFilter, which can
-        be created with `data_filter.and_filter([])`.
-
-        Example:
-
-        ```python
-        >>> import asyncio
-        >>> from planet import Session, DataClient
-        >>>
-        >>> async def main():
-        ...     item_types = ['PSScene']
-        ...     sfilter = {
-        ...         "type":"DateRangeFilter",
-        ...         "field_name":"acquired",
-        ...         "config":{
-        ...             "gt":"2019-12-31T00:00:00Z",
-        ...             "lte":"2020-01-31T00:00:00Z"
-        ...         }
-        ...     }
-        ...     async with Session() as sess:
-        ...         cl = DataClient(sess)
-        ...         items = await cl.quick_search(item_types, sfilter)
-        ...
-        >>> asyncio.run(main())
-
-        ```
 
         Parameters:
             item_types: The item types to include in the search.
@@ -178,7 +139,8 @@ class DataClient:
                                                url=url,
                                                json=request_json,
                                                params=params)
-        return Items(response, self._session.request, limit=limit)
+        async for i in Items(response, self._session.request, limit=limit):
+            yield i
 
     async def create_search(self,
                             name: str,
