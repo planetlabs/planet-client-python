@@ -463,10 +463,10 @@ class OrdersClient:
 
         return current_state
 
-    async def list_orders(self,
-                          state: Optional[str] = None,
-                          limit: int = 100) -> AsyncIterator[dict]:
-        """Get all order requests.
+    async def list_orders_aiter(self,
+                                state: Optional[str] = None,
+                                limit: int = 100) -> AsyncIterator[dict]:
+        """Iterate over the list of stored order requests.
 
         Parameters:
             state: Filter orders to given state.
@@ -474,7 +474,7 @@ class OrdersClient:
                 maximum is applied.
 
         Returns:
-            User orders that match the query
+            Iterator over user orders that match the query
 
         Raises:
             planet.exceptions.APIError: On API error.
@@ -493,4 +493,5 @@ class OrdersClient:
         response = await self._session.request(method='GET',
                                                url=url,
                                                params=params)
-        return Orders(response, self._session.request, limit=limit)
+        async for o in Orders(response, self._session.request, limit=limit):
+            yield o

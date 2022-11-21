@@ -97,7 +97,7 @@ def test_OrderStates_passed():
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_list_orders_basic(order_descriptions, session):
+async def test_list_orders_aiter_basic(order_descriptions, session):
     next_page_url = TEST_ORDERS_URL + 'blob/?page_marker=IAmATest'
 
     order1, order2, order3 = order_descriptions
@@ -116,13 +116,13 @@ async def test_list_orders_basic(order_descriptions, session):
     respx.get(next_page_url).return_value = mock_resp2
 
     cl = OrdersClient(session, base_url=TEST_URL)
-    orders = await cl.list_orders()
-    assert order_descriptions == [o async for o in orders]
+    order_aiter = cl.list_orders_aiter()
+    assert order_descriptions == [o async for o in order_aiter]
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_list_orders_state(order_descriptions, session):
+async def test_list_orders_aiter_state_success(order_descriptions, session):
     list_url = TEST_ORDERS_URL + '?source_type=all&state=failed'
 
     order1, order2, _ = order_descriptions
@@ -139,26 +139,27 @@ async def test_list_orders_state(order_descriptions, session):
 
     # if the value of state doesn't get sent as a url parameter,
     # the mock will fail and this test will fail
-    orders = await cl.list_orders(state='failed')
-    assert [order1, order2] == [o async for o in orders]
+    order_aiter = cl.list_orders_aiter(state='failed')
+    assert [order1, order2] == [o async for o in order_aiter]
 
 
 @pytest.mark.asyncio
-async def test_list_orders_state_invalid_state(session):
+async def test_list_orders_aiter_state_invalid(session):
     cl = OrdersClient(session, base_url=TEST_URL)
 
     with pytest.raises(exceptions.ClientError):
-        await cl.list_orders(state='invalidstate')
+        order_aiter = cl.list_orders_aiter(state='invalidstate')
+        [o async for o in order_aiter]
 
 
 @respx.mock
 @pytest.mark.asyncio
 @pytest.mark.parametrize("limit,limited_list_length", [(None, 100), (0, 102),
                                                        (1, 1)])
-async def test_list_orders_limit(order_descriptions,
-                                 session,
-                                 limit,
-                                 limited_list_length):
+async def test_list_orders_aiter_limit(order_descriptions,
+                                       session,
+                                       limit,
+                                       limited_list_length):
     nono_page_url = None
 
     # Creating 102 (3x34) order descriptions
@@ -182,8 +183,8 @@ async def test_list_orders_limit(order_descriptions,
 
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    orders = await cl.list_orders(limit=limit)
-    assert len([o async for o in orders]) == limited_list_length
+    order_aiter = cl.list_orders_aiter(limit=limit)
+    assert len([o async for o in order_aiter]) == limited_list_length
 
 
 @respx.mock
