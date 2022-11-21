@@ -8,12 +8,12 @@ The Planet SDK for Python is Version 2 of what was previously referred to as the
 
 The V2 SDK has a flatter code structure. Everything of note previously found under `planet.api` is now available from the `planet` module. So, `import planet` should give you everything you need.
 
-If you are migrating from V1, and were using the Data API filter builder (from `planet.api import filters`), we do recommend also including `from planet import data_filter as filters` in your imports for an easy migration from the old filter module to the new one.
+If you are migrating from V1, and are using the Data API filter builder (from `planet.api import filters`), we do recommend also including `from planet import data_filter as filters` in your imports for an easy migration from the old filter module to the new one.
 
 ## Authentication
 
 In Version 1, a single client was created for all APIs,
-`client=api.ClientV1(api_key=API_KEY)`. To authenticate automatically in V2, use an API key stored in the `PL_API_KEY` environment variable by adding `planet.Auth.from_env(`PL_API_KEY`).write()` to the first line of your script. For other methods for authenticating against the SDK, check out [Authenticate with the Planet server](quick-start-guide/#authenticate-with-the-planet-server).
+`client=api.ClientV1(api_key=API_KEY)`. To authenticate automatically in V2, use an API key stored in the `PL_API_KEY` environment variable by adding `planet.Auth.from_env(PL_API_KEY).write()` to the first line of your script. For other methods for authenticating against the SDK, check out [Authenticate with the Planet server](quick-start-guide/#authenticate-with-the-planet-server).
 
 ## Session for all communication
 
@@ -32,15 +32,15 @@ async with Session() as session:
 
 For more information about Session, refer to the [SDK user guide](../../python/sdk-guide/#session).
 
-# Asynchronous Methods
+## Asynchronous Methods
 
-With the V1 client, all commumication was synchronous. Asynchronous bulk support was provided with the `downloader` module. There was no built-in support for polling when an order was ready to download or tracking when an order was downloaded.
+With the V1 client, all communication was synchronous. Asynchronous bulk support was provided with the `downloader` module. There was no built-in support for polling when an order was ready to download or tracking when an order was downloaded.
 
 In V2, all `*Client` methods (for example, `DataClient().quick_search`, `OrderClient().create_order`) are asynchronous. Any functions that call such methods must include `async` in their definition. To invoke asynchronous methods from synchronous code, you can wrap the async method calls in `asyncio.run()`.
 
 For more details on interacting with the asynchronous portions of the SDK, refer to the [SDK user guide](../../python/sdk-guide/#session).
 
-# Data API
+## Data API
 The Data API portion of SDK V2 is quite similar to V1, although some filters have been renamed for consistency (also reference the note on imports):
 
 * `date_range` to `date_range_filter`
@@ -61,7 +61,7 @@ async with Session() as session:
 planet.DataClient(session).quick_search(["PSScene"], all_filters)
 ```
 
-# Orders API
+## Orders API
 
 The Orders API capabilities in V1 were quite primitive, but those that did exist have been retained in much the same form; `ClientV1().create_order` becomes `OrderClient(session).create_order`. (As with the `DataClient`, you must also use `async` and `Session` with `OrderClient`.)
 
