@@ -297,18 +297,18 @@ async def test_update_search_basic(search_filter, session):
 @respx.mock
 @pytest.mark.asyncio
 @pytest.mark.parametrize("limit, expected_list_length", [(None, 4), (3, 3)])
-async def test_list_searches_success(limit,
-                                     expected_list_length,
-                                     search_result,
-                                     session):
+async def test_list_searches_aiter_success(limit,
+                                           expected_list_length,
+                                           search_result,
+                                           session):
     page1_response = {"_links": {}, "searches": [search_result] * 4}
     route = respx.get(TEST_SEARCHES_URL)
     route.return_value = httpx.Response(200, json=page1_response)
 
     cl = DataClient(session, base_url=TEST_URL)
 
-    searches = await cl.list_searches(limit=limit)
-    searches_list_length = len([s async for s in searches])
+    search_aiter = cl.list_searches_aiter(limit=limit)
+    searches_list_length = len([s async for s in search_aiter])
     assert searches_list_length == expected_list_length
 
     assert route.called
@@ -320,17 +320,19 @@ async def test_list_searches_success(limit,
     "sort, search_type, expectation",
     [('DOESNOTEXIST', 'ANY', pytest.raises(exceptions.ClientError)),
      ('CREATED DESC', 'DOESNOTEXIST', pytest.raises(exceptions.ClientError))])
-async def test_list_searches_args_do_not_match(sort,
-                                               search_type,
-                                               expectation,
-                                               session):
+async def test_list_searches_aiter_args_do_not_match(sort,
+                                                     search_type,
+                                                     expectation,
+                                                     session):
     route = respx.get(TEST_SEARCHES_URL)
     route.return_value = httpx.Response(200, json={})
 
     cl = DataClient(session, base_url=TEST_URL)
 
     with expectation:
-        await cl.list_searches(sort=sort, search_type=search_type)
+        searches_aiter = cl.list_searches_aiter(sort=sort,
+                                                search_type=search_type)
+        [s async for s in searches_aiter]
 
     assert not route.called
 

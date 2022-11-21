@@ -114,8 +114,8 @@ class DataClient:
             limit: Maximum number of results to return. When set to 0, no
                 maximum is applied.
 
-        Returns:
-            Returns an iterator over all items matching the search.
+        Yields:
+            Description of an item.
 
         Raises:
             planet.exceptions.APIError: On API error.
@@ -224,11 +224,11 @@ class DataClient:
                                                json=request)
         return response.json()
 
-    async def list_searches(self,
-                            sort: str = 'created desc',
-                            search_type: str = 'any',
-                            limit: int = 100) -> AsyncIterator[dict]:
-        """List all saved searches available to the authenticated user.
+    async def list_searches_aiter(self,
+                                  sort: str = 'created desc',
+                                  search_type: str = 'any',
+                                  limit: int = 100) -> AsyncIterator[dict]:
+        """Iterate through list of searches available to the user.
 
         NOTE: the term 'saved' is overloaded here. We want to list saved
         searches that are 'quick' or list saved searches that are 'saved'? Do
@@ -241,8 +241,8 @@ class DataClient:
             limit: Maximum number of results to return. When set to 0, no
                 maximum is applied.
 
-        Returns:
-            An iterator over all searches that match filter.
+        Yields:
+            Description of a search.
 
         Raises:
             planet.exceptions.APIError: On API error.
@@ -262,7 +262,8 @@ class DataClient:
         url = f'{self._searches_url()}'
 
         response = await self._session.request(method='GET', url=url)
-        return Searches(response, self._session.request, limit=limit)
+        async for s in Searches(response, self._session.request, limit=limit):
+            yield s
 
     async def delete_search(self, search_id: str):
         """Delete an existing saved search.
@@ -304,8 +305,8 @@ class DataClient:
             limit: Maximum number of results to return. When set to 0, no
                 maximum is applied.
 
-        Returns:
-            Returns an iterator over all items matching the search.
+        Yields:
+            Description of an item.
 
         Raises:
             planet.exceptions.APIError: On API error.
