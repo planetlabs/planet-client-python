@@ -1,5 +1,5 @@
 ---
-title: Upgrading from V1 to V2
+title: Upgrade from Version 1 to Version 2
 ---
 
 The Planet SDK for Python is Version 2 of what was previously referred to as the Planet API client. This V2 is a major update of the V1 SDK. As such, there are major structural changes to how it operates. However, many aspects are still quite similar to V1. Follow this migration guide to upgrade an application developed with v1 of the SDK to V2 with minimal fuss.
