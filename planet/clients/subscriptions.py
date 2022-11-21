@@ -31,10 +31,11 @@ class SubscriptionsClient:
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    async def list_subscriptions(self,
-                                 status: Optional[Set[str]] = None,
-                                 limit: int = 100) -> AsyncIterator[dict]:
-        """Get account subscriptions with optional filtering.
+    async def list_subscriptions_aiter(
+            self,
+            status: Optional[Set[str]] = None,
+            limit: int = 100) -> AsyncIterator[dict]:
+        """Iterate over list of account subscriptions with optional filtering.
 
         Note:
             The name of this method is based on the API's method name.

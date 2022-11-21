@@ -156,19 +156,19 @@ res_api_mock.route(
 
 @pytest.mark.asyncio
 @failing_api_mock
-async def test_list_subscriptions_failure():
+async def test_list_subscriptions_aiter_failure():
     """ServerError is raised if there is an internal server error (500)."""
     with pytest.raises(ServerError):
         async with Session() as session:
             client = SubscriptionsClient(session)
-            _ = [sub async for sub in client.list_subscriptions()]
+            _ = [sub async for sub in client.list_subscriptions_aiter()]
 
 
 @pytest.mark.parametrize("status, count", [({"created"}, 100), ({"failed"}, 0),
                                            (None, 100)])
 @pytest.mark.asyncio
 @api_mock
-async def test_list_subscriptions_success(
+async def test_list_subscriptions_aiter_success(
     status,
     count,
 ):
@@ -176,7 +176,7 @@ async def test_list_subscriptions_success(
     async with Session() as session:
         client = SubscriptionsClient(session)
         assert len([
-            sub async for sub in client.list_subscriptions(status=status)
+            sub async for sub in client.list_subscriptions_aiter(status=status)
         ]) == count
 
 
@@ -313,9 +313,9 @@ paging_cycle_api_mock.route(
 
 @pytest.mark.asyncio
 @paging_cycle_api_mock
-async def test_list_subscriptions_cycle_break():
+async def test_list_subscriptions_aiter_cycle_break():
     """PagingError is raised if there is a paging cycle."""
     with pytest.raises(PagingError):
         async with Session() as session:
             client = SubscriptionsClient(session)
-            _ = [sub async for sub in client.list_subscriptions()]
+            _ = [sub async for sub in client.list_subscriptions_aiter()]
