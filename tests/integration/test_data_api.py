@@ -372,8 +372,8 @@ async def test_run_search_success(item_descriptions, session):
     respx.get(next_page_url).return_value = mock_resp2
 
     cl = DataClient(session, base_url=TEST_URL)
-    items = await cl.run_search(sid)
-    items_list = [i async for i in items]
+    item_aiter = cl.run_search_aiter(sid)
+    items_list = [i async for i in item_aiter]
 
     assert route.called
 
@@ -390,10 +390,10 @@ async def test_run_search_doesnotexist(session):
 
     cl = DataClient(session, base_url=TEST_URL)
     with pytest.raises(exceptions.APIError):
-        items = await cl.run_search(sid)
+        item_aiter = cl.run_search_aiter(sid)
         # this won't throw the error until the iterator is processed
         # issue 476
-        [i async for i in items]
+        [i async for i in item_aiter]
 
     assert route.called
 

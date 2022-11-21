@@ -332,10 +332,10 @@ class DataClient:
         response = await self._session.request(method='GET', url=url)
         return response.json()
 
-    async def run_search(self,
-                         search_id: str,
-                         limit: int = 100) -> AsyncIterator[dict]:
-        """Execute a saved search.
+    async def run_search_aiter(self,
+                               search_id: str,
+                               limit: int = 100) -> AsyncIterator[dict]:
+        """Iterate over results from a saved search.
 
         Parameters:
             search_id: Stored search identifier.
@@ -351,7 +351,8 @@ class DataClient:
         url = f'{self._searches_url()}/{search_id}/results'
 
         response = await self._session.request(method='GET', url=url)
-        return Items(response, self._session.request, limit=limit)
+        async for i in Items(response, self._session.request, limit=limit):
+            yield i
 
     async def get_stats(self,
                         item_types: List[str],
