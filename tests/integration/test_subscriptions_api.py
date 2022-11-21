@@ -266,21 +266,21 @@ async def test_get_subscription_success(monkeypatch):
 
 @pytest.mark.asyncio
 @failing_api_mock
-async def test_get_results_failure():
+async def test_get_results_aiter_failure():
     """APIError is raised if there is a server error."""
     with pytest.raises(APIError):
         async with Session() as session:
             client = SubscriptionsClient(session)
-            _ = [res async for res in client.get_results("lolwut")]
+            _ = [res async for res in client.get_results_aiter("lolwut")]
 
 
 @pytest.mark.asyncio
 @res_api_mock
-async def test_get_results_success():
+async def test_get_results_aiter_success():
     """Subscription description fetched, has the expected items."""
     async with Session() as session:
         client = SubscriptionsClient(session)
-        results = [res async for res in client.get_results("42")]
+        results = [res async for res in client.get_results_aiter("42")]
         assert len(results) == 100
 
 
