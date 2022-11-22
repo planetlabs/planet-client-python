@@ -272,12 +272,12 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
     parameter will be applied to the stored quick search.
     """
     async with data_client(ctx) as cl:
-        items = await cl.search(item_types,
-                                filter,
-                                name=name,
-                                sort=sort,
-                                limit=limit)
-        async for item in items:
+        items_aiter = cl.search_aiter(item_types,
+                                      filter,
+                                      name=name,
+                                      sort=sort,
+                                      limit=limit)
+        async for item in items_aiter:
             echo_json(item, pretty)
 
 

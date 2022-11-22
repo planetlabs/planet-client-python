@@ -109,11 +109,17 @@ Otherwise, the JSON blob is a list of the individual results.
 >>> async def main():
 ...     async with Session() as sess:
 ...         client = OrdersClient(sess)
-...         orders = client.list_orders()
-...         orders_list = collect(orders)
+...         orders_aiter = client.list_orders_aiter()
+...         orders_list = collect(orders_aiter)
 ...
 >>> asyncio.run(main())
 
+```
+
+Alternatively, these results can be converted to a list directly with
+
+```python
+>>>         orders_list = [o async for o in client.list_orders_aiter()]
 ```
 
 

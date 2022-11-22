@@ -93,56 +93,17 @@ class DataClient:
     def _item_url(self, item_type, item_id):
         return f'{self._base_url}/item-types/{item_type}/items/{item_id}'
 
-    async def search(self,
-                     item_types: List[str],
-                     search_filter: dict,
-                     name: Optional[str] = None,
-                     sort: Optional[str] = None,
-                     limit: int = 100) -> AsyncIterator[dict]:
-        """Execute a quick search.
+    async def search_aiter(self,
+                           item_types: List[str],
+                           search_filter: dict,
+                           name: Optional[str] = None,
+                           sort: Optional[str] = None,
+                           limit: int = 100) -> AsyncIterator[dict]:
+        """Iterate over results from a quick search.
 
         Quick searches are saved for a short period of time (~month). The
         `name` parameter of the search defaults to the id of the generated
         search id if `name` is not specified.
-
-        To filter to items you have access to download which are of standard
-        (aka not test) quality, use the following:
-
-        ```python
-        >>> from planet import data_filter
-        >>> data_filter.and_filter([
-        ...     data_filter.permission_filter(),
-        ...     data_filter.std_quality_filter()
-        >>> ])
-
-        ```
-
-        To avoid filtering out any imagery, supply a blank AndFilter, which can
-        be created with `data_filter.and_filter([])`.
-
-        Example:
-
-        ```python
-        >>> import asyncio
-        >>> from planet import Session, DataClient
-        >>>
-        >>> async def main():
-        ...     item_types = ['PSScene']
-        ...     sfilter = {
-        ...         "type":"DateRangeFilter",
-        ...         "field_name":"acquired",
-        ...         "config":{
-        ...             "gt":"2019-12-31T00:00:00Z",
-        ...             "lte":"2020-01-31T00:00:00Z"
-        ...         }
-        ...     }
-        ...     async with Session() as sess:
-        ...         cl = DataClient(sess)
-        ...         items = await cl.quick_search(item_types, sfilter)
-        ...
-        >>> asyncio.run(main())
-
-        ```
 
         Parameters:
             item_types: The item types to include in the search.
@@ -153,8 +114,8 @@ class DataClient:
             limit: Maximum number of results to return. When set to 0, no
                 maximum is applied.
 
-        Returns:
-            Returns an iterator over all items matching the search.
+        Yields:
+            Description of an item.
 
         Raises:
             planet.exceptions.APIError: On API error.
@@ -178,7 +139,8 @@ class DataClient:
                                                url=url,
                                                json=request_json,
                                                params=params)
-        return Items(response, self._session.request, limit=limit)
+        async for i in Items(response, self._session.request, limit=limit):
+            yield i
 
     async def create_search(self,
                             name: str,
@@ -262,11 +224,11 @@ class DataClient:
                                                json=request)
         return response.json()
 
-    async def list_searches(self,
-                            sort: str = 'created desc',
-                            search_type: str = 'any',
-                            limit: int = 100) -> AsyncIterator[dict]:
-        """List all saved searches available to the authenticated user.
+    async def list_searches_aiter(self,
+                                  sort: str = 'created desc',
+                                  search_type: str = 'any',
+                                  limit: int = 100) -> AsyncIterator[dict]:
+        """Iterate through list of searches available to the user.
 
         NOTE: the term 'saved' is overloaded here. We want to list saved
         searches that are 'quick' or list saved searches that are 'saved'? Do
@@ -279,8 +241,8 @@ class DataClient:
             limit: Maximum number of results to return. When set to 0, no
                 maximum is applied.
 
-        Returns:
-            An iterator over all searches that match filter.
+        Yields:
+            Description of a search.
 
         Raises:
             planet.exceptions.APIError: On API error.
@@ -300,7 +262,8 @@ class DataClient:
         url = f'{self._searches_url()}'
 
         response = await self._session.request(method='GET', url=url)
-        return Searches(response, self._session.request, limit=limit)
+        async for s in Searches(response, self._session.request, limit=limit):
+            yield s
 
     async def delete_search(self, search_id: str):
         """Delete an existing saved search.
@@ -332,18 +295,18 @@ class DataClient:
         response = await self._session.request(method='GET', url=url)
         return response.json()
 
-    async def run_search(self,
-                         search_id: str,
-                         limit: int = 100) -> AsyncIterator[dict]:
-        """Execute a saved search.
+    async def run_search_aiter(self,
+                               search_id: str,
+                               limit: int = 100) -> AsyncIterator[dict]:
+        """Iterate over results from a saved search.
 
         Parameters:
             search_id: Stored search identifier.
             limit: Maximum number of results to return. When set to 0, no
                 maximum is applied.
 
-        Returns:
-            Returns an iterator over all items matching the search.
+        Yields:
+            Description of an item.
 
         Raises:
             planet.exceptions.APIError: On API error.
@@ -351,7 +314,8 @@ class DataClient:
         url = f'{self._searches_url()}/{search_id}/results'
 
         response = await self._session.request(method='GET', url=url)
-        return Items(response, self._session.request, limit=limit)
+        async for i in Items(response, self._session.request, limit=limit):
+            yield i
 
     async def get_stats(self,
                         item_types: List[str],
