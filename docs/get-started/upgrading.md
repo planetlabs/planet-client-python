@@ -73,10 +73,9 @@ planet.api.ClientV1().quick_search(filters.build_search_request(all_filters, ["P
 
 Is now
 
-```console
+```python
 async with Session() as session: 
-planet.DataClient(session).quick_search(["PSScene"], all_filters)
-```
+    items_aiter = planet.DataClient(session).search_aiter(["PSScene"], all_filters)
 
 ## Orders API
 
