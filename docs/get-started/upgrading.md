@@ -67,7 +67,7 @@ The Data API portion of SDK V2 is quite similar to V1, although some filters hav
 
 `filters.build_seach_request` no longer exists, and has instead been integrated into the replacement for `client.quick_seach`. For example:
 
-```console
+```python
 planet.api.ClientV1().quick_search(filters.build_search_request(all_filters, ["PSScene"]))
 ```
 
