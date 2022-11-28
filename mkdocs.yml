@@ -91,3 +91,5 @@ markdown_extensions:
   - pymdownx.superfences
   - mkdocs-click
   - admonition
+  - toc:
+      permalink: True
