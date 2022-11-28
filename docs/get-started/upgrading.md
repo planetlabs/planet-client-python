@@ -35,7 +35,7 @@ For more information about Session, refer to the [Python SDK User Guide](../../p
 
 With the V1 client, all communication was synchronous. Asynchronous bulk support was provided with the `downloader` module. There was no built-in support for polling when an order was ready to download or tracking when an order was downloaded.
 
-In V2, all `*Client` methods (for example, `DataClient().quick_search`, `OrderClient().create_order`) are asynchronous. Any functions that call such methods must include `async` in their definition. To invoke asynchronous methods from synchronous code, you can wrap the async method calls in `asyncio.run()`. The following is an example of using async with session.
+In V2, all `*Client` methods (for example, `DataClient().search_aiter`, `OrderClient().create_order`) are asynchronous. Any functions that call such methods must include `async` in their definition. To invoke asynchronous methods from synchronous code, you can wrap the async method calls in `asyncio.run()`. The following is an example of using async with session.
 
 ```python
 import asyncio
