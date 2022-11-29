@@ -76,6 +76,7 @@ Is now
 ```python
 async with Session() as session: 
     items_aiter = planet.DataClient(session).search_aiter(["PSScene"], all_filters)
+```
 
 ## Orders API
 
