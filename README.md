@@ -62,7 +62,7 @@ read from source in the [docs](/docs) directory.
 ## Authentication
 
 Planet's APIs require an account for use. To get started you need to 
-[Get a Planet Account](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/get-started/get-your-planet-account/)
+[Get a Planet Account](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/get-started/get-your-planet-account/).
 
 ## Development
 
