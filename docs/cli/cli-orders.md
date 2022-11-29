@@ -142,7 +142,7 @@ The above command just prints out the necessary JSON to create an order. To actu
 save the output into a file:
 
 ```console
-planet orders request PSScene analytic_sr_udm2 --name "My first Order" --id 20220605_124027_64_242b \
+planet orders request PSScene analytic_sr_udm2 --name "My First Order" --id 20220605_124027_64_242b \
  > request-1.json
 ```
 
@@ -164,19 +164,21 @@ The output of that command is the JSON returned from the server, that reports th
 ```json
 {
   "_links": {
-    "_self": "https://api.planet.com/compute/ops/orders/v2/3b1f250e-72a0-41bb-94ea-8109b6b34e44"
+    "_self": "https://api.planet.com/compute/ops/orders/v2/2887c43b-26be-4bec-8efe-cb9e94f0ef3d"
   },
-  "created_on": "2022-07-16T05:04:36.998Z",
+  "created_on": "2022-11-29T22:49:24.478Z",
   "error_hints": [],
-  "id": "3b1f250e-72a0-41bb-94ea-8109b6b34e44",
+  "id": "2887c43b-26be-4bec-8efe-cb9e94f0ef3d",
   "last_message": "Preparing order",
-  "last_modified": "2022-07-16T05:04:36.998Z",
-  "name": "My Second Order",
+  "last_modified": "2022-11-29T22:49:24.478Z",
+  "metadata": {
+    "stac": {}
+  },
+  "name": "My First Order",
   "products": [
     {
       "item_ids": [
-        "20220605_124027_64_242b",
-        "20220605_124025_34_242b"
+        "20220605_124027_64_242b"
       ],
       "item_type": "PSScene",
       "product_bundle": "analytic_sr_udm2"
@@ -198,7 +200,7 @@ command:
 
 ```console
 planet orders request PSScene analytic_sr_udm2 --name "My Second Order" \
---id 20220605_124027_64_242b,20220605_124025_34_242b | planet orders create
+--id 20220605_124027_64_242b,20220605_124025_34_242b | planet orders create -
 ```
 
 The Planet CLI is designed to work well with piping, as it aims at small commands that can be 
@@ -271,7 +273,7 @@ mkdir psscene
 planet orders download 782b414e-4e34-4f31-86f4-5b757bd062d7 --directory psscene
 ```
 
-You can also specify absolute directories (int his case to my desktop):
+You can also specify absolute directories (in this case to my desktop):
 
 ```console
 planet orders download 782b414e-4e34-4f31-86f4-5b757bd062d7 --directory /Users/cholmes/Desktop/
@@ -306,7 +308,7 @@ gave it. The file given with the `--clip` option should contain valid [GeoJSON](
 It can be a Polygon geometry, a Feature, or a FeatureClass. If it is a FeatureClass,
 only the first Feature is used for the clip geometry.
 
-Example: `aoi.geojson`
+Example: `geometry.geojson`
 ```
 {
     "type": "Polygon",
@@ -338,9 +340,9 @@ Example: `aoi.geojson`
 ```
 
 We'll work with a geojson that is already saved. You should download the 
-[geometry](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/data/geometry.geojson)
+[geometry](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/geometry.geojson)
 (and you can see it [on github](https://github.com/planetlabs/planet-client-python/blob/main/docs/data/geometry.geojson)
-or it is also stored in the repo in the [data/](data/) directory. 
+or it is also stored in the repo in the [request-json/](request-json/) directory. 
 
 You can move that geometry to your current directory and use the following command, or
 tweak the geometry.geojson to refer to where you downloaded it.
@@ -356,7 +358,7 @@ Since clip is so heavily used it has its own dedicated command in the CLI. All
 the other tools use the `--tools` option, that points to a file. The file should 
 contain JSON that follows the format for a toolchain, the "tools" section of an order. 
 The toolchain options and format are given in
-[Creating Toolchains](https://developers.planet.com/docs/orders/tools-toolchains/#creating-toolchains).
+[Creating Toolchains](https://developers.planet.com/apis/orders/tools/#creating-toolchains).
 
 Example: `tools.json`
 ```
@@ -417,20 +419,20 @@ can pipe that to `orders create`.
 
 ```console
 planet orders request PSScene analytic_sr_udm2 --name "Two Scenes Composited" \
---id 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-composite.json | planet orders create
+--id 20220605_124027_64_242b,20220605_124025_34_242b --no-stac --tools tools-composite.json | planet orders create
 ```
+
+Note that we add the `--no-stac` option as [STAC Metadata](#stac-metadata) is not yet supported by the composite 
+operation, but STAC metadata is requested by default with the CLI.
 
 ### Output as COG
 
-If you'd like the above order as a COG you Get the output as a cloud-optimized GeoTIFF:
+If you'd like to ensure the above order is a Cloud-Optimized Geotiff then you can request it 
+as COG in the file format tool.
 
 
 ```json
 [
-    {
-      "composite": {
-        }
-    },
     {
     "file_format": {
         "format": "COG"
@@ -439,28 +441,69 @@ If you'd like the above order as a COG you Get the output as a cloud-optimized G
 ]
 ```
 
-The following command just shows the output, you can pipe into orders create if you'd like:
+The following command just shows the output:
 
 ```console
 planet orders request PSScene analytic_sr_udm2 --name "Two Scenes Composited" \
  --id 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-cog.json
 ```
 
+As shown above you can also pipe that output directly in to `orders create`. 
+
 ### Clip & Composite
 
 To clip and composite you need to specify the clip in the tools (instead of `--clip`), as you can
 not use `--clip` and `--tools` in the same call. There is not yet CLI calls to generate the `tools.json`,
-so you can just grab the [full tools.json](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/data/tools-clip-composite.json)
+so you can just use the following json:
+
+```
+[
+    {
+        "composite": {}
+    },
+    {
+        "clip": {
+            "aoi": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -48.492541,
+                            -1.404126
+                        ],
+                        [
+                            -48.512879,
+                            -1.504392
+                        ],
+                        [
+                            -48.398017,
+                            -1.52127
+                        ],
+                        [
+                            -48.380419,
+                            -1.423805
+                        ],
+                        [
+                            -48.492541,
+                            -1.404126
+                        ]
+                    ]
+                ]
+            }
+        }
+    }
+]
+```
 
 ```console
-planet orders request PSScene analytic_sr_udm2 --name "Two Scenes Clipped and Composited" \
- --id 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-clip-composite.json
+planet orders request PSScene analytic_sr_udm2 --no-stac --name "Two Scenes Clipped and Composited" \
+ --id 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-clip-composite.json | planet orders create -
 ```
 
 One cool little trick is that you can even stream in the JSON directly with `curl`, piping it into the request:
 
 ```console
-curl -s https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/data/tools-clip-composite.json \
+curl -s https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/tools-clip-composite.json \
 | planet orders request PSScene analytic_sr_udm2 --name "Streaming Clip & Composite" \
  --id 20220605_124027_64_242b,20220605_124025_34_242b --tools - | planet orders create
 ```
