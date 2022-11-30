@@ -349,7 +349,7 @@ Example: `geometry.geojson`
 
 We'll work with a geojson that is already saved. You should download the 
 [geometry](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/geometry.geojson)
-(and you can see it [on github](https://github.com/planetlabs/planet-client-python/blob/main/docs/data/geometry.geojson)
+(and you can see it [on github](https://github.com/planetlabs/planet-client-python/blob/main/docs/cli/request-json/geometry.geojson)
 or it is also stored in the repo in the [request-json/](request-json/) directory. 
 
 You can move that geometry to your current directory and use the following command, or
@@ -462,7 +462,7 @@ As shown above you can also pipe that output directly in to `orders create`.
 
 To clip and composite you need to specify the clip in the tools (instead of `--clip`), as you can
 not use `--clip` and `--tools` in the same call. There is not yet CLI calls to generate the `tools.json`,
-so you can just use the following json:
+so you can just use the [following json](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/tools-clip-composite.json):
 
 ```
 [
