@@ -21,9 +21,9 @@ Once in Explorer, you can select the user icon in the upper right corner to go t
      "
      alt="My Account Icon in Planet Explorer" >
 
-### Sign up for the Planet Developer Trial
+### Sign up for the Planet Developer Program
 
-If you don’t have an account, but you’d like to take our APIs for a spin and see how you might intergrate Planet into your existing geospatial workflows, you can sign up for a <a href="https://developers.planet.com/devtrial/" target="_blank">Developer Trial</a>.
+If you don’t have an account, but you’d like to take our APIs for a spin and see how you might intergrate Planet into your existing geospatial workflows, you can sign up for the <a href="https://developers.planet.com/devtrial/" target="_blank">Developer Program</a>.
 
 ## Authenticating with the Planet server
 
