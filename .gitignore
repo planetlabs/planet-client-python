@@ -21,11 +21,6 @@ coverage.xml
 .DS_Store
 
 *.pyc
-*.jpg
-*.jpeg
-*.png
-*.tif*
-*.geojson
 
 # Editors
 .vscode/
