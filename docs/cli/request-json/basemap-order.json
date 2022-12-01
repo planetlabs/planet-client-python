@@ -1,0 +1,26 @@
+{
+   "name": "basemap order with geometry",
+   "source_type": "basemaps",
+   "order_type":"partial",
+   "products": [
+       {
+           "mosaic_name": "global_monthly_2022_01_mosaic",
+           "geometry":{
+               "type": "Polygon",
+               "coordinates":[
+                   [
+                       [4.607406, 52.353994],
+                       [4.680005, 52.353994],
+                       [4.680005, 52.395523],
+                       [4.607406, 52.395523],
+                       [4.607406, 52.353994]
+                   ]
+               ]
+           }
+      }
+  ],
+    "tools": [
+      {"merge": {}},
+      {"clip": {}}
+  ]
+}
