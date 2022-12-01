@@ -541,7 +541,7 @@ planet orders request psscene analytic_sr_udm2 --name 'Harmonized data' --id 202
 ### STAC Metadata
 
 A relatively recent addition to Planet's orders delivery is the inclusion of [SpatioTemporal Asset Catalog](https://stacspec.org/en)
-(STAC) metadata in Orders. This provides a more standard set of JSON fields, that work with a number of 
+(STAC) metadata in Orders. STAC metadata provides a more standard set of JSON fields that work with 
 many GIS and geospatial [STAC-enabled tools](https://stacindex.org/ecosystem). The CLI `orders request` command currently requests
 STAC metadata by default, as the STAC files are small and often more useful than the default JSON metadata.
 You can easily turn off STAC output request with the `--no-stac` command:
