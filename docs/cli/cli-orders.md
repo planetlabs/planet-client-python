@@ -631,7 +631,7 @@ You'll need to use a full orders request JSON.
 }
 ```
 
-Once you've got the JSON the other commands are all the same. Use create to submit it to the API:
+Once you've got the JSON, the other commands are all the same. Use create to submit it to the API:
 
 ```
 planet orders create basemap-order.json
