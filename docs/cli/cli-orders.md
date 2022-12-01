@@ -410,7 +410,7 @@ Ordering two scenes is easy, just add another id:
 
 ```console
 planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Two Scenes' \
- 20220605_124027_64_242b,20220605_124025_34_242b | planet orders create
+ 20220605_124027_64_242b,20220605_124025_34_242b | planet orders create - 
 ```
 
 And then you can composite them together, using the 'tools' json. You can 
@@ -430,7 +430,7 @@ can pipe that to `orders create`.
 
 ```console
 planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Two Scenes Composited' \
- 20220605_124027_64_242b,20220605_124025_34_242b --no-stac --tools tools-composite.json | planet orders create
+ 20220605_124027_64_242b,20220605_124025_34_242b --no-stac --tools tools-composite.json | planet orders create - 
 ```
 
 Note that we add the `--no-stac` option as [STAC Metadata](#stac-metadata) is not yet supported by the composite 
@@ -516,7 +516,7 @@ One cool little trick is that you can even stream in the JSON directly with `cur
 ```console
 curl -s https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/tools-clip-composite.json \
 | planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Streaming Clip & Composite' \
- 20220605_124027_64_242b,20220605_124025_34_242b --tools - | planet orders create
+ 20220605_124027_64_242b,20220605_124025_34_242b --tools - | planet orders create - 
 ```
 
 ### Harmonize
@@ -673,7 +673,7 @@ image that was published:
 ```console
 planet orders request --item-type SkySatCollect --bundle analytic --name 'SkySat Latest' \
  `planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id` \
- | planet orders create
+| planet orders create - 
 ```
 
 Or get the 5 latest cloud free images in an area and create an order that clips to that area, using 
