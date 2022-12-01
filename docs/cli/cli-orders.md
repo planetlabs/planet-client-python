@@ -361,7 +361,7 @@ tweak the geometry.geojson to refer to where you downloaded it.
 
 ```console
 planet orders request --item-type PSScene --bundle analytic_sr_udm2 --clip geometry.geojson --name clipped-geom \
- 20220605_124027_64_242b | planet orders create
+ 20220605_124027_64_242b | planet orders create - 
 ```
 
 ### Additional Tools
