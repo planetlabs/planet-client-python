@@ -8,7 +8,7 @@ title: Resources
 
 The following examples were created specifically to show you how to use the SDK and CLI:
 
-* [download_multiple_assets.py](https://github.com/planetlabs/planet-client-python/blob/main/examples/download_multiple_assets.py) - this Python script orders, activates, and downloads two assets
+* [data_download_multiple_assets.py](https://github.com/planetlabs/planet-client-python/blob/main/examples/data_download_multiple_assets.py) - this Python script orders, activates, and downloads two assets
 * [orders_create_and_download_multiple_orders.py](https://github.com/planetlabs/planet-client-python/blob/main/examples/orders_create_and_download_multiple_orders.py) - this Python script creates two orders, each with unique Area of Interest (AoI), preventing a combined download
 * [Planet API Python Client](https://github.com/planetlabs/notebooks/blob/master/jupyter-notebooks/data-api-tutorials/planet_python_client_introduction.ipynb) - a Python notebook to introduce Planet’s Data API and the `planet` module
 * [Orders API & Planet SDK](https://github.com/planetlabs/notebooks/blob/665f165e59f2c3584976ad2dde569c649e631c0b/jupyter-notebooks/orders_api_tutorials/Planet_SDK_Orders_demo.ipynb) - a Python notebook shows how to get started with Planet SDK and the Orders API.
