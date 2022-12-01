@@ -595,7 +595,7 @@ and use the CLI to customize it.
 
 ### Basemaps Orders
 
-One of the newer features in Planet's orders API is the ability to [order basemaps](https://developers.planet.com/apis/orders/basemaps/).
+One of the newer features in Planet's Orders API is the ability to [order basemaps](https://developers.planet.com/apis/orders/basemaps/).
 The CLI does not yet support a 'convenience' method to easily create the JSON - you unfortunately
 can't yet use `planet orders request` to help form an orders request. But all the other CLI functionality
 supports it, due to the modular design of the CLI.
