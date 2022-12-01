@@ -14,9 +14,15 @@ This guide walks you through the steps:
 
 ## Create a session
 
-Communication with the Planet services is provided with the `Session` class.
-The recommended way to use a `Session` is as a context manager. This will
-provide for automatic clean up of connections when the context is left.
+This Planet SDK for Python is a RESTful application at its core. So the code you create here is about preparing a client request with some parameters (for example, your Area of Interest, a filter, your API key, and so on). Your client request exists within a communications session with a Planet service. And you wait for a response from the service.
+
+Of course, sitting around and waiting is not very efficient. You want your code to do other tasks at the same time it’s waiting. So you want coroutines that can happen at the same time. Async io is a model for doing this. And asyncio is the Python library you can use to do so. If you want to learn more, you can read all about Async io and asyncio in the article [Async IO in Python: A Complete Walkthrough](https://realpython.com/async-io-python/).
+
+Here, we’ll explain how to use an async session as a wrapper around your client requests. We’ll provide the boilerplate code and comments like `# perform operations here` to make it easier to jump in and start making client requests.
+
+As with any call to a service, your client session needs to make a connection to the services and to end it when done. To make sure you’re properly entering and exiting the session, it’s best to use a context manager. That means your `async` method is an `async with` a context manager that is responsible for the session and cleaning it up afterwards.
+
+In the following boilerplate code you’ll see `main` defined as an async method that will `perform operations` (do stuff) within the `Session()` context. The word `with` is a context management keyword.
 
 ```python
 import asyncio
@@ -32,7 +38,7 @@ asyncio.run(main())
 
 ```
 
-Alternatively, use `await Session.aclose()` to close a `Session` explicitly:
+If you don’t want to use a context manager for the session, alternatively, don’t use `async with` and instead use `await Session.aclose()` to close a `Session` explicitly:
 
 ```python
 async def main():
@@ -380,5 +386,3 @@ async def download_and_validate():
         # validate download file
         cl.validate_checksum(asset, path)
 ```
-
-
