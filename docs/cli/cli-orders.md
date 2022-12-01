@@ -684,5 +684,5 @@ planet orders request PSScene analytic_sr_udm2 --name 'Clipped Scenes'  \
 ```
 
 This one uses some advanced unix capabilities like `sed` and `tr`, along with unix variables, so more
-properly belongs in the [CLI Tips & Tricks]](cli-tips-tricks.md), but we'll leave it here to give a taste
+properly belongs in the [CLI Tips & Tricks](cli-tips-tricks.md), but we'll leave it here to give a taste
 of what's possible.
