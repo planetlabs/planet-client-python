@@ -2,8 +2,17 @@
 title: Python SDK User Guide
 ---
 
-## API
-### Session
+This guide is for Planet SDK for Python users who want to use Python code to search, order, customize, and deliver Planet imagery and data. If you’re new to Python, you may want to choose the no-code option of using the [command-line interface (CLI)](../../cli/cli-guide). But if you’ve successfully followed the instructions to [get started](../../get-started/quick-start-guide) and you’re ready to try your hand at Python coding, this guide should be all you need to use this SDK to get Planet data.
+
+This guide walks you through the steps:
+
+* **[Create a session](#create-a-session)**—set up a context for calling on Planet servers and receiving data back.
+* **[Authenticate](#authenticate-with-planet-services)**—pass your API key to Planet services to verify your permissions to data.
+* **[Create an order](#create-an-order)**—how to build an orders client, send the request within the session context, and download it when it’s ready.
+* **[Collect and list data](#collecting-results)**—handle the potentially large number of results from a search for imagery
+* **[Query the data catalog](#query-the-data-catalog)**—search the catalog based on a filter, activate the assets you want, and download and validate it when it’s ready.
+
+## Create a session
 
 Communication with the Planet services is provided with the `Session` class.
 The recommended way to use a `Session` is as a context manager. This will
@@ -35,7 +44,7 @@ asyncio.run(main())
 
 ```
 
-### Authentication
+## Authenticate with Planet services
 
 There are two steps to managing authentication information, obtaining the
 authentication information from Planet and then managing it for local retrieval
@@ -90,40 +99,7 @@ asyncio.run(main())
 
 ```
 
-
-### Collecting Results
-
-Some API calls, such as searching for imagery and listing orders, return a
-varying, and potentially large, number of results. These API responses are
-paged. The SDK manages paging internally and the associated client commands
-return an asynchronous iterator over the results. These results can be
-converted to a JSON blob using the `collect` command. When the results
-represent GeoJSON features, the JSON blob is a GeoJSON FeatureCollection.
-Otherwise, the JSON blob is a list of the individual results.
-
-
-```python
-import asyncio
-from planet import collect, OrdersClient, Session
-
-async def main():
-    async with Session() as sess:
-        client = OrdersClient(sess)
-        orders_aiter = client.list_orders_aiter()
-        orders_list = collect(orders_aiter)
-
-asyncio.run(main())
-
-```
-
-Alternatively, these results can be converted to a list directly with
-
-```python
-        orders_list = [o async for o in client.list_orders_aiter()]
-```
-
-
-### Orders Client
+## Create an order
 
 The Orders Client mostly mirrors the
 [Orders API](https://developers.planet.com/docs/orders/reference/#tag/Orders),
@@ -142,7 +118,7 @@ asyncio.run(main())
 
 ```
 
-#### Creating an Order
+### Your orders client
 
 When creating an order, the order request details must be provided to the API
 as a JSON blob. This JSON blob can be built up manually or by using the
@@ -224,7 +200,7 @@ asyncio.run(main())
 
 ```
 
-#### Waiting and Downloading an Order
+### Waiting and downloading an order
 
 Once an order is created, the Orders API takes some time to create the order
 and thus we must wait a while before downloading the order.
@@ -256,7 +232,7 @@ async def create_wait_and_download():
 asyncio.run(create_poll_and_download())
 ```
 
-#### Validating Checksums
+### Validating checksums
 
 Checksum validation provides for verification that the files in an order have
 been downloaded successfully and are not missing, corrupted, or changed. This
@@ -274,10 +250,38 @@ order_path = Path('193e5bd1-dedc-4c65-a539-6bc70e55d928')
 OrdersClient.validate_checksum(order_path, 'md5')
 ```
 
+## Collecting results
+
+Some API calls, such as searching for imagery and listing orders, return a
+varying, and potentially large, number of results. These API responses are
+paged. The SDK manages paging internally and the associated client commands
+return an asynchronous iterator over the results. These results can be
+converted to a JSON blob using the `collect` command. When the results
+represent GeoJSON features, the JSON blob is a GeoJSON FeatureCollection.
+Otherwise, the JSON blob is a list of the individual results.
 
 
+```python
+import asyncio
+from planet import collect, OrdersClient, Session
 
-### Data Client
+async def main():
+    async with Session() as sess:
+        client = OrdersClient(sess)
+        orders_aiter = client.list_orders_aiter()
+        orders_list = collect(orders_aiter)
+
+asyncio.run(main())
+
+```
+
+Alternatively, these results can be converted to a list directly with
+
+```python
+        orders_list = [o async for o in client.list_orders_aiter()]
+```
+
+## Query the data catalog
 
 The Data Client mostly mirrors the
 [Data API](https://developers.planet.com/docs/apis/data/reference/),
@@ -296,7 +300,7 @@ asyncio.run(main())
 
 ```
 
-#### Filter
+### Filter
 
 When performing a quick search, creating or updating a saved search, or
 requesting stats, the data search filter must be provided to the API
@@ -342,7 +346,7 @@ async def main():
 asyncio.run(main())
 ```
 
-#### Downloading an Asset
+### Downloading an asset
 
 Downloading an asset is a multi-step process involving: activating the asset,
 waiting for the asset to be active, downloading the asset, and, optionally,
