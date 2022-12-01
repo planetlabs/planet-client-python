@@ -8,8 +8,8 @@ This guide walks you through the steps:
 
 * **[Create a session](#create-a-session)**—set up a context for calling on Planet servers and receiving data back.
 * **[Authenticate](#authenticate-with-planet-services)**—pass your API key to Planet services to verify your permissions to data.
-* **[Create an order](#create-an-order)**—how to build an orders client, send the request within the session context, and download it when it’s ready.
-* **[Collect and list data](#collecting-results)**—handle the potentially large number of results from a search for imagery
+* **[Create an order](#create-an-order)**build an orders client, send the request within the session context, and download it when it’s ready.
+* **[Collect and list data](#collecting-results)**—handle the potentially large number of results from a search for imagery.
 * **[Query the data catalog](#query-the-data-catalog)**—search the catalog based on a filter, activate the assets you want, and download and validate it when it’s ready.
 
 ## Create a session
