@@ -225,22 +225,21 @@ async def create(ctx, request: str, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument('item_type',
-                metavar='ITEM_TYPE',
-                type=click.Choice(planet.specs.get_item_types(),
-                                  case_sensitive=False))
-@click.argument('bundle',
-                metavar='BUNDLE',
-                type=click.Choice(planet.specs.get_product_bundles(),
-                                  case_sensitive=False))
+@click.argument('ids', metavar='IDS', type=types.CommaSeparatedString())
+@click.option('--item-type',
+              required=True,
+              help='Item type for requested item ids.',
+              type=click.Choice(planet.specs.get_item_types(),
+                                case_sensitive=False))
+@click.option('--bundle',
+              required=True,
+              help='Asset type for the item.',
+              type=click.Choice(planet.specs.get_product_bundles(),
+                                case_sensitive=False))
 @click.option('--name',
               required=True,
               help='Order name. Does not need to be unique.',
               type=click.STRING)
-@click.option('--id',
-              help='One or more comma-separated item IDs.',
-              type=types.CommaSeparatedString(),
-              required=True)
 @click.option('--clip',
               type=types.JSON(),
               help="""Clip feature GeoJSON. Can be a json string, filename,
@@ -270,7 +269,7 @@ async def request(ctx,
                   item_type,
                   bundle,
                   name,
-                  id,
+                  ids,
                   clip,
                   tools,
                   email,
@@ -280,11 +279,13 @@ async def request(ctx,
     """Generate an order request.
 
     This command provides support for building an order description used
-    in creating an order. It outputs the order request, optionally pretty-
-    printed.
+    in creating an order. It outputs the order request, optionally
+    pretty-printed.
+
+    IDs is one or more comma-separated item IDs.
     """
     try:
-        product = planet.order_request.product(id, bundle, item_type)
+        product = planet.order_request.product(ids, bundle, item_type)
     except planet.specs.SpecificationException as e:
         raise click.BadParameter(e)
 
