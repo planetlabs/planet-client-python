@@ -1,5 +1,5 @@
 site_name: Planet SDK for Python
-site_url: https://planetlabs.github.io/planet-client-python/
+site_url: https://planet-sdk-for-python-v2.readthedocs.io/en/latest/
 site_author: https://developers.planet.com
 site_description: >-
   A Python library to discover and retrieve earth observation data from Planet Labs PBC.
@@ -38,8 +38,6 @@ theme:
         name: Switch to light mode
 
 extra:
-  version:
-    provider: mike
   company:
     name: "Planet Labs PBC"
   product:
