@@ -104,3 +104,11 @@ def test_cli_auth_value_failure(redirect_secretfile):
     assert result.exception
     assert 'Error: Auth information does not exist or is corrupted.' \
         in result.output
+
+
+def test_cli_auth_set(redirect_secretfile):
+    result = CliRunner().invoke(cli.main, ['auth', 'set', 'setval'])
+    assert not result.exception
+
+    with open(redirect_secretfile, 'r') as f:
+        assert json.load(f) == {'key': 'setval'}

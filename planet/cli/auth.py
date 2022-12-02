@@ -57,3 +57,13 @@ def init(ctx, email, password):
 def value():
     '''Print the stored authentication information'''
     click.echo(planet.Auth.from_file().value)
+
+
+@auth.command()
+@translate_exceptions
+@click.argument('key')
+def set(key):
+    '''Store authentication information'''
+    plauth = planet.Auth.from_key(key)
+    plauth.write()
+    click.echo('Updated')
