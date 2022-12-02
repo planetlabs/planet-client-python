@@ -25,14 +25,13 @@ import httpx
 import jwt
 
 from . import http
-from .constants import PLANET_BASE_URL, SECRET_FILE_PATH
+from .constants import ENV_API_KEY, PLANET_BASE_URL, SECRET_FILE_PATH
 from .exceptions import AuthException
 from typing import Optional
 
 LOGGER = logging.getLogger(__name__)
 
 BASE_URL = f'{PLANET_BASE_URL}/v0/auth'
-ENV_API_KEY = 'PL_API_KEY'
 
 AuthType = httpx.Auth
 
