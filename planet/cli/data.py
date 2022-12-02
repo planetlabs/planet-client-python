@@ -37,10 +37,8 @@ valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(ALL_ITEM_TYPES)
 
 @asynccontextmanager
 async def data_client(ctx):
-    auth = ctx.obj['AUTH']
-    base_url = ctx.obj['BASE_URL']
-    async with CliSession(auth=auth) as sess:
-        cl = DataClient(sess, base_url=base_url)
+    async with CliSession() as sess:
+        cl = DataClient(sess, base_url=ctx.obj['BASE_URL'])
         yield cl
 
 
@@ -52,7 +50,6 @@ async def data_client(ctx):
               help='Assign custom base Orders API URL.')
 def data(ctx, base_url):
     '''Commands for interacting with the Data API'''
-    ctx.obj['AUTH'] = None
     ctx.obj['BASE_URL'] = base_url
 
 
