@@ -68,7 +68,7 @@ def value():
 @auth.command()
 @translate_exceptions
 @click.argument('key')
-def set(key):
+def store(key):
     '''Store authentication information'''
     plauth = planet.Auth.from_key(key)
     if click.confirm('This overrides the stored value. Continue?'):

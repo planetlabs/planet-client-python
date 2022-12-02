@@ -107,14 +107,16 @@ def test_cli_auth_value_failure(redirect_secretfile):
         in result.output
 
 
-def test_cli_auth_set_cancel(redirect_secretfile):
-    result = CliRunner().invoke(cli.main, ['auth', 'set', 'setval'], input='')
+def test_cli_auth_store_cancel(redirect_secretfile):
+    result = CliRunner().invoke(cli.main, ['auth', 'store', 'setval'],
+                                input='')
     assert not result.exception
     assert not os.path.isfile(redirect_secretfile)
 
 
-def test_cli_auth_set_confirm(redirect_secretfile):
-    result = CliRunner().invoke(cli.main, ['auth', 'set', 'setval'], input='y')
+def test_cli_auth_store_confirm(redirect_secretfile):
+    result = CliRunner().invoke(cli.main, ['auth', 'store', 'setval'],
+                                input='y')
     assert not result.exception
 
     with open(redirect_secretfile, 'r') as f:
