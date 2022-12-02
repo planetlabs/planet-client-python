@@ -13,10 +13,12 @@
 # limitations under the License.
 """Auth API CLI"""
 import logging
+import os
 
 import click
 
 import planet
+from planet.constants import ENV_API_KEY
 from .cmds import translate_exceptions
 
 LOGGER = logging.getLogger(__name__)
@@ -50,6 +52,10 @@ def init(ctx, email, password):
     plauth = planet.Auth.from_login(email, password, base_url=base_url)
     plauth.write()
     click.echo('Initialized')
+    if os.getenv(ENV_API_KEY):
+        click.echo(f'Warning - Environment variable {ENV_API_KEY} already '
+                   'exists. To update, with the new value, use the following:')
+        click.echo(f'export {ENV_API_KEY}=$(planet auth value)')
 
 
 @auth.command()
@@ -65,5 +71,11 @@ def value():
 def set(key):
     '''Store authentication information'''
     plauth = planet.Auth.from_key(key)
-    plauth.write()
-    click.echo('Updated')
+    if click.confirm('This overrides the stored value. Continue?'):
+        plauth.write()
+        click.echo('Updated')
+        if os.getenv(ENV_API_KEY):
+            click.echo(f'Warning - Environment variable {ENV_API_KEY} already '
+                       'exists. To update, with the new value, use the '
+                       'following:')
+            click.echo(f'export {ENV_API_KEY}=$(planet auth value)')
