@@ -1,11 +1,12 @@
 """CLI HTTP/auth sessions."""
 
-from planet.auth import Auth
+from planet.auth import AuthType
 from planet.http import Session
+from typing import Optional
 
 
 class CliSession(Session):
-    """Session with CLI-specific auth and identifying header"""
-    def __init__(self):
-        super().__init__(Auth.from_file())
+
+    def __init__(self, auth: Optional[AuthType] = None):
+        super().__init__(auth)
         self._client.headers.update({'X-Planet-App': 'python-cli'})

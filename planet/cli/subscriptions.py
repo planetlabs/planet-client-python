@@ -14,7 +14,9 @@ from planet.clients.subscriptions import SubscriptionsClient
 @click.pass_context
 def subscriptions(ctx):
     '''Commands for interacting with the Subscriptions API'''
-    pass
+    # None means that order of precedence is 1) environment variable,
+    # 2) secret file.
+    ctx.obj['AUTH'] = None
 
 
 # We want our command to be known as "list" on the command line but
@@ -38,7 +40,7 @@ def subscriptions(ctx):
 @coro
 async def list_subscriptions_cmd(ctx, status, limit, pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
-    async with CliSession() as session:
+    async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
         subs_aiter = client.list_subscriptions_aiter(status=status,
                                                      limit=limit)
@@ -75,7 +77,7 @@ def parse_request(ctx, param, value: str) -> dict:
 @coro
 async def create_subscription_cmd(ctx, request, pretty):
     """Submits a subscription request and prints the API response."""
-    async with CliSession() as session:
+    async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
         sub = await client.create_subscription(request)
         echo_json(sub, pretty)
@@ -89,7 +91,7 @@ async def create_subscription_cmd(ctx, request, pretty):
 @coro
 async def cancel_subscription_cmd(ctx, subscription_id, pretty):
     """Cancels a subscription and prints the API response."""
-    async with CliSession() as session:
+    async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
         sub = await client.cancel_subscription(subscription_id)
         echo_json(sub, pretty)
@@ -104,7 +106,7 @@ async def cancel_subscription_cmd(ctx, subscription_id, pretty):
 @coro
 async def update_subscription_cmd(ctx, subscription_id, request, pretty):
     """Updates a subscription and prints the API response."""
-    async with CliSession() as session:
+    async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
         sub = await client.update_subscription(subscription_id, request)
         echo_json(sub, pretty)
@@ -118,7 +120,7 @@ async def update_subscription_cmd(ctx, subscription_id, request, pretty):
 @coro
 async def describe_subscription_cmd(ctx, subscription_id, pretty):
     """Gets the description of a subscription and prints the API response."""
-    async with CliSession() as session:
+    async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
         sub = await client.get_subscription(subscription_id)
         echo_json(sub, pretty)
@@ -154,7 +156,7 @@ async def list_subscription_results_cmd(ctx,
                                         status,
                                         limit):
     """Gets results of a subscription and prints the API response."""
-    async with CliSession() as session:
+    async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
         results_aiter = client.get_results_aiter(subscription_id,
                                                  status=status,
