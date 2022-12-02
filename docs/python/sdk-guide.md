@@ -46,15 +46,18 @@ asyncio.run(main())
 
 ## Authenticate with Planet services
 
-There are two steps to managing authentication information, obtaining the
-authentication information from Planet and then managing it for local retrieval
-for authentication purposes.
+A `Session` requires authentication to communicate with Planet services. This
+authentication information is retrieved when a `Session` is created. By default,
+a `Session` obtains authorization from the following sources with order
+indicating priority:
 
-The recommended method for obtaining authentication information is through
-logging in, using `Auth.from_login()` (note: using something like the `getpass`
-module is recommended to ensure your password remains secure). Alternatively,
-the api key can be obtained directly from the Planet account site and then used
-in `Auth.from_key()`.
+1. The environment variable `PL_API_KEY`
+2. The secret file
+
+The SDK provides the `auth.Auth` class for managing authentication information.
+This module can be used to obtain authentication information from username
+and password with `Auth.from_login()`. Additionally, it can be created with
+the API key obtained directly from the Planet account site with `Auth.from_key(<API_KEY>)`.
 
 Once the authentication information is obtained, the most convenient way of
 managing it for local use is to write it to a secret file using `Auth.write()`.
@@ -69,16 +72,15 @@ from planet import Auth
 
 pw = getpass.getpass()
 auth = Auth.from_login('user', 'pw')
-auth.write()
+auth.store()
 
 ```
 
-When a `Session` is created, by default, authentication is read from the secret
-file created with `Auth.write()`. This behavior can be modified by specifying
+The default authentication behavior of the `Session` can be modified by specifying
 `Auth` explicitly using the methods `Auth.from_file()` and `Auth.from_env()`.
 While `Auth.from_key()` and `Auth.from_login` can be used, it is recommended
 that those functions be used in authentication initialization and the
-authentication information be stored using `Auth.write()`.
+authentication information be stored using `Auth.store()`.
 
 The file and environment variable read from can be customized in the
 respective functions. For example, authentication can be read from a custom
