@@ -134,9 +134,9 @@ class Auth(metaclass=abc.ABCMeta):
     def to_dict(self) -> dict:
         pass
 
-    def write(self,
+    def store(self,
               filename: Optional[typing.Union[str, pathlib.Path]] = None):
-        '''Write authentication information.
+        '''Store authentication information in secret file.
 
         Parameters:
             filename: Alternate path for the planet secret file.

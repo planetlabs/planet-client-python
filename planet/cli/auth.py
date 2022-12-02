@@ -50,7 +50,7 @@ def init(ctx, email, password):
     '''Obtain and store authentication information'''
     base_url = ctx.obj['BASE_URL']
     plauth = planet.Auth.from_login(email, password, base_url=base_url)
-    plauth.write()
+    plauth.store()
     click.echo('Initialized')
     if os.getenv(ENV_API_KEY):
         click.echo(f'Warning - Environment variable {ENV_API_KEY} already '
@@ -72,7 +72,7 @@ def store(key):
     '''Store authentication information'''
     plauth = planet.Auth.from_key(key)
     if click.confirm('This overrides the stored value. Continue?'):
-        plauth.write()
+        plauth.store()
         click.echo('Updated')
         if os.getenv(ENV_API_KEY):
             click.echo(f'Warning - Environment variable {ENV_API_KEY} already '
