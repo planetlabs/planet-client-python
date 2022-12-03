@@ -31,9 +31,8 @@ LOGGER = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def orders_client(ctx):
-    auth = ctx.obj['AUTH']
     base_url = ctx.obj['BASE_URL']
-    async with CliSession(auth=auth) as sess:
+    async with CliSession() as sess:
         cl = OrdersClient(sess, base_url=base_url)
         yield cl
 
@@ -46,7 +45,6 @@ async def orders_client(ctx):
               help='Assign custom base Orders API URL.')
 def orders(ctx, base_url):
     '''Commands for interacting with the Orders API'''
-    ctx.obj['AUTH'] = None
     ctx.obj['BASE_URL'] = base_url
 
 
