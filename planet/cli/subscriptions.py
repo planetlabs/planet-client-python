@@ -42,9 +42,7 @@ async def list_subscriptions_cmd(ctx, status, limit, pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
     async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
-        subs_aiter = client.list_subscriptions_aiter(status=status,
-                                                     limit=limit)
-        async for sub in subs_aiter:
+        async for sub in client.list_subscriptions(status=status, limit=limit):
             echo_json(sub, pretty)
 
 
@@ -158,8 +156,7 @@ async def list_subscription_results_cmd(ctx,
     """Gets results of a subscription and prints the API response."""
     async with CliSession(auth=ctx.obj['AUTH']) as session:
         client = SubscriptionsClient(session)
-        results_aiter = client.get_results_aiter(subscription_id,
-                                                 status=status,
-                                                 limit=limit)
-        async for result in results_aiter:
+        async for result in client.get_results(subscription_id,
+                                               status=status,
+                                               limit=limit):
             echo_json(result, pretty)

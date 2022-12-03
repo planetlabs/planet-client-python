@@ -67,8 +67,7 @@ async def list(ctx, state, limit, pretty):
     optionally pretty-printed.
     '''
     async with orders_client(ctx) as cl:
-        orders_aiter = cl.list_orders_aiter(state=state, limit=limit)
-        async for o in orders_aiter:
+        async for o in cl.list_orders(state=state, limit=limit):
             echo_json(o, pretty)
 
 

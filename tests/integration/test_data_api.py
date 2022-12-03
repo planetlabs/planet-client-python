@@ -67,10 +67,10 @@ def search_response(item_descriptions):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_search_aiter_basic(item_descriptions,
-                                  search_filter,
-                                  search_response,
-                                  session):
+async def test_search_basic(item_descriptions,
+                            search_filter,
+                            search_response,
+                            session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
@@ -89,10 +89,10 @@ async def test_search_aiter_basic(item_descriptions,
     respx.get(next_page_url).return_value = mock_resp2
 
     cl = DataClient(session, base_url=TEST_URL)
-    item_aiter = cl.search_aiter(['PSScene'],
-                                 search_filter,
-                                 name='quick_search')
-    items_list = [i async for i in item_aiter]
+    items_list = [
+        i async for i in cl.search(
+            ['PSScene'], search_filter, name='quick_search')
+    ]
 
     # check that request is correct
     expected_request = {
@@ -109,10 +109,10 @@ async def test_search_aiter_basic(item_descriptions,
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_search_aiter_sort(item_descriptions,
-                                 search_filter,
-                                 search_response,
-                                 session):
+async def test_search_sort(item_descriptions,
+                           search_filter,
+                           search_response,
+                           session):
 
     sort = 'acquired asc'
     quick_search_url = f'{TEST_URL}/quick-search?_sort={sort}'
@@ -125,18 +125,17 @@ async def test_search_aiter_sort(item_descriptions,
     # if the sort parameter is not used correctly, the client will not send
     # the request to the mocked endpoint and this test will fail
     cl = DataClient(session, base_url=TEST_URL)
-    item_aiter = cl.search_aiter(['PSScene'], search_filter, sort=sort)
 
     # run through the iterator to actually initiate the call
-    [i async for i in item_aiter]
+    [i async for i in cl.search(['PSScene'], search_filter, sort=sort)]
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_search_aiter_limit(item_descriptions,
-                                  search_filter,
-                                  search_response,
-                                  session):
+async def test_search_limit(item_descriptions,
+                            search_filter,
+                            search_response,
+                            session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
 
@@ -148,8 +147,9 @@ async def test_search_aiter_limit(item_descriptions,
     respx.post(quick_search_url).return_value = mock_resp
 
     cl = DataClient(session, base_url=TEST_URL)
-    item_aiter = cl.search_aiter(['PSScene'], search_filter, limit=2)
-    items_list = [i async for i in item_aiter]
+    items_list = [
+        i async for i in cl.search(['PSScene'], search_filter, limit=2)
+    ]
 
     # check only the first two results were returned
     assert items_list == item_descriptions[:2]
@@ -297,19 +297,18 @@ async def test_update_search_basic(search_filter, session):
 @respx.mock
 @pytest.mark.asyncio
 @pytest.mark.parametrize("limit, expected_list_length", [(None, 4), (3, 3)])
-async def test_list_searches_aiter_success(limit,
-                                           expected_list_length,
-                                           search_result,
-                                           session):
+async def test_list_searches_success(limit,
+                                     expected_list_length,
+                                     search_result,
+                                     session):
     page1_response = {"_links": {}, "searches": [search_result] * 4}
     route = respx.get(TEST_SEARCHES_URL)
     route.return_value = httpx.Response(200, json=page1_response)
 
     cl = DataClient(session, base_url=TEST_URL)
 
-    search_aiter = cl.list_searches_aiter(limit=limit)
-    searches_list_length = len([s async for s in search_aiter])
-    assert searches_list_length == expected_list_length
+    assert len([s async for s in cl.list_searches(limit=limit)
+                ]) == expected_list_length
 
     assert route.called
 
@@ -320,19 +319,17 @@ async def test_list_searches_aiter_success(limit,
     "sort, search_type, expectation",
     [('DOESNOTEXIST', 'ANY', pytest.raises(exceptions.ClientError)),
      ('CREATED DESC', 'DOESNOTEXIST', pytest.raises(exceptions.ClientError))])
-async def test_list_searches_aiter_args_do_not_match(sort,
-                                                     search_type,
-                                                     expectation,
-                                                     session):
+async def test_list_searches_args_do_not_match(sort,
+                                               search_type,
+                                               expectation,
+                                               session):
     route = respx.get(TEST_SEARCHES_URL)
     route.return_value = httpx.Response(200, json={})
 
     cl = DataClient(session, base_url=TEST_URL)
 
     with expectation:
-        searches_aiter = cl.list_searches_aiter(sort=sort,
-                                                search_type=search_type)
-        [s async for s in searches_aiter]
+        [s async for s in cl.list_searches(sort=sort, search_type=search_type)]
 
     assert not route.called
 
@@ -357,7 +354,7 @@ async def test_delete_search(retcode, expectation, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_run_search_aiter_success(item_descriptions, session):
+async def test_run_search_success(item_descriptions, session):
     sid = 'search_id'
     route = respx.get(f'{TEST_SEARCHES_URL}/{sid}/results')
 
@@ -376,8 +373,7 @@ async def test_run_search_aiter_success(item_descriptions, session):
     respx.get(next_page_url).return_value = mock_resp2
 
     cl = DataClient(session, base_url=TEST_URL)
-    item_aiter = cl.run_search_aiter(sid)
-    items_list = [i async for i in item_aiter]
+    items_list = [i async for i in cl.run_search(sid)]
 
     assert route.called
 
@@ -387,17 +383,14 @@ async def test_run_search_aiter_success(item_descriptions, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_run_search_aiter_doesnotexist(session):
+async def test_run_search_doesnotexist(session):
     sid = 'search_id'
     route = respx.get(f'{TEST_SEARCHES_URL}/{sid}/results')
     route.return_value = httpx.Response(404)
 
     cl = DataClient(session, base_url=TEST_URL)
     with pytest.raises(exceptions.APIError):
-        item_aiter = cl.run_search_aiter(sid)
-        # this won't throw the error until the iterator is processed
-        # issue 476
-        [i async for i in item_aiter]
+        [i async for i in cl.run_search(sid)]
 
     assert route.called
 

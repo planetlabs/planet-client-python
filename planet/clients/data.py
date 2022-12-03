@@ -93,17 +93,22 @@ class DataClient:
     def _item_url(self, item_type, item_id):
         return f'{self._base_url}/item-types/{item_type}/items/{item_id}'
 
-    async def search_aiter(self,
-                           item_types: List[str],
-                           search_filter: dict,
-                           name: Optional[str] = None,
-                           sort: Optional[str] = None,
-                           limit: int = 100) -> AsyncIterator[dict]:
+    async def search(self,
+                     item_types: List[str],
+                     search_filter: dict,
+                     name: Optional[str] = None,
+                     sort: Optional[str] = None,
+                     limit: int = 100) -> AsyncIterator[dict]:
         """Iterate over results from a quick search.
 
         Quick searches are saved for a short period of time (~month). The
         `name` parameter of the search defaults to the id of the generated
         search id if `name` is not specified.
+
+        Note:
+            The name of this method is based on the API's method name. This
+            method provides iteration over results, it does not get a
+            single result description or return a list of descriptions.
 
         Parameters:
             item_types: The item types to include in the search.
@@ -224,16 +229,16 @@ class DataClient:
                                                json=request)
         return response.json()
 
-    async def list_searches_aiter(self,
-                                  sort: str = 'created desc',
-                                  search_type: str = 'any',
-                                  limit: int = 100) -> AsyncIterator[dict]:
+    async def list_searches(self,
+                            sort: str = 'created desc',
+                            search_type: str = 'any',
+                            limit: int = 100) -> AsyncIterator[dict]:
         """Iterate through list of searches available to the user.
 
-        NOTE: the term 'saved' is overloaded here. We want to list saved
-        searches that are 'quick' or list saved searches that are 'saved'? Do
-        we want to introduce a new term, 'stored' that encompasses 'saved' and
-        'quick' searches?
+        Note:
+            The name of this method is based on the API's method name. This
+            method provides iteration over results, it does not get a
+            single result description or return a list of descriptions.
 
         Parameters:
             sort: Field and direction to order results by.
@@ -295,10 +300,15 @@ class DataClient:
         response = await self._session.request(method='GET', url=url)
         return response.json()
 
-    async def run_search_aiter(self,
-                               search_id: str,
-                               limit: int = 100) -> AsyncIterator[dict]:
+    async def run_search(self,
+                         search_id: str,
+                         limit: int = 100) -> AsyncIterator[dict]:
         """Iterate over results from a saved search.
+
+        Note:
+            The name of this method is based on the API's method name. This
+            method provides iteration over results, it does not get a
+            single result description or return a list of descriptions.
 
         Parameters:
             search_id: Stored search identifier.
