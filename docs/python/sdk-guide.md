@@ -268,8 +268,7 @@ from planet import collect, OrdersClient, Session
 async def main():
     async with Session() as sess:
         client = OrdersClient(sess)
-        orders_aiter = client.list_orders_aiter()
-        orders_list = collect(orders_aiter)
+        orders_list = collect(client.list_orders())
 
 asyncio.run(main())
 
@@ -278,7 +277,7 @@ asyncio.run(main())
 Alternatively, these results can be converted to a list directly with
 
 ```python
-        orders_list = [o async for o in client.list_orders_aiter()]
+orders_list = [o async for o in client.list_orders()]
 ```
 
 ## Query the data catalog
@@ -341,7 +340,7 @@ the context of a `Session` with the `DataClient`:
 async def main():
     async with Session() as sess:
         cl = DataClient(sess)
-        items = await cl.search(['PSScene'], sfilter)
+        items = [i async for i in cl.search(['PSScene'], sfilter)]
 
 asyncio.run(main())
 ```
