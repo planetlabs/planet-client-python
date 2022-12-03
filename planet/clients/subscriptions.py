@@ -221,7 +221,6 @@ class SubscriptionsClient:
 
         class _ResultsPager(Paged):
             """Navigates pages of messages about subscription results."""
-            NEXT_KEY = '_next'
             ITEMS_KEY = 'results'
 
         params = {'status': [val for val in status or {}]}

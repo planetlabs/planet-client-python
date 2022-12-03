@@ -122,7 +122,7 @@ def result_pages(status=None, size=40):
         pm = datetime.now().isoformat()
         if len(results) == size:
             url = f'https://api.planet.com/subscriptions/v1/42/results?pm={pm}'
-            page['_links']['_next'] = url
+            page['_links']['next'] = url
         pages.append(page)
     return pages
 
