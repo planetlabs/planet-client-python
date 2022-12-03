@@ -35,7 +35,7 @@ For more information about Session, refer to the [Python SDK User Guide](../../p
 
 With the V1 client, all communication was synchronous. Asynchronous bulk support was provided with the `downloader` module. There was no built-in support for polling when an order was ready to download or tracking when an order was downloaded.
 
-In V2, all `*Client` methods (for example, `DataClient().search_aiter`, `OrderClient().create_order`) are asynchronous. Any functions that call such methods must include `async` in their definition. To invoke asynchronous methods from synchronous code, you can wrap the async method calls in `asyncio.run()`. The following is an example of using async with session.
+In V2, all `*Client` methods (for example, `DataClient().search`, `OrderClient().create_order`) are asynchronous. Any functions that call such methods must include `async` in their definition. To invoke asynchronous methods from synchronous code, you can wrap the async method calls in `asyncio.run()`. The following is an example of using async with session.
 
 ```python
 import asyncio
@@ -49,8 +49,7 @@ async def do_search():
         date_filter = filters.date_range_filter('acquired', gte=datetime.fromisoformat("2022-11-18"), lte=datetime.fromisoformat("2022-11-21"))
         cloud_filter = filters.range_filter('cloud_cover', lte=0.1)
         download_filter = filters.permission_filter()
-        search_results = await client.search(["PSScene"], filters.and_filter([date_filter, cloud_filter, download_filter]))
-    return [item async for item in search_results]
+    return [item async for item in client.search(["PSScene"], filters.and_filter([date_filter, cloud_filter, download_filter]))]
  
 items = asyncio.run(do_search())
 ```
@@ -74,8 +73,8 @@ planet.api.ClientV1().quick_search(filters.build_search_request(all_filters, ["P
 Is now
 
 ```python
-async with Session() as session: 
-    items_aiter = planet.DataClient(session).search_aiter(["PSScene"], all_filters)
+async with Session() as session:
+    items = [i async for i in planet.DataClient(session).search(["PSScene"], all_filters)]
 ```
 
 ## Orders API

@@ -463,18 +463,23 @@ class OrdersClient:
 
         return current_state
 
-    async def list_orders_aiter(self,
-                                state: Optional[str] = None,
-                                limit: int = 100) -> AsyncIterator[dict]:
+    async def list_orders(self,
+                          state: Optional[str] = None,
+                          limit: int = 100) -> AsyncIterator[dict]:
         """Iterate over the list of stored order requests.
+
+        Note:
+            The name of this method is based on the API's method name. This
+            method provides iteration over results, it does not get a
+            single result description or return a list of descriptions.
 
         Parameters:
             state: Filter orders to given state.
             limit: Maximum number of results to return. When set to 0, no
                 maximum is applied.
 
-        Returns:
-            Iterator over user orders that match the query
+        Yields:
+            Description of an order.
 
         Raises:
             planet.exceptions.APIError: On API error.
