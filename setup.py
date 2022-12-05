@@ -26,7 +26,7 @@ with open('planet/__version__.py') as f:
 install_requires = [
     'click>=8.0.0',
     'geojson',
-    'httpx==0.23.0',
+    'httpx>=0.23',
     'jsonschema',
     'pyjwt>=2.1',
     'tqdm>=4.56',
