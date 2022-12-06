@@ -31,5 +31,5 @@ After you’ve installed the Planet SDK, you can authenticate with the Planet se
 
 ## Next steps
 
-Now that you have confirmed your Planet account username and password, you can take the other steps in the [Quick Start](quick-start-guide). 
+Now that you have confirmed your Planet account username and password, you can take the other steps in the [Quick Start](../quick-start-guide). 
 
