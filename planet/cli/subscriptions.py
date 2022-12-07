@@ -24,8 +24,15 @@ def subscriptions(ctx):
 @click.option('--pretty', is_flag=True, help='Pretty-print output.')
 @click.option(
     '--status',
-    type=click.Choice(["created", "queued", "processing", "failed",
-                       "success"]),
+    type=click.Choice([
+        "running",
+        "cancelled",
+        "preparing",
+        "pending",
+        "completed",
+        "suspended",
+        "failed"
+    ]),
     multiple=True,
     default=None,
     help="Select subscriptions in one or more states. Default is all.")
