@@ -26,7 +26,7 @@ failing_api_mock.route(
 
 def result_pages(status=None, size=40):
     """Helper for creating fake subscriptions listing pages."""
-    all_subs = [{'id': str(i), 'status': 'created'} for i in range(1, 101)]
+    all_subs = [{'id': str(i), 'status': 'running'} for i in range(1, 101)]
     select_subs = (sub for sub in all_subs
                    if not status or sub['status'] in status)
     pages = []
@@ -47,11 +47,11 @@ def result_pages(status=None, size=40):
 # must disable the default.
 api_mock = respx.mock(assert_all_called=False)
 
-# 1. Request for status: created. Response has three pages.
+# 1. Request for status: running. Response has three pages.
 api_mock.route(M(url__startswith='https://api.planet.com/subscriptions/v1'),
-               M(params__contains={'status': 'created'})).mock(side_effect=[
+               M(params__contains={'status': 'running'})).mock(side_effect=[
                    Response(200, json=page)
-                   for page in result_pages(status={'created'}, size=40)
+                   for page in result_pages(status={'running'}, size=40)
                ])
 
 # 2. Request for status: failed. Response has a single empty page.
@@ -59,9 +59,9 @@ api_mock.route(M(url__startswith='https://api.planet.com/subscriptions/v1'),
                M(params__contains={'status': 'failed'})).mock(
                    side_effect=[Response(200, json={'subscriptions': []})])
 
-# 3. Request for status: queued. Response has a single empty page.
+# 3. Request for status: preparing. Response has a single empty page.
 api_mock.route(M(url__startswith='https://api.planet.com/subscriptions/v1'),
-               M(params__contains={'status': 'queued'})).mock(
+               M(params__contains={'status': 'preparing'})).mock(
                    side_effect=[Response(200, json={'subscriptions': []})])
 
 # 4. No status requested. Response is the same as for 1.
@@ -164,7 +164,7 @@ async def test_list_subscriptions_failure():
             _ = [sub async for sub in client.list_subscriptions()]
 
 
-@pytest.mark.parametrize("status, count", [({"created"}, 100), ({"failed"}, 0),
+@pytest.mark.parametrize("status, count", [({"running"}, 100), ({"failed"}, 0),
                                            (None, 100)])
 @pytest.mark.asyncio
 @api_mock

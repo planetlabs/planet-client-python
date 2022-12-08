@@ -37,10 +37,10 @@ from test_subscriptions_api import (api_mock,
 #
 # does not work.
 @pytest.mark.parametrize('options,expected_count',
-                         [(['--status=created'], 100), ([], 100),
-                          (['--limit=1', '--status=created'], 1),
-                          (['--limit=2', '--pretty', '--status=created'], 2),
-                          (['--limit=1', '--status=queued'], 0)])
+                         [(['--status=running'], 100), ([], 100),
+                          (['--limit=1', '--status=running'], 1),
+                          (['--limit=2', '--pretty', '--status=running'], 2),
+                          (['--limit=1', '--status=preparing'], 0)])
 @api_mock
 # Remember, parameters come before fixtures in the function definition.
 def test_subscriptions_list_options(options, expected_count):
