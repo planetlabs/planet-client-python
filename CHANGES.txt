@@ -1,3 +1,24 @@
+2.0.0-beta.1 (2022-12-07)
+
+Changed:
+- Auth.write() renamed to Auth.store() to match CLI command
+- CLI now only sources from the configuration file
+- the following functions were changed to generator functions and therefore no
+longer require awaits: OrdersClient.list_orders, DataClient.search,
+DataClient.run_search, SubscriptionsClient.list_results,
+SubscriptionsClient.list_subscriptions
+
+Added:
+- support for Sentinel-2 as a target in the harminization tool in
+orders_request
+- `planet auth store` CLI command for storing authentication info
+in the configuration file
+
+Fixed:
+- status option for list_subscriptions now works
+- subscriptions list_results now returns more than the first page
+
+
 2.0a6 (2022-11-10)
 
 - Add SDK identification headers to communication with servers (#754).
