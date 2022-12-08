@@ -9,6 +9,9 @@ APIs. It's divided up into a number of sections, so you can jump right into
 the examples for an API you're interested in. If you're new to CLI's it should
 provide all the information you need to work more directly with Planet's API's.
 
+!!!tip "We want to hear from you!"
+    This is a beta release. We encourage you to test your workflows rigorously. Based on your feedback, we may roll out additional updates to improve your experience. Please share your feedback with us on our [Planet Developers community channel](https://community.planet.com/developers-55).
+
 ## CLI Guide Overview
 
 * **[CLI Introduction](cli-intro.md)** provides an introduction to using a

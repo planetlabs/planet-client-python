@@ -4,6 +4,9 @@ title: Python SDK User Guide
 
 This guide is for Planet SDK for Python users who want to use Python code to search, order, customize, and deliver Planet imagery and data. If you’re new to Python, you may want to choose the no-code option of using the [command-line interface (CLI)](../../cli/cli-guide). But if you’ve successfully followed the instructions to [get started](../../get-started/quick-start-guide) and you’re ready to try your hand at Python coding, this guide should be all you need to use this SDK to get Planet data.
 
+!!!tip "We want to hear from you!"
+    This is a beta release. We encourage you to test your workflows rigorously. Based on your feedback, we may roll out additional updates to improve your experience. Please share your feedback with us on our [Planet Developers community channel](https://community.planet.com/developers-55).
+
 This guide walks you through the steps:
 
 * **[Create a session](#create-a-session)**—set up a context for calling on Planet servers and receiving data back.

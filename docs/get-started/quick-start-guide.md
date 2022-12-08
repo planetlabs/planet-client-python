@@ -7,6 +7,9 @@ If you’re a Python developer, this Planet SDK for Python makes it easy to acce
 
 If you’re not a Python developer, you can use the Command Line Interface (CLI) to get Planet data, and to process and analyze that data.
 
+!!!tip "We want to hear from you!"
+    This is a beta release. We encourage you to test your workflows rigorously. Based on your feedback, we may roll out additional updates to improve your experience. Please share your feedback with us on our [Planet Developers community channel](https://community.planet.com/developers-55).
+
 Take the following steps to install the SDK and connect with the Planet Server.
 
 [TOC]
