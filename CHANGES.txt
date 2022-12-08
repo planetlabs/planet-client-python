@@ -9,7 +9,7 @@ DataClient.run_search, SubscriptionsClient.list_results,
 SubscriptionsClient.list_subscriptions
 
 Added:
-- support for Sentinel-2 as a target in the harminization tool in
+- support for Sentinel-2 as a target in the harmonization tool in
 orders_request
 - `planet auth store` CLI command for storing authentication info
 in the configuration file
