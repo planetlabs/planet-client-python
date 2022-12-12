@@ -6,7 +6,9 @@ Changed:
 - the following functions were changed to generator functions and therefore no
 longer require awaits: OrdersClient.list_orders, DataClient.search,
 DataClient.run_search, SubscriptionsClient.list_results,
-SubscriptionsClient.list_subscriptions
+SubscriptionsClient.list_subscriptions.
+- - CLI command planet orders request arguments have changed so only IDs is
+positional, all others are flags.
 
 Added:
 - support for Sentinel-2 as a target in the harmonization tool in
