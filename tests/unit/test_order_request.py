@@ -222,20 +222,6 @@ def test__tool():
         _ = order_request._tool('notsupported', 'jsonstring')
 
 
-@pytest.fixture
-def multipolygon_geom_geojson():
-    return {
-        "type":
-        "MultiPolygon",
-        "coordinates":
-        [[[[37.791595458984375, 14.84923123791421],
-          [37.90214538574219, 14.84923123791421],
-          [37.90214538574219, 14.945448293647944],
-          [37.791595458984375, 14.945448293647944],
-          [37.791595458984375, 14.84923123791421]]]]
-    }  # yapf: disable
-
-
 def test_clip_tool_polygon(geom_geojson):
     ct = order_request.clip_tool(geom_geojson)
     expected = {'clip': {'aoi': geom_geojson}}
