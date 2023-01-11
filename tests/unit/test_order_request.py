@@ -222,13 +222,35 @@ def test__tool():
         _ = order_request._tool('notsupported', 'jsonstring')
 
 
-def test_clip_tool(geom_geojson, point_geom_geojson):
+@pytest.fixture
+def multipolygon_geom_geojson():
+    return {
+        "type":
+        "MultiPolygon",
+        "coordinates":
+        [[[[37.791595458984375, 14.84923123791421],
+          [37.90214538574219, 14.84923123791421],
+          [37.90214538574219, 14.945448293647944],
+          [37.791595458984375, 14.945448293647944],
+          [37.791595458984375, 14.84923123791421]]]]
+    }  # yapf: disable
+
+
+def test_clip_tool_polygon(geom_geojson):
     ct = order_request.clip_tool(geom_geojson)
     expected = {'clip': {'aoi': geom_geojson}}
     assert ct == expected
 
-    with pytest.raises(exceptions.GeoJSONError):
-        _ = order_request.clip_tool(point_geom_geojson)
+
+def test_clip_tool_multipolygon(multipolygon_geom_geojson):
+    ct = order_request.clip_tool(multipolygon_geom_geojson)
+    expected = {'clip': {'aoi': multipolygon_geom_geojson}}
+    assert ct == expected
+
+
+def test_clip_tool_invalid(point_geom_geojson):
+    with pytest.raises(exceptions.ClientError):
+        order_request.clip_tool(point_geom_geojson)
 
 
 def test_reproject_tool():

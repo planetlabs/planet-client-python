@@ -239,8 +239,8 @@ async def create(ctx, request: str, pretty):
               type=click.STRING)
 @click.option('--clip',
               type=types.JSON(),
-              help="""Clip feature GeoJSON. Can be a json string, filename,
-              or '-' for stdin.""")
+              help="""Clip feature Polygon or Multipolygon GeoJSON. Can be a
+              json string, filename, or '-' for stdin.""")
 @click.option(
     '--tools',
     type=types.JSON(),
@@ -295,11 +295,9 @@ async def request(ctx,
         raise click.BadParameter("Specify only one of '--clip' or '--tools'")
     elif clip:
         try:
-            clip = planet.geojson.as_polygon(clip)
-        except planet.exceptions.GeoJSONError as e:
+            tools = [planet.order_request.clip_tool(clip)]
+        except planet.exceptions.ClientError as e:
             raise click.BadParameter(e)
-
-        tools = [planet.order_request.clip_tool(clip)]
 
     if cloudconfig:
         delivery = planet.order_request.delivery(cloud_config=cloudconfig)

@@ -530,7 +530,7 @@ def test_cli_orders_request_id_empty(invoke):
 @pytest.mark.parametrize("geom_fixture",
                          [('geom_geojson'), ('feature_geojson'),
                           ('featurecollection_geojson')])
-def test_cli_orders_request_clip_success(geom_fixture,
+def test_cli_orders_request_clip_polygon(geom_fixture,
                                          request,
                                          invoke,
                                          geom_geojson,
@@ -567,6 +567,40 @@ def test_cli_orders_request_clip_success(geom_fixture,
     assert order_request == json.loads(result.output)
 
 
+def test_cli_orders_request_clip_multipolygon(multipolygon_geom_geojson,
+                                              invoke,
+                                              geom_geojson,
+                                              stac_json):
+
+    result = invoke([
+        'request',
+        '--item-type=PSOrthoTile',
+        '--bundle=analytic',
+        '--name=test',
+        '4500474_2133707_2021-05-20_2419',
+        f'--clip={json.dumps(multipolygon_geom_geojson)}',
+    ])
+    assert result.exit_code == 0
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": ["4500474_2133707_2021-05-20_2419"],
+            "item_type": "PSOrthoTile",
+            "product_bundle": "analytic",
+        }],
+        "tools": [{
+            'clip': {
+                'aoi': multipolygon_geom_geojson
+            }
+        }],
+        "metadata":
+        stac_json
+    }
+    assert order_request == json.loads(result.output)
+
+
 def test_cli_orders_request_clip_invalid_geometry(invoke, point_geom_geojson):
     result = invoke([
         'request',
@@ -577,9 +611,6 @@ def test_cli_orders_request_clip_invalid_geometry(invoke, point_geom_geojson):
         f'--clip={json.dumps(point_geom_geojson)}'
     ])
     assert result.exit_code == 2
-    error_msg = ('Error: Invalid value: Invalid geometry type: ' +
-                 'Point is not Polygon.')
-    assert error_msg in result.output
 
 
 def test_cli_orders_request_both_clip_and_tools(invoke, geom_geojson):
