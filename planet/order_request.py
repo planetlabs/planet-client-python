@@ -18,6 +18,7 @@ import logging
 from typing import Optional, Any, Dict, List
 
 from . import geojson, specs
+from .exceptions import ClientError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -328,13 +329,19 @@ def clip_tool(aoi: dict) -> dict:
         ```
 
     Parameters:
-        aoi: clip GeoJSON.
+        aoi: clip GeoJSON, either Polygon or Multipolygon.
 
     Raises:
-        geojson.GeoJSONException: If GeoJSON is not a valid polygon.
+        geojson.GeoJSONException: If GeoJSON is not a valid polygon or
+            multipolygon.
     '''
-    parameters = {'aoi': geojson.as_polygon(aoi)}
-    return _tool('clip', parameters)
+    valid_types = ['Polygon', 'MultiPolygon']
+
+    geom = geojson.as_geom(aoi)
+    if geom['type'].lower() not in [v.lower() for v in valid_types]:
+        raise ClientError(
+            f'Invalid geometry type: {geom["type"]} is not in {valid_types}.')
+    return _tool('clip', {'aoi': geom})
 
 
 def composite_tool() -> dict:
