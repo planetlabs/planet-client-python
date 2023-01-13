@@ -96,8 +96,7 @@ async def cancel_subscription_cmd(ctx, subscription_id, pretty):
     """Cancels a subscription and prints the API response."""
     async with CliSession() as session:
         client = SubscriptionsClient(session)
-        sub = await client.cancel_subscription(subscription_id)
-        echo_json(sub, pretty)
+        _ = await client.cancel_subscription(subscription_id)
 
 
 @subscriptions.command(name='update')
