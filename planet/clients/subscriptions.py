@@ -6,6 +6,9 @@ from typing import AsyncIterator, Optional, Set
 from planet.exceptions import APIError, ClientError
 from planet.http import Session
 from planet.models import Paged
+from ..constants import PLANET_BASE_URL
+
+BASE_URL = f'{PLANET_BASE_URL}/subscriptions/v1/'
 
 LOGGER = logging.getLogger()
 
@@ -22,14 +25,22 @@ class SubscriptionsClient:
     exceptions raised by this class are categorized by HTTP client
     (4xx) or server (5xx) errors. This client's level of abstraction is
     low.
-
-    Attributes:
-        session (Session): an authenticated session which wraps the
-            low-level HTTP client.
     """
 
-    def __init__(self, session: Session) -> None:
+    def __init__(self,
+                 session: Session,
+                 base_url: Optional[str] = None) -> None:
+        """
+        Parameters:
+            session: Open session connected to server.
+            base_url: The base URL to use. Defaults to production subscriptions
+                API base url.
+        """
         self._session = session
+
+        self._base_url = base_url or BASE_URL
+        if self._base_url.endswith('/'):
+            self._base_url = self._base_url[:-1]
 
     async def list_subscriptions(self,
                                  status: Optional[Set[str]] = None,
@@ -62,11 +73,10 @@ class SubscriptionsClient:
             ITEMS_KEY = 'subscriptions'
 
         params = {'status': [val for val in status or {}]}
-        url = 'https://api.planet.com/subscriptions/v1'
 
         try:
             response = await self._session.request(method='GET',
-                                                   url=url,
+                                                   url=self._base_url,
                                                    params=params)
             async for sub in _SubscriptionsPager(response,
                                                  self._session.request,
@@ -93,11 +103,9 @@ class SubscriptionsClient:
             ClientError: on a client error.
         """
 
-        url = 'https://api.planet.com/subscriptions/v1'
-
         try:
             resp = await self._session.request(method='POST',
-                                               url=url,
+                                               url=self._base_url,
                                                json=request)
         # Forward APIError. We don't strictly need this clause, but it
         # makes our intent clear.
@@ -122,8 +130,7 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        root_url = 'https://api.planet.com/subscriptions/v1'
-        url = f'{root_url}/{subscription_id}/cancel'
+        url = f'{self._base_url}/{subscription_id}/cancel'
 
         try:
             _ = await self._session.request(method='POST', url=url)
@@ -149,7 +156,7 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        url = f'https://api.planet.com/subscriptions/v1/{subscription_id}'
+        url = f'{self._base_url}/{subscription_id}'
 
         try:
             resp = await self._session.request(method='PUT',
@@ -178,7 +185,7 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        url = f'https://api.planet.com/subscriptions/v1/{subscription_id}'
+        url = f'{self._base_url}/{subscription_id}'
 
         try:
             resp = await self._session.request(method='GET', url=url)
@@ -224,8 +231,7 @@ class SubscriptionsClient:
             ITEMS_KEY = 'results'
 
         params = {'status': [val for val in status or {}]}
-        root_url = 'https://api.planet.com/subscriptions/v1'
-        url = f'{root_url}/{subscription_id}/results'
+        url = f'{self._base_url}/{subscription_id}/results'
 
         try:
             resp = await self._session.request(method='GET',
