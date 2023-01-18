@@ -1,5 +1,5 @@
 """Subscriptions CLI"""
-
+from contextlib import asynccontextmanager
 import json
 
 import click
@@ -10,11 +10,22 @@ from .session import CliSession
 from planet.clients.subscriptions import SubscriptionsClient
 
 
+@asynccontextmanager
+async def subscriptions_client(ctx):
+    async with CliSession() as sess:
+        cl = SubscriptionsClient(sess, base_url=ctx.obj['BASE_URL'])
+        yield cl
+
+
 @click.group()
 @click.pass_context
-def subscriptions(ctx):
+@click.option('-u',
+              '--base-url',
+              default=None,
+              help='Assign custom base Subscriptions API URL.')
+def subscriptions(ctx, base_url):
     '''Commands for interacting with the Subscriptions API'''
-    pass
+    ctx.obj['BASE_URL'] = base_url
 
 
 # We want our command to be known as "list" on the command line but
@@ -45,8 +56,7 @@ def subscriptions(ctx):
 @coro
 async def list_subscriptions_cmd(ctx, status, limit, pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
-    async with CliSession() as session:
-        client = SubscriptionsClient(session)
+    async with subscriptions_client(ctx) as client:
         async for sub in client.list_subscriptions(status=status, limit=limit):
             echo_json(sub, pretty)
 
@@ -80,8 +90,7 @@ def parse_request(ctx, param, value: str) -> dict:
 @coro
 async def create_subscription_cmd(ctx, request, pretty):
     """Submits a subscription request and prints the API response."""
-    async with CliSession() as session:
-        client = SubscriptionsClient(session)
+    async with subscriptions_client(ctx) as client:
         sub = await client.create_subscription(request)
         echo_json(sub, pretty)
 
@@ -94,8 +103,7 @@ async def create_subscription_cmd(ctx, request, pretty):
 @coro
 async def cancel_subscription_cmd(ctx, subscription_id, pretty):
     """Cancels a subscription and prints the API response."""
-    async with CliSession() as session:
-        client = SubscriptionsClient(session)
+    async with subscriptions_client(ctx) as client:
         _ = await client.cancel_subscription(subscription_id)
 
 
@@ -108,8 +116,7 @@ async def cancel_subscription_cmd(ctx, subscription_id, pretty):
 @coro
 async def update_subscription_cmd(ctx, subscription_id, request, pretty):
     """Updates a subscription and prints the API response."""
-    async with CliSession() as session:
-        client = SubscriptionsClient(session)
+    async with subscriptions_client(ctx) as client:
         sub = await client.update_subscription(subscription_id, request)
         echo_json(sub, pretty)
 
@@ -122,8 +129,7 @@ async def update_subscription_cmd(ctx, subscription_id, request, pretty):
 @coro
 async def describe_subscription_cmd(ctx, subscription_id, pretty):
     """Gets the description of a subscription and prints the API response."""
-    async with CliSession() as session:
-        client = SubscriptionsClient(session)
+    async with subscriptions_client(ctx) as client:
         sub = await client.get_subscription(subscription_id)
         echo_json(sub, pretty)
 
@@ -158,8 +164,7 @@ async def list_subscription_results_cmd(ctx,
                                         status,
                                         limit):
     """Gets results of a subscription and prints the API response."""
-    async with CliSession() as session:
-        client = SubscriptionsClient(session)
+    async with subscriptions_client(ctx) as client:
         async for result in client.get_results(subscription_id,
                                                status=status,
                                                limit=limit):
