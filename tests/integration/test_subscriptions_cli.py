@@ -101,6 +101,7 @@ GOOD_SUB_REQUEST = {'name': 'lol', 'delivery': True, 'source': 'wut'}
 @create_mock
 def test_subscriptions_create_success(invoke, cmd_arg, runner_input):
     """Subscriptions creation succeeds with a valid subscription request."""
+
     # The "-" argument says "read from stdin" and the input keyword
     # argument specifies what bytes go to the runner's stdin.
     result = invoke(

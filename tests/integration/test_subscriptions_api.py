@@ -21,11 +21,10 @@ TEST_URL = 'http://www.mocknotrealurl.com/api/path'
 # internal server error. The router is configured outside the test
 # to help keep our test more readable.
 failing_api_mock = respx.mock()
-failing_api_mock.route(
-    M(url__startswith=TEST_URL)).mock(
-        return_value=Response(500, json={
-            "code": 0, "message": "string"
-        }))
+failing_api_mock.route(M(url__startswith=TEST_URL)).mock(
+    return_value=Response(500, json={
+        "code": 0, "message": "string"
+    }))
 
 
 def result_pages(status=None, size=40):
@@ -39,8 +38,7 @@ def result_pages(status=None, size=40):
         page = {'subscriptions': subs, '_links': {}}
         pm = datetime.now().isoformat()
         if len(subs) == size:
-            page['_links'][
-                'next'] = f'{TEST_URL}?pm={pm}'
+            page['_links']['next'] = f'{TEST_URL}?pm={pm}'
         pages.append(page)
     return pages
 
@@ -58,11 +56,9 @@ api_mock.route(M(url=TEST_URL),
                    for page in result_pages(status={'running'}, size=40)
                ])
 
-
 # 2. Request for status: failed. Response has a single empty page.
-api_mock.route(M(url=TEST_URL),
-               M(params__contains={'status': 'failed'})).mock(
-                   side_effect=[Response(200, json={'subscriptions': []})])
+api_mock.route(M(url=TEST_URL), M(params__contains={'status': 'failed'})).mock(
+    side_effect=[Response(200, json={'subscriptions': []})])
 
 # 3. Request for status: preparing. Response has a single empty page.
 api_mock.route(M(url=TEST_URL),
@@ -70,9 +66,7 @@ api_mock.route(M(url=TEST_URL),
                    side_effect=[Response(200, json={'subscriptions': []})])
 
 # 4. No status requested. Response is the same as for 1.
-api_mock.route(
-    M(url=TEST_URL)
-).mock(
+api_mock.route(M(url=TEST_URL)).mock(
     side_effect=[Response(200, json=page) for page in result_pages(size=40)])
 
 
@@ -100,7 +94,8 @@ cancel_mock.route(M(url=f'{TEST_URL}/test/cancel'),
 
 # Mock the subscription description API endpoint.
 describe_mock = respx.mock()
-describe_mock.route(M(url=f'{TEST_URL}/test'),
+describe_mock.route(
+    M(url=f'{TEST_URL}/test'),
     method='GET').mock(return_value=Response(200,
                                              json={
                                                  'id': '42',
@@ -142,15 +137,12 @@ res_api_mock.route(
     ])
 
 # 2. Request for status: queued. Response has a single empty page.
-res_api_mock.route(
-    M(url__startswith=TEST_URL),
-    M(params__contains={'status': 'queued'})).mock(
-        side_effect=[Response(200, json={'results': []})])
+res_api_mock.route(M(url__startswith=TEST_URL),
+                   M(params__contains={'status': 'queued'})).mock(
+                       side_effect=[Response(200, json={'results': []})])
 
 # 3. No status requested. Response is the same as for 1.
-res_api_mock.route(
-    M(url__startswith=TEST_URL)
-).mock(
+res_api_mock.route(M(url__startswith=TEST_URL)).mock(
     side_effect=[Response(200, json=page) for page in result_pages(size=40)])
 
 
@@ -287,28 +279,24 @@ async def test_get_results_success():
 paging_cycle_api_mock = respx.mock()
 
 # Identical next links is a hangup we want to avoid.
-paging_cycle_api_mock.route(
-    M(url__startswith=TEST_URL)).mock(
-        side_effect=[
-            Response(200,
-                     json={
-                         'subscriptions': [{
-                             'id': '1'
-                         }],
-                         '_links': {
-                             "next": TEST_URL
-                         }
-                     }),
-            Response(200,
-                     json={
-                         'subscriptions': [{
-                             'id': '2'
-                         }],
-                         '_links': {
-                             "next": TEST_URL
-                         }
-                     })
-        ])
+paging_cycle_api_mock.route(M(url__startswith=TEST_URL)).mock(side_effect=[
+    Response(200,
+             json={
+                 'subscriptions': [{
+                     'id': '1'
+                 }], '_links': {
+                     "next": TEST_URL
+                 }
+             }),
+    Response(200,
+             json={
+                 'subscriptions': [{
+                     'id': '2'
+                 }], '_links': {
+                     "next": TEST_URL
+                 }
+             })
+])
 
 
 @pytest.mark.asyncio
