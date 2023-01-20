@@ -26,8 +26,8 @@ from test_subscriptions_api import (api_mock,
                                     update_mock,
                                     cancel_mock,
                                     describe_mock,
-                                    res_api_mock)
-
+                                    res_api_mock,
+                                    TEST_URL)
 
 # CliRunner doesn't agree with empty options, so a list of option
 # combinations which omit the empty options is best. For example,
@@ -36,6 +36,19 @@ from test_subscriptions_api import (api_mock,
 # CliRunner().invoke(cli.main, args=['subscriptions', 'list', limit]
 #
 # does not work.
+
+
+@pytest.fixture
+def invoke():
+
+    def _invoke(extra_args, runner=None, **kwargs):
+        runner = runner or CliRunner()
+        args = ['subscriptions', f'--base-url={TEST_URL}'] + extra_args
+        return runner.invoke(cli.main, args=args, **kwargs)
+
+    return _invoke
+
+
 @pytest.mark.parametrize('options,expected_count',
                          [(['--status=running'], 100), ([], 100),
                           (['--limit=1', '--status=running'], 1),
@@ -43,13 +56,11 @@ from test_subscriptions_api import (api_mock,
                           (['--limit=1', '--status=preparing'], 0)])
 @api_mock
 # Remember, parameters come before fixtures in the function definition.
-def test_subscriptions_list_options(options, expected_count):
+def test_subscriptions_list_options(invoke, options, expected_count):
     """Prints the expected sequence of subscriptions."""
     # While developing it is handy to have click's command invoker
     # *not* catch exceptions, so we can use the pytest --pdb option.
-    result = CliRunner().invoke(cli.main,
-                                args=['subscriptions', 'list'] + options,
-                                catch_exceptions=False)
+    result = invoke(['list'] + options, catch_exceptions=False)
     assert result.exit_code == 0  # success.
 
     # For a start, counting the number of "id" strings in the output
@@ -58,7 +69,7 @@ def test_subscriptions_list_options(options, expected_count):
 
 
 @failing_api_mock
-def test_subscriptions_create_failure():
+def test_subscriptions_create_failure(invoke):
     """An invalid subscription request fails to create a new subscription."""
     # This subscription request lacks the required "delivery" and
     # "source" members.
@@ -66,9 +77,8 @@ def test_subscriptions_create_failure():
 
     # The "-" argument says "read from stdin" and the input keyword
     # argument specifies what bytes go to the runner's stdin.
-    result = CliRunner().invoke(
-        cli.main,
-        args=['subscriptions', 'create', '-'],
+    result = invoke(
+        ['create', '-'],
         input=json.dumps(sub),
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
@@ -89,13 +99,13 @@ GOOD_SUB_REQUEST = {'name': 'lol', 'delivery': True, 'source': 'wut'}
                          [('-', json.dumps(GOOD_SUB_REQUEST)),
                           (json.dumps(GOOD_SUB_REQUEST), None)])
 @create_mock
-def test_subscriptions_create_success(cmd_arg, runner_input):
+def test_subscriptions_create_success(invoke, cmd_arg, runner_input):
     """Subscriptions creation succeeds with a valid subscription request."""
+
     # The "-" argument says "read from stdin" and the input keyword
     # argument specifies what bytes go to the runner's stdin.
-    result = CliRunner().invoke(
-        cli.main,
-        args=['subscriptions', 'create', cmd_arg],
+    result = invoke(
+        ['create', cmd_arg],
         input=runner_input,
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
@@ -111,13 +121,12 @@ BAD_SUB_REQUEST = '{0: "lolwut"}'
 
 @pytest.mark.parametrize('cmd_arg, runner_input', [('-', BAD_SUB_REQUEST),
                                                    (BAD_SUB_REQUEST, None)])
-def test_subscriptions_bad_request(cmd_arg, runner_input):
+def test_subscriptions_bad_request(invoke, cmd_arg, runner_input):
     """Short circuit and print help message if request is bad."""
     # The "-" argument says "read from stdin" and the input keyword
     # argument specifies what bytes go to the runner's stdin.
-    result = CliRunner().invoke(
-        cli.main,
-        args=['subscriptions', 'create', cmd_arg],
+    result = invoke(
+        ['create', cmd_arg],
         input=runner_input,
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
@@ -129,11 +138,10 @@ def test_subscriptions_bad_request(cmd_arg, runner_input):
 
 
 @failing_api_mock
-def test_subscriptions_cancel_failure():
+def test_subscriptions_cancel_failure(invoke):
     """Cancel command exits gracefully from an API error."""
-    result = CliRunner().invoke(
-        cli.main,
-        args=['subscriptions', 'cancel', '42'],
+    result = invoke(
+        ['cancel', 'test'],
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
         # failure.
@@ -143,11 +151,10 @@ def test_subscriptions_cancel_failure():
 
 
 @cancel_mock
-def test_subscriptions_cancel_success():
+def test_subscriptions_cancel_success(invoke):
     """Cancel command succeeds."""
-    result = CliRunner().invoke(
-        cli.main,
-        args=['subscriptions', 'cancel', '42'],
+    result = invoke(
+        ['cancel', 'test'],
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
         # failure.
@@ -157,11 +164,10 @@ def test_subscriptions_cancel_success():
 
 
 @failing_api_mock
-def test_subscriptions_update_failure():
+def test_subscriptions_update_failure(invoke):
     """Update command exits gracefully from an API error."""
-    result = CliRunner().invoke(
-        cli.main,
-        args=['subscriptions', 'update', '42', json.dumps(GOOD_SUB_REQUEST)],
+    result = invoke(
+        ['update', 'test', json.dumps(GOOD_SUB_REQUEST)],
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
         # failure.
@@ -171,14 +177,13 @@ def test_subscriptions_update_failure():
 
 
 @update_mock
-def test_subscriptions_update_success():
+def test_subscriptions_update_success(invoke):
     """Update command succeeds."""
     request = GOOD_SUB_REQUEST.copy()
     request['name'] = 'new_name'
 
-    result = CliRunner().invoke(
-        cli.main,
-        args=['subscriptions', 'update', '42', json.dumps(request)],
+    result = invoke(
+        ['update', 'test', json.dumps(request)],
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
         # failure.
@@ -189,11 +194,10 @@ def test_subscriptions_update_success():
 
 
 @failing_api_mock
-def test_subscriptions_describe_failure():
+def test_subscriptions_describe_failure(invoke):
     """Describe command exits gracefully from an API error."""
-    result = CliRunner().invoke(
-        cli.main,
-        args=['subscriptions', 'describe', '42'],
+    result = invoke(
+        ['describe', 'test'],
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
         # failure.
@@ -203,11 +207,10 @@ def test_subscriptions_describe_failure():
 
 
 @describe_mock
-def test_subscriptions_describe_success():
+def test_subscriptions_describe_success(invoke):
     """Describe command succeeds."""
-    result = CliRunner().invoke(
-        cli.main,
-        args=['subscriptions', 'describe', '42'],
+    result = invoke(
+        ['describe', 'test'],
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
         # failure.
@@ -218,11 +221,10 @@ def test_subscriptions_describe_success():
 
 
 @failing_api_mock
-def test_subscriptions_results_failure():
+def test_subscriptions_results_failure(invoke):
     """Results command exits gracefully from an API error."""
-    result = CliRunner().invoke(
-        cli.main,
-        args=['subscriptions', 'results', '42'],
+    result = invoke(
+        ['results', 'test'],
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
         # failure.
@@ -238,11 +240,10 @@ def test_subscriptions_results_failure():
                           (['--limit=1', '--status=queued'], 0)])
 @res_api_mock
 # Remember, parameters come before fixtures in the function definition.
-def test_subscriptions_results_success(options, expected_count):
+def test_subscriptions_results_success(invoke, options, expected_count):
     """Describe command succeeds."""
-    result = CliRunner().invoke(
-        cli.main,
-        args=['subscriptions', 'results', '42'] + options,
+    result = invoke(
+        ['results', 'test'] + options,
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
         # failure.
