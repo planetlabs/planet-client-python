@@ -48,10 +48,7 @@ def subscriptions(ctx, base_url):
     multiple=True,
     default=None,
     help="Select subscriptions in one or more states. Default is all.")
-@click.option('--limit',
-              type=int,
-              default=100,
-              help='Maximum number of results to return. Defaults to 100.')
+@limit
 @click.pass_context
 @translate_exceptions
 @coro
