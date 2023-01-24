@@ -201,7 +201,7 @@ async def download(ctx, order_id, overwrite, directory, checksum):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("request", type=types.JSON(), default="-", required=False)
+@click.argument("request", type=types.JSON())
 @pretty
 async def create(ctx, request: str, pretty):
     '''Create an order.
