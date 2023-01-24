@@ -6,6 +6,7 @@ import click
 
 from .cmds import coro, translate_exceptions
 from .io import echo_json
+from .options import limit, pretty
 from .session import CliSession
 from planet.clients.subscriptions import SubscriptionsClient
 
@@ -32,7 +33,7 @@ def subscriptions(ctx, base_url):
 # don't want to clobber Python's built-in "list". We'll define the
 # command function as "list_subscriptions".
 @subscriptions.command(name="list")
-@click.option('--pretty', is_flag=True, help='Pretty-print output.')
+@pretty
 @click.option(
     '--status',
     type=click.Choice([
@@ -47,10 +48,7 @@ def subscriptions(ctx, base_url):
     multiple=True,
     default=None,
     help="Select subscriptions in one or more states. Default is all.")
-@click.option('--limit',
-              type=int,
-              default=100,
-              help='Maximum number of results to return. Defaults to 100.')
+@limit
 @click.pass_context
 @translate_exceptions
 @coro
@@ -84,7 +82,7 @@ def parse_request(ctx, param, value: str) -> dict:
 
 @subscriptions.command(name='create')
 @click.argument('request', callback=parse_request)
-@click.option('--pretty', is_flag=True, help='Pretty-print output.')
+@pretty
 @click.pass_context
 @translate_exceptions
 @coro
@@ -97,7 +95,7 @@ async def create_subscription_cmd(ctx, request, pretty):
 
 @subscriptions.command(name='cancel')
 @click.argument('subscription_id')
-@click.option('--pretty', is_flag=True, help='Pretty-print output.')
+@pretty
 @click.pass_context
 @translate_exceptions
 @coro
@@ -110,7 +108,7 @@ async def cancel_subscription_cmd(ctx, subscription_id, pretty):
 @subscriptions.command(name='update')
 @click.argument('subscription_id')
 @click.argument('request', callback=parse_request)
-@click.option('--pretty', is_flag=True, help='Pretty-print output.')
+@pretty
 @click.pass_context
 @translate_exceptions
 @coro
@@ -123,7 +121,7 @@ async def update_subscription_cmd(ctx, subscription_id, request, pretty):
 
 @subscriptions.command(name='describe')
 @click.argument('subscription_id')
-@click.option('--pretty', is_flag=True, help='Pretty-print output.')
+@pretty
 @click.pass_context
 @translate_exceptions
 @coro
@@ -136,7 +134,7 @@ async def describe_subscription_cmd(ctx, subscription_id, pretty):
 
 @subscriptions.command(name='results')
 @click.argument('subscription_id')
-@click.option('--pretty', is_flag=True, help='Pretty-print output.')
+@pretty
 @click.option(
     '--status',
     type=click.Choice(["created", "queued", "processing", "failed",
@@ -147,10 +145,7 @@ async def describe_subscription_cmd(ctx, subscription_id, pretty):
     param,
     value: set(value),
     help="Select subscription results in one or more states. Default: all.")
-@click.option('--limit',
-              type=int,
-              default=100,
-              help='Maximum number of results to return. Defaults to 100.')
+@limit
 # TODO: the following 3 options.
 # –created: timestamp instant or range.
 # –updated: timestamp instant or range.
