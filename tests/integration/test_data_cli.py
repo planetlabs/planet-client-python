@@ -221,8 +221,7 @@ def test_data_filter_geom(geom_fixture,
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_number_in_success(invoke,
-                                       assert_and_filters_equal):
+def test_data_filter_number_in_success(invoke, assert_and_filters_equal):
 
     result = invoke(["filter"] + '--number-in field 1'.split() +
                     '--number-in field2 2,3.5'.split())
