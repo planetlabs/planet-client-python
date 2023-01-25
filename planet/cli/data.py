@@ -155,8 +155,8 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     VALUE is a comma-separated list of entries.
     When multiple entries are specified, an implicit 'or' logic is applied.""")
 @click.option('--permission',
-              type=bool,
-              default=True,
+              is_flag=True,
+              default=False,
               show_default=True,
               help='Filter to assets with download permissions.')
 @click.option('--range',
@@ -168,8 +168,8 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     FIELD is the name of the field to filter on.
     COMP can be lt, lte, gt, or gte.""")
 @click.option('--std-quality',
-              type=bool,
-              default=True,
+              is_flag=True,
+              default=False,
               show_default=True,
               help='Filter to standard quality.')
 @click.option('--string-in',
@@ -209,6 +209,9 @@ def filter(ctx,
     inputs. This is only a subset of the complex filtering supported by the
     API. For advanced filter creation, either create the filter by hand or use
     the Python API.
+
+    If no options are specified, an empty filter is returned which, when used
+    in a search, bypasses all search filtering.
     """
     permission = data_filter.permission_filter() if permission else None
     std_quality = data_filter.std_quality_filter() if std_quality else None
@@ -234,7 +237,13 @@ def filter(ctx,
             else:
                 filters.append(f)
 
-    filt = data_filter.and_filter(filters)
+    if filters:
+        filt = data_filter.and_filter(filters)
+    else:
+        # make it explicit that we return an empty filter
+        # when no filters are specified
+        filt = data_filter.empty_filter()
+
     echo_json(filt, pretty)
 
 
