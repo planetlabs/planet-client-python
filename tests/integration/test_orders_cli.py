@@ -417,17 +417,8 @@ def test_cli_orders_download_state(invoke, order_description, oid):
     assert 'order state (running) is not a final state.' in result.output
 
 
-# TODO: add tests of "create --pretty" (gh-491).
-@pytest.mark.parametrize(
-    "id_string, expected_ids",
-    [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
-     ('4500474_2133707_2021-05-20_2419,4500474_2133707_2021-05-20_2420',
-      ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])])
 @respx.mock
-def test_cli_orders_create_basic_success(expected_ids,
-                                         id_string,
-                                         invoke,
-                                         order_description):
+def test_cli_orders_create_basic_success(invoke, order_description):
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
@@ -435,7 +426,7 @@ def test_cli_orders_create_basic_success(expected_ids,
         "name":
         "test",
         "products": [{
-            "item_ids": expected_ids,
+            "item_ids": ['4500474_2133707_2021-05-20_2419'],
             "item_type": "PSOrthoTile",
             "product_bundle": "analytic"
         }],

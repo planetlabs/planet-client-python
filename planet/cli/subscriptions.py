@@ -1,9 +1,9 @@
 """Subscriptions CLI"""
 from contextlib import asynccontextmanager
-import json
 
 import click
 
+from . import types
 from .cmds import coro, translate_exceptions
 from .io import echo_json
 from .options import limit, pretty
@@ -59,35 +59,21 @@ async def list_subscriptions_cmd(ctx, status, limit, pretty):
             echo_json(sub, pretty)
 
 
-def parse_request(ctx, param, value: str) -> dict:
-    """Turn request JSON/file into a dict."""
-    if value.startswith('{'):
-        try:
-            obj = json.loads(value)
-        except json.decoder.JSONDecodeError:
-            raise click.BadParameter('Request does not contain valid json.',
-                                     ctx=ctx,
-                                     param=param)
-    else:
-        try:
-            with click.open_file(value) as f:
-                obj = json.load(f)
-        except json.decoder.JSONDecodeError:
-            raise click.BadParameter('Request does not contain valid json.',
-                                     ctx=ctx,
-                                     param=param)
-
-    return obj
-
-
 @subscriptions.command(name='create')
-@click.argument('request', callback=parse_request)
+@click.argument('request', type=types.JSON())
 @pretty
 @click.pass_context
 @translate_exceptions
 @coro
 async def create_subscription_cmd(ctx, request, pretty):
-    """Submits a subscription request and prints the API response."""
+    """Create a subscription.
+
+    Submits a subscription request for creation and prints the created
+    subscription description, optionally pretty-printed.
+
+    REQUEST is the full description of the subscription to be created. It must
+    be JSON and can be specified a json string, filename, or '-' for stdin.
+    """
     async with subscriptions_client(ctx) as client:
         sub = await client.create_subscription(request)
         echo_json(sub, pretty)
@@ -107,13 +93,20 @@ async def cancel_subscription_cmd(ctx, subscription_id, pretty):
 
 @subscriptions.command(name='update')
 @click.argument('subscription_id')
-@click.argument('request', callback=parse_request)
+@click.argument('request', type=types.JSON())
 @pretty
 @click.pass_context
 @translate_exceptions
 @coro
 async def update_subscription_cmd(ctx, subscription_id, request, pretty):
-    """Updates a subscription and prints the API response."""
+    """Update a subscription.
+
+    Updates a subscription and prints the updated subscription description,
+    optionally pretty-printed.
+
+    REQUEST is the full description of the updated subscription. It must be
+    JSON and can be specified a json string, filename, or '-' for stdin.
+    """
     async with subscriptions_client(ctx) as client:
         sub = await client.update_subscription(subscription_id, request)
         echo_json(sub, pretty)

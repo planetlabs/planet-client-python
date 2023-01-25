@@ -134,7 +134,6 @@ def test_subscriptions_bad_request(invoke, cmd_arg, runner_input):
         catch_exceptions=True)
 
     assert result.exit_code == 2  # bad parameter.
-    assert "Request does not contain valid json" in result.output
 
 
 @failing_api_mock

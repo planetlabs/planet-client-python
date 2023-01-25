@@ -245,7 +245,7 @@ def filter(ctx,
 @click.argument("item_types",
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
-@click.argument("filter", type=types.JSON(), default="-", required=False)
+@click.argument("filter", type=types.JSON())
 @limit
 @click.option('--name', type=str, help='Name of the saved search.')
 @click.option('--sort',
@@ -263,7 +263,7 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
     ITEM_TYPES is a comma-separated list of item-types to search.
 
     FILTER must be JSON and can be specified a json string, filename, or '-'
-    for stdin. It defaults to reading from stdin.
+    for stdin.
 
     Quick searches are stored for approximately 30 days and the --name
     parameter will be applied to the stored quick search.
@@ -286,7 +286,7 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
 @click.argument("item_types",
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
-@click.argument("filter", type=types.JSON(), default="-", required=False)
+@click.argument("filter", type=types.JSON())
 @click.option('--daily-email',
               is_flag=True,
               help='Send a daily email when new results are added.')
@@ -302,7 +302,7 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
     ITEM_TYPES is a comma-separated list of item-types to search.
 
     FILTER must be JSON and can be specified a json string, filename, or '-'
-    for stdin. It defaults to reading from stdin.
+    for stdin.
     """
     async with data_client(ctx) as cl:
         items = await cl.create_search(name=name,
@@ -320,7 +320,7 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
 @click.argument('interval', type=click.Choice(STATS_INTERVAL))
-@click.argument("filter", type=types.JSON(), default="-", required=False)
+@click.argument("filter", type=types.JSON())
 async def stats(ctx, item_types, interval, filter):
     """Get a bucketed histogram of items matching the filter.
 
