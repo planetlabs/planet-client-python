@@ -100,10 +100,10 @@ In this step, you search for the most recent PSScene images available to downloa
 One of the commands you’ll use most frequently is `planet data filter`. This “convenience method” creates the JSON you need to run other commands. Run it with no arguments to see how it works by default:
 
 ```console
-planet data filter
+planet data filter --permission --std-quality
 ```
 
-Look at the console output to see some default filters. `PermissionFilter` filters the output to only contain imagery that you have permission to download. You’ll also see `quality_category`, which means the output lists only images in the [`standard quality` category](https://developers.planet.com/docs/data/planetscope/#image-quality-standard-vs-test-imagery). 
+Look at the console output to see some default filters. `PermissionFilter` filters the output to only contain imagery that you have permission to download. You’ll also see `quality_category`, which means the output lists only images in the [`standard quality` category](https://developers.planet.com/docs/data/planetscope/#image-quality-standard-vs-test-imagery). Without these options, an empty filter is generated which would be used to disable filtering and simply return all results.
 
 !!!note "The --help switch is your friend"
     You can do a lot with this `filter` command. We recommend running `planet data filter --help` often to get a reference of how the commands work.
@@ -113,13 +113,13 @@ Look at the console output to see some default filters. `PermissionFilter` filte
 Run the filter command and save it to a file named `filter.json`:
 
 ```console
-planet data filter > filter.json
+planet data filter --permission --std-quality > filter.json
 ```
 
 Then use that file with the search command and save the results to another file named `recent-psscene.json`.
 
 ```console
-planet data search PSScene filter.json > recent-psscene.json
+planet data search PSScene --filter filter.json > recent-psscene.json
 ```
 
 Open `recent-psscene.json` to see the 100 most recent PSScene images you have permissions to actually download.
