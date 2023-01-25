@@ -245,7 +245,9 @@ def filter(ctx,
 @click.argument("item_types",
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
-@click.argument("filter", type=types.JSON())
+@click.option('--filter',
+              type=types.JSON(),
+              help='Apply specified filter to search.')
 @limit
 @click.option('--name', type=str, help='Name of the saved search.')
 @click.option('--sort',
@@ -262,8 +264,9 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
 
     ITEM_TYPES is a comma-separated list of item-types to search.
 
-    FILTER must be JSON and can be specified a json string, filename, or '-'
-    for stdin.
+    If --filter is specified, the filter must be JSON and can be a json string,
+    filename, or '-' for stdin. If not specified, search results are not
+    filtered.
 
     Quick searches are stored for approximately 30 days and the --name
     parameter will be applied to the stored quick search.
@@ -271,7 +274,7 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
     async with data_client(ctx) as cl:
 
         async for item in cl.search(item_types,
-                                    filter,
+                                    search_filter=filter,
                                     name=name,
                                     sort=sort,
                                     limit=limit):
