@@ -29,8 +29,13 @@ SEARCHES_PATH = '/searches'
 STATS_PATH = '/stats'
 
 # TODO: get these values from the spec directly gh-619
+# NOTE: these values are mached against a lower-case value so must also be
+# lower-case
 LIST_SORT_ORDER = ('created desc', 'created asc')
 LIST_SEARCH_TYPE = ('any', 'saved', 'quick')
+LIST_SORT_DEFAULT = 'created desc'
+LIST_SEARCH_TYPE_DEFAULT = 'any'
+
 SEARCH_SORT = ('published desc',
                'published asc',
                'acquired desc',
@@ -230,8 +235,8 @@ class DataClient:
         return response.json()
 
     async def list_searches(self,
-                            sort: str = 'created desc',
-                            search_type: str = 'any',
+                            sort: Optional[str] = LIST_SORT_DEFAULT,
+                            search_type: Optional[str] = LIST_SEARCH_TYPE_DEFAULT,
                             limit: int = 100) -> AsyncIterator[dict]:
         """Iterate through list of searches available to the user.
 
@@ -242,7 +247,7 @@ class DataClient:
 
         Parameters:
             sort: Field and direction to order results by.
-            search_type: Search type filter.
+            search_type: Filter to specified search type.
             limit: Maximum number of results to return. When set to 0, no
                 maximum is applied.
 
@@ -254,19 +259,26 @@ class DataClient:
             planet.exceptions.ClientError: If sort or search_type are not
                 valid.
         """
+        params = {}
+
         sort = sort.lower()
         if sort not in LIST_SORT_ORDER:
             raise exceptions.ClientError(
                 f'{sort} must be one of {LIST_SORT_ORDER}')
+        elif sort != LIST_SORT_DEFAULT:
+            params['_sort'] = sort
 
         search_type = search_type.lower()
         if search_type not in LIST_SEARCH_TYPE:
             raise exceptions.ClientError(
                 f'{search_type} must be one of {LIST_SEARCH_TYPE}')
+        elif search_type != LIST_SEARCH_TYPE_DEFAULT:
+            params['search_type'] = search_type
 
-        url = f'{self._searches_url()}'
-
-        response = await self._session.request(method='GET', url=url)
+        url = self._searches_url()
+        response = await self._session.request(method='GET',
+                                               url=url,
+                                               params=params)
         async for s in Searches(response, self._session.request, limit=limit):
             yield s
 
