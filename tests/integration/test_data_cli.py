@@ -23,6 +23,7 @@ from click.testing import CliRunner
 import pytest
 
 from planet.cli import cli
+from planet.clients.data import LIST_SEARCH_TYPE_DEFAULT, LIST_SORT_DEFAULT
 from planet.specs import get_item_types
 
 LOGGER = logging.getLogger(__name__)
@@ -596,6 +597,61 @@ def test_data_search_create_daily_email(invoke, search_result):
     assert result.exit_code == 0
     assert sent_request == search_request
     assert json.loads(result.output) == search_result
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("limit, expected_list_length", [(0, 4), (3, 3)])
+def test_data_list_searches_basic(invoke,
+                                  search_result,
+                                  limit,
+                                  expected_list_length):
+    """Ensure planet data search-list runs successfully and respects limit."""
+    page1_response = {"_links": {}, "searches": [search_result] * 4}
+    route = respx.get(TEST_SEARCHES_URL)
+    route.return_value = httpx.Response(200, json=page1_response)
+
+    result = invoke(['search-list', f'--limit={limit}'])
+    assert result.exit_code == 0
+    assert len(result.output.strip().split('\n')) == expected_list_length
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("sort, rel_url, valid",
+                         [(LIST_SORT_DEFAULT, '', True),
+                          ('created asc', '?_sort=created+asc', True),
+                          ('notvalid', '', False)])
+def test_data_list_searches_sort(invoke, search_result, sort, rel_url, valid):
+    """Ensure planet data search-list handles sort."""
+    page1_response = {"_links": {}, "searches": [search_result] * 4}
+    route = respx.get(f'{TEST_SEARCHES_URL}{rel_url}')
+    route.return_value = httpx.Response(200, json=page1_response)
+
+    result = invoke(['search-list', f'--sort={sort}'])
+    expected_code = 0 if valid else 2
+    assert result.exit_code == expected_code
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("search_type, rel_url, valid",
+                         [(LIST_SEARCH_TYPE_DEFAULT, '', True),
+                          ('saved', '?search_type=saved', True),
+                          ('notvalid', '', False)])
+def test_data_list_searches_searchtype(invoke,
+                                       search_result,
+                                       search_type,
+                                       rel_url,
+                                       valid):
+    """Ensure planet data search-list handles search-type."""
+    page1_response = {"_links": {}, "searches": [search_result] * 4}
+    route = respx.get(f'{TEST_SEARCHES_URL}{rel_url}')
+    route.return_value = httpx.Response(200, json=page1_response)
+
+    result = invoke(['search-list', f'--search-type={search_type}'])
+    expected_code = 0 if valid else 2
+    assert result.exit_code == expected_code
 
 
 @respx.mock

@@ -18,7 +18,11 @@ from contextlib import asynccontextmanager
 import click
 
 from planet import data_filter, DataClient
-from planet.clients.data import (SEARCH_SORT,
+from planet.clients.data import (LIST_SEARCH_TYPE,
+                                 LIST_SEARCH_TYPE_DEFAULT,
+                                 LIST_SORT_ORDER,
+                                 LIST_SORT_DEFAULT,
+                                 SEARCH_SORT,
                                  SEARCH_SORT_DEFAULT,
                                  STATS_INTERVAL)
 from planet.specs import (get_item_types,
@@ -310,6 +314,80 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
                                        search_filter=filter,
                                        enable_email=daily_email)
         echo_json(items, pretty)
+
+
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.option('--sort',
+              type=click.Choice(LIST_SORT_ORDER),
+              default=LIST_SORT_DEFAULT,
+              show_default=True,
+              help='Field and direction to order results by.')
+@click.option('--search-type',
+              type=click.Choice(LIST_SEARCH_TYPE),
+              default=LIST_SEARCH_TYPE_DEFAULT,
+              show_default=True,
+              help='Search type filter.')
+@limit
+@pretty
+async def search_list(ctx, sort, search_type, limit, pretty):
+    """List saved searches.
+
+    This function outputs a full JSON description of the saved searches,
+    optionally pretty-printed.
+    """
+    async with data_client(ctx) as cl:
+        async for item in cl.list_searches(sort=sort,
+                                           search_type=search_type,
+                                           limit=limit):
+            echo_json(item, pretty)
+
+
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument('search_id')
+@limit
+@pretty
+async def search_run(ctx, search_id, limit):
+    """Execute a saved structured item search.
+
+    This function outputs a series of GeoJSON descriptions, one for each of the
+    returned items, optionally pretty-printed.
+    """
+    async with data_client(ctx) as cl:
+        async for item in cl.run_search(search_id, limit=limit):
+            echo_json(item, pretty)
+
+
+# @data.command(epilog=valid_item_string)
+# @click.pass_context
+# @translate_exceptions
+# @coro
+# @click.argument('search_id')
+# @pretty
+# async def search_run(ctx, name, item_types, filter, daily_email, pretty):
+#     """Create a new saved structured item search.
+#
+#     This function outputs a full JSON description of the created search,
+#     optionally pretty-printed.
+#
+#     NAME is the name to give the search.
+#
+#     ITEM_TYPES is a comma-separated list of item-types to search.
+#
+#     FILTER must be JSON and can be specified a json string, filename, or '-'
+#     for stdin.
+#     """
+#     async with data_client(ctx) as cl:
+#         items = await cl.create_search(name=name,
+#                                        item_types=item_types,
+#                                        search_filter=filter,
+#                                        enable_email=daily_email)
+#         echo_json(items, pretty)
 
 
 @data.command(epilog=valid_item_string)
