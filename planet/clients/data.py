@@ -234,10 +234,11 @@ class DataClient:
                                                json=request)
         return response.json()
 
-    async def list_searches(self,
-                            sort: Optional[str] = LIST_SORT_DEFAULT,
-                            search_type: Optional[str] = LIST_SEARCH_TYPE_DEFAULT,
-                            limit: int = 100) -> AsyncIterator[dict]:
+    async def list_searches(
+            self,
+            sort: Optional[str] = LIST_SORT_DEFAULT,
+            search_type: Optional[str] = LIST_SEARCH_TYPE_DEFAULT,
+            limit: int = 100) -> AsyncIterator[dict]:
         """Iterate through list of searches available to the user.
 
         Note:
