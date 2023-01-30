@@ -560,7 +560,7 @@ def test_data_search_create_filter_success(invoke, item_types):
 
 
 @respx.mock
-def test_search_create_daily_email(invoke, search_result):
+def test_data_search_create_daily_email(invoke, search_result):
     mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
