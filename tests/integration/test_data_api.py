@@ -25,8 +25,9 @@ import pytest
 import respx
 
 from planet import exceptions, DataClient
+from planet.clients.data import LIST_SORT_DEFAULT, LIST_SEARCH_TYPE_DEFAULT
 
-TEST_URL = 'http://www.MockNotRealURL.com/api/path'
+TEST_URL = 'http://www.mocknotrealurl.com/api/path'
 TEST_SEARCHES_URL = f'{TEST_URL}/searches'
 TEST_STATS_URL = f'{TEST_URL}/stats'
 
@@ -309,6 +310,41 @@ async def test_list_searches_success(limit,
 
     assert len([s async for s in cl.list_searches(limit=limit)
                 ]) == expected_list_length
+
+    assert route.called
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("sort, rel_url",
+                         [(LIST_SORT_DEFAULT, ''),
+                          ('created asc', '?_sort=created+asc')])
+async def test_list_searches_sort(sort, rel_url, search_result, session):
+    page1_response = {"_links": {}, "searches": [search_result] * 4}
+    route = respx.get(f'{TEST_SEARCHES_URL}{rel_url}')
+    route.return_value = httpx.Response(200, json=page1_response)
+
+    cl = DataClient(session, base_url=TEST_URL)
+    _ = [s async for s in cl.list_searches(sort=sort)]
+
+    assert route.called
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("search_type, rel_url",
+                         [(LIST_SEARCH_TYPE_DEFAULT, ''),
+                          ('saved', '?search_type=saved')])
+async def test_list_searches_searchtype(search_type,
+                                        rel_url,
+                                        search_result,
+                                        session):
+    page1_response = {"_links": {}, "searches": [search_result] * 4}
+    route = respx.get(f'{TEST_SEARCHES_URL}{rel_url}')
+    route.return_value = httpx.Response(200, json=page1_response)
+
+    cl = DataClient(session, base_url=TEST_URL)
+    _ = [s async for s in cl.list_searches(search_type=search_type)]
 
     assert route.called
 
