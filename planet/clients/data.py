@@ -18,6 +18,7 @@ import logging
 from pathlib import Path
 import time
 from typing import Any, AsyncIterator, Callable, Dict, List, Optional
+import uuid
 
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
@@ -92,6 +93,15 @@ class DataClient:
         if self._base_url.endswith('/'):
             self._base_url = self._base_url[:-1]
 
+    @staticmethod
+    def _check_search_id(sid):
+        """Raises planet.exceptions.ClientError if sid is not a valid UUID"""
+        try:
+            uuid.UUID(hex=sid)
+        except (ValueError, AttributeError):
+            msg = f'Search id ({sid}) is not a valid UUID hexadecimal string.'
+            raise exceptions.ClientError(msg)
+
     def _searches_url(self):
         return f'{self._base_url}{SEARCHES_PATH}'
 
@@ -103,7 +113,7 @@ class DataClient:
                      search_filter: dict,
                      name: Optional[str] = None,
                      sort: Optional[str] = None,
-                     limit: int = 100) -> AsyncIterator[dict]:
+                     limit: Optional[int] = 100) -> AsyncIterator[dict]:
         """Iterate over results from a quick search.
 
         Quick searches are saved for a short period of time (~month). The
@@ -315,7 +325,8 @@ class DataClient:
 
     async def run_search(self,
                          search_id: str,
-                         limit: int = 100) -> AsyncIterator[dict]:
+                         sort: Optional[str] = None,
+                         limit: Optional[int] = 100) -> AsyncIterator[dict]:
         """Iterate over results from a saved search.
 
         Note:
@@ -325,6 +336,8 @@ class DataClient:
 
         Parameters:
             search_id: Stored search identifier.
+            sort: Field and direction to order results by. Valid options are
+            given in SEARCH_SORT.
             limit: Maximum number of results to return. When set to 0, no
                 maximum is applied.
 
@@ -333,10 +346,22 @@ class DataClient:
 
         Raises:
             planet.exceptions.APIError: On API error.
+            planet.exceptions.ClientError: If search_id or sort is not valid.
         """
+        self._check_search_id(search_id)
         url = f'{self._searches_url()}/{search_id}/results'
 
-        response = await self._session.request(method='GET', url=url)
+        params = {}
+        if sort and sort != SEARCH_SORT_DEFAULT:
+            sort = sort.lower()
+            if sort not in SEARCH_SORT:
+                raise exceptions.ClientError(
+                    f'{sort} must be one of {SEARCH_SORT}')
+            params['_sort'] = sort
+
+        response = await self._session.request(method='GET',
+                                               url=url,
+                                               params=params)
         async for i in Items(response, self._session.request, limit=limit):
             yield i
 

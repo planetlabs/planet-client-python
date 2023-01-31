@@ -25,11 +25,15 @@ import pytest
 import respx
 
 from planet import exceptions, DataClient
-from planet.clients.data import LIST_SORT_DEFAULT, LIST_SEARCH_TYPE_DEFAULT
+from planet.clients.data import (LIST_SORT_DEFAULT,
+                                 LIST_SEARCH_TYPE_DEFAULT,
+                                 SEARCH_SORT_DEFAULT)
 
 TEST_URL = 'http://www.mocknotrealurl.com/api/path'
 TEST_SEARCHES_URL = f'{TEST_URL}/searches'
 TEST_STATS_URL = f'{TEST_URL}/stats'
+
+VALID_SEARCH_ID = '39a6e871-3b8a-4b5a-831a-28d42da9599e'
 
 LOGGER = logging.getLogger(__name__)
 
@@ -390,10 +394,16 @@ async def test_delete_search(retcode, expectation, session):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_run_search_success(item_descriptions, session):
-    sid = 'search_id'
-    route = respx.get(f'{TEST_SEARCHES_URL}/{sid}/results')
-
+@pytest.mark.parametrize("search_id, valid", [(VALID_SEARCH_ID, True),
+                                              ('invalid', False)])
+@pytest.mark.parametrize("limit, expected_count", [(None, 3), (2, 2)])
+async def test_run_search_basic(item_descriptions,
+                                session,
+                                search_id,
+                                valid,
+                                limit,
+                                expected_count):
+    """Ensure run_search is successful and handles search_id and limit"""
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
     item1, item2, item3 = item_descriptions
     page1_response = {
@@ -402,6 +412,7 @@ async def test_run_search_success(item_descriptions, session):
         }, "features": [item1, item2]
     }
 
+    route = respx.get(f'{TEST_SEARCHES_URL}/{search_id}/results')
     route.return_value = httpx.Response(204, json=page1_response)
 
     page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
@@ -409,12 +420,54 @@ async def test_run_search_success(item_descriptions, session):
     respx.get(next_page_url).return_value = mock_resp2
 
     cl = DataClient(session, base_url=TEST_URL)
-    items_list = [i async for i in cl.run_search(sid)]
 
-    assert route.called
+    if valid:
+        items_list = [i async for i in cl.run_search(search_id, limit=limit)]
 
-    # check that all of the items were returned unchanged
-    assert items_list == item_descriptions
+        assert route.called
+
+        # check that all of the items were returned unchanged
+        assert items_list == item_descriptions[:expected_count]
+    else:
+        with pytest.raises(exceptions.ClientError):
+            [i async for i in cl.run_search(search_id)]
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("sort, rel_url, valid",
+                         [(SEARCH_SORT_DEFAULT, '', True),
+                          ('acquired asc', '?_sort=acquired+asc', True),
+                          ('invalid', '', False)])
+async def test_run_search_sort(item_descriptions,
+                               session,
+                               sort,
+                               rel_url,
+                               valid):
+    next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
+    item1, item2, item3 = item_descriptions
+    page1_response = {
+        "_links": {
+            "_next": next_page_url
+        }, "features": [item1, item2]
+    }
+
+    route = respx.get(
+        f'{TEST_SEARCHES_URL}/{VALID_SEARCH_ID}/results{rel_url}')
+    route.return_value = httpx.Response(204, json=page1_response)
+
+    page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    cl = DataClient(session, base_url=TEST_URL)
+
+    expectation = pytest.raises(
+        exceptions.ClientError) if not valid else does_not_raise()
+
+    with expectation:
+        [s async for s in cl.run_search(VALID_SEARCH_ID, sort=sort)]
+        assert route.called
 
 
 @respx.mock
