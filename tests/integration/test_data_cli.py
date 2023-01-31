@@ -602,10 +602,10 @@ def test_data_search_create_daily_email(invoke, search_result):
 @respx.mock
 @pytest.mark.asyncio
 @pytest.mark.parametrize("limit, expected_list_length", [(0, 4), (3, 3)])
-def test_data_list_searches_basic(invoke,
-                                  search_result,
-                                  limit,
-                                  expected_list_length):
+def test_data_search_list_basic(invoke,
+                                search_result,
+                                limit,
+                                expected_list_length):
     """Ensure planet data search-list runs successfully and respects limit."""
     page1_response = {"_links": {}, "searches": [search_result] * 4}
     route = respx.get(TEST_SEARCHES_URL)
@@ -622,7 +622,7 @@ def test_data_list_searches_basic(invoke,
                          [(LIST_SORT_DEFAULT, '', True),
                           ('created asc', '?_sort=created+asc', True),
                           ('notvalid', '', False)])
-def test_data_list_searches_sort(invoke, search_result, sort, rel_url, valid):
+def test_data_search_list_sort(invoke, search_result, sort, rel_url, valid):
     """Ensure planet data search-list handles sort."""
     page1_response = {"_links": {}, "searches": [search_result] * 4}
     route = respx.get(f'{TEST_SEARCHES_URL}{rel_url}')
@@ -639,11 +639,11 @@ def test_data_list_searches_sort(invoke, search_result, sort, rel_url, valid):
                          [(LIST_SEARCH_TYPE_DEFAULT, '', True),
                           ('saved', '?search_type=saved', True),
                           ('notvalid', '', False)])
-def test_data_list_searches_searchtype(invoke,
-                                       search_result,
-                                       search_type,
-                                       rel_url,
-                                       valid):
+def test_data_search_list_searchtype(invoke,
+                                     search_result,
+                                     search_type,
+                                     rel_url,
+                                     valid):
     """Ensure planet data search-list handles search-type."""
     page1_response = {"_links": {}, "searches": [search_result] * 4}
     route = respx.get(f'{TEST_SEARCHES_URL}{rel_url}')
