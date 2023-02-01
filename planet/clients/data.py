@@ -248,7 +248,7 @@ class DataClient:
             self,
             sort: Optional[str] = LIST_SORT_DEFAULT,
             search_type: Optional[str] = LIST_SEARCH_TYPE_DEFAULT,
-            limit: int = 100) -> AsyncIterator[dict]:
+            limit: Optional[int] = 100) -> AsyncIterator[dict]:
         """Iterate through list of searches available to the user.
 
         Note:
