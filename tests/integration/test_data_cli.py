@@ -730,7 +730,7 @@ def test_data_search_run_sort(invoke, item_descriptions, sort, rel_url, valid):
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
-    result = invoke(['search-list', f'--sort={sort}'])
+    result = invoke(['search-run', f'--sort={sort}', VALID_SEARCH_ID])
     expected_code = 0 if valid else 2
     assert result.exit_code == expected_code
 

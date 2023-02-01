@@ -359,16 +359,21 @@ async def search_list(ctx, sort, search_type, limit, pretty):
 @translate_exceptions
 @coro
 @click.argument('search_id', callback=check_search_id)
+@click.option('--sort',
+              type=click.Choice(SEARCH_SORT),
+              default=SEARCH_SORT_DEFAULT,
+              show_default=True,
+              help='Field and direction to order results by.')
 @limit
 @pretty
-async def search_run(ctx, search_id, limit, pretty):
+async def search_run(ctx, search_id, sort, limit, pretty):
     """Execute a saved structured item search.
 
     This function outputs a series of GeoJSON descriptions, one for each of the
     returned items, optionally pretty-printed.
     """
     async with data_client(ctx) as cl:
-        async for item in cl.run_search(search_id, limit=limit):
+        async for item in cl.run_search(search_id, sort=sort, limit=limit):
             echo_json(item, pretty)
 
 

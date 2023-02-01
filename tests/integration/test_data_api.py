@@ -33,7 +33,7 @@ TEST_URL = 'http://www.mocknotrealurl.com/api/path'
 TEST_SEARCHES_URL = f'{TEST_URL}/searches'
 TEST_STATS_URL = f'{TEST_URL}/stats'
 
-VALID_SEARCH_ID = '39a6e871-3b8a-4b5a-831a-28d42da9599e'
+VALID_SEARCH_ID = '286469f0b27c476e96c3c4e561f59664'
 
 LOGGER = logging.getLogger(__name__)
 
@@ -265,7 +265,6 @@ async def test_get_search_id_doesnt_exist(search_id, session):
 @respx.mock
 @pytest.mark.asyncio
 async def test_update_search_basic(search_filter, session):
-    sid = 'search_id'
 
     page_response = {
         "__daily_email_enabled": False,
@@ -274,16 +273,19 @@ async def test_update_search_basic(search_filter, session):
         },
         "created": "2019-08-24T14:15:22Z",
         "filter": search_filter,
-        "id": sid,
+        "id": VALID_SEARCH_ID,
         "last_executed": "2019-08-24T14:15:22Z",
         "name": "test",
         "updated": "2019-08-24T14:15:22Z"
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
-    respx.put(f'{TEST_SEARCHES_URL}/{sid}').return_value = mock_resp
+    respx.put(
+        f'{TEST_SEARCHES_URL}/{VALID_SEARCH_ID}').return_value = mock_resp
 
     cl = DataClient(session, base_url=TEST_URL)
-    search = await cl.update_search(sid, 'test', ['PSScene'], search_filter)
+    search = await cl.update_search(VALID_SEARCH_ID,
+                                    'test', ['PSScene'],
+                                    search_filter)
 
     # check that request is correct
     expected_request = {
@@ -380,14 +382,13 @@ async def test_list_searches_args_do_not_match(sort,
                          [(204, does_not_raise()),
                           (404, pytest.raises(exceptions.APIError))])
 async def test_delete_search(retcode, expectation, session):
-    sid = 'search_id'
     mock_resp = httpx.Response(retcode)
-    route = respx.delete(f'{TEST_SEARCHES_URL}/{sid}')
+    route = respx.delete(f'{TEST_SEARCHES_URL}/{VALID_SEARCH_ID}')
     route.return_value = mock_resp
     cl = DataClient(session, base_url=TEST_URL)
 
     with expectation:
-        await cl.delete_search(sid)
+        await cl.delete_search(VALID_SEARCH_ID)
 
     assert route.called
 
@@ -473,13 +474,12 @@ async def test_run_search_sort(item_descriptions,
 @respx.mock
 @pytest.mark.asyncio
 async def test_run_search_doesnotexist(session):
-    sid = 'search_id'
-    route = respx.get(f'{TEST_SEARCHES_URL}/{sid}/results')
+    route = respx.get(f'{TEST_SEARCHES_URL}/{VALID_SEARCH_ID}/results')
     route.return_value = httpx.Response(404)
 
     cl = DataClient(session, base_url=TEST_URL)
     with pytest.raises(exceptions.APIError):
-        [i async for i in cl.run_search(sid)]
+        [i async for i in cl.run_search(VALID_SEARCH_ID)]
 
     assert route.called
 

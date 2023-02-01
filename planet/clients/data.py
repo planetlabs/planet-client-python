@@ -113,7 +113,7 @@ class DataClient:
                      search_filter: dict,
                      name: Optional[str] = None,
                      sort: Optional[str] = None,
-                     limit: Optional[int] = 100) -> AsyncIterator[dict]:
+                     limit: int = 100) -> AsyncIterator[dict]:
         """Iterate over results from a quick search.
 
         Quick searches are saved for a short period of time (~month). The
@@ -244,11 +244,10 @@ class DataClient:
                                                json=request)
         return response.json()
 
-    async def list_searches(
-            self,
-            sort: Optional[str] = LIST_SORT_DEFAULT,
-            search_type: Optional[str] = LIST_SEARCH_TYPE_DEFAULT,
-            limit: Optional[int] = 100) -> AsyncIterator[dict]:
+    async def list_searches(self,
+                            sort: str = LIST_SORT_DEFAULT,
+                            search_type: str = LIST_SEARCH_TYPE_DEFAULT,
+                            limit: int = 100) -> AsyncIterator[dict]:
         """Iterate through list of searches available to the user.
 
         Note:
@@ -326,7 +325,7 @@ class DataClient:
     async def run_search(self,
                          search_id: str,
                          sort: Optional[str] = None,
-                         limit: Optional[int] = 100) -> AsyncIterator[dict]:
+                         limit: int = 100) -> AsyncIterator[dict]:
         """Iterate over results from a saved search.
 
         Note:
