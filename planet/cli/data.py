@@ -17,7 +17,7 @@ from contextlib import asynccontextmanager
 
 import click
 
-from planet import data_filter, DataClient
+from planet import data_filter, DataClient, exceptions
 from planet.clients.data import (LIST_SEARCH_TYPE,
                                  LIST_SEARCH_TYPE_DEFAULT,
                                  LIST_SORT_ORDER,
@@ -76,6 +76,15 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
         return item_types
     except SpecificationException as e:
         raise click.BadParameter(str(e))
+
+
+def check_search_id(ctx, param, search_id) -> str:
+    '''Ensure search id is a valix hex string'''
+    try:
+        _ = DataClient._check_search_id(search_id)
+    except exceptions.ClientError as e:
+        raise click.BadParameter(str(e))
+    return search_id
 
 
 def date_range_to_filter(ctx, param, values) -> Optional[List[dict]]:
@@ -349,10 +358,10 @@ async def search_list(ctx, sort, search_type, limit, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument('search_id')
+@click.argument('search_id', callback=check_search_id)
 @limit
 @pretty
-async def search_run(ctx, search_id, limit):
+async def search_run(ctx, search_id, limit, pretty):
     """Execute a saved structured item search.
 
     This function outputs a series of GeoJSON descriptions, one for each of the
@@ -363,31 +372,8 @@ async def search_run(ctx, search_id, limit):
             echo_json(item, pretty)
 
 
-# @data.command(epilog=valid_item_string)
-# @click.pass_context
-# @translate_exceptions
-# @coro
-# @click.argument('search_id')
-# @pretty
-# async def search_run(ctx, name, item_types, filter, daily_email, pretty):
-#     """Create a new saved structured item search.
-#
-#     This function outputs a full JSON description of the created search,
-#     optionally pretty-printed.
-#
-#     NAME is the name to give the search.
-#
-#     ITEM_TYPES is a comma-separated list of item-types to search.
-#
-#     FILTER must be JSON and can be specified a json string, filename, or '-'
-#     for stdin.
-#     """
-#     async with data_client(ctx) as cl:
-#         items = await cl.create_search(name=name,
-#                                        item_types=item_types,
-#                                        search_filter=filter,
-#                                        enable_email=daily_email)
-#         echo_json(items, pretty)
+# TODO: search-update
+# TODO: search-delete
 
 
 @data.command(epilog=valid_item_string)
