@@ -175,6 +175,49 @@ In the case of invalid options, print an error message (stderr) and set the exit
 code to 2. In the case of an API error response, print the response JSON and 
 set code to 1.
 
+## Request
+
+### Interface
+
+```
+planet subscriptions request [OPTIONS]
+
+Generate a subscriptions request.
+
+This command provides support for building the subscription request JSON used to create or 
+update a subscription. It outputs the subscription request.
+
+Options:
+  --name TEXT                     Subscription name. Does not need to be unique.
+                                  [required]
+  --asset-types TEXT              One or more comma-separated asset types [required]
+  --item-types TEXT               One or more comma-separated item-types [required]
+  --geometry JSON                 GeoJSON of area to deliver subscription to. Use 
+                                  --clip only deliver pixels that match this area.
+                                  Can be a json string, filename, or '-' for stdin.
+  --clip                          Use the geometry GeoJSON as the clip geometry for 
+                                  the subscription.
+  --start-time DATETIME           Start date and time to begin subscription.
+  --end-time DATETIME             Date and time to end the subscription.
+  --rrule TEXT                    iCalendar recurrance rule to specify recurrances. 
+  --filter JSON                   A search filter can be specified a json string, 
+                                  filename, or '-' for stdin. 
+  --tools JSON                    Toolchain JSON. Can be a json string,
+                                  filename, or '-' for stdin.
+  --cloudconfig JSON              Credentials for cloud storage provider to
+                                  enable cloud delivery of data. Can be a json
+                                  string, filename, or '-' for stdin.
+  --notifications JSON            Notification JSON to specify webhook topics.
+  --pretty                        Format JSON output.
+  --help                          Show this message and exit.
+```
+
+### Usage Examples
+
+```
+planet subscription request --item-type PSScene --asset-types ortho_analytic_8b_sr,ortho_udm2 --geom JSON --clip --start-time 05/01/2022 --cloudconfig delivery.json | planet subscriptions create -
+```
+
 ## Update
 
 Edit a subscription, such as one with a future start date, before it starts running.
