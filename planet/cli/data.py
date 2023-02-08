@@ -356,7 +356,6 @@ async def search_get(ctx, search_id, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-@pretty
 @click.argument('search_id')
 async def search_delete(ctx, search_id):
     """Delete an existing saved search.
