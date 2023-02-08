@@ -701,9 +701,18 @@ def test_search_get_id_not_found(invoke, search_id):
     assert 'Error: {"message": "Error message"}\n' == result.output
 
 
+@respx.mock
+def test_search_delete(invoke, search_id, search_result):
+    delete_url = f'{TEST_SEARCHES_URL}/{search_id}'
+    mock_resp = httpx.Response(HTTPStatus.NO_CONTENT, json=search_result)
+    respx.delete(delete_url).return_value = mock_resp
+
+    result = invoke(['search-delete', search_id])
+
+    assert not result.exception
+
 # TODO: basic test for "planet data search-create".
 # TODO: basic test for "planet data search-update".
-# TODO: basic test for "planet data search-delete".
 # TODO: basic test for "planet data search-get".
 # TODO: basic test for "planet data search-list".
 # TODO: basic test for "planet data search-run".
