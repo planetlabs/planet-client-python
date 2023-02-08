@@ -724,6 +724,7 @@ def test_search_delete_invalid_id(invoke, search_id, search_result):
     assert result.exception
     assert result.exit_code == 1
 
+
 # TODO: basic test for "planet data search-create".
 # TODO: basic test for "planet data search-update".
 # TODO: basic test for "planet data search-get".
