@@ -53,6 +53,7 @@ def test_data_command_registered(invoke):
     assert "search" in result.output
     assert "search-create" in result.output
     assert "search-get" in result.output
+    assert "search-delete" in result.output
     # Add other sub-commands here.
 
 
