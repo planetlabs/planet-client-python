@@ -703,7 +703,7 @@ def test_search_get_id_not_found(invoke, search_id):
 
 
 @respx.mock
-def test_search_delete(invoke, search_id, search_result):
+def test_search_delete_success(invoke, search_id, search_result):
     delete_url = f'{TEST_SEARCHES_URL}/{search_id}'
     mock_resp = httpx.Response(HTTPStatus.NO_CONTENT, json=search_result)
     respx.delete(delete_url).return_value = mock_resp
@@ -714,7 +714,7 @@ def test_search_delete(invoke, search_id, search_result):
 
 
 @respx.mock
-def test_search_delete_invalid_id(invoke, search_id, search_result):
+def test_search_delete_nonexistant_search_id(invoke, search_id, search_result):
     delete_url = f'{TEST_SEARCHES_URL}/{search_id}'
     mock_resp = httpx.Response(404, json=search_result)
     respx.delete(delete_url).return_value = mock_resp
