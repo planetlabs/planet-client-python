@@ -53,6 +53,7 @@ def test_data_command_registered(invoke):
     assert "search" in result.output
     assert "search-create" in result.output
     assert "search-get" in result.output
+    assert "search-delete" in result.output
     # Add other sub-commands here.
 
 
@@ -701,9 +702,31 @@ def test_search_get_id_not_found(invoke, search_id):
     assert 'Error: {"message": "Error message"}\n' == result.output
 
 
+@respx.mock
+def test_search_delete_success(invoke, search_id, search_result):
+    delete_url = f'{TEST_SEARCHES_URL}/{search_id}'
+    mock_resp = httpx.Response(HTTPStatus.NO_CONTENT, json=search_result)
+    respx.delete(delete_url).return_value = mock_resp
+
+    result = invoke(['search-delete', search_id])
+
+    assert not result.exception
+
+
+@respx.mock
+def test_search_delete_nonexistant_search_id(invoke, search_id, search_result):
+    delete_url = f'{TEST_SEARCHES_URL}/{search_id}'
+    mock_resp = httpx.Response(404, json=search_result)
+    respx.delete(delete_url).return_value = mock_resp
+
+    result = invoke(['search-delete', search_id])
+
+    assert result.exception
+    assert result.exit_code == 1
+
+
 # TODO: basic test for "planet data search-create".
 # TODO: basic test for "planet data search-update".
-# TODO: basic test for "planet data search-delete".
 # TODO: basic test for "planet data search-get".
 # TODO: basic test for "planet data search-list".
 # TODO: basic test for "planet data search-run".

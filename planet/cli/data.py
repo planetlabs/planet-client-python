@@ -352,8 +352,19 @@ async def search_get(ctx, search_id, pretty):
         echo_json(items, pretty)
 
 
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument('search_id')
+async def search_delete(ctx, search_id):
+    """Delete an existing saved search.
+    """
+    async with data_client(ctx) as cl:
+        await cl.delete_search(search_id)
+
+
 # TODO: search_update()".
-# TODO: search_delete()".
 # TODO: search_run()".
 # TODO: item_get()".
 # TODO: asset_activate()".
