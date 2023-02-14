@@ -373,7 +373,7 @@ async def search_delete(ctx, search_id):
 @click.argument("item_types",
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
-@click.argument("filter", type=types.JSON())
+@click.argument('filter', type=types.JSON())
 @click.option('--daily-email',
               is_flag=True,
               help='Send a daily email when new results are added.')
