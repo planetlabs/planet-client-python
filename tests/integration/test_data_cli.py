@@ -745,7 +745,6 @@ def test_search_update_success(invoke,
     respx.put(update_url).return_value = mock_resp
 
     name = "search_name"
-    daily_email = "--daily-email"
 
     result = invoke(
         ['search-update', search_id, name, item_types, search_filter])
@@ -753,9 +752,6 @@ def test_search_update_success(invoke,
     assert not result.exception
 
 
-
-#     # check the response is returned unaltered
-#     assert search == page_response
 # TODO: basic test for "planet data search-create".
 # TODO: basic test for "planet data search-get".
 # TODO: basic test for "planet data search-list".
