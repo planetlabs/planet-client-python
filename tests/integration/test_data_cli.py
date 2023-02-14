@@ -54,6 +54,7 @@ def test_data_command_registered(invoke):
     assert "search-create" in result.output
     assert "search-get" in result.output
     assert "search-delete" in result.output
+    assert "search-update" in result.output
     # Add other sub-commands here.
 
 
@@ -85,6 +86,12 @@ STD_QUALITY_FILTER = {
 @pytest.fixture()
 def default_filters():
     return [PERMISSION_FILTER, STD_QUALITY_FILTER]
+
+
+@pytest.fixture
+def search_filter(get_test_file_json):
+    filename = 'data_search_filter_2022-01.json'
+    return get_test_file_json(filename)
 
 
 @pytest.fixture
@@ -725,8 +732,31 @@ def test_search_delete_nonexistant_search_id(invoke, search_id, search_result):
     assert result.exit_code == 1
 
 
+@pytest.mark.parametrize("item_types",
+                         ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
+@respx.mock
+def test_search_update_success(invoke,
+                               search_id,
+                               search_result,
+                               item_types,
+                               search_filter):
+    update_url = f'{TEST_SEARCHES_URL}/{search_id}'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
+    respx.put(update_url).return_value = mock_resp
+
+    name = "search_name"
+    daily_email = "--daily-email"
+
+    result = invoke(
+        ['search-update', search_id, name, item_types, search_filter])
+
+    assert not result.exception
+
+
+
+#     # check the response is returned unaltered
+#     assert search == page_response
 # TODO: basic test for "planet data search-create".
-# TODO: basic test for "planet data search-update".
 # TODO: basic test for "planet data search-get".
 # TODO: basic test for "planet data search-list".
 # TODO: basic test for "planet data search-run".
