@@ -387,7 +387,7 @@ async def search_update(ctx,
                         pretty):
     """Update a saved search with the given search request.
 
-    This function outputs a full JSON description of the updated search, 
+    This function outputs a full JSON description of the updated search,
     optionally pretty-printed.
     """
     async with data_client(ctx) as cl:
