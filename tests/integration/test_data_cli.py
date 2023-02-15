@@ -757,6 +757,30 @@ def test_search_update_success(invoke,
     assert not result.exception
 
 
+@respx.mock
+def test_search_update_invalid_search_filter(invoke,
+                                             search_id,
+                                             search_result):
+    update_url = f'{TEST_SEARCHES_URL}/{search_id}'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
+    respx.put(update_url).return_value = mock_resp
+
+    name = "search_name"
+    item_types = "PSScene"
+    search_filter = {'type': 'invalid_search_filter'}
+
+    result = invoke([
+        'search-update',
+        search_id,
+        name,
+        item_types,
+        search_filter
+    ])
+
+    assert result.exception
+    assert result.exit_code == 1
+
+
 # TODO: basic test for "planet data search-create".
 # TODO: basic test for "planet data search-get".
 # TODO: basic test for "planet data search-list".
