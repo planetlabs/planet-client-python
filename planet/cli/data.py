@@ -364,7 +364,41 @@ async def search_delete(ctx, search_id):
         await cl.delete_search(search_id)
 
 
-# TODO: search_update()".
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument('search_id')
+@click.argument('name')
+@click.argument("item_types",
+                type=types.CommaSeparatedString(),
+                callback=check_item_types)
+@click.argument('filter', type=types.JSON())
+@click.option('--daily-email',
+              is_flag=True,
+              help='Send a daily email when new results are added.')
+@pretty
+async def search_update(ctx,
+                        search_id,
+                        name,
+                        item_types,
+                        filter,
+                        daily_email,
+                        pretty):
+    """Update a saved search with the given search request.
+
+    This function outputs a full JSON description of the updated search,
+    optionally pretty-printed.
+    """
+    async with data_client(ctx) as cl:
+        items = await cl.update_search(search_id,
+                                       name,
+                                       item_types,
+                                       filter,
+                                       daily_email)
+        echo_json(items, pretty)
+
+
 # TODO: search_run()".
 # TODO: item_get()".
 # TODO: asset_activate()".
