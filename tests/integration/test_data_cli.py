@@ -746,8 +746,13 @@ def test_search_update_success(invoke,
 
     name = "search_name"
 
-    result = invoke(
-        ['search-update', search_id, name, item_types, search_filter])
+    result = invoke([
+        'search-update',
+        search_id,
+        name,
+        item_types,
+        json.dumps(search_filter)
+    ])
 
     assert not result.exception
 
