@@ -145,3 +145,20 @@ def test_clip_tool_success(geom_geojson):
 def test_clip_tool_invalid_type(point_geom_geojson):
     with pytest.raises(exceptions.ClientError):
         subscription_request.clip_tool(point_geom_geojson)
+
+
+def test_file_format_tool_success():
+    res = subscription_request.file_format_tool('COG')
+
+    expected = {
+        "type": "file_format",
+        "parameters": {
+            "format": "COG"
+        }
+    }
+    assert res == expected
+
+
+def test_file_format_tool_invalid_type():
+    with pytest.raises(exceptions.ClientError):
+        subscription_request.file_format_tool('invalid')

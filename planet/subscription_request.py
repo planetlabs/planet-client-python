@@ -17,7 +17,7 @@ from typing import Optional, List
 
 from . import geojson
 from .exceptions import ClientError
-from .specs import get_match, SpecificationException
+from .specs import get_match, SpecificationException, validate_file_format
 
 NOTIFICATIONS_TOPICS = ('delivery.success',
                         'delivery.match',
@@ -231,7 +231,7 @@ def band_math_tool(b1: str,
         pixel_type: A value indicating what the output pixel type should be.
 
     Raises:
-        planet.exceptions.ClientError: When pixel_type is not valid.
+        planet.exceptions.ClientError: If pixel_type is not valid.
     '''  # noqa
 
     try:
@@ -259,6 +259,10 @@ def clip_tool(aoi: dict) -> dict:
         aoi: GeoJSON polygon or multipolygon defining the clip area, with up to
             500 vertices. The minimum geographic area of any polygon or
             internal ring is one square meter.
+
+    Raises:
+        planet.exceptions.ClientError: If aoi is not a valid polygon or
+            multipolygon.
     '''
     valid_types = ['Polygon', 'MultiPolygon']
 
@@ -270,3 +274,18 @@ def clip_tool(aoi: dict) -> dict:
     return _tool('clip', {'aoi': aoi})
 
 
+def file_format_tool(file_format: str) -> dict:
+    '''Specify a subscriptions API file format tool.
+
+    Parameters:
+        file_format: The format of the tool output. Either "COG" or "PL_NITF".
+
+    Raises:
+        planet.specs.SpecificationException: If file_format is not valid.
+    '''
+    try:
+        file_format = validate_file_format(file_format)
+    except SpecificationException as e:
+        raise ClientError(e)
+
+    return _tool('file_format', {'format': file_format})
