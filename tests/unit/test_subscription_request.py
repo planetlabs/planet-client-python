@@ -159,6 +159,23 @@ def test_file_format_tool_success():
     assert res == expected
 
 
-def test_file_format_tool_invalid_type():
+def test_file_format_tool_invalid_format():
     with pytest.raises(exceptions.ClientError):
         subscription_request.file_format_tool('invalid')
+
+
+def test_harmonize_tool_success():
+    res = subscription_request.harmonize_tool('PS2')
+
+    expected = {
+        "type": "harmonize",
+        "parameters": {
+            "target_sensor": "PS2"
+        }
+    }
+    assert res == expected
+
+
+def test_harmonize_tool_invalid_target_sensor():
+    with pytest.raises(exceptions.ClientError):
+        subscription_request.harmonize_tool('invalid')

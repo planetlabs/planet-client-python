@@ -15,9 +15,11 @@
 from datetime import datetime
 from typing import Optional, List
 
-from . import geojson
+from . import geojson, specs
 from .exceptions import ClientError
-from .specs import get_match, SpecificationException, validate_file_format
+
+BAND_MATH_PIXEL_TYPE = ('Auto', '8U', '16U', '16S', '32R')
+BAND_MATH_PIXEL_TYPE_DEFAULT = 'Auto'
 
 NOTIFICATIONS_TOPICS = ('delivery.success',
                         'delivery.match',
@@ -172,19 +174,17 @@ def oracle_cloud_storage(customer_access_key_id: str,
 
 
 def notifications(url: str, topics: List[str]) -> dict:
-    if not set(topics).issubset(NOTIFICATIONS_TOPICS):
-        raise ClientError(
-            f'topics: {set(topics)} must be a subset of {NOTIFICATIONS_TOPICS}'
-        )
+    for i, t in enumerate(topics):
+        try:
+            topics[i] = specs.get_match(t, NOTIFICATIONS_TOPICS, 'topic')
+        except specs.SpecificationException as e:
+            raise ClientError(e)
+
     return {"webhook": {"url": url, "topics": topics}}
 
 
 def _tool(type: str, parameters: dict) -> dict:
     return {"type": type, "parameters": parameters}
-
-
-BAND_MATH_PIXEL_TYPE = ('Auto', '8U', '16U', '16S', '32R')
-BAND_MATH_PIXEL_TYPE_DEFAULT = 'Auto'
 
 
 def band_math_tool(b1: str,
@@ -233,10 +233,11 @@ def band_math_tool(b1: str,
     Raises:
         planet.exceptions.ClientError: If pixel_type is not valid.
     '''  # noqa
-
     try:
-        pixel_type = get_match(pixel_type, BAND_MATH_PIXEL_TYPE, 'pixel_type')
-    except SpecificationException as e:
+        pixel_type = specs.get_match(pixel_type,
+                                     BAND_MATH_PIXEL_TYPE,
+                                     'pixel_type')
+    except specs.SpecificationException as e:
         raise ClientError(e)
 
     # e.g. {"b1": "b1", "b2":"arctan(b1)"} if b1 and b2 are specified
@@ -281,11 +282,36 @@ def file_format_tool(file_format: str) -> dict:
         file_format: The format of the tool output. Either "COG" or "PL_NITF".
 
     Raises:
-        planet.specs.SpecificationException: If file_format is not valid.
+        planet.exceptions.ClientError: If file_format is not valid.
     '''
     try:
-        file_format = validate_file_format(file_format)
-    except SpecificationException as e:
+        file_format = specs.validate_file_format(file_format)
+    except specs.SpecificationException as e:
         raise ClientError(e)
 
     return _tool('file_format', {'format': file_format})
+
+
+def harmonize_tool(target_sensor: str) -> dict:
+    '''Specify a subscriptions API harmonize tool.
+
+    Each sensor value transforms items captured by a defined set of instrument
+    IDs. Items which have not been captured by that defined set of instrument
+    IDs are unaffected by (passed through) the harmonization operation.
+
+    Parameters:
+        target_sensor: A value indicating to what sensor the input asset types
+            should be calibrated.
+
+    Raises:
+        planet.exceptions.ClientError: If target_sensor is not valid.
+    '''
+    try:
+        target_sensor = specs.get_match(
+            target_sensor,
+            specs.HARMONIZE_TOOL_TARGET_SENSORS,
+            'target_sensor')
+    except specs.SpecificationException as e:
+        raise ClientError(e)
+
+    return _tool('harmonize', {'target_sensor': target_sensor})

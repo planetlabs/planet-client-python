@@ -264,7 +264,12 @@ def test_toar_tool():
 
 
 @pytest.mark.parametrize("target_sensor", ["PS2", "Sentinel-2"])
-def test_harmonization_tool(target_sensor):
+def test_harmonization_tool_success(target_sensor):
     ht = order_request.harmonize_tool(target_sensor)
     expected = {'harmonize': {'target_sensor': target_sensor}}
     assert ht == expected
+
+
+def test_harmonization_tool_invalid_target_sensor():
+    with pytest.raises(exceptions.ClientError):
+        order_request.harmonize_tool('invalid')
