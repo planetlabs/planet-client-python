@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from .http import Session
-from . import order_request, reporting
+from . import order_request, reporting, subscription_request
 from .__version__ import __version__  # NOQA
 from .auth import Auth
 from .clients import DataClient, OrdersClient  # NOQA
