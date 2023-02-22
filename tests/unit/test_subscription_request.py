@@ -105,6 +105,26 @@ def test_notifications_success():
 
 
 def test_notifications_invalid_topics():
-    topics = ['invalid']
     with pytest.raises(exceptions.ClientError):
-        subscription_request.notifications(url='url', topics=topics)
+        subscription_request.notifications(url='url', topics=['invalid'])
+
+
+def test_band_math_tool_success():
+    res = subscription_request.band_math_tool(b1='b1', b2='arctan(b1)')
+
+    expected = {
+        "type": "bandmath",
+        "parameters": {
+            "b1": "b1",
+            "b2": "arctan(b1)",
+            "pixel_type": subscription_request.BAND_MATH_PIXEL_TYPE_DEFAULT
+        }
+    }
+    assert res == expected
+
+
+def test_band_math_tool_invalid_pixel_type():
+    with pytest.raises(exceptions.ClientError):
+        subscription_request.band_math_tool(b1='b1',
+                                            b2='arctan(b1)',
+                                            pixel_type="invalid")
