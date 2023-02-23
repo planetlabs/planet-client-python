@@ -21,6 +21,11 @@ from planet import exceptions, geojson
 LOGGER = logging.getLogger(__name__)
 
 
+def empty_filter() -> dict:
+    """Create an Empty filter for bypassing search filtering."""
+    return {'type': 'AndFilter', 'config': []}
+
+
 def and_filter(nested_filters: List[dict]) -> dict:
     """Create an AndFilter
 

@@ -84,14 +84,13 @@ one command to be the input for the next one. So instead of having to save to a 
 then referring to it you can just do it all in one call:
 
 ```
-planet data filter --range cloud_percent lt 10 | planet data search-quick PSScene -
+planet data filter --range cloud_percent lt 10 | planet data search PSScene --filter -
 ```
 
 The pipe says to take the output of the first command and pass it to the input of 
 the second. You'll notice that the planet command has a dash (`-`), this is a convention
 that is often used by different CLI programs to explicitly say 'read from
-standard out'. Most Planet CLI commands require it, but one or two will implicitly
-read from standard out if it's not explicitly included. Using the dash to mean
+standard out'. Using the dash to mean
 'read from standard out' is a general convention used by many programs, but it's 
 not universal, so check the docs of the program you're using as to how it reads 
 from piped input. For example GDAL/OGR uses a specific `/vsistdin/` convention to 
@@ -174,7 +173,7 @@ represent GeoJSON features, the JSON blob is a GeoJSON FeatureCollection.
 Otherwise, the JSON blob is a list of the individual results.
 
 ```console
-$ planet data filter | planet data search PSScene - | planet collect -
+$ planet data search PSScene | planet collect -
 ```
 
 This gives you a fully compliant GeoJSON FeatureCollection, which is 

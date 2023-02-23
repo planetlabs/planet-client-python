@@ -155,8 +155,8 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     VALUE is a comma-separated list of entries.
     When multiple entries are specified, an implicit 'or' logic is applied.""")
 @click.option('--permission',
-              type=bool,
-              default=True,
+              is_flag=True,
+              default=False,
               show_default=True,
               help='Filter to assets with download permissions.')
 @click.option('--range',
@@ -168,8 +168,8 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     FIELD is the name of the field to filter on.
     COMP can be lt, lte, gt, or gte.""")
 @click.option('--std-quality',
-              type=bool,
-              default=True,
+              is_flag=True,
+              default=False,
               show_default=True,
               help='Filter to standard quality.')
 @click.option('--string-in',
@@ -209,6 +209,9 @@ def filter(ctx,
     inputs. This is only a subset of the complex filtering supported by the
     API. For advanced filter creation, either create the filter by hand or use
     the Python API.
+
+    If no options are specified, an empty filter is returned which, when used
+    in a search, bypasses all search filtering.
     """
     permission = data_filter.permission_filter() if permission else None
     std_quality = data_filter.std_quality_filter() if std_quality else None
@@ -234,7 +237,13 @@ def filter(ctx,
             else:
                 filters.append(f)
 
-    filt = data_filter.and_filter(filters)
+    if filters:
+        filt = data_filter.and_filter(filters)
+    else:
+        # make it explicit that we return an empty filter
+        # when no filters are specified
+        filt = data_filter.empty_filter()
+
     echo_json(filt, pretty)
 
 
@@ -245,7 +254,9 @@ def filter(ctx,
 @click.argument("item_types",
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
-@click.argument("filter", type=types.JSON())
+@click.option('--filter',
+              type=types.JSON(),
+              help='Apply specified filter to search.')
 @limit
 @click.option('--name', type=str, help='Name of the saved search.')
 @click.option('--sort',
@@ -262,8 +273,9 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
 
     ITEM_TYPES is a comma-separated list of item-types to search.
 
-    FILTER must be JSON and can be specified a json string, filename, or '-'
-    for stdin.
+    If --filter is specified, the filter must be JSON and can be a json string,
+    filename, or '-' for stdin. If not specified, search results are not
+    filtered.
 
     Quick searches are stored for approximately 30 days and the --name
     parameter will be applied to the stored quick search.
@@ -271,7 +283,7 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
     async with data_client(ctx) as cl:
 
         async for item in cl.search(item_types,
-                                    filter,
+                                    search_filter=filter,
                                     name=name,
                                     sort=sort,
                                     limit=limit):
