@@ -54,6 +54,32 @@ def build_request(name: str,
                   tools: List[dict] = None) -> dict:
     """Prepare a subscriptions request.
 
+
+    ```python
+    >>> from datetime import datetime
+    >>> from planet.subscription_request import (
+    ...     build_request, catalog_source, amazon_s3)
+    ...
+    ... geom = {
+    ...     "coordinates": [[[139.5648193359375,35.42374884923695],
+    ...                     [140.1031494140625,35.42374884923695],
+    ...                     [140.1031494140625,35.77102915686019],
+    ...                     [139.5648193359375,35.77102915686019],
+    ...                     [139.5648193359375,35.42374884923695]]],
+    ...     "type": "Polygon"
+    ... }
+    >>> source = catalog_source(
+    ...     ["PSScene"], ["ortho_analytic_4b"], geom, datetime(2021,3,1))
+
+    >>> delivery = amazon_s3(
+    ...     ACCESS_KEY_ID, SECRET_ACCESS_KEY, "test", "us-east-1")
+    ...
+    >>> subscription_request = build_request(
+    ...     'test_subscription', source, delivery)
+    ...
+
+    ```
+
     Parameters:
         name: Name of the subscription.
         source: A source for the subscription, i.e. catalog.
