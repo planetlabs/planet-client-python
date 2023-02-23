@@ -32,6 +32,20 @@ NOTIFICATIONS_TOPICS = ('delivery.success',
                         'status.suspended',
                         'status.failed')
 
+REPROJECT_KERNEL = ('near',
+                    'bilinear',
+                    'cubic',
+                    'cubicspline',
+                    'lanczos',
+                    'average',
+                    'mode',
+                    'min',
+                    'max',
+                    'med',
+                    'q1',
+                    'q3')
+REPROJECT_KERNEL_DEFAULT = 'near'
+
 
 def build_request(name: str,
                   source: dict,
@@ -307,11 +321,44 @@ def harmonize_tool(target_sensor: str) -> dict:
         planet.exceptions.ClientError: If target_sensor is not valid.
     '''
     try:
-        target_sensor = specs.get_match(
-            target_sensor,
-            specs.HARMONIZE_TOOL_TARGET_SENSORS,
-            'target_sensor')
+        target_sensor = specs.get_match(target_sensor,
+                                        specs.HARMONIZE_TOOL_TARGET_SENSORS,
+                                        'target_sensor')
     except specs.SpecificationException as e:
         raise ClientError(e)
 
     return _tool('harmonize', {'target_sensor': target_sensor})
+
+
+def reproject_tool(projection: str,
+                   resolution: Optional[float] = None,
+                   kernel: str = REPROJECT_KERNEL_DEFAULT) -> dict:
+    '''
+    Parameters:
+        projection: A coordinate system in the form EPSG:n (for example,
+            EPSG:4326 for WGS84, EPSG:32611 for UTM 11 North (WGS84), or
+            EPSG:3857 for Web Mercator). Well known text CRS values are also
+            supported (for example, WGS84).
+        resolution: The pixel width and height in the output file. If not
+            provided, the default is the resolution of the input item. This
+            value is in meters unless the coordinate system is geographic (such
+            as EPSG:4326), in which case, it is pixel size in decimal degrees.
+        kernel: The resampling kernel used. UDM files always use "near".
+
+    Raises:
+        planet.exceptions.ClientError: If kernel is not valid.
+    '''
+    try:
+        kernel = specs.get_match(kernel, REPROJECT_KERNEL, 'kernel')
+    except specs.SpecificationException as e:
+        raise ClientError(e)
+
+    parameters = {"projection": projection, "kernel": kernel}
+    if resolution is not None:
+        parameters['resolution'] = resolution
+
+    return _tool('reproject', parameters)
+
+
+def toar_tool() -> dict:
+    raise NotImplementedError

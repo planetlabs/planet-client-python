@@ -133,12 +133,7 @@ def test_band_math_tool_invalid_pixel_type():
 def test_clip_tool_success(geom_geojson):
     res = subscription_request.clip_tool(geom_geojson)
 
-    expected = {
-        "type": "clip",
-        "parameters": {
-            "aoi": geom_geojson
-        }
-    }
+    expected = {"type": "clip", "parameters": {"aoi": geom_geojson}}
     assert res == expected
 
 
@@ -150,12 +145,7 @@ def test_clip_tool_invalid_type(point_geom_geojson):
 def test_file_format_tool_success():
     res = subscription_request.file_format_tool('COG')
 
-    expected = {
-        "type": "file_format",
-        "parameters": {
-            "format": "COG"
-        }
-    }
+    expected = {"type": "file_format", "parameters": {"format": "COG"}}
     assert res == expected
 
 
@@ -167,15 +157,31 @@ def test_file_format_tool_invalid_format():
 def test_harmonize_tool_success():
     res = subscription_request.harmonize_tool('PS2')
 
-    expected = {
-        "type": "harmonize",
-        "parameters": {
-            "target_sensor": "PS2"
-        }
-    }
+    expected = {"type": "harmonize", "parameters": {"target_sensor": "PS2"}}
     assert res == expected
 
 
 def test_harmonize_tool_invalid_target_sensor():
     with pytest.raises(exceptions.ClientError):
         subscription_request.harmonize_tool('invalid')
+
+
+def test_reproject_tool_success():
+    res = subscription_request.reproject_tool('EPSG:4326',
+                                              kernel='near',
+                                              resolution=0.5)
+
+    expected = {
+        "type": "reproject",
+        "parameters": {
+            "projection": "EPSG:4326", "kernel": "near", "resolution": 0.5
+        }
+    }
+    assert res == expected
+
+
+def test_reproject_tool_invalid_kernel():
+    with pytest.raises(exceptions.ClientError):
+        subscription_request.reproject_tool('EPSG:4326',
+                                            kernel='invalid',
+                                            resolution=0.5)
