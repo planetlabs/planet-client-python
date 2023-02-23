@@ -421,7 +421,7 @@ def tile_tool(tile_size: int,
     return _tool('tile', parameters)
 
 
-def toar_tool(scale_factor: Optional[int] = None, ) -> dict:
+def toar_tool(scale_factor: Optional[int] = None) -> dict:
     '''Create the API spec representation of a TOAR tool.
 
     Parameters:
@@ -438,6 +438,11 @@ def toar_tool(scale_factor: Optional[int] = None, ) -> dict:
 
 def harmonize_tool(target_sensor: str) -> dict:
     '''Create the API spec representation of a harmonize tool.
+
+    Currently, only "PS2" (Dove Classic) and "Sentinel-2" are supported as
+    target sensors. The Sentinel-2 target only harmonizes PSScene
+    surface reflectance bundle types (analytic_8b_sr_udm2, analytic_sr_udm2).
+    The PS2 target only works on analytic bundles from Dove-R (PS2.SD).
 
     Parameters:
         target_sensor: A value indicating to what sensor the input asset types
