@@ -448,10 +448,9 @@ def harmonize_tool(target_sensor: str) -> dict:
     '''
 
     try:
-        target_sensor = specs.get_match(
-            target_sensor,
-            specs.HARMONIZE_TOOL_TARGET_SENSORS,
-            'target_sensor')
+        target_sensor = specs.get_match(target_sensor,
+                                        specs.HARMONIZE_TOOL_TARGET_SENSORS,
+                                        'target_sensor')
     except specs.SpecificationException as e:
         raise ClientError(e)
 

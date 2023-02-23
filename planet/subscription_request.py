@@ -13,7 +13,7 @@
 # the License.
 """Functionality for preparing subscription requests."""
 from datetime import datetime
-from typing import Optional, List
+from typing import Any, Dict, Optional, List
 
 from . import geojson, specs
 from .exceptions import ClientError
@@ -50,8 +50,8 @@ REPROJECT_KERNEL_DEFAULT = 'near'
 def build_request(name: str,
                   source: dict,
                   delivery: dict,
-                  notifications: dict = None,
-                  tools: List[dict] = None) -> dict:
+                  notifications: Optional[dict] = None,
+                  tools: Optional[List[dict]] = None) -> dict:
     """Prepare a subscriptions request.
 
 
@@ -88,11 +88,7 @@ def build_request(name: str,
         tools: Tools to apply to the products. Order defines
             the toolchain order of operatations.
     """
-    details = {
-        "name": name,
-        "source": source,
-        "delivery": delivery
-    }
+    details = {"name": name, "source": source, "delivery": delivery}
 
     if notifications:
         details['notifications'] = notifications
@@ -428,7 +424,7 @@ def reproject_tool(projection: str,
     except specs.SpecificationException as e:
         raise ClientError(e)
 
-    parameters = {"projection": projection, "kernel": kernel}
+    parameters: Dict[str, Any] = {"projection": projection, "kernel": kernel}
     if resolution is not None:
         parameters['resolution'] = resolution
 

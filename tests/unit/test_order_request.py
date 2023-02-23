@@ -263,10 +263,9 @@ def test_toar_tool():
     assert tt_empty == expected_empty
 
 
-@pytest.mark.parametrize("target_sensor", ["PS2", "Sentinel-2"])
-def test_harmonization_tool_success(target_sensor):
-    ht = order_request.harmonize_tool(target_sensor)
-    expected = {'harmonize': {'target_sensor': target_sensor}}
+def test_harmonization_tool_success():
+    ht = order_request.harmonize_tool("Sentinel-2")
+    expected = {'harmonize': {'target_sensor': "Sentinel-2"}}
     assert ht == expected
 
 

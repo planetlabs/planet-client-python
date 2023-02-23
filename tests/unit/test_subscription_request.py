@@ -229,9 +229,13 @@ def test_file_format_tool_invalid_format():
 
 
 def test_harmonize_tool_success():
-    res = subscription_request.harmonize_tool('PS2')
+    res = subscription_request.harmonize_tool('Sentinel-2')
 
-    expected = {"type": "harmonize", "parameters": {"target_sensor": "PS2"}}
+    expected = {
+        "type": "harmonize", "parameters": {
+            "target_sensor": "Sentinel-2"
+        }
+    }
     assert res == expected
 
 
