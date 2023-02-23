@@ -17,7 +17,7 @@ import hashlib
 import logging
 from pathlib import Path
 import time
-from typing import Any, AsyncIterator, Callable, Dict, List, Optional
+from typing import Any, AsyncIterator, Callable, Dict, Iterator, List, Optional
 
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
@@ -42,6 +42,57 @@ WAIT_DELAY = 5
 WAIT_MAX_ATTEMPTS = 200
 
 LOGGER = logging.getLogger(__name__)
+
+
+# NOTE: There is probably some way to generalize this
+class _Search:
+    '''AsyncGenerator that manages a httpx session.
+
+    Without explicitely closing the session on aclose(), an error would
+    be thrown if the generator created by DataClient.search was not exhausted.
+    '''
+
+    def __init__(self, **kwarg):
+        self.sess = Session()
+        self.gen = DataClient(self.sess).search(**kwarg)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        return await self.gen.__anext__()
+
+    async def aclose(self):
+        # close the session even if the generator isn't exhausted
+        await self.sess.aclose()
+
+
+def search(item_types: List[str],
+           search_filter: dict,
+           name: Optional[str] = None,
+           sort: Optional[str] = None,
+           limit: int = 100) -> Iterator[dict]:
+    '''Easy peasy synchronous search. Slow as heck for bulk calls.
+
+    You want just one call and want it to be easy?
+    Use this fnc.
+
+    You want more than one call and want it fast and light?
+    Use DataClient.search
+    '''
+    loop = asyncio.get_event_loop()
+
+    gen = _Search(item_types=item_types,
+                  search_filter=search_filter,
+                  name=name,
+                  sort=sort,
+                  limit=limit)
+
+    while True:
+        try:
+            yield loop.run_until_complete(gen.__anext__())
+        except StopAsyncIteration:
+            break
 
 
 class Items(Paged):
