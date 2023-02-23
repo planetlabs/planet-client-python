@@ -50,8 +50,8 @@ REPROJECT_KERNEL_DEFAULT = 'near'
 def build_request(name: str,
                   source: dict,
                   delivery: dict,
-                  tools: dict = None,
-                  notifications: dict = None) -> dict:
+                  notifications: dict = None,
+                  tools: List[dict] = None) -> dict:
     """Prepare a subscriptions request.
 
     Parameters:
@@ -62,7 +62,19 @@ def build_request(name: str,
         tools: Tools to apply to the products. Order defines
             the toolchain order of operatations.
     """
-    raise NotImplementedError
+    details = {
+        "name": name,
+        "source": source,
+        "delivery": delivery
+    }
+
+    if notifications:
+        details['notifications'] = notifications
+
+    if tools:
+        details['tools'] = tools
+
+    return details
 
 
 def catalog_source(

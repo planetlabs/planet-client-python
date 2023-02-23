@@ -21,6 +21,50 @@ from planet import exceptions, subscription_request
 LOGGER = logging.getLogger(__name__)
 
 
+def test_build_request_success(geom_geojson):
+    source = {
+        "type": "catalog",
+        "parameters": {
+            "geometry": geom_geojson,
+            "start_time": "2021-03-01T00:00:00Z",
+            "end_time": "2023-11-01T00:00:00Z",
+            "rrule": "FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
+            "item_types": ["PSScene"],
+            "asset_types": ["ortho_analytic_4b"]
+        }
+    }
+
+    delivery = {
+        "type": "amazon_s3",
+        "parameters": {
+            "aws_access_key_id": "keyid",
+            "aws_secret_access_key": "accesskey",
+            "bucket": "bucket",
+            "aws_region": "region"
+        }
+    }
+
+    tool = {"type": "clip", "parameters": {"aoi": geom_geojson}}
+
+    notifications = {"webhook": {"url": "url", "topics": ['delivery.success']}}
+
+    res = subscription_request.build_request('test',
+                                             source=source,
+                                             delivery=delivery,
+                                             tools=[tool],
+                                             notifications=notifications)
+
+    expected = {
+        "name": "test",
+        "source": source,
+        "delivery": delivery,
+        "tools": [tool],
+        "notifications": notifications
+    }
+
+    assert res == expected
+
+
 def test_catalog_source_success(geom_geojson):
     res = subscription_request.catalog_source(
         item_types=["PSScene"],
