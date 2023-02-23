@@ -24,7 +24,7 @@ import httpx
 import pytest
 import respx
 
-from planet import exceptions, DataClient
+from planet import exceptions, DataClient, data_filter
 from planet.clients.data import (LIST_SORT_DEFAULT,
                                  LIST_SEARCH_TYPE_DEFAULT,
                                  SEARCH_SORT_DEFAULT)
@@ -72,10 +72,80 @@ def search_response(item_descriptions):
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_search_basic(item_descriptions,
-                            search_filter,
-                            search_response,
-                            session):
+async def test_search_basic(item_descriptions, search_response, session):
+
+    quick_search_url = f'{TEST_URL}/quick-search'
+    next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
+
+    item1, item2, item3 = item_descriptions
+    page1_response = {
+        "_links": {
+            "_next": next_page_url
+        }, "features": [item1, item2]
+    }
+    mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.post(quick_search_url).return_value = mock_resp1
+
+    page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    cl = DataClient(session, base_url=TEST_URL)
+    items_list = [i async for i in cl.search(['PSScene'])]
+
+    # check that request is correct
+    expected_request = {
+        "item_types": ["PSScene"], "filter": data_filter.empty_filter()
+    }
+    actual_body = json.loads(respx.calls[0].request.content)
+    assert actual_body == expected_request
+
+    # check that all of the items were returned unchanged
+    assert items_list == item_descriptions
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_search_name(item_descriptions, search_response, session):
+
+    quick_search_url = f'{TEST_URL}/quick-search'
+    next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
+
+    item1, item2, item3 = item_descriptions
+    page1_response = {
+        "_links": {
+            "_next": next_page_url
+        }, "features": [item1, item2]
+    }
+    mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.post(quick_search_url).return_value = mock_resp1
+
+    page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    cl = DataClient(session, base_url=TEST_URL)
+    items_list = [i async for i in cl.search(['PSScene'], name='quick_search')]
+
+    # check that request is correct
+    expected_request = {
+        "item_types": ["PSScene"],
+        "filter": data_filter.empty_filter(),
+        "name": "quick_search"
+    }
+    actual_body = json.loads(respx.calls[0].request.content)
+    assert actual_body == expected_request
+
+    # check that all of the items were returned unchanged
+    assert items_list == item_descriptions
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_search_filter(item_descriptions,
+                             search_filter,
+                             search_response,
+                             session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
@@ -95,16 +165,11 @@ async def test_search_basic(item_descriptions,
 
     cl = DataClient(session, base_url=TEST_URL)
     items_list = [
-        i async for i in cl.search(
-            ['PSScene'], search_filter, name='quick_search')
+        i async for i in cl.search(['PSScene'], search_filter=search_filter)
     ]
 
     # check that request is correct
-    expected_request = {
-        "item_types": ["PSScene"],
-        "filter": search_filter,
-        "name": "quick_search"
-    }
+    expected_request = {"item_types": ["PSScene"], "filter": search_filter}
     actual_body = json.loads(respx.calls[0].request.content)
     assert actual_body == expected_request
 

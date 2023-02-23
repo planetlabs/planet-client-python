@@ -20,6 +20,7 @@ import time
 from typing import Any, AsyncIterator, Callable, Dict, List, Optional
 import uuid
 
+from ..data_filter import empty_filter
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
@@ -110,7 +111,7 @@ class DataClient:
 
     async def search(self,
                      item_types: List[str],
-                     search_filter: dict,
+                     search_filter: Optional[dict] = None,
                      name: Optional[str] = None,
                      sort: Optional[str] = None,
                      limit: int = 100) -> AsyncIterator[dict]:
@@ -127,7 +128,8 @@ class DataClient:
 
         Parameters:
             item_types: The item types to include in the search.
-            search_filter: Structured search criteria.
+            search_filter: Structured search criteria to apply. If None,
+                no search criteria is applied.
             sort: Field and direction to order results by. Valid options are
             given in SEARCH_SORT.
             name: The name of the saved search.
@@ -141,6 +143,8 @@ class DataClient:
             planet.exceptions.APIError: On API error.
         """
         url = f'{self._base_url}/quick-search'
+
+        search_filter = search_filter or empty_filter()
 
         # TODO: validate item_types
         request_json = {'filter': search_filter, 'item_types': item_types}

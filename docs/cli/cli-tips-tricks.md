@@ -53,7 +53,7 @@ JSON from the text box:
 On a mac you can use `pbpaste` to grab whatever is currently in your clipboard:
 
 ```console
-pbpaste | planet data filter --geom -  | planet data search SkySatCollect -
+pbpaste | planet data filter --geom -  | planet data search SkySatCollect --filter -
 ```
 
 (TODO: Find alternatives for windows and linux)
@@ -94,7 +94,7 @@ Or also on Placemark, which tends to perform a bit better (especially when you g
 For both it's recommended to pass the output through `planet collect` to get properly formatted GeoJSON:
 
 ```console
-planet data filter --string-in strip_id 5743669 | planet data search PSScene - | planet collect - | pbcopy
+planet data filter --string-in strip_id 5743669 | planet data search PSScene --filter - | planet collect - | pbcopy
 ```
 
 (TODO: Get pbcopy equivalents for windows and linux)
@@ -108,7 +108,7 @@ The following command will get the latest SkySat image captured, upload to githu
 your browser to see it:
 
 ```console
-planet data filter | planet data search SkySatCollect - --sort 'acquired desc' --limit 1 \
+planet data search SkySatCollect --sort 'acquired desc' --limit 1 \
 | planet collect - | jq | gh gist create -f latest-skysat.geojson -w
 ```
 
@@ -116,7 +116,7 @@ Or you can show all ps-scenes in a strip on github gist.
 (You may need to reload the page, for some reason it doesn't always showing up immediately after open)
 
 ```console
-planet data filter --string-in strip_id 5743640 | planet data search PSScene - \
+planet data filter --string-in strip_id 5743640 | planet data search PSScene --filter - \
 | planet collect - | gh gist create -f ps-search.geojson -w
 ```
 
@@ -125,9 +125,9 @@ TODO: get a command that gets the latest strip id and uses that as input in one 
 This current command doesn't quite work.
 
 ```console
-strip-id=`planet data filter | planet data search PSScene - --limit 1 \
+strip-id=`planet data search PSScene --limit 1 \
 | jq -r '.properties.strip_id' | sed 's/\\[tn]//g'`
-planet data filter --string-in strip_id $stripid | planet data search PSScene -
+planet data filter --string-in strip_id $stripid | planet data search PSScene --filter -
 ```
 
 
@@ -146,13 +146,10 @@ Once it's set up you can just pipe any search command directly to `kepler` (it u
 
 ```console
 curl -s https://storage.googleapis.com/open-geodata/ch/vermont.json \
-| planet data filter --permission false --geom -  \
-| planet data search PSScene - \
+| planet data filter --geom -  \
+| planet data search PSScene --filter - \
 | kepler
 ```
-
-Note `--permission false` is added to these examples so that anyone with Planet access can try them, even if you don't
-have download permission for the area shown.
 
 (TODO: Add animated gif, showing some options)
 
@@ -160,9 +157,9 @@ Kepler really excels at larger amounts of data, so try it out with larger limits
 
 ```console
 curl -s https://storage.googleapis.com/open-geodata/ch/vermont.json \
-| planet data filter --permission false --geom - \
+| planet data filter --geom - \
 | planet data search PSScene,Sentinel2L1C,Landsat8L1G,SkySatCollect,Sentinel1 \
---sort 'acquired desc' --limit 1500 - \
+--sort 'acquired desc' --limit 1500 --filter - \
 | kepler
 ```
 
@@ -176,8 +173,8 @@ And you can bring it all together using Placemark for input and Kepler for outpu
 
 ```console
 curl -s https://api.placemark.io/api/v1/map/a0BWUEErqU9A1EDHZWHez/feature/91a07390-0652-11ed-8fdd-15633e4f8f01 \
-| planet data filter --permission false --geom - \
-| planet data search PSScene,Landsat8L1G,SkySatCollect,Sentinel1 - | kepler
+| planet data filter --geom - \
+| planet data search PSScene,Landsat8L1G,SkySatCollect,Sentinel1 --filter - | kepler
 ```
 
 #### Large Dataset Visualization
@@ -188,7 +185,7 @@ to disk. Getting 20,000 skysat collects will take at least a couple of minutes, 
 100 megabytes of GeoJSON on disk.
 
 ```console
-planet data filter | planet data search SkySatCollect --limit 20000 > skysat-large.geojson
+planet data search SkySatCollect --limit 20000 > skysat-large.geojson
 ```
 
 Kepler can fairly easily handle 20,000 skysat footprints, try:
@@ -274,7 +271,7 @@ mapshaper -i footprints.geojson -simplify 15% -o simplified.geojson
 Once you find a simplification amount you're happy with you can use it as a piped output. 
 
 ```console
-planet data filter | planet data search --limit 20 SkySatCollect - | planet collect - | mapshaper -i - -simplify 15% -o skysat-ms2.geojson
+planet data search --limit 20 SkySatCollect - | planet collect - | mapshaper -i - -simplify 15% -o skysat-ms2.geojson
 ```
 
 Mapshaper also has more simplification algorithms to try out, so we recommend diving into the 
