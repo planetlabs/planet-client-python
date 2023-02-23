@@ -333,7 +333,8 @@ def harmonize_tool(target_sensor: str) -> dict:
 def reproject_tool(projection: str,
                    resolution: Optional[float] = None,
                    kernel: str = REPROJECT_KERNEL_DEFAULT) -> dict:
-    '''
+    '''Specify a subscriptions API reproject tool.
+
     Parameters:
         projection: A coordinate system in the form EPSG:n (for example,
             EPSG:4326 for WGS84, EPSG:32611 for UTM 11 North (WGS84), or
@@ -360,5 +361,17 @@ def reproject_tool(projection: str,
     return _tool('reproject', parameters)
 
 
-def toar_tool() -> dict:
-    raise NotImplementedError
+def toar_tool(scale_factor: int = 10000) -> dict:
+    '''Specify a subscriptions API reproject tool.
+
+    The toar tool supports the analytic asset type for PSScene, PSOrthoTile,
+    and REOrthoTile item types. In addition to the analytic asset, the
+    corresponding XML metadata asset type is required.
+
+    Parameters:
+        scale_factor: Scale factor applied to convert 0.0 to 1.0 reflectance
+            floating point values to a value that fits in 16bit integer pixels.
+            The API default is 10000. Values over 65535 could result in high
+            reflectances not fitting in 16bit integers.
+    '''
+    return _tool('toar', {'scale_factor': scale_factor})

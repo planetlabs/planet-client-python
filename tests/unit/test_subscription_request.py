@@ -185,3 +185,10 @@ def test_reproject_tool_invalid_kernel():
         subscription_request.reproject_tool('EPSG:4326',
                                             kernel='invalid',
                                             resolution=0.5)
+
+
+def test_toar_tool_success():
+    res = subscription_request.toar_tool(12345)
+
+    expected = {"type": "toar", "parameters": {"scale_factor": 12345}}
+    assert res == expected
