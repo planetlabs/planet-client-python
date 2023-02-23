@@ -34,7 +34,7 @@ def build_request(name: str,
     '''Prepare an order request.
 
     ```python
-    >>> from planet.api.order_details import (
+    >>> from planet.order_request import (
     ...     build_request, product, toar_tool, reproject_tool, tile_tool)
     ...
     >>> products = [
@@ -438,11 +438,6 @@ def toar_tool(scale_factor: Optional[int] = None) -> dict:
 
 def harmonize_tool(target_sensor: str) -> dict:
     '''Create the API spec representation of a harmonize tool.
-
-    Currently, only "PS2" (Dove Classic) and "Sentinel-2" are supported as
-    target sensors. The Sentinel-2 target only harmonizes PSScene
-    surface reflectance bundle types (analytic_8b_sr_udm2, analytic_sr_udm2).
-    The PS2 target only works on analytic bundles from Dove-R (PS2.SD).
 
     Parameters:
         target_sensor: A value indicating to what sensor the input asset types
