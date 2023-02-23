@@ -132,7 +132,7 @@ def _datetime_to_rfc3339(value: datetime) -> str:
 
 
 def _delivery(type: str, parameters: dict) -> dict:
-    return {"delivery": {"type": type, "parameters": parameters}}
+    return {"type": type, "parameters": parameters}
 
 
 def amazon_s3(aws_access_key_id: str,

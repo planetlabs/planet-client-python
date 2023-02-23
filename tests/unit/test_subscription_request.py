@@ -65,14 +65,12 @@ def test_amazon_s3_success():
                                          aws_region='region')
 
     assert res == {
-        "delivery": {
-            "type": "amazon_s3",
-            "parameters": {
-                "aws_access_key_id": "keyid",
-                "aws_secret_access_key": "accesskey",
-                "bucket": "bucket",
-                "aws_region": "region"
-            }
+        "type": "amazon_s3",
+        "parameters": {
+            "aws_access_key_id": "keyid",
+            "aws_secret_access_key": "accesskey",
+            "bucket": "bucket",
+            "aws_region": "region"
         }
     }
 
@@ -85,14 +83,12 @@ def test_azure_blob_storage_success():
         storage_endpoint_suffix='suffix')
 
     assert res == {
-        "delivery": {
-            "type": "azure_blob_storage",
-            "parameters": {
-                "account": "act",
-                "container": "container",
-                "sas_token": "sastoken",
-                "storage_endpoint_suffix": "suffix"
-            }
+        "type": "azure_blob_storage",
+        "parameters": {
+            "account": "act",
+            "container": "container",
+            "sas_token": "sastoken",
+            "storage_endpoint_suffix": "suffix"
         }
     }
 
@@ -102,11 +98,9 @@ def test_google_cloud_storage_success():
                                                     bucket='bucket')
 
     assert res == {
-        "delivery": {
-            "type": "google_cloud_storage",
-            "parameters": {
-                "bucket": "bucket", "credentials": "cred"
-            }
+        "type": "google_cloud_storage",
+        "parameters": {
+            "bucket": "bucket", "credentials": "cred"
         }
     }
 
@@ -120,15 +114,13 @@ def test_oracle_cloud_storage_success():
         namespace='namespace')
 
     assert res == {
-        "delivery": {
-            "type": "oracle_cloud_storage",
-            "parameters": {
-                "customer_access_key_id": "keyid",
-                "customer_secret_key": "secretkey",
-                "bucket": "bucket",
-                "region": "region",
-                "namespace": "namespace"
-            }
+        "type": "oracle_cloud_storage",
+        "parameters": {
+            "customer_access_key_id": "keyid",
+            "customer_secret_key": "secretkey",
+            "bucket": "bucket",
+            "region": "region",
+            "namespace": "namespace"
         }
     }
 
