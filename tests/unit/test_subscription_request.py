@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from datetime import datetime
 import logging
 
 import pytest
@@ -18,6 +19,43 @@ import pytest
 from planet import exceptions, subscription_request
 
 LOGGER = logging.getLogger(__name__)
+
+
+def test_catalog_source_success(geom_geojson):
+    res = subscription_request.catalog_source(
+        item_types=["PSScene"],
+        asset_types=["ortho_analytic_4b"],
+        geometry=geom_geojson,
+        start_time=datetime(2021, 3, 1),
+        end_time=datetime(2023, 11, 1),
+        rrule="FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
+    )
+
+    expected = {
+        "type": "catalog",
+        "parameters": {
+            "geometry": geom_geojson,
+            "start_time": "2021-03-01T00:00:00Z",
+            "end_time": "2023-11-01T00:00:00Z",
+            "rrule": "FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
+            "item_types": ["PSScene"],
+            "asset_types": ["ortho_analytic_4b"]
+        }
+    }
+
+    assert res == expected
+
+
+def test_catalog_source_invalid_start_time(geom_geojson):
+    with pytest.raises(exceptions.ClientError):
+        subscription_request.catalog_source(
+            item_types=["PSScene"],
+            asset_types=["ortho_analytic_4b"],
+            geometry=geom_geojson,
+            start_time='invalid',
+            end_time=datetime(2023, 11, 1),
+            rrule="FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
+        )
 
 
 def test_amazon_s3_success():

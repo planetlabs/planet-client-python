@@ -70,11 +70,11 @@ def catalog_source(
     asset_types: List[str],
     geometry: dict,
     start_time: datetime,
-    filter: Optional[dict],
+    filter: Optional[dict] = None,
     end_time: Optional[datetime] = None,
     rrule: Optional[str] = None,
 ) -> dict:
-    """Catalog subscription source.
+    '''Catalog subscription source.
 
     Parameters:
     item_types: The class of spacecraft and processing level of the
@@ -91,8 +91,44 @@ def catalog_source(
         future, and must be after the start_time.
     rrule: The recurrence rule, given in iCalendar RFC 5545 format. Only
         monthly recurrences are supported at this time.
-    """
-    raise NotImplementedError
+
+    Raises:
+        planet.exceptions.ClientError: If start_time or end_time are not valid
+            datetimes
+    '''
+    parameters = {
+        "item_types": item_types,
+        "asset_types": asset_types,
+        "geometry": geometry,
+    }
+
+    try:
+        parameters['start_time'] = _datetime_to_rfc3339(start_time)
+    except AttributeError:
+        raise ClientError('Could not convert start_time to an iso string')
+
+    if filter:
+        parameters['filter'] = filter
+
+    if end_time:
+        try:
+            parameters['end_time'] = _datetime_to_rfc3339(end_time)
+        except AttributeError:
+            raise ClientError('Could not convert end_time to an iso string')
+
+    if rrule:
+        parameters['rrule'] = rrule
+
+    return {"type": "catalog", "parameters": parameters}
+
+
+def _datetime_to_rfc3339(value: datetime) -> str:
+    """Converts the datetime to an RFC3339 string"""
+    iso = value.isoformat()
+    if not value.utcoffset():
+        # rfc3339 needs a Z if there is no timezone offset
+        iso += 'Z'
+    return iso
 
 
 def _delivery(type: str, parameters: dict) -> dict:
