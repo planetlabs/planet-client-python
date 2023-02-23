@@ -23,6 +23,9 @@ from click.testing import CliRunner
 import pytest
 
 from planet.cli import cli
+from planet.clients.data import (LIST_SEARCH_TYPE_DEFAULT,
+                                 LIST_SORT_DEFAULT,
+                                 SEARCH_SORT_DEFAULT)
 from planet.specs import get_item_types
 
 LOGGER = logging.getLogger(__name__)
@@ -32,16 +35,29 @@ TEST_QUICKSEARCH_URL = f'{TEST_URL}/quick-search'
 TEST_SEARCHES_URL = f'{TEST_URL}/searches'
 TEST_STATS_URL = f'{TEST_URL}/stats'
 
+VALID_SEARCH_ID = '286469f0b27c476e96c3c4e561f59664'
+
 
 @pytest.fixture
 def invoke():
 
-    def _invoke(extra_args, runner=None):
+    def _invoke(extra_args, runner=None, **kwargs):
         runner = runner or CliRunner()
         args = ['data'] + extra_args
-        return runner.invoke(cli.main, args=args)
+        return runner.invoke(cli.main, args=args, **kwargs)
 
     return _invoke
+
+
+@pytest.fixture
+def item_descriptions(get_test_file_json):
+    item_ids = [
+        '20220125_075509_67_1061',
+        '20220125_075511_17_1061',
+        '20220125_075650_17_1061'
+    ]
+    items = [get_test_file_json(f'data_item_{id}.json') for id in item_ids]
+    return items
 
 
 def test_data_command_registered(invoke):
@@ -523,7 +539,7 @@ def test_data_search_create_filter_success(invoke, item_types):
 
 
 @respx.mock
-def test_search_create_daily_email(invoke, search_result):
+def test_data_search_create_daily_email(invoke, search_result):
     mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
@@ -559,6 +575,127 @@ def test_search_create_daily_email(invoke, search_result):
     assert result.exit_code == 0
     assert sent_request == search_request
     assert json.loads(result.output) == search_result
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("limit, expected_list_length", [(0, 4), (3, 3)])
+def test_data_search_list_basic(invoke,
+                                search_result,
+                                limit,
+                                expected_list_length):
+    """Ensure planet data search-list runs successfully and respects limit."""
+    page1_response = {"_links": {}, "searches": [search_result] * 4}
+    route = respx.get(TEST_SEARCHES_URL)
+    route.return_value = httpx.Response(200, json=page1_response)
+
+    result = invoke(['search-list', f'--limit={limit}'])
+    assert result.exit_code == 0
+    assert len(result.output.strip().split('\n')) == expected_list_length
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("sort, rel_url, valid",
+                         [(LIST_SORT_DEFAULT, '', True),
+                          ('created asc', '?_sort=created+asc', True),
+                          ('notvalid', '', False)])
+def test_data_search_list_sort(invoke, search_result, sort, rel_url, valid):
+    """Ensure planet data search-list handles sort."""
+    page1_response = {"_links": {}, "searches": [search_result] * 4}
+    route = respx.get(f'{TEST_SEARCHES_URL}{rel_url}')
+    route.return_value = httpx.Response(200, json=page1_response)
+
+    result = invoke(['search-list', f'--sort={sort}'])
+    expected_code = 0 if valid else 2
+    assert result.exit_code == expected_code
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("search_type, rel_url, valid",
+                         [(LIST_SEARCH_TYPE_DEFAULT, '', True),
+                          ('saved', '?search_type=saved', True),
+                          ('notvalid', '', False)])
+def test_data_search_list_searchtype(invoke,
+                                     search_result,
+                                     search_type,
+                                     rel_url,
+                                     valid):
+    """Ensure planet data search-list handles search-type."""
+    page1_response = {"_links": {}, "searches": [search_result] * 4}
+    route = respx.get(f'{TEST_SEARCHES_URL}{rel_url}')
+    route.return_value = httpx.Response(200, json=page1_response)
+
+    result = invoke(['search-list', f'--search-type={search_type}'])
+    expected_code = 0 if valid else 2
+    assert result.exit_code == expected_code
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("search_id, valid", [(VALID_SEARCH_ID, True),
+                                              ('invalid', False)])
+@pytest.mark.parametrize("limit, expected_count", [(0, 3), (2, 2)])
+def test_data_search_run_basic(invoke,
+                               item_descriptions,
+                               search_id,
+                               valid,
+                               limit,
+                               expected_count):
+    """Ensure planet data search-run runs successfully and handles search id
+    and limit."""
+    next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
+    item1, item2, item3 = item_descriptions
+    page1_response = {
+        "_links": {
+            "_next": next_page_url
+        }, "features": [item1, item2]
+    }
+
+    route = respx.get(f'{TEST_SEARCHES_URL}/{search_id}/results')
+    route.return_value = httpx.Response(204, json=page1_response)
+
+    page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    result = invoke(['search-run', f'--limit={limit}', search_id])
+
+    if valid:
+        assert result.exit_code == 0
+        assert len(result.output.strip().split('\n')) == expected_count
+    else:
+        assert result.exit_code == 2
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("sort, rel_url, valid",
+                         [(SEARCH_SORT_DEFAULT, '', True),
+                          ('acquired asc', '?_sort=acquired+asc', True),
+                          ('invalid', '', False)])
+def test_data_search_run_sort(invoke, item_descriptions, sort, rel_url, valid):
+    """Ensure planet data search-run handles sort."""
+    next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
+    item1, item2, item3 = item_descriptions
+    page1_response = {
+        "_links": {
+            "_next": next_page_url
+        }, "features": [item1, item2]
+    }
+
+    route = respx.get(
+        f'{TEST_SEARCHES_URL}/{VALID_SEARCH_ID}/results{rel_url}')
+    route.return_value = httpx.Response(204, json=page1_response)
+
+    page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    result = invoke(['search-run', f'--sort={sort}', VALID_SEARCH_ID])
+    expected_code = 0 if valid else 2
+    assert result.exit_code == expected_code
 
 
 @respx.mock

@@ -17,8 +17,12 @@ from contextlib import asynccontextmanager
 
 import click
 
-from planet import data_filter, DataClient
-from planet.clients.data import (SEARCH_SORT,
+from planet import data_filter, DataClient, exceptions
+from planet.clients.data import (LIST_SEARCH_TYPE,
+                                 LIST_SEARCH_TYPE_DEFAULT,
+                                 LIST_SORT_ORDER,
+                                 LIST_SORT_DEFAULT,
+                                 SEARCH_SORT,
                                  SEARCH_SORT_DEFAULT,
                                  STATS_INTERVAL)
 from planet.specs import (get_item_types,
@@ -72,6 +76,15 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
         return item_types
     except SpecificationException as e:
         raise click.BadParameter(str(e))
+
+
+def check_search_id(ctx, param, search_id) -> str:
+    '''Ensure search id is a valix hex string'''
+    try:
+        _ = DataClient._check_search_id(search_id)
+    except exceptions.ClientError as e:
+        raise click.BadParameter(str(e))
+    return search_id
 
 
 def date_range_to_filter(ctx, param, values) -> Optional[List[dict]]:
@@ -322,6 +335,62 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
                                        search_filter=filter,
                                        enable_email=daily_email)
         echo_json(items, pretty)
+
+
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.option('--sort',
+              type=click.Choice(LIST_SORT_ORDER),
+              default=LIST_SORT_DEFAULT,
+              show_default=True,
+              help='Field and direction to order results by.')
+@click.option('--search-type',
+              type=click.Choice(LIST_SEARCH_TYPE),
+              default=LIST_SEARCH_TYPE_DEFAULT,
+              show_default=True,
+              help='Search type filter.')
+@limit
+@pretty
+async def search_list(ctx, sort, search_type, limit, pretty):
+    """List saved searches.
+
+    This function outputs a full JSON description of the saved searches,
+    optionally pretty-printed.
+    """
+    async with data_client(ctx) as cl:
+        async for item in cl.list_searches(sort=sort,
+                                           search_type=search_type,
+                                           limit=limit):
+            echo_json(item, pretty)
+
+
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument('search_id', callback=check_search_id)
+@click.option('--sort',
+              type=click.Choice(SEARCH_SORT),
+              default=SEARCH_SORT_DEFAULT,
+              show_default=True,
+              help='Field and direction to order results by.')
+@limit
+@pretty
+async def search_run(ctx, search_id, sort, limit, pretty):
+    """Execute a saved structured item search.
+
+    This function outputs a series of GeoJSON descriptions, one for each of the
+    returned items, optionally pretty-printed.
+    """
+    async with data_client(ctx) as cl:
+        async for item in cl.run_search(search_id, sort=sort, limit=limit):
+            echo_json(item, pretty)
+
+
+# TODO: search-update
+# TODO: search-delete
 
 
 @data.command(epilog=valid_item_string)
