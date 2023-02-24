@@ -33,7 +33,7 @@ SUPPORTED_TOOLS = [
 SUPPORTED_ORDER_TYPES = ['full', 'partial']
 SUPPORTED_ARCHIVE_TYPES = ['zip']
 SUPPORTED_FILE_FORMATS = ['COG', 'PL_NITF']
-HARMONIZE_TOOL_TARGET_SENSORS = ('Sentinel-2', )
+HARMONIZE_TOOL_TARGET_SENSORS = ('Sentinel-2', 'PS2')
 
 LOGGER = logging.getLogger(__name__)
 
