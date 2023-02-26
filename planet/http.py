@@ -22,6 +22,7 @@ import logging
 import random
 import time
 from typing import AsyncGenerator, Optional
+
 import httpx
 
 from .auth import Auth, AuthType
@@ -412,6 +413,32 @@ class Session(BaseSession):
             yield response
         finally:
             await response.aclose()
+
+    def client(self, name: str, base_url: Optional[str] = None) -> object:
+        """Get a client by its name.
+
+        Parameters:
+            name: the name of the client module: data, orders, or
+                subscriptions.
+
+        Returns:
+            A client instance.
+
+        Raises:
+            ClientError when no such client can be had.
+
+        """
+        # To avoid circular dependency.
+        from planet.clients.data import DataClient
+        from planet.clients.orders import OrdersClient
+        from planet.clients.subscriptions import SubscriptionsClient
+
+        client_map = {
+            'data': DataClient,
+            'orders': OrdersClient,
+            'subscriptions': SubscriptionsClient
+        }
+        return client_map[name](self, base_url=base_url)
 
 
 class AuthSession(BaseSession):

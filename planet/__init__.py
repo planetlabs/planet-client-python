@@ -16,7 +16,7 @@ from .http import Session
 from . import order_request, reporting
 from .__version__ import __version__  # NOQA
 from .auth import Auth
-from .clients import DataClient, OrdersClient  # NOQA
+from .clients import DataClient, OrdersClient, SubscriptionsClient  # NOQA
 from .io import collect
 
 __all__ = [
@@ -24,6 +24,7 @@ __all__ = [
     'collect',
     'DataClient'
     'OrdersClient',
+    'SubscriptionsClient',
     'order_request',
     'reporting',
     'Session',
