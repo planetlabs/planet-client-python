@@ -116,7 +116,7 @@ from planet import OrdersClient
 
 async def main():
     async with Session() as sess:
-        client = OrdersClient(sess)
+        client = sess.client('orders')
         # perform operations here
 
 asyncio.run(main())
@@ -198,7 +198,7 @@ the context of a `Session` with the `OrdersClient`:
 ```python
 async def main():
     async with Session() as sess:
-        cl = OrdersClient(sess)
+        cl = sess.client('orders')
         order = await cl.create_order(request)
 
 asyncio.run(main())
@@ -222,7 +222,7 @@ from planet import reporting
 
 async def create_wait_and_download():
     async with Session() as sess:
-        cl = OrdersClient(sess)
+        cl = sess.client('orders')
         with reporting.StateBar(state='creating') as bar:
             # create order
             order = await cl.create_order(request)
@@ -272,7 +272,7 @@ from planet import collect, OrdersClient, Session
 
 async def main():
     async with Session() as sess:
-        client = OrdersClient(sess)
+        client = sess.client('orders')
         orders_list = collect(client.list_orders())
 
 asyncio.run(main())
@@ -297,7 +297,7 @@ from planet import DataClient
 
 async def main():
     async with Session() as sess:
-        client = DataClient(sess)
+        client = sess.client('data')
         # perform operations here
 
 asyncio.run(main())
@@ -344,7 +344,7 @@ the context of a `Session` with the `DataClient`:
 ```python
 async def main():
     async with Session() as sess:
-        cl = DataClient(sess)
+        cl = sess.client('data')
         items = [i async for i in cl.search(['PSScene'], sfilter)]
 
 asyncio.run(main())
@@ -364,7 +364,7 @@ print command to report wait status. `download_asset` has reporting built in.
 ```python
 async def download_and_validate():
     async with Session() as sess:
-        cl = DataClient(sess)
+        cl = sess.client('data')
 
         # get asset description
         item_type_id = 'PSScene'
