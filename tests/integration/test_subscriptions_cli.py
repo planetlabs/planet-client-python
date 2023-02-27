@@ -283,3 +283,26 @@ def test_request_base_success(invoke, geom_geojson):
 
     assert source in result.output
     assert result.exit_code == 0  # success.
+
+
+def test_request_catalog_success(invoke, geom_geojson):
+    """Request-catalog command succeeds"""
+    source = {
+        "type": "catalog",
+        "parameters": {
+            "geometry": geom_geojson,
+            "start_time": "2021-03-01T00:00:00Z",
+            "item_types": ["PSScene"],
+            "asset_types": ["ortho_analytic_4b"]
+        }
+    }
+
+    result = invoke([
+        'request-catalog',
+        '--item-types=PSScene',
+        '--asset-types=ortho_analytic_4b',
+        f"--geometry={json.dumps(geom_geojson)}",
+        '--start-time=2021-03-01T00:00:00'
+    ])
+    assert json.loads(result.output) == source
+    assert result.exit_code == 0  # success.

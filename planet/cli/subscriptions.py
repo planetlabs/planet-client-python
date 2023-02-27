@@ -191,5 +191,49 @@ def request(name, source, delivery, notifications, tools, pretty):
     echo_json(res, pretty)
 
 
-async def request_catalog():
-    raise NotImplementedError
+@subscriptions.command()
+@click.option('--item-types',
+              required=True,
+              type=types.CommaSeparatedString(),
+              help='One or more comma-separated item types.')
+@click.option('--asset-types',
+              required=True,
+              type=types.CommaSeparatedString(),
+              help='One or more comma-separated asset types.')
+@click.option(
+    '--geometry',
+    required=True,
+    type=types.JSON(),
+    help="""Geometry of the area of interest of the subscription that will be
+    used to determine matches. Can be a string, filename or - for stdin.""")
+@click.option('--start-time',
+              required=True,
+              type=types.DateTime(),
+              help='Date and time to begin subscription.')
+@click.option('--end-time',
+              type=types.DateTime(),
+              help='Date and time to end subscription.')
+@click.option('--rrule',
+              type=str,
+              help='iCalendar recurrance rule to specify recurrances.')
+@click.option('--filter',
+              type=types.JSON(),
+              help='Search filter.  Can be a string, filename or - for stdin.')
+@pretty
+def request_catalog(item_types,
+                    asset_types,
+                    geometry,
+                    start_time,
+                    end_time,
+                    rrule,
+                    filter,
+                    pretty):
+    """Generate a subscriptions request catalog source description."""
+    res = subscription_request.catalog_source(item_types,
+                                              asset_types,
+                                              geometry,
+                                              start_time,
+                                              end_time=end_time,
+                                              rrule=rrule,
+                                              filter=filter)
+    echo_json(res, pretty)
