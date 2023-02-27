@@ -24,6 +24,7 @@ import time
 from typing import AsyncGenerator, Optional
 
 import httpx
+from typing_extensions import Literal
 
 from .auth import Auth, AuthType
 from . import exceptions, models
@@ -414,12 +415,13 @@ class Session(BaseSession):
         finally:
             await response.aclose()
 
-    def client(self, name: str, base_url: Optional[str] = None) -> object:
+    def client(self,
+               name: Literal['data', 'orders', 'subscriptions'],
+               base_url: Optional[str] = None) -> object:
         """Get a client by its module name.
 
         Parameters:
-            name: the name of the client module: data, orders, or
-                subscriptions.
+            name: one of 'data', 'orders', or 'subscriptions'.
 
         Returns:
             A client instance.
