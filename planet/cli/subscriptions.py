@@ -9,6 +9,7 @@ from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
 from planet.clients.subscriptions import SubscriptionsClient
+from .. import subscription_request
 
 
 @asynccontextmanager
@@ -157,3 +158,38 @@ async def list_subscription_results_cmd(ctx,
                                                status=status,
                                                limit=limit):
             echo_json(result, pretty)
+
+
+@subscriptions.command()
+@click.option('--name',
+              required=True,
+              type=str,
+              help='Subscription name. Does not need to be unique.')
+@click.option('--source',
+              required=True,
+              type=types.JSON(),
+              help='Source JSON. Can be a string, filename or - for stdin.')
+@click.option('--delivery',
+              required=True,
+              type=types.JSON(),
+              help='Delivery JSON. Can be a string, filename or - for stdin.')
+@click.option(
+    '--notifications',
+    type=types.JSON(),
+    help='Notifications JSON. Can be a string, filename or - for stdin.')
+@click.option('--tools',
+              type=types.JSON(),
+              help='Toolchain JSON. Can be a string, filename or - for stdin.')
+@pretty
+def request(name, source, delivery, notifications, tools, pretty):
+    """Generate a subscriptions request."""
+    res = subscription_request.build_request(name,
+                                             source,
+                                             delivery,
+                                             notifications=notifications,
+                                             tools=tools)
+    echo_json(res, pretty)
+
+
+async def request_catalog():
+    raise NotImplementedError
