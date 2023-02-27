@@ -415,7 +415,7 @@ class Session(BaseSession):
             await response.aclose()
 
     def client(self, name: str, base_url: Optional[str] = None) -> object:
-        """Get a client by its name.
+        """Get a client by its module name.
 
         Parameters:
             name: the name of the client module: data, orders, or
@@ -433,12 +433,14 @@ class Session(BaseSession):
         from planet.clients.orders import OrdersClient
         from planet.clients.subscriptions import SubscriptionsClient
 
-        client_map = {
-            'data': DataClient,
-            'orders': OrdersClient,
-            'subscriptions': SubscriptionsClient
-        }
-        return client_map[name](self, base_url=base_url)
+        try:
+            return {
+                'data': DataClient,
+                'orders': OrdersClient,
+                'subscriptions': SubscriptionsClient
+            }[name](self, base_url=base_url)
+        except KeyError:
+            raise exceptions.ClientError("No such client.")
 
 
 class AuthSession(BaseSession):
