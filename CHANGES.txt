@@ -1,3 +1,9 @@
+2.0b2 (TBD)
+
+Added:
+- The Session class can now construct clients by name with its client method
+  (#858).
+
 2.0.0-beta.1 (2022-12-07)
 
 Changed:
