@@ -431,10 +431,10 @@ class Session(BaseSession):
 
         """
         # To avoid circular dependency.
-        from planet.clients import client_directory
+        from planet.clients import _client_directory
 
         try:
-            return client_directory[name](self, base_url=base_url)
+            return _client_directory[name](self, base_url=base_url)
         except KeyError:
             raise exceptions.ClientError("No such client.")
 
