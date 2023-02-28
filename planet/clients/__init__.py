@@ -12,20 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from .data import DataClient
 from .orders import OrdersClient
-from .subscriptions import SubscriptionsClient
 
 __all__ = [
     'DataClient',
     'OrdersClient',
-    'SubscriptionsClient',
 ]
-
-# Organize client classes by their module name to allow concise lookup.
-_client_directory = {
-    'data': DataClient,
-    'orders': OrdersClient,
-    'subscriptions': SubscriptionsClient
-}

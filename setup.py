@@ -30,7 +30,6 @@ install_requires = [
     'jsonschema',
     'pyjwt>=2.1',
     'tqdm>=4.56',
-    'typing-extensions',
 ]
 
 test_requires = ['pytest', 'pytest-asyncio==0.16', 'pytest-cov', 'respx==0.19']

@@ -22,9 +22,7 @@ import logging
 import random
 import time
 from typing import AsyncGenerator, Optional
-
 import httpx
-from typing_extensions import Literal
 
 from .auth import Auth, AuthType
 from . import exceptions, models
@@ -414,29 +412,6 @@ class Session(BaseSession):
             yield response
         finally:
             await response.aclose()
-
-    def client(self,
-               name: Literal['data', 'orders', 'subscriptions'],
-               base_url: Optional[str] = None) -> object:
-        """Get a client by its module name.
-
-        Parameters:
-            name: one of 'data', 'orders', or 'subscriptions'.
-
-        Returns:
-            A client instance.
-
-        Raises:
-            ClientError when no such client can be had.
-
-        """
-        # To avoid circular dependency.
-        from planet.clients import _client_directory
-
-        try:
-            return _client_directory[name](self, base_url=base_url)
-        except KeyError:
-            raise exceptions.ClientError("No such client.")
 
 
 class AuthSession(BaseSession):
