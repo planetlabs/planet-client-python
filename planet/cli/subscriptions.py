@@ -168,18 +168,19 @@ async def list_subscription_results_cmd(ctx,
 @click.option('--source',
               required=True,
               type=types.JSON(),
-              help='Source JSON. Can be a string, filename or - for stdin.')
+              help='Source JSON. Can be a string, filename, or - for stdin.')
 @click.option('--delivery',
               required=True,
               type=types.JSON(),
-              help='Delivery JSON. Can be a string, filename or - for stdin.')
+              help='Delivery JSON. Can be a string, filename, or - for stdin.')
 @click.option(
     '--notifications',
     type=types.JSON(),
-    help='Notifications JSON. Can be a string, filename or - for stdin.')
+    help='Notifications JSON. Can be a string, filename, or - for stdin.')
 @click.option('--tools',
               type=types.JSON(),
-              help='Toolchain JSON. Can be a string, filename or - for stdin.')
+              help='Toolchain JSON. Can be a string, filename, or - for stdin.'
+              )
 @pretty
 def request(name, source, delivery, notifications, tools, pretty):
     """Generate a subscriptions request."""
@@ -205,7 +206,7 @@ def request(name, source, delivery, notifications, tools, pretty):
     required=True,
     type=types.JSON(),
     help="""Geometry of the area of interest of the subscription that will be
-    used to determine matches. Can be a string, filename or - for stdin.""")
+    used to determine matches. Can be a string, filename, or - for stdin.""")
 @click.option('--start-time',
               required=True,
               type=types.DateTime(),
@@ -218,7 +219,8 @@ def request(name, source, delivery, notifications, tools, pretty):
               help='iCalendar recurrance rule to specify recurrances.')
 @click.option('--filter',
               type=types.JSON(),
-              help='Search filter.  Can be a string, filename or - for stdin.')
+              help='Search filter.  Can be a string, filename, or - for stdin.'
+              )
 @pretty
 def request_catalog(item_types,
                     asset_types,
