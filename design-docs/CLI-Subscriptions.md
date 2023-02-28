@@ -207,7 +207,10 @@ Options:
 ### Usage Examples
 
 ```
-planet subscription request --source source.json --clip geom.json --delivery delivery.json | planet subscriptions create -
+planet subscription request \
+    --name test \
+    --source source.json \
+    --delivery delivery.json | planet subscriptions create -
 ```
 
 ## Request-catalog
@@ -236,13 +239,12 @@ Options:
 ### Usage Examples
 
 ```
-planet subscriptions request \
-    --source $(planet subscriptions request-catalog \
+planet subscriptions request-catalog \
         --item-types PSScene \
         --asset-types ortho_analytic_8b_sr,ortho_udm2 \
         --geometry aoi.geojson \
         --start-time 2022-01-01) \
-    --delivery delivery.json | planet subscriptions create -
+    --delivery delivery.json > source.json
 ```
 
 ## Request-other
