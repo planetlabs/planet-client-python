@@ -259,7 +259,7 @@ Generate a subscriptions request source JSON for another product.
 Options:
   --type                        Type.
   --id                          Id.
-  --geom JSON                      geometry of the area of interest of the subscription that will be used to determine matches.
+  --geometry JSON                      geometry of the area of interest of the subscription that will be used to determine matches.
                                   Can be a json string, filename, or '-' for stdin.
   --start-time DATETIME           Start date and time to begin subscription.
   --end-time DATETIME             Date and time to end the subscription.
