@@ -14,6 +14,7 @@
 """The Planet Data CLI."""
 from typing import List, Optional
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import click
 
@@ -21,6 +22,7 @@ from planet import data_filter, DataClient
 from planet.clients.data import (SEARCH_SORT,
                                  SEARCH_SORT_DEFAULT,
                                  STATS_INTERVAL)
+
 from planet.specs import (get_item_types,
                           validate_item_type,
                           SpecificationException)
@@ -70,6 +72,18 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
         for item_type in item_types:
             validate_item_type(item_type)
         return item_types
+    except SpecificationException as e:
+        raise click.BadParameter(str(e))
+
+
+async def check_asset_types(ctx, param, item_type, item_id,
+                            asset_type_id) -> Optional[List[dict]]:
+    '''Validates the asset type by comparying the inputted asset type to all
+    supported asset types.'''
+    try:
+        async with data_client(ctx) as cl:
+            asset = cl.get_asset(item_type, item_id, asset_type_id)
+        return asset
     except SpecificationException as e:
         raise click.BadParameter(str(e))
 
@@ -399,8 +413,62 @@ async def search_update(ctx,
         echo_json(items, pretty)
 
 
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument('item_id')
+@click.argument("item_types",
+                type=types.CommaSeparatedString(),
+                callback=check_item_types)
+@click.argument("asset_types",
+                type=types.CommaSeparatedString(),
+                callback=check_asset_types)
+@click.option('--directory',
+              default='.',
+              help=('Base directory for file download.'),
+              type=click.Path(exists=True,
+                              resolve_path=True,
+                              writable=True,
+                              file_okay=False))
+@click.option('--overwrite',
+              is_flag=True,
+              default=False,
+              help=('Overwrite files if they already exist.'))
+@click.option('--checksum',
+              default=None,
+              type=click.Choice(['MD5', 'SHA256'], case_sensitive=False),
+              help=('Verify that checksums match.'))
+@pretty
+async def asset_download(ctx,
+                         item_id,
+                         item_types,
+                         asset_types,
+                         directory,
+                         overwrite,
+                         pretty,
+                         checksum):
+    """Download an activated asset.
+
+    This function outputs the path to the downloaded asset, optionally 
+    pretty-printed.
+
+    This function will fail if the asset state is not activated. Consider 
+    calling `asset-wait` before this command to ensure the asset is activated.
+    """
+    quiet = ctx.obj['QUIET']
+    async with data_client(ctx) as cl:
+        path = await cl.download_asset(asset_types,
+                                       filename,
+                                       Path(directory),
+                                       overwrite,
+                                       progress_bar=not quiet)
+        if checksum:
+            cl.validate_checksum(path, checksum)
+        echo_json(path, pretty)
+
+
 # TODO: search_run()".
 # TODO: item_get()".
 # TODO: asset_activate()".
 # TODO: asset_wait()".
-# TODO: asset_download()".
