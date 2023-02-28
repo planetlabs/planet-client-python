@@ -24,7 +24,7 @@ The best way of doing this is wrapping any code that invokes a client class in a
 
 ```python
 async with Session() as session:
-    client = session.client('orders')
+    client = OrdersClient(session)
     result = await client.create_order(order)
 # Process result
 ```
@@ -40,12 +40,12 @@ In V2, all `*Client` methods (for example, `DataClient().search`, `OrderClient()
 ```python
 import asyncio
 from datetime import datetime
-from planet import Session
+from planet import Session, DataClient
 from planet import data_filter as filters
  
 async def do_search():
     async with Session() as session:
-        client = session.client('data')
+        client = DataClient(session)
         date_filter = filters.date_range_filter('acquired', gte=datetime.fromisoformat("2022-11-18"), lte=datetime.fromisoformat("2022-11-21"))
         cloud_filter = filters.range_filter('cloud_cover', lte=0.1)
         download_filter = filters.permission_filter()
@@ -74,11 +74,11 @@ Is now
 
 ```python
 async with Session() as session:
-    items = [i async for i in session.client('data').search(["PSScene"], all_filters)]
+    items = [i async for i in planet.DataClient(session).search(["PSScene"], all_filters)]
 ```
 
 ## Orders API
 
-The Orders API capabilities in V1 were quite primitive, but those that did exist have been retained in much the same form; `ClientV1().create_order` becomes `OrdersClient(session).create_order`. (As with the `DataClient`, you must also use `async` and `Session` with `OrdersClient`.)
+The Orders API capabilities in V1 were quite primitive, but those that did exist have been retained in much the same form; `ClientV1().create_order` becomes `OrderClient(session).create_order`. (As with the `DataClient`, you must also use `async` and `Session` with `OrderClient`.)
 
 Additionally, there is now also an order builder in `planet.order_request`, similar to the preexisting search filter builder. For more details on this, refer to the [Creating an Order](../../python/sdk-guide/#creating-an-order).
