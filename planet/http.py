@@ -431,16 +431,10 @@ class Session(BaseSession):
 
         """
         # To avoid circular dependency.
-        from planet.clients.data import DataClient
-        from planet.clients.orders import OrdersClient
-        from planet.clients.subscriptions import SubscriptionsClient
+        from planet.clients import client_directory
 
         try:
-            return {
-                'data': DataClient,
-                'orders': OrdersClient,
-                'subscriptions': SubscriptionsClient
-            }[name](self, base_url=base_url)
+            return client_directory[name](self, base_url=base_url)
         except KeyError:
             raise exceptions.ClientError("No such client.")
 

@@ -21,3 +21,10 @@ __all__ = [
     'OrdersClient',
     'SubscriptionsClient',
 ]
+
+# Organize client classes by their module name to allow concise lookup.
+client_directory = {
+    'data': DataClient,
+    'orders': OrdersClient,
+    'subscriptions': SubscriptionsClient
+}
