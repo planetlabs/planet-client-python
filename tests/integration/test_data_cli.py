@@ -55,6 +55,9 @@ def test_data_command_registered(invoke):
     assert "search-get" in result.output
     assert "search-delete" in result.output
     assert "search-update" in result.output
+    assert "asset_download" in result.output
+    # assert "asset_activate" in result.output
+    # assert "asset_wait" in result.output
     # Add other sub-commands here.
 
 
