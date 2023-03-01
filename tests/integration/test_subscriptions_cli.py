@@ -12,7 +12,6 @@ There are 6 subscriptions commands:
 TODO: tests for 3 options of the planet-subscriptions-results command.
 
 """
-
 import json
 
 from click.testing import CliRunner
@@ -250,3 +249,60 @@ def test_subscriptions_results_success(invoke, options, expected_count):
 
     assert result.exit_code == 0  # success.
     assert result.output.count('"id"') == expected_count
+
+
+def test_request_base_success(invoke, geom_geojson):
+    """Request command succeeds"""
+    source = json.dumps({
+        "type": "catalog",
+        "parameters": {
+            "geometry": geom_geojson,
+            "start_time": "2021-03-01T00:00:00Z",
+            "end_time": "2023-11-01T00:00:00Z",
+            "rrule": "FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
+            "item_types": ["PSScene"],
+            "asset_types": ["ortho_analytic_4b"]
+        }
+    })
+    delivery = json.dumps({
+        "type": "amazon_s3",
+        "parameters": {
+            "aws_access_key_id": "keyid",
+            "aws_secret_access_key": "accesskey",
+            "bucket": "bucket",
+            "aws_region": "region"
+        }
+    })
+
+    result = invoke([
+        'request',
+        '--name=test',
+        f'--source={source}',
+        f'--delivery={delivery}'
+    ])
+
+    assert source in result.output
+    assert result.exit_code == 0  # success.
+
+
+def test_request_catalog_success(invoke, geom_geojson):
+    """Request-catalog command succeeds"""
+    source = {
+        "type": "catalog",
+        "parameters": {
+            "geometry": geom_geojson,
+            "start_time": "2021-03-01T00:00:00Z",
+            "item_types": ["PSScene"],
+            "asset_types": ["ortho_analytic_4b"]
+        }
+    }
+
+    result = invoke([
+        'request-catalog',
+        '--item-types=PSScene',
+        '--asset-types=ortho_analytic_4b',
+        f"--geometry={json.dumps(geom_geojson)}",
+        '--start-time=2021-03-01T00:00:00'
+    ])
+    assert json.loads(result.output) == source
+    assert result.exit_code == 0  # success.

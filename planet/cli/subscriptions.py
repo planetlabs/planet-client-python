@@ -9,6 +9,7 @@ from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
 from planet.clients.subscriptions import SubscriptionsClient
+from .. import subscription_request
 
 
 @asynccontextmanager
@@ -157,3 +158,84 @@ async def list_subscription_results_cmd(ctx,
                                                status=status,
                                                limit=limit):
             echo_json(result, pretty)
+
+
+@subscriptions.command()
+@click.option('--name',
+              required=True,
+              type=str,
+              help='Subscription name. Does not need to be unique.')
+@click.option('--source',
+              required=True,
+              type=types.JSON(),
+              help='Source JSON. Can be a string, filename, or - for stdin.')
+@click.option('--delivery',
+              required=True,
+              type=types.JSON(),
+              help='Delivery JSON. Can be a string, filename, or - for stdin.')
+@click.option(
+    '--notifications',
+    type=types.JSON(),
+    help='Notifications JSON. Can be a string, filename, or - for stdin.')
+@click.option('--tools',
+              type=types.JSON(),
+              help='Toolchain JSON. Can be a string, filename, or - for stdin.'
+              )
+@pretty
+def request(name, source, delivery, notifications, tools, pretty):
+    """Generate a subscriptions request."""
+    res = subscription_request.build_request(name,
+                                             source,
+                                             delivery,
+                                             notifications=notifications,
+                                             tools=tools)
+    echo_json(res, pretty)
+
+
+@subscriptions.command()
+@click.option('--item-types',
+              required=True,
+              type=types.CommaSeparatedString(),
+              help='One or more comma-separated item types.')
+@click.option('--asset-types',
+              required=True,
+              type=types.CommaSeparatedString(),
+              help='One or more comma-separated asset types.')
+@click.option(
+    '--geometry',
+    required=True,
+    type=types.JSON(),
+    help="""Geometry of the area of interest of the subscription that will be
+    used to determine matches. Can be a string, filename, or - for stdin.""")
+@click.option('--start-time',
+              required=True,
+              type=types.DateTime(),
+              help='Date and time to begin subscription.')
+@click.option('--end-time',
+              type=types.DateTime(),
+              help='Date and time to end subscription.')
+@click.option('--rrule',
+              type=str,
+              help='iCalendar recurrance rule to specify recurrances.')
+@click.option('--filter',
+              type=types.JSON(),
+              help='Search filter.  Can be a string, filename, or - for stdin.'
+              )
+@pretty
+def request_catalog(item_types,
+                    asset_types,
+                    geometry,
+                    start_time,
+                    end_time,
+                    rrule,
+                    filter,
+                    pretty):
+    """Generate a subscriptions request catalog source description."""
+    res = subscription_request.catalog_source(item_types,
+                                              asset_types,
+                                              geometry,
+                                              start_time,
+                                              end_time=end_time,
+                                              rrule=rrule,
+                                              filter=filter)
+    echo_json(res, pretty)

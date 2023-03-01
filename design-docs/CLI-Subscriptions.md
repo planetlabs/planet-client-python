@@ -184,7 +184,7 @@ planet subscriptions request [OPTIONS]
 
 Generate a subscriptions request.
 
-This command provides support for building the subscription request JSON used to create or 
+This command provides support for building the subscription request JSON used to create or
 update a subscription. It outputs the subscription request.
 
 Options:
@@ -207,7 +207,10 @@ Options:
 ### Usage Examples
 
 ```
-planet subscription request --source source.json --clip geom.json --delivery delivery.json | planet subscriptions create -
+planet subscription request \
+    --name test \
+    --source source.json \
+    --delivery delivery.json | planet subscriptions create -
 ```
 
 ## Request-catalog
@@ -222,13 +225,13 @@ Generate a subscriptions request source JSON for a catalog.
 Options:
   --asset-types TEXT              One or more comma-separated asset types. Required.
   --item-types TEXT               One or more comma-separated item-types. Required.
-  --geom JSON                 geometry of the area of interest of the subscription that will be used to determine matches. 
+  --geometry JSON                 geometry of the area of interest of the subscription that will be used to determine matches.
                                   Can be a json string, filename, or '-' for stdin.
   --start-time DATETIME           Start date and time to begin subscription.
   --end-time DATETIME             Date and time to end the subscription.
-  --rrule TEXT                    iCalendar recurrance rule to specify recurrances. 
-  --filter JSON                   A search filter can be specified a json string, 
-                                  filename, or '-' for stdin. 
+  --rrule TEXT                    iCalendar recurrance rule to specify recurrances.
+  --filter JSON                   A search filter can be specified a json string,
+                                  filename, or '-' for stdin.
   --pretty                        Format JSON output.
   --help                          Show this message and exit.
 ```
@@ -236,13 +239,12 @@ Options:
 ### Usage Examples
 
 ```
-planet subscriptions request \
-    --source $(planet subscriptions request-catalog
-        --item-type PSScene
-        --asset-types ortho_analytic_8b_sr,ortho_udm2
-        --geom aoi.json
-        --start-time 05/01/2022)
-    --delivery delivery.json | planet subscriptions create -
+planet subscriptions request-catalog \
+        --item-types PSScene \
+        --asset-types ortho_analytic_8b_sr,ortho_udm2 \
+        --geometry aoi.geojson \
+        --start-time 2022-01-01) \
+    --delivery delivery.json > source.json
 ```
 
 ## Request-other
@@ -257,25 +259,13 @@ Generate a subscriptions request source JSON for another product.
 Options:
   --type                        Type.
   --id                          Id.
-  --geom JSON                      geometry of the area of interest of the subscription that will be used to determine matches. 
+  --geometry JSON                      geometry of the area of interest of the subscription that will be used to determine matches.
                                   Can be a json string, filename, or '-' for stdin.
   --start-time DATETIME           Start date and time to begin subscription.
   --end-time DATETIME             Date and time to end the subscription.
   --rrule TEXT                    iCalendar recurrance rule to specify recurrances.
   --pretty                        Format JSON output.
   --help                          Show this message and exit.
-```
-
-### Usage Examples
-
-```
-planet subscriptions request \
-    --source $(planet subscriptions request-other
-        --type othertype
-        --id otherid
-        --geom aoi.json
-        --start-time 05/01/2022)
-    --delivery delivery.json | planet subscriptions create -
 ```
 
 
