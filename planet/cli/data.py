@@ -441,11 +441,15 @@ async def search_update(ctx,
 async def asset_download(ctx, asset, directory, filename, overwrite, checksum):
     """Download an activated asset.
 
-    This function outputs the path to the downloaded asset, optionally
-    pretty-printed.
-
     This function will fail if the asset state is not activated. Consider
     calling `asset-wait` before this command to ensure the asset is activated.
+
+    If --checksum is provided, the associated checksums given in the manifest
+    are compared against the downloaded files to verify that they match.
+
+    If --checksum is provided, files are already downloaded, and --overwrite is
+    not specified, this will simply validate the checksums of the files against
+    the manifest.
     """
     quiet = ctx.obj['QUIET']
     async with data_client(ctx) as cl:
@@ -462,22 +466,9 @@ async def asset_download(ctx, asset, directory, filename, overwrite, checksum):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("item_types")
-@click.argument("item_id")
-@click.argument("asset_type_id")
-@pretty
-async def asset_get(ctx, item_types, item_id, asset_type_id, pretty):
-    async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_types, item_id, asset_type_id)
-        echo_json(asset, pretty)
-
-
-@data.command()
-@click.pass_context
-@translate_exceptions
-@coro
 @click.argument("asset", type=types.JSON())
 async def asset_activate(ctx, asset):
+    '''Activate an asset.'''
     async with data_client(ctx) as cl:
         await cl.activate_asset(asset)
 
@@ -497,6 +488,11 @@ async def asset_activate(ctx, asset):
               show_default=True,
               help='Maximum number of polls. Set to zero for no limit.')
 async def asset_wait(ctx, asset, delay, max_attempts):
+    '''Wait for an asset to be activated.
+
+    Returns when the asset state has reached "activated" and the asset is 
+    available.
+    '''
     quiet = ctx.obj['QUIET']
     async with data_client(ctx) as cl:
         with StateBar(order_id="my asset", disable=quiet) as bar:
@@ -507,7 +503,20 @@ async def asset_wait(ctx, asset, delay, max_attempts):
     click.echo(state)
 
 
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument("item_types")
+@click.argument("item_id")
+@click.argument("asset_type_id")
+@pretty
+async def asset_get(ctx, item_types, item_id, asset_type_id, pretty):
+    '''Get an item asset.'''
+    async with data_client(ctx) as cl:
+        asset = await cl.get_asset(item_types, item_id, asset_type_id)
+        echo_json(asset, pretty)
+
+
 # TODO: search_run()".
 # TODO: item_get()".
-# TODO: asset_activate()".
-# TODO: asset_wait()".
