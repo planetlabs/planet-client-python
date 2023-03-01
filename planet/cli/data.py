@@ -490,7 +490,7 @@ async def asset_activate(ctx, asset):
 async def asset_wait(ctx, asset, delay, max_attempts):
     '''Wait for an asset to be activated.
 
-    Returns when the asset state has reached "activated" and the asset is 
+    Returns when the asset state has reached "activated" and the asset is
     available.
     '''
     quiet = ctx.obj['QUIET']
