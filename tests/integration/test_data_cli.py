@@ -15,6 +15,8 @@
 from http import HTTPStatus
 import json
 import logging
+from pathlib import Path
+import math
 
 import httpx
 import respx
@@ -782,6 +784,155 @@ def test_search_update_fail(invoke, search_id, search_filter):
     assert result.exception
 
 
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("exists, overwrite",
+                         [(False, False), (True, False), (True, True),
+                          (False, True)])
+def test_asset_download_default(invoke, open_test_img, exists, overwrite):
+    # mock_download_response()
+    dl_url = f'{TEST_URL}/1?token=IAmAToken'
+
+    img_headers = {
+        'Content-Type': 'image/tiff',
+        'Content-Length': '527',
+        'Content-Disposition': 'attachment; filename="img.tif"'
+    }
+
+    async def _stream_img():
+        data = open_test_img.read()
+        v = memoryview(data)
+
+        chunksize = 100
+        for i in range(math.ceil(len(v) / (chunksize))):
+            yield v[i * chunksize:min((i + 1) * chunksize, len(v))]
+
+    # populate request parameter to avoid respx cloning, which throws
+    # an error caused by respx and not this code
+    # https://github.com/lundberg/respx/issues/130
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               stream=_stream_img(),
+                               headers=img_headers,
+                               request='donotcloneme')
+    respx.get(dl_url).return_value = mock_resp
+
+    dl_url = f'{TEST_URL}/1?token=IAmAToken'
+    basic_udm2_asset = {
+        "_links": {
+            "_self": "SELFURL",
+            "activate": "ACTIVATEURL",
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "md5_digest": None,
+        "status": 'active',
+        "location": dl_url,
+        "type": "basic_udm2"
+    }
+
+    runner = CliRunner()
+    with runner.isolated_filesystem() as folder:
+        if exists:
+            Path(folder, 'img.tif').write_text('i exist')
+        asset_download_call = [
+            'asset-download',
+            json.dumps(basic_udm2_asset),
+            '--directory',
+            Path(folder),
+            '--filename',
+            'img.tif'
+        ]
+        if overwrite:
+            asset_download_call.append('--overwrite')
+        result = invoke(asset_download_call, runner=runner)
+        assert result.exit_code == 0
+
+        path = Path(folder, 'img.tif')
+
+        assert path.name == 'img.tif'
+        assert path.is_file()
+
+        if exists and not overwrite:
+            assert path.read_text() == 'i exist'
+            assert len(result.output) == 0
+        else:
+            assert len(path.read_bytes()) == 527
+            assert path.name in result.output
+
+
+# @respx.mock
+# def test_cli_orders_download_checksum(invoke, mock_download_response, oid):
+#     mock_download_response()
+
+#     runner = CliRunner()
+#     with runner.isolated_filesystem() as folder:
+#         result = invoke(['download', oid], runner=runner)
+#         assert result.exit_code == 0
+
+#         # basic check of progress reporting
+#         assert 'm1.json' in result.output
+
+#         # Check that the files were downloaded and have the correct contents
+#         f1_path = Path(folder) / 'oid/itemtype/m1.json'
+#         assert json.load(open(f1_path)) == {'key': 'value'}
+#         f2_path = Path(folder) / 'oid/itemtype/m2.json'
+#         assert json.load(open(f2_path)) == {'key2': 'value2'}
+
+# @respx.mock
+# def test_cli_orders_download_dest(invoke, mock_download_response, oid):
+#     mock_download_response()
+
+#     runner = CliRunner()
+#     with runner.isolated_filesystem() as folder:
+#         dest_dir = Path(folder) / 'foobar'
+#         dest_dir.mkdir()
+#         result = invoke(['download', '--directory', 'foobar', oid],
+#                         runner=runner)
+#         assert result.exit_code == 0
+
+#         # Check that the files were downloaded to the custom directory
+#         f1_path = dest_dir / 'oid/itemtype/m1.json'
+#         assert json.load(open(f1_path)) == {'key': 'value'}
+#         f2_path = dest_dir / 'oid/itemtype/m2.json'
+#         assert json.load(open(f2_path)) == {'key2': 'value2'}
+
+# @respx.mock
+# def test_cli_orders_download_overwrite(invoke,
+#                                        mock_download_response,
+#                                        oid,
+#                                        write_to_tmp_json_file):
+#     mock_download_response()
+
+#     runner = CliRunner()
+#     with runner.isolated_filesystem() as folder:
+#         filepath = Path(folder) / 'oid/itemtype/m1.json'
+#         filepath.parent.mkdir(parents=True)
+#         filepath.write_text(json.dumps({'foo': 'bar'}))
+
+#         # check the file doesn't get overwritten by default
+#         result = invoke(['download', oid], runner=runner)
+#         assert result.exit_code == 0
+#         assert json.load(open(filepath)) == {'foo': 'bar'}
+
+#         # check the file gets overwritten
+#         result = invoke(['download', '--overwrite', oid], runner=runner)
+#         assert result.exit_code == 0
+#         assert json.load(open(filepath)) == {'key': 'value'}
+
+# @respx.mock
+# def test_cli_orders_download_state(invoke, order_description, oid):
+#     get_url = f'{TEST_ORDERS_URL}/{oid}'
+
+#     order_description['state'] = 'running'
+#     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+#     respx.get(get_url).return_value = mock_resp
+
+#     runner = CliRunner()
+#     result = invoke(['download', oid], runner=runner)
+
+#     assert result.exit_code == 1
+#     assert 'order state (running) is not a final state.' in result.output
+
 # TODO: basic test for "planet data search-create".
 # TODO: basic test for "planet data search-get".
 # TODO: basic test for "planet data search-list".
@@ -789,5 +940,4 @@ def test_search_update_fail(invoke, search_id, search_filter):
 # TODO: basic test for "planet data item-get".
 # TODO: basic test for "planet data asset-activate".
 # TODO: basic test for "planet data asset-wait".
-# TODO: basic test for "planet data asset-download".
 # TODO: basic test for "planet data stats".
