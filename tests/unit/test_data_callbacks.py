@@ -53,5 +53,3 @@ def test_item_type_fail():
     ctx = MockContext()
     with pytest.raises(click.BadParameter):
         check_item_types(ctx, 'item_type', "bad_item_type")
-
-# def test_asset_type_success(item_types, bundles):
