@@ -258,6 +258,16 @@ def oracle_cloud_storage(customer_access_key_id: str,
 
 
 def notifications(url: str, topics: List[str]) -> dict:
+    '''Specify a subscriptions API notification.
+
+    Webhook notifications proactively notify you when a subscription matches
+    and delivers an item so you have confidence that you have all the expected
+    imagery.
+
+    Parameters:
+        url: location of webhook/callback where you expect to receive updates.
+        topics: Event types that you can choose to be notified about.
+    '''
     for i, t in enumerate(topics):
         try:
             topics[i] = specs.get_match(t, NOTIFICATIONS_TOPICS, 'topic')
