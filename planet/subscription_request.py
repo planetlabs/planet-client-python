@@ -84,7 +84,7 @@ def build_request(name: str,
         name: Name of the subscription.
         source: A source for the subscription, i.e. catalog.
         delivery: A delivery mechanism e.g. GCS, AWS, Azure, or OCS.
-        notifications: Specify notifications via email/webhook
+        notifications: Specify notifications via email/webhook.
         tools: Tools to apply to the products. Order defines
             the toolchain order of operatations.
     """
