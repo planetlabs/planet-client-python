@@ -77,18 +77,6 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
         raise click.BadParameter(str(e))
 
 
-# async def check_asset(ctx, param, item_type, item_id,
-#                             asset_type_id) -> Optional[List[dict]]:
-#     '''Validates the asset type by comparying the inputted asset type to all
-#     supported asset types.'''
-#     try:
-#         async with data_client(ctx) as cl:
-#             asset = cl.get_asset(item_type, item_id, asset_type_id)
-#         return asset
-#     except SpecificationException as e:
-#         raise click.BadParameter(str(e))
-
-
 def date_range_to_filter(ctx, param, values) -> Optional[List[dict]]:
 
     def _func(obj):
