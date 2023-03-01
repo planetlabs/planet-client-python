@@ -18,6 +18,7 @@ from pathlib import Path
 
 import click
 
+from planet.reporting import StateBar
 from planet import data_filter, DataClient
 from planet.clients.data import (SEARCH_SORT,
                                  SEARCH_SORT_DEFAULT,
@@ -76,16 +77,16 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
         raise click.BadParameter(str(e))
 
 
-async def check_asset_types(ctx, param, item_type, item_id,
-                            asset_type_id) -> Optional[List[dict]]:
-    '''Validates the asset type by comparying the inputted asset type to all
-    supported asset types.'''
-    try:
-        async with data_client(ctx) as cl:
-            asset = cl.get_asset(item_type, item_id, asset_type_id)
-        return asset
-    except SpecificationException as e:
-        raise click.BadParameter(str(e))
+# async def check_asset(ctx, param, item_type, item_id,
+#                             asset_type_id) -> Optional[List[dict]]:
+#     '''Validates the asset type by comparying the inputted asset type to all
+#     supported asset types.'''
+#     try:
+#         async with data_client(ctx) as cl:
+#             asset = cl.get_asset(item_type, item_id, asset_type_id)
+#         return asset
+#     except SpecificationException as e:
+#         raise click.BadParameter(str(e))
 
 
 def date_range_to_filter(ctx, param, values) -> Optional[List[dict]]:
@@ -417,13 +418,7 @@ async def search_update(ctx,
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument('item_id')
-@click.argument("item_types",
-                type=types.CommaSeparatedString(),
-                callback=check_item_types)
-@click.argument("asset_types",
-                type=types.CommaSeparatedString(),
-                callback=check_asset_types)
+@click.argument("asset", type=types.JSON())
 @click.option('--directory',
               default='.',
               help=('Base directory for file download.'),
@@ -431,41 +426,85 @@ async def search_update(ctx,
                               resolve_path=True,
                               writable=True,
                               file_okay=False))
+@click.option('--filename',
+              default=None,
+              help=('Custom name to assign to downloaded file.'),
+              type=str)
 @click.option('--overwrite',
               is_flag=True,
               default=False,
               help=('Overwrite files if they already exist.'))
 @click.option('--checksum',
+              is_flag=True,
               default=None,
-              type=click.Choice(['MD5', 'SHA256'], case_sensitive=False),
               help=('Verify that checksums match.'))
-@pretty
-async def asset_download(ctx,
-                         item_id,
-                         item_types,
-                         asset_types,
-                         directory,
-                         overwrite,
-                         pretty,
-                         checksum):
+async def asset_download(ctx, asset, directory, filename, overwrite, checksum):
     """Download an activated asset.
 
-    This function outputs the path to the downloaded asset, optionally 
+    This function outputs the path to the downloaded asset, optionally
     pretty-printed.
 
-    This function will fail if the asset state is not activated. Consider 
+    This function will fail if the asset state is not activated. Consider
     calling `asset-wait` before this command to ensure the asset is activated.
     """
     quiet = ctx.obj['QUIET']
     async with data_client(ctx) as cl:
-        path = await cl.download_asset(asset_types,
-                                       filename,
-                                       Path(directory),
-                                       overwrite,
+        path = await cl.download_asset(asset=asset,
+                                       filename=filename,
+                                       directory=Path(directory),
+                                       overwrite=overwrite,
                                        progress_bar=not quiet)
         if checksum:
-            cl.validate_checksum(path, checksum)
-        echo_json(path, pretty)
+            cl.validate_checksum(asset, path)
+
+
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument("item_types")
+@click.argument("item_id")
+@click.argument("asset_type_id")
+@pretty
+async def asset_get(ctx, item_types, item_id, asset_type_id, pretty):
+    async with data_client(ctx) as cl:
+        asset = await cl.get_asset(item_types, item_id, asset_type_id)
+        echo_json(asset, pretty)
+
+
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument("asset", type=types.JSON())
+async def asset_activate(ctx, asset):
+    async with data_client(ctx) as cl:
+        await cl.activate_asset(asset)
+
+
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument("asset", type=types.JSON())
+@click.option('--delay',
+              type=int,
+              default=5,
+              help='Time (in seconds) between polls.')
+@click.option('--max-attempts',
+              type=int,
+              default=200,
+              show_default=True,
+              help='Maximum number of polls. Set to zero for no limit.')
+async def asset_wait(ctx, asset, delay, max_attempts):
+    quiet = ctx.obj['QUIET']
+    async with data_client(ctx) as cl:
+        with StateBar(order_id="my asset", disable=quiet) as bar:
+            state = await cl.wait_asset(asset,
+                                        delay,
+                                        max_attempts,
+                                        callback=bar.update_state)
+    click.echo(state)
 
 
 # TODO: search_run()".
