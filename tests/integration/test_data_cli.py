@@ -863,11 +863,64 @@ def test_asset_download_default(invoke, open_test_img, exists, overwrite):
             assert path.name in result.output
 
 
+@respx.mock
+def test_asset_activate(invoke):
+    mock_resp = httpx.Response(HTTPStatus.OK)
+    dl_url = f'{TEST_URL}/1?token=IAmAToken'
+    respx.get(dl_url).return_value = mock_resp
+
+    basic_udm2_asset = {
+        "_links": {
+            "_self": "SELFURL",
+            "activate": "ACTIVATEURL",
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "md5_digest": None,
+        "status": 'active',
+        "location": dl_url,
+        "type": "basic_udm2"
+    }
+
+    runner = CliRunner()
+    result = invoke(['asset-activate', json.dumps(basic_udm2_asset)],
+                    runner=runner)
+
+    assert not result.exception
+
+
+@respx.mock
+def test_asset_wait(invoke):
+    mock_resp = httpx.Response(HTTPStatus.OK)
+    dl_url = f'{TEST_URL}/1?token=IAmAToken'
+    respx.get(dl_url).return_value = mock_resp
+
+    basic_udm2_asset = {
+        "_links": {
+            "_self": "SELFURL",
+            "activate": "ACTIVATEURL",
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "md5_digest": None,
+        "status": 'active',
+        "location": dl_url,
+        "type": "basic_udm2"
+    }
+
+    runner = CliRunner()
+    result = invoke(
+        ['asset-wait', json.dumps(basic_udm2_asset), '--delay', '0'],
+        runner=runner)
+
+    assert not result.exception
+    assert "state: active" in result.output
+
+
 # TODO: basic test for "planet data search-create".
 # TODO: basic test for "planet data search-get".
 # TODO: basic test for "planet data search-list".
 # TODO: basic test for "planet data search-run".
 # TODO: basic test for "planet data item-get".
-# TODO: basic test for "planet data asset-activate".
 # TODO: basic test for "planet data asset-wait".
 # TODO: basic test for "planet data stats".
