@@ -840,8 +840,7 @@ def test_asset_download_default(invoke, open_test_img, exists, overwrite):
         asset_download_command = [
             'asset-download',
             json.dumps(basic_udm2_asset),
-            '--directory',
-            Path(folder),
+            f'--directory={Path(folder)}',
             '--filename',
             'img.tif'
         ]
