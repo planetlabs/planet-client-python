@@ -861,7 +861,7 @@ def test_asset_download_default(invoke, open_test_img, exists, overwrite):
     runner = CliRunner()
     with runner.isolated_filesystem() as folder:
         if exists:
-            Path(folder, 'img.tif').write_text('i exist')
+            Path(folder, 'img.tif').write_bytes(b'01010')
 
         asset_download_command = [
             'asset-download',
@@ -884,7 +884,7 @@ def test_asset_download_default(invoke, open_test_img, exists, overwrite):
         assert path.is_file()
 
         if exists and not overwrite:
-            assert path.read_text() == 'i exist'
+            assert len(path.read_bytes()) == 5
             assert len(result.output) == 0
         else:
             assert len(path.read_bytes()) == 527
