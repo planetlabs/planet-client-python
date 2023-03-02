@@ -19,15 +19,12 @@ from pathlib import Path
 import click
 
 from planet.reporting import StateBar
-from planet import data_filter, DataClient
-from planet.clients.data import (SEARCH_SORT,
-
 from planet import data_filter, DataClient, exceptions
-from planet.clients.data import (LIST_SEARCH_TYPE,
+from planet.clients.data import (SEARCH_SORT,
+                                 LIST_SEARCH_TYPE,
                                  LIST_SEARCH_TYPE_DEFAULT,
                                  LIST_SORT_ORDER,
                                  LIST_SORT_DEFAULT,
-                                 SEARCH_SORT,
                                  SEARCH_SORT_DEFAULT,
                                  STATS_INTERVAL)
 
