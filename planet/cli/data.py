@@ -406,7 +406,9 @@ async def search_update(ctx,
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("item_type")
+@click.argument("item_type",
+                type=types.CommaSeparatedString(),
+                callback=check_item_types)
 @click.argument("item_id")
 @click.argument("asset_type_id")
 @click.option('--directory',
@@ -449,6 +451,8 @@ async def asset_download(ctx,
     the manifest.
     """
     quiet = ctx.obj['QUIET']
+    # The callback function returns a list, but we want the item type as a str
+    item_type = item_type.pop()
     async with data_client(ctx) as cl:
         asset = await cl.get_asset(item_type, item_id, asset_type_id)
         path = await cl.download_asset(asset=asset,
@@ -514,7 +518,6 @@ async def asset_wait(ctx, asset, delay, max_attempts):
 #     async with data_client(ctx) as cl:
 #         asset = await cl.get_asset(item_type, item_id, asset_type_id)
 #     echo_json(asset, pretty)
-
 
 # TODO: search_run()".
 # TODO: item_get()".
