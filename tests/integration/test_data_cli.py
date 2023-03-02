@@ -114,6 +114,7 @@ def mock_asset_get_response(item_type, item_id, asset_type_id, dl_url):
     return _func
 
 
+@pytest.fixture
 def item_descriptions(get_test_file_json):
     item_ids = [
         '20220125_075509_67_1061',
