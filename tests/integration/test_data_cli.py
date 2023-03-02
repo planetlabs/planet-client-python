@@ -46,6 +46,69 @@ def invoke():
     return _invoke
 
 
+@pytest.fixture
+def item_type():
+    return 'PSScene'
+
+
+@pytest.fixture
+def item_id():
+    return '20221003_002705_38_2461xx'
+
+
+@pytest.fixture
+def asset_type_id():
+    return 'basic_udm2'
+
+
+@pytest.fixture
+def dl_url():
+    return f'{TEST_URL}/1?token=IAmAToken'
+
+
+@pytest.fixture
+def mock_asset_get_response(item_type, item_id, asset_type_id, dl_url):
+
+    def _func():
+        basic_udm2_asset = {
+            "_links": {
+                "_self": "SELFURL",
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": 'active',
+            "location": dl_url,
+            "type": asset_type_id
+        }
+
+        page_response = {
+            "basic_analytic_4b": {
+                "_links": {
+                    "_self":
+                    "SELFURL",
+                    "activate":
+                    "ACTIVATEURL",
+                    "type":
+                    "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+                },
+                "_permissions": ["download"],
+                "md5_digest": None,
+                "status": "inactive",
+                "type": "basic_analytic_4b"
+            },
+            "basic_udm2": basic_udm2_asset
+        }
+
+        # Mock the response for get_asset
+        mock_resp_get = httpx.Response(HTTPStatus.OK, json=page_response)
+        asset_url = f'{TEST_URL}/item-types/{item_type}/items/{item_id}/assets'
+        respx.get(asset_url).return_value = mock_resp_get
+
+    return _func
+
+
 def test_data_command_registered(invoke):
     """planet-data command prints help and usage message."""
     runner = CliRunner()
@@ -57,10 +120,9 @@ def test_data_command_registered(invoke):
     assert "search-get" in result.output
     assert "search-delete" in result.output
     assert "search-update" in result.output
-    assert "asset_download" in result.output
-    assert "asset_activate" in result.output
-    assert "asset_wait" in result.output
-    assert "asset_get" in result.output
+    assert "asset-download" in result.output
+    assert "asset-activate" in result.output
+    assert "asset-wait" in result.output
     # Add other sub-commands here.
 
 
@@ -790,52 +852,17 @@ def test_search_update_fail(invoke, search_id, search_filter):
 @pytest.mark.parametrize("exists, overwrite",
                          [(False, False), (True, False), (True, True),
                           (False, True)])
-def test_asset_download_default(invoke, open_test_img, exists, overwrite):
-    # NOTE: this is a slightly edited version of test_download_asset from
-    # tests/integration/test_data_api
+def test_asset_download_default(invoke,
+                                open_test_img,
+                                exists,
+                                overwrite,
+                                mock_asset_get_response,
+                                item_type,
+                                item_id,
+                                asset_type_id,
+                                dl_url):
 
-    # Description of the data we're going to get and download
-    item_type = 'PSScene'
-    item_id = '20221003_002705_38_2461xx'
-    asset_type_id = 'basic_udm2'
-
-    dl_url = f'{TEST_URL}/1?token=IAmAToken'
-
-    basic_udm2_asset = {
-        "_links": {
-            "_self": "SELFURL",
-            "activate": "ACTIVATEURL",
-            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
-        },
-        "_permissions": ["download"],
-        "md5_digest": None,
-        "status": 'active',
-        "location": dl_url,
-        "type": "basic_udm2"
-    }
-
-    page_response = {
-        "basic_analytic_4b": {
-            "_links": {
-                "_self":
-                "SELFURL",
-                "activate":
-                "ACTIVATEURL",
-                "type":
-                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
-            },
-            "_permissions": ["download"],
-            "md5_digest": None,
-            "status": "inactive",
-            "type": "basic_analytic_4b"
-        },
-        "basic_udm2": basic_udm2_asset
-    }
-
-    # Mock the response for get_asset
-    mock_resp_get = httpx.Response(HTTPStatus.OK, json=page_response)
-    assets_url = f'{TEST_URL}/item-types/{item_type}/items/{item_id}/assets'
-    respx.get(assets_url).return_value = mock_resp_get
+    mock_asset_get_response()
 
     img_headers = {
         'Content-Type': 'image/tiff',
@@ -892,53 +919,17 @@ def test_asset_download_default(invoke, open_test_img, exists, overwrite):
 
 
 @respx.mock
-def test_asset_activate(invoke):
-    # Description of the data we're going to get and download
-    item_type = 'PSScene'
-    item_id = '20221003_002705_38_2461xx'
-    asset_type_id = 'basic_udm2'
+def test_asset_activate(invoke,
+                        mock_asset_get_response,
+                        item_type,
+                        item_id,
+                        asset_type_id,
+                        dl_url):
 
-    dl_url = f'{TEST_URL}/1?token=IAmAToken'
-
-    basic_udm2_asset = {
-        "_links": {
-            "_self": "SELFURL",
-            "activate": "ACTIVATEURL",
-            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
-        },
-        "_permissions": ["download"],
-        "md5_digest": None,
-        "status": 'active',
-        "location": dl_url,
-        "type": "basic_udm2"
-    }
-
-    page_response = {
-        "basic_analytic_4b": {
-            "_links": {
-                "_self":
-                "SELFURL",
-                "activate":
-                "ACTIVATEURL",
-                "type":
-                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
-            },
-            "_permissions": ["download"],
-            "md5_digest": None,
-            "status": "inactive",
-            "type": "basic_analytic_4b"
-        },
-        "basic_udm2": basic_udm2_asset
-    }
-
-    # Mock the response for get_asset
-    mock_resp_get = httpx.Response(HTTPStatus.OK, json=page_response)
-    assets_url = f'{TEST_URL}/item-types/{item_type}/items/{item_id}/assets'
-    respx.get(assets_url).return_value = mock_resp_get
+    mock_asset_get_response()
 
     # Mock the response for activate_asset
     mock_resp_activate = httpx.Response(HTTPStatus.OK)
-    dl_url = f'{TEST_URL}/1?token=IAmAToken'
     respx.get(dl_url).return_value = mock_resp_activate
 
     runner = CliRunner()
@@ -949,67 +940,18 @@ def test_asset_activate(invoke):
 
 
 @respx.mock
-def test_asset_wait(invoke):
-    # Description of the data we're going to get and download
-    item_type = 'PSScene'
-    item_id = '20221003_002705_38_2461xx'
-    asset_type_id = 'basic_udm2'
+def test_asset_wait(invoke,
+                    mock_asset_get_response,
+                    item_type,
+                    item_id,
+                    asset_type_id,
+                    dl_url):
 
-    dl_url = f'{TEST_URL}/1?token=IAmAToken'
-
-    basic_udm2_asset = {
-        "_links": {
-            "_self": "SELFURL",
-            "activate": "ACTIVATEURL",
-            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
-        },
-        "_permissions": ["download"],
-        "md5_digest": None,
-        "status": 'active',
-        "location": dl_url,
-        "type": "basic_udm2"
-    }
-
-    page_response = {
-        "basic_analytic_4b": {
-            "_links": {
-                "_self":
-                "SELFURL",
-                "activate":
-                "ACTIVATEURL",
-                "type":
-                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
-            },
-            "_permissions": ["download"],
-            "md5_digest": None,
-            "status": "inactive",
-            "type": "basic_analytic_4b"
-        },
-        "basic_udm2": basic_udm2_asset
-    }
-
-    # Mock the response for get_asset
-    mock_resp_get = httpx.Response(HTTPStatus.OK, json=page_response)
-    assets_url = f'{TEST_URL}/item-types/{item_type}/items/{item_id}/assets'
-    respx.get(assets_url).return_value = mock_resp_get
+    mock_asset_get_response()
 
     # Mock the response for wait_asset
     mock_resp_wait = httpx.Response(HTTPStatus.OK)
-    dl_url = f'{TEST_URL}/1?token=IAmAToken'
     respx.get(dl_url).return_value = mock_resp_wait
-
-    basic_udm2_asset = {
-        "_links": {
-            "_self": "SELFURL",
-            "activate": "ACTIVATEURL",
-            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
-        },
-        "_permissions": ["download"],
-        "md5_digest": None,
-        "status": 'active',
-        "location": dl_url,
-        "type": "basic_udm2"
-    }
 
     runner = CliRunner()
     result = invoke(
