@@ -406,7 +406,9 @@ async def search_update(ctx,
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("asset", type=types.JSON())
+@click.argument("item_type")
+@click.argument("item_id")
+@click.argument("asset_type_id")
 @click.option('--directory',
               default='.',
               help=('Base directory for file download.'),
@@ -426,7 +428,14 @@ async def search_update(ctx,
               is_flag=True,
               default=None,
               help=('Verify that checksums match.'))
-async def asset_download(ctx, asset, directory, filename, overwrite, checksum):
+async def asset_download(ctx,
+                         item_type,
+                         item_id,
+                         asset_type_id,
+                         directory,
+                         filename,
+                         overwrite,
+                         checksum):
     """Download an activated asset.
 
     This function will fail if the asset state is not activated. Consider
@@ -441,6 +450,7 @@ async def asset_download(ctx, asset, directory, filename, overwrite, checksum):
     """
     quiet = ctx.obj['QUIET']
     async with data_client(ctx) as cl:
+        asset = await cl.get_asset(item_type, item_id, asset_type_id)
         path = await cl.download_asset(asset=asset,
                                        filename=filename,
                                        directory=Path(directory),
@@ -491,19 +501,19 @@ async def asset_wait(ctx, asset, delay, max_attempts):
     click.echo(state)
 
 
-@data.command()
-@click.pass_context
-@translate_exceptions
-@coro
-@click.argument("item_type")
-@click.argument("item_id")
-@click.argument("asset_type_id")
-@pretty
-async def asset_get(ctx, item_type, item_id, asset_type_id, pretty):
-    '''Get an item asset.'''
-    async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_type, item_id, asset_type_id)
-    echo_json(asset, pretty)
+# @data.command()
+# @click.pass_context
+# @translate_exceptions
+# @coro
+# @click.argument("item_type")
+# @click.argument("item_id")
+# @click.argument("asset_type_id")
+# @pretty
+# async def asset_get(ctx, item_type, item_id, asset_type_id, pretty):
+#     '''Get an item asset.'''
+#     async with data_client(ctx) as cl:
+#         asset = await cl.get_asset(item_type, item_id, asset_type_id)
+#     echo_json(asset, pretty)
 
 
 # TODO: search_run()".
