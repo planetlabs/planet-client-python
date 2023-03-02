@@ -495,14 +495,14 @@ async def asset_wait(ctx, asset, delay, max_attempts):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("item_types")
+@click.argument("item_type")
 @click.argument("item_id")
 @click.argument("asset_type_id")
 @pretty
-async def asset_get(ctx, item_types, item_id, asset_type_id, pretty):
+async def asset_get(ctx, item_type, item_id, asset_type_id, pretty):
     '''Get an item asset.'''
     async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_types, item_id, asset_type_id)
+        asset = await cl.get_asset(item_type, item_id, asset_type_id)
         echo_json(asset, pretty)
 
 
