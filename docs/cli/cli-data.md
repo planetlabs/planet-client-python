@@ -326,6 +326,25 @@ that are of standard (aka not test) quality. Therefore, these filters can be eas
 planet data filter --permission --std-quality --asset ortho_analytic_8b_sr | planet data search PSScene --filter -
 ```
 
+## `data asset` command basics
+
+To activate an asset for download three commands must be queried, in sequence:
+1. `asset-activate` - activate an asset
+2. `asset-wait` - wait for an asset to be activated
+3. `asset-download` - download an activated asset
+
+For example, if we want to download a `basic_udm2` asset from item ID 
+`20221003_002705_38_2461`, a `PSScene` item type:
+
+```
+planet data asset-activate PSScene 20221003_002705_38_2461 basic_udm2 && \
+planet data asset-wait PSScene 20221003_002705_38_2461 basic_udm2 && \
+planet data asset-download PSScene 20221003_002705_38_2461 basic_udm2 --directory /path/to/data/
+00:00 - order my asset - state: active
+{'_links': {'_self': 'https://api.planet.com/data/v1/assets/eyJpIjogIjIwMjIxMDAzXzAwMjcwNV8zOF8yNDYxIiwgImMiOiAiUFNTY2VuZSIsICJ0IjogImJhc2ljX3VkbTIiLCAiY3QiOiAiaXRlbS10eXBlIn0', 'activate': 'https://api.planet.com/data/v1/assets/eyJpIjogIjIwMjIxMDAzXzAwMjcwNV8zOF8yNDYxIiwgImMiOiAiUFNTY2VuZSIsICJ0IjogImJhc2ljX3VkbTIiLCAiY3QiOiAiaXRlbS10eXBlIn0/activate', 'type': 'https://api.planet.com/data/v1/asset-types/basic_udm2'}, '_permissions': ['download'], 'expires_at': '2023-03-02T19:30:48.942718', 'location': 'https://api.planet.com/data/v1/download?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJQYWtGNHZuUEs3WXRmSFNGUklHY2I3YTNXT3piaTlaam4zWUpZMmxnd0x5cVlFMVBRSHU5QXNCcjR5Q3FxSjBNbl9yN3VwVEFQYUI1ZzhYNUJmcDhmUT09IiwiZXhwIjoxNjc3Nzg1NDQ4LCJ0b2tlbl90eXBlIjoidHlwZWQtaXRlbSIsIml0ZW1fdHlwZV9pZCI6IlBTU2NlbmUiLCJpdGVtX2lkIjoiMjAyMjEwMDNfMDAyNzA1XzM4XzI0NjEiLCJhc3NldF90eXBlIjoiYmFzaWNfdWRtMiJ9.Dd0opDjW3bBS6qLLZoNiJkfBsO2n5Xz9pM5apEUz_K6viDPFexhJiy6bMbaySbby8W0YvuATdb1uYXS2FkweDg', 'md5_digest': '3a9f7dd1ce500f699d0a96afdd0e3aa2', 'status': 'active', 'type': 'basic_udm2'}
+/path/to/data/20221003_002705_38_2461_1A_udm2.tif: 100%|██████████████████████████████████| 3.16k/3.16k [00:00<00:00, 32.0MB/s]
+```
+
 ## Stats
 
 TODO
