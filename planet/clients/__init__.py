@@ -14,8 +14,6 @@
 # limitations under the License.
 from .data import DataClient
 from .orders import OrdersClient
+from .subscriptions import SubscriptionsClient
 
-__all__ = [
-    'DataClient',
-    'OrdersClient',
-]
+__all__ = ['DataClient', 'OrdersClient', 'SubscriptionsClient']

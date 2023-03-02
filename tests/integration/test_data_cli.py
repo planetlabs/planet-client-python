@@ -25,6 +25,9 @@ from click.testing import CliRunner
 import pytest
 
 from planet.cli import cli
+from planet.clients.data import (LIST_SEARCH_TYPE_DEFAULT,
+                                 LIST_SORT_DEFAULT,
+                                 SEARCH_SORT_DEFAULT)
 from planet.specs import get_item_types
 
 LOGGER = logging.getLogger(__name__)
@@ -34,14 +37,16 @@ TEST_QUICKSEARCH_URL = f'{TEST_URL}/quick-search'
 TEST_SEARCHES_URL = f'{TEST_URL}/searches'
 TEST_STATS_URL = f'{TEST_URL}/stats'
 
+VALID_SEARCH_ID = '286469f0b27c476e96c3c4e561f59664'
+
 
 @pytest.fixture
 def invoke():
 
-    def _invoke(extra_args, runner=None):
+    def _invoke(extra_args, runner=None, **kwargs):
         runner = runner or CliRunner()
         args = ['data'] + extra_args
-        return runner.invoke(cli.main, args=args)
+        return runner.invoke(cli.main, args=args, **kwargs)
 
     return _invoke
 
@@ -108,6 +113,16 @@ def mock_asset_get_response(item_type, item_id, asset_type_id, dl_url):
 
     return _func
 
+def item_descriptions(get_test_file_json):
+    item_ids = [
+        '20220125_075509_67_1061',
+        '20220125_075511_17_1061',
+        '20220125_075650_17_1061'
+    ]
+    items = [get_test_file_json(f'data_item_{id}.json') for id in item_ids]
+    return items
+
+
 
 def test_data_command_registered(invoke):
     """planet-data command prints help and usage message."""
@@ -143,19 +158,6 @@ def test_data_search_command_registered(invoke):
     # Add other sub-commands here.
 
 
-PERMISSION_FILTER = {"type": "PermissionFilter", "config": ["assets:download"]}
-STD_QUALITY_FILTER = {
-    "type": "StringInFilter",
-    "field_name": "quality_category",
-    "config": ["standard"]
-}
-
-
-@pytest.fixture()
-def default_filters():
-    return [PERMISSION_FILTER, STD_QUALITY_FILTER]
-
-
 @pytest.fixture
 def search_filter(get_test_file_json):
     filename = 'data_search_filter_2022-01.json'
@@ -179,27 +181,45 @@ def assert_and_filters_equal():
 
 @respx.mock
 @pytest.mark.asyncio
-@pytest.mark.parametrize("permission, p_remove",
-                         [(None, None),
-                          ('--permission=False', PERMISSION_FILTER)])
-@pytest.mark.parametrize("std_quality, s_remove",
-                         [(None, None),
-                          ('--std-quality=False', STD_QUALITY_FILTER)])
-def test_data_filter_defaults(permission,
-                              p_remove,
-                              std_quality,
-                              s_remove,
-                              invoke,
-                              default_filters,
-                              assert_and_filters_equal):
-    runner = CliRunner()
+def test_data_filter_defaults(invoke, assert_and_filters_equal):
 
-    args = [arg for arg in [permission, std_quality] if arg]
-    result = invoke(["filter", *args], runner=runner)
+    result = invoke(["filter"])
     assert result.exit_code == 0
 
-    [default_filters.remove(rem) for rem in [p_remove, s_remove] if rem]
-    expected_filt = {"type": "AndFilter", "config": default_filters}
+    empty_filter = {"type": "AndFilter", "config": []}
+    assert_and_filters_equal(json.loads(result.output), empty_filter)
+
+
+@respx.mock
+@pytest.mark.asyncio
+def test_data_filter_permission(invoke, assert_and_filters_equal):
+    result = invoke(["filter", "--permission"])
+    assert result.exit_code == 0
+
+    expected_filt = {
+        "type": "AndFilter",
+        "config": [{
+            "type": "PermissionFilter", "config": ["assets:download"]
+        }]
+    }
+    assert_and_filters_equal(json.loads(result.output), expected_filt)
+
+
+@respx.mock
+@pytest.mark.asyncio
+def test_data_filter_std_quality(invoke, assert_and_filters_equal):
+    result = invoke(["filter", '--std-quality'])
+    assert result.exit_code == 0
+
+    expected_filt = {
+        "type":
+        "AndFilter",
+        "config": [{
+            "type": "StringInFilter",
+            "field_name": "quality_category",
+            "config": ["standard"]
+        }]
+    }
     assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
@@ -211,35 +231,24 @@ def test_data_filter_defaults(permission,
                            ['ortho_analytic_8b_sr', 'ortho_analytic_4b_sr']),
                           ('ortho_analytic_8b_sr , ortho_analytic_4b_sr',
                            ['ortho_analytic_8b_sr', 'ortho_analytic_4b_sr'])])
-def test_data_filter_asset(asset,
-                           expected,
-                           invoke,
-                           default_filters,
-                           assert_and_filters_equal):
-    runner = CliRunner()
+def test_data_filter_asset(asset, expected, invoke, assert_and_filters_equal):
 
-    result = invoke(["filter", f'--asset={asset}'], runner=runner)
+    result = invoke(["filter", f'--asset={asset}'])
     assert result.exit_code == 0
 
     asset_filter = {"type": "AssetFilter", "config": expected}
-    expected_filt = {
-        "type": "AndFilter", "config": default_filters + [asset_filter]
-    }
+    expected_filt = {"type": "AndFilter", "config": [asset_filter]}
     assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_date_range_success(invoke,
-                                        assert_and_filters_equal,
-                                        default_filters):
+def test_data_filter_date_range_success(invoke, assert_and_filters_equal):
     """Check filter is created correctly and that multiple options results in
     multiple filters"""
-    runner = CliRunner()
 
     result = invoke(["filter"] + '--date-range field gt 2021-01-01'.split() +
-                    '--date-range field2 lt 2022-01-01'.split(),
-                    runner=runner)
+                    '--date-range field2 lt 2022-01-01'.split())
     assert result.exit_code == 0
 
     date_range_filter1 = {
@@ -259,7 +268,7 @@ def test_data_filter_date_range_success(invoke,
 
     expected_filt = {
         "type": "AndFilter",
-        "config": default_filters + [date_range_filter1, date_range_filter2]
+        "config": [date_range_filter1, date_range_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
@@ -268,10 +277,7 @@ def test_data_filter_date_range_success(invoke,
 @respx.mock
 @pytest.mark.asyncio
 def test_data_filter_date_range_invalid(invoke):
-    runner = CliRunner()
-
-    result = invoke(["filter"] + '--date-range field gt 2021'.split(),
-                    runner=runner)
+    result = invoke(["filter"] + '--date-range field gt 2021'.split())
     assert result.exit_code == 2
 
 
@@ -284,15 +290,13 @@ def test_data_filter_geom(geom_fixture,
                           request,
                           invoke,
                           geom_geojson,
-                          assert_and_filters_equal,
-                          default_filters):
+                          assert_and_filters_equal):
     """Ensure that all GeoJSON forms of describing a geometry are handled
     and all result in the same, valid GeometryFilter being created"""
-    runner = CliRunner()
 
     geom = request.getfixturevalue(geom_fixture)
     geom_str = json.dumps(geom)
-    result = invoke(["filter", f'--geom={geom_str}'], runner=runner)
+    result = invoke(["filter", f'--geom={geom_str}'])
     assert result.exit_code == 0
 
     geom_filter = {
@@ -301,23 +305,17 @@ def test_data_filter_geom(geom_fixture,
         "config": geom_geojson
     }
 
-    expected_filt = {
-        "type": "AndFilter", "config": default_filters + [geom_filter]
-    }
+    expected_filt = {"type": "AndFilter", "config": [geom_filter]}
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_number_in_success(invoke,
-                                       assert_and_filters_equal,
-                                       default_filters):
-    runner = CliRunner()
+def test_data_filter_number_in_success(invoke, assert_and_filters_equal):
 
     result = invoke(["filter"] + '--number-in field 1'.split() +
-                    '--number-in field2 2,3.5'.split(),
-                    runner=runner)
+                    '--number-in field2 2,3.5'.split())
     assert result.exit_code == 0
 
     number_in_filter1 = {
@@ -328,8 +326,7 @@ def test_data_filter_number_in_success(invoke,
     }
 
     expected_filt = {
-        "type": "AndFilter",
-        "config": default_filters + [number_in_filter1, number_in_filter2]
+        "type": "AndFilter", "config": [number_in_filter1, number_in_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
@@ -337,26 +334,19 @@ def test_data_filter_number_in_success(invoke,
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_number_in_badparam(invoke,
-                                        assert_and_filters_equal,
-                                        default_filters):
-    runner = CliRunner()
+def test_data_filter_number_in_badparam(invoke, assert_and_filters_equal):
 
-    result = invoke(["filter"] + '--number-in field 1,str'.split(),
-                    runner=runner)
+    result = invoke(["filter"] + '--number-in field 1,str'.split())
     assert result.exit_code == 2
 
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_range(invoke, assert_and_filters_equal, default_filters):
+def test_data_filter_range(invoke, assert_and_filters_equal):
     """Check filter is created correctly, that multiple options results in
     multiple filters, and that floats are processed correctly."""
-    runner = CliRunner()
-
     result = invoke(["filter"] + '--range field gt 70'.split() +
-                    '--range cloud_cover lt 0.5'.split(),
-                    runner=runner)
+                    '--range cloud_cover lt 0.5'.split())
     assert result.exit_code == 0
 
     range_filter1 = {
@@ -373,8 +363,7 @@ def test_data_filter_range(invoke, assert_and_filters_equal, default_filters):
     }
 
     expected_filt = {
-        "type": "AndFilter",
-        "config": default_filters + [range_filter1, range_filter2]
+        "type": "AndFilter", "config": [range_filter1, range_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
@@ -382,14 +371,10 @@ def test_data_filter_range(invoke, assert_and_filters_equal, default_filters):
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_string_in(invoke,
-                               assert_and_filters_equal,
-                               default_filters):
-    runner = CliRunner()
+def test_data_filter_string_in(invoke, assert_and_filters_equal):
 
     result = invoke(["filter"] + '--string-in field foo'.split() +
-                    '--string-in field2 foo,bar'.split(),
-                    runner=runner)
+                    '--string-in field2 foo,bar'.split())
     assert result.exit_code == 0
 
     string_in_filter1 = {
@@ -402,8 +387,7 @@ def test_data_filter_string_in(invoke,
     }
 
     expected_filt = {
-        "type": "AndFilter",
-        "config": default_filters + [string_in_filter1, string_in_filter2]
+        "type": "AndFilter", "config": [string_in_filter1, string_in_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
@@ -411,14 +395,12 @@ def test_data_filter_string_in(invoke,
 
 @respx.mock
 @pytest.mark.asyncio
-def test_data_filter_update(invoke, assert_and_filters_equal, default_filters):
+def test_data_filter_update(invoke, assert_and_filters_equal):
     """Check filter is created correctly and that multiple options results in
     multiple filters"""
-    runner = CliRunner()
 
     result = invoke(["filter"] + '--update field gt 2021-01-01'.split() +
-                    '--update field2 gte 2022-01-01'.split(),
-                    runner=runner)
+                    '--update field2 gte 2022-01-01'.split())
     assert result.exit_code == 0
 
     update_filter1 = {
@@ -437,20 +419,38 @@ def test_data_filter_update(invoke, assert_and_filters_equal, default_filters):
     }
 
     expected_filt = {
-        "type": "AndFilter",
-        "config": default_filters + [update_filter1, update_filter2]
+        "type": "AndFilter", "config": [update_filter1, update_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
 @respx.mock
+@pytest.mark.parametrize("item_types, expect_success",
+                         [('PSScene', True), ('SkySatScene', True),
+                          ('PSScene, SkySatScene', True), ('INVALID', False)])
+def test_data_search_cmd_item_types(item_types, expect_success, invoke):
+    """Test for planet data search_quick item types, valid and invalid."""
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               json={'features': [{
+                                   "key": "value"
+                               }]})
+    respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
+
+    result = invoke(['search', item_types])
+
+    if expect_success:
+        assert result.exit_code == 0
+        assert len(result.output.strip().split('\n')) == 1  # we have 1 feature
+    else:
+        assert result.exit_code == 2
+
+
+@respx.mock
 @pytest.mark.asyncio
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
-@pytest.mark.parametrize("item_types",
-                         ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
-def test_data_search_cmd_filter_invalid_json(invoke, item_types, filter):
-    """Test for planet data search_quick. Test with multiple item_types.
+def test_data_search_cmd_filter_invalid_json(invoke, filter):
+    """Test for planet data search_quick.
     Test should fail as filter does not contain valid JSON."""
     mock_resp = httpx.Response(HTTPStatus.OK,
                                json={'features': [{
@@ -458,15 +458,12 @@ def test_data_search_cmd_filter_invalid_json(invoke, item_types, filter):
                                }]})
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
 
-    runner = CliRunner()
-    result = invoke(["search", item_types, filter], runner=runner)
+    result = invoke(['search', 'PSScene', f'--filter={filter}'])
     assert result.exit_code == 2
 
 
 @respx.mock
-@pytest.mark.parametrize("item_types",
-                         ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
-def test_data_search_cmd_filter_success(invoke, item_types):
+def test_data_search_cmd_filter_success(invoke):
     """Test for planet data search_quick. Test with multiple item_types.
     Test should succeed as filter contains valid JSON."""
     filter = {
@@ -483,11 +480,16 @@ def test_data_search_cmd_filter_success(invoke, item_types):
                                }]})
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
 
-    runner = CliRunner()
-    result = invoke(["search", item_types, json.dumps(filter)], runner=runner)
+    result = invoke(['search', 'PSScene', f'--filter={json.dumps(filter)}'])
 
     assert result.exit_code == 0
     assert len(result.output.strip().split('\n')) == 1  # we have 1 feature
+
+    # check that filter was sent
+    expected_request = {"item_types": ['PSScene'], "filter": filter}
+    actual_body = json.loads(respx.calls[0].request.content)
+
+    assert actual_body == expected_request
 
 
 @respx.mock
@@ -497,41 +499,18 @@ def test_data_search_cmd_sort_success(invoke):
     sort = 'published asc'
     search_url = f'{TEST_QUICKSEARCH_URL}?_sort={sort}'
 
-    filter = {
-        "type": "DateRangeFilter",
-        "field_name": "acquired",
-        "config": {
-            "gt": "2019-12-31T00:00:00Z"
-        }
-    }
-
     feature = {"key": "value"}
     mock_resp = httpx.Response(HTTPStatus.OK, json={'features': [feature]})
     respx.post(search_url).return_value = mock_resp
 
-    runner = CliRunner()
-    result = invoke(
-        ['search', 'PSScene', json.dumps(filter), f'--sort={sort}'],
-        runner=runner)
+    result = invoke(['search', 'PSScene', f'--sort={sort}'])
     assert result.exit_code == 0
     assert json.loads(result.output) == feature
 
 
 @respx.mock
 def test_data_search_cmd_sort_invalid(invoke):
-    filter = {
-        "type": "DateRangeFilter",
-        "field_name": "acquired",
-        "config": {
-            "gt": "2019-12-31T00:00:00Z"
-        }
-    }
-
-    runner = CliRunner()
-    result = invoke(
-        ['search', 'PSScene', json.dumps(filter), '--sort=invalid'],
-        runner=runner)
-
+    result = invoke(['search', 'PSScene', '--sort=invalid'])
     assert result.exit_code == 2
 
 
@@ -547,13 +526,6 @@ def test_data_search_cmd_limit(invoke,
     If no value is specified, make sure the result contains at most 100
     entries.
     """
-    filter = {
-        "type": "DateRangeFilter",
-        "field_name": "acquired",
-        "config": {
-            "gt": "2019-12-31T00:00:00Z", "lte": "2020-01-31T00:00:00Z"
-        }
-    }
     item_types = 'SkySatCollect'
 
     # Creating 102 (3x34) search results
@@ -577,9 +549,7 @@ def test_data_search_cmd_limit(invoke,
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
 
     runner = CliRunner()
-    result = invoke(
-        ["search", item_types, json.dumps(filter), "--limit", limit],
-        runner=runner)
+    result = invoke(["search", item_types, "--limit", limit], runner=runner)
     assert result.exit_code == 0
     assert result.output.count('"id"') == limited_list_length
 
@@ -590,7 +560,7 @@ def test_data_search_cmd_limit(invoke,
 @pytest.mark.parametrize("item_types",
                          ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 def test_data_search_create_filter_invalid_json(invoke, item_types, filter):
-    """Test for planet data search_create. Test with multiple item_types.
+    """Test for planet data search_create.
     Test should fail as filter does not contain valid JSON."""
     mock_resp = httpx.Response(HTTPStatus.OK,
                                json={'features': [{
@@ -636,7 +606,7 @@ def test_data_search_create_filter_success(invoke, item_types):
 
 
 @respx.mock
-def test_search_create_daily_email(invoke, search_result):
+def test_data_search_create_daily_email(invoke, search_result):
     mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
@@ -672,6 +642,127 @@ def test_search_create_daily_email(invoke, search_result):
     assert result.exit_code == 0
     assert sent_request == search_request
     assert json.loads(result.output) == search_result
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("limit, expected_list_length", [(0, 4), (3, 3)])
+def test_data_search_list_basic(invoke,
+                                search_result,
+                                limit,
+                                expected_list_length):
+    """Ensure planet data search-list runs successfully and respects limit."""
+    page1_response = {"_links": {}, "searches": [search_result] * 4}
+    route = respx.get(TEST_SEARCHES_URL)
+    route.return_value = httpx.Response(200, json=page1_response)
+
+    result = invoke(['search-list', f'--limit={limit}'])
+    assert result.exit_code == 0
+    assert len(result.output.strip().split('\n')) == expected_list_length
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("sort, rel_url, valid",
+                         [(LIST_SORT_DEFAULT, '', True),
+                          ('created asc', '?_sort=created+asc', True),
+                          ('notvalid', '', False)])
+def test_data_search_list_sort(invoke, search_result, sort, rel_url, valid):
+    """Ensure planet data search-list handles sort."""
+    page1_response = {"_links": {}, "searches": [search_result] * 4}
+    route = respx.get(f'{TEST_SEARCHES_URL}{rel_url}')
+    route.return_value = httpx.Response(200, json=page1_response)
+
+    result = invoke(['search-list', f'--sort={sort}'])
+    expected_code = 0 if valid else 2
+    assert result.exit_code == expected_code
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("search_type, rel_url, valid",
+                         [(LIST_SEARCH_TYPE_DEFAULT, '', True),
+                          ('saved', '?search_type=saved', True),
+                          ('notvalid', '', False)])
+def test_data_search_list_searchtype(invoke,
+                                     search_result,
+                                     search_type,
+                                     rel_url,
+                                     valid):
+    """Ensure planet data search-list handles search-type."""
+    page1_response = {"_links": {}, "searches": [search_result] * 4}
+    route = respx.get(f'{TEST_SEARCHES_URL}{rel_url}')
+    route.return_value = httpx.Response(200, json=page1_response)
+
+    result = invoke(['search-list', f'--search-type={search_type}'])
+    expected_code = 0 if valid else 2
+    assert result.exit_code == expected_code
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("search_id, valid", [(VALID_SEARCH_ID, True),
+                                              ('invalid', False)])
+@pytest.mark.parametrize("limit, expected_count", [(0, 3), (2, 2)])
+def test_data_search_run_basic(invoke,
+                               item_descriptions,
+                               search_id,
+                               valid,
+                               limit,
+                               expected_count):
+    """Ensure planet data search-run runs successfully and handles search id
+    and limit."""
+    next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
+    item1, item2, item3 = item_descriptions
+    page1_response = {
+        "_links": {
+            "_next": next_page_url
+        }, "features": [item1, item2]
+    }
+
+    route = respx.get(f'{TEST_SEARCHES_URL}/{search_id}/results')
+    route.return_value = httpx.Response(204, json=page1_response)
+
+    page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    result = invoke(['search-run', f'--limit={limit}', search_id])
+
+    if valid:
+        assert result.exit_code == 0
+        assert len(result.output.strip().split('\n')) == expected_count
+    else:
+        assert result.exit_code == 2
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("sort, rel_url, valid",
+                         [(SEARCH_SORT_DEFAULT, '', True),
+                          ('acquired asc', '?_sort=acquired+asc', True),
+                          ('invalid', '', False)])
+def test_data_search_run_sort(invoke, item_descriptions, sort, rel_url, valid):
+    """Ensure planet data search-run handles sort."""
+    next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
+    item1, item2, item3 = item_descriptions
+    page1_response = {
+        "_links": {
+            "_next": next_page_url
+        }, "features": [item1, item2]
+    }
+
+    route = respx.get(
+        f'{TEST_SEARCHES_URL}/{VALID_SEARCH_ID}/results{rel_url}')
+    route.return_value = httpx.Response(204, json=page1_response)
+
+    page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    result = invoke(['search-run', f'--sort={sort}', VALID_SEARCH_ID])
+    expected_code = 0 if valid else 2
+    assert result.exit_code == expected_code
 
 
 @respx.mock

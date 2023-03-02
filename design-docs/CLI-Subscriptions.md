@@ -184,30 +184,22 @@ planet subscriptions request [OPTIONS]
 
 Generate a subscriptions request.
 
-This command provides support for building the subscription request JSON used to create or 
+This command provides support for building the subscription request JSON used to create or
 update a subscription. It outputs the subscription request.
 
 Options:
   --name TEXT                     Subscription name. Does not need to be unique.
                                   [required]
-  --asset-types TEXT              One or more comma-separated asset types [required]
-  --item-types TEXT               One or more comma-separated item-types [required]
-  --geometry JSON                 GeoJSON of area to deliver subscription to. Use 
-                                  --clip only deliver pixels that match this area.
-                                  Can be a json string, filename, or '-' for stdin.
-  --clip                          Use the geometry GeoJSON as the clip geometry for 
-                                  the subscription.
-  --start-time DATETIME           Start date and time to begin subscription.
-  --end-time DATETIME             Date and time to end the subscription.
-  --rrule TEXT                    iCalendar recurrance rule to specify recurrances. 
-  --filter JSON                   A search filter can be specified a json string, 
-                                  filename, or '-' for stdin. 
+  --source                        Source JSON. Can be a json string,
+                                  filename, or '-' for stdin.
   --tools JSON                    Toolchain JSON. Can be a json string,
                                   filename, or '-' for stdin.
-  --cloudconfig JSON              Credentials for cloud storage provider to
+  --delivery JSON                 Credentials for cloud storage provider to
                                   enable cloud delivery of data. Can be a json
                                   string, filename, or '-' for stdin.
   --notifications JSON            Notification JSON to specify webhook topics.
+                                  Can be a json string, filename, or '-' for
+                                  stdin.
   --pretty                        Format JSON output.
   --help                          Show this message and exit.
 ```
@@ -215,8 +207,67 @@ Options:
 ### Usage Examples
 
 ```
-planet subscription request --item-type PSScene --asset-types ortho_analytic_8b_sr,ortho_udm2 --geom JSON --clip --start-time 05/01/2022 --cloudconfig delivery.json | planet subscriptions create -
+planet subscription request \
+    --name test \
+    --source source.json \
+    --delivery delivery.json | planet subscriptions create -
 ```
+
+## Request-catalog
+
+### Interface
+
+```
+planet subscriptions request-catalog [OPTIONS]
+
+Generate a subscriptions request source JSON for a catalog.
+
+Options:
+  --asset-types TEXT              One or more comma-separated asset types. Required.
+  --item-types TEXT               One or more comma-separated item-types. Required.
+  --geometry JSON                 geometry of the area of interest of the subscription that will be used to determine matches.
+                                  Can be a json string, filename, or '-' for stdin.
+  --start-time DATETIME           Start date and time to begin subscription.
+  --end-time DATETIME             Date and time to end the subscription.
+  --rrule TEXT                    iCalendar recurrance rule to specify recurrances.
+  --filter JSON                   A search filter can be specified a json string,
+                                  filename, or '-' for stdin.
+  --pretty                        Format JSON output.
+  --help                          Show this message and exit.
+```
+
+### Usage Examples
+
+```
+planet subscriptions request-catalog \
+        --item-types PSScene \
+        --asset-types ortho_analytic_8b_sr,ortho_udm2 \
+        --geometry aoi.geojson \
+        --start-time 2022-01-01) \
+    --delivery delivery.json > source.json
+```
+
+## Request-other
+
+### Interface
+
+```
+planet subscriptions request-other [OPTIONS]
+
+Generate a subscriptions request source JSON for another product.
+
+Options:
+  --type                        Type.
+  --id                          Id.
+  --geometry JSON                      geometry of the area of interest of the subscription that will be used to determine matches.
+                                  Can be a json string, filename, or '-' for stdin.
+  --start-time DATETIME           Start date and time to begin subscription.
+  --end-time DATETIME             Date and time to end the subscription.
+  --rrule TEXT                    iCalendar recurrance rule to specify recurrances.
+  --pretty                        Format JSON output.
+  --help                          Show this message and exit.
+```
+
 
 ## Update
 
