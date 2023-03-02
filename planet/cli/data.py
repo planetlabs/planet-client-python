@@ -455,10 +455,8 @@ async def asset_download(ctx,
     also provides ANSI download status reporting.
     """
     quiet = ctx.obj['QUIET']
-    # The callback function returns a list, but we want the item type as a str
-    item_type = item_type.pop()
     async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_type, item_id, asset_type_id)
+        asset = await cl.get_asset(item_type.pop(), item_id, asset_type_id)
         path = await cl.download_asset(asset=asset,
                                        filename=filename,
                                        directory=Path(directory),
@@ -479,9 +477,8 @@ async def asset_download(ctx,
 @click.argument("asset_type_id")
 async def asset_activate(ctx, item_type, item_id, asset_type_id):
     '''Activate an asset.'''
-    item_type = item_type.pop()
     async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_type, item_id, asset_type_id)
+        asset = await cl.get_asset(item_type.pop(), item_id, asset_type_id)
         await cl.activate_asset(asset)
 
 
@@ -515,9 +512,8 @@ async def asset_wait(ctx,
     available.
     '''
     quiet = ctx.obj['QUIET']
-    item_type = item_type.pop()
     async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_type, item_id, asset_type_id)
+        asset = await cl.get_asset(item_type.pop(), item_id, asset_type_id)
         with StateBar(order_id="my asset", disable=quiet) as bar:
             state = await cl.wait_asset(asset,
                                         delay,
