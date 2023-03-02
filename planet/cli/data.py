@@ -449,6 +449,10 @@ async def asset_download(ctx,
     If --checksum is provided, files are already downloaded, and --overwrite is
     not specified, this will simply validate the checksums of the files against
     the manifest.
+
+    Output:
+    The full path of the downloaded file. If the quiet flag is not set, this
+    also provides ANSI download status reporting.
     """
     quiet = ctx.obj['QUIET']
     # The callback function returns a list, but we want the item type as a str
@@ -468,10 +472,16 @@ async def asset_download(ctx,
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("asset", type=types.JSON())
-async def asset_activate(ctx, asset):
+@click.argument("item_type",
+                type=types.CommaSeparatedString(),
+                callback=check_item_types)
+@click.argument("item_id")
+@click.argument("asset_type_id")
+async def asset_activate(ctx, item_type, item_id, asset_type_id):
     '''Activate an asset.'''
+    item_type = item_type.pop()
     async with data_client(ctx) as cl:
+        asset = await cl.get_asset(item_type, item_id, asset_type_id)
         await cl.activate_asset(asset)
 
 
@@ -479,7 +489,11 @@ async def asset_activate(ctx, asset):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("asset", type=types.JSON())
+@click.argument("item_type",
+                type=types.CommaSeparatedString(),
+                callback=check_item_types)
+@click.argument("item_id")
+@click.argument("asset_type_id")
 @click.option('--delay',
               type=int,
               default=5,
@@ -489,14 +503,21 @@ async def asset_activate(ctx, asset):
               default=200,
               show_default=True,
               help='Maximum number of polls. Set to zero for no limit.')
-async def asset_wait(ctx, asset, delay, max_attempts):
+async def asset_wait(ctx,
+                     item_type,
+                     item_id,
+                     asset_type_id,
+                     delay,
+                     max_attempts):
     '''Wait for an asset to be activated.
 
     Returns when the asset state has reached "activated" and the asset is
     available.
     '''
     quiet = ctx.obj['QUIET']
+    item_type = item_type.pop()
     async with data_client(ctx) as cl:
+        asset = await cl.get_asset(item_type, item_id, asset_type_id)
         with StateBar(order_id="my asset", disable=quiet) as bar:
             state = await cl.wait_asset(asset,
                                         delay,
