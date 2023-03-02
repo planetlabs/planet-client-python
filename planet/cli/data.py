@@ -503,7 +503,7 @@ async def asset_get(ctx, item_type, item_id, asset_type_id, pretty):
     '''Get an item asset.'''
     async with data_client(ctx) as cl:
         asset = await cl.get_asset(item_type, item_id, asset_type_id)
-        echo_json(asset, pretty)
+    echo_json(asset, pretty)
 
 
 # TODO: search_run()".
