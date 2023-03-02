@@ -90,8 +90,8 @@ def mock_asset_get_response(item_type, item_id, asset_type_id, dl_url):
                     "SELFURL",
                     "activate":
                     "ACTIVATEURL",
-                    "type":
-                    "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+                    "type": ('https://api.planet.com/data/v1/asset-types/'
+                             'basic_analytic_4b')
                 },
                 "_permissions": ["download"],
                 "md5_digest": None,
