@@ -1051,7 +1051,7 @@ def test_asset_wait(invoke,
         runner=runner)
 
     assert not result.exception
-    assert "state: active" in result.output
+    assert "status: active" in result.output
 
 
 # @respx.mock
