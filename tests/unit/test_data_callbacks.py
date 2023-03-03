@@ -66,3 +66,9 @@ def test_item_type_fail():
     ctx = MockContext()
     with pytest.raises(click.BadParameter):
         check_item_type(ctx, 'item_type', "bad_item_type")
+
+
+def test_item_type_too_many_item_types():
+    ctx = MockContext()
+    with pytest.raises(click.BadParameter):
+        check_item_types(ctx, 'item_type', "PSScene,SkySatScene")
