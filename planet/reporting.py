@@ -145,11 +145,13 @@ class AssetStatusBar(ProgressBar):
     def update(self, status: str):
         self.status = status
 
-        try:
-            self.bar.postfix[1] = self.status
-        except AttributeError:
-            # If the bar is disabled, attempting to access self.bar.postfix
-            # will result in an error. In this case, just skip it.
-            pass
+        if self.bar is not None:
+            try:
+                self.bar.postfix[1] = self.status
+            except AttributeError:
+                # If the bar is disabled, attempting to access self.bar.postfix
+                # will result in an error. In this case, just skip it.
+                pass
 
-        self.bar.refresh()
+        if self.bar is not None:
+            self.bar.refresh()

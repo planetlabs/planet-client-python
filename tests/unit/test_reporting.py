@@ -72,6 +72,7 @@ def test_AssetStatusBar_disabled():
 
 
 def test_AssetStatusBar_update():
+    """Status is changed with update"""
     with reporting.AssetStatusBar('item-type', 'item_id', 'asset_type') as bar:
         assert ('status: init') not in str(bar)
 
