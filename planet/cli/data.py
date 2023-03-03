@@ -71,12 +71,22 @@ def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
 
 
 def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
-    '''Validates the item type by comparing the inputted item type to all
-    supported item types.'''
+    '''Validates each item types provided by comparing them to all supported
+    item types.'''
     try:
         for item_type in item_types:
             validate_item_type(item_type)
         return item_types
+    except SpecificationException as e:
+        raise click.BadParameter(str(e))
+
+
+def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
+    '''Validates the item type provided by comparing it to all supported
+    item types.'''
+    try:
+        validate_item_type(item_type)
+        return item_type
     except SpecificationException as e:
         raise click.BadParameter(str(e))
 
@@ -487,9 +497,7 @@ async def search_update(ctx,
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("item_type",
-                type=types.CommaSeparatedString(),
-                callback=check_item_types)
+@click.argument("item_type", type=str, callback=check_item_type)
 @click.argument("item_id")
 @click.argument("asset_type_id")
 @click.option('--directory',
@@ -537,7 +545,7 @@ async def asset_download(ctx,
     """
     quiet = ctx.obj['QUIET']
     async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_type.pop(), item_id, asset_type_id)
+        asset = await cl.get_asset(item_type, item_id, asset_type_id)
         path = await cl.download_asset(asset=asset,
                                        filename=filename,
                                        directory=Path(directory),
@@ -551,15 +559,13 @@ async def asset_download(ctx,
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("item_type",
-                type=types.CommaSeparatedString(),
-                callback=check_item_types)
+@click.argument("item_type", type=str, callback=check_item_type)
 @click.argument("item_id")
 @click.argument("asset_type_id")
 async def asset_activate(ctx, item_type, item_id, asset_type_id):
     '''Activate an asset.'''
     async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_type.pop(), item_id, asset_type_id)
+        asset = await cl.get_asset(item_type, item_id, asset_type_id)
         await cl.activate_asset(asset)
 
 
@@ -567,9 +573,7 @@ async def asset_activate(ctx, item_type, item_id, asset_type_id):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("item_type",
-                type=types.CommaSeparatedString(),
-                callback=check_item_types)
+@click.argument("item_type", type=str, callback=check_item_type)
 @click.argument("item_id")
 @click.argument("asset_type_id")
 @click.option('--delay',
@@ -594,7 +598,7 @@ async def asset_wait(ctx,
     '''
     quiet = ctx.obj['QUIET']
     async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_type.pop(), item_id, asset_type_id)
+        asset = await cl.get_asset(item_type, item_id, asset_type_id)
         with StateBar(order_id="my asset", disable=quiet) as bar:
             state = await cl.wait_asset(asset,
                                         delay,
