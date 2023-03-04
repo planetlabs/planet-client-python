@@ -88,11 +88,10 @@ def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
         raise click.BadParameter("Only provide 1 item type.")
     try:
         validate_item_type(item_type)
-        return item_type
     except SpecificationException as e:
         raise click.BadParameter(str(e))
 
-
+    return item_type
 def check_search_id(ctx, param, search_id) -> str:
     '''Ensure search id is a valix hex string'''
     try:
