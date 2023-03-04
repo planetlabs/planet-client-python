@@ -84,8 +84,6 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
 def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
     '''Validates the item type provided by comparing it to all supported
     item types.'''
-    if len(item_type.split(",")) > 1:
-        raise click.BadParameter("Only provide 1 item type.")
     try:
         validate_item_type(item_type)
     except SpecificationException as e:
