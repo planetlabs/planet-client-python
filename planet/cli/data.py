@@ -90,6 +90,8 @@ def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
         raise click.BadParameter(str(e))
 
     return item_type
+
+
 def check_search_id(ctx, param, search_id) -> str:
     '''Ensure search id is a valix hex string'''
     try:
@@ -498,7 +500,7 @@ async def search_update(ctx,
 @coro
 @click.argument("item_type", type=str, callback=check_item_type)
 @click.argument("item_id")
-@click.argument("asset_type_id")
+@click.argument("asset_type")
 @click.option('--directory',
               default='.',
               help=('Base directory for file download.'),
@@ -521,7 +523,7 @@ async def search_update(ctx,
 async def asset_download(ctx,
                          item_type,
                          item_id,
-                         asset_type_id,
+                         asset_type,
                          directory,
                          filename,
                          overwrite,
@@ -544,7 +546,7 @@ async def asset_download(ctx,
     """
     quiet = ctx.obj['QUIET']
     async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_type, item_id, asset_type_id)
+        asset = await cl.get_asset(item_type, item_id, asset_type)
         path = await cl.download_asset(asset=asset,
                                        filename=filename,
                                        directory=Path(directory),
@@ -560,11 +562,11 @@ async def asset_download(ctx,
 @coro
 @click.argument("item_type", type=str, callback=check_item_type)
 @click.argument("item_id")
-@click.argument("asset_type_id")
-async def asset_activate(ctx, item_type, item_id, asset_type_id):
+@click.argument("asset_type")
+async def asset_activate(ctx, item_type, item_id, asset_type):
     '''Activate an asset.'''
     async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_type, item_id, asset_type_id)
+        asset = await cl.get_asset(item_type, item_id, asset_type)
         await cl.activate_asset(asset)
 
 
@@ -574,7 +576,7 @@ async def asset_activate(ctx, item_type, item_id, asset_type_id):
 @coro
 @click.argument("item_type", type=str, callback=check_item_type)
 @click.argument("item_id")
-@click.argument("asset_type_id")
+@click.argument("asset_type")
 @click.option('--delay',
               type=int,
               default=5,
@@ -584,12 +586,7 @@ async def asset_activate(ctx, item_type, item_id, asset_type_id):
               default=200,
               show_default=True,
               help='Maximum number of polls. Set to zero for no limit.')
-async def asset_wait(ctx,
-                     item_type,
-                     item_id,
-                     asset_type_id,
-                     delay,
-                     max_attempts):
+async def asset_wait(ctx, item_type, item_id, asset_type, delay, max_attempts):
     '''Wait for an asset to be activated.
 
     Returns when the asset state has reached "activated" and the asset is
@@ -597,7 +594,7 @@ async def asset_wait(ctx,
     '''
     quiet = ctx.obj['QUIET']
     async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_type, item_id, asset_type_id)
+        asset = await cl.get_asset(item_type, item_id, asset_type)
         with StateBar(order_id="my asset", disable=quiet) as bar:
             state = await cl.wait_asset(asset,
                                         delay,

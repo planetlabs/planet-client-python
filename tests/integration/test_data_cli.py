@@ -62,7 +62,7 @@ def item_id():
 
 
 @pytest.fixture
-def asset_type_id():
+def asset_type():
     return 'basic_udm2'
 
 
@@ -72,7 +72,7 @@ def dl_url():
 
 
 @pytest.fixture
-def mock_asset_get_response(item_type, item_id, asset_type_id, dl_url):
+def mock_asset_get_response(item_type, item_id, asset_type, dl_url):
 
     def _func():
         basic_udm2_asset = {
@@ -85,7 +85,7 @@ def mock_asset_get_response(item_type, item_id, asset_type_id, dl_url):
             "md5_digest": None,
             "status": 'active',
             "location": dl_url,
-            "type": asset_type_id
+            "type": asset_type
         }
 
         page_response = {
@@ -951,7 +951,7 @@ def test_asset_download_default(invoke,
                                 mock_asset_get_response,
                                 item_type,
                                 item_id,
-                                asset_type_id,
+                                asset_type,
                                 dl_url):
 
     mock_asset_get_response()
@@ -986,7 +986,7 @@ def test_asset_download_default(invoke,
             'asset-download',
             item_type,
             item_id,
-            asset_type_id,
+            asset_type,
             f'--directory={Path(folder)}',
             '--filename',
             'img.tif'
@@ -1015,7 +1015,7 @@ def test_asset_activate(invoke,
                         mock_asset_get_response,
                         item_type,
                         item_id,
-                        asset_type_id,
+                        asset_type,
                         dl_url):
 
     mock_asset_get_response()
@@ -1025,7 +1025,7 @@ def test_asset_activate(invoke,
     respx.get(dl_url).return_value = mock_resp_activate
 
     runner = CliRunner()
-    result = invoke(['asset-activate', item_type, item_id, asset_type_id],
+    result = invoke(['asset-activate', item_type, item_id, asset_type],
                     runner=runner)
 
     assert not result.exception
@@ -1036,7 +1036,7 @@ def test_asset_wait(invoke,
                     mock_asset_get_response,
                     item_type,
                     item_id,
-                    asset_type_id,
+                    asset_type,
                     dl_url):
 
     mock_asset_get_response()
@@ -1047,7 +1047,7 @@ def test_asset_wait(invoke,
 
     runner = CliRunner()
     result = invoke(
-        ['asset-wait', item_type, item_id, asset_type_id, '--delay', '0'],
+        ['asset-wait', item_type, item_id, asset_type, '--delay', '0'],
         runner=runner)
 
     assert not result.exception
