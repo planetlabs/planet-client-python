@@ -18,7 +18,7 @@ from pathlib import Path
 
 import click
 
-from planet.reporting import StateBar
+from planet.reporting import AssetStatusBar
 from planet import data_filter, DataClient, exceptions
 from planet.clients.data import (SEARCH_SORT,
                                  LIST_SEARCH_TYPE,
@@ -589,18 +589,19 @@ async def asset_activate(ctx, item_type, item_id, asset_type):
 async def asset_wait(ctx, item_type, item_id, asset_type, delay, max_attempts):
     '''Wait for an asset to be activated.
 
-    Returns when the asset state has reached "activated" and the asset is
+    Returns when the asset status has reached "activated" and the asset is
     available.
     '''
     quiet = ctx.obj['QUIET']
     async with data_client(ctx) as cl:
         asset = await cl.get_asset(item_type, item_id, asset_type)
-        with StateBar(order_id="my asset", disable=quiet) as bar:
-            state = await cl.wait_asset(asset,
-                                        delay,
-                                        max_attempts,
-                                        callback=bar.update_state)
-    click.echo(state)
+        with AssetStatusBar(item_type, item_id, asset_type,
+                            disable=quiet) as bar:
+            status = await cl.wait_asset(asset,
+                                         delay,
+                                         max_attempts,
+                                         callback=bar.update)
+    click.echo(status)
 
 
 # @data.command()

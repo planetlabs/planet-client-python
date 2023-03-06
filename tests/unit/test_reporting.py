@@ -37,6 +37,7 @@ def test_StateBar___init___stateandorder():
 
 
 def test_StateBar___init___disabled():
+    """Make sure it doesn't error out when disabled"""
     with reporting.StateBar(disable=True) as bar:
         assert bar.bar.disable
 
@@ -56,3 +57,24 @@ def test_StateBar_update_state():
         expected_update = '..:.. - order  - state: init'
         bar.update_state('init')
         assert (re.fullmatch(expected_update, str(bar)))
+
+
+def test_AssetStatusBar_disabled():
+    """Make sure it doesn't error out when disabled"""
+    with reporting.AssetStatusBar('item-type',
+                                  'item_id',
+                                  'asset_type',
+                                  disable=True) as bar:
+        assert bar.bar.disable
+
+        # just make sure this doesn't error out
+        bar.update(status='init')
+
+
+def test_AssetStatusBar_update():
+    """Status is changed with update"""
+    with reporting.AssetStatusBar('item-type', 'item_id', 'asset_type') as bar:
+        assert ('status: init') not in str(bar)
+
+        bar.update(status='init')
+        assert ('status: init') in str(bar)

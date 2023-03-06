@@ -110,3 +110,48 @@ class StateBar(ProgressBar):
 
         if self.bar is not None:
             self.bar.refresh()
+
+
+class AssetStatusBar(ProgressBar):
+    """Bar reporter of asset status."""
+
+    def __init__(
+        self,
+        item_type,
+        item_id,
+        asset_type,
+        disable: bool = False,
+    ):
+        """Initialize the object.
+        """
+        self.item_type = item_type
+        self.item_id = item_id
+        self.asset_type = asset_type
+        self.status = ''
+        super().__init__(disable=disable)
+
+    def open_bar(self):
+        """Initialize and start the progress bar."""
+        self.bar = tqdm(
+            bar_format="{elapsed} - {desc} - {postfix[0]}: {postfix[1]}",
+            desc=self.desc,
+            postfix=["status", self.status],
+            disable=self.disable)
+
+    @property
+    def desc(self):
+        return f'{self.item_type} {self.item_id} {self.asset_type}'
+
+    def update(self, status: str):
+        self.status = status
+
+        if self.bar is not None:
+            try:
+                self.bar.postfix[1] = self.status
+            except AttributeError:
+                # If the bar is disabled, attempting to access self.bar.postfix
+                # will result in an error. In this case, just skip it.
+                pass
+
+        if self.bar is not None:
+            self.bar.refresh()
