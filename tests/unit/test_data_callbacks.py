@@ -14,7 +14,7 @@
 import logging
 import pytest
 import click
-from planet.cli.data import check_item_types
+from planet.cli.data import check_item_types, check_item_type
 
 LOGGER = logging.getLogger(__name__)
 
@@ -43,13 +43,32 @@ class MockContext:
                              'PSScene4Band',
                              'REScene'
                          ])
-def test_item_type_success(item_types):
+def test_item_types_success(item_types):
     ctx = MockContext()
     result = check_item_types(ctx, 'item_types', [item_types])
     assert result == [item_types]
 
 
+def test_item_types_fail():
+    ctx = MockContext()
+    with pytest.raises(click.BadParameter):
+        check_item_types(ctx, 'item_types', "bad_item_type")
+
+
+def test_item_type_success():
+    ctx = MockContext()
+    item_type = "PSScene"
+    result = check_item_type(ctx, 'item_type', item_type)
+    assert result == item_type
+
+
 def test_item_type_fail():
     ctx = MockContext()
     with pytest.raises(click.BadParameter):
-        check_item_types(ctx, 'item_type', "bad_item_type")
+        check_item_type(ctx, 'item_type', "bad_item_type")
+
+
+def test_item_type_too_many_item_types():
+    ctx = MockContext()
+    with pytest.raises(click.BadParameter):
+        check_item_types(ctx, 'item_type', "PSScene,SkySatScene")
