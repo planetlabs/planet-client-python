@@ -14,17 +14,20 @@
 """The Planet Data CLI."""
 from typing import List, Optional
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import click
 
+from planet.reporting import StateBar
 from planet import data_filter, DataClient, exceptions
-from planet.clients.data import (LIST_SEARCH_TYPE,
+from planet.clients.data import (SEARCH_SORT,
+                                 LIST_SEARCH_TYPE,
                                  LIST_SEARCH_TYPE_DEFAULT,
                                  LIST_SORT_ORDER,
                                  LIST_SORT_DEFAULT,
-                                 SEARCH_SORT,
                                  SEARCH_SORT_DEFAULT,
                                  STATS_INTERVAL)
+
 from planet.specs import (get_item_types,
                           validate_item_type,
                           SpecificationException)
@@ -68,14 +71,25 @@ def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
 
 
 def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
-    '''Validates the item type by comparing the inputted item type to all
-    supported item types.'''
+    '''Validates each item types provided by comparing them to all supported
+    item types.'''
     try:
         for item_type in item_types:
             validate_item_type(item_type)
         return item_types
     except SpecificationException as e:
         raise click.BadParameter(str(e))
+
+
+def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
+    '''Validates the item type provided by comparing it to all supported
+    item types.'''
+    try:
+        validate_item_type(item_type)
+    except SpecificationException as e:
+        raise click.BadParameter(str(e))
+
+    return item_type
 
 
 def check_search_id(ctx, param, search_id) -> str:
@@ -480,8 +494,128 @@ async def search_update(ctx,
         echo_json(items, pretty)
 
 
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument("item_type", type=str, callback=check_item_type)
+@click.argument("item_id")
+@click.argument("asset_type")
+@click.option('--directory',
+              default='.',
+              help=('Base directory for file download.'),
+              type=click.Path(exists=True,
+                              resolve_path=True,
+                              writable=True,
+                              file_okay=False))
+@click.option('--filename',
+              default=None,
+              help=('Custom name to assign to downloaded file.'),
+              type=str)
+@click.option('--overwrite',
+              is_flag=True,
+              default=False,
+              help=('Overwrite files if they already exist.'))
+@click.option('--checksum',
+              is_flag=True,
+              default=None,
+              help=('Verify that checksums match.'))
+async def asset_download(ctx,
+                         item_type,
+                         item_id,
+                         asset_type,
+                         directory,
+                         filename,
+                         overwrite,
+                         checksum):
+    """Download an activated asset.
+
+    This function will fail if the asset state is not activated. Consider
+    calling `asset-wait` before this command to ensure the asset is activated.
+
+    If --checksum is provided, the associated checksums given in the manifest
+    are compared against the downloaded files to verify that they match.
+
+    If --checksum is provided, files are already downloaded, and --overwrite is
+    not specified, this will simply validate the checksums of the files against
+    the manifest.
+
+    Output:
+    The full path of the downloaded file. If the quiet flag is not set, this
+    also provides ANSI download status reporting.
+    """
+    quiet = ctx.obj['QUIET']
+    async with data_client(ctx) as cl:
+        asset = await cl.get_asset(item_type, item_id, asset_type)
+        path = await cl.download_asset(asset=asset,
+                                       filename=filename,
+                                       directory=Path(directory),
+                                       overwrite=overwrite,
+                                       progress_bar=not quiet)
+        if checksum:
+            cl.validate_checksum(asset, path)
+
+
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument("item_type", type=str, callback=check_item_type)
+@click.argument("item_id")
+@click.argument("asset_type")
+async def asset_activate(ctx, item_type, item_id, asset_type):
+    '''Activate an asset.'''
+    async with data_client(ctx) as cl:
+        asset = await cl.get_asset(item_type, item_id, asset_type)
+        await cl.activate_asset(asset)
+
+
+@data.command()
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument("item_type", type=str, callback=check_item_type)
+@click.argument("item_id")
+@click.argument("asset_type")
+@click.option('--delay',
+              type=int,
+              default=5,
+              help='Time (in seconds) between polls.')
+@click.option('--max-attempts',
+              type=int,
+              default=200,
+              show_default=True,
+              help='Maximum number of polls. Set to zero for no limit.')
+async def asset_wait(ctx, item_type, item_id, asset_type, delay, max_attempts):
+    '''Wait for an asset to be activated.
+
+    Returns when the asset state has reached "activated" and the asset is
+    available.
+    '''
+    quiet = ctx.obj['QUIET']
+    async with data_client(ctx) as cl:
+        asset = await cl.get_asset(item_type, item_id, asset_type)
+        with StateBar(order_id="my asset", disable=quiet) as bar:
+            state = await cl.wait_asset(asset,
+                                        delay,
+                                        max_attempts,
+                                        callback=bar.update_state)
+    click.echo(state)
+
+
+# @data.command()
+# @click.pass_context
+# @translate_exceptions
+# @coro
+# @click.argument("item_type")
+# @click.argument("item_id")
+# @click.argument("asset_type_id")
+# @pretty
+# async def asset_get(ctx, item_type, item_id, asset_type_id, pretty):
+#     '''Get an item asset.'''
+#     async with data_client(ctx) as cl:
+#         asset = await cl.get_asset(item_type, item_id, asset_type_id)
+#     echo_json(asset, pretty)
+
 # TODO: search_run()".
 # TODO: item_get()".
-# TODO: asset_activate()".
-# TODO: asset_wait()".
-# TODO: asset_download()".

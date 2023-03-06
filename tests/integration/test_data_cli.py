@@ -15,6 +15,8 @@
 from http import HTTPStatus
 import json
 import logging
+from pathlib import Path
+import math
 
 import httpx
 import respx
@@ -50,6 +52,69 @@ def invoke():
 
 
 @pytest.fixture
+def item_type():
+    return 'PSScene'
+
+
+@pytest.fixture
+def item_id():
+    return '20221003_002705_38_2461xx'
+
+
+@pytest.fixture
+def asset_type():
+    return 'basic_udm2'
+
+
+@pytest.fixture
+def dl_url():
+    return f'{TEST_URL}/1?token=IAmAToken'
+
+
+@pytest.fixture
+def mock_asset_get_response(item_type, item_id, asset_type, dl_url):
+
+    def _func():
+        basic_udm2_asset = {
+            "_links": {
+                "_self": "SELFURL",
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": 'active',
+            "location": dl_url,
+            "type": asset_type
+        }
+
+        page_response = {
+            "basic_analytic_4b": {
+                "_links": {
+                    "_self":
+                    "SELFURL",
+                    "activate":
+                    "ACTIVATEURL",
+                    "type": ('https://api.planet.com/data/v1/asset-types/'
+                             'basic_analytic_4b')
+                },
+                "_permissions": ["download"],
+                "md5_digest": None,
+                "status": "inactive",
+                "type": "basic_analytic_4b"
+            },
+            "basic_udm2": basic_udm2_asset
+        }
+
+        # Mock the response for get_asset
+        mock_resp_get = httpx.Response(HTTPStatus.OK, json=page_response)
+        asset_url = f'{TEST_URL}/item-types/{item_type}/items/{item_id}/assets'
+        respx.get(asset_url).return_value = mock_resp_get
+
+    return _func
+
+
+@pytest.fixture
 def item_descriptions(get_test_file_json):
     item_ids = [
         '20220125_075509_67_1061',
@@ -71,6 +136,9 @@ def test_data_command_registered(invoke):
     assert "search-get" in result.output
     assert "search-delete" in result.output
     assert "search-update" in result.output
+    assert "asset-download" in result.output
+    assert "asset-activate" in result.output
+    assert "asset-wait" in result.output
     # Add other sub-commands here.
 
 
@@ -871,12 +939,171 @@ def test_search_update_fail(invoke, search_id, search_filter):
     assert result.exception
 
 
-# TODO: basic test for "planet data search-create".
-# TODO: basic test for "planet data search-get".
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("exists, overwrite",
+                         [(False, False), (True, False), (True, True),
+                          (False, True)])
+def test_asset_download_default(invoke,
+                                open_test_img,
+                                exists,
+                                overwrite,
+                                mock_asset_get_response,
+                                item_type,
+                                item_id,
+                                asset_type,
+                                dl_url):
+
+    mock_asset_get_response()
+
+    img_headers = {
+        'Content-Type': 'image/tiff',
+        'Content-Length': '527',
+        'Content-Disposition': 'attachment; filename="img.tif"'
+    }
+
+    async def _stream_img():
+        data = open_test_img.read()
+        v = memoryview(data)
+
+        chunksize = 100
+        for i in range(math.ceil(len(v) / (chunksize))):
+            yield v[i * chunksize:min((i + 1) * chunksize, len(v))]
+
+    # Mock the response for download_asset
+    mock_resp_download = httpx.Response(HTTPStatus.OK,
+                                        stream=_stream_img(),
+                                        headers=img_headers,
+                                        request='donotcloneme')
+    respx.get(dl_url).return_value = mock_resp_download
+
+    runner = CliRunner()
+    with runner.isolated_filesystem() as folder:
+        if exists:
+            Path(folder, 'img.tif').write_bytes(b'01010')
+
+        asset_download_command = [
+            'asset-download',
+            item_type,
+            item_id,
+            asset_type,
+            f'--directory={Path(folder)}',
+            '--filename',
+            'img.tif'
+        ]
+        if overwrite:
+            asset_download_command.append('--overwrite')
+
+        result = invoke(asset_download_command, runner=runner)
+        assert result.exit_code == 0
+
+        path = Path(folder, 'img.tif')
+
+        assert path.name == 'img.tif'
+        assert path.is_file()
+
+        if exists and not overwrite:
+            assert len(path.read_bytes()) == 5
+            assert len(result.output) == 0
+        else:
+            assert len(path.read_bytes()) == 527
+            assert path.name in result.output
+
+
+@respx.mock
+def test_asset_activate(invoke,
+                        mock_asset_get_response,
+                        item_type,
+                        item_id,
+                        asset_type,
+                        dl_url):
+
+    mock_asset_get_response()
+
+    # Mock the response for activate_asset
+    mock_resp_activate = httpx.Response(HTTPStatus.OK)
+    respx.get(dl_url).return_value = mock_resp_activate
+
+    runner = CliRunner()
+    result = invoke(['asset-activate', item_type, item_id, asset_type],
+                    runner=runner)
+
+    assert not result.exception
+
+
+@respx.mock
+def test_asset_wait(invoke,
+                    mock_asset_get_response,
+                    item_type,
+                    item_id,
+                    asset_type,
+                    dl_url):
+
+    mock_asset_get_response()
+
+    # Mock the response for wait_asset
+    mock_resp_wait = httpx.Response(HTTPStatus.OK)
+    respx.get(dl_url).return_value = mock_resp_wait
+
+    runner = CliRunner()
+    result = invoke(
+        ['asset-wait', item_type, item_id, asset_type, '--delay', '0'],
+        runner=runner)
+
+    assert not result.exception
+    assert "state: active" in result.output
+
+
+# @respx.mock
+# def test_asset_get(invoke):
+#     item_type = 'PSScene'
+#     item_id = '20221003_002705_38_2461xx'
+#     asset_type_id = 'basic_udm2'
+#     dl_url = f'{TEST_URL}/1?token=IAmAToken'
+
+#     basic_udm2_asset = {
+#         "_links": {
+#             "_self": "SELFURL",
+#             "activate": "ACTIVATEURL",
+#             "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+#         },
+#         "_permissions": ["download"],
+#         "md5_digest": None,
+#         "status": 'active',
+#         "location": dl_url,
+#         "type": "basic_udm2"
+#     }
+
+#     page_response = {
+#         "basic_analytic_4b": {
+#             "_links": {
+#                 "_self":
+#                 "SELFURL",
+#                 "activate":
+#                 "ACTIVATEURL",
+#                 "type":
+#                 "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+#             },
+#             "_permissions": ["download"],
+#             "md5_digest": None,
+#             "status": "inactive",
+#             "type": "basic_analytic_4b"
+#         },
+#         "basic_udm2": basic_udm2_asset
+#     }
+
+#     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+#     assets_url = f'{TEST_URL}/item-types/{item_type}/items/{item_id}/assets'
+#     respx.get(assets_url).return_value = mock_resp
+
+#     runner = CliRunner()
+#     result = invoke(['asset-get', item_type, item_id, asset_type_id],
+#                     runner=runner)
+
+#     assert not result.exception
+#     assert json.dumps(basic_udm2_asset) in result.output
+
 # TODO: basic test for "planet data search-list".
 # TODO: basic test for "planet data search-run".
 # TODO: basic test for "planet data item-get".
-# TODO: basic test for "planet data asset-activate".
-# TODO: basic test for "planet data asset-wait".
-# TODO: basic test for "planet data asset-download".
 # TODO: basic test for "planet data stats".
