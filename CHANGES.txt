@@ -1,3 +1,9 @@
+2.0.0-rc.2 (TBD)
+
+Added:
+- The Session class can now construct clients by name with its client method
+  (#858).
+
 2.0.0-rc.1 (2023-03-06)
 
 User Interface Changes:
