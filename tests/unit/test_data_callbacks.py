@@ -27,7 +27,6 @@ class MockContext:
 
 @pytest.mark.parametrize("item_types",
                          [
-                             'PSScene3Band',
                              'MOD09GQ',
                              'MYD09GA',
                              'REOrthoTile',
@@ -40,7 +39,6 @@ class MockContext:
                              'Sentinel1',
                              'PSScene',
                              'PSOrthoTile',
-                             'PSScene4Band',
                              'REScene'
                          ])
 def test_item_types_success(item_types):
