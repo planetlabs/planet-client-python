@@ -5,7 +5,7 @@ This directory contains static external resources used by the codebase.
 
 ### Files
 
-* `orders_product_bundle_2022_02_02.json`
+* `orders_product_bundle_2023-02-24.json`
 
 ### Description
 

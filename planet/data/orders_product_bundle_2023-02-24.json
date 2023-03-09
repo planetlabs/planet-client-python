@@ -29,16 +29,6 @@
           "udm",
           "analytic_xml"
         ],
-        "PSScene3Band": [
-          "analytic",
-          "analytic_xml",
-          "udm"
-        ],
-        "PSScene4Band": [
-          "analytic",
-          "analytic_xml",
-          "udm"
-        ],
         "REOrthoTile": [
           "analytic",
           "analytic_xml",
@@ -88,12 +78,6 @@
           "udm",
           "udm2",
           "analytic_xml"
-        ],
-        "PSScene4Band": [
-          "analytic",
-          "analytic_xml",
-          "udm",
-          "udm2"
         ],
         "PSScene": [
           "ortho_analytic_4b",
@@ -192,10 +176,6 @@
           "visual",
           "visual_xml"
         ],
-        "PSScene3Band": [
-          "visual",
-          "visual_xml"
-        ],
         "PSScene": [
           "ortho_visual"
         ],
@@ -228,16 +208,6 @@
           "udm",
           "analytic_dn_xml"
         ],
-        "PSScene3Band": [
-          "analytic_dn",
-          "analytic_dn_xml",
-          "udm"
-        ],
-        "PSScene4Band": [
-          "analytic_dn",
-          "analytic_dn_xml",
-          "udm"
-        ],
         "SkySatCollect": [
           "ortho_analytic_dn",
           "ortho_analytic_udm"
@@ -258,12 +228,6 @@
       "auxiliaryFiles": "udm, udm2",
       "assets": {
         "PSOrthoTile": [
-          "analytic_dn",
-          "analytic_dn_xml",
-          "udm",
-          "udm2"
-        ],
-        "PSScene4Band": [
           "analytic_dn",
           "analytic_dn_xml",
           "udm",
@@ -290,18 +254,6 @@
       "fileType": "TIFF and RPCs",
       "auxiliaryFiles": "udm",
       "assets": {
-        "PSScene3Band": [
-          "basic_analytic",
-          "basic_udm",
-          "basic_analytic_rpc",
-          "basic_analytic_xml"
-        ],
-        "PSScene4Band": [
-          "basic_analytic",
-          "basic_udm",
-          "basic_analytic_rpc",
-          "basic_analytic_xml"
-        ],
         "REScene": [
           "basic_analytic_b1",
           "basic_analytic_b2",
@@ -330,13 +282,6 @@
       "fileType": "TIFF and RPCs",
       "auxiliaryFiles": "udm, udm2",
       "assets": {
-        "PSScene4Band": [
-          "basic_analytic",
-          "basic_udm",
-          "basic_udm2",
-          "basic_analytic_rpc",
-          "basic_analytic_xml"
-        ],
         "PSScene": [
           "basic_analytic_4b",
           "basic_udm2",
@@ -346,7 +291,8 @@
         "SkySatScene": [
           "basic_analytic",
           "basic_analytic_rpc",
-          "basic_analytic_udm"
+          "basic_analytic_udm",
+          "basic_analytic_udm2"
         ]
       }
     },
@@ -376,18 +322,6 @@
       "fileType": "TIFF and RPCs",
       "auxiliaryFiles": "udm",
       "assets": {
-        "PSScene3Band": [
-          "basic_analytic_dn",
-          "basic_analytic_dn_xml",
-          "basic_udm",
-          "basic_analytic_dn_rpc"
-        ],
-        "PSScene4Band": [
-          "basic_analytic_dn",
-          "basic_analytic_dn_xml",
-          "basic_udm",
-          "basic_analytic_dn_rpc"
-        ],
         "SkySatScene": [
           "basic_analytic_dn",
           "basic_analytic_dn_rpc",
@@ -404,17 +338,11 @@
       "fileType": "TIFF and RPCs",
       "auxiliaryFiles": "udm, udm2",
       "assets": {
-        "PSScene4Band": [
-          "basic_analytic_dn",
-          "basic_analytic_dn_xml",
-          "basic_udm",
-          "basic_udm2",
-          "basic_analytic_dn_rpc"
-        ],
         "SkySatScene": [
           "basic_analytic_dn",
           "basic_analytic_dn_rpc",
-          "basic_analytic_udm"
+          "basic_analytic_udm",
+          "basic_analytic_udm2"
         ]
       }
     },
@@ -427,11 +355,6 @@
       "fileType": "GeoTIFF",
       "auxiliaryFiles": "udm",
       "assets": {
-        "PSScene4Band": [
-          "analytic_sr",
-          "udm",
-          "analytic_xml"
-        ],
         "PSOrthoTile": [
           "analytic_sr",
           "udm",
@@ -529,12 +452,6 @@
       "fileType": "GeoTIFF",
       "auxiliaryFiles": "udm, udm2",
       "assets": {
-        "PSScene4Band": [
-          "analytic_sr",
-          "analytic_xml",
-          "udm",
-          "udm2"
-        ],
         "PSScene": [
           "ortho_analytic_4b_sr",
           "ortho_analytic_4b_xml",
@@ -574,56 +491,15 @@
         ]
       }
     },
-    "basic_uncalibrated_dn_nitf": {
-      "name": "Basic Uncalibrated DN - NITF",
-      "description": "Uncalibrated digital numbers - includes RPC text file for georeferencing",
-      "bands": "all",
-      "rectification": "non-orthorectified",
-      "radiometry": "digital numbers",
-      "fileType": "NITF",
-      "auxiliaryFiles": "udm",
-      "assets": {
-        "PSScene4Band": [
-          "basic_analytic_dn_nitf",
-          "basic_analytic_dn_xml_nitf",
-          "basic_analytic_dn_rpc_nitf",
-          "basic_udm"
-        ]
-      }
-    },
-    "basic_uncalibrated_dn_nitf_udm2": {
-      "name": "Basic Uncalibrated DN - NITF",
-      "description": "Uncalibrated digital numbers - includes RPC text file for georeferencing",
-      "bands": "all",
-      "rectification": "non-orthorectified",
-      "radiometry": "digital numbers",
-      "fileType": "NITF",
-      "auxiliaryFiles": "udm, udm2",
-      "assets": {
-        "PSScene4Band": [
-          "basic_analytic_dn_nitf",
-          "basic_analytic_dn_xml_nitf",
-          "basic_analytic_dn_rpc_nitf",
-          "basic_udm",
-          "basic_udm2"
-        ]
-      }
-    },
     "basic_analytic_nitf": {
       "name": "Basic Analytic Radiance (TOAR) – NITF",
-      "description": " Calibrated to top of atmosphere radiance - includes RPC text file for georeferencing",
+      "description": "Calibrated to top of atmosphere radiance - includes RPC text file for georeferencing",
       "bands": "all",
       "rectification": "non-orthorectified",
       "radiometry": "at-sensor",
       "fileType": "NITF",
       "auxiliaryFiles": "udm",
       "assets": {
-        "PSScene4Band": [
-          "basic_analytic_nitf",
-          "basic_analytic_rpc_nitf",
-          "basic_analytic_xml_nitf",
-          "basic_udm"
-        ],
         "REScene": [
           "basic_analytic_b1_nitf",
           "basic_analytic_b2_nitf",
@@ -635,24 +511,6 @@
           "basic_udm",
           "basic_analytic_sci",
           "browse"
-        ]
-      }
-    },
-    "basic_analytic_nitf_udm2": {
-      "name": "Basic Analytic Radiance (TOAR) – NITF",
-      "description": " Calibrated to top of atmosphere radiance - includes RPC text file for georeferencing",
-      "bands": "all",
-      "rectification": "non-orthorectified",
-      "radiometry": "at-sensor",
-      "fileType": "NITF",
-      "auxiliaryFiles": "udm, udm2",
-      "assets": {
-        "PSScene4Band": [
-          "basic_analytic_nitf",
-          "basic_analytic_rpc_nitf",
-          "basic_analytic_xml_nitf",
-          "basic_udm",
-          "basic_udm2"
         ]
       }
     },
@@ -805,5 +663,5 @@
       }
     }
   },
-  "version": "2022-02-02"
+  "version": "2023-02-24"
 }

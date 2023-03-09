@@ -18,7 +18,7 @@ import logging
 import itertools
 from .constants import DATA_DIR
 
-PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2022_02_02.json'
+PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2023-02-24.json'
 SUPPORTED_TOOLS = [
     'band_math',
     'clip',
