@@ -18,9 +18,22 @@ If you have your API key stored in the `PL_API_KEY` environment variable you wil
 
 In Version 2, sessions are used to manage all communication with the Planet APIs. This provides for multiple asynchronous connections. For each API, there is a specific client object. This client manages polling and downloading, along with any other capabilities provided by the API.
 
-Each client now requires a `Session` object, which stores connection information and authentication.
+Each client now requires a `Session` object, which stores connection information and authentication and manages an HTTP connection pool.
 
 The best way of doing this is wrapping any code that invokes a client class in a block like so:
+
+```python
+from planet import OrdersClient, Session
+
+async with Session() as session:
+    client = OrdersClient(session)
+    result = await client.create_order(order)
+# Process result
+```
+
+You will see this usage in the project's tests and in the `planet.cli`
+package. As a convenience, you may also get a service client instance from a
+session's `client()` method.
 
 ```python
 async with Session() as session:

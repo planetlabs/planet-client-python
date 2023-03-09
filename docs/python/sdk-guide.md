@@ -112,8 +112,6 @@ with the only difference being the addition of the ability to poll for when an
 order is completed and to download an entire order.
 
 ```python
-from planet import OrdersClient
-
 async def main():
     async with Session() as sess:
         client = sess.client('orders')
@@ -268,7 +266,7 @@ Otherwise, the JSON blob is a list of the individual results.
 
 ```python
 import asyncio
-from planet import collect, OrdersClient, Session
+from planet import collect, Session
 
 async def main():
     async with Session() as sess:
@@ -293,8 +291,6 @@ with the only difference being the addition of functionality to activate an
 asset, poll for when activation is complete, and download the asset.
 
 ```python
-from planet import DataClient
-
 async def main():
     async with Session() as sess:
         client = sess.client('data')
