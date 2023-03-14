@@ -45,10 +45,9 @@ iowa_items = ['20200925_161029_69_2223', '20200925_161027_48_2223']
 iowa_order = planet.order_request.build_request(
     name='iowa_order',
     products=[
-        planet.order_request.product(
-            item_ids=iowa_items,
-            product_bundle='analytic_udm2',
-            item_type='PSScene')
+        planet.order_request.product(item_ids=iowa_items,
+                                     product_bundle='analytic_udm2',
+                                     item_type='PSScene')
     ],
     tools=[planet.order_request.clip_tool(aoi=iowa_aoi)])
 
@@ -65,10 +64,9 @@ oregon_items = ['20200909_182525_1014', '20200909_182524_1014']
 oregon_order = planet.order_request.build_request(
     name='oregon_order',
     products=[
-        planet.order_request.product(
-            item_ids=oregon_items,
-            product_bundle='analytic_udm2',
-            item_type='PSScene')
+        planet.order_request.product(item_ids=oregon_items,
+                                     product_bundle='analytic_udm2',
+                                     item_type='PSScene')
     ],
     tools=[planet.order_request.clip_tool(aoi=oregon_aoi)])
 
