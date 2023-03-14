@@ -27,7 +27,7 @@ import os
 import planet
 
 DOWNLOAD_DIR = os.getenv('TEST_DOWNLOAD_DIR', '.')
-    
+
 iowa_aoi = {
     "type":
     "Polygon",
@@ -72,7 +72,7 @@ oregon_order = planet.order_request.build_request(
 
 
 async def create_and_download(client, order_detail, directory):
-    """Place an order, wait for completion, and download assets as a single task.""" 
+    """Make an order, wait for completion, download files as a single task."""
     with planet.reporting.StateBar(state='creating') as reporter:
         order = await client.create_order(order_detail)
         reporter.update(state='created', order_id=order['id'])
