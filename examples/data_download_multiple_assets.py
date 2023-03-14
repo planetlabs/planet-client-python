@@ -22,7 +22,7 @@ the AOIs and get the image ids.
 """
 import asyncio
 
-from planet import Session, DataClient
+from planet import Session
 
 river_item_id = '20221003_002705_38_2461'
 river_item_type = 'PSScene'
@@ -33,7 +33,8 @@ wildfire_item_type = 'PSScene'
 wildfire_asset_type = 'basic_analytic_4b'
 
 
-async def download_and_validate(item_id, item_type_id, asset_type_id, client):
+async def download_and_validate(client, item_id, item_type_id, asset_type_id):
+    """Activate, download, and validate an asset as a single task."""
     # Get asset description
     asset = await client.get_asset(item_type_id, item_id, asset_type_id)
 
@@ -51,19 +52,19 @@ async def download_and_validate(item_id, item_type_id, asset_type_id, client):
 
 
 async def main():
+    """Download and validate assets in parallel."""
     async with Session() as sess:
-        # Data client object
-        client = DataClient(sess)
-        # Download and validate assets in parallel
+        client = sess.client('data')
         await asyncio.gather(
-            download_and_validate(river_item_id,
+            download_and_validate(client,
+                                  river_item_id,
                                   river_item_type,
-                                  river_asset_type,
-                                  client),
-            download_and_validate(wildfire_item_id,
+                                  river_asset_type),
+            download_and_validate(client,
+                                  wildfire_item_id,
                                   wildfire_item_type,
-                                  wildfire_asset_type,
-                                  client))
+                                  wildfire_asset_type)
+        )
 
 
 if __name__ == '__main__':
