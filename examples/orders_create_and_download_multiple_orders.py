@@ -28,6 +28,8 @@ import planet
 
 DOWNLOAD_DIR = os.getenv('TEST_DOWNLOAD_DIR', '.')
 
+# The Orders API will be asked to mask, or clip, results to
+# this area of interest.
 iowa_aoi = {
     "type":
     "Polygon",
@@ -36,11 +38,15 @@ iowa_aoi = {
                      [-91.198465, 42.893071]]]
 }
 
+# In practice, you will use a Data API search to find items, but
+# for this example take them as given.
+iowa_items = ['20200925_161029_69_2223', '20200925_161027_48_2223']
+
 iowa_order = planet.order_request.build_request(
     name='iowa_order',
     products=[
         planet.order_request.product(
-            item_ids=['20200925_161029_69_2223', '20200925_161027_48_2223'],
+            item_ids=iowa_items,
             product_bundle='analytic_udm2',
             item_type='PSScene')
     ],
@@ -54,11 +60,13 @@ oregon_aoi = {
                      [-117.558734, 45.229745]]]
 }
 
+oregon_items = ['20200909_182525_1014', '20200909_182524_1014']
+
 oregon_order = planet.order_request.build_request(
     name='oregon_order',
     products=[
         planet.order_request.product(
-            item_ids=['20200909_182525_1014', '20200909_182524_1014'],
+            item_ids=oregon_items,
             product_bundle='analytic_udm2',
             item_type='PSScene')
     ],
