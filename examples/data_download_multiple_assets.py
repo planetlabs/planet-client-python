@@ -63,8 +63,7 @@ async def main():
             download_and_validate(client,
                                   wildfire_item_id,
                                   wildfire_item_type,
-                                  wildfire_asset_type)
-        )
+                                  wildfire_asset_type))
 
 
 if __name__ == '__main__':
