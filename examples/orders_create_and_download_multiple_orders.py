@@ -44,8 +44,7 @@ iowa_order = planet.order_request.build_request(
             product_bundle='analytic_udm2',
             item_type='PSScene')
     ],
-    tools=[planet.order_request.clip_tool(aoi=iowa_aoi)]
-)
+    tools=[planet.order_request.clip_tool(aoi=iowa_aoi)])
 
 oregon_aoi = {
     "type":
@@ -63,8 +62,7 @@ oregon_order = planet.order_request.build_request(
             product_bundle='analytic_udm2',
             item_type='PSScene')
     ],
-    tools=[planet.order_request.clip_tool(aoi=oregon_aoi)]
-)
+    tools=[planet.order_request.clip_tool(aoi=oregon_aoi)])
 
 
 async def create_and_download(client, order_detail, directory):
