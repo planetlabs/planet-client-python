@@ -1,8 +1,10 @@
-2.0.0-rc.2 (TBD)
+2.0.0-rc.2 (2023-03-15)
 
 Added:
 - The Session class can now construct clients by name with its client method
   (#858).
+- Updated product bundle spec to 2/24/23 version.
+
 
 2.0.0-rc.1 (2023-03-06)
 
@@ -11,6 +13,8 @@ User Interface Changes:
   stdin, string, or filename. To specify stdin, use `-`.
 - planet data filter cli command outputs empty filter by default, helpers must
   be specified with flags.
+- (edit 2023-03-15, added) planet data search filter is specified by --filter
+  flag.
 
 Changed:
 - Connect retries wait time adjusted from 1sec to just shy of 1sec to
@@ -28,6 +32,7 @@ Added:
 Fixed:
 - Remove null printout from CLI subscriptions cancel command
 - Update session_configuration.py to latest api
+
 
 2.0.0-beta.1 (2022-12-07)
 
