@@ -28,6 +28,8 @@ import planet
 
 DOWNLOAD_DIR = os.getenv('TEST_DOWNLOAD_DIR', '.')
 
+# The Orders API will be asked to mask, or clip, results to
+# this area of interest.
 iowa_aoi = {
     "type":
     "Polygon",
@@ -36,11 +38,18 @@ iowa_aoi = {
                      [-91.198465, 42.893071]]]
 }
 
-iowa_images = ['20200925_161029_69_2223', '20200925_161027_48_2223']
+# In practice, you will use a Data API search to find items, but
+# for this example take them as given.
+iowa_items = ['20200925_161029_69_2223', '20200925_161027_48_2223']
+
 iowa_order = planet.order_request.build_request(
-    'iowa_order',
-    [planet.order_request.product(iowa_images, 'analytic_udm2', 'PSScene')],
-    tools=[planet.order_request.clip_tool(iowa_aoi)])
+    name='iowa_order',
+    products=[
+        planet.order_request.product(item_ids=iowa_items,
+                                     product_bundle='analytic_udm2',
+                                     item_type='PSScene')
+    ],
+    tools=[planet.order_request.clip_tool(aoi=iowa_aoi)])
 
 oregon_aoi = {
     "type":
@@ -50,33 +59,34 @@ oregon_aoi = {
                      [-117.558734, 45.229745]]]
 }
 
-oregon_images = ['20200909_182525_1014', '20200909_182524_1014']
+oregon_items = ['20200909_182525_1014', '20200909_182524_1014']
+
 oregon_order = planet.order_request.build_request(
-    'oregon_order',
-    [planet.order_request.product(oregon_images, 'analytic_udm2', 'PSScene')],
-    tools=[planet.order_request.clip_tool(oregon_aoi)])
+    name='oregon_order',
+    products=[
+        planet.order_request.product(item_ids=oregon_items,
+                                     product_bundle='analytic_udm2',
+                                     item_type='PSScene')
+    ],
+    tools=[planet.order_request.clip_tool(aoi=oregon_aoi)])
 
 
-async def create_and_download(order_detail, directory, client):
+async def create_and_download(client, order_detail, directory):
+    """Make an order, wait for completion, download files as a single task."""
     with planet.reporting.StateBar(state='creating') as reporter:
-        # create
         order = await client.create_order(order_detail)
         reporter.update(state='created', order_id=order['id'])
-
-        # wait for completion
         await client.wait(order['id'], callback=reporter.update_state)
 
-    # download
     await client.download_order(order['id'], directory, progress_bar=True)
 
 
 async def main():
-    async with planet.Session() as ps:
-        client = planet.OrdersClient(ps)
-
+    async with planet.Session() as sess:
+        client = sess.client('orders')
         await asyncio.gather(
-            create_and_download(iowa_order, DOWNLOAD_DIR, client),
-            create_and_download(oregon_order, DOWNLOAD_DIR, client),
+            create_and_download(client, iowa_order, DOWNLOAD_DIR),
+            create_and_download(client, oregon_order, DOWNLOAD_DIR),
         )
 
 
