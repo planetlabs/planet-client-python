@@ -272,3 +272,24 @@ def test_harmonization_tool_success():
 def test_harmonization_tool_invalid_target_sensor():
     with pytest.raises(exceptions.ClientError):
         order_request.harmonize_tool('invalid')
+
+
+def test_band_math_tool_success():
+    res = order_request.band_math_tool(b1='b1', b2='arctan(b1)')
+
+    expected = {
+        "type": "bandmath",
+        "parameters": {
+            "b1": "b1",
+            "b2": "arctan(b1)",
+            "pixel_type": order_request.BAND_MATH_PIXEL_TYPE_DEFAULT
+        }
+    }
+    assert res == expected
+
+
+def test_band_math_tool_invalid_pixel_type():
+    with pytest.raises(exceptions.ClientError):
+        order_request.band_math_tool(b1='b1',
+                                     b2='arctan(b1)',
+                                     pixel_type="invalid")
