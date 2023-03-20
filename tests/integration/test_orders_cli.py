@@ -417,17 +417,8 @@ def test_cli_orders_download_state(invoke, order_description, oid):
     assert 'order state (running) is not a final state.' in result.output
 
 
-# TODO: add tests of "create --pretty" (gh-491).
-@pytest.mark.parametrize(
-    "id_string, expected_ids",
-    [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
-     ('4500474_2133707_2021-05-20_2419,4500474_2133707_2021-05-20_2420',
-      ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])])
 @respx.mock
-def test_cli_orders_create_basic_success(expected_ids,
-                                         id_string,
-                                         invoke,
-                                         order_description):
+def test_cli_orders_create_basic_success(invoke, order_description):
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
@@ -435,7 +426,7 @@ def test_cli_orders_create_basic_success(expected_ids,
         "name":
         "test",
         "products": [{
-            "item_ids": expected_ids,
+            "item_ids": ['4500474_2133707_2021-05-20_2419'],
             "item_type": "PSOrthoTile",
             "product_bundle": "analytic"
         }],
@@ -461,10 +452,10 @@ def test_cli_orders_request_basic_success(expected_ids,
                                           stac_json):
     result = invoke([
         'request',
-        'PSOrthoTile',
-        'analytic',
+        '--item-type=PSOrthoTile',
+        '--bundle=analytic',
         '--name=test',
-        f'--id={id_string}',
+        id_string,
     ])
     assert not result.exception
 
@@ -485,45 +476,44 @@ def test_cli_orders_request_basic_success(expected_ids,
 def test_cli_orders_request_item_type_invalid(invoke):
     result = invoke([
         'request',
-        'invalid'
-        'analytic',
+        '--item-type=invalid'
+        '--bundle=analytic',
         '--name=test',
-        '--id=4500474_2133707_2021-05-20_2419',
+        '4500474_2133707_2021-05-20_2419',
     ])
     assert result.exit_code == 2
-    error_msg = "Usage: main orders request [OPTIONS] ITEM_TYPE BUNDLE"
-    assert error_msg in result.output
 
 
 def test_cli_orders_request_product_bundle_invalid(invoke):
     result = invoke([
         'request',
-        'PSScene'
-        'invalid',
+        '--item-type=PSScene'
+        '--bundle=invalid',
         '--name=test',
-        '--id=4500474_2133707_2021-05-20_2419',
+        '4500474_2133707_2021-05-20_2419',
     ])
     assert result.exit_code == 2
-    error_msg = "Usage: main orders request [OPTIONS] ITEM_TYPE BUNDLE"
-    assert error_msg in result.output
 
 
 def test_cli_orders_request_product_bundle_incompatible(invoke):
     result = invoke([
         'request',
-        'PSScene',
-        'analytic',
+        '--item-type=PSScene',
+        '--bundle=analytic',
         '--name=test',
-        '--id=4500474_2133707_2021-05-20_2419',
+        '4500474_2133707_2021-05-20_2419',
     ])
     assert result.exit_code == 2
-    error_msg = "Usage: main orders request [OPTIONS] ITEM_TYPE BUNDLE"
-    assert error_msg in result.output
 
 
 def test_cli_orders_request_id_empty(invoke):
-    result = invoke(
-        ['request', 'PSOrthoTile', 'analytic', '--name=test', '--id='])
+    result = invoke([
+        'request',
+        '--item-type=PSOrthoTile',
+        '--bundle=analytic',
+        '--name=test',
+        ''
+    ])
     assert result.exit_code == 2
     assert 'Entry cannot be an empty string.' in result.output
 
@@ -531,7 +521,7 @@ def test_cli_orders_request_id_empty(invoke):
 @pytest.mark.parametrize("geom_fixture",
                          [('geom_geojson'), ('feature_geojson'),
                           ('featurecollection_geojson')])
-def test_cli_orders_request_clip_success(geom_fixture,
+def test_cli_orders_request_clip_polygon(geom_fixture,
                                          request,
                                          invoke,
                                          geom_geojson,
@@ -541,10 +531,10 @@ def test_cli_orders_request_clip_success(geom_fixture,
 
     result = invoke([
         'request',
-        'PSOrthoTile',
-        'analytic',
+        '--item-type=PSOrthoTile',
+        '--bundle=analytic',
         '--name=test',
-        '--id=4500474_2133707_2021-05-20_2419',
+        '4500474_2133707_2021-05-20_2419',
         f'--clip={json.dumps(geom)}',
     ])
     assert result.exit_code == 0
@@ -568,19 +558,50 @@ def test_cli_orders_request_clip_success(geom_fixture,
     assert order_request == json.loads(result.output)
 
 
+def test_cli_orders_request_clip_multipolygon(multipolygon_geom_geojson,
+                                              invoke,
+                                              geom_geojson,
+                                              stac_json):
+
+    result = invoke([
+        'request',
+        '--item-type=PSOrthoTile',
+        '--bundle=analytic',
+        '--name=test',
+        '4500474_2133707_2021-05-20_2419',
+        f'--clip={json.dumps(multipolygon_geom_geojson)}',
+    ])
+    assert result.exit_code == 0
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": ["4500474_2133707_2021-05-20_2419"],
+            "item_type": "PSOrthoTile",
+            "product_bundle": "analytic",
+        }],
+        "tools": [{
+            'clip': {
+                'aoi': multipolygon_geom_geojson
+            }
+        }],
+        "metadata":
+        stac_json
+    }
+    assert order_request == json.loads(result.output)
+
+
 def test_cli_orders_request_clip_invalid_geometry(invoke, point_geom_geojson):
     result = invoke([
         'request',
-        'PSOrthoTile',
-        'analytic',
+        '--item-type=PSOrthoTile',
+        '--bundle=analytic',
         '--name=test',
-        '--id=4500474_2133707_2021-05-20_2419',
+        '4500474_2133707_2021-05-20_2419',
         f'--clip={json.dumps(point_geom_geojson)}'
     ])
     assert result.exit_code == 2
-    error_msg = ('Error: Invalid value: Invalid geometry type: ' +
-                 'Point is not Polygon.')
-    assert error_msg in result.output
 
 
 def test_cli_orders_request_both_clip_and_tools(invoke, geom_geojson):
@@ -588,10 +609,10 @@ def test_cli_orders_request_both_clip_and_tools(invoke, geom_geojson):
     # option values are valid json
     result = invoke([
         'request',
-        'PSOrthoTile',
-        'analytic',
+        '--item-type=PSOrthoTile',
+        '--bundle=analytic',
         '--name=test',
-        '--id=4500474_2133707_2021-05-20_2419',
+        '4500474_2133707_2021-05-20_2419',
         f'--clip={json.dumps(geom_geojson)}',
         f'--tools={json.dumps(geom_geojson)}'
     ])
@@ -613,10 +634,10 @@ def test_cli_orders_request_cloudconfig(invoke, stac_json):
 
     result = invoke([
         'request',
-        'PSOrthoTile',
-        'analytic',
+        '--item-type=PSOrthoTile',
+        '--bundle=analytic',
         '--name=test',
-        '--id=4500474_2133707_2021-05-20_2419',
+        '4500474_2133707_2021-05-20_2419',
         f'--cloudconfig={json.dumps(config_json)}',
     ])
     assert result.exit_code == 0
@@ -640,10 +661,10 @@ def test_cli_orders_request_cloudconfig(invoke, stac_json):
 def test_cli_orders_request_email(invoke, stac_json):
     result = invoke([
         'request',
-        'PSOrthoTile',
-        'analytic',
+        '--item-type=PSOrthoTile',
+        '--bundle=analytic',
         '--name=test',
-        '--id=4500474_2133707_2021-05-20_2419',
+        '4500474_2133707_2021-05-20_2419',
         '--email'
     ])
     assert result.exit_code == 0
@@ -671,10 +692,10 @@ def test_cli_orders_request_tools(invoke, geom_geojson, stac_json):
 
     result = invoke([
         'request',
-        'PSOrthoTile',
-        'analytic',
+        '--item-type=PSOrthoTile',
+        '--bundle=analytic',
         '--name=test',
-        '--id=4500474_2133707_2021-05-20_2419',
+        '4500474_2133707_2021-05-20_2419',
         f'--tools={json.dumps(tools_json)}'
     ])
 
@@ -699,10 +720,10 @@ def test_cli_orders_request_no_stac(invoke):
 
     result = invoke([
         'request',
-        'PSOrthoTile',
-        'analytic',
+        '--item-type=PSOrthoTile',
+        '--bundle=analytic',
         '--name=test',
-        '--id=4500474_2133707_2021-05-20_2419',
+        '4500474_2133707_2021-05-20_2419',
         '--no-stac'
     ])
 

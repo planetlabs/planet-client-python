@@ -335,7 +335,7 @@ class Session(BaseSession):
         """Calculates retry wait
 
         Base wait period is calculated as a exponential based on the number of
-        tries. Then, a random jitter of up to 1s is added to the base wait
+        tries. Then, a random jitter of up to 999ms is added to the base wait
         to avoid waves of requests in the case of multiple requests. Finally,
         the wait is thresholded to the maximum retry backoff.
 
@@ -347,7 +347,7 @@ class Session(BaseSession):
         * https://developers.planet.com/docs/data/api-mechanics/
         * https://cloud.google.com/iot/docs/how-tos/exponential-backoff
         """
-        random_number_milliseconds = random.randint(0, 1000) / 1000.0
+        random_number_milliseconds = random.randint(0, 999) / 1000.0
         calc_wait = 2**num_tries + random_number_milliseconds
         return min(calc_wait, max_retry_backoff)
 

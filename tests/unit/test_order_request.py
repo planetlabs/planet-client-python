@@ -222,13 +222,23 @@ def test__tool():
         _ = order_request._tool('notsupported', 'jsonstring')
 
 
-def test_clip_tool(geom_geojson, point_geom_geojson):
+def test_clip_tool_polygon(geom_geojson):
     ct = order_request.clip_tool(geom_geojson)
     expected = {'clip': {'aoi': geom_geojson}}
     assert ct == expected
 
-    with pytest.raises(exceptions.GeoJSONError):
-        _ = order_request.clip_tool(point_geom_geojson)
+
+def test_clip_tool_multipolygon(multipolygon_geom_geojson):
+    ct = order_request.clip_tool(multipolygon_geom_geojson)
+    expected = {'clip': {'aoi': multipolygon_geom_geojson}}
+    assert ct == expected
+
+
+def test_clip_tool_invalid(point_geom_geojson):
+    '''Confirm an exception is raised if an invalid geometry type is supplied.
+    '''
+    with pytest.raises(exceptions.ClientError):
+        order_request.clip_tool(point_geom_geojson)
 
 
 def test_reproject_tool():
@@ -253,8 +263,12 @@ def test_toar_tool():
     assert tt_empty == expected_empty
 
 
-@pytest.mark.parametrize("target_sensor", ["PS2", "Sentinel-2"])
-def test_harmonization_tool(target_sensor):
-    ht = order_request.harmonize_tool(target_sensor)
-    expected = {'harmonize': {'target_sensor': target_sensor}}
+def test_harmonization_tool_success():
+    ht = order_request.harmonize_tool("Sentinel-2")
+    expected = {'harmonize': {'target_sensor': "Sentinel-2"}}
     assert ht == expected
+
+
+def test_harmonization_tool_invalid_target_sensor():
+    with pytest.raises(exceptions.ClientError):
+        order_request.harmonize_tool('invalid')

@@ -18,6 +18,7 @@ import logging
 from typing import Optional, Any, Dict, List
 
 from . import geojson, specs
+from .exceptions import ClientError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ def build_request(name: str,
     '''Prepare an order request.
 
     ```python
-    >>> from planet.api.order_details import (
+    >>> from planet.order_request import (
     ...     build_request, product, toar_tool, reproject_tool, tile_tool)
     ...
     >>> products = [
@@ -328,13 +329,19 @@ def clip_tool(aoi: dict) -> dict:
         ```
 
     Parameters:
-        aoi: clip GeoJSON.
+        aoi: clip GeoJSON, either Polygon or Multipolygon.
 
     Raises:
-        geojson.GeoJSONException: If GeoJSON is not a valid polygon.
+        planet.exceptions.ClientError: If GeoJSON is not a valid polygon or
+            multipolygon.
     '''
-    parameters = {'aoi': geojson.as_polygon(aoi)}
-    return _tool('clip', parameters)
+    valid_types = ['Polygon', 'MultiPolygon']
+
+    geom = geojson.as_geom(aoi)
+    if geom['type'].lower() not in [v.lower() for v in valid_types]:
+        raise ClientError(
+            f'Invalid geometry type: {geom["type"]} is not in {valid_types}.')
+    return _tool('clip', {'aoi': geom})
 
 
 def composite_tool() -> dict:
@@ -414,7 +421,7 @@ def tile_tool(tile_size: int,
     return _tool('tile', parameters)
 
 
-def toar_tool(scale_factor: Optional[int] = None, ) -> dict:
+def toar_tool(scale_factor: Optional[int] = None) -> dict:
     '''Create the API spec representation of a TOAR tool.
 
     Parameters:
@@ -432,9 +439,19 @@ def toar_tool(scale_factor: Optional[int] = None, ) -> dict:
 def harmonize_tool(target_sensor: str) -> dict:
     '''Create the API spec representation of a harmonize tool.
 
-    Currently, only "PS2" (Dove Classic) and "Sentinel-2" are supported as
-    target sensors. The Sentinel-2 target only harmonizes PSScene
-    surface reflectance bundle types (analytic_8b_sr_udm2, analytic_sr_udm2).
-    The PS2 target only works on analytic bundles from Dove-R (PS2.SD).
+    Parameters:
+        target_sensor: A value indicating to what sensor the input asset types
+            should be calibrated.
+
+    Raises:
+        planet.exceptions.ClientError: If target_sensor is not valid.
     '''
+
+    try:
+        target_sensor = specs.get_match(target_sensor,
+                                        specs.HARMONIZE_TOOL_TARGET_SENSORS,
+                                        'target_sensor')
+    except specs.SpecificationException as e:
+        raise ClientError(e)
+
     return _tool('harmonize', {'target_sensor': target_sensor})

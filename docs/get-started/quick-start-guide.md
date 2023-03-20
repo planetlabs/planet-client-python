@@ -7,6 +7,9 @@ If you’re a Python developer, this Planet SDK for Python makes it easy to acce
 
 If you’re not a Python developer, you can use the Command Line Interface (CLI) to get Planet data, and to process and analyze that data.
 
+!!!tip "We want to hear from you!"
+    This is a beta release. We encourage you to test your workflows rigorously. Based on your feedback, we may roll out additional updates to improve your experience. Please share your feedback with us on our [Planet Developers community channel](https://community.planet.com/developers-55).
+
 Take the following steps to install the SDK and connect with the Planet Server.
 
 [TOC]
@@ -83,8 +86,8 @@ And you can see that the value was stored successfully as an environment variabl
 echo $PL_API_KEY
 ```
 
-!!!note "The API Key environment variable is always used first in the Planet SDK"
-    If you do create a `PL_API_KEY` environment variable, the SDK will use this value. `PL_API_KEY` overrides the value that was retrieved using your Planet login with a call to `planet auth init`. The `planet auth value` call currently does not reflect that `PL_API_KEY` overrides the `auth init` value (this should be fixed in 2.0-beta.1 with [issue 643](https://github.com/planetlabs/planet-client-python/issues/643))
+!!!note "The API Key environment variable is ignored by the CLI but used by the Python library"
+    If you do create a `PL_API_KEY` environment variable, the CLI will be unaffected but the Planet library will use this as the source for authorization instead of the value stored in `planet auth init`.
 
 ## Step 5: Search for Planet Imagery
 
@@ -97,10 +100,10 @@ In this step, you search for the most recent PSScene images available to downloa
 One of the commands you’ll use most frequently is `planet data filter`. This “convenience method” creates the JSON you need to run other commands. Run it with no arguments to see how it works by default:
 
 ```console
-planet data filter
+planet data filter --permission --std-quality
 ```
 
-Look at the console output to see some default filters. `PermissionFilter` filters the output to only contain imagery that you have permission to download. You’ll also see `quality_category`, which means the output lists only images in the [`standard quality` category](https://developers.planet.com/docs/data/planetscope/#image-quality-standard-vs-test-imagery). 
+Look at the console output to see some default filters. `PermissionFilter` filters the output to only contain imagery that you have permission to download. You’ll also see `quality_category`, which means the output lists only images in the [`standard quality` category](https://developers.planet.com/docs/data/planetscope/#image-quality-standard-vs-test-imagery). Without these options, an empty filter is generated which would be used to disable filtering and simply return all results.
 
 !!!note "The --help switch is your friend"
     You can do a lot with this `filter` command. We recommend running `planet data filter --help` often to get a reference of how the commands work.
@@ -110,13 +113,13 @@ Look at the console output to see some default filters. `PermissionFilter` filte
 Run the filter command and save it to a file named `filter.json`:
 
 ```console
-planet data filter > filter.json
+planet data filter --permission --std-quality > filter.json
 ```
 
 Then use that file with the search command and save the results to another file named `recent-psscene.json`.
 
 ```console
-planet data search PSScene filter.json > recent-psscene.json
+planet data search PSScene --filter filter.json > recent-psscene.json
 ```
 
 Open `recent-psscene.json` to see the 100 most recent PSScene images you have permissions to actually download.

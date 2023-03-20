@@ -1,3 +1,51 @@
+2.0.0-rc.1 (2023-03-06)
+
+User Interface Changes:
+- Stdin is no longer the default for CLI arguments/options that read from
+  stdin, string, or filename. To specify stdin, use `-`.
+- planet data filter cli command outputs empty filter by default, helpers must
+  be specified with flags.
+
+Changed:
+- Connect retries wait time adjusted from 1sec to just shy of 1sec to
+  optimize distribution
+
+Added:
+- Data CLI commands: asset-get, asset-download, asset-activate, asset-wait,
+  search-run, search-list, search-update, search-delete
+- Add AssetStatusBar reporter, use in data asset-wait cli command
+- Add subscription request helper methods in python api
+- Add planet subscriptions request CLI command
+- Add support for base_url in subscriptions client
+- Add support for MultiPolygon in orders clip tool
+
+Fixed:
+- Remove null printout from CLI subscriptions cancel command
+- Update session_configuration.py to latest api
+
+2.0.0-beta.1 (2022-12-07)
+
+Changed:
+- Auth.write() renamed to Auth.store() to match CLI command
+- CLI now only sources from the configuration file
+- the following functions were changed to generator functions and therefore no
+longer require awaits: OrdersClient.list_orders, DataClient.search,
+DataClient.run_search, SubscriptionsClient.list_results,
+SubscriptionsClient.list_subscriptions.
+- - CLI command planet orders request arguments have changed so only IDs is
+positional, all others are flags.
+
+Added:
+- support for Sentinel-2 as a target in the harmonization tool in
+orders_request
+- `planet auth store` CLI command for storing authentication info
+in the configuration file
+
+Fixed:
+- status option for list_subscriptions now works
+- subscriptions list_results now returns more than the first page
+
+
 2.0a6 (2022-11-10)
 
 - Add SDK identification headers to communication with servers (#754).

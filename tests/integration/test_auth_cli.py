@@ -13,6 +13,7 @@
 # the License.
 from http import HTTPStatus
 import json
+import os
 
 from click.testing import CliRunner
 import httpx
@@ -104,3 +105,19 @@ def test_cli_auth_value_failure(redirect_secretfile):
     assert result.exception
     assert 'Error: Auth information does not exist or is corrupted.' \
         in result.output
+
+
+def test_cli_auth_store_cancel(redirect_secretfile):
+    result = CliRunner().invoke(cli.main, ['auth', 'store', 'setval'],
+                                input='')
+    assert not result.exception
+    assert not os.path.isfile(redirect_secretfile)
+
+
+def test_cli_auth_store_confirm(redirect_secretfile):
+    result = CliRunner().invoke(cli.main, ['auth', 'store', 'setval'],
+                                input='y')
+    assert not result.exception
+
+    with open(redirect_secretfile, 'r') as f:
+        assert json.load(f) == {'key': 'setval'}

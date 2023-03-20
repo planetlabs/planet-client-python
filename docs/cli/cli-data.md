@@ -17,10 +17,10 @@ At this point you should have completed [Step 5](../get-started/quick-start-guid
 of the quick start guide, and run your first full data search command:
 
 ```
-planet data search PSScene filter.json > recent-psscene.json
+planet data search PSScene --filter filter.json > recent-psscene.json
 ```
 
-This saves the latest 100 scenes in a file, that you can open and look at.
+This saves the descriptions of the latest 100 standard-quality scenes you have permissions to download in a file, that you can open and look at.
 
 ### Pretty printing
 
@@ -28,7 +28,7 @@ You will likely notice that this file is quite wide, with one very long line for
 item returned. You can make for a more readable file by using the `--pretty` flag:
 
 ```
-planet data search --pretty PSScene filter.json > recent-psscene.json
+planet data search --pretty PSScene --filter filter.json > recent-psscene.json
 ```
 
 The `--pretty` flag is built into most of the CLI calls. But you can also achieve the
@@ -38,7 +38,7 @@ piping any JSON output through it prints it in a more readable form. So the foll
 command will do the same thing as the previous one:
 
 ```
-planet data search PSScene filter.json | jq > recent-psscene.json
+planet data search PSScene --filter filter.json | jq > recent-psscene.json
 ```
 
 You can read a bit [more about jq]((cli-intro.md#jq) in the CLI intro.
@@ -49,14 +49,14 @@ You also don't have to save the output to a file. If you don't redirect it into 
 it will just print out on the console.
 
 ```
-planet data search PSScene filter.json 
+planet data search PSScene --filter filter.json
 ```
 
 If you enter this command you'll see the output stream by. Here you can use jq again, and
 it'll often give you nice syntax highlighting in addition to formatting.
 
 ```
-planet data search PSScene filter.json | jq
+planet data search PSScene --filter filter.json | jq
 ```
 
 ### Create filter and search in one call
@@ -66,13 +66,24 @@ passing the output of the `data filter` command directly to be the input of the 
 command:
 
 ```
-planet data filter | planet data search --pretty PSScene -
+planet data filter --permission --std-quality | planet data search --pretty PSScene --filter -
 ```
 
 Note the dash (`-`), which explicitly tells the CLI to use the output from the call that is piped into it.
 
 You can learn more about the pipe command, as well as the `>` command above in the 
 [Piping & redirection section](cli-intro.md#piping-redirection) of the CLI Introduction.
+
+### Search without filtering
+
+If no filtering is required, the search command can be called directly:
+
+```
+planet data search PSScene
+```
+
+This outputs the last 100 scenes.
+
 
 ### Search on Item Type
 
@@ -82,7 +93,7 @@ its catalog. The item type is the first argument of the `search` command, follow
 you can specify any number of item types here:
 
 ```
-planet data filter | planet data search PSScene,Sentinel2L1C,Landsat8L1G,SkySatCollect -
+planet data search PSScene,Sentinel2L1C,Landsat8L1G,SkySatCollect
 ```
 
 This will search for all the most recent images captured by PlanetScope, SkySat, Sentinel 2 and Landsat 8 satellites. 
@@ -96,7 +107,7 @@ By default the `search` command returns only the 100 first scenes. But with the 
 under the hood will automatically page through all the results from the API. 
 
 ```
-planet data filter | planet data search --limit 3000 PSScene
+planet data search --limit 3000 PSScene
 ```
 
 Note you can also do a call with no limits if you set the limit to `0`. Though don't use this haphazardly, or you'll be
@@ -111,13 +122,13 @@ the `planet collect` method to transform the output from the Data API to valid G
 output to it:
 
 ```console
-planet data filter | planet data search PSScene - | planet collect -
+planet data search PSScene | planet collect -
 ```
 
 If you want to visualize this you can save it as a file:
 
 ```console
-planet data filter | planet data search PSScene - | planet collect - > planet-search.geojson
+planet data search PSScene | planet collect - > planet-search.geojson
 ```
 
 This you can then open with your favorite GIS program, or see this 
@@ -138,13 +149,13 @@ descending order. The options are are:
 The lets you do things like get the id of the most recent skysat image taken (that you have download access to):
 
 ```console
-planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 - 
+planet data search SkySatCollect --sort 'acquired desc' --limit 1
 ```
 
 And you can also just get the ID, using `jq`
 
 ```console
-planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id
+planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id
 ```
 
 
@@ -202,14 +213,14 @@ of Iowa. You can copy it and save as a file called `geometry.geojson`
 And then run it with this command:
 
 ```console
-planet data filter --geom geometry.geojson | planet data search PSScene -
+planet data filter --geom geometry.geojson | planet data search PSScene --filter -
 ```
 
 Note that by default all searches with the command-line return 100 results, but you can easily increase that with
 the `--limit` flag:
 
 ```console
-planet data filter --geom geometry.geojson | planet data search --limit 500 PSScene -
+planet data filter --geom geometry.geojson | planet data search --limit 500 PSScene --filter -
 ```
 
 Creating geometries for search can be annoying in a command-line workflow, but there are some ideas in the
@@ -220,7 +231,7 @@ Creating geometries for search can be annoying in a command-line workflow, but t
 Some of the most common filtering is by date. You could get all imagery acquired before August 2021:
 
 ```console
-planet data filter --date-range acquired lt 2021-08-01 | planet data search PSScene -
+planet data filter --date-range acquired lt 2021-08-01 | planet data search PSScene --filter -
 ```
 
 The 'operator' in this case is 'less than' (`lt`). The options are:
@@ -236,7 +247,7 @@ do a search for all images in July of 2021:
 
 ```console
 planet data filter --date-range acquired gte 2021-07-01 --date-range acquired lt 2021-08-01 | \
-planet data search PSScene -
+planet data search PSScene --filter -
 ```
 
 The date input understands [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339) and 
@@ -246,7 +257,7 @@ on July 1st 2021:
 
 ```console
 planet data filter --date-range acquired gte 2021-07-01:06:20:10 --date-range acquired lt 2021-07-01:06:20:15 | \
-planet data search PSScene - 
+planet data search PSScene --filter -
 ```
 
 ### Range Filter
@@ -255,7 +266,7 @@ The range filter uses the same operators as the date filter, but works against a
 of these tend to be ones about cloudy pixels. For example you can search for data with clear pixels greater than 90%:
 
 ```console
-planet data filter --range clear_percent gt 90
+planet data filter --range clear_percent gt 90 | planet data search PSScene --filter -
 ```
 
 ### String-In Filter
@@ -264,19 +275,20 @@ For properties that are strings you can use the `string-in` filter. For example 
 with PS2 instrument:
 
 ```console
-planet data filter --string-in instrument PS2 | planet data search PSScene -
+planet data filter --string-in instrument PS2 | planet data search PSScene --filter -
 ```
 
 You can specify multiple strings to match, with a comma:
 
 ```console
-planet data filter --string-in instrument PS2,PSB.SD | planet data search PSScene -
+planet data filter --string-in instrument PS2,PSB.SD | planet data search PSScene --filter -
+
 ```
 
 Another example is to select all data in a single strip:
 
 ```console
-planet data filter --string-in strip_id 5743640 | planet data search PSScene -
+planet data filter --string-in strip_id 5743640 | planet data search PSScene --filter -
 ```
 
 Note that in all these commands we are piping the results into the search. If you don't include the pipe then you'll
@@ -287,13 +299,13 @@ get the filter output, which can be interested to inspect to see exactly what is
 You can limit your search to only data with a particular asset, for example search just for 8-band analytic assets:
 
 ```console
-planet data filter --asset ortho_analytic_8b_sr | planet data search PSScene -
+planet data filter --asset ortho_analytic_8b_sr | planet data search PSScene --filter -
 ```
 
 Or 8-band assets that also have a UDM.
 
 ```console
-planet data filter --asset ortho_analytic_8b_sr --asset udm2 | planet data search PSScene -
+planet data filter --asset ortho_analytic_8b_sr --asset udm2 | planet data search PSScene --filter -
 ```
 
 You can find the list of available assets in each Item Type Page, like 
@@ -306,12 +318,31 @@ sure you got the asset right, and it's valid for the item-types you're searching
 
 ### Permission Filter
 
-The 'permission filter' is set to true by default, since most people want to search only for data they have access to
-and are able to download. But if you'd like to just get search Planet's catalog and get a sense of what is out there
-you can set the permission filter to false:
+By default, no search filters are applied. However, many people want to search only for data they have access to download
+that are of standard (aka not test) quality. Therefore, these filters can be easily added with the `--permission` and
+`--std-quality` flags. To use the permission and standard quality filters:
 
 ```console
-planet data filter --permission false --asset ortho_analytic_8b_sr | planet data search PSScene -
+planet data filter --permission --std-quality --asset ortho_analytic_8b_sr | planet data search PSScene --filter -
+```
+
+## `data asset` command basics
+
+To activate an asset for download three commands must be queried, in sequence:
+1. `asset-activate` - activate an asset
+2. `asset-wait` - wait for an asset to be activated
+3. `asset-download` - download an activated asset
+
+For example, if we want to download a `basic_udm2` asset from item ID 
+`20221003_002705_38_2461`, a `PSScene` item type:
+
+```
+planet data asset-activate PSScene 20221003_002705_38_2461 basic_udm2 && \
+planet data asset-wait PSScene 20221003_002705_38_2461 basic_udm2 && \
+planet data asset-download PSScene 20221003_002705_38_2461 basic_udm2 --directory /path/to/data/
+00:00 - order my asset - state: active
+{'_links': {'_self': 'https://api.planet.com/data/v1/assets/eyJpIjogIjIwMjIxMDAzXzAwMjcwNV8zOF8yNDYxIiwgImMiOiAiUFNTY2VuZSIsICJ0IjogImJhc2ljX3VkbTIiLCAiY3QiOiAiaXRlbS10eXBlIn0', 'activate': 'https://api.planet.com/data/v1/assets/eyJpIjogIjIwMjIxMDAzXzAwMjcwNV8zOF8yNDYxIiwgImMiOiAiUFNTY2VuZSIsICJ0IjogImJhc2ljX3VkbTIiLCAiY3QiOiAiaXRlbS10eXBlIn0/activate', 'type': 'https://api.planet.com/data/v1/asset-types/basic_udm2'}, '_permissions': ['download'], 'expires_at': '2023-03-02T19:30:48.942718', 'location': 'https://api.planet.com/data/v1/download?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJQYWtGNHZuUEs3WXRmSFNGUklHY2I3YTNXT3piaTlaam4zWUpZMmxnd0x5cVlFMVBRSHU5QXNCcjR5Q3FxSjBNbl9yN3VwVEFQYUI1ZzhYNUJmcDhmUT09IiwiZXhwIjoxNjc3Nzg1NDQ4LCJ0b2tlbl90eXBlIjoidHlwZWQtaXRlbSIsIml0ZW1fdHlwZV9pZCI6IlBTU2NlbmUiLCJpdGVtX2lkIjoiMjAyMjEwMDNfMDAyNzA1XzM4XzI0NjEiLCJhc3NldF90eXBlIjoiYmFzaWNfdWRtMiJ9.Dd0opDjW3bBS6qLLZoNiJkfBsO2n5Xz9pM5apEUz_K6viDPFexhJiy6bMbaySbby8W0YvuATdb1uYXS2FkweDg', 'md5_digest': '3a9f7dd1ce500f699d0a96afdd0e3aa2', 'status': 'active', 'type': 'basic_udm2'}
+/path/to/data/20221003_002705_38_2461_1A_udm2.tif: 100%|██████████████████████████████████| 3.16k/3.16k [00:00<00:00, 32.0MB/s]
 ```
 
 ## Stats

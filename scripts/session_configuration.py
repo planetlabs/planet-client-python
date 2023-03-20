@@ -50,7 +50,7 @@ async def test_configuration(execution_number,
 
     async def _search(cl):
         sfilter = data_filter.permission_filter()
-        items = await cl.search(['PSScene'], sfilter, limit=limit)
+        items = cl.search(['PSScene'], sfilter, limit=limit)
         return list([i async for i in items])
 
     await _runit(_search,
@@ -79,7 +79,7 @@ async def test_api_rate_limiting(execution_number,
 
     async def _search(cl):
         sfilter = data_filter.permission_filter()
-        items = await cl.search(['PSScene'], sfilter, limit=limit)
+        items = cl.search(['PSScene'], sfilter, limit=limit)
         return list([i async for i in items])
 
     monkeypatch.setattr(planet.http, 'RETRY_EXCEPTIONS', [])
@@ -110,7 +110,7 @@ async def test_reliability(execution_number,
 
     async def _search(cl):
         sfilter = data_filter.permission_filter()
-        items = await cl.search(['PSScene'], sfilter, limit=limit)
+        items = cl.search(['PSScene'], sfilter, limit=limit)
         return list([i async for i in items])
 
     await _runit(_search,

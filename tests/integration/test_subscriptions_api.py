@@ -13,20 +13,23 @@ from planet.clients.subscriptions import SubscriptionsClient
 from planet.exceptions import APIError, PagingError, ServerError
 from planet.http import Session
 
+# M(url=TEST_URL) is case sensitive and matching a lower-case url, and it
+# requires that there not be a '/'
+TEST_URL = 'http://www.mocknotrealurl.com/api/path'
+
 # Mock router representing an API that returns only a 500
 # internal server error. The router is configured outside the test
 # to help keep our test more readable.
 failing_api_mock = respx.mock()
-failing_api_mock.route(
-    M(url__startswith='https://api.planet.com/subscriptions/v1')).mock(
-        return_value=Response(500, json={
-            "code": 0, "message": "string"
-        }))
+failing_api_mock.route(M(url__startswith=TEST_URL)).mock(
+    return_value=Response(500, json={
+        "code": 0, "message": "string"
+    }))
 
 
 def result_pages(status=None, size=40):
     """Helper for creating fake subscriptions listing pages."""
-    all_subs = [{'id': str(i), 'status': 'created'} for i in range(1, 101)]
+    all_subs = [{'id': str(i), 'status': 'running'} for i in range(1, 101)]
     select_subs = (sub for sub in all_subs
                    if not status or sub['status'] in status)
     pages = []
@@ -35,8 +38,7 @@ def result_pages(status=None, size=40):
         page = {'subscriptions': subs, '_links': {}}
         pm = datetime.now().isoformat()
         if len(subs) == size:
-            page['_links'][
-                'next'] = f'https://api.planet.com/subscriptions/v1?pm={pm}'
+            page['_links']['next'] = f'{TEST_URL}?pm={pm}'
         pages.append(page)
     return pages
 
@@ -47,27 +49,24 @@ def result_pages(status=None, size=40):
 # must disable the default.
 api_mock = respx.mock(assert_all_called=False)
 
-# 1. Request for status: created. Response has three pages.
-api_mock.route(M(url__startswith='https://api.planet.com/subscriptions/v1'),
-               M(params__contains={'status': 'created'})).mock(side_effect=[
+# 1. Request for status: running. Response has three pages.
+api_mock.route(M(url=TEST_URL),
+               M(params__contains={'status': 'running'})).mock(side_effect=[
                    Response(200, json=page)
-                   for page in result_pages(status={'created'}, size=40)
+                   for page in result_pages(status={'running'}, size=40)
                ])
 
 # 2. Request for status: failed. Response has a single empty page.
-api_mock.route(M(url__startswith='https://api.planet.com/subscriptions/v1'),
-               M(params__contains={'status': 'failed'})).mock(
-                   side_effect=[Response(200, json={'subscriptions': []})])
+api_mock.route(M(url=TEST_URL), M(params__contains={'status': 'failed'})).mock(
+    side_effect=[Response(200, json={'subscriptions': []})])
 
-# 3. Request for status: queued. Response has a single empty page.
-api_mock.route(M(url__startswith='https://api.planet.com/subscriptions/v1'),
-               M(params__contains={'status': 'queued'})).mock(
+# 3. Request for status: preparing. Response has a single empty page.
+api_mock.route(M(url=TEST_URL),
+               M(params__contains={'status': 'preparing'})).mock(
                    side_effect=[Response(200, json={'subscriptions': []})])
 
 # 4. No status requested. Response is the same as for 1.
-api_mock.route(
-    M(url__startswith='https://api.planet.com/subscriptions/v1')
-).mock(
+api_mock.route(M(url=TEST_URL)).mock(
     side_effect=[Response(200, json=page) for page in result_pages(size=40)])
 
 
@@ -82,25 +81,21 @@ def modify_response(request):
 
 
 create_mock = respx.mock()
-create_mock.route(host='api.planet.com',
-                  path='/subscriptions/v1',
+create_mock.route(M(url=TEST_URL),
                   method='POST').mock(side_effect=modify_response)
 
 update_mock = respx.mock()
-update_mock.route(host='api.planet.com',
-                  path__regex=r'^/subscriptions/v1/(\w+)',
+update_mock.route(M(url=f'{TEST_URL}/test'),
                   method='PUT').mock(side_effect=modify_response)
 
 cancel_mock = respx.mock()
-cancel_mock.route(host='api.planet.com',
-                  path__regex=r'^/subscriptions/v1/(\w+)/cancel',
+cancel_mock.route(M(url=f'{TEST_URL}/test/cancel'),
                   method='POST').mock(side_effect=modify_response)
 
 # Mock the subscription description API endpoint.
 describe_mock = respx.mock()
 describe_mock.route(
-    host='api.planet.com',
-    path__regex=r'^/subscriptions/v1/(\w+)',
+    M(url=f'{TEST_URL}/test'),
     method='GET').mock(return_value=Response(200,
                                              json={
                                                  'id': '42',
@@ -121,8 +116,8 @@ def result_pages(status=None, size=40):
         page = {'results': results, '_links': {}}
         pm = datetime.now().isoformat()
         if len(results) == size:
-            url = f'https://api.planet.com/subscriptions/v1/42/results?pm={pm}'
-            page['_links']['_next'] = url
+            url = f'{TEST_URL}/42/results?pm={pm}'
+            page['_links']['next'] = url
         pages.append(page)
     return pages
 
@@ -135,48 +130,45 @@ res_api_mock = respx.mock(assert_all_called=False)
 
 # 1. Request for status: created. Response has three pages.
 res_api_mock.route(
-    M(url__startswith='https://api.planet.com/subscriptions/v1'),
+    M(url__startswith=TEST_URL),
     M(params__contains={'status': 'created'})).mock(side_effect=[
         Response(200, json=page)
         for page in result_pages(status={'created'}, size=40)
     ])
 
 # 2. Request for status: queued. Response has a single empty page.
-res_api_mock.route(
-    M(url__startswith='https://api.planet.com/subscriptions/v1'),
-    M(params__contains={'status': 'queued'})).mock(
-        side_effect=[Response(200, json={'results': []})])
+res_api_mock.route(M(url__startswith=TEST_URL),
+                   M(params__contains={'status': 'queued'})).mock(
+                       side_effect=[Response(200, json={'results': []})])
 
 # 3. No status requested. Response is the same as for 1.
-res_api_mock.route(
-    M(url__startswith='https://api.planet.com/subscriptions/v1')
-).mock(
+res_api_mock.route(M(url__startswith=TEST_URL)).mock(
     side_effect=[Response(200, json=page) for page in result_pages(size=40)])
 
 
 @pytest.mark.asyncio
 @failing_api_mock
-async def test_list_subscriptions_aiter_failure():
+async def test_list_subscriptions_failure():
     """ServerError is raised if there is an internal server error (500)."""
     with pytest.raises(ServerError):
         async with Session() as session:
-            client = SubscriptionsClient(session)
-            _ = [sub async for sub in client.list_subscriptions_aiter()]
+            client = SubscriptionsClient(session, base_url=TEST_URL)
+            _ = [sub async for sub in client.list_subscriptions()]
 
 
-@pytest.mark.parametrize("status, count", [({"created"}, 100), ({"failed"}, 0),
+@pytest.mark.parametrize("status, count", [({"running"}, 100), ({"failed"}, 0),
                                            (None, 100)])
 @pytest.mark.asyncio
 @api_mock
-async def test_list_subscriptions_aiter_success(
+async def test_list_subscriptions_success(
     status,
     count,
 ):
     """Account subscriptions iterator yields expected descriptions."""
     async with Session() as session:
-        client = SubscriptionsClient(session)
+        client = SubscriptionsClient(session, base_url=TEST_URL)
         assert len([
-            sub async for sub in client.list_subscriptions_aiter(status=status)
+            sub async for sub in client.list_subscriptions(status=status)
         ]) == count
 
 
@@ -186,7 +178,7 @@ async def test_create_subscription_failure():
     """APIError is raised if there is a server error."""
     with pytest.raises(ServerError):
         async with Session() as session:
-            client = SubscriptionsClient(session)
+            client = SubscriptionsClient(session, base_url=TEST_URL)
             _ = await client.create_subscription({"lol": "wut"})
 
 
@@ -195,7 +187,7 @@ async def test_create_subscription_failure():
 async def test_create_subscription_success():
     """Subscription is created, description has the expected items."""
     async with Session() as session:
-        client = SubscriptionsClient(session)
+        client = SubscriptionsClient(session, base_url=TEST_URL)
         sub = await client.create_subscription({
             'name': 'test', 'delivery': 'yes, please', 'source': 'test'
         })
@@ -208,7 +200,7 @@ async def test_cancel_subscription_failure():
     """APIError is raised if there is a server error."""
     with pytest.raises(ServerError):
         async with Session() as session:
-            client = SubscriptionsClient(session)
+            client = SubscriptionsClient(session, base_url=TEST_URL)
             _ = await client.cancel_subscription("lolwut")
 
 
@@ -217,7 +209,7 @@ async def test_cancel_subscription_failure():
 async def test_cancel_subscription_success():
     """Subscription is canceled, description has the expected items."""
     async with Session() as session:
-        client = SubscriptionsClient(session)
+        client = SubscriptionsClient(session, base_url=TEST_URL)
         _ = await client.cancel_subscription("test")
 
 
@@ -227,7 +219,7 @@ async def test_update_subscription_failure():
     """APIError is raised if there is a server error."""
     with pytest.raises(ServerError):
         async with Session() as session:
-            client = SubscriptionsClient(session)
+            client = SubscriptionsClient(session, base_url=TEST_URL)
             _ = await client.update_subscription("lolwut", {})
 
 
@@ -236,7 +228,7 @@ async def test_update_subscription_failure():
 async def test_update_subscription_success():
     """Subscription is created, description has the expected items."""
     async with Session() as session:
-        client = SubscriptionsClient(session)
+        client = SubscriptionsClient(session, base_url=TEST_URL)
         sub = await client.update_subscription(
             "test", {
                 'name': 'test', 'delivery': "no, thanks", 'source': 'test'
@@ -250,7 +242,7 @@ async def test_get_subscription_failure():
     """APIError is raised if there is a server error."""
     with pytest.raises(ServerError):
         async with Session() as session:
-            client = SubscriptionsClient(session)
+            client = SubscriptionsClient(session, base_url=TEST_URL)
             _ = await client.get_subscription("lolwut")
 
 
@@ -259,63 +251,59 @@ async def test_get_subscription_failure():
 async def test_get_subscription_success(monkeypatch):
     """Subscription description fetched, has the expected items."""
     async with Session() as session:
-        client = SubscriptionsClient(session)
+        client = SubscriptionsClient(session, base_url=TEST_URL)
         sub = await client.get_subscription("test")
         assert sub['delivery'] == "yes, please"
 
 
 @pytest.mark.asyncio
 @failing_api_mock
-async def test_get_results_aiter_failure():
+async def test_get_results_failure():
     """APIError is raised if there is a server error."""
     with pytest.raises(APIError):
         async with Session() as session:
-            client = SubscriptionsClient(session)
-            _ = [res async for res in client.get_results_aiter("lolwut")]
+            client = SubscriptionsClient(session, base_url=TEST_URL)
+            _ = [res async for res in client.get_results("lolwut")]
 
 
 @pytest.mark.asyncio
 @res_api_mock
-async def test_get_results_aiter_success():
+async def test_get_results_success():
     """Subscription description fetched, has the expected items."""
     async with Session() as session:
-        client = SubscriptionsClient(session)
-        results = [res async for res in client.get_results_aiter("42")]
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        results = [res async for res in client.get_results("42")]
         assert len(results) == 100
 
 
 paging_cycle_api_mock = respx.mock()
 
 # Identical next links is a hangup we want to avoid.
-paging_cycle_api_mock.route(
-    M(url__startswith='https://api.planet.com/subscriptions/v1')).mock(
-        side_effect=[
-            Response(200,
-                     json={
-                         'subscriptions': [{
-                             'id': '1'
-                         }],
-                         '_links': {
-                             "next": 'https://api.planet.com/subscriptions/v1'
-                         }
-                     }),
-            Response(200,
-                     json={
-                         'subscriptions': [{
-                             'id': '2'
-                         }],
-                         '_links': {
-                             "next": 'https://api.planet.com/subscriptions/v1'
-                         }
-                     })
-        ])
+paging_cycle_api_mock.route(M(url__startswith=TEST_URL)).mock(side_effect=[
+    Response(200,
+             json={
+                 'subscriptions': [{
+                     'id': '1'
+                 }], '_links': {
+                     "next": TEST_URL
+                 }
+             }),
+    Response(200,
+             json={
+                 'subscriptions': [{
+                     'id': '2'
+                 }], '_links': {
+                     "next": TEST_URL
+                 }
+             })
+])
 
 
 @pytest.mark.asyncio
 @paging_cycle_api_mock
-async def test_list_subscriptions_aiter_cycle_break():
+async def test_list_subscriptions_cycle_break():
     """PagingError is raised if there is a paging cycle."""
     with pytest.raises(PagingError):
         async with Session() as session:
-            client = SubscriptionsClient(session)
-            _ = [sub async for sub in client.list_subscriptions_aiter()]
+            client = SubscriptionsClient(session, base_url=TEST_URL)
+            _ = [sub async for sub in client.list_subscriptions()]

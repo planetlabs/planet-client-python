@@ -107,19 +107,19 @@ If you don't have access to PlanetScope data then replace PSScene with SkySatCol
 Then make the following call:
 
 ```console
-planet orders request PSScene visual --name 'My First Order' --id 20220605_124027_64_242b 
+planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'My First Order' 20220605_124027_64_242b
 ```
 
 Running the above command should output the JSON needed to create an order:
 
 ```json
-{"name": "My First Order", "products": [{"item_ids": ["20220605_124027_64_242b"], "item_type": "PSScene", "product_bundle": "analytic_sr_udm2"}]}
+{"name": "My First Order", "products": [{"item_ids": ["20220605_124027_64_242b"], "item_type": "PSScene", "product_bundle": "analytic_sr_udm2"}], "metadata": {"stac": {}}}
 ```
 
 You can also use `jq` here to make it a bit more readable:
 
 ```console
-planet orders request PSScene analytic_sr_udm2 --name 'My First Order' --id 20220605_124027_64_242b | jq
+planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'My First Order' 20220605_124027_64_242b | jq
 ```
 
 ```json
@@ -133,7 +133,10 @@ planet orders request PSScene analytic_sr_udm2 --name 'My First Order' --id 2022
       "item_type": "PSScene",
       "product_bundle": "analytic_sr_udm2"
     }
-  ]
+  ],
+  "metadata": {
+    "stac": {}
+  }
 }
 ```
 
@@ -143,7 +146,7 @@ The above command just prints out the necessary JSON to create an order. To actu
 save the output into a file:
 
 ```console
-planet orders request PSScene analytic_sr_udm2 --name "My First Order" --id 20220605_124027_64_242b \
+planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name "My First Order" 20220605_124027_64_242b \
  > request-1.json
 ```
 
@@ -200,8 +203,8 @@ passing the output of the `orders request` command directly to be the input of t
 command:
 
 ```console
-planet orders request PSScene analytic_sr_udm2 --name 'Two Item Order' \
---id 20220605_124027_64_242b,20220605_124025_34_242b | planet orders create -
+planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Two Item Order' \
+20220605_124027_64_242b,20220605_124025_34_242b | planet orders create -
 ```
 
 The Planet CLI is designed to work well with piping, as it aims at small commands that can be 
@@ -357,8 +360,8 @@ You can move that geometry to your current directory and use the following comma
 tweak the geometry.geojson to refer to where you downloaded it.
 
 ```console
-planet orders request PSScene analytic_sr_udm2 --clip geometry.geojson --name clipped-geom \
- --id 20220605_124027_64_242b | planet orders create -
+planet orders request --item-type PSScene --bundle analytic_sr_udm2 --clip geometry.geojson --name clipped-geom \
+ 20220605_124027_64_242b | planet orders create - 
 ```
 
 ### Additional Tools
@@ -406,8 +409,8 @@ Example: `tools.json`
 Ordering two scenes is easy, just add another id:
 
 ```console
-planet orders request PSScene analytic_sr_udm2 --name 'Two Scenes' \
- --id 20220605_124027_64_242b,20220605_124025_34_242b | planet orders create -
+planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Two Scenes' \
+ 20220605_124027_64_242b,20220605_124025_34_242b | planet orders create - 
 ```
 
 And then you can composite them together, using the 'tools' json. You can 
@@ -426,8 +429,8 @@ Once you've got it saved you call the `--tools` flag to refer to the JSON file, 
 can pipe that to `orders create`.
 
 ```console
-planet orders request PSScene analytic_sr_udm2 --name 'Two Scenes Composited' \
---id 20220605_124027_64_242b,20220605_124025_34_242b --no-stac --tools tools-composite.json | planet orders create -
+planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Two Scenes Composited' \
+ 20220605_124027_64_242b,20220605_124025_34_242b --no-stac --tools tools-composite.json | planet orders create - 
 ```
 
 Note that we add the `--no-stac` option as [STAC Metadata](#stac-metadata) is not yet supported by the composite 
@@ -452,8 +455,8 @@ as COG in the file format tool.
 The following command just shows the output with [tools-cog.json](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/tools-cog.json):
 
 ```console
-planet orders request PSScene analytic_sr_udm2 --name 'COG Order' \
- --id 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-cog.json
+planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'COG Order' \
+ 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-cog.json
 ```
 
 As shown above you can also pipe that output directly in to `orders create`. 
@@ -504,16 +507,16 @@ so you can just use the [following json](https://raw.githubusercontent.com/plane
 ```
 
 ```console
-planet orders request PSScene analytic_sr_udm2 --no-stac --name 'Two Scenes Clipped and Composited' \
- --id 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-clip-composite.json | planet orders create -
+planet orders request --item-type PSScene --bundle analytic_sr_udm2 --no-stac --name 'Two Scenes Clipped and Composited' \
+ 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-clip-composite.json | planet orders create -
 ```
 
 One cool little trick is that you can even stream in the JSON directly with `curl`, piping it into the request:
 
 ```console
 curl -s https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/tools-clip-composite.json \
-| planet orders request PSScene analytic_sr_udm2 --name 'Streaming Clip & Composite' \
- --id 20220605_124027_64_242b,20220605_124025_34_242b --tools - | planet orders create - 
+| planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Streaming Clip & Composite' \
+ 20220605_124027_64_242b,20220605_124025_34_242b --tools - | planet orders create - 
 ```
 
 ### Harmonize
@@ -533,7 +536,7 @@ The harmonize tool allows you to compare data to different generations of satell
 You may create an order request by calling [`tools-harmonize.json`](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/tools-harmonize.json) with `--tools`.
 
 ```console
-planet orders request psscene analytic_sr_udm2 --name 'Harmonized data' --id 20200925_161029_69_2223 --tools tools-harmonize.json
+planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Harmonized data' 20200925_161029_69_2223 --tools tools-harmonize.json
 ```
 
 ## More options
@@ -541,8 +544,8 @@ planet orders request psscene analytic_sr_udm2 --name 'Harmonized data' --id 202
 ### STAC Metadata
 
 A relatively recent addition to Planet's orders delivery is the inclusion of [SpatioTemporal Asset Catalog](https://stacspec.org/en)
-(STAC) metadata in Orders. This provides a more standard set of JSON fields, that work with a number of 
-[different tools](https://stacindex.org/ecosystem). The CLI `orders request` command currently requests
+(STAC) metadata in Orders. STAC metadata provides a more standard set of JSON fields that work with 
+many GIS and geospatial [STAC-enabled tools](https://stacindex.org/ecosystem). The CLI `orders request` command currently requests
 STAC metadata by default, as the STAC files are small and often more useful than the default JSON metadata.
 You can easily turn off STAC output request with the `--no-stac` command:
 
@@ -552,7 +555,8 @@ planet orders request PSScene visual --name 'No STAC' --no-stac --id 20220605_12
 
 Currently this needs to be done for any 'composite' operation, as STAC output from composites is not yet 
 supported (but is coming). You can explicitly add `--stac`, but it is the default, so does not need to
-be included. For more information about Planet's STAC output see the [orders API documentation](https://developers.planet.com/apis/orders/delivery/#stac-metadata).
+be included. For more information about Planet's STAC output see the [Orders API documentation](https://developers.planet.com/apis/orders/delivery/#stac-metadata).
+
 
 ### Cloud Delivery
 
@@ -595,10 +599,10 @@ and use the CLI to customize it.
 
 ### Basemaps Orders
 
-One of the newer features in Planet's orders API is the ability to [order basemaps](https://developers.planet.com/apis/orders/basemaps/).
+One of the newer features in Planet's Orders API is the ability to [order basemaps](https://developers.planet.com/apis/orders/basemaps/).
 The CLI does not yet support a 'convenience' method to easily create the JSON - you unfortunately
 can't yet use `planet orders request` to help form an orders request. But all the other CLI functionality
-supports it, due to the modular design of the CLI.
+supports ordering basemaps through the Orders API.
 
 You'll need to use a full orders request JSON.
 
@@ -631,7 +635,7 @@ You'll need to use a full orders request JSON.
 }
 ```
 
-Once you've got the JSON the other commands are all the same. Use create to submit it to the API:
+Once you've got the JSON, the other commands are all the same. Use create to submit it to the API:
 
 ```
 planet orders create basemap-order.json
@@ -668,9 +672,9 @@ image that was published:
 
 
 ```console
-planet orders request SkySatCollect analytic --name 'SkySat Latest' \
---id `planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id` \
-| planet orders create -
+planet orders request --item-type SkySatCollect --bundle analytic --name 'SkySat Latest' \
+ `planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id` \
+| planet orders create - 
 ```
 
 Or get the 5 latest cloud free images in an area and create an order that clips to that area, using 
@@ -679,10 +683,10 @@ Or get the 5 latest cloud free images in an area and create an order that clips 
 ```console
 ids=`planet data filter --geom geometry.geojson --range clear_percent gt 90 | planet data \
 search PSScene --limit 5 - | jq -r .id | tr '\n' , | sed 's/.$//'`
-planet orders request PSScene analytic_sr_udm2 --name 'Clipped Scenes'  \
---id $ids --clip geometry.geojson | planet orders create -
+planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Clipped Scenes'  \
+ $ids --clip geometry.geojson | planet orders create -
 ```
 
 This one uses some advanced unix capabilities like `sed` and `tr`, along with unix variables, so more
-properly belongs in the [CLI Tips & Tricks]](cli-tips-tricks.md), but we'll leave it here to give a taste
+properly belongs in the [CLI Tips & Tricks](cli-tips-tricks.md), but we'll leave it here to give a taste
 of what's possible.

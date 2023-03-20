@@ -71,4 +71,4 @@ def test_str_to_datetime_success(string, expected):
 
 def test_str_to_datetime_failure():
     with pytest.raises(exceptions.PlanetError):
-        io.str_to_datetime('20210101')
+        io.str_to_datetime('notadate')

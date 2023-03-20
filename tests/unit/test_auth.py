@@ -118,23 +118,23 @@ def test_Auth_from_login(monkeypatch):
     assert test_auth.value == auth_data
 
 
-def test_Auth_write_doesnotexist(tmp_path):
+def test_Auth_store_doesnotexist(tmp_path):
     test_auth = auth.Auth.from_key('test')
     secret_path = str(tmp_path / '.test')
-    test_auth.write(secret_path)
+    test_auth.store(secret_path)
 
     with open(secret_path, 'r') as fp:
         assert json.loads(fp.read()) == {"key": "test"}
 
 
-def test_Auth_write_exists(tmp_path):
+def test_Auth_store_exists(tmp_path):
     secret_path = str(tmp_path / '.test')
 
     with open(secret_path, 'w') as fp:
         fp.write('{"existing": "exists"}')
 
     test_auth = auth.Auth.from_key('test')
-    test_auth.write(secret_path)
+    test_auth.store(secret_path)
 
     with open(secret_path, 'r') as fp:
         assert json.loads(fp.read()) == {"key": "test", "existing": "exists"}

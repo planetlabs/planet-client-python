@@ -31,9 +31,8 @@ LOGGER = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def orders_client(ctx):
-    auth = ctx.obj['AUTH']
     base_url = ctx.obj['BASE_URL']
-    async with CliSession(auth=auth) as sess:
+    async with CliSession() as sess:
         cl = OrdersClient(sess, base_url=base_url)
         yield cl
 
@@ -46,7 +45,6 @@ async def orders_client(ctx):
               help='Assign custom base Orders API URL.')
 def orders(ctx, base_url):
     '''Commands for interacting with the Orders API'''
-    ctx.obj['AUTH'] = None
     ctx.obj['BASE_URL'] = base_url
 
 
@@ -67,8 +65,7 @@ async def list(ctx, state, limit, pretty):
     optionally pretty-printed.
     '''
     async with orders_client(ctx) as cl:
-        orders_aiter = cl.list_orders_aiter(state=state, limit=limit)
-        async for o in orders_aiter:
+        async for o in cl.list_orders(state=state, limit=limit):
             echo_json(o, pretty)
 
 
@@ -204,7 +201,7 @@ async def download(ctx, order_id, overwrite, directory, checksum):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument("request", type=types.JSON(), default="-", required=False)
+@click.argument("request", type=types.JSON())
 @pretty
 async def create(ctx, request: str, pretty):
     '''Create an order.
@@ -225,26 +222,25 @@ async def create(ctx, request: str, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument('item_type',
-                metavar='ITEM_TYPE',
-                type=click.Choice(planet.specs.get_item_types(),
-                                  case_sensitive=False))
-@click.argument('bundle',
-                metavar='BUNDLE',
-                type=click.Choice(planet.specs.get_product_bundles(),
-                                  case_sensitive=False))
+@click.argument('ids', metavar='IDS', type=types.CommaSeparatedString())
+@click.option('--item-type',
+              required=True,
+              help='Item type for requested item ids.',
+              type=click.Choice(planet.specs.get_item_types(),
+                                case_sensitive=False))
+@click.option('--bundle',
+              required=True,
+              help='Asset type for the item.',
+              type=click.Choice(planet.specs.get_product_bundles(),
+                                case_sensitive=False))
 @click.option('--name',
               required=True,
               help='Order name. Does not need to be unique.',
               type=click.STRING)
-@click.option('--id',
-              help='One or more comma-separated item IDs.',
-              type=types.CommaSeparatedString(),
-              required=True)
 @click.option('--clip',
               type=types.JSON(),
-              help="""Clip feature GeoJSON. Can be a json string, filename,
-              or '-' for stdin.""")
+              help="""Clip feature Polygon or Multipolygon GeoJSON. Can be a
+              json string, filename, or '-' for stdin.""")
 @click.option(
     '--tools',
     type=types.JSON(),
@@ -270,7 +266,7 @@ async def request(ctx,
                   item_type,
                   bundle,
                   name,
-                  id,
+                  ids,
                   clip,
                   tools,
                   email,
@@ -280,11 +276,13 @@ async def request(ctx,
     """Generate an order request.
 
     This command provides support for building an order description used
-    in creating an order. It outputs the order request, optionally pretty-
-    printed.
+    in creating an order. It outputs the order request, optionally
+    pretty-printed.
+
+    IDs is one or more comma-separated item IDs.
     """
     try:
-        product = planet.order_request.product(id, bundle, item_type)
+        product = planet.order_request.product(ids, bundle, item_type)
     except planet.specs.SpecificationException as e:
         raise click.BadParameter(e)
 
@@ -297,11 +295,9 @@ async def request(ctx,
         raise click.BadParameter("Specify only one of '--clip' or '--tools'")
     elif clip:
         try:
-            clip = planet.geojson.as_polygon(clip)
-        except planet.exceptions.GeoJSONError as e:
+            tools = [planet.order_request.clip_tool(clip)]
+        except planet.exceptions.ClientError as e:
             raise click.BadParameter(e)
-
-        tools = [planet.order_request.clip_tool(clip)]
 
     if cloudconfig:
         delivery = planet.order_request.delivery(cloud_config=cloudconfig)
