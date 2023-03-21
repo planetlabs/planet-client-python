@@ -133,7 +133,7 @@ def catalog_source(
     parameters = {
         "item_types": item_types,
         "asset_types": asset_types,
-        "geometry": geometry,
+        "geometry": geojson.as_geom(geometry),
     }
 
     try:
