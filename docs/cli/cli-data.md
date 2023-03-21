@@ -158,7 +158,6 @@ And you can also just get the ID, using `jq`
 planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id
 ```
 
-
 ## Filtering
 
 ### Run a search on a bounding box
@@ -326,25 +325,63 @@ that are of standard (aka not test) quality. Therefore, these filters can be eas
 planet data filter --permission --std-quality --asset ortho_analytic_8b_sr | planet data search PSScene --filter -
 ```
 
-## `data asset` command basics
+## Asset Activation and Download
 
-To activate an asset for download three commands must be queried, in sequence:
-1. `asset-activate` - activate an asset
-2. `asset-wait` - wait for an asset to be activated
-3. `asset-download` - download an activated asset
+While we recommend using the Orders or Subscriptions API's to deliver Planet data, the Data API has the capability
+to activate and download data. Only one asset can be activated at once, and there is no clipping or additional 
+processing of the data like the great 'tools' of Subscriptions & Orders. But the advantage is that it can often
+be faster for working with a small number of items & assets. 
 
-For example, if we want to download a `basic_udm2` asset from item ID 
-`20221003_002705_38_2461`, a `PSScene` item type:
+### Activate an Asset
+
+All items in the Data API have a list of assets. This includes the main imagery geotiff files, usually in a few
+different formats, and also accompanying files like the [Usable Data Mask](https://developers.planet.com/docs/data/udm-2/)
+ (UDM) and JSON metadata. You can't immediately download them, as they must first be created in the cloud, known as
+'activated'. To activate data you need to get its item id, plus the name of the asset - the available ones
+can be seen by looking at the Item's JSON. Once you have the item id and asset type you can run the CLI
 
 ```
-planet data asset-activate PSScene 20221003_002705_38_2461 basic_udm2 && \
-planet data asset-wait PSScene 20221003_002705_38_2461 basic_udm2 && \
-planet data asset-download PSScene 20221003_002705_38_2461 basic_udm2 --directory /path/to/data/
-00:00 - order my asset - state: active
-{'_links': {'_self': 'https://api.planet.com/data/v1/assets/eyJpIjogIjIwMjIxMDAzXzAwMjcwNV8zOF8yNDYxIiwgImMiOiAiUFNTY2VuZSIsICJ0IjogImJhc2ljX3VkbTIiLCAiY3QiOiAiaXRlbS10eXBlIn0', 'activate': 'https://api.planet.com/data/v1/assets/eyJpIjogIjIwMjIxMDAzXzAwMjcwNV8zOF8yNDYxIiwgImMiOiAiUFNTY2VuZSIsICJ0IjogImJhc2ljX3VkbTIiLCAiY3QiOiAiaXRlbS10eXBlIn0/activate', 'type': 'https://api.planet.com/data/v1/asset-types/basic_udm2'}, '_permissions': ['download'], 'expires_at': '2023-03-02T19:30:48.942718', 'location': 'https://api.planet.com/data/v1/download?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJQYWtGNHZuUEs3WXRmSFNGUklHY2I3YTNXT3piaTlaam4zWUpZMmxnd0x5cVlFMVBRSHU5QXNCcjR5Q3FxSjBNbl9yN3VwVEFQYUI1ZzhYNUJmcDhmUT09IiwiZXhwIjoxNjc3Nzg1NDQ4LCJ0b2tlbl90eXBlIjoidHlwZWQtaXRlbSIsIml0ZW1fdHlwZV9pZCI6IlBTU2NlbmUiLCJpdGVtX2lkIjoiMjAyMjEwMDNfMDAyNzA1XzM4XzI0NjEiLCJhc3NldF90eXBlIjoiYmFzaWNfdWRtMiJ9.Dd0opDjW3bBS6qLLZoNiJkfBsO2n5Xz9pM5apEUz_K6viDPFexhJiy6bMbaySbby8W0YvuATdb1uYXS2FkweDg', 'md5_digest': '3a9f7dd1ce500f699d0a96afdd0e3aa2', 'status': 'active', 'type': 'basic_udm2'}
-/path/to/data/20221003_002705_38_2461_1A_udm2.tif: 100%|██████████████████████████████████| 3.16k/3.16k [00:00<00:00, 32.0MB/s]
+planet data asset-activate PSScene 20230310_083933_71_2431 ortho_udm2
 ```
+
+This will kick off the activation process, and the command should return immediately. In this example
+we're activating the UDM, which is one of the most common things to do through the Data API, to 
+first get a sense of where there are clouds before placing a proper clipping order.
+
+### Download an Asset
+
+Once an asset is ready you can use `asset-download` with a similar command:
+
+```
+planet data asset-download PSScene 20230310_083933_71_2431 ortho_udm2
+```
+
+Note though that while some assets activate almost immediately (if another user has requested
+it recently), some can take a few minutes. If you try to download it before it's active
+you'll get a message like: `Error: asset missing ["location"] entry. Is asset active?`
+
+Thankfully the CLI has the great `asset-wait` command will complete when the asset is activated:
+
+```
+planet data asset-wait PSScene 20230310_083933_71_2431 ortho_udm2
+```
+
+And you can pair with download so that as soon as the asset is active it'll be downloaded:
+
+```
+planet data asset-wait PSScene 20230310_083933_71_2431 ortho_udm2 && \
+planet data asset-download PSScene 20230310_083933_71_2431 ortho_udm2
+```
+
+Download has a few different options:
+
+ * `--directory` lets you specify a base directory to put the asset in.
+ * `--filename` assigns a custom name to the downloaded file.
+ * `--overwrite` will overwrite files if they already exist.
+ * `--checksum` checks to make sure the file you downloaded is the exact same as the one on the server. This can be useful if you script thousands of files to download to detect any corruptions in that process.
 
 ## Stats
 
 TODO
+
+## Saved Searches
