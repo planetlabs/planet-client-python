@@ -6,6 +6,7 @@ from planet import DataClient, OrdersClient, SubscriptionsClient, Session
 from planet.exceptions import ClientError
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize("client_name,client_class",
                          [('data', DataClient), ('orders', OrdersClient),
                           ('subscriptions', SubscriptionsClient)])
@@ -16,6 +17,7 @@ async def test_session_get_client(client_name, client_class):
         assert isinstance(client, client_class)
 
 
+@pytest.mark.asyncio
 async def test_session_get_client_error():
     """Get an exception when no such client exists."""
     async with Session() as session:
