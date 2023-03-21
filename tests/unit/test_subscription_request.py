@@ -90,6 +90,30 @@ def test_catalog_source_success(geom_geojson):
     assert res == expected
 
 
+def test_catalog_source_featurecollection(featurecollection_geojson,
+                                          geom_geojson):
+    '''geojson specified as featurecollection is simplified down to just
+    the geometry'''
+    res = subscription_request.catalog_source(
+        item_types=["PSScene"],
+        asset_types=["ortho_analytic_4b"],
+        geometry=featurecollection_geojson,
+        start_time=datetime(2021, 3, 1),
+    )
+
+    expected = {
+        "type": "catalog",
+        "parameters": {
+            "geometry": geom_geojson,
+            "start_time": "2021-03-01T00:00:00Z",
+            "item_types": ["PSScene"],
+            "asset_types": ["ortho_analytic_4b"]
+        }
+    }
+
+    assert res == expected
+
+
 def test_catalog_source_invalid_start_time(geom_geojson):
     with pytest.raises(exceptions.ClientError):
         subscription_request.catalog_source(
