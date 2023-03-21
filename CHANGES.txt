@@ -3,13 +3,7 @@
 Added:
 - The Session class can now construct clients by name with its client method
   (#858).
-
-Changed:
 - Updated product bundle spec to 2/24/23 version.
-- `planet.subscription_request.catalog_source` and 
-  `planet subscriptions source-catalog` now simplify geojson given in
-  `geometry` parameter/option to just the geometry, the form required by the
-   subscriptions api (#880).
 
 
 2.0.0-rc.1 (2023-03-06)
