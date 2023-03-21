@@ -572,7 +572,13 @@ def test_data_search_create_filter_invalid_json(invoke, item_types, filter):
     name = "temp"
 
     runner = CliRunner()
-    result = invoke(["search-create", name, item_types, filter], runner=runner)
+    result = invoke([
+        "search-create",
+        item_types,
+        f'--name={name}',
+        f'--filter={json.dumps(filter)}'
+    ],
+                    runner=runner)
     assert result.exit_code == 2
 
 
@@ -599,7 +605,12 @@ def test_data_search_create_filter_success(invoke, item_types):
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
     runner = CliRunner()
-    result = invoke(["search-create", name, item_types, json.dumps(filter)],
+    result = invoke([
+        "search-create",
+        item_types,
+        f'--name={name}',
+        f'--filter={json.dumps(filter)}'
+    ],
                     runner=runner)
 
     assert result.exit_code == 0
@@ -621,9 +632,9 @@ def test_data_search_create_daily_email(invoke, search_result):
 
     result = invoke([
         'search-create',
-        'temp',
         'SkySatScene',
-        json.dumps(filter),
+        '--name=temp',
+        f'--filter={json.dumps(filter)}',
         '--daily-email'
     ])
 

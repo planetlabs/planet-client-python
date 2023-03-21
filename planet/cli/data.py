@@ -283,7 +283,8 @@ def filter(ctx,
                 callback=check_item_types)
 @click.option('--filter',
               type=types.JSON(),
-              help='Apply specified filter to search.')
+              help="""Apply specified filter to search. Can be a json string,
+              filename, or '-' for stdin.""")
 @limit
 @click.option('--name', type=str, help='Name of the saved search.')
 @click.option('--sort',
@@ -321,11 +322,19 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument('name')
 @click.argument("item_types",
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
-@click.argument("filter", type=types.JSON())
+@click.option('--name',
+              type=str,
+              required=True,
+              help='Name of the saved search.')
+@click.option(
+    '--filter',
+    type=types.JSON(),
+    required=True,
+    help="""Filter to apply to search. Can be a json string, filename,
+              # or '-' for stdin.""")
 @click.option('--daily-email',
               is_flag=True,
               help='Send a daily email when new results are added.')
@@ -336,12 +345,7 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
     This function outputs a full JSON description of the created search,
     optionally pretty-printed.
 
-    NAME is the name to give the search.
-
     ITEM_TYPES is a comma-separated list of item-types to search.
-
-    FILTER must be JSON and can be specified a json string, filename, or '-'
-    for stdin.
     """
     async with data_client(ctx) as cl:
         items = await cl.create_search(name=name,
