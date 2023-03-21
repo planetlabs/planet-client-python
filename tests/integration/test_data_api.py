@@ -246,8 +246,8 @@ async def test_create_search_basic(search_filter, session):
 
     cl = DataClient(session, base_url=TEST_URL)
     search = await cl.create_search(['PSScene'],
-                                    name='test',
-                                    search_filter=search_filter)
+                                    search_filter=search_filter,
+                                    name='test')
 
     # check that request is correct
     expected_request = {
@@ -284,8 +284,8 @@ async def test_create_search_email(search_filter, session):
 
     cl = DataClient(session, base_url=TEST_URL)
     search = await cl.create_search(['PSScene'],
-                                    name='test',
                                     search_filter=search_filter,
+                                    name='test',
                                     enable_email=True)
 
     # check that request is correct
