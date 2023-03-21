@@ -2,7 +2,7 @@
 
 Changed:
 - Session class unit tests are marked to be run within an event loop and are
-  no longer skipped (#).
+  no longer skipped (#881).
 
 2.0.0-rc.2 (2023-03-15)
 
