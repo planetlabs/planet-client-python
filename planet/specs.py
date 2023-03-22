@@ -20,7 +20,7 @@ from .constants import DATA_DIR
 
 PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2023-02-24.json'
 SUPPORTED_TOOLS = [
-    'band_math',
+    'bandmath',
     'clip',
     'composite',
     'coregister',
