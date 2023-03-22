@@ -325,21 +325,21 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
 @click.argument("item_types",
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
-@click.option('--name',
-              type=str,
-              required=True,
-              help='Name of the saved search.')
 @click.option(
     '--filter',
     type=types.JSON(),
     required=True,
     help="""Filter to apply to search. Can be a json string, filename,
-              # or '-' for stdin.""")
+         or '-' for stdin.""")
+@click.option('--name',
+              type=str,
+              required=True,
+              help='Name of the saved search.')
 @click.option('--daily-email',
               is_flag=True,
               help='Send a daily email when new results are added.')
 @pretty
-async def search_create(ctx, name, item_types, filter, daily_email, pretty):
+async def search_create(ctx, item_types, filter, name, daily_email, pretty):
     """Create a new saved structured item search.
 
     This function outputs a full JSON description of the created search,
@@ -348,9 +348,9 @@ async def search_create(ctx, name, item_types, filter, daily_email, pretty):
     ITEM_TYPES is a comma-separated list of item-types to search.
     """
     async with data_client(ctx) as cl:
-        items = await cl.create_search(name=name,
-                                       item_types=item_types,
+        items = await cl.create_search(item_types=item_types,
                                        search_filter=filter,
+                                       name=name,
                                        enable_email=daily_email)
         echo_json(items, pretty)
 
