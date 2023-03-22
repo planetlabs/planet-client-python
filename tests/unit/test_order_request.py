@@ -278,8 +278,7 @@ def test_band_math_tool_success():
     res = order_request.band_math_tool(b1='b1', b2='arctan(b1)')
 
     expected = {
-        "type": "bandmath",
-        "parameters": {
+        "band_math": {
             "b1": "b1",
             "b2": "arctan(b1)",
             "pixel_type": order_request.BAND_MATH_PIXEL_TYPE_DEFAULT
