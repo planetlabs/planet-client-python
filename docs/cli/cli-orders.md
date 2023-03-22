@@ -515,7 +515,7 @@ One cool little trick is that you can even stream in the JSON directly with `cur
 
 ```console
 curl -s https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/tools-clip-composite.json \
-| planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Streaming Clip & Composite' \
+| planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Streaming Clip & Composite' --no-stac \
  20220605_124027_64_242b,20220605_124025_34_242b --tools - | planet orders create - 
 ```
 
