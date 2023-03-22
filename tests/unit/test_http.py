@@ -63,7 +63,7 @@ def test_basesession__raise_for_status(mock_response):
             mock_response(HTTPStatus.METHOD_NOT_ALLOWED, json={}))
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test__Limiter_max_workers(monkeypatch):
     """Test that the worker cap is enforced.
 
@@ -119,7 +119,7 @@ async def test__Limiter_max_workers(monkeypatch):
     assert calls == total_calls
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test__Limiter_rate_limit(monkeypatch):
     """Test that the rate limit is enforced.
 
@@ -184,14 +184,14 @@ async def test__Limiter_rate_limit(monkeypatch):
     await asyncio.gather(*test_functions, control())
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session_contextmanager():
     async with http.Session():
         pass
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize('data', (None, {'boo': 'baa'}))
 async def test_session_request_success(data):
 
@@ -216,7 +216,7 @@ async def test_session_request_success(data):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session_stream():
     async with http.Session() as ps:
         mock_resp = httpx.Response(HTTPStatus.OK, text='bubba')
@@ -228,7 +228,7 @@ async def test_session_stream():
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session_request_retry():
     """Test the retry in the Session.request method"""
     async with http.Session() as ps:
@@ -247,7 +247,7 @@ async def test_session_request_retry():
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session__retry():
     """A unit test for the _retry function"""
 
@@ -285,7 +285,7 @@ def test__calculate_wait():
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_authsession_request():
     sess = http.AuthSession()
     resp_json = {'token': 'foobar'}

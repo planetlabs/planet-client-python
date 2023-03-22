@@ -146,7 +146,7 @@ res_api_mock.route(M(url__startswith=TEST_URL)).mock(
     side_effect=[Response(200, json=page) for page in result_pages(size=40)])
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @failing_api_mock
 async def test_list_subscriptions_failure():
     """ServerError is raised if there is an internal server error (500)."""
@@ -158,7 +158,7 @@ async def test_list_subscriptions_failure():
 
 @pytest.mark.parametrize("status, count", [({"running"}, 100), ({"failed"}, 0),
                                            (None, 100)])
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @api_mock
 async def test_list_subscriptions_success(
     status,
@@ -172,7 +172,7 @@ async def test_list_subscriptions_success(
         ]) == count
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @failing_api_mock
 async def test_create_subscription_failure():
     """APIError is raised if there is a server error."""
@@ -182,7 +182,7 @@ async def test_create_subscription_failure():
             _ = await client.create_subscription({"lol": "wut"})
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @create_mock
 async def test_create_subscription_success():
     """Subscription is created, description has the expected items."""
@@ -194,7 +194,7 @@ async def test_create_subscription_success():
         assert sub['name'] == 'test'
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @failing_api_mock
 async def test_cancel_subscription_failure():
     """APIError is raised if there is a server error."""
@@ -204,7 +204,7 @@ async def test_cancel_subscription_failure():
             _ = await client.cancel_subscription("lolwut")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @cancel_mock
 async def test_cancel_subscription_success():
     """Subscription is canceled, description has the expected items."""
@@ -213,7 +213,7 @@ async def test_cancel_subscription_success():
         _ = await client.cancel_subscription("test")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @failing_api_mock
 async def test_update_subscription_failure():
     """APIError is raised if there is a server error."""
@@ -223,7 +223,7 @@ async def test_update_subscription_failure():
             _ = await client.update_subscription("lolwut", {})
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @update_mock
 async def test_update_subscription_success():
     """Subscription is created, description has the expected items."""
@@ -236,7 +236,7 @@ async def test_update_subscription_success():
         assert sub['delivery'] == "no, thanks"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @failing_api_mock
 async def test_get_subscription_failure():
     """APIError is raised if there is a server error."""
@@ -246,7 +246,7 @@ async def test_get_subscription_failure():
             _ = await client.get_subscription("lolwut")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @describe_mock
 async def test_get_subscription_success(monkeypatch):
     """Subscription description fetched, has the expected items."""
@@ -256,7 +256,7 @@ async def test_get_subscription_success(monkeypatch):
         assert sub['delivery'] == "yes, please"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @failing_api_mock
 async def test_get_results_failure():
     """APIError is raised if there is a server error."""
@@ -266,7 +266,7 @@ async def test_get_results_failure():
             _ = [res async for res in client.get_results("lolwut")]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @res_api_mock
 async def test_get_results_success():
     """Subscription description fetched, has the expected items."""
@@ -299,7 +299,7 @@ paging_cycle_api_mock.route(M(url__startswith=TEST_URL)).mock(side_effect=[
 ])
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @paging_cycle_api_mock
 async def test_list_subscriptions_cycle_break():
     """PagingError is raised if there is a paging cycle."""
