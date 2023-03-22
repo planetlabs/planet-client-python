@@ -281,7 +281,7 @@ def test_band_math_tool_success():
         "bandmath": {
             "b1": "b1",
             "b2": "arctan(b1)",
-            "pixel_type": order_request.BAND_MATH_PIXEL_TYPE_DEFAULT
+            "pixel_type": specs.BAND_MATH_PIXEL_TYPE_DEFAULT
         }
     }
     assert res == expected
