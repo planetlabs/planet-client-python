@@ -125,7 +125,7 @@ def test__get_random_filename(content_type, check):
     assert check(models._get_random_filename(content_type))
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_StreamingBody_write_img(tmpdir, open_test_img):
 
     async def _aiter_bytes():
@@ -149,7 +149,7 @@ async def test_StreamingBody_write_img(tmpdir, open_test_img):
     assert os.stat(filename).st_size == 527
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_Paged_iterator():
     resp = MagicMock(name='response')
     resp.json = lambda: {'_links': {'next': 'blah'}, 'items': [1, 2]}
@@ -163,7 +163,7 @@ async def test_Paged_iterator():
     assert [1, 2, 3, 4] == [i async for i in paged]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize('limit, expected', [(0, [1, 2, 3, 4]), (1, [1])])
 async def test_Paged_limit(limit, expected):
     resp = MagicMock(name='response')
@@ -178,7 +178,7 @@ async def test_Paged_limit(limit, expected):
     assert [i async for i in paged] == expected
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_Paged_break_page_cycle():
     """Check that we break out of a page cycle."""
     resp = MagicMock(name='response')

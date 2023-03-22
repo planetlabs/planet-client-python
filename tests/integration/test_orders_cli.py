@@ -334,13 +334,15 @@ def test_cli_orders_download_default(invoke, mock_download_response, oid):
         assert 'm1.json' in result.output
 
         # Check that the files were downloaded and have the correct contents
-        f1_path = Path(folder) / 'oid/itemtype/m1.json'
-        assert json.load(open(f1_path)) == {'key': 'value'}
-        f2_path = Path(folder) / 'oid/itemtype/m2.json'
-        assert json.load(open(f2_path)) == {'key2': 'value2'}
+        with open(Path(folder) / 'oid/itemtype/m1.json') as f:
+            assert json.load(f) == {'key': 'value'}
+        with open(Path(folder) / 'oid/itemtype/m2.json') as f:
+            assert json.load(f) == {'key2': 'value2'}
 
 
 @respx.mock
+@pytest.mark.skip("""does not actually test checksum, copy of
+test_cli_orders_download_default""")
 def test_cli_orders_download_checksum(invoke, mock_download_response, oid):
     mock_download_response()
 
@@ -353,10 +355,10 @@ def test_cli_orders_download_checksum(invoke, mock_download_response, oid):
         assert 'm1.json' in result.output
 
         # Check that the files were downloaded and have the correct contents
-        f1_path = Path(folder) / 'oid/itemtype/m1.json'
-        assert json.load(open(f1_path)) == {'key': 'value'}
-        f2_path = Path(folder) / 'oid/itemtype/m2.json'
-        assert json.load(open(f2_path)) == {'key2': 'value2'}
+        with open(Path(folder) / 'oid/itemtype/m1.json') as f:
+            assert json.load(f) == {'key': 'value'}
+        with open(Path(folder) / 'oid/itemtype/m2.json') as f:
+            assert json.load(f) == {'key2': 'value2'}
 
 
 @respx.mock
@@ -372,10 +374,11 @@ def test_cli_orders_download_dest(invoke, mock_download_response, oid):
         assert result.exit_code == 0
 
         # Check that the files were downloaded to the custom directory
-        f1_path = dest_dir / 'oid/itemtype/m1.json'
-        assert json.load(open(f1_path)) == {'key': 'value'}
-        f2_path = dest_dir / 'oid/itemtype/m2.json'
-        assert json.load(open(f2_path)) == {'key2': 'value2'}
+        with open(dest_dir / 'oid/itemtype/m1.json') as f:
+            assert json.load(f) == {'key': 'value'}
+
+        with open(dest_dir / 'oid/itemtype/m2.json') as f:
+            assert json.load(f) == {'key2': 'value2'}
 
 
 @respx.mock
@@ -394,12 +397,16 @@ def test_cli_orders_download_overwrite(invoke,
         # check the file doesn't get overwritten by default
         result = invoke(['download', oid], runner=runner)
         assert result.exit_code == 0
-        assert json.load(open(filepath)) == {'foo': 'bar'}
+
+        with open(filepath, 'r') as f:
+            assert json.load(f) == {'foo': 'bar'}
 
         # check the file gets overwritten
         result = invoke(['download', '--overwrite', oid], runner=runner)
         assert result.exit_code == 0
-        assert json.load(open(filepath)) == {'key': 'value'}
+
+        with open(filepath, 'r') as f:
+            assert json.load(f) == {'key': 'value'}
 
 
 @respx.mock
