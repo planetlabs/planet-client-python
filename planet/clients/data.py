@@ -167,9 +167,9 @@ class DataClient:
             yield i
 
     async def create_search(self,
-                            name: str,
                             item_types: List[str],
                             search_filter: dict,
+                            name: str,
                             enable_email: bool = False) -> dict:
         """Create a new saved structured item search.
 
@@ -190,9 +190,9 @@ class DataClient:
 
 
         Parameters:
-            name: The name of the saved search.
             item_types: The item types to include in the search.
             search_filter: Structured search criteria.
+            name: The name of the saved search.
             enable_email: Send a daily email when new results are added.
 
         Returns:

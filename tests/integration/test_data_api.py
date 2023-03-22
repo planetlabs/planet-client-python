@@ -245,7 +245,9 @@ async def test_create_search_basic(search_filter, session):
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
     cl = DataClient(session, base_url=TEST_URL)
-    search = await cl.create_search('test', ['PSScene'], search_filter)
+    search = await cl.create_search(['PSScene'],
+                                    search_filter=search_filter,
+                                    name='test')
 
     # check that request is correct
     expected_request = {
@@ -281,8 +283,9 @@ async def test_create_search_email(search_filter, session):
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
     cl = DataClient(session, base_url=TEST_URL)
-    search = await cl.create_search('test', ['PSScene'],
-                                    search_filter,
+    search = await cl.create_search(['PSScene'],
+                                    search_filter=search_filter,
+                                    name='test',
                                     enable_email=True)
 
     # check that request is correct
