@@ -550,7 +550,7 @@ STAC metadata by default, as the STAC files are small and often more useful than
 You can easily turn off STAC output request with the `--no-stac` command:
 
 ```
-planet orders request PSScene visual --name 'No STAC' --no-stac --id 20220605_124027_64_242b 
+planet orders request --item-type PSScene --bundle visual --name 'No STAC' --no-stac 20220605_124027_64_242b
 ```
 
 Currently this needs to be done for any 'composite' operation, as STAC output from composites is not yet 
