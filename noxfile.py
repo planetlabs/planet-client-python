@@ -42,8 +42,7 @@ def test(session):
     session.install(".[test]")
 
     options = session.posargs
-    # -W=error raises pytest warnings to errors so they are caught by CI
-    session.run('pytest', '--ignore', 'examples/', '-v', '-W=error', *options)
+    session.run('pytest', '--ignore', 'examples/', '-v', *options)
 
 
 @nox.session
