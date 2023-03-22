@@ -22,9 +22,6 @@ from .exceptions import ClientError
 
 LOGGER = logging.getLogger(__name__)
 
-BAND_MATH_PIXEL_TYPE = ('Auto', '8U', '16U', '16S', '32R')
-BAND_MATH_PIXEL_TYPE_DEFAULT = 'Auto'
-
 
 def build_request(name: str,
                   products: List[dict],
@@ -475,7 +472,7 @@ def band_math_tool(b1: str,
                    b13: Optional[str] = None,
                    b14: Optional[str] = None,
                    b15: Optional[str] = None,
-                   pixel_type: str = BAND_MATH_PIXEL_TYPE_DEFAULT):
+                   pixel_type: str = specs.BAND_MATH_PIXEL_TYPE_DEFAULT):
     '''Specify an Orders API band math tool.
 
     The parameters of the bandmath tool define how each output band in the
@@ -508,7 +505,7 @@ def band_math_tool(b1: str,
     '''  # noqa
     try:
         pixel_type = specs.get_match(pixel_type,
-                                     BAND_MATH_PIXEL_TYPE,
+                                     specs.BAND_MATH_PIXEL_TYPE,
                                      'pixel_type')
     except specs.SpecificationException as e:
         raise ClientError(e)
