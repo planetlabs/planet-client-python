@@ -515,4 +515,4 @@ def band_math_tool(b1: str,
 
     # e.g. {"b1": "b1", "b2":"arctan(b1)"} if b1 and b2 are specified
     parameters = dict((k, v) for k, v in locals().items() if v)
-    return _tool('bandmath', parameters)
+    return _tool('band_math', parameters)
