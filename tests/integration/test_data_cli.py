@@ -608,8 +608,8 @@ def test_data_search_create_filter_success(invoke, item_types):
     result = invoke([
         "search-create",
         item_types,
-        f'--name={name}',
-        f'--filter={json.dumps(filter)}'
+        f'--filter={json.dumps(filter)}',
+        f'--name={name}'
     ],
                     runner=runner)
 
