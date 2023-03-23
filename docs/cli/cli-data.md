@@ -532,4 +532,4 @@ planet data search-delete da963039dbe94573a3ac9e4629d065b6
 
 If the deletion was successful the command-line won't print out anything except a new line. If the
 search didn't exist it will say `Error: {"general": [{"message": "The requested search id does not exist"}], "field": {}}`.
-Note you can also delete `quick` searches, which would remove them from your history.
+You can also delete `quick` searches, which would remove them from your history.
