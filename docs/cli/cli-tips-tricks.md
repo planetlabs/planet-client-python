@@ -301,9 +301,11 @@ planet orders list | jq -rs '.[3] | "\(.id) \(.created_on) \(.name) \(.state)"'
 
 * Use jq to show just orders that have a given item type, like just skysat.
 
-planet orders list | jq -rs '.[] | "\(.id) \(.created_on) \(.state) \(.products[0].item_type)"'  will show the item type
+```console
+planet orders list | jq -rs '.[] | "\(.id) \(.created_on) \(.state) \(.products[0].item_type)"'
+```
 
-https://gist.github.com/ipbastola/2c955d8bf2e96f9b1077b15f995bdae3 has ideas for contains, but haven't got it right yet
+will show the item type https://gist.github.com/ipbastola/2c955d8bf2e96f9b1077b15f995bdae3 has ideas for contains, but haven't got it right yet
 
 * use jq to get the id of the an order by it's name
 
