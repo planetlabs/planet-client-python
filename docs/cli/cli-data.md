@@ -508,7 +508,7 @@ planet data search-run da963039dbe94573a3ac9e4629d065b6
 ```
 
 This is just like running a normal (quick) search, and takes similar arguments: `--limit` and `--pretty`, 
-and also the same [sort](#sort) parameter (`--sort`). Note that you can also run any previous `quick` search. 
+and also the same [sort](#sort) parameter (`--sort`). You can also run any previous `quick` search. 
 They don't have names (the ID is just used as the name), but they are saved in the system and can be 
 executed again. Note that searches (except those with an end date that has passed) will show new results
 if run later and match newly acquired imagery. 
