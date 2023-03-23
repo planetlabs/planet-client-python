@@ -146,7 +146,7 @@ descending order. The options are are:
  * 'published asc'
  * 'published desc'
 
-The lets you do things like get the id of the most recent skysat image taken (that you have download access to):
+This lets you do things like get the ID of the most recent SkySat image taken (and that you have permissions to download):
 
 ```console
 planet data search SkySatCollect --sort 'acquired desc' --limit 1
@@ -290,7 +290,7 @@ planet data filter --string-in strip_id 5743640 | planet data search PSScene --f
 ```
 
 Note that in all these commands we are piping the results into the search. If you don't include the pipe then you'll
-get the filter output, which can be interested to inspect to see exactly what is sent to the server.
+get the filter output, which can be interesting to inspect to see exactly what is sent to the server.
 
 ### Filter by asset
 
