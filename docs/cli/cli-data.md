@@ -439,7 +439,7 @@ Once an asset is ready you can use `asset-download` with a similar command:
 planet data asset-download PSScene 20230310_083933_71_2431 ortho_udm2
 ```
 
-Note though that while some assets activate almost immediately (if another user has requested
+While some assets activate almost immediately (if another user has requested
 it recently), some can take a few minutes. If you try to download it before it's active
 you'll get a message like: `Error: asset missing ["location"] entry. Is asset active?`
 
