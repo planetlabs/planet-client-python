@@ -398,7 +398,7 @@ You can see how the yearly output of Planet has gone up, though it actually went
 SuperDove meant much larger swaths, so the number of individual items went down even as we captured the whole
 earth.
 
-Note that the API does not support an 'all time' interval to get the total of all collections for an area, but
+The API does not support an 'all time' interval to get the total of all collections for an area, but
 you can easily use [jq]((cli-intro.md#jq) to total up the results of an interval count:
 
 ```
