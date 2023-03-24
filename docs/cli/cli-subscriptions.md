@@ -159,7 +159,7 @@ To see what items have been delivered to your cloud bucket you can use the `resu
 planet subscriptions results cb817760-1f07-4ee7-bba6-bcac5346343f
 ```
 
-By default it will show the first 100 results, but as with other commands, you can use the `--limit` param to 
+By default this displays the first 100 results. As with other commands, you can use the `--limit` param to 
 set a higher limit, or set it to 0 to see all results (this can be quite large with subscriptions results).
 
 You can also filter by status:
