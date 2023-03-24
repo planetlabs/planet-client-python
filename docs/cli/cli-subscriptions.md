@@ -285,7 +285,7 @@ And you can even pipe it in directly:
 planet data filter --range clear_percent gt 90 | planet subscriptions request-catalog --item-types PSScene --asset-types ortho_analytic_8b --geometry geometry.geojson --start-time 2022-08-24T00:00:00-07:00 --filter -
 ```
 
-Just note that you should not use geometry or date filters, as they will be ignored in favor of the `--start-time` and `--geometry` values that are required.
+Do not bother with geometry or date filters, as they will be ignored in favor of the `--start-time` and `--geometry` values that are required.
 
 #### Saving the output
 
