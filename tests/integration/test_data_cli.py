@@ -771,16 +771,18 @@ def test_data_stats_invalid_filter(invoke, filter):
     interval = "hour"
     item_type = 'PSScene'
     runner = CliRunner()
-    result = invoke(["stats", item_type, interval, filter], runner=runner)
+    result = invoke(
+        ["stats", item_type, f'--interval={interval}', f'--filter={filter}'],
+        runner=runner)
     assert result.exit_code == 2
 
 
 @respx.mock
 @pytest.mark.parametrize("item_types",
                          ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
-@pytest.mark.parametrize("interval, exit_code", [(None, 1), ('hou', 2),
+@pytest.mark.parametrize("interval, exit_code", [(None, 2), ('hou', 2),
                                                  ('hour', 0)])
-def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
+def test_data_stats_interval(invoke, item_types, interval, exit_code):
     """Test for planet data stats. Test with multiple item_types.
     Test should succeed with valid interval, and fail with invalid interval."""
     filter = {
@@ -797,10 +799,11 @@ def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
                                }]})
     respx.post(TEST_STATS_URL).return_value = mock_resp
 
-    runner = CliRunner()
-    result = invoke(["stats", item_types, interval, json.dumps(filter)],
-                    runner=runner)
+    args = ["stats", item_types, f'--filter={json.dumps(filter)}']
+    if interval:
+        args.append(f'--interval={interval}')
 
+    result = invoke(args)
     assert result.exit_code == exit_code
 
 
@@ -828,9 +831,12 @@ def test_data_stats_success(invoke, item_types, interval):
                                }]})
     respx.post(TEST_STATS_URL).return_value = mock_resp
 
-    runner = CliRunner()
-    result = invoke(["stats", item_types, interval, json.dumps(filter)],
-                    runner=runner)
+    result = invoke([
+        "stats",
+        item_types,
+        f'--interval={interval}',
+        f'--filter={json.dumps(filter)}'
+    ])
     assert result.exit_code == 0
 
 

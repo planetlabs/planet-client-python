@@ -418,19 +418,27 @@ async def search_run(ctx, search_id, sort, limit, pretty):
 @click.argument("item_types",
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
-@click.argument('interval', type=click.Choice(STATS_INTERVAL))
-@click.argument("filter", type=types.JSON())
-async def stats(ctx, item_types, interval, filter):
+@click.option(
+    '--filter',
+    type=types.JSON(),
+    required=True,
+    help="""Filter to apply to search. Can be a json string, filename,
+         or '-' for stdin.""")
+@click.option('--interval',
+              type=click.Choice(STATS_INTERVAL),
+              required=True,
+              help='The size of the histogram date buckets.')
+async def stats(ctx, item_types, filter, interval):
     """Get a bucketed histogram of items matching the filter.
 
     This function returns a bucketed histogram of results based on the
-    item_types, interval, and json filter specified (using file or stdin).
+    item_types, interval, and filter specified.
 
     """
     async with data_client(ctx) as cl:
         items = await cl.get_stats(item_types=item_types,
-                                   interval=interval,
-                                   search_filter=filter)
+                                   search_filter=filter,
+                                   interval=interval)
         echo_json(items)
 
 
