@@ -111,7 +111,7 @@ just replace the 'delivery' section with your cloud credentials, see the
 [core subscriptions delivery docs](https://developers.planet.com/docs/subscriptions/delivery/) 
 for more information. 
 
-To create a new subscription with the CLI you just use the `create` command:
+To create a new subscription with the CLI, use the `create` command:
 
 ```
 planet orders subscriptions create my-subscription.json
