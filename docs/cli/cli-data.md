@@ -333,14 +333,14 @@ binned by different time periods.
 This can be used for things like getting the number of items in a strip:
 
 ```
-planet data filter --string-in strip_id 5743640 | planet data stats PSScene day -
+planet data filter --string-in strip_id 5743640 | planet data stats PSScene --interval day --filter -
 ```
 
 Or the number of PlanetScope scenes collected in California each year:
 
 ```
 curl -s https://raw.githubusercontent.com/ropensci/geojsonio/main/inst/examples/california.geojson | \
-planet data filter --geom - | planet data stats PSScene year - | jq
+planet data filter --geom - | planet data stats PSScene --interval year --filter - | jq
 ```
 
 Will result in output like:
@@ -403,7 +403,7 @@ you can easily use [jq]((cli-intro.md#jq) to total up the results of an interval
 
 ```
 curl -s https://raw.githubusercontent.com/ropensci/geojsonio/main/inst/examples/california.geojson | \
-planet data filter --geom - | planet data stats PSScene year - | jq '.buckets | map(.count) | add'
+planet data filter --geom - | planet data stats PSScene --interval year --filter - | jq '.buckets | map(.count) | add'
 ```
 
 Just pipe the results to `jq '.buckets | map(.count) | add'` and it'll give you the total of all the values.
@@ -495,7 +495,7 @@ To make a new saved search you can use the exact same filter syntax as the regul
 but you must also add a 'name' to refer to the search by:
 
 ```
-planet data filter --geom geometry.geojson | planet data search-create 'my saved search' PSScene -
+planet data filter --geom geometry.geojson | planet data search-create PSScene --name 'my saved search' --filter -
 ```
 
 ### Run Search
@@ -519,7 +519,7 @@ You can also update an existing search to have a different set of values. This t
 will overwrite the previous values.
 
 ```
-planet data filter --string-in instrument PS2,PSB.SD | planet data search-update da963039dbe94573a3ac9e4629d065b6 'my updated search' SkySatCollect -
+planet data filter --string-in instrument PS2,PSB.SD | planet data search-update da963039dbe94573a3ac9e4629d065b6 --name 'my updated search' --filter - SkySatCollect
 ```
 
 ### Delete Search
