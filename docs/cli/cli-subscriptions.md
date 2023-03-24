@@ -139,7 +139,7 @@ The `list` command also supports filtering by the status of the subscription:
 planet subscriptions list --status running
 ```
 
-will give you just the currently active subscriptions. The other available status's are:
+gives you just the currently active subscriptions. The other available statuses are:
 `cancelled`, `preparing`, `pending`, `completed`, `suspended`, and `failed`.
 
 ### Describe Subscription
