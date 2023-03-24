@@ -127,7 +127,7 @@ Now that you've got a subscription working you can make use of the other command
 planet subscriptions list
 ```
 
-Will output the JSON for your first 100 subscriptions. If you'd like more you can set the `--limit` 
+outputs the JSON for your first 100 subscriptions. If you'd like more you can set the `--limit` 
 parameter higher, or you can set it to 0 and there will be no limit. 
 
 You can get nicer formatting with `--pretty` or pipe it into `jq`, just like the other Planet
