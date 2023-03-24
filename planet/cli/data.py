@@ -283,7 +283,8 @@ def filter(ctx,
                 callback=check_item_types)
 @click.option('--filter',
               type=types.JSON(),
-              help='Apply specified filter to search.')
+              help="""Apply specified filter to search. Can be a json string,
+              filename, or '-' for stdin.""")
 @limit
 @click.option('--name', type=str, help='Name of the saved search.')
 @click.option('--sort',
@@ -321,32 +322,35 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-@click.argument('name')
 @click.argument("item_types",
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
-@click.argument("filter", type=types.JSON())
+@click.option(
+    '--filter',
+    type=types.JSON(),
+    required=True,
+    help="""Filter to apply to search. Can be a json string, filename,
+         or '-' for stdin.""")
+@click.option('--name',
+              type=str,
+              required=True,
+              help='Name of the saved search.')
 @click.option('--daily-email',
               is_flag=True,
               help='Send a daily email when new results are added.')
 @pretty
-async def search_create(ctx, name, item_types, filter, daily_email, pretty):
+async def search_create(ctx, item_types, filter, name, daily_email, pretty):
     """Create a new saved structured item search.
 
     This function outputs a full JSON description of the created search,
     optionally pretty-printed.
 
-    NAME is the name to give the search.
-
     ITEM_TYPES is a comma-separated list of item-types to search.
-
-    FILTER must be JSON and can be specified a json string, filename, or '-'
-    for stdin.
     """
     async with data_client(ctx) as cl:
-        items = await cl.create_search(name=name,
-                                       item_types=item_types,
+        items = await cl.create_search(item_types=item_types,
                                        search_filter=filter,
+                                       name=name,
                                        enable_email=daily_email)
         echo_json(items, pretty)
 
@@ -414,19 +418,27 @@ async def search_run(ctx, search_id, sort, limit, pretty):
 @click.argument("item_types",
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
-@click.argument('interval', type=click.Choice(STATS_INTERVAL))
-@click.argument("filter", type=types.JSON())
-async def stats(ctx, item_types, interval, filter):
+@click.option(
+    '--filter',
+    type=types.JSON(),
+    required=True,
+    help="""Filter to apply to search. Can be a json string, filename,
+         or '-' for stdin.""")
+@click.option('--interval',
+              type=click.Choice(STATS_INTERVAL),
+              required=True,
+              help='The size of the histogram date buckets.')
+async def stats(ctx, item_types, filter, interval):
     """Get a bucketed histogram of items matching the filter.
 
     This function returns a bucketed histogram of results based on the
-    item_types, interval, and json filter specified (using file or stdin).
+    item_types, interval, and filter specified.
 
     """
     async with data_client(ctx) as cl:
         items = await cl.get_stats(item_types=item_types,
-                                   interval=interval,
-                                   search_filter=filter)
+                                   search_filter=filter,
+                                   interval=interval)
         echo_json(items)
 
 

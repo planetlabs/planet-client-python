@@ -173,7 +173,7 @@ represent GeoJSON features, the JSON blob is a GeoJSON FeatureCollection.
 Otherwise, the JSON blob is a list of the individual results.
 
 ```console
-$ planet data search PSScene | planet collect -
+planet data search PSScene | planet collect -
 ```
 
 This gives you a fully compliant GeoJSON FeatureCollection, which is 

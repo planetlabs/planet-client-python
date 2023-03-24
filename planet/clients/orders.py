@@ -123,10 +123,10 @@ class OrdersClient:
         >>> from planet.order_request import build_request, product
         >>>
         >>> async def main():
-        ...     image_ids = ['3949357_1454705_2020-12-01_241c']
+        ...     image_ids = ["20200925_161029_69_2223"]
         ...     request = build_request(
         ...         'test_order',
-        ...         [product(image_ids, 'analytic', 'psorthotile')]
+        ...         [product(image_ids, 'analytic_udm2', 'psscene')]
         ...     )
         ...     async with Session() as sess:
         ...         cl = OrdersClient(sess)

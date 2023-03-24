@@ -16,7 +16,7 @@ import logging
 
 import pytest
 
-from planet import exceptions, subscription_request
+from planet import exceptions, subscription_request, specs
 
 LOGGER = logging.getLogger(__name__)
 
@@ -82,6 +82,30 @@ def test_catalog_source_success(geom_geojson):
             "start_time": "2021-03-01T00:00:00Z",
             "end_time": "2023-11-01T00:00:00Z",
             "rrule": "FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
+            "item_types": ["PSScene"],
+            "asset_types": ["ortho_analytic_4b"]
+        }
+    }
+
+    assert res == expected
+
+
+def test_catalog_source_featurecollection(featurecollection_geojson,
+                                          geom_geojson):
+    '''geojson specified as featurecollection is simplified down to just
+    the geometry'''
+    res = subscription_request.catalog_source(
+        item_types=["PSScene"],
+        asset_types=["ortho_analytic_4b"],
+        geometry=featurecollection_geojson,
+        start_time=datetime(2021, 3, 1),
+    )
+
+    expected = {
+        "type": "catalog",
+        "parameters": {
+            "geometry": geom_geojson,
+            "start_time": "2021-03-01T00:00:00Z",
             "item_types": ["PSScene"],
             "asset_types": ["ortho_analytic_4b"]
         }
@@ -191,7 +215,7 @@ def test_band_math_tool_success():
         "parameters": {
             "b1": "b1",
             "b2": "arctan(b1)",
-            "pixel_type": subscription_request.BAND_MATH_PIXEL_TYPE_DEFAULT
+            "pixel_type": specs.BAND_MATH_PIXEL_TYPE_DEFAULT
         }
     }
     assert res == expected

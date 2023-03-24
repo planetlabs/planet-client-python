@@ -455,3 +455,61 @@ def harmonize_tool(target_sensor: str) -> dict:
         raise ClientError(e)
 
     return _tool('harmonize', {'target_sensor': target_sensor})
+
+
+def band_math_tool(b1: str,
+                   b2: Optional[str] = None,
+                   b3: Optional[str] = None,
+                   b4: Optional[str] = None,
+                   b5: Optional[str] = None,
+                   b6: Optional[str] = None,
+                   b7: Optional[str] = None,
+                   b8: Optional[str] = None,
+                   b9: Optional[str] = None,
+                   b10: Optional[str] = None,
+                   b11: Optional[str] = None,
+                   b12: Optional[str] = None,
+                   b13: Optional[str] = None,
+                   b14: Optional[str] = None,
+                   b15: Optional[str] = None,
+                   pixel_type: str = specs.BAND_MATH_PIXEL_TYPE_DEFAULT):
+    '''Specify an Orders API band math tool.
+
+    The parameters of the bandmath tool define how each output band in the
+    derivative product should be produced, referencing the product inputs’
+    original bands. Band math expressions may not reference neighboring pixels,
+    as non-local operations are not supported. The tool can calculate up to 15
+    bands for an item. Input band parameters may not be skipped. For example,
+    if the b4 parameter is provided, then b1, b2, and b3 parameters are also
+    required.
+
+    For each band expression, the bandmath tool supports normal arithmetic
+    operations and simple math operators offered in the Python numpy package.
+    (For a list of supported mathematical functions, see
+    [Bandmath supported numpy math routines](https://developers.planet.com/apis/orders/bandmath-numpy-routines/)).
+
+    One bandmath imagery output file is produced for each product bundle, with
+    output bands derived from the band math expressions. nodata pixels are
+    processed with the band math equation. These files have “_bandmath”
+    appended to their file names.
+
+    The tool passes through UDM, RPC, and XML files, and does not update values
+    in these files.
+
+    Parameters:
+        b1-b15: An expression defining how the output band should be computed.
+        pixel_type: A value indicating what the output pixel type should be.
+
+    Raises:
+        planet.exceptions.ClientError: If pixel_type is not valid.
+    '''  # noqa
+    try:
+        pixel_type = specs.get_match(pixel_type,
+                                     specs.BAND_MATH_PIXEL_TYPE,
+                                     'pixel_type')
+    except specs.SpecificationException as e:
+        raise ClientError(e)
+
+    # e.g. {"b1": "b1", "b2":"arctan(b1)"} if b1 and b2 are specified
+    parameters = dict((k, v) for k, v in locals().items() if v)
+    return _tool('bandmath', parameters)

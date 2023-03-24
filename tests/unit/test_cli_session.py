@@ -45,7 +45,7 @@ def test_valid_secretfile(tmp_path, monkeypatch):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_CliSession_headers(test_valid_secretfile):
     async with session.CliSession() as sess:
         route = respx.get(TEST_URL)
@@ -61,7 +61,7 @@ async def test_CliSession_headers(test_valid_secretfile):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_CliSession_auth_valid(test_valid_secretfile):
     async with session.CliSession() as sess:
         route = respx.get(TEST_URL)
@@ -77,7 +77,7 @@ async def test_CliSession_auth_valid(test_valid_secretfile):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_CliSession_auth_invalid(tmp_path, monkeypatch):
     # write invalid secret file
     secret_path = f'{tmp_path}/secret.test'
@@ -90,7 +90,7 @@ async def test_CliSession_auth_invalid(tmp_path, monkeypatch):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_CliSession_auth_nofile(tmp_path, monkeypatch):
     # point to non-existant file
     secret_path = f'{tmp_path}/doesnotexist.test'

@@ -18,9 +18,6 @@ from typing import Any, Dict, Optional, List
 from . import geojson, specs
 from .exceptions import ClientError
 
-BAND_MATH_PIXEL_TYPE = ('Auto', '8U', '16U', '16S', '32R')
-BAND_MATH_PIXEL_TYPE_DEFAULT = 'Auto'
-
 NOTIFICATIONS_TOPICS = ('delivery.success',
                         'delivery.match',
                         'delivery.failed',
@@ -133,7 +130,7 @@ def catalog_source(
     parameters = {
         "item_types": item_types,
         "asset_types": asset_types,
-        "geometry": geometry,
+        "geometry": geojson.as_geom(geometry),
     }
 
     try:
@@ -296,7 +293,7 @@ def band_math_tool(b1: str,
                    b13: Optional[str] = None,
                    b14: Optional[str] = None,
                    b15: Optional[str] = None,
-                   pixel_type: str = BAND_MATH_PIXEL_TYPE_DEFAULT):
+                   pixel_type: str = specs.BAND_MATH_PIXEL_TYPE_DEFAULT):
     '''Specify a subscriptions API band math tool.
 
     The parameters of the bandmath tool define how each output band in the
@@ -329,7 +326,7 @@ def band_math_tool(b1: str,
     '''  # noqa
     try:
         pixel_type = specs.get_match(pixel_type,
-                                     BAND_MATH_PIXEL_TYPE,
+                                     specs.BAND_MATH_PIXEL_TYPE,
                                      'pixel_type')
     except specs.SpecificationException as e:
         raise ClientError(e)

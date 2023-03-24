@@ -36,7 +36,7 @@ You can also filter orders by their `state`, which can be useful to just see ord
 progress:
 
 ```console
-planet orders --state running
+planet orders list --state running
 ```
 
 The other options are queued, failed, success, partial and cancelled.
@@ -100,7 +100,7 @@ To create an order you need a name, a [bundle](https://developers.planet.com/api
 First lets get the ID of an item you have download access to, using the Data API: 
 
 ```
-planet data filter | planet data search PSScene --limit 1 - | jq -r .id
+planet data filter | planet data search PSScene --limit 1 --filter - | jq -r .id 
 ```
 
 If you don't have access to PlanetScope data then replace PSScene with SkySatCollect.
@@ -515,7 +515,7 @@ One cool little trick is that you can even stream in the JSON directly with `cur
 
 ```console
 curl -s https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/tools-clip-composite.json \
-| planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Streaming Clip & Composite' \
+| planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Streaming Clip & Composite' --no-stac \
  20220605_124027_64_242b,20220605_124025_34_242b --tools - | planet orders create - 
 ```
 
@@ -550,7 +550,7 @@ STAC metadata by default, as the STAC files are small and often more useful than
 You can easily turn off STAC output request with the `--no-stac` command:
 
 ```
-planet orders request PSScene visual --name 'No STAC' --no-stac --id 20220605_124027_64_242b 
+planet orders request --item-type PSScene --bundle visual --name 'No STAC' --no-stac 20220605_124027_64_242b
 ```
 
 Currently this needs to be done for any 'composite' operation, as STAC output from composites is not yet 
@@ -672,7 +672,7 @@ image that was published:
 
 ```console
 planet orders request --item-type SkySatCollect --bundle analytic --name 'SkySat Latest' \
- `planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id` \
+ `planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 --filter - | jq -r .id` \
 | planet orders create - 
 ```
 
@@ -681,7 +681,7 @@ Or get the 5 latest cloud free images in an area and create an order that clips 
 
 ```console
 ids=`planet data filter --geom geometry.geojson --range clear_percent gt 90 | planet data \
-search PSScene --limit 5 - | jq -r .id | tr '\n' , | sed 's/.$//'`
+search PSScene --limit 5 --filter - | jq -r .id | tr '\n' , | sed 's/.$//'`
 planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Clipped Scenes'  \
  $ids --clip geometry.geojson | planet orders create -
 ```

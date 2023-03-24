@@ -181,7 +181,6 @@ def assert_and_filters_equal():
 
 
 @respx.mock
-@pytest.mark.asyncio
 def test_data_filter_defaults(invoke, assert_and_filters_equal):
 
     result = invoke(["filter"])
@@ -192,7 +191,6 @@ def test_data_filter_defaults(invoke, assert_and_filters_equal):
 
 
 @respx.mock
-@pytest.mark.asyncio
 def test_data_filter_permission(invoke, assert_and_filters_equal):
     result = invoke(["filter", "--permission"])
     assert result.exit_code == 0
@@ -207,7 +205,6 @@ def test_data_filter_permission(invoke, assert_and_filters_equal):
 
 
 @respx.mock
-@pytest.mark.asyncio
 def test_data_filter_std_quality(invoke, assert_and_filters_equal):
     result = invoke(["filter", '--std-quality'])
     assert result.exit_code == 0
@@ -225,7 +222,6 @@ def test_data_filter_std_quality(invoke, assert_and_filters_equal):
 
 
 @respx.mock
-@pytest.mark.asyncio
 @pytest.mark.parametrize("asset, expected",
                          [('ortho_analytic_8b_sr', ['ortho_analytic_8b_sr']),
                           ('ortho_analytic_8b_sr,ortho_analytic_4b_sr',
@@ -243,7 +239,6 @@ def test_data_filter_asset(asset, expected, invoke, assert_and_filters_equal):
 
 
 @respx.mock
-@pytest.mark.asyncio
 def test_data_filter_date_range_success(invoke, assert_and_filters_equal):
     """Check filter is created correctly and that multiple options results in
     multiple filters"""
@@ -276,14 +271,12 @@ def test_data_filter_date_range_success(invoke, assert_and_filters_equal):
 
 
 @respx.mock
-@pytest.mark.asyncio
 def test_data_filter_date_range_invalid(invoke):
     result = invoke(["filter"] + '--date-range field gt 2021'.split())
     assert result.exit_code == 2
 
 
 @respx.mock
-@pytest.mark.asyncio
 @pytest.mark.parametrize("geom_fixture",
                          [('geom_geojson'), ('feature_geojson'),
                           ('featurecollection_geojson')])
@@ -312,7 +305,6 @@ def test_data_filter_geom(geom_fixture,
 
 
 @respx.mock
-@pytest.mark.asyncio
 def test_data_filter_number_in_success(invoke, assert_and_filters_equal):
 
     result = invoke(["filter"] + '--number-in field 1'.split() +
@@ -334,7 +326,6 @@ def test_data_filter_number_in_success(invoke, assert_and_filters_equal):
 
 
 @respx.mock
-@pytest.mark.asyncio
 def test_data_filter_number_in_badparam(invoke, assert_and_filters_equal):
 
     result = invoke(["filter"] + '--number-in field 1,str'.split())
@@ -342,7 +333,6 @@ def test_data_filter_number_in_badparam(invoke, assert_and_filters_equal):
 
 
 @respx.mock
-@pytest.mark.asyncio
 def test_data_filter_range(invoke, assert_and_filters_equal):
     """Check filter is created correctly, that multiple options results in
     multiple filters, and that floats are processed correctly."""
@@ -371,7 +361,6 @@ def test_data_filter_range(invoke, assert_and_filters_equal):
 
 
 @respx.mock
-@pytest.mark.asyncio
 def test_data_filter_string_in(invoke, assert_and_filters_equal):
 
     result = invoke(["filter"] + '--string-in field foo'.split() +
@@ -395,7 +384,6 @@ def test_data_filter_string_in(invoke, assert_and_filters_equal):
 
 
 @respx.mock
-@pytest.mark.asyncio
 def test_data_filter_update(invoke, assert_and_filters_equal):
     """Check filter is created correctly and that multiple options results in
     multiple filters"""
@@ -448,7 +436,6 @@ def test_data_search_cmd_item_types(item_types, expect_success, invoke):
 
 
 @respx.mock
-@pytest.mark.asyncio
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
 def test_data_search_cmd_filter_invalid_json(invoke, filter):
     """Test for planet data search_quick.
@@ -556,7 +543,6 @@ def test_data_search_cmd_limit(invoke,
 
 
 @respx.mock
-@pytest.mark.asyncio
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
 @pytest.mark.parametrize("item_types",
                          ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
@@ -572,7 +558,13 @@ def test_data_search_create_filter_invalid_json(invoke, item_types, filter):
     name = "temp"
 
     runner = CliRunner()
-    result = invoke(["search-create", name, item_types, filter], runner=runner)
+    result = invoke([
+        "search-create",
+        item_types,
+        f'--name={name}',
+        f'--filter={json.dumps(filter)}'
+    ],
+                    runner=runner)
     assert result.exit_code == 2
 
 
@@ -599,7 +591,12 @@ def test_data_search_create_filter_success(invoke, item_types):
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
     runner = CliRunner()
-    result = invoke(["search-create", name, item_types, json.dumps(filter)],
+    result = invoke([
+        "search-create",
+        item_types,
+        f'--filter={json.dumps(filter)}',
+        f'--name={name}'
+    ],
                     runner=runner)
 
     assert result.exit_code == 0
@@ -621,9 +618,9 @@ def test_data_search_create_daily_email(invoke, search_result):
 
     result = invoke([
         'search-create',
-        'temp',
         'SkySatScene',
-        json.dumps(filter),
+        '--name=temp',
+        f'--filter={json.dumps(filter)}',
         '--daily-email'
     ])
 
@@ -646,7 +643,6 @@ def test_data_search_create_daily_email(invoke, search_result):
 
 
 @respx.mock
-@pytest.mark.asyncio
 @pytest.mark.parametrize("limit, expected_list_length", [(0, 4), (3, 3)])
 def test_data_search_list_basic(invoke,
                                 search_result,
@@ -663,7 +659,6 @@ def test_data_search_list_basic(invoke,
 
 
 @respx.mock
-@pytest.mark.asyncio
 @pytest.mark.parametrize("sort, rel_url, valid",
                          [(LIST_SORT_DEFAULT, '', True),
                           ('created asc', '?_sort=created+asc', True),
@@ -680,7 +675,6 @@ def test_data_search_list_sort(invoke, search_result, sort, rel_url, valid):
 
 
 @respx.mock
-@pytest.mark.asyncio
 @pytest.mark.parametrize("search_type, rel_url, valid",
                          [(LIST_SEARCH_TYPE_DEFAULT, '', True),
                           ('saved', '?search_type=saved', True),
@@ -701,7 +695,6 @@ def test_data_search_list_searchtype(invoke,
 
 
 @respx.mock
-@pytest.mark.asyncio
 @pytest.mark.parametrize("search_id, valid", [(VALID_SEARCH_ID, True),
                                               ('invalid', False)])
 @pytest.mark.parametrize("limit, expected_count", [(0, 3), (2, 2)])
@@ -738,7 +731,6 @@ def test_data_search_run_basic(invoke,
 
 
 @respx.mock
-@pytest.mark.asyncio
 @pytest.mark.parametrize("sort, rel_url, valid",
                          [(SEARCH_SORT_DEFAULT, '', True),
                           ('acquired asc', '?_sort=acquired+asc', True),
@@ -767,7 +759,6 @@ def test_data_search_run_sort(invoke, item_descriptions, sort, rel_url, valid):
 
 
 @respx.mock
-@pytest.mark.asyncio
 @pytest.mark.parametrize("filter", ['{1:1}', '{"foo"}'])
 def test_data_stats_invalid_filter(invoke, filter):
     """Test for planet data stats. Test with multiple item_types.
@@ -780,16 +771,18 @@ def test_data_stats_invalid_filter(invoke, filter):
     interval = "hour"
     item_type = 'PSScene'
     runner = CliRunner()
-    result = invoke(["stats", item_type, interval, filter], runner=runner)
+    result = invoke(
+        ["stats", item_type, f'--interval={interval}', f'--filter={filter}'],
+        runner=runner)
     assert result.exit_code == 2
 
 
 @respx.mock
 @pytest.mark.parametrize("item_types",
                          ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
-@pytest.mark.parametrize("interval, exit_code", [(None, 1), ('hou', 2),
+@pytest.mark.parametrize("interval, exit_code", [(None, 2), ('hou', 2),
                                                  ('hour', 0)])
-def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
+def test_data_stats_interval(invoke, item_types, interval, exit_code):
     """Test for planet data stats. Test with multiple item_types.
     Test should succeed with valid interval, and fail with invalid interval."""
     filter = {
@@ -806,10 +799,11 @@ def test_data_stats_invalid_interval(invoke, item_types, interval, exit_code):
                                }]})
     respx.post(TEST_STATS_URL).return_value = mock_resp
 
-    runner = CliRunner()
-    result = invoke(["stats", item_types, interval, json.dumps(filter)],
-                    runner=runner)
+    args = ["stats", item_types, f'--filter={json.dumps(filter)}']
+    if interval:
+        args.append(f'--interval={interval}')
 
+    result = invoke(args)
     assert result.exit_code == exit_code
 
 
@@ -837,9 +831,12 @@ def test_data_stats_success(invoke, item_types, interval):
                                }]})
     respx.post(TEST_STATS_URL).return_value = mock_resp
 
-    runner = CliRunner()
-    result = invoke(["stats", item_types, interval, json.dumps(filter)],
-                    runner=runner)
+    result = invoke([
+        "stats",
+        item_types,
+        f'--interval={interval}',
+        f'--filter={json.dumps(filter)}'
+    ])
     assert result.exit_code == 0
 
 
@@ -940,7 +937,6 @@ def test_search_update_fail(invoke, search_id, search_filter):
 
 
 @respx.mock
-@pytest.mark.asyncio
 @pytest.mark.parametrize("exists, overwrite",
                          [(False, False), (True, False), (True, True),
                           (False, True)])

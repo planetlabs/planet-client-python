@@ -96,7 +96,7 @@ def test_OrderStates_passed():
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_list_orders_basic(order_descriptions, session):
     next_page_url = TEST_ORDERS_URL + 'blob/?page_marker=IAmATest'
 
@@ -120,7 +120,7 @@ async def test_list_orders_basic(order_descriptions, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_list_orders_state_success(order_descriptions, session):
     list_url = TEST_ORDERS_URL + '?source_type=all&state=failed'
 
@@ -142,7 +142,7 @@ async def test_list_orders_state_success(order_descriptions, session):
             order2] == [o async for o in cl.list_orders(state='failed')]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_list_orders_state_invalid(session):
     cl = OrdersClient(session, base_url=TEST_URL)
 
@@ -151,7 +151,7 @@ async def test_list_orders_state_invalid(session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("limit,limited_list_length", [(None, 100), (0, 102),
                                                        (1, 1)])
 async def test_list_orders_limit(order_descriptions,
@@ -186,7 +186,7 @@ async def test_list_orders_limit(order_descriptions,
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_order_basic(oid,
                                   order_description,
                                   order_request,
@@ -203,7 +203,7 @@ async def test_create_order_basic(oid,
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_order_bad_item_type(order_request, session):
     resp = {
         "field": {
@@ -226,7 +226,7 @@ async def test_create_order_bad_item_type(order_request, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_order_item_id_does_not_exist(order_request, session):
     resp = {
         "field": {
@@ -250,7 +250,7 @@ async def test_create_order_item_id_does_not_exist(order_request, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_order(oid, order_description, session):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
@@ -261,7 +261,7 @@ async def test_get_order(oid, order_description, session):
     assert order_description == order
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_order_invalid_id(session):
     cl = OrdersClient(session, base_url=TEST_URL)
     with pytest.raises(exceptions.ClientError):
@@ -269,7 +269,7 @@ async def test_get_order_invalid_id(session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_order_id_doesnt_exist(oid, session):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
 
@@ -284,7 +284,7 @@ async def test_get_order_id_doesnt_exist(oid, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_cancel_order(oid, order_description, session):
     cancel_url = f'{TEST_ORDERS_URL}/{oid}'
     order_description['state'] = 'cancelled'
@@ -297,7 +297,7 @@ async def test_cancel_order(oid, order_description, session):
     assert json_resp == example_resp
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_cancel_order_invalid_id(session):
     cl = OrdersClient(session, base_url=TEST_URL)
     with pytest.raises(exceptions.ClientError):
@@ -305,7 +305,7 @@ async def test_cancel_order_invalid_id(session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_cancel_order_id_doesnt_exist(oid, session):
     cancel_url = f'{TEST_ORDERS_URL}/{oid}'
 
@@ -320,7 +320,7 @@ async def test_cancel_order_id_doesnt_exist(oid, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_cancel_order_id_cannot_be_cancelled(oid, session):
     cancel_url = f'{TEST_ORDERS_URL}/{oid}'
 
@@ -335,7 +335,7 @@ async def test_cancel_order_id_cannot_be_cancelled(oid, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_cancel_orders_by_ids(session, oid):
     oid2 = '5ece1dc0-ea81-11eb-837c-acde48001122'
     test_ids = [oid, oid2]
@@ -367,7 +367,7 @@ async def test_cancel_orders_by_ids(session, oid):
     assert actual_body == expected_body
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_cancel_orders_by_ids_invalid_id(session, oid):
     cl = OrdersClient(session, base_url=TEST_URL)
     with pytest.raises(exceptions.ClientError):
@@ -375,7 +375,7 @@ async def test_cancel_orders_by_ids_invalid_id(session, oid):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_cancel_orders_all(session):
     example_result = {
         "result": {
@@ -399,7 +399,7 @@ async def test_cancel_orders_all(session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_wait_default(oid, order_description, session):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
 
@@ -421,7 +421,7 @@ async def test_wait_default(oid, order_description, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_wait_callback(oid, order_description, session):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
 
@@ -449,7 +449,7 @@ async def test_wait_callback(oid, order_description, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_wait_state(oid, order_description, session):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
 
@@ -471,7 +471,7 @@ async def test_wait_state(oid, order_description, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_wait_max_attempts_enabled(oid, order_description, session):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
 
@@ -486,7 +486,7 @@ async def test_wait_max_attempts_enabled(oid, order_description, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_wait_max_attempts_disabled(oid, order_description, session):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
 
@@ -501,14 +501,14 @@ async def test_wait_max_attempts_disabled(oid, order_description, session):
         await cl.wait(oid, max_attempts=0, delay=0)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_wait_invalid_oid(session):
     cl = OrdersClient(session, base_url=TEST_URL)
     with pytest.raises(exceptions.ClientError):
         await cl.wait("invalid_oid", delay=0)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_wait_invalid_state(oid, session):
     cl = OrdersClient(session, base_url=TEST_URL)
     with pytest.raises(exceptions.ClientError):
@@ -516,7 +516,7 @@ async def test_wait_invalid_state(oid, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_aggegated_order_stats(session):
     example_stats = {
         "organization": {
@@ -536,7 +536,7 @@ async def test_aggegated_order_stats(session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_download_asset_md(tmpdir, session):
     dl_url = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
 
@@ -559,12 +559,14 @@ async def test_download_asset_md(tmpdir, session):
     cl = OrdersClient(session, base_url=TEST_URL)
     filename = await cl.download_asset(dl_url, directory=str(tmpdir))
 
-    assert json.loads(open(filename).read()) == {'key': 'value'}
+    with open(filename) as f:
+        assert json.load(f) == {'key': 'value'}
+
     assert Path(filename).name == 'metadata.json'
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_download_asset_img(tmpdir, open_test_img, session):
     dl_url = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
 
@@ -599,7 +601,7 @@ async def test_download_asset_img(tmpdir, open_test_img, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("checksum", [("MD5"), ("SHA256")])
 @pytest.mark.parametrize(
     "asset1_bytes, expectation",
@@ -642,7 +644,7 @@ async def test_validate_checksum_checksum(tmpdir,
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "create, corrupt, expectation",
     [(True, False, does_not_raise()),
@@ -684,7 +686,7 @@ async def test_validate_checksum_manifest(
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "results, paths",
     [(None, []),
@@ -739,12 +741,15 @@ async def test_download_order_success(results,
     assert filenames == [Path(tmpdir, p) for p in paths]
 
     if filenames:
-        assert json.load(open(filenames[0])) == {'key': 'value'}
-        assert json.load(open(filenames[1])) == {'key2': 'value2'}
+        with open(filenames[0]) as f:
+            assert json.load(f) == {'key': 'value'}
+
+        with open(filenames[1]) as f:
+            assert json.load(f) == {'key2': 'value2'}
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_download_order_state(tmpdir, order_description, oid, session):
     dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
     order_description['_links']['results'] = [
@@ -763,7 +768,7 @@ async def test_download_order_state(tmpdir, order_description, oid, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_download_order_overwrite_true_preexisting_data(
         tmpdir,
         oid,
@@ -785,11 +790,12 @@ async def test_download_order_overwrite_true_preexisting_data(
     await cl.download_order(oid, directory=str(tmpdir), overwrite=True)
 
     # Check that the data downloaded has overwritten the original data
-    assert json.load(open(Path(tmpdir, 'file.json'))) == downloaded_content
+    with open(Path(tmpdir, 'file.json')) as f:
+        assert json.load(f) == downloaded_content
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_download_order_overwrite_false_preexisting_data(
         tmpdir, oid, session, create_download_mock, original_content):
     '''
@@ -806,11 +812,12 @@ async def test_download_order_overwrite_false_preexisting_data(
     await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
 
     # Check that the original data has not been overwritten
-    assert json.load(open(Path(tmpdir, 'file.json'))) == original_content
+    with open(Path(tmpdir, 'file.json')) as f:
+        assert json.load(f) == original_content
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_download_order_overwrite_true_nonexisting_data(
         tmpdir, oid, session, create_download_mock, downloaded_content):
     '''
@@ -822,12 +829,12 @@ async def test_download_order_overwrite_true_nonexisting_data(
     cl = OrdersClient(session, base_url=TEST_URL)
     await cl.download_order(oid, directory=str(tmpdir), overwrite=True)
 
-    # Check that the was data downloaded and has the correct contents
-    assert json.load(open(Path(tmpdir, 'file.json'))) == downloaded_content
+    with open(Path(tmpdir, 'file.json')) as f:
+        assert json.load(f) == downloaded_content
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_download_order_overwrite_false_nonexisting_data(
         tmpdir, oid, session, create_download_mock, downloaded_content):
     '''
@@ -840,4 +847,5 @@ async def test_download_order_overwrite_false_nonexisting_data(
     await cl.download_order(oid, directory=str(tmpdir), overwrite=False)
 
     # Check that the was data downloaded and has the correct contents
-    assert json.load(open(Path(tmpdir, 'file.json'))) == downloaded_content
+    with open(Path(tmpdir, 'file.json')) as f:
+        assert json.load(f) == downloaded_content

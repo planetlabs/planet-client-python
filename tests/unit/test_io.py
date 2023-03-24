@@ -30,7 +30,7 @@ def make_aiter():
     return func
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_collect_non_features(make_aiter):
     values = [{
         'key11': 'value11', 'key12': 'value12'
@@ -43,7 +43,7 @@ async def test_collect_non_features(make_aiter):
     assert res == values
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_collect_features(feature_geojson, make_aiter):
     feature2 = feature_geojson.copy()
     feature2['properties'] = {'foo': 'bar'}
