@@ -202,7 +202,7 @@ tools to process the data plus notifications on the status.
 
 The first place to start is the `request-catalog` command, which generates all the JSON for the 
 [catalog source](https://developers.planet.com/docs/subscriptions/source/#catalog-source-type) block. The core
-of this is quite similar to a Data API search requests, though with more required fields. The minimal
+of this is quite similar to a Data API search request, though with more required fields. The minimal
 required commands would be a request like:
 
 ```
