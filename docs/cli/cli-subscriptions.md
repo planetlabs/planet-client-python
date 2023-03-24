@@ -5,7 +5,7 @@ title: CLI for Subscriptions API Tutorial
 ## Introduction
 
 The `planet subscriptions` command enables interaction with the 
-[Subscriptions API](https://developers.planet.com/apis/subscriptions/),
+[Subscriptions API](https://developers.planet.com/apis/subscriptions/)
 that make it possible to set up a recurring search criteria. Using `planet subscriptions`, you can automatically process
 and deliver new imagery to a cloud bucket. It also has a powerful 'backfill' capability
 to bulk order historical imagery to your area of interest. This tutorial takes you
