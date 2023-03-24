@@ -106,7 +106,7 @@ Since there is no UI to easily create subscriptions we'll start with making a ne
 
 This is a full subscriptions JSON request, with the credentials redacted, so you'll have 
 to replace your own for it to work. Below we'll show the convenience methods that will 
-help create a custom one more easily, but if you'd just like to get things working then 
+help create a custom one more easily. If you'd like to get things working for now then 
 just replace the 'delivery' section with your cloud credentials, see the 
 [core subscriptions delivery docs](https://developers.planet.com/docs/subscriptions/delivery/) 
 for more information. 
