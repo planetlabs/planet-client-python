@@ -556,7 +556,6 @@ Currently this needs to be done for any 'composite' operation, as STAC output fr
 supported (but is coming). You can explicitly add `--stac`, but it is the default, so does not need to
 be included. For more information about Planet's STAC output see the [Orders API documentation](https://developers.planet.com/apis/orders/delivery/#stac-metadata).
 
-
 ### Cloud Delivery
 
 Another option is to delivery your orders directly to a cloud bucket, like AWS S3 or Google Cloud Storage.
