@@ -26,14 +26,14 @@ with open('planet/__version__.py') as f:
 install_requires = [
     'click>=8.0.0',
     'geojson',
-    'httpx==0.23.0',
+    'httpx>=0.23.0',
     'jsonschema',
     'pyjwt>=2.1',
     'tqdm>=4.56',
     'typing-extensions',
 ]
 
-test_requires = ['pytest', 'pytest-asyncio==0.16', 'pytest-cov', 'respx==0.19']
+test_requires = ['pytest', 'anyio', 'pytest-cov', 'respx>=0.20']
 
 lint_requires = ['flake8', 'mypy', 'yapf']
 

@@ -20,7 +20,7 @@ from .constants import DATA_DIR
 
 PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2023-02-24.json'
 SUPPORTED_TOOLS = [
-    'band_math',
+    'bandmath',
     'clip',
     'composite',
     'coregister',
@@ -34,6 +34,8 @@ SUPPORTED_ORDER_TYPES = ['full', 'partial']
 SUPPORTED_ARCHIVE_TYPES = ['zip']
 SUPPORTED_FILE_FORMATS = ['COG', 'PL_NITF']
 HARMONIZE_TOOL_TARGET_SENSORS = ('Sentinel-2', 'PS2')
+BAND_MATH_PIXEL_TYPE = ('Auto', '8U', '16U', '16S', '32R')
+BAND_MATH_PIXEL_TYPE_DEFAULT = 'Auto'
 
 LOGGER = logging.getLogger(__name__)
 

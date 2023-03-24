@@ -71,7 +71,7 @@ def search_response(item_descriptions):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_search_basic(item_descriptions, search_response, session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
@@ -105,7 +105,7 @@ async def test_search_basic(item_descriptions, search_response, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_search_name(item_descriptions, search_response, session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
@@ -141,7 +141,7 @@ async def test_search_name(item_descriptions, search_response, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_search_filter(item_descriptions,
                              search_filter,
                              search_response,
@@ -178,7 +178,7 @@ async def test_search_filter(item_descriptions,
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_search_sort(item_descriptions,
                            search_filter,
                            search_response,
@@ -201,7 +201,7 @@ async def test_search_sort(item_descriptions,
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_search_limit(item_descriptions,
                             search_filter,
                             search_response,
@@ -226,7 +226,7 @@ async def test_search_limit(item_descriptions,
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_search_basic(search_filter, session):
 
     page_response = {
@@ -245,7 +245,9 @@ async def test_create_search_basic(search_filter, session):
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
     cl = DataClient(session, base_url=TEST_URL)
-    search = await cl.create_search('test', ['PSScene'], search_filter)
+    search = await cl.create_search(['PSScene'],
+                                    search_filter=search_filter,
+                                    name='test')
 
     # check that request is correct
     expected_request = {
@@ -262,7 +264,7 @@ async def test_create_search_basic(search_filter, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_search_email(search_filter, session):
 
     page_response = {
@@ -281,8 +283,9 @@ async def test_create_search_email(search_filter, session):
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
     cl = DataClient(session, base_url=TEST_URL)
-    search = await cl.create_search('test', ['PSScene'],
-                                    search_filter,
+    search = await cl.create_search(['PSScene'],
+                                    search_filter=search_filter,
+                                    name='test',
                                     enable_email=True)
 
     # check that request is correct
@@ -300,7 +303,7 @@ async def test_create_search_email(search_filter, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_search_success(search_id, search_result, session):
     get_url = f'{TEST_SEARCHES_URL}/{search_id}'
     mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
@@ -311,7 +314,7 @@ async def test_get_search_success(search_id, search_result, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_search_id_doesnt_exist(search_id, session):
     get_url = f'{TEST_SEARCHES_URL}/{search_id}'
 
@@ -328,7 +331,7 @@ async def test_get_search_id_doesnt_exist(search_id, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_update_search_basic(search_filter, session):
 
     page_response = {
@@ -367,7 +370,7 @@ async def test_update_search_basic(search_filter, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("limit, expected_list_length", [(None, 4), (3, 3)])
 async def test_list_searches_success(limit,
                                      expected_list_length,
@@ -386,7 +389,7 @@ async def test_list_searches_success(limit,
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("sort, rel_url",
                          [(LIST_SORT_DEFAULT, ''),
                           ('created asc', '?_sort=created+asc')])
@@ -402,7 +405,7 @@ async def test_list_searches_sort(sort, rel_url, search_result, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("search_type, rel_url",
                          [(LIST_SEARCH_TYPE_DEFAULT, ''),
                           ('saved', '?search_type=saved')])
@@ -421,7 +424,7 @@ async def test_list_searches_searchtype(search_type,
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "sort, search_type, expectation",
     [('DOESNOTEXIST', 'ANY', pytest.raises(exceptions.ClientError)),
@@ -442,7 +445,7 @@ async def test_list_searches_args_do_not_match(sort,
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("retcode, expectation",
                          [(204, does_not_raise()),
                           (404, pytest.raises(exceptions.APIError))])
@@ -459,7 +462,7 @@ async def test_delete_search(retcode, expectation, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("search_id, valid", [(VALID_SEARCH_ID, True),
                                               ('invalid', False)])
 @pytest.mark.parametrize("limit, expected_count", [(None, 3), (2, 2)])
@@ -500,7 +503,7 @@ async def test_run_search_basic(item_descriptions,
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("sort, rel_url, valid",
                          [(SEARCH_SORT_DEFAULT, '', True),
                           ('acquired asc', '?_sort=acquired+asc', True),
@@ -537,7 +540,7 @@ async def test_run_search_sort(item_descriptions,
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_run_search_doesnotexist(session):
     route = respx.get(f'{TEST_SEARCHES_URL}/{VALID_SEARCH_ID}/results')
     route.return_value = httpx.Response(404)
@@ -550,7 +553,7 @@ async def test_run_search_doesnotexist(session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_stats_success(search_filter, session):
 
     page_response = {
@@ -584,7 +587,7 @@ async def test_get_stats_success(search_filter, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_stats_invalid_interval(search_filter, session):
     cl = DataClient(session, base_url=TEST_URL)
 
@@ -593,7 +596,7 @@ async def test_get_stats_invalid_interval(search_filter, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_list_item_assets_success(session):
     item_type_id = 'PSScene'
     item_id = '20221003_002705_38_2461'
@@ -637,7 +640,7 @@ async def test_list_item_assets_success(session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_list_item_assets_missing(session):
     item_type_id = 'PSScene'
     item_id = '20221003_002705_38_2461xx'
@@ -653,7 +656,7 @@ async def test_list_item_assets_missing(session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("asset_type_id, expectation",
                          [('basic_udm2', does_not_raise()),
                           ('invalid', pytest.raises(exceptions.ClientError))])
@@ -703,7 +706,7 @@ async def test_get_asset(asset_type_id, expectation, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("status, expectation", [('inactive', True),
                                                  ('active', False)])
 async def test_activate_asset_success(status, expectation, session):
@@ -732,7 +735,7 @@ async def test_activate_asset_success(status, expectation, session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_activate_asset_invalid_asset(session):
     cl = DataClient(session, base_url=TEST_URL)
 
@@ -741,7 +744,7 @@ async def test_activate_asset_invalid_asset(session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_wait_asset_success(session):
     asset_url = f'{TEST_URL}/asset'
 
@@ -774,7 +777,7 @@ async def test_wait_asset_success(session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_wait_asset_max_attempts(session):
     asset_url = f'{TEST_URL}/asset'
 
@@ -803,7 +806,7 @@ async def test_wait_asset_max_attempts(session):
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("exists, overwrite",
                          [(False, False), (True, False), (True, True),
                           (False, True)])
@@ -870,7 +873,7 @@ async def test_download_asset(exists,
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("hashes_match, md5_entry, expectation",
                          [(True, True, does_not_raise()),
                           (False, True, pytest.raises(exceptions.ClientError)),

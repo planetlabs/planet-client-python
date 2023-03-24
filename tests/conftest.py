@@ -50,7 +50,9 @@ def get_test_file_json():
 
     def func(filename):
         file_path = _test_data_path / filename
-        return json.load(open(file_path, 'r'))
+        with open(file_path, 'r') as f:
+            res = json.load(f)
+        return res
 
     return func
 
@@ -147,3 +149,8 @@ def multipolygon_geom_geojson():
           [37.791595458984375, 14.945448293647944],
           [37.791595458984375, 14.84923123791421]]]]
     }  # yapf: disable
+
+
+@pytest.fixture
+def anyio_backend():
+    return 'asyncio'

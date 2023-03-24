@@ -51,7 +51,7 @@ def test_build_request():
         'webhook_per_order': True
     }
     order_type = 'partial'
-    tool = {'band_math': 'jsonstring'}
+    tool = {'bandmath': 'jsonstring'}
     stac_json = {'stac': {}}
 
     request = order_request.build_request('test_name', [product],
@@ -215,8 +215,8 @@ def test_google_earth_engine():
 
 
 def test__tool():
-    test_tool = order_request._tool('band_math', 'jsonstring')
-    assert test_tool == {'band_math': 'jsonstring'}
+    test_tool = order_request._tool('bandmath', 'jsonstring')
+    assert test_tool == {'bandmath': 'jsonstring'}
 
     with pytest.raises(specs.SpecificationException):
         _ = order_request._tool('notsupported', 'jsonstring')
@@ -272,3 +272,23 @@ def test_harmonization_tool_success():
 def test_harmonization_tool_invalid_target_sensor():
     with pytest.raises(exceptions.ClientError):
         order_request.harmonize_tool('invalid')
+
+
+def test_band_math_tool_success():
+    res = order_request.band_math_tool(b1='b1', b2='arctan(b1)')
+
+    expected = {
+        "bandmath": {
+            "b1": "b1",
+            "b2": "arctan(b1)",
+            "pixel_type": specs.BAND_MATH_PIXEL_TYPE_DEFAULT
+        }
+    }
+    assert res == expected
+
+
+def test_band_math_tool_invalid_pixel_type():
+    with pytest.raises(exceptions.ClientError):
+        order_request.band_math_tool(b1='b1',
+                                     b2='arctan(b1)',
+                                     pixel_type="invalid")
