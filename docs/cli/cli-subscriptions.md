@@ -266,7 +266,7 @@ planet subscriptions request-catalog --item-types PSScene --asset-types ortho_an
 --start-time 2023-03-17T04:08:00.0Z --rrule 'FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10'
 ```
 
-For more information on the `rrule` parameter see the [recurrance rules](https://developers.planet.com/docs/subscriptions/source/#rrules-recurrence-rules)
+For more information on the `rrule` parameter see the [recurrence rules](https://developers.planet.com/docs/subscriptions/source/#rrules-recurrence-rules)
 documentation.  
 
 #### Filter
