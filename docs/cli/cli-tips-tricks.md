@@ -185,20 +185,20 @@ to disk. Getting 20,000 skysat collects will take at least a couple of minutes, 
 100 megabytes of GeoJSON on disk.
 
 ```console
-planet data search SkySatCollect --limit 20000 > skysat-large.geojson
+planet data search SkySatCollect --limit 20000 > skysat-large.geojsons
 ```
 
 Kepler can fairly easily handle 20,000 skysat footprints, try:
 
 ```console
-kepler skysat-large.geojson
+kepler skysat-large.geojsons
 ```
 
 Many GIS programs will open that geojson file by default. But if you have any trouble it can be useful to run it
 through `planet collect`:
 
 ```console
-planet data collect skysat-large.geojson > skysat-large-clean.geojson
+planet data collect skysat-large.geojsons > skysat-large-clean.geojson
 ```
 This turns it into a real GeoJSON, instead of a newline-delimited one, which more programs understand.
 
@@ -206,20 +206,52 @@ If you want to visualize even larger sets of footprints there's a few things we 
 
 ##### Convert to GeoPackage
 
-GeoJSON is an amazing format for communicating online, but is less good with really large amounts of data, so 
-we recommend converting it to a format that has a spatial index and isn't so large on disk. We recommend 
-[geopackage](https://www.geopackage.org/), but shapefile can work as well. The `ogr2ogr` of 
-[GDAL/OGR](https://gdal.org/) is a great tool for this. We recommend using the 
-[binaries](https://gdal.org/download.html#binaries), or if you're on a Mac then use 
-[homebrew](https://brew.sh/) (run `brew install gdal` after you get it set up). If you're having 
-trouble getting GDAL working well a good backup can be to use docker and the 
+GeoJSON is an amazing format for communicating online, but is less good with
+really large amounts of data, so we recommend converting it to a format that
+has a spatial index and isn't so large on disk. We recommend
+[geopackage](https://www.geopackage.org/), but shapefile can work as well.
+
+The `ogr2ogr` of [GDAL/OGR](https://gdal.org/) is a great tool for this. We
+recommend using the [binaries](https://gdal.org/download.html#binaries), or if
+you're on a Mac then use [homebrew](https://brew.sh/) (run `brew install gdal`
+after you get it set up). If you're having trouble getting GDAL working well a
+good backup can be to use docker and the
 [osgeo/gdal](https://hub.docker.com/r/osgeo/gdal) package.
 
 To convert to a geopackage run:
 
 ```console
-ogr2ogr skysat-large.gpkg skysat-large.geojson
+ogr2ogr skysat-large.gpkg skysat-large.geojsons
 ```
+
+The Python program `fio` from
+[Fiona](https://fiona.readthedocs.io/en/stable/cli.html) and plugin commands
+from the [fio-planet](https://fio-planet.readthedocs.io/en/latest/) package are
+another option for converting and manipulating GeoJSON. Fiona and fio-planet
+are easy to install alongside the Planet SDK and CLI. The Fiona way to convert
+a sequence of GeoJSON features from a search to Geopackage is this:
+
+```console
+cat skysat-large.geojsons | fio load -f GPKG skysat-large.gpkg
+```
+
+##### Simplification with Fiona and fio-planet
+
+There are a number of ways to [simplify areas of
+interest](https://fio-planet.readthedocs.io/en/latest/topics/simplification/).
+The one that best balances effectiveness with ease of use is the union, or
+merger, of concave hulls.
+
+```console
+cat skysat-large.geojsons \
+| fio map 'concave_hull g :ratio 0.4' --dump-parts \
+| fio reduce 'unary_union c' \
+| fio load -f GPKG skysat-large-simplified.gpkg
+```
+
+The `ratio` parameter describes the desired distance from the `convex_hull`
+algorithm. A ratio of 1.0 produces hulls that are the same as convex hulls.
+Smaller ratios preserve the character of concave features better.
 
 ##### Simplification with OGR
 
