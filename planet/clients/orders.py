@@ -265,8 +265,7 @@ class OrdersClient:
                              order_id: str,
                              directory: Path = Path('.'),
                              overwrite: bool = False,
-                             progress_bar: bool = False,
-                             checksum: Optional[str] = None) -> List[Path]:
+                             progress_bar: bool = False) -> List[Path]:
         """Download all assets in an order.
 
         Parameters:
