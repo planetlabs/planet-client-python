@@ -113,13 +113,13 @@ async def update_subscription_cmd(ctx, subscription_id, request, pretty):
         echo_json(sub, pretty)
 
 
-@subscriptions.command(name='describe')
+@subscriptions.command(name='get')
 @click.argument('subscription_id')
 @pretty
 @click.pass_context
 @translate_exceptions
 @coro
-async def describe_subscription_cmd(ctx, subscription_id, pretty):
+async def get_subscription_cmd(ctx, subscription_id, pretty):
     """Gets the description of a subscription and prints the API response."""
     async with subscriptions_client(ctx) as client:
         sub = await client.get_subscription(subscription_id)
