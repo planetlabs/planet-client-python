@@ -93,8 +93,8 @@ cancel_mock.route(M(url=f'{TEST_URL}/test/cancel'),
                   method='POST').mock(side_effect=modify_response)
 
 # Mock the subscription description API endpoint.
-describe_mock = respx.mock()
-describe_mock.route(
+get_mock = respx.mock()
+get_mock.route(
     M(url=f'{TEST_URL}/test'),
     method='GET').mock(return_value=Response(200,
                                              json={
@@ -247,7 +247,7 @@ async def test_get_subscription_failure():
 
 
 @pytest.mark.anyio
-@describe_mock
+@get_mock
 async def test_get_subscription_success(monkeypatch):
     """Subscription description fetched, has the expected items."""
     async with Session() as session:
