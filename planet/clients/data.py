@@ -204,7 +204,7 @@ class DataClient:
         """
         url = self._searches_url()
 
-        # TODO: validate item_types
+        item_types = [validate_item_type(item) for item in item_types]
         request = {
             'name': name,
             'filter': search_filter,
@@ -237,6 +237,7 @@ class DataClient:
         """
         url = f'{self._searches_url()}/{search_id}'
 
+        item_types = [validate_item_type(item) for item in item_types]
         request = {
             'name': name,
             'filter': search_filter,
@@ -395,6 +396,7 @@ class DataClient:
 
         url = f'{self._base_url}{STATS_PATH}'
 
+        item_types = [validate_item_type(item) for item in item_types]
         request = {
             'interval': interval,
             'filter': search_filter,
