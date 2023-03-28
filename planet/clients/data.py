@@ -25,6 +25,7 @@ from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
 from ..models import Paged, StreamingBody
+from ..specs import validate_item_type
 
 BASE_URL = f'{PLANET_BASE_URL}/data/v1/'
 SEARCHES_PATH = '/searches'
@@ -146,7 +147,7 @@ class DataClient:
 
         search_filter = search_filter or empty_filter()
 
-        # TODO: validate item_types
+        item_types = [validate_item_type(item) for item in item_types]
         request_json = {'filter': search_filter, 'item_types': item_types}
         if name:
             request_json['name'] = name
