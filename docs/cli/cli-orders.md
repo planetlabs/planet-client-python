@@ -303,7 +303,6 @@ of at least one being corrupted in creases
 Now we'll dive into the variety of ways to customize your order. These can all be
 combined with all the commands listed above.
 
-
 ### Clipping
 
 The most used tool is the `clip` operation, which lets you pass a geometry to the
