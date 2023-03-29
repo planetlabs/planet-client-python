@@ -906,9 +906,9 @@ def test_search_update_success(invoke,
     result = invoke([
         'search-update',
         search_id,
-        name,
         item_types,
-        json.dumps(search_filter)
+        f'--filter={json.dumps(search_filter)}',
+        f'--name={name}'
     ])
 
     assert not result.exception
@@ -927,9 +927,9 @@ def test_search_update_fail(invoke, search_id, search_filter):
     result = invoke([
         'search-update',
         search_id,
-        name,
         item_types,
-        json.dumps(search_filter)
+        f'--filter={json.dumps(search_filter)}',
+        f'--name={name}'
     ])
 
     assert result.output.startswith("Error")
