@@ -3,7 +3,7 @@
 There are 6 subscriptions commands:
 
 [x] planet subscriptions list
-[x] planet subscriptions describe
+[x] planet subscriptions get
 [x] planet subscriptions results
 [x] planet subscriptions create
 [x] planet subscriptions update
@@ -24,7 +24,7 @@ from test_subscriptions_api import (api_mock,
                                     create_mock,
                                     update_mock,
                                     cancel_mock,
-                                    describe_mock,
+                                    get_mock,
                                     res_api_mock,
                                     TEST_URL)
 
@@ -192,10 +192,10 @@ def test_subscriptions_update_success(invoke):
 
 
 @failing_api_mock
-def test_subscriptions_describe_failure(invoke):
+def test_subscriptions_get_failure(invoke):
     """Describe command exits gracefully from an API error."""
     result = invoke(
-        ['describe', 'test'],
+        ['get', 'test'],
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
         # failure.
@@ -204,11 +204,11 @@ def test_subscriptions_describe_failure(invoke):
     assert result.exit_code == 1  # failure.
 
 
-@describe_mock
-def test_subscriptions_describe_success(invoke):
+@get_mock
+def test_subscriptions_get_success(invoke):
     """Describe command succeeds."""
     result = invoke(
-        ['describe', 'test'],
+        ['get', 'test'],
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
         # failure.
