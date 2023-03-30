@@ -120,7 +120,7 @@ async def update_subscription_cmd(ctx, subscription_id, request, pretty):
 @translate_exceptions
 @coro
 async def get_subscription_cmd(ctx, subscription_id, pretty):
-    """Gets the description of a subscription and prints the API response."""
+    """Get the description of a subscription."""
     async with subscriptions_client(ctx) as client:
         sub = await client.get_subscription(subscription_id)
         echo_json(sub, pretty)
