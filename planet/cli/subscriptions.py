@@ -10,6 +10,7 @@ from .options import limit, pretty
 from .session import CliSession
 from planet.clients.subscriptions import SubscriptionsClient
 from .. import subscription_request
+from ..specs import get_item_types
 
 
 @asynccontextmanager
@@ -195,8 +196,8 @@ def request(name, source, delivery, notifications, tools, pretty):
 @subscriptions.command()
 @click.option('--item-types',
               required=True,
-              type=types.CommaSeparatedString(),
-              help='One or more comma-separated item types.')
+              help='Item type for requested item ids.',
+              type=click.Choice(get_item_types(), case_sensitive=False))
 @click.option('--asset-types',
               required=True,
               type=types.CommaSeparatedString(),
