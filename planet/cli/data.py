@@ -407,10 +407,6 @@ async def search_run(ctx, search_id, sort, limit, pretty):
             echo_json(item, pretty)
 
 
-# TODO: search-update
-# TODO: search-delete
-
-
 @data.command(epilog=valid_item_string)
 @click.pass_context
 @translate_exceptions
@@ -471,7 +467,7 @@ async def search_delete(ctx, search_id):
         await cl.delete_search(search_id)
 
 
-@data.command()
+@data.command(epilog=valid_item_string)
 @click.pass_context
 @translate_exceptions
 @coro
@@ -514,7 +510,7 @@ async def search_update(ctx,
         echo_json(items, pretty)
 
 
-@data.command()
+@data.command(epilog=valid_item_string)
 @click.pass_context
 @translate_exceptions
 @coro
@@ -576,7 +572,7 @@ async def asset_download(ctx,
             cl.validate_checksum(asset, path)
 
 
-@data.command()
+@data.command(epilog=valid_item_string)
 @click.pass_context
 @translate_exceptions
 @coro
@@ -590,7 +586,7 @@ async def asset_activate(ctx, item_type, item_id, asset_type):
         await cl.activate_asset(asset)
 
 
-@data.command()
+@data.command(epilog=valid_item_string)
 @click.pass_context
 @translate_exceptions
 @coro
