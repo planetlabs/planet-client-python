@@ -162,6 +162,7 @@ async def list_subscription_results_cmd(ctx,
 
 
 @subscriptions.command()
+@translate_exceptions
 @click.option('--name',
               required=True,
               type=str,
