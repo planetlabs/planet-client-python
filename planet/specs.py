@@ -109,6 +109,13 @@ def validate_supported_bundles(item_type, bundle, all_product_bundles):
     return _validate_field(bundle, supported_bundles, 'bundle')
 
 
+def validate_asset_type(item_type, asset_type):
+    item_type = validate_item_type(item_type)
+    supported_assets = get_supported_assets(item_type)
+
+    return _validate_field(asset_type, supported_assets, 'asset_type')
+
+
 def _get_product_bundle_spec():
     with open(DATA_DIR / PRODUCT_BUNDLE_SPEC_NAME) as f:
         data = json.load(f)
@@ -162,3 +169,17 @@ def get_item_types(product_bundle=None):
                 for bundle in get_product_bundles()))
 
     return item_types
+
+
+def get_supported_assets(item_type):
+    '''Get all assets supported by a given item type.'''
+    item_type = validate_item_type(item_type)
+    supported_bundles = get_product_bundles(item_type)
+    spec = _get_product_bundle_spec()
+    supported_assets = [
+        spec['bundles'][bundle]["assets"][item_type]
+        for bundle in supported_bundles
+    ]
+    supported_assets = list(set(list(itertools.chain(*supported_assets))))
+
+    return supported_assets
