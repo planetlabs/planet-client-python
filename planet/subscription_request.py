@@ -127,6 +127,7 @@ def catalog_source(
         planet.exceptions.ClientError: If start_time or end_time are not valid
             datetimes
     '''
+    asset_types = specs.validate_asset_type(item_types, asset_types[0])
     parameters = {
         "item_types": item_types,
         "asset_types": asset_types,
