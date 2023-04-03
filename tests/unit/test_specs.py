@@ -192,7 +192,7 @@ def test_get_supported_assets_success():
 
 def test_get_supported_assets_not_supported_item_type():
     with pytest.raises(specs.SpecificationException):
-        specs.get_supported_assets('POOP')
+        specs.get_supported_assets('notsupported')
 
 
 def test_validate_asset_type():
