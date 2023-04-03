@@ -195,6 +195,7 @@ def request(name, source, delivery, notifications, tools, pretty):
 
 
 @subscriptions.command()
+@translate_exceptions
 @click.option('--item-types',
               required=True,
               help='Item type for requested item ids.',
