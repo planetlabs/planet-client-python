@@ -503,9 +503,9 @@ async def search_update(ctx,
     """
     async with data_client(ctx) as cl:
         items = await cl.update_search(search_id,
+                                       name,
                                        item_types,
                                        filter,
-                                       name,
                                        daily_email)
         echo_json(items, pretty)
 
