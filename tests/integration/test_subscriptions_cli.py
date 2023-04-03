@@ -292,7 +292,7 @@ def test_request_catalog_success(invoke, geom_geojson):
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",
-            "item_types": ["PSScene"],
+            "item_types": "PSScene",
             "asset_types": ["ortho_analytic_4b"]
         }
     }
