@@ -142,13 +142,13 @@ planet subscriptions list --status running
 gives you just the currently active subscriptions. The other available statuses are:
 `cancelled`, `preparing`, `pending`, `completed`, `suspended`, and `failed`.
 
-### Describe Subscription
+### Get Subscription
 
 To get the full details on a single subscription you can take the id from your list and use the
-`describe` command:
+`get` command:
 
 ```
-planet subscriptions describe cb817760-1f07-4ee7-bba6-bcac5346343f
+planet subscriptions get cb817760-1f07-4ee7-bba6-bcac5346343f
 ```
 
 ### Subscription Results
@@ -175,7 +175,7 @@ to use `jq` to help filter out results as well.
 
 You can update a subscription that is running, for example to change the 'tools' it's using or to alter
 its geometry. To do this you must submit the full subscription creation JSON, so the easiest way is to
-get it with `describe` and then alter the values.
+get it with `get` and then alter the values.
 
 ```
 planet subscriptions update cb817760-1f07-4ee7-bba6-bcac5346343f my-updated-subscriptions.json
@@ -190,7 +190,7 @@ planet subscriptions cancel cb817760-1f07-4ee7-bba6-bcac5346343f
 ```
 
 That will stop the subscription from producing any more results, but it will stay in the system so you can
-continue to list and describe it.
+continue to list and get it.
 
 ## Subscription Request Conveniences
 
