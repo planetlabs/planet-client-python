@@ -243,8 +243,7 @@ planet subscriptions request-catalog \
         --item-types PSScene \
         --asset-types ortho_analytic_8b_sr,ortho_udm2 \
         --geometry aoi.geojson \
-        --start-time 2022-01-01) \
-    --delivery delivery.json > source.json
+        --start-time 2022-01-01 > req_cat.json
 ```
 
 ## Request-other
