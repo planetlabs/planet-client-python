@@ -352,8 +352,9 @@ async def test_update_search_basic(search_filter, session):
 
     cl = DataClient(session, base_url=TEST_URL)
     search = await cl.update_search(VALID_SEARCH_ID,
-                                    'test', ['PSScene'],
-                                    search_filter)
+                                    item_types=['PSScene'],
+                                    search_filter=search_filter,
+                                    name='test')
 
     # check that request is correct
     expected_request = {
