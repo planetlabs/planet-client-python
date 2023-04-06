@@ -285,22 +285,26 @@ def test_request_base_success(invoke, geom_geojson):
     assert result.exit_code == 0  # success.
 
 
-def test_request_catalog_success(invoke, geom_geojson):
+@pytest.mark.parametrize('item_types, asset_types',
+                         [("PSScene", "ortho_analytic_4b_sr"),
+                          ("SkySatScene", "basic_panchromatic_dn")])
+def test_request_catalog_success(invoke, geom_geojson, item_types,
+                                 asset_types):
     """Request-catalog command succeeds"""
     source = {
         "type": "catalog",
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",
-            "item_types": "PSScene",
-            "asset_types": ["ortho_analytic_4b"]
+            "item_types": [item_types],
+            "asset_types": [asset_types]
         }
     }
 
     result = invoke([
         'request-catalog',
-        '--item-types=PSScene',
-        '--asset-types=ortho_analytic_4b',
+        f'--item-types={item_types}',
+        f'--asset-types={asset_types}',
         f"--geometry={json.dumps(geom_geojson)}",
         '--start-time=2021-03-01T00:00:00'
     ])
