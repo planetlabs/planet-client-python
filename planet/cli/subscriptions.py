@@ -12,6 +12,9 @@ from planet.clients.subscriptions import SubscriptionsClient
 from .. import subscription_request
 from ..specs import get_item_types
 
+ALL_ITEM_TYPES = get_item_types()
+valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(ALL_ITEM_TYPES)
+
 
 @asynccontextmanager
 async def subscriptions_client(ctx):
@@ -194,12 +197,12 @@ def request(name, source, delivery, notifications, tools, pretty):
     echo_json(res, pretty)
 
 
-@subscriptions.command()
+@subscriptions.command(epilog=valid_item_string)
 @translate_exceptions
 @click.option('--item-types',
               required=True,
               help='Item type for requested item ids.',
-              type=click.Choice(get_item_types(), case_sensitive=False))
+              type=types.CommaSeparatedString())
 @click.option('--asset-types',
               required=True,
               type=types.CommaSeparatedString(),
