@@ -195,7 +195,9 @@ def test_get_supported_assets_not_supported_item_type():
         specs.get_supported_assets('notsupported')
 
 
-def test_validate_asset_type():
+def test_validate_asset_type_supported():
+    '''Ensures that a validated asset type for a given item type matches the
+    the given asset type.'''
     assert TEST_ASSET_TYPE == specs.validate_asset_type(
         TEST_ITEM_TYPE, TEST_ASSET_TYPE)
 
