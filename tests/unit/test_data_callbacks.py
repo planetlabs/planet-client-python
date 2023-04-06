@@ -14,7 +14,8 @@
 import logging
 import pytest
 import click
-from planet.cli.data import check_item_types, check_item_type
+from planet.cli import data
+from planet.cli import subscriptions
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,32 +42,80 @@ class MockContext:
                              'PSOrthoTile',
                              'REScene'
                          ])
-def test_item_types_success(item_types):
+def test_item_types_success_data(item_types):
     ctx = MockContext()
-    result = check_item_types(ctx, 'item_types', [item_types])
+    result = data.check_item_types(ctx, 'item_types', [item_types])
     assert result == [item_types]
 
 
-def test_item_types_fail():
+def test_item_types_fail_data():
     ctx = MockContext()
     with pytest.raises(click.BadParameter):
-        check_item_types(ctx, 'item_types', "bad_item_type")
+        data.check_item_types(ctx, 'item_types', "bad_item_type")
 
 
-def test_item_type_success():
+def test_item_type_success_data():
     ctx = MockContext()
     item_type = "PSScene"
-    result = check_item_type(ctx, 'item_type', item_type)
+    result = data.check_item_type(ctx, 'item_type', item_type)
     assert result == item_type
 
 
-def test_item_type_fail():
+def test_item_type_fail_data():
     ctx = MockContext()
     with pytest.raises(click.BadParameter):
-        check_item_type(ctx, 'item_type', "bad_item_type")
+        data.check_item_type(ctx, 'item_type', "bad_item_type")
 
 
-def test_item_type_too_many_item_types():
+def test_item_type_too_many_item_types_data():
     ctx = MockContext()
     with pytest.raises(click.BadParameter):
-        check_item_types(ctx, 'item_type', "PSScene,SkySatScene")
+        data.check_item_types(ctx, 'item_type', "PSScene,SkySatScene")
+
+
+# Identical tests to above, but for subscriptions CLI
+@pytest.mark.parametrize("item_types",
+                         [
+                             'MOD09GQ',
+                             'MYD09GA',
+                             'REOrthoTile',
+                             'SkySatCollect',
+                             'SkySatScene',
+                             'MYD09GQ',
+                             'Landsat8L1G',
+                             'Sentinel2L1C',
+                             'MOD09GA',
+                             'Sentinel1',
+                             'PSScene',
+                             'PSOrthoTile',
+                             'REScene'
+                         ])
+def test_item_types_success_subscriptions(item_types):
+    ctx = MockContext()
+    result = subscriptions.check_item_types(ctx, 'item_types', [item_types])
+    assert result == [item_types]
+
+
+def test_item_types_fail_subscriptions():
+    ctx = MockContext()
+    with pytest.raises(click.BadParameter):
+        subscriptions.check_item_types(ctx, 'item_types', "bad_item_type")
+
+
+def test_item_type_success_subscriptions():
+    ctx = MockContext()
+    item_type = "PSScene"
+    result = subscriptions.check_item_type(ctx, 'item_type', item_type)
+    assert result == item_type
+
+
+def test_item_type_fail_subscriptions():
+    ctx = MockContext()
+    with pytest.raises(click.BadParameter):
+        subscriptions.check_item_type(ctx, 'item_type', "bad_item_type")
+
+
+def test_item_type_too_many_item_types_subscriptions():
+    ctx = MockContext()
+    with pytest.raises(click.BadParameter):
+        subscriptions.check_item_types(ctx, 'item_type', "PSScene,SkySatScene")
