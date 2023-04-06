@@ -127,12 +127,13 @@ def catalog_source(
         planet.exceptions.ClientError: If start_time or end_time are not valid
             datetimes
     '''
-    for i in range(len(item_types)):
-        try:
-            asset_types[i] = specs.validate_asset_type(item_types[i],
-                                                       asset_types[i])
-        except specs.SpecificationException as exception:
-            raise ClientError(exception)
+    try:
+        asset_types = [
+            specs.validate_asset_type(item, asset) for asset in asset_types
+            for item in item_types
+        ]
+    except specs.SpecificationException as exception:
+        raise ClientError(exception)
 
     parameters = {
         "item_types": item_types,
