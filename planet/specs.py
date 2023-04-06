@@ -110,6 +110,7 @@ def validate_supported_bundles(item_type, bundle, all_product_bundles):
 
 
 def validate_asset_type(item_type, asset_type):
+    '''Validates an asset type for a given item type.'''
     item_type = validate_item_type(item_type)
     supported_assets = get_supported_assets(item_type)
 
