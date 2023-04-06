@@ -29,7 +29,7 @@ def test_build_request_success(geom_geojson):
             "start_time": "2021-03-01T00:00:00Z",
             "end_time": "2023-11-01T00:00:00Z",
             "rrule": "FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
-            "item_types": "PSScene",
+            "item_types": ["PSScene"],
             "asset_types": ["ortho_analytic_4b"]
         }
     }
@@ -67,7 +67,7 @@ def test_build_request_success(geom_geojson):
 
 def test_catalog_source_success(geom_geojson):
     res = subscription_request.catalog_source(
-        item_types="PSScene",
+        item_types=["PSScene"],
         asset_types=["ortho_analytic_4b"],
         geometry=geom_geojson,
         start_time=datetime(2021, 3, 1),
@@ -82,7 +82,7 @@ def test_catalog_source_success(geom_geojson):
             "start_time": "2021-03-01T00:00:00Z",
             "end_time": "2023-11-01T00:00:00Z",
             "rrule": "FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
-            "item_types": "PSScene",
+            "item_types": ["PSScene"],
             "asset_types": ["ortho_analytic_4b"]
         }
     }
@@ -95,7 +95,7 @@ def test_catalog_source_featurecollection(featurecollection_geojson,
     '''geojson specified as featurecollection is simplified down to just
     the geometry'''
     res = subscription_request.catalog_source(
-        item_types="PSScene",
+        item_types=["PSScene"],
         asset_types=["ortho_analytic_4b"],
         geometry=featurecollection_geojson,
         start_time=datetime(2021, 3, 1),
@@ -106,7 +106,7 @@ def test_catalog_source_featurecollection(featurecollection_geojson,
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",
-            "item_types": "PSScene",
+            "item_types": ["PSScene"],
             "asset_types": ["ortho_analytic_4b"]
         }
     }
@@ -117,7 +117,7 @@ def test_catalog_source_featurecollection(featurecollection_geojson,
 def test_catalog_source_invalid_start_time(geom_geojson):
     with pytest.raises(exceptions.ClientError):
         subscription_request.catalog_source(
-            item_types="PSScene",
+            item_types=["PSScene"],
             asset_types=["ortho_analytic_4b"],
             geometry=geom_geojson,
             start_time='invalid',
