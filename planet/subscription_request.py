@@ -129,7 +129,8 @@ def catalog_source(
     '''
     if len(item_types) > 1:
         raise ClientError(
-            """Subscription can only be successfully created if one item type is specified."""
+            """Subscription can only be successfully created if one item type
+            is specified."""
         )
     try:
         asset_types = [
