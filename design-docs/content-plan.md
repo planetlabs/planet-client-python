@@ -114,13 +114,7 @@ A more awesome readme is possible. See a list of examples in the References sect
 
 ## changes.txt
 
-The [current changes.txt](https://github.com/planetlabs/planet-client-python/blob/v2/CHANGES.txt) file is out of date.
-
-### Ticket to be filed
-
-Remove the changes.txt file for version 2.0, as this is a major release and does not require a dot-release changes file.
-
-Consider publishing this data in the SDK documentation.
+The [current changes.txt](https://github.com/planetlabs/planet-client-python/blob/main/CHANGES.txt) follows industry standards and is adquate.
 
 ## contributing.md
 
