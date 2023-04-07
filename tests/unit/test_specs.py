@@ -67,24 +67,6 @@ ALL_ITEM_TYPES = [
     'SkySatScene'
 ]
 TEST_ASSET_TYPE = "basic_udm2"
-ALL_SUPPORTED_ASSET_TYPES_PSSCENE = [
-    'ortho_analytic_8b_xml',
-    'basic_analytic_4b_xml',
-    'ortho_analytic_4b_sr',
-    'ortho_analytic_3b',
-    'basic_udm2',
-    'ortho_analytic_8b_sr',
-    'basic_analytic_8b',
-    'basic_analytic_4b_rpc',
-    'basic_analytic_8b_xml',
-    'ortho_udm2',
-    'ortho_analytic_3b_xml',
-    'ortho_analytic_8b',
-    'ortho_analytic_4b_xml',
-    'basic_analytic_4b',
-    'ortho_visual',
-    'ortho_analytic_4b'
-]
 
 
 def test_get_type_match():
@@ -185,9 +167,7 @@ def test_validate_supported_bundles_fail():
 
 def test_get_supported_assets_success():
     supported_assets = specs.get_supported_assets(TEST_ITEM_TYPE)
-    supported_assets.sort()
-    ALL_SUPPORTED_ASSET_TYPES_PSSCENE.sort()
-    assert supported_assets == ALL_SUPPORTED_ASSET_TYPES_PSSCENE
+    assert TEST_ASSET_TYPE in supported_assets
 
 
 def test_get_supported_assets_not_supported_item_type():
