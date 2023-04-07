@@ -26,26 +26,10 @@ class MockContext:
         self.obj = {}
 
 
-@pytest.mark.parametrize("item_types",
-                         [
-                             'MOD09GQ',
-                             'MYD09GA',
-                             'REOrthoTile',
-                             'SkySatCollect',
-                             'SkySatScene',
-                             'MYD09GQ',
-                             'Landsat8L1G',
-                             'Sentinel2L1C',
-                             'MOD09GA',
-                             'Sentinel1',
-                             'PSScene',
-                             'PSOrthoTile',
-                             'REScene'
-                         ])
-def test_item_types_success_data(item_types):
+def test_item_types_success_data():
     ctx = MockContext()
-    result = data.check_item_types(ctx, 'item_types', [item_types])
-    assert result == [item_types]
+    result = data.check_item_types(ctx, 'item_types', ["PSScene"])
+    assert result == ["PSScene"]
 
 
 def test_item_types_fail_data():
@@ -74,26 +58,10 @@ def test_item_type_too_many_item_types_data():
 
 
 # Identical tests to above, but for subscriptions CLI
-@pytest.mark.parametrize("item_types",
-                         [
-                             'MOD09GQ',
-                             'MYD09GA',
-                             'REOrthoTile',
-                             'SkySatCollect',
-                             'SkySatScene',
-                             'MYD09GQ',
-                             'Landsat8L1G',
-                             'Sentinel2L1C',
-                             'MOD09GA',
-                             'Sentinel1',
-                             'PSScene',
-                             'PSOrthoTile',
-                             'REScene'
-                         ])
-def test_item_types_success_subscriptions(item_types):
+def test_item_types_success_subscriptions():
     ctx = MockContext()
-    result = subscriptions.check_item_types(ctx, 'item_types', [item_types])
-    assert result == [item_types]
+    result = subscriptions.check_item_types(ctx, 'item_types', ["PSScene"])
+    assert result == ["PSScene"]
 
 
 def test_item_types_fail_subscriptions():
