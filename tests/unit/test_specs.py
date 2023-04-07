@@ -66,6 +66,7 @@ ALL_ITEM_TYPES = [
     'MYD09GQ',
     'SkySatScene'
 ]
+TEST_ASSET_TYPE = "basic_udm2"
 
 
 def test_get_type_match():
@@ -162,3 +163,25 @@ def test_validate_supported_bundles_fail():
         specs.validate_supported_bundles(TEST_ITEM_TYPE,
                                          'analytic',
                                          ALL_PRODUCT_BUNDLES)
+
+
+def test_get_supported_assets_success():
+    supported_assets = specs.get_supported_assets(TEST_ITEM_TYPE)
+    assert TEST_ASSET_TYPE in supported_assets
+
+
+def test_get_supported_assets_not_supported_item_type():
+    with pytest.raises(specs.SpecificationException):
+        specs.get_supported_assets('notsupported')
+
+
+def test_validate_asset_type_supported():
+    '''Ensures that a validated asset type for a given item type matches the
+    the given asset type.'''
+    assert TEST_ASSET_TYPE == specs.validate_asset_type(
+        TEST_ITEM_TYPE, TEST_ASSET_TYPE)
+
+
+def test_validate_asset_type_notsupported():
+    with pytest.raises(specs.SpecificationException):
+        specs.validate_asset_type(TEST_ITEM_TYPE, 'notsupported')

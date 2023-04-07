@@ -127,6 +127,18 @@ def catalog_source(
         planet.exceptions.ClientError: If start_time or end_time are not valid
             datetimes
     '''
+    if len(item_types) > 1:
+        raise ClientError(
+            "Subscription can only be successfully created if one item type",
+            "is specified.")
+    try:
+        asset_types = [
+            specs.validate_asset_type(item, asset) for asset in asset_types
+            for item in item_types
+        ]
+    except specs.SpecificationException as exception:
+        raise ClientError(exception)
+
     parameters = {
         "item_types": item_types,
         "asset_types": asset_types,

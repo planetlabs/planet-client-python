@@ -1,5 +1,6 @@
 """Subscriptions CLI"""
 from contextlib import asynccontextmanager
+from typing import List, Optional
 
 import click
 
@@ -10,6 +11,32 @@ from .options import limit, pretty
 from .session import CliSession
 from planet.clients.subscriptions import SubscriptionsClient
 from .. import subscription_request
+from ..specs import get_item_types, validate_item_type, SpecificationException
+
+ALL_ITEM_TYPES = get_item_types()
+valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(ALL_ITEM_TYPES)
+
+
+def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
+    '''Validates each item types provided by comparing them to all supported
+    item types.'''
+    try:
+        for item_type in item_types:
+            validate_item_type(item_type)
+        return item_types
+    except SpecificationException as e:
+        raise click.BadParameter(str(e))
+
+
+def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
+    '''Validates the item type provided by comparing it to all supported
+    item types.'''
+    try:
+        validate_item_type(item_type)
+    except SpecificationException as e:
+        raise click.BadParameter(str(e))
+
+    return item_type
 
 
 @asynccontextmanager
@@ -161,6 +188,7 @@ async def list_subscription_results_cmd(ctx,
 
 
 @subscriptions.command()
+@translate_exceptions
 @click.option('--name',
               required=True,
               type=str,
@@ -192,11 +220,13 @@ def request(name, source, delivery, notifications, tools, pretty):
     echo_json(res, pretty)
 
 
-@subscriptions.command()
+@subscriptions.command(epilog=valid_item_string)
+@translate_exceptions
 @click.option('--item-types',
               required=True,
+              help='Item type for requested item ids.',
               type=types.CommaSeparatedString(),
-              help='One or more comma-separated item types.')
+              callback=check_item_types)
 @click.option('--asset-types',
               required=True,
               type=types.CommaSeparatedString(),

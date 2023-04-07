@@ -533,6 +533,7 @@ class DataClient:
             planet.exceptions.ClientError: If asset type identifier is not
             valid.
         """
+        item_type_id = validate_item_type(item_type_id)
         assets = await self.list_item_assets(item_type_id, item_id)
 
         try:
