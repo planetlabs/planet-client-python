@@ -28,47 +28,51 @@ import planet
 
 DOWNLOAD_DIR = os.getenv('TEST_DOWNLOAD_DIR', '.')
 
-# The Orders API will be asked to mask, or clip, results to
-# this area of interest.
-iowa_aoi = {
-    "type":
-    "Polygon",
-    "coordinates": [[[-91.198465, 42.893071], [-91.121931, 42.893071],
-                     [-91.121931, 42.946205], [-91.198465, 42.946205],
-                     [-91.198465, 42.893071]]]
-}
 
-# In practice, you will use a Data API search to find items, but
-# for this example take them as given.
-iowa_items = ['20200925_161029_69_2223', '20200925_161027_48_2223']
+def create_requests():
+    # The Orders API will be asked to mask, or clip, results to
+    # this area of interest.
+    iowa_aoi = {
+        "type":
+        "Polygon",
+        "coordinates": [[[-91.198465, 42.893071], [-91.121931, 42.893071],
+                         [-91.121931, 42.946205], [-91.198465, 42.946205],
+                         [-91.198465, 42.893071]]]
+    }
 
-iowa_order = planet.order_request.build_request(
-    name='iowa_order',
-    products=[
-        planet.order_request.product(item_ids=iowa_items,
-                                     product_bundle='analytic_udm2',
-                                     item_type='PSScene')
-    ],
-    tools=[planet.order_request.clip_tool(aoi=iowa_aoi)])
+    # In practice, you will use a Data API search to find items, but
+    # for this example take them as given.
+    iowa_items = ['20200925_161029_69_2223', '20200925_161027_48_2223']
 
-oregon_aoi = {
-    "type":
-    "Polygon",
-    "coordinates": [[[-117.558734, 45.229745], [-117.452447, 45.229745],
-                     [-117.452447, 45.301865], [-117.558734, 45.301865],
-                     [-117.558734, 45.229745]]]
-}
+    iowa_order = planet.order_request.build_request(
+        name='iowa_order',
+        products=[
+            planet.order_request.product(item_ids=iowa_items,
+                                         product_bundle='analytic_udm2',
+                                         item_type='PSScene')
+        ],
+        tools=[planet.order_request.clip_tool(aoi=iowa_aoi)])
 
-oregon_items = ['20200909_182525_1014', '20200909_182524_1014']
+    oregon_aoi = {
+        "type":
+        "Polygon",
+        "coordinates": [[[-117.558734, 45.229745], [-117.452447, 45.229745],
+                         [-117.452447, 45.301865], [-117.558734, 45.301865],
+                         [-117.558734, 45.229745]]]
+    }
 
-oregon_order = planet.order_request.build_request(
-    name='oregon_order',
-    products=[
-        planet.order_request.product(item_ids=oregon_items,
-                                     product_bundle='analytic_udm2',
-                                     item_type='PSScene')
-    ],
-    tools=[planet.order_request.clip_tool(aoi=oregon_aoi)])
+    oregon_items = ['20200909_182525_1014', '20200909_182524_1014']
+
+    oregon_order = planet.order_request.build_request(
+        name='oregon_order',
+        products=[
+            planet.order_request.product(item_ids=oregon_items,
+                                         product_bundle='analytic_udm2',
+                                         item_type='PSScene')
+        ],
+        tools=[planet.order_request.clip_tool(aoi=oregon_aoi)])
+
+    return [iowa_order, oregon_order]
 
 
 async def create_and_download(client, order_detail, directory):
@@ -84,10 +88,13 @@ async def create_and_download(client, order_detail, directory):
 async def main():
     async with planet.Session() as sess:
         client = sess.client('orders')
-        await asyncio.gather(
-            create_and_download(client, iowa_order, DOWNLOAD_DIR),
-            create_and_download(client, oregon_order, DOWNLOAD_DIR),
-        )
+
+        requests = create_requests()
+
+        await asyncio.gather(*[
+            create_and_download(client, request, DOWNLOAD_DIR)
+            for request in requests
+        ])
 
 
 if __name__ == '__main__':
