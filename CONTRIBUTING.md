@@ -110,7 +110,7 @@ of the Planet SDK for Python and required development packages into the virtual
 environment use:
 
 ```console
-    $ pip install -e .[dev]
+    $ pip install -e .'[dev]'
 ```
 
 ### YAPF
