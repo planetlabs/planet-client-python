@@ -146,7 +146,7 @@ descending order. The options are are:
  * 'published asc'
  * 'published desc'
 
-The lets you do things like get the id of the most recent skysat image taken (that you have download access to):
+This lets you do things like get the ID of the most recent SkySat image taken (and that you have permissions to download):
 
 ```console
 planet data search SkySatCollect --sort 'acquired desc' --limit 1
@@ -157,7 +157,6 @@ And you can also just get the ID, using `jq`
 ```console
 planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id
 ```
-
 
 ## Filtering
 
@@ -282,7 +281,6 @@ You can specify multiple strings to match, with a comma:
 
 ```console
 planet data filter --string-in instrument PS2,PSB.SD | planet data search PSScene --filter -
-
 ```
 
 Another example is to select all data in a single strip:
@@ -292,7 +290,7 @@ planet data filter --string-in strip_id 5743640 | planet data search PSScene --f
 ```
 
 Note that in all these commands we are piping the results into the search. If you don't include the pipe then you'll
-get the filter output, which can be interested to inspect to see exactly what is sent to the server.
+get the filter output, which can be interesting to inspect to see exactly what is sent to the server.
 
 ### Filter by asset
 
@@ -326,25 +324,212 @@ that are of standard (aka not test) quality. Therefore, these filters can be eas
 planet data filter --permission --std-quality --asset ortho_analytic_8b_sr | planet data search PSScene --filter -
 ```
 
-## `data asset` command basics
-
-To activate an asset for download three commands must be queried, in sequence:
-1. `asset-activate` - activate an asset
-2. `asset-wait` - wait for an asset to be activated
-3. `asset-download` - download an activated asset
-
-For example, if we want to download a `basic_udm2` asset from item ID 
-`20221003_002705_38_2461`, a `PSScene` item type:
-
-```
-planet data asset-activate PSScene 20221003_002705_38_2461 basic_udm2 && \
-planet data asset-wait PSScene 20221003_002705_38_2461 basic_udm2 && \
-planet data asset-download PSScene 20221003_002705_38_2461 basic_udm2 --directory /path/to/data/
-00:00 - order my asset - state: active
-{'_links': {'_self': 'https://api.planet.com/data/v1/assets/eyJpIjogIjIwMjIxMDAzXzAwMjcwNV8zOF8yNDYxIiwgImMiOiAiUFNTY2VuZSIsICJ0IjogImJhc2ljX3VkbTIiLCAiY3QiOiAiaXRlbS10eXBlIn0', 'activate': 'https://api.planet.com/data/v1/assets/eyJpIjogIjIwMjIxMDAzXzAwMjcwNV8zOF8yNDYxIiwgImMiOiAiUFNTY2VuZSIsICJ0IjogImJhc2ljX3VkbTIiLCAiY3QiOiAiaXRlbS10eXBlIn0/activate', 'type': 'https://api.planet.com/data/v1/asset-types/basic_udm2'}, '_permissions': ['download'], 'expires_at': '2023-03-02T19:30:48.942718', 'location': 'https://api.planet.com/data/v1/download?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJQYWtGNHZuUEs3WXRmSFNGUklHY2I3YTNXT3piaTlaam4zWUpZMmxnd0x5cVlFMVBRSHU5QXNCcjR5Q3FxSjBNbl9yN3VwVEFQYUI1ZzhYNUJmcDhmUT09IiwiZXhwIjoxNjc3Nzg1NDQ4LCJ0b2tlbl90eXBlIjoidHlwZWQtaXRlbSIsIml0ZW1fdHlwZV9pZCI6IlBTU2NlbmUiLCJpdGVtX2lkIjoiMjAyMjEwMDNfMDAyNzA1XzM4XzI0NjEiLCJhc3NldF90eXBlIjoiYmFzaWNfdWRtMiJ9.Dd0opDjW3bBS6qLLZoNiJkfBsO2n5Xz9pM5apEUz_K6viDPFexhJiy6bMbaySbby8W0YvuATdb1uYXS2FkweDg', 'md5_digest': '3a9f7dd1ce500f699d0a96afdd0e3aa2', 'status': 'active', 'type': 'basic_udm2'}
-/path/to/data/20221003_002705_38_2461_1A_udm2.tif: 100%|██████████████████████████████████| 3.16k/3.16k [00:00<00:00, 32.0MB/s]
-```
-
 ## Stats
 
-TODO
+One command that can be quite useful for getting a sense of a search is the `stats` command. It works with the
+exact same filters as the main `search` command, but it just returns a count of the results, which can be 
+binned by different time periods. 
+
+This can be used for things like getting the number of items in a strip:
+
+```
+planet data filter --string-in strip_id 5743640 | planet data stats PSScene --interval day --filter -
+```
+
+Or the number of PlanetScope scenes collected in California each year:
+
+```
+curl -s https://raw.githubusercontent.com/ropensci/geojsonio/main/inst/examples/california.geojson | \
+planet data filter --geom - | planet data stats PSScene --interval year --filter - | jq
+```
+
+Will result in output like:
+
+```json
+{
+  "buckets": [
+    {
+      "count": 5261,
+      "start_time": "2014-01-01T00:00:00.000000Z"
+    },
+    {
+      "count": 34377,
+      "start_time": "2015-01-01T00:00:00.000000Z"
+    },
+    {
+      "count": 112331,
+      "start_time": "2016-01-01T00:00:00.000000Z"
+    },
+    {
+      "count": 504377,
+      "start_time": "2017-01-01T00:00:00.000000Z"
+    },
+    {
+      "count": 807086,
+      "start_time": "2018-01-01T00:00:00.000000Z"
+    },
+    {
+      "count": 806945,
+      "start_time": "2019-01-01T00:00:00.000000Z"
+    },
+    {
+      "count": 776757,
+      "start_time": "2020-01-01T00:00:00.000000Z"
+    },
+    {
+      "count": 684095,
+      "start_time": "2021-01-01T00:00:00.000000Z"
+    },
+    {
+      "count": 323557,
+      "start_time": "2022-01-01T00:00:00.000000Z"
+    },
+    {
+      "count": 56733,
+      "start_time": "2023-01-01T00:00:00.000000Z"
+    }
+  ],
+  "interval": "year",
+  "utc_offset": "+0h"
+}
+```
+
+You can see how the yearly output of Planet has gone up, though it actually went down in 2022 as the upgrade to 
+SuperDove meant much larger swaths, so the number of individual items went down even as we captured the whole
+earth.
+
+The API does not support an 'all time' interval to get the total of all collections for an area, but
+you can easily use [jq]((cli-intro.md#jq) to total up the results of an interval count:
+
+```
+curl -s https://raw.githubusercontent.com/ropensci/geojsonio/main/inst/examples/california.geojson | \
+planet data filter --geom - | planet data stats PSScene --interval year --filter - | jq '.buckets | map(.count) | add'
+```
+
+Just pipe the results to `jq '.buckets | map(.count) | add'` and it'll give you the total of all the values.
+
+## Asset Activation and Download
+
+While we recommend using the Orders or Subscriptions API's to deliver Planet data, the Data API has the capability
+to activate and download data. Only one asset can be activated at once, and there is no clipping or additional 
+processing of the data like the great 'tools' of Subscriptions & Orders. But the advantage is that it can often
+be faster for working with a small number of items & assets. 
+
+### Activate an Asset
+
+All items in the Data API have a list of assets. This includes the main imagery geotiff files, usually in a few
+different formats, and also accompanying files like the [Usable Data Mask](https://developers.planet.com/docs/data/udm-2/)
+ (UDM) and JSON metadata. You can't immediately download them, as they must first be created in the cloud, known as
+'activated'. To activate data you need to get its item id, plus the name of the asset - the available ones
+can be seen by looking at the Item's JSON. Once you have the item id and asset type you can run the CLI
+
+```
+planet data asset-activate PSScene 20230310_083933_71_2431 ortho_udm2
+```
+
+This will kick off the activation process, and the command should return immediately. In this example
+we're activating the UDM, which is one of the most common things to do through the Data API, to 
+first get a sense of where there are clouds before placing a proper clipping order.
+
+### Download an Asset
+
+Once an asset is ready you can use `asset-download` with a similar command:
+
+```
+planet data asset-download PSScene 20230310_083933_71_2431 ortho_udm2
+```
+
+While some assets activate almost immediately (if another user has requested
+it recently), some can take a few minutes. If you try to download it before it's active
+you'll get a message like: `Error: asset missing ["location"] entry. Is asset active?`
+
+Thankfully the CLI has the great `asset-wait` command will complete when the asset is activated:
+
+```
+planet data asset-wait PSScene 20230310_083933_71_2431 ortho_udm2
+```
+
+And you can pair with download so that as soon as the asset is active it'll be downloaded:
+
+```
+planet data asset-wait PSScene 20230310_083933_71_2431 ortho_udm2 && \
+planet data asset-download PSScene 20230310_083933_71_2431 ortho_udm2
+```
+
+Download has a few different options:
+
+ * `--directory` lets you specify a base directory to put the asset in.
+ * `--filename` assigns a custom name to the downloaded file.
+ * `--overwrite` will overwrite files if they already exist.
+ * `--checksum` checks to make sure the file you downloaded is the exact same as the one on the server. This can be useful if you script thousands of files to download to detect any corruptions in that process.
+
+## Saved Searches
+
+The core `planet data search` command uses what is called a 'quick search' in the API. The API 
+also supports what we call a '[saved searches](https://developers.planet.com/docs/apis/data/quick-saved-search/#saved-search)',
+and the CLI supports this as well. 
+
+### List Searches
+
+You can easily get a list of all the searches you've made:
+
+```
+planet data search-list
+```
+
+This defaults to returning 100 results, but you can use `--limit` to return the number you 
+specify, and set it to 0 to return all your searches. By default this returns both
+your quick searches and saved searches, but you can also limit to to only return
+your saved searches:
+
+```
+planet data search-list --search-type saved
+```
+
+If you've not created any saved searches it may be an empty list. You can create
+saved searches with Planet Explorer, or it's also easy with the command-line.
+
+### Create Search
+
+To make a new saved search you can use the exact same filter syntax as the regular `search` command,
+but you must also add a 'name' to refer to the search by:
+
+```
+planet data filter --geom geometry.geojson | planet data search-create PSScene --name 'my saved search' --filter -
+```
+
+### Run Search
+
+When you save a new search you'll get back the JSON describing the search. If you grab the 'id' field from it then
+you can get the current results for that search:
+
+```
+planet data search-run da963039dbe94573a3ac9e4629d065b6
+```
+
+This is just like running a normal (quick) search, and takes similar arguments: `--limit` and `--pretty`, 
+and also the same [sort](#sort) parameter (`--sort`). You can also run any previous `quick` search. 
+They don't have names (the ID is just used as the name), but they are saved in the system and can be 
+executed again. Searches (except those with an end date that has passed) show new results
+if run later and match newly acquired imagery. 
+
+### Update Search
+
+You can also update an existing search to have a different set of values. This takes similar arguments, and
+will overwrite the previous values.
+
+```
+planet data filter --string-in instrument PS2,PSB.SD | planet data search-update da963039dbe94573a3ac9e4629d065b6 --name 'my updated search' --filter - SkySatCollect
+```
+
+### Delete Search
+
+If you're no longer using a search you can delete it:
+
+```
+planet data search-delete da963039dbe94573a3ac9e4629d065b6
+```
+
+If the deletion was successful the command-line won't print out anything except a new line. If the
+search didn't exist it will say `Error: {"general": [{"message": "The requested search id does not exist"}], "field": {}}`.
+You can also delete `quick` searches, which would remove them from your history.
