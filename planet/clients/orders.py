@@ -465,7 +465,10 @@ class OrdersClient:
     async def list_orders(self,
                           state: Optional[str] = None,
                           limit: int = 100) -> AsyncIterator[dict]:
-        """Iterate over the list of stored order requests.
+        """Iterate over the list of stored orders.
+
+        Order descriptions are sorted by creation date with the last created
+        order returned first.
 
         Note:
             The name of this method is based on the API's method name. This

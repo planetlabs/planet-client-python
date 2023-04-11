@@ -63,6 +63,9 @@ async def list(ctx, state, limit, pretty):
 
     This command prints a sequence of the returned order descriptions,
     optionally pretty-printed.
+
+    Order descriptions are sorted by creation date with the last created order
+    returned first.
     '''
     async with orders_client(ctx) as cl:
         async for o in cl.list_orders(state=state, limit=limit):
