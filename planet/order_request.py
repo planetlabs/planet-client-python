@@ -143,7 +143,21 @@ def notifications(email: Optional[bool] = None,
         webhook_per_order: Request a single webhook call per order instead
             of one call per each delivered item.
     '''
-    return dict((k, v) for k, v in locals().items() if v)
+    notifications_dict = {}
+
+    if webhook_url:
+        webhook_dict = {
+            'url': webhook_url
+            }
+        if webhook_per_order is not None:
+            webhook_dict['per_order'] = webhook_per_order
+
+        notifications_dict['webhook'] = webhook_dict
+
+    if email is not None:
+        notifications_dict['email'] = email
+
+    return notifications_dict
 
 
 def delivery(archive_type: Optional[str] = None,
