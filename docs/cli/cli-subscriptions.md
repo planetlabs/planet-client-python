@@ -114,7 +114,7 @@ for more information.
 To create a new subscription with the CLI, use the `create` command:
 
 ```
-planet orders subscriptions create my-subscription.json
+planet subscriptions create my-subscription.json
 ```
 
 The above command assumes that you've saved the subscriptions JSON as `my-subscription.json`.
