@@ -46,9 +46,9 @@ def test_build_request():
         }
     }
     notifications = {
-        'email': 'email',
-        'webhook_url': 'webhookurl',
-        'webhook_per_order': True
+        'email': 'email', 'webhook': {
+            'url': 'webhookurl', 'per_order': True
+        }
     }
     order_type = 'partial'
     tool = {'bandmath': 'jsonstring'}
@@ -119,11 +119,11 @@ def test_product():
 
 def test_notifications():
     notifications_config = order_request.notifications(
-        email='email', webhook_url='webhookurl', webhook_per_order=True)
+        email=True, webhook_url='webhookurl', webhook_per_order=True)
     expected = {
-        'email': 'email',
-        'webhook_url': 'webhookurl',
-        'webhook_per_order': True
+        'email': True, 'webhook': {
+            'url': 'webhookurl', 'per_order': True
+        }
     }
     assert notifications_config == expected
 
