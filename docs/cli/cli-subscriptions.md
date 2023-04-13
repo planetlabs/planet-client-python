@@ -17,7 +17,7 @@ through the main commands available in the CLI.
 
 Since there is no UI to easily create subscriptions we’ll start with making a new one. 
 
-```
+```json
 {
   "name": "First Subscription",
   "source": {
@@ -113,7 +113,7 @@ for more information.
 
 To create a new subscription with the CLI, use the `create` command and the json file you just created:
 
-```
+```sh
 planet subscriptions create my-subscription.json
 ```
 
@@ -124,7 +124,7 @@ planet subscriptions create my-subscription.json
 
 Now that you’ve got a subscription working you can make use of the other commands.
 
-```
+```sh
 planet subscriptions list
 ```
 
@@ -136,7 +136,7 @@ CLI’s.
 
 The `list` command also supports filtering by the status of the subscription:
 
-```
+```sh
 planet subscriptions list --status running
 ```
 
@@ -148,7 +148,7 @@ gives you just the currently active subscriptions. The other available statuses 
 To get the full details on a single subscription you can take the id from your list and use the
 `get` command:
 
-```
+```sh
 planet subscriptions get cb817760-1f07-4ee7-bba6-bcac5346343f
 ```
 
@@ -156,7 +156,7 @@ planet subscriptions get cb817760-1f07-4ee7-bba6-bcac5346343f
 
 To see what items have been delivered to your cloud bucket you can use the `results` command:
 
-```
+```sh
 planet subscriptions results cb817760-1f07-4ee7-bba6-bcac5346343f
 ```
 
@@ -165,7 +165,7 @@ set a higher limit, or set it to 0 to see all results (this can be quite large w
 
 You can also filter by status:
 
-```
+```sh
 planet subscriptions results --status processing
 ```
 
@@ -178,15 +178,16 @@ You can update a subscription that is running, for example to change the 'tools'
 its geometry. To do this you must submit the full subscription creation JSON, so the easiest way is to
 get it with `get` and then alter the values.
 
-```
-planet subscriptions update cb817760-1f07-4ee7-bba6-bcac5346343f my-updated-subscriptions.json
+```sh
+planet subscriptions update cb817760-1f07-4ee7-bba6-bcac5346343f \
+my-updated-subscriptions.json
 ```
 
-### Cancelling Subscription
+### Cancel a subscription
 
 Cancelling a subscription is simple with the CLI:
 
-```
+```sh
 planet subscriptions cancel cb817760-1f07-4ee7-bba6-bcac5346343f
 ```
 
@@ -206,8 +207,9 @@ The first place to start is the `request-catalog` command, which generates all t
 of this is quite similar to a Data API search request, though with more required fields. The minimal
 required commands would be a request like:
 
-```
-planet subscriptions request-catalog --item-types PSScene --asset-types ortho_analytic_8b --geometry geometry.geojson \
+```sh
+planet subscriptions request-catalog --item-types PSScene \
+--asset-types ortho_analytic_8b --geometry geometry.geojson \
 --start-time 2023-03-17T04:08:00.0Z
 ```
 
@@ -224,7 +226,7 @@ Just select 'ISO 8601' (third one on the list), or 'RFC 3339' (8th on the list).
 In this case we are using a locally saved `geometry.geojson`, which would look like the following if you wanted
 it to match the subscription creation request at the top of this documentation page:
 
-```
+```json
 {
     "coordinates":
     [
@@ -262,9 +264,10 @@ is not flexible to input like the orders command.
 
 RRule lets you specify a subscription that repeats at various time intervals:
 
-```
-planet subscriptions request-catalog --item-types PSScene --asset-types ortho_analytic_8b --geometry geometry.geojson \
---start-time 2023-03-17T04:08:00.0Z --rrule 'FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10'
+```sh
+planet subscriptions request-catalog --item-types PSScene --asset-types \
+ortho_analytic_8b --geometry geometry.geojson --start-time 2023-03-17T04:08:00.0Z \
+--rrule 'FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10'
 ```
 
 For more information on the `rrule` parameter see the [recurrence rules](https://developers.planet.com/docs/subscriptions/source/#rrules-recurrence-rules)
@@ -274,16 +277,19 @@ documentation.
 
 You can pass in a filter from the data API:
 
-```
+```sh
 planet data filter --range clear_percent gt 90 > filter.json
-planet subscriptions request-catalog --item-types PSScene --asset-types ortho_analytic_8b --geometry geometry.geojson \
+planet subscriptions request-catalog --item-types PSScene --asset-types \
+ortho_analytic_8b --geometry geometry.geojson \
 --start-time 2022-08-24T00:00:00-07:00 --filter filter.json
 ```
 
 And you can even pipe it in directly:
 
-```
-planet data filter --range clear_percent gt 90 | planet subscriptions request-catalog --item-types PSScene --asset-types ortho_analytic_8b --geometry geometry.geojson --start-time 2022-08-24T00:00:00-07:00 --filter -
+```sh
+planet data filter --range clear_percent gt 90 | planet subscriptions \
+request-catalog --item-types PSScene --asset-types ortho_analytic_8b \
+--geometry geometry.geojson --start-time 2022-08-24T00:00:00-07:00 --filter -
 ```
 
 Do not bother with geometry or date filters, as they will be ignored in favor of the `--start-time` and `--geometry` values that are required.
@@ -293,10 +299,11 @@ Do not bother with geometry or date filters, as they will be ignored in favor of
 You’ll likely want to save the output of your `request-catalog` call to disk, so that you can more easily use it in constructing the complete subscription
 request. 
 
-```
+```sh
 planet data filter --range clear_percent gt 90 > filter.json
-planet subscriptions request-catalog --item-types PSScene --asset-types ortho_analytic_8b --geometry geometry.geojson \
---start-time 2022-08-24T00:00:00-07:00 --filter filter.json > request-catalog.json
+planet subscriptions request-catalog --item-types PSScene --asset-types \
+ortho_analytic_8b --geometry geometry.geojson --start-time 2022-08-24T00:00:00-07:00 \
+--filter filter.json > request-catalog.json
 ```
 
 ### Subscription Tools
@@ -316,7 +323,7 @@ any pixels outside of your area of interest (99.9% of all subscriptions use the 
 tool, so it’s strongly recommended to also use clip). The proper 'clip' tool for it
 would be:
 
-```
+```json
 [
     {
         "type": "clip",
@@ -402,15 +409,15 @@ Example: `more-tools.json`
 
 ### Delivery
 
-One other essential block is the `delivery` JSON. Like with tools there’s as of yet
-not convenience method, so you’ll have to write out the JSON for this section, but we
-hope to have one soon. You can find the full documentation for the delivery options in
+One other essential block is the `delivery` JSON. Like with tools there is no convenience 
+method, as of yet. You must write out the JSON for this section.
+You can find the full documentation for the delivery options in
 the [Subscriptions Delivery documentation](https://developers.planet.com/docs/subscriptions/delivery/).
 
 An example of a delivery.json file that you would save as a file to pass into the 
 `subscriptions request` command is:
 
-```
+```json
 {
     "type": "azure_blob_storage",
     "parameters":
@@ -430,7 +437,7 @@ The main documentation page also has the parameters for Google Cloud, AWS and Or
 Once you’ve got all your sub-blocks of JSON saved you’re ready to make a complete 
 subscriptions request with the `subscriptions request` command:
 
-```
+```sh
 planet subscriptions request --name 'First Subscription' --source request-catalog.json \
 --tools tools.json --delivery cloud-delivery.json --pretty
 ```
@@ -438,7 +445,7 @@ planet subscriptions request --name 'First Subscription' --source request-catalo
 The above will print it nicely out so you can see the full request. You can write it out
 as a file, or pipe it directly into `subscriptions create` or `subscriptions update`:
 
-```
+```sh
 planet subscriptions request --name 'First Subscription' --source request-catalog.json \
 --tools tools.json --delivery cloud-delivery.json | planet subscriptiosn create -
 ```
