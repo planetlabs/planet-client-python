@@ -1,6 +1,6 @@
 # Planet SDK for Python
 
-[![Build Status](https://travis-ci.org/planetlabs/planet-client-python.svg?branch=master)](https://travis-ci.org/planetlabs/planet-client-python)
+[![Build Status]([https://github.com/planetlabs/planet-client-python/actions/workflows/test.yml](https://github.com/planetlabs/planet-client-python/actions/workflows/test.yml/badge.svg)
 
 The [Planet](https://planet.com) Software Development Kit (SDK) for Python
 provides both a Python API and a command-line interface (CLI)
