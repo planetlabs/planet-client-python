@@ -35,12 +35,6 @@ We are eager to share this pre-release with you and encourage you to test your w
 To contribute or develop with this library, see
 [CONTRIBUTING](https://github.com/planetlabs/planet-client-python/blob/main/CONTRIBUTING.md).
 
-## Build Status
-
-[Planet Software Development Kit (SDK) for Python main branch](https://github.com/planetlabs/planet-client-python)
-
-[![Build Status](https://travis-ci.org/planetlabs/planet-client-python.svg?branch=master)](https://travis-ci.org/planetlabs/planet-client-python)
-
 ## Version 1 of this SDK
 
 [Version 1 of this SDK](https://github.com/planetlabs/planet-client-python/tree/1.5.2) is significantly different (see the [documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/)). Version 2 is not backward compatible. Make sure to create a separate virtual environment if you need to work with both versions. For more information on how to do this, see the [Virtual Environments and the Planet SDK for Python](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/get-started/venv-tutorial/).
