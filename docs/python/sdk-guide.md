@@ -292,8 +292,11 @@ Now, instead of going to your account dashboard to see the order request running
 
 ```console
 02:06 - order [id number] - state: running
+```
+
 And when your order is ready, it will download into the current directory, while writing status to the output:
 
+```console
 order-id/PSScene/20200909_182524_1014_metadata.json: 100%|█| 0.00k/0.00k [0
 order-id/PSScene/20200909_182524_1014_3B_AnalyticMS_metadata_clip.xml: 100%
 order-id/PSScene/20200909_182524_1014_3B_udm2_clip.tif: 100%|█| 0.55k/0.55k
