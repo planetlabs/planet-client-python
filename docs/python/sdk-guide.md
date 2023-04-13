@@ -145,7 +145,7 @@ The Orders Client mostly mirrors the [Planet Orders API](https://developers.plan
 As a first step in ordering, you create an order request object. This request object is transmitted to the Planet service as a JSON object. The SDK provides a way for you to build up that object: `planet.order_request.build_request()`. The following code returns an order request object, with the values you’ve provided for:
 
 * a name for your order
-* what product to order—in this example, PSScene items with analytic_udm2 product bundle asset types
+* what product to order—in this example, `PSScene` items with `analytic_udm2` product bundle asset types
 * what tools to use—here, the clip tool with the area of interest (AOI) to clip within
 
 ```python
