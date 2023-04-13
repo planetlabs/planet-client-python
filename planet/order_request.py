@@ -15,7 +15,7 @@
 """Functionality for preparing order details for use in creating an order"""
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import logging
-from typing import Optional, Any, Dict, List
+from typing import Optional, Any, Dict, List, Union
 
 from . import geojson, specs
 from .exceptions import ClientError
@@ -143,19 +143,21 @@ def notifications(email: Optional[bool] = None,
         webhook_per_order: Request a single webhook call per order instead
             of one call per each delivered item.
     '''
-    notifications_dict = {}
+    notifications_dict: Dict[str, Union[dict, bool]] = {}
 
     if webhook_url:
-        webhook_dict = {
-            'url': webhook_url
-            }
+        webhook_dict: Dict[str, Union[str, bool]] = {
+            'url': webhook_url,
+        }
         if webhook_per_order is not None:
-            webhook_dict['per_order'] = webhook_per_order
+            wpo: bool = webhook_per_order
+            webhook_dict['per_order'] = wpo
 
         notifications_dict['webhook'] = webhook_dict
 
     if email is not None:
-        notifications_dict['email'] = email
+        val: bool = email
+        notifications_dict['email'] = val
 
     return notifications_dict
 

@@ -119,9 +119,9 @@ def test_product():
 
 def test_notifications():
     notifications_config = order_request.notifications(
-        email='email', webhook_url='webhookurl', webhook_per_order=True)
+        email=True, webhook_url='webhookurl', webhook_per_order=True)
     expected = {
-        'email': 'email', 'webhook': {
+        'email': True, 'webhook': {
             'url': 'webhookurl', 'per_order': True
         }
     }
