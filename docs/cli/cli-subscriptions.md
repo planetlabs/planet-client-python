@@ -109,19 +109,20 @@ to replace your own for it to work. Below we’ll show the convenience methods t
 help create a custom one more easily. If you'd like to get things working for now then 
 just replace the 'delivery' section with your cloud credentials, see the 
 [core subscriptions delivery docs](https://developers.planet.com/docs/subscriptions/delivery/) 
-for more information. 
+for more information.
 
-To create a new subscription with the CLI, use the `create` command:
+To create a new subscription with the CLI, use the `create` command and the json file you just created:
 
 ```
 planet subscriptions create my-subscription.json
 ```
 
-The above command assumes that you've saved the subscriptions JSON as `my-subscription.json`.
+!!!note "Note"
+    The above command assumes that you’ve saved the subscriptions JSON as `my-subscription.json` and that you’ve replaced the delivery information with your own bucket and credentials.
 
 ### List Subscriptions
 
-Now that you've got a subscription working you can make use of the other commands.
+Now that you’ve got a subscription working you can make use of the other commands.
 
 ```
 planet subscriptions list
@@ -426,7 +427,7 @@ The main documentation page also has the parameters for Google Cloud, AWS and Or
 
 ### Subscriptions Request
 
-Once you've got all your sub-blocks of JSON saved you’re ready to make a complete 
+Once you’ve got all your sub-blocks of JSON saved you’re ready to make a complete 
 subscriptions request with the `subscriptions request` command:
 
 ```

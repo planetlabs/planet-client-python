@@ -23,7 +23,7 @@ You can use the `list` command to show your recent orders:
 planet orders list
 ```
 
-If you've not placed any orders with Explorer, the CLI or the API directly, then the results
+If you’ve not placed any orders with Explorer, the CLI or the API directly, then the results
 of this call will be blank, so you may want to try out some of the create order commands below.
 
 Sometimes that list gets too long, so you can put a limit on how many are returned:
@@ -74,7 +74,7 @@ You can customize which fields you want to show by changing the values.
 ### Number of recent orders
 
 You can use jq to process the output for more insight, like 
-get a count of how many recent orders you've done. 
+get a count of how many recent orders you’ve done. 
 
 ```console
 planet orders list | jq -s length
@@ -424,7 +424,7 @@ use this, just save it into a file called [tools-composite.json](https://raw.git
 ]
 ```
 
-Once you've got it saved you call the `--tools` flag to refer to the JSON file, and you 
+Once you’ve got it saved you call the `--tools` flag to refer to the JSON file, and you 
 can pipe that to `orders create`.
 
 ```console
@@ -633,7 +633,7 @@ You’ll need to use a full orders request JSON.
 }
 ```
 
-Once you've got the JSON, the other commands are all the same. Use create to submit it to the API:
+Once you’ve got the JSON, the other commands are all the same. Use create to submit it to the API:
 
 ```
 planet orders create basemap-order.json

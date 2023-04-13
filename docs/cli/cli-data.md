@@ -471,7 +471,7 @@ and the CLI supports this as well.
 
 ### List Searches
 
-You can easily get a list of all the searches you've made:
+You can easily get a list of all the searches you’ve made:
 
 ```
 planet data search-list
@@ -486,7 +486,7 @@ your saved searches:
 planet data search-list --search-type saved
 ```
 
-If you've not created any saved searches it may be an empty list. You can create
+If you’ve not created any saved searches it may be an empty list. You can create
 saved searches with Planet Explorer, or it’s also easy with the command-line.
 
 ### Create Search
