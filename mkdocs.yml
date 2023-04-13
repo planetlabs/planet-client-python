@@ -16,6 +16,7 @@ theme:
   features:
     - navigation.tabs
     # - navigation.instant # Not compatible with i18n plugin
+    - navigation.tabs.sticky
     - navigation.expand
     - navigation.indexes
     - navigation.top
