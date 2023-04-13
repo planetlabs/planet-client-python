@@ -10,7 +10,7 @@ which lets you activate and download Planet data products in bulk, and apply var
 of the CLI for creating and downloading orders. It depends on several more advanced 
 command-line concepts, but this tutorial should let you get a sense of what you can do, 
 with enough examples that you should be able to adapt the commands for what you want to do. 
-If you're interested in deeper understanding what is going on
+If you’re interested in deeper understanding what is going on
 then check out our [CLI Concepts](cli-intro.md) guide.
 
 ## Core Workflows
@@ -63,7 +63,7 @@ planet orders list | jq
 
 Piping any output through jq will format it nicely and do syntax highlighting. You can 
 also `jq` to just show select information, which can be useful for getting a quick sense 
-of the state of the state of things and pull out id's for other operations:
+of the state of the state of things and pull out id’s for other operations:
 
 ```console
 planet orders list | jq -rs '.[] | "\(.id) \(.created_on) \(.state) \(.name)"'
@@ -95,7 +95,7 @@ planet orders get 782b414e-4e34-4f31-86f4-5b757bd062d7
 ### Create an Order Request
 
 To create an order you need a name, a [bundle](https://developers.planet.com/apis/orders/product-bundles-reference/),
- one or more id's, and an [item type](https://developers.planet.com/docs/apis/data/items-assets/#item-types):
+ one or more id’s, and an [item type](https://developers.planet.com/docs/apis/data/items-assets/#item-types):
 
 First lets get the ID of an item you have download access to, using the Data API: 
 
@@ -150,7 +150,7 @@ planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name "My F
  > request-1.json
 ```
 
-Note that `\` just tells the command-line to treat the next line as the same one. It's used here so it's 
+Note that `\` just tells the command-line to treat the next line as the same one. It’s used here so it’s 
 easier to read, but you can still copy and paste the full line into your command-line and it should work.
 
 This saves the above JSON in a file called `request-1.json`
@@ -208,7 +208,7 @@ planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Two 
 ```
 
 The Planet CLI is designed to work well with piping, as it aims at small commands that can be 
-combined in powerful ways, so you'll see it used in a number of the examples.
+combined in powerful ways, so you’ll see it used in a number of the examples.
 
 ### Download an order
 
@@ -224,7 +224,7 @@ way see the next example.
 ### Wait then download an order
 
 The `wait` command is a small, dedicated command that polls the server to 
-see if an order is ready for downloading, showing the status. It's not
+see if an order is ready for downloading, showing the status. It’s not
 so useful by itself, but can be combined with the `download` command to
 only start the download once the order is ready:
 
@@ -259,7 +259,7 @@ To check the current value of `orderid` just run `echo $orderid`.
 ### Create an order and download when ready
 
 You can then combine these all into one call, to create the order and 
-download it when it's available:
+download it when it’s available:
 
 ```console
 id=`planet orders create request-1.json | jq -r '.id'` && \
@@ -300,7 +300,7 @@ of at least one being corrupted in creases
 
 ## Tools with orders
 
-Now we'll dive into the variety of ways to customize your order. These can all be
+Now we’ll dive into the variety of ways to customize your order. These can all be
 combined with all the commands listed above.
 
 ### Clipping
@@ -350,7 +350,7 @@ Example: `geometry.geojson`
 }
 ```
 
-We'll work with a geojson that is already saved. You should download the 
+We’ll work with a geojson that is already saved. You should download the 
 [geometry](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/geometry.geojson)
 (and you can see it [on github](https://github.com/planetlabs/planet-client-python/blob/main/docs/cli/request-json/geometry.geojson)
 or it is also stored in the repo in the [request-json/](request-json/) directory. 
@@ -542,7 +542,7 @@ planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Harm
 
 ### STAC Metadata
 
-A relatively recent addition to Planet's orders delivery is the inclusion of [SpatioTemporal Asset Catalog](https://stacspec.org/en)
+A relatively recent addition to Planet’s orders delivery is the inclusion of [SpatioTemporal Asset Catalog](https://stacspec.org/en)
 (STAC) metadata in Orders. STAC metadata provides a more standard set of JSON fields that work with 
 many GIS and geospatial [STAC-enabled tools](https://stacindex.org/ecosystem). The CLI `orders request` command currently requests
 STAC metadata by default, as the STAC files are small and often more useful than the default JSON metadata.
@@ -554,7 +554,7 @@ planet orders request --item-type PSScene --bundle visual --name 'No STAC' --no-
 
 Currently this needs to be done for any 'composite' operation, as STAC output from composites is not yet 
 supported (but is coming). You can explicitly add `--stac`, but it is the default, so does not need to
-be included. For more information about Planet's STAC output see the [Orders API documentation](https://developers.planet.com/apis/orders/delivery/#stac-metadata).
+be included. For more information about Planet’s STAC output see the [Orders API documentation](https://developers.planet.com/apis/orders/delivery/#stac-metadata).
 
 ### Cloud Delivery
 
@@ -588,7 +588,7 @@ request. So the following call is a quick way to exactly redo a previous order r
 planet orders get <order-id> | planet orders create -
 ```
 
-Realistically you'd more likely want to get a previous order and then change it in some way (new id's, different 
+Realistically you'd more likely want to get a previous order and then change it in some way (new id’s, different 
 tools, etc.). You can remove the 'extra' JSON fields that report on status if you'd like, but the Orders
 API will just ignore them if they are included in a request.
 
@@ -597,12 +597,12 @@ and use the CLI to customize it.
 
 ### Basemaps Orders
 
-One of the newer features in Planet's Orders API is the ability to [order basemaps](https://developers.planet.com/apis/orders/basemaps/).
+One of the newer features in Planet’s Orders API is the ability to [order basemaps](https://developers.planet.com/apis/orders/basemaps/).
 The CLI does not yet support a 'convenience' method to easily create the JSON - you unfortunately
 can't yet use `planet orders request` to help form an orders request. But all the other CLI functionality
 supports ordering basemaps through the Orders API.
 
-You'll need to use a full orders request JSON.
+You’ll need to use a full orders request JSON.
 
 ```json
 {
@@ -651,7 +651,7 @@ Extract the ID:
 planet orders list --limit 1 | jq -r .id 
 ```
 
-Use that ID to wait and download when it's ready:
+Use that ID to wait and download when it’s ready:
 
 ```
 planet orders wait 605b5472-de61-4563-88ae-d43417d3ed96 && planet orders download 605b5472-de61-4563-88ae-d43417d3ed96
@@ -686,5 +686,5 @@ planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Clip
 ```
 
 This one uses some advanced unix capabilities like `sed` and `tr`, along with unix variables, so more
-properly belongs in the [CLI Tips & Tricks](cli-tips-tricks.md), but we'll leave it here to give a taste
-of what's possible.
+properly belongs in the [CLI Tips & Tricks](cli-tips-tricks.md), but we’ll leave it here to give a taste
+of what’s possible.

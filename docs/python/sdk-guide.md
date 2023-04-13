@@ -72,7 +72,7 @@ asyncio.run(main())
 
 Communication with the Planet services is provided by way of the `Session` class. The `Session` class automatically implements rate limiting that allows for smooth asynchronous communication with Planet servers. Note that this rate-limiting only works when one `Session` is being used. Employing multiple sessions will cause the rate-limiting to be bypassed and can cause collisions.
 
-To use `Session`, it's recommended to use it as a context manager. In this way, your session is clearly defined and is handled as part of the context. For example, the context manager handles automatic cleanup of connections when the context is left, such as when an exception occurs.
+To use `Session`, it’s recommended to use it as a context manager. In this way, your session is clearly defined and is handled as part of the context. For example, the context manager handles automatic cleanup of connections when the context is left, such as when an exception occurs.
 
 ```python
 import asyncio
@@ -100,7 +100,7 @@ asyncio.run(main())
 
 ### Use asyncio to order Planet data
 
-As noted above, to ensure your session is properly managed and cleaned up when it's no longer needed, create a session using the Session class and use it as a context manager.
+As noted above, to ensure your session is properly managed and cleaned up when it’s no longer needed, create a session using the Session class and use it as a context manager.
 
 The proper implementation of the `Session` class:
 

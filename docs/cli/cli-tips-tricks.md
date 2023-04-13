@@ -9,20 +9,20 @@ of tools in the command-line & geospatial ecosystem. Some of them can be a pain 
 GDAL/OGR, and several pop in and out of web tools, so these are kept out of the main tutorial 
 section. 
 
-**WORK IN PROGRESS**: This document is still under construction, with a number of TODO's remaining,
-but we are publishing as there's a lot of good information here.
+**WORK IN PROGRESS**: This document is still under construction, with a number of TODO’s remaining,
+but we are publishing as there’s a lot of good information here.
 
 ## Tools used
 
-* **[GDAL/OGR](https://gdal.org)** - We'll mostly use OGR, the vector tooling. 
+* **[GDAL/OGR](https://gdal.org)** - We’ll mostly use OGR, the vector tooling. 
 Great for things like format conversion and basic simplification.
 * **[Keplergl_cli](https://github.com/kylebarron/keplergl_cli#usage)** - Nice tool to call the
 awesome kepler.gl library from the commandline. Useful for visualization of large amounts of 
 geojson.
 * **[GeoJSON.io](https://geojson.io/)** - Simple tool to do editing of geojson, useful for creating
-AOI's. It integrates with github, but the ability to save a GeoJSON to github doesn't seem to work so well.
+AOI’s. It integrates with github, but the ability to save a GeoJSON to github doesn't seem to work so well.
 * **[Placemark.io](https://placemark.io)** - More advanced tool from the creator of GeoJSON.io, very
-nice for creating AOI's and piping them in, with lots of rich geometry editing features. 
+nice for creating AOI’s and piping them in, with lots of rich geometry editing features. 
 * **[MapShaper](https://github.com/mbloch/mapshaper)** - Tool to do interactive simplification of
 GeoJSON, has a nice CLI.
 * **[STACTools](https://github.com/stac-utils/stactools)** - CLI for working with STAC data. There
@@ -43,7 +43,7 @@ tools that can get you back into the CLI workflow more quickly.
 
 One great tool for quickly drawing on a map and getting GeoJSON output is 
 [GeoJSON.io](https://geojson.io). You can draw and save the file, but an even faster workflow
-is to use your operating system's clipboard to command-line tools.
+is to use your operating system’s clipboard to command-line tools.
 
 Just draw with the tools, then copy (with right click and 'copy' from the menu or 'ctrl c') the
 JSON from the text box:
@@ -61,7 +61,7 @@ pbpaste | planet data filter --geom -  | planet data search SkySatCollect --filt
 #### Draw with Placemark
 
 A really fantastic tool for working with GeoJSON is [Placemark](https://placemark.io). It is a
-commercial tool that you'll have to pay for, but it's got a really nice feature that makes it very
+commercial tool that you’ll have to pay for, but it’s got a really nice feature that makes it very
 compatible with command-line workflows. You can easily grab the URL of any individual GeoJSON 
 feature and stream it in as your geometry using `curl`:
 
@@ -91,7 +91,7 @@ Or also on Placemark, which tends to perform a bit better (especially when you g
 
 (TODO: record example)
 
-For both it's recommended to pass the output through `planet collect` to get properly formatted GeoJSON:
+For both it’s recommended to pass the output through `planet collect` to get properly formatted GeoJSON:
 
 ```console
 planet data filter --string-in strip_id 5743669 | planet data search PSScene --filter - | planet collect - | pbcopy
@@ -134,14 +134,14 @@ planet data filter --string-in strip_id $stripid | planet data search PSScene --
 #### Kepler.gl
 
 One of the best tools to visualize large numbers of imagery footprints is a tool called [kepler.gl](https://kepler.gl/),
-which has a really awesome command-line version which is perfect for working with Planet's CLI. To get the CLI go to
+which has a really awesome command-line version which is perfect for working with Planet’s CLI. To get the CLI go to
 [keplergl_cli](https://github.com/kylebarron/keplergl_cli) and follow the 
 [installation instructions](https://github.com/kylebarron/keplergl_cli#install). Be sure to get a Mapbox API key (from
 the [access tokens](https://account.mapbox.com/access-tokens/) page) - just sign up for a free account if you don't have
 one already. The kepler CLI won't work at all without getting one and setting it as the `MAPBOX_API_KEY` environment
 variable.
 
-Once it's set up you can just pipe any search command directly to `kepler` (it usually does fine even without 
+Once it’s set up you can just pipe any search command directly to `kepler` (it usually does fine even without 
 `planet collect` to go from ndgeojson to geojson). For example:
 
 ```console
@@ -202,7 +202,7 @@ planet data collect skysat-large.geojsons > skysat-large-clean.geojson
 ```
 This turns it into a real GeoJSON, instead of a newline-delimited one, which more programs understand.
 
-If you want to visualize even larger sets of footprints there's a few things we recommend:
+If you want to visualize even larger sets of footprints there’s a few things we recommend:
 
 ##### Convert to GeoPackage
 
@@ -213,8 +213,8 @@ has a spatial index and isn't so large on disk. We recommend
 
 The `ogr2ogr` of [GDAL/OGR](https://gdal.org/) is a great tool for this. We
 recommend using the [binaries](https://gdal.org/download.html#binaries), or if
-you're on a Mac then use [homebrew](https://brew.sh/) (run `brew install gdal`
-after you get it set up). If you're having trouble getting GDAL working well a
+you’re on a Mac then use [homebrew](https://brew.sh/) (run `brew install gdal`
+after you get it set up). If you’re having trouble getting GDAL working well a
 good backup can be to use docker and the
 [osgeo/gdal](https://hub.docker.com/r/osgeo/gdal) package.
 
@@ -255,7 +255,7 @@ Smaller ratios preserve the character of concave features better.
 
 ##### Simplification with OGR
 
-The other thing you'll likely want to do to visualize large amounts of data is to simplify it 
+The other thing you’ll likely want to do to visualize large amounts of data is to simplify it 
 some. Many simplification tools call for a 'tolerance', often set in degrees. For SkySat some useful values are:
 
 | tolerance | result                                                                                                          |
@@ -264,7 +264,7 @@ some. Many simplification tools call for a 'tolerance', often set in degrees. Fo
 | 0.01      | Messes with the shape a bit, but the footprint generally looks the same, with a couple vertices off.            |
 | 0.1       | Mashes the shape, often into a triangle, but still useful for understanding broad coverage.                     |
 
-It's worth experimenting with options between these as well. The more simplification the easier it is for programs to 
+It’s worth experimenting with options between these as well. The more simplification the easier it is for programs to 
 render the results. `ogr2ogr` includes the ability to simplify any output:
 
 ```console
@@ -284,7 +284,7 @@ sql.
 
 Another great tool is [Mapshaper](https://github.com/mbloch/mapshaper), which excels at simplification. It offers a 
 web-based user interface to see the results of simplification, and also a command-line tool you can use if you 
-find a simplification percentage you're happy with. After you get it 
+find a simplification percentage you’re happy with. After you get it 
 [installed](https://github.com/mbloch/mapshaper#installation) you can fire up the UI with:
 
 ```console
@@ -293,14 +293,14 @@ mapshaper-gui skysat-large.geojson
 
 (TODO: Show animated gif of recording)
 
-It's easy to get a sense of how much simplification affects the shape. You can download the output from the web
+It’s easy to get a sense of how much simplification affects the shape. You can download the output from the web
 interface, or you can also run the command-line program:
 
 ```console
 mapshaper -i footprints.geojson -simplify 15% -o simplified.geojson
 ```
 
-Once you find a simplification amount you're happy with you can use it as a piped output. 
+Once you find a simplification amount you’re happy with you can use it as a piped output. 
 
 ```console
 planet data search --limit 20 SkySatCollect - | planet collect - | mapshaper -i - -simplify 15% -o skysat-ms2.geojson
@@ -339,13 +339,13 @@ planet orders list | jq -rs '.[] | "\(.id) \(.created_on) \(.state) \(.products[
 
 will show the item type https://gist.github.com/ipbastola/2c955d8bf2e96f9b1077b15f995bdae3 has ideas for contains, but haven't got it right yet
 
-* use jq to get the id of the an order by it's name
+* use jq to get the id of the an order by it’s name
 
 * get total number of items, add up each year of `stats`
 
 ### Simplify Geometries to 500 vertices
 
-One of the limits of Planet's API's is that they demand geometries have less than 500 vertices. This section shows some
+One of the limits of Planet’s API’s is that they demand geometries have less than 500 vertices. This section shows some
 tools that can help you to do that simplification.
 
 TODO: flesh these out.

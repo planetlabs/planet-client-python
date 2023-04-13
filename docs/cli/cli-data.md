@@ -5,7 +5,7 @@ title: CLI for Data API Tutorial
 ## Introduction
 
 The `planet data` CLI commands enable interaction with the [Data API](https://developers.planet.com/docs/apis/data/),
-which lets you search Planet's catalog (including select public datasets like Sentinel 2 and Landsat 8).
+which lets you search Planet’s catalog (including select public datasets like Sentinel 2 and Landsat 8).
 Currently the CLI has focused on the core search functionality, implementing
 [Quick Search](https://developers.planet.com/docs/apis/data/reference/#tag/Item-Search/operation/QuickSearch)
 and [stats](https://developers.planet.com/docs/apis/data/reference/#tag/Item-Stats/operation/Stats) plus some
@@ -52,8 +52,8 @@ it will just print out on the console.
 planet data search PSScene --filter filter.json
 ```
 
-If you enter this command you'll see the output stream by. Here you can use jq again, and
-it'll often give you nice syntax highlighting in addition to formatting.
+If you enter this command you’ll see the output stream by. Here you can use jq again, and
+it’ll often give you nice syntax highlighting in addition to formatting.
 
 ```
 planet data search PSScene --filter filter.json | jq
@@ -97,7 +97,7 @@ planet data search PSScene,Sentinel2L1C,Landsat8L1G,SkySatCollect
 ```
 
 This will search for all the most recent images captured by PlanetScope, SkySat, Sentinel 2 and Landsat 8 satellites. 
-Note that you'll likely mostly see PlanetScope results, as they generate far more individual images than the others.
+Note that you’ll likely mostly see PlanetScope results, as they generate far more individual images than the others.
 The filter you specify will apply to all item types, but not all filters work against all satellites, so you may 
 inadvertently filter some out if you are filtering specific properties.
 
@@ -110,13 +110,13 @@ under the hood will automatically page through all the results from the API.
 planet data search --limit 3000 PSScene
 ```
 
-Note you can also do a call with no limits if you set the limit to `0`. Though don't use this haphazardly, or you'll be
-generating a lot of JSON from your request. It's best to use it with a number of filters to constrain the search, so
+Note you can also do a call with no limits if you set the limit to `0`. Though don't use this haphazardly, or you’ll be
+generating a lot of JSON from your request. It’s best to use it with a number of filters to constrain the search, so
 you don't get hundreds of millions of results.
 
 ### Output as valid GeoJSON
 
-By default the output of Planet's Data API is [newline-delimited GeoJSON](https://stevage.github.io/ndgeojson/), which
+By default the output of Planet’s Data API is [newline-delimited GeoJSON](https://stevage.github.io/ndgeojson/), which
 is much better for streaming. While more and more programs will understand the format, the CLI also provides 
 the `planet collect` method to transform the output from the Data API to valid GeoJSON. You just pipe the end
 output to it:
@@ -162,7 +162,7 @@ planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id
 
 ### Run a search on a bounding box
 
-Most searches you'll likely want to run on a geometry. To try this out you can use the following bounding box
+Most searches you’ll likely want to run on a geometry. To try this out you can use the following bounding box
 of Iowa. You can copy it and save as a file called `geometry.geojson`
 
 ```json
@@ -207,7 +207,7 @@ of Iowa. You can copy it and save as a file called `geometry.geojson`
 !!!note ".geojson and .json files both work"
     Here we save it as .geojson, but you can also save it as .json. The CLI is happy with any file
     extension, even .txt, but different extensions may make it easier to open the files with other
-    programs. What's important is that the text inside the file is valid geojson.
+    programs. What’s important is that the text inside the file is valid geojson.
 
 And then run it with this command:
 
@@ -289,7 +289,7 @@ Another example is to select all data in a single strip:
 planet data filter --string-in strip_id 5743640 | planet data search PSScene --filter -
 ```
 
-Note that in all these commands we are piping the results into the search. If you don't include the pipe then you'll
+Note that in all these commands we are piping the results into the search. If you don't include the pipe then you’ll
 get the filter output, which can be interesting to inspect to see exactly what is sent to the server.
 
 ### Filter by asset
@@ -312,7 +312,7 @@ You can find the list of available assets in each Item Type Page, like
 the page for each with their list of asset types.
 
 Note that the asset filter doesn't perform any validation, so if your searches aren't returning anything check to make
-sure you got the asset right, and it's valid for the item-types you're searching.
+sure you got the asset right, and it’s valid for the item-types you’re searching.
 
 ### Permission Filter
 
@@ -406,11 +406,11 @@ curl -s https://raw.githubusercontent.com/ropensci/geojsonio/main/inst/examples/
 planet data filter --geom - | planet data stats PSScene --interval year --filter - | jq '.buckets | map(.count) | add'
 ```
 
-Just pipe the results to `jq '.buckets | map(.count) | add'` and it'll give you the total of all the values.
+Just pipe the results to `jq '.buckets | map(.count) | add'` and it’ll give you the total of all the values.
 
 ## Asset Activation and Download
 
-While we recommend using the Orders or Subscriptions API's to deliver Planet data, the Data API has the capability
+While we recommend using the Orders or Subscriptions API’s to deliver Planet data, the Data API has the capability
 to activate and download data. Only one asset can be activated at once, and there is no clipping or additional 
 processing of the data like the great 'tools' of Subscriptions & Orders. But the advantage is that it can often
 be faster for working with a small number of items & assets. 
@@ -421,14 +421,14 @@ All items in the Data API have a list of assets. This includes the main imagery 
 different formats, and also accompanying files like the [Usable Data Mask](https://developers.planet.com/docs/data/udm-2/)
  (UDM) and JSON metadata. You can't immediately download them, as they must first be created in the cloud, known as
 'activated'. To activate data you need to get its item id, plus the name of the asset - the available ones
-can be seen by looking at the Item's JSON. Once you have the item id and asset type you can run the CLI
+can be seen by looking at the Item’s JSON. Once you have the item id and asset type you can run the CLI
 
 ```
 planet data asset-activate PSScene 20230310_083933_71_2431 ortho_udm2
 ```
 
 This will kick off the activation process, and the command should return immediately. In this example
-we're activating the UDM, which is one of the most common things to do through the Data API, to 
+we’re activating the UDM, which is one of the most common things to do through the Data API, to 
 first get a sense of where there are clouds before placing a proper clipping order.
 
 ### Download an Asset
@@ -440,8 +440,8 @@ planet data asset-download PSScene 20230310_083933_71_2431 ortho_udm2
 ```
 
 While some assets activate almost immediately (if another user has requested
-it recently), some can take a few minutes. If you try to download it before it's active
-you'll get a message like: `Error: asset missing ["location"] entry. Is asset active?`
+it recently), some can take a few minutes. If you try to download it before it’s active
+you’ll get a message like: `Error: asset missing ["location"] entry. Is asset active?`
 
 Thankfully the CLI has the great `asset-wait` command will complete when the asset is activated:
 
@@ -449,7 +449,7 @@ Thankfully the CLI has the great `asset-wait` command will complete when the ass
 planet data asset-wait PSScene 20230310_083933_71_2431 ortho_udm2
 ```
 
-And you can pair with download so that as soon as the asset is active it'll be downloaded:
+And you can pair with download so that as soon as the asset is active it’ll be downloaded:
 
 ```
 planet data asset-wait PSScene 20230310_083933_71_2431 ortho_udm2 && \
@@ -487,7 +487,7 @@ planet data search-list --search-type saved
 ```
 
 If you've not created any saved searches it may be an empty list. You can create
-saved searches with Planet Explorer, or it's also easy with the command-line.
+saved searches with Planet Explorer, or it’s also easy with the command-line.
 
 ### Create Search
 
@@ -500,7 +500,7 @@ planet data filter --geom geometry.geojson | planet data search-create PSScene -
 
 ### Run Search
 
-When you save a new search you'll get back the JSON describing the search. If you grab the 'id' field from it then
+When you save a new search you’ll get back the JSON describing the search. If you grab the 'id' field from it then
 you can get the current results for that search:
 
 ```
@@ -524,7 +524,7 @@ planet data filter --string-in instrument PS2,PSB.SD | planet data search-update
 
 ### Delete Search
 
-If you're no longer using a search you can delete it:
+If you’re no longer using a search you can delete it:
 
 ```
 planet data search-delete da963039dbe94573a3ac9e4629d065b6

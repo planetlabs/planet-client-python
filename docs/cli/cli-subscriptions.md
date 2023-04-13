@@ -15,7 +15,7 @@ through the main commands available in the CLI.
 
 ### Create a Subscription
 
-Since there is no UI to easily create subscriptions we'll start with making a new one. 
+Since there is no UI to easily create subscriptions we’ll start with making a new one. 
 
 ```
 {
@@ -104,8 +104,8 @@ Since there is no UI to easily create subscriptions we'll start with making a ne
 }
 ```
 
-This is a full subscriptions JSON request, with the credentials redacted, so you'll have 
-to replace your own for it to work. Below we'll show the convenience methods that will 
+This is a full subscriptions JSON request, with the credentials redacted, so you’ll have 
+to replace your own for it to work. Below we’ll show the convenience methods that will 
 help create a custom one more easily. If you'd like to get things working for now then 
 just replace the 'delivery' section with your cloud credentials, see the 
 [core subscriptions delivery docs](https://developers.planet.com/docs/subscriptions/delivery/) 
@@ -131,7 +131,7 @@ outputs the JSON for your first 100 subscriptions. If you'd like more you can se
 parameter higher, or you can set it to 0 and there will be no limit. 
 
 You can get nicer formatting with `--pretty` or pipe it into `jq`, just like the other Planet
-CLI's.
+CLI’s.
 
 The `list` command also supports filtering by the status of the subscription:
 
@@ -168,12 +168,12 @@ You can also filter by status:
 planet subscriptions results --status processing
 ```
 
-The available statuses are `created`, `queued`, `processing`, `failed`, and `success`. Note it's quite useful
+The available statuses are `created`, `queued`, `processing`, `failed`, and `success`. Note it’s quite useful
 to use `jq` to help filter out results as well.  
 
 ### Update Subscription
 
-You can update a subscription that is running, for example to change the 'tools' it's using or to alter
+You can update a subscription that is running, for example to change the 'tools' it’s using or to alter
 its geometry. To do this you must submit the full subscription creation JSON, so the easiest way is to
 get it with `get` and then alter the values.
 
@@ -289,7 +289,7 @@ Do not bother with geometry or date filters, as they will be ignored in favor of
 
 #### Saving the output
 
-You'll likely want to save the output of your `request-catalog` call to disk, so that you can more easily use it in constructing the complete subscription
+You’ll likely want to save the output of your `request-catalog` call to disk, so that you can more easily use it in constructing the complete subscription
 request. 
 
 ```
@@ -300,7 +300,7 @@ planet subscriptions request-catalog --item-types PSScene --asset-types ortho_an
 
 ### Subscription Tools
 
-Now we'll dive into some of the tools options for subscriptions. These are quite similar to the tools for 
+Now we’ll dive into some of the tools options for subscriptions. These are quite similar to the tools for 
 orders, but unfortunately the syntax is subtly different, and there are less tools supported. Just like 
 for Orders, future of the versions of the CLI will likely add `tools` convenience methods, you can follow issue
 [#601](https://github.com/planetlabs/planet-client-python/issues/601). 
@@ -309,10 +309,10 @@ for Orders, future of the versions of the CLI will likely add `tools` convenienc
 
 The most used tool is the `clip` operation, which lets you pass a geometry to the
 Subscriptions API and it creates new images that only have pixels within the geometry you
-gave it. We'll use the same geometry from [above](#geometry), as it is quite
+gave it. We’ll use the same geometry from [above](#geometry), as it is quite
 typical to use the same subscription geometry as the clip geometry, so you don't get
 any pixels outside of your area of interest (99.9% of all subscriptions use the clip
-tool, so it's strongly recommended to also use clip). The proper 'clip' tool for it
+tool, so it’s strongly recommended to also use clip). The proper 'clip' tool for it
 would be:
 
 ```
@@ -401,8 +401,8 @@ Example: `more-tools.json`
 
 ### Delivery
 
-One other essential block is the `delivery` JSON. Like with tools there's as of yet
-not convenience method, so you'll have to write out the JSON for this section, but we
+One other essential block is the `delivery` JSON. Like with tools there’s as of yet
+not convenience method, so you’ll have to write out the JSON for this section, but we
 hope to have one soon. You can find the full documentation for the delivery options in
 the [Subscriptions Delivery documentation](https://developers.planet.com/docs/subscriptions/delivery/).
 
@@ -426,7 +426,7 @@ The main documentation page also has the parameters for Google Cloud, AWS and Or
 
 ### Subscriptions Request
 
-Once you've got all your sub-blocks of JSON saved you're ready to make a complete 
+Once you've got all your sub-blocks of JSON saved you’re ready to make a complete 
 subscriptions request with the `subscriptions request` command:
 
 ```
