@@ -4,9 +4,6 @@ title: Get Your Planet Account
 
 Whenever you use the Planet SDK for Python to connect to Planet's APIs, you’ll need to authenticate with the Planet server. To do so, you need a Planet account with your own username and password.
 
-!!!tip "We want to hear from you!"
-    This is a beta release. We encourage you to test your workflows rigorously. Based on your feedback, we may roll out additional updates to improve your experience. Please share your feedback with us on our [Planet Developers community channel](https://community.planet.com/developers-55).
-
 ## Confirm your Planet account
 
 ### Sign on to Planet Explorer
