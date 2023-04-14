@@ -16,7 +16,7 @@ partial saved search functionality.
 At this point you should have completed [Step 5](../get-started/quick-start-guide.md#step-5-search-for-planet-imagery)
 of the quick start guide, and run your first full data search command:
 
-```
+```sh
 planet data search PSScene --filter filter.json > recent-psscene.json
 ```
 
@@ -27,7 +27,7 @@ This saves the descriptions of the latest 100 standard-quality scenes you have p
 You will likely notice that this file is quite wide, with one very long line for each Planet 
 item returned. You can make for a more readable file by using the `--pretty` flag:
 
-```
+```sh
 planet data search --pretty PSScene --filter filter.json > recent-psscene.json
 ```
 
@@ -37,7 +37,7 @@ extensive manipulation of JSON, but simply
 piping any JSON output through it prints it in a more readable form. So the following
 command will do the same thing as the previous one:
 
-```
+```sh
 planet data search PSScene --filter filter.json | jq > recent-psscene.json
 ```
 
@@ -48,14 +48,14 @@ You can read a bit [more about jq]((cli-intro.md#jq) in the CLI intro.
 You also don't have to save the output to a file. If you don't redirect it into a file then
 it will just print out on the console.
 
-```
+```sh
 planet data search PSScene --filter filter.json
 ```
 
 If you enter this command you’ll see the output stream by. Here you can use jq again, and
 it’ll often give you nice syntax highlighting in addition to formatting.
 
-```
+```sh
 planet data search PSScene --filter filter.json | jq
 ```
 
@@ -65,7 +65,7 @@ Using a unix command called a 'pipe', which looks like `|`, you can skip the ste
 passing the output of the `data filter` command directly to be the input of the `data search`
 command:
 
-```
+```sh
 planet data filter --permission --std-quality | planet data search --pretty PSScene --filter -
 ```
 
@@ -78,7 +78,7 @@ You can learn more about the pipe command, as well as the `>` command above in t
 
 If no filtering is required, the search command can be called directly:
 
-```
+```sh
 planet data search PSScene
 ```
 
@@ -92,7 +92,7 @@ can use any [Item Type](https://developers.planet.com/docs/apis/data/items-asset
 its catalog. The item type is the first argument of the `search` command, followed by the 'filter'. Note that
 you can specify any number of item types here:
 
-```
+```sh
 planet data search PSScene,Sentinel2L1C,Landsat8L1G,SkySatCollect
 ```
 
@@ -106,7 +106,7 @@ inadvertently filter some out if you are filtering specific properties.
 By default the `search` command returns only the 100 first scenes. But with the CLI you can set any limit, and the SDK
 under the hood will automatically page through all the results from the API. 
 
-```
+```sh
 planet data search --limit 3000 PSScene
 ```
 
@@ -121,13 +121,13 @@ is much better for streaming. While more and more programs will understand the f
 the `planet collect` method to transform the output from the Data API to valid GeoJSON. You just pipe the end
 output to it:
 
-```console
+```sh
 planet data search PSScene | planet collect -
 ```
 
 If you want to visualize this you can save it as a file:
 
-```console
+```sh
 planet data search PSScene | planet collect - > planet-search.geojson
 ```
 
@@ -148,13 +148,13 @@ descending order. The options are are:
 
 This lets you do things like get the ID of the most recent SkySat image taken (and that you have permissions to download):
 
-```console
+```sh
 planet data search SkySatCollect --sort 'acquired desc' --limit 1
 ```
 
 And you can also just get the ID, using `jq`
 
-```console
+```sh
 planet data search SkySatCollect --sort 'acquired desc' --limit 1 - | jq -r .id
 ```
 
@@ -211,14 +211,14 @@ of Iowa. You can copy it and save as a file called `geometry.geojson`
 
 And then run it with this command:
 
-```console
+```sh
 planet data filter --geom geometry.geojson | planet data search PSScene --filter -
 ```
 
 Note that by default all searches with the command-line return 100 results, but you can easily increase that with
 the `--limit` flag:
 
-```console
+```sh
 planet data filter --geom geometry.geojson | planet data search --limit 500 PSScene --filter -
 ```
 
@@ -229,8 +229,9 @@ Creating geometries for search can be annoying in a command-line workflow, but t
 
 Some of the most common filtering is by date. You could get all imagery acquired before August 2021:
 
-```console
-planet data filter --date-range acquired lt 2021-08-01 | planet data search PSScene --filter -
+```sh
+planet data filter --date-range acquired lt 2021-08-01 \
+    | planet data search PSScene --filter -
 ```
 
 The 'operator' in this case is 'less than' (`lt`). The options are:
@@ -244,8 +245,10 @@ You must specify which date field you want to use, either `acquired` or `publish
 You can use the flags multiple times, and they are logically 'AND'-ed together, so you can
 do a search for all images in July of 2021:
 
-```console
-planet data filter --date-range acquired gte 2021-07-01 --date-range acquired lt 2021-08-01 | \
+```sh
+planet data filter \
+    --date-range acquired gte 2021-07-01 \
+    --date-range acquired lt 2021-08-01 | \
 planet data search PSScene --filter -
 ```
 
@@ -254,9 +257,11 @@ The date input understands [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3
 or include the time, to search for all Planetscope images acquired within 5 seconds at a time
 on July 1st 2021:
 
-```console
-planet data filter --date-range acquired gte 2021-07-01:06:20:10 --date-range acquired lt 2021-07-01:06:20:15 | \
-planet data search PSScene --filter -
+```sh
+planet data filter \
+    --date-range acquired gte 2021-07-01:06:20:10 \
+    --date-range acquired lt 2021-07-01:06:20:15 \
+    | planet data search PSScene --filter -
 ```
 
 ### Range Filter
@@ -264,8 +269,9 @@ planet data search PSScene --filter -
 The range filter uses the same operators as the date filter, but works against any numerical property. The most useful
 of these tend to be ones about cloudy pixels. For example you can search for data with clear pixels greater than 90%:
 
-```console
-planet data filter --range clear_percent gt 90 | planet data search PSScene --filter -
+```sh
+planet data filter --range clear_percent gt 90 \
+    | planet data search PSScene --filter -
 ```
 
 ### String-In Filter
@@ -273,20 +279,23 @@ planet data filter --range clear_percent gt 90 | planet data search PSScene --fi
 For properties that are strings you can use the `string-in` filter. For example search for all planetscope imagery
 with PS2 instrument:
 
-```console
-planet data filter --string-in instrument PS2 | planet data search PSScene --filter -
+```sh
+planet data filter --string-in instrument PS2 \
+    | planet data search PSScene --filter -
 ```
 
 You can specify multiple strings to match, with a comma:
 
-```console
-planet data filter --string-in instrument PS2,PSB.SD | planet data search PSScene --filter -
+```sh
+planet data filter --string-in instrument PS2,PSB.SD \
+    | planet data search PSScene --filter -
 ```
 
 Another example is to select all data in a single strip:
 
-```console
-planet data filter --string-in strip_id 5743640 | planet data search PSScene --filter -
+```sh
+planet data filter --string-in strip_id 5743640 \
+    | planet data search PSScene --filter -
 ```
 
 Note that in all these commands we are piping the results into the search. If you don't include the pipe then you’ll
@@ -296,14 +305,16 @@ get the filter output, which can be interesting to inspect to see exactly what i
 
 You can limit your search to only data with a particular asset, for example search just for 8-band analytic assets:
 
-```console
-planet data filter --asset ortho_analytic_8b_sr | planet data search PSScene --filter -
+```sh
+planet data filter --asset ortho_analytic_8b_sr \
+    | planet data search PSScene --filter -
 ```
 
 Or 8-band assets that also have a UDM.
 
-```console
-planet data filter --asset ortho_analytic_8b_sr --asset udm2 | planet data search PSScene --filter -
+```sh
+planet data filter --asset ortho_analytic_8b_sr --asset udm2 \
+    | planet data search PSScene --filter -
 ```
 
 You can find the list of available assets in each Item Type Page, like 
@@ -320,8 +331,9 @@ By default, no search filters are applied. However, many people want to search o
 that are of standard (aka not test) quality. Therefore, these filters can be easily added with the `--permission` and
 `--std-quality` flags. To use the permission and standard quality filters:
 
-```console
-planet data filter --permission --std-quality --asset ortho_analytic_8b_sr | planet data search PSScene --filter -
+```sh
+planet data filter --permission --std-quality --asset ortho_analytic_8b_sr \
+    | planet data search PSScene --filter -
 ```
 
 ## Stats
@@ -332,15 +344,18 @@ binned by different time periods.
 
 This can be used for things like getting the number of items in a strip:
 
-```
-planet data filter --string-in strip_id 5743640 | planet data stats PSScene --interval day --filter -
+```sh
+planet data filter --string-in strip_id 5743640 \
+    | planet data stats PSScene --interval day --filter -
 ```
 
 Or the number of PlanetScope scenes collected in California each year:
 
 ```
-curl -s https://raw.githubusercontent.com/ropensci/geojsonio/main/inst/examples/california.geojson | \
-planet data filter --geom - | planet data stats PSScene --interval year --filter - | jq
+curl -s https://raw.githubusercontent.com/ropensci/geojsonio/main/inst/examples/california.geojson \
+    | planet data filter --geom - \
+    | planet data stats PSScene --interval year --filter - \
+    | jq
 ```
 
 Will result in output like:
@@ -394,16 +409,17 @@ Will result in output like:
 }
 ```
 
-You can see how the yearly output of Planet has gone up, though it actually went down in 2022 as the upgrade to 
-SuperDove meant much larger swaths, so the number of individual items went down even as we captured the whole
-earth.
+You can see how the yearly output of Planet has gone up, though it actually went down in 2022 as the upgrade to SuperDove meant much larger swaths, so the number of individual items went down even as we captured the whole earth.
 
 The API does not support an 'all time' interval to get the total of all collections for an area, but
 you can easily use [jq]((cli-intro.md#jq) to total up the results of an interval count:
 
-```
-curl -s https://raw.githubusercontent.com/ropensci/geojsonio/main/inst/examples/california.geojson | \
-planet data filter --geom - | planet data stats PSScene --interval year --filter - | jq '.buckets | map(.count) | add'
+```sh
+curl -s https://raw.githubusercontent.com/ropensci/geojsonio/main/inst/examples/california.geojson \
+    | planet data filter --geom - \
+    | planet data stats PSScene --interval year --filter - \
+    | jq '.buckets | map(.count) | add'
+
 ```
 
 Just pipe the results to `jq '.buckets | map(.count) | add'` and it’ll give you the total of all the values.
@@ -423,7 +439,7 @@ different formats, and also accompanying files like the [Usable Data Mask](https
 'activated'. To activate data you need to get its item id, plus the name of the asset - the available ones
 can be seen by looking at the Item’s JSON. Once you have the item id and asset type you can run the CLI
 
-```
+```sh
 planet data asset-activate PSScene 20230310_083933_71_2431 ortho_udm2
 ```
 
@@ -435,7 +451,7 @@ first get a sense of where there are clouds before placing a proper clipping ord
 
 Once an asset is ready you can use `asset-download` with a similar command:
 
-```
+```sh
 planet data asset-download PSScene 20230310_083933_71_2431 ortho_udm2
 ```
 
@@ -445,13 +461,13 @@ you’ll get a message like: `Error: asset missing ["location"] entry. Is asset 
 
 Thankfully the CLI has the great `asset-wait` command will complete when the asset is activated:
 
-```
+```sh
 planet data asset-wait PSScene 20230310_083933_71_2431 ortho_udm2
 ```
 
 And you can pair with download so that as soon as the asset is active it’ll be downloaded:
 
-```
+```sh
 planet data asset-wait PSScene 20230310_083933_71_2431 ortho_udm2 && \
 planet data asset-download PSScene 20230310_083933_71_2431 ortho_udm2
 ```
@@ -473,7 +489,7 @@ and the CLI supports this as well.
 
 You can easily get a list of all the searches you’ve made:
 
-```
+```sh
 planet data search-list
 ```
 
@@ -482,7 +498,7 @@ specify, and set it to 0 to return all your searches. By default this returns bo
 your quick searches and saved searches, but you can also limit to to only return
 your saved searches:
 
-```
+```sh
 planet data search-list --search-type saved
 ```
 
@@ -494,8 +510,9 @@ saved searches with Planet Explorer, or it’s also easy with the command-line.
 To make a new saved search you can use the exact same filter syntax as the regular `search` command,
 but you must also add a 'name' to refer to the search by:
 
-```
-planet data filter --geom geometry.geojson | planet data search-create PSScene --name 'my saved search' --filter -
+```sh
+planet data filter --geom geometry.geojson \
+    | planet data search-create PSScene --name 'my saved search' --filter -
 ```
 
 ### Run Search
@@ -503,7 +520,7 @@ planet data filter --geom geometry.geojson | planet data search-create PSScene -
 When you save a new search you’ll get back the JSON describing the search. If you grab the 'id' field from it then
 you can get the current results for that search:
 
-```
+```sh
 planet data search-run da963039dbe94573a3ac9e4629d065b6
 ```
 
@@ -518,15 +535,18 @@ if run later and match newly acquired imagery.
 You can also update an existing search to have a different set of values. This takes similar arguments, and
 will overwrite the previous values.
 
-```
-planet data filter --string-in instrument PS2,PSB.SD | planet data search-update da963039dbe94573a3ac9e4629d065b6 --name 'my updated search' --filter - SkySatCollect
+```sh
+planet data filter --string-in instrument PS2,PSB.SD \
+    | planet data search-update da963039dbe94573a3ac9e4629d065b6 \
+        --name 'my updated search' \
+        --filter - SkySatCollect
 ```
 
 ### Delete Search
 
 If you’re no longer using a search you can delete it:
 
-```
+```sh
 planet data search-delete da963039dbe94573a3ac9e4629d065b6
 ```
 
