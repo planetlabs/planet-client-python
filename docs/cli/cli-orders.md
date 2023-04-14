@@ -273,12 +273,12 @@ To check the current value of `orderid` just run `echo $orderid`.
 
 ### Create an order and download when ready
 
-You can then combine these all into one call, to create the order and 
+You can then combine these all into one call, to create the order and
 download it when it’s available:
 
 ```sh
 id=`planet orders create request-1.json | jq -r '.id'` && \
-planet orders wait $id && planet orders download $id
+    planet orders wait $id && planet orders download $id
 ```
 
 ### Download to a different directory
@@ -720,11 +720,17 @@ planet orders list | jq -s '.[] | select(.source_type == "basemaps")'
 
 #### Bringing it all together
 
-The cool thing is you can combine the data and order commands, to make calls 
+The cool thing is you can combine the data and order commands, to make calls
 like ordering the most recent skysat image that was published:
 
 ```sh
-latest_id=$(planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 --filter - | jq -r .id)
+latest_id=$(planet data filter \
+    | planet data search SkySatCollect \
+        --sort 'acquired desc' \
+        --limit 1 \
+        --filter - \
+    | jq -r .id)
+
 planet orders request \
     --item-type SkySatCollect \
     --bundle analytic \
