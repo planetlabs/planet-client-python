@@ -19,7 +19,8 @@ from pathlib import Path
 import random
 import re
 import string
-from typing import AsyncGenerator, Callable, List
+from typing import AsyncGenerator, Callable, List, Optional
+from urllib.parse import urlparse
 
 import httpx
 from tqdm.asyncio import tqdm
@@ -174,13 +175,12 @@ def _get_filename_from_headers(headers):
     return match.group(1) if match else None
 
 
-def _get_filename_from_url(url):
-    """Get a filename from a URL.
+def _get_filename_from_url(url: str) -> Optional[str]:
+    """Get a filename from a url.
 
-    :returns: a filename (i.e. ``basename``)
-    :rtype: str or None
+    Getting a name for Landsat imagery uses this function.
     """
-    path = url.path
+    path = urlparse(url).path
     name = path[path.rfind('/') + 1:]
     return name or None
 
