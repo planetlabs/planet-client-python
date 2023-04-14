@@ -39,7 +39,7 @@ To contribute or develop with this library, see
 
 [Planet Software Development Kit (SDK) for Python main branch](https://github.com/planetlabs/planet-client-python)
 
-[![Build Status](https://travis-ci.org/planetlabs/planet-client-python.svg?branch=master)](https://travis-ci.org/planetlabs/planet-client-python)
+[![Build Status](https://github.com/planetlabs/planet-client-python/actions/workflows/test.yml/badge.svg)](https://github.com/planetlabs/planet-client-python/actions/workflows/test.yml)
 
 ## Version 1 of this SDK
 

@@ -72,7 +72,7 @@ asyncio.run(main())
 
 Communication with the Planet services is provided by way of the `Session` class. The `Session` class automatically implements rate limiting that allows for smooth asynchronous communication with Planet servers. Note that this rate-limiting only works when one `Session` is being used. Employing multiple sessions will cause the rate-limiting to be bypassed and can cause collisions.
 
-To use `Session`, it's recommended to use it as a context manager. In this way, your session is clearly defined and is handled as part of the context. For example, the context manager handles automatic cleanup of connections when the context is left, such as when an exception occurs.
+To use `Session`, it’s recommended to use it as a context manager. In this way, your session is clearly defined and is handled as part of the context. For example, the context manager handles automatic cleanup of connections when the context is left, such as when an exception occurs.
 
 ```python
 import asyncio
@@ -100,7 +100,7 @@ asyncio.run(main())
 
 ### Use asyncio to order Planet data
 
-As noted above, to ensure your session is properly managed and cleaned up when it's no longer needed, create a session using the Session class and use it as a context manager.
+As noted above, to ensure your session is properly managed and cleaned up when it’s no longer needed, create a session using the Session class and use it as a context manager.
 
 The proper implementation of the `Session` class:
 
@@ -145,7 +145,7 @@ The Orders Client mostly mirrors the [Planet Orders API](https://developers.plan
 As a first step in ordering, you create an order request object. This request object is transmitted to the Planet service as a JSON object. The SDK provides a way for you to build up that object: `planet.order_request.build_request()`. The following code returns an order request object, with the values you’ve provided for:
 
 * a name for your order
-* what product to order—in this example, PSScene items with analytic_udm2 product bundle asset types
+* what product to order—in this example, `PSScene` items with `analytic_udm2` product bundle asset types
 * what tools to use—here, the clip tool with the area of interest (AOI) to clip within
 
 ```python
@@ -292,8 +292,11 @@ Now, instead of going to your account dashboard to see the order request running
 
 ```console
 02:06 - order [id number] - state: running
+```
+
 And when your order is ready, it will download into the current directory, while writing status to the output:
 
+```console
 order-id/PSScene/20200909_182524_1014_metadata.json: 100%|█| 0.00k/0.00k [0
 order-id/PSScene/20200909_182524_1014_3B_AnalyticMS_metadata_clip.xml: 100%
 order-id/PSScene/20200909_182524_1014_3B_udm2_clip.tif: 100%|█| 0.55k/0.55k

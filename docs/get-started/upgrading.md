@@ -31,9 +31,9 @@ async with Session() as session:
 # Process result
 ```
 
-You will see this usage in the project's tests and in the `planet.cli`
+You will see this usage in the project’s tests and in the `planet.cli`
 package. As a convenience, you may also get a service client instance from a
-session's `client()` method.
+session’s `client()` method.
 
 ```python
 async with Session() as session:
