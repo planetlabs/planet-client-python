@@ -100,7 +100,7 @@ asyncio.run(main())
 
 ### Use asyncio to order Planet data
 
-As noted above, to ensure your session is properly managed and cleaned up when it’s no longer needed, create a session using the Session class and use it as a context manager.
+As noted above, to ensure your session is properly managed and cleaned up when it’s no longer needed, create a session using the `Session` class and use it as a context manager.
 
 The proper implementation of the `Session` class:
 
