@@ -454,6 +454,6 @@ async def download_and_validate():
 
 When errors occur, the Planet SDK for Python exception hierarchy is as follows:
 
- * All exceptions inherit from the base exception called `PlanetError`.
- * Client-side errors are raised as `ClientError`.
- * Server-side errors are raised as specific exceptions based on the http code. These specific exceptions all inherit from `APIError`  and contain the original error message returned by the server.
+* All exceptions inherit from the base exception called `PlanetError`.
+* Client-side errors are raised as `ClientError`.
+* Server-side errors are raised as specific exceptions based on the http code. These specific exceptions all inherit from `APIError`  and contain the original error message returned by the server.
