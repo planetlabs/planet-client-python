@@ -23,7 +23,7 @@ This module can be used to obtain authentication information from the username
 and password with `Auth.from_login()`. Additionally, it can be created with
 the API key obtained directly from the Planet account site with `Auth.from_key(<API_KEY>)`.
 
-Once you have provided the authentication information (in other words, the username and API key), it can be accessed by way of the Auth.value. The most convenient way of managing it for local use is to write it to a secret file using Auth.write(). For example, to obtain and store authentication information:
+Once you have provided the authentication information (in other words, the username and API key), it can be accessed by way of the `Auth.value`. The most convenient way of managing it for local use is to write it to a secret file using `Auth.write()`. For example, to obtain and store authentication information:
 
 Once you have provided the authentication information (in other words, the account username and password), it can be accessed by way of `Auth.value`. The most convenient way of managing it for local use is to write it to a secret file using `Auth.write()`.
 It can also be accessed, for example, to store in an environment variable, such as
