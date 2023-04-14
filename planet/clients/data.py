@@ -518,7 +518,7 @@ class DataClient:
                         item_type_id: str,
                         item_id: str,
                         asset_type_id: str) -> dict:
-        """Get an item asset.
+        """Get an item asset description.
 
         Parameters:
             item_type_id: Item type identifier.
