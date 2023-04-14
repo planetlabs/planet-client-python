@@ -19,7 +19,7 @@ then check out our [CLI Concepts](cli-intro.md) guide.
 
 You can use the `list` command to show your recent orders:
 
-```console
+```sh
 planet orders list
 ```
 
@@ -28,14 +28,14 @@ of this call will be blank, so you may want to try out some of the create order 
 
 Sometimes that list gets too long, so you can put a limit on how many are returned:
 
-```console
+```sh
 planet orders list --limit 5
 ```
 
 You can also filter orders by their `state`, which can be useful to just see orders in 
 progress:
 
-```console
+```sh
 planet orders list --state running
 ```
 
@@ -47,7 +47,7 @@ Note you can also get a nice list online as well, at https://www.planet.com/acco
 
 You can also print the list of orders more nicely:
 
-```console
+```sh
 planet orders list --pretty
 ```
 
@@ -57,7 +57,7 @@ more readable.
 You can also use `jq`, a powerful command-line JSON-processing tool, that is mentioned in 
 the [CLI introduction]((cli-intro.md#jq).
 
-```console
+```sh
 planet orders list | jq
 ```
 
@@ -65,7 +65,7 @@ Piping any output through jq will format it nicely and do syntax highlighting. Y
 also `jq` to just show select information, which can be useful for getting a quick sense 
 of the state of the state of things and pull out id’s for other operations:
 
-```console
+```sh
 planet orders list | jq -rs '.[] | "\(.id) \(.created_on) \(.state) \(.name)"'
 ```
 
@@ -76,7 +76,7 @@ You can customize which fields you want to show by changing the values.
 You can use jq to process the output for more insight, like 
 get a count of how many recent orders you’ve done. 
 
-```console
+```sh
 planet orders list | jq -s length
 ```
 
@@ -88,7 +88,7 @@ length of the array.
 For a bit more information about an order, including the location of any downloads, use
 the `get` command, using the order id.
 
-```console
+```sh
 planet orders get 782b414e-4e34-4f31-86f4-5b757bd062d7
 ```
 
@@ -99,15 +99,19 @@ To create an order you need a name, a [bundle](https://developers.planet.com/api
 
 First lets get the ID of an item you have download access to, using the Data API: 
 
-```
+```sh
 planet data filter | planet data search PSScene --limit 1 --filter - | jq -r .id 
 ```
 
 If you don't have access to PlanetScope data then replace PSScene with SkySatCollect.
 Then make the following call:
 
-```console
-planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'My First Order' 20220605_124027_64_242b
+```sh
+planet orders request \
+    --item-type PSScene \
+    --bundle analytic_sr_udm2 \
+    --name 'My First Order' \
+    20220605_124027_64_242b
 ```
 
 Running the above command should output the JSON needed to create an order:
@@ -118,8 +122,13 @@ Running the above command should output the JSON needed to create an order:
 
 You can also use `jq` here to make it a bit more readable:
 
-```console
-planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'My First Order' 20220605_124027_64_242b | jq
+```sh
+planet orders request \
+    --item-type PSScene \
+    --bundle analytic_sr_udm2 \
+    --name 'My First Order' \
+    20220605_124027_64_242b \
+    | jq
 ```
 
 ```json
@@ -145,9 +154,13 @@ planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'My F
 The above command just prints out the necessary JSON to create an order. To actually use it you can
 save the output into a file:
 
-```console
-planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name "My First Order" 20220605_124027_64_242b \
- > request-1.json
+```sh
+planet orders request \
+    --item-type PSScene \
+    --bundle analytic_sr_udm2 \
+    --name "My First Order" \
+    20220605_124027_64_242b \
+    > request-1.json
 ```
 
 Note that `\` just tells the command-line to treat the next line as the same one. It’s used here so it’s 
@@ -159,7 +172,7 @@ This saves the above JSON in a file called `request-1.json`
 
 From there you can create the order with the request you just saved: 
 
-```console
+```sh
 planet orders create request-1.json
 ```
 
@@ -202,7 +215,7 @@ Using a unix command called a 'pipe', which looks like `|`, you can skip the ste
 passing the output of the `orders request` command directly to be the input of the `orders create`
 command:
 
-```console
+```sh
 planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Two Item Order' \
 20220605_124027_64_242b,20220605_124025_34_242b | planet orders create -
 ```
@@ -214,9 +227,10 @@ combined in powerful ways, so you’ll see it used in a number of the examples.
 
 To download all files in an order you use the `download` command:
 
-```console
+```sh
 planet orders download 65df4eb0-e416-4243-a4d2-38afcf382c30
 ```
+
 Note this only works when the order is ready for download. To do that you can
 keep running `orders get` until the `state` is `success`. Or for a better
 way see the next example.
@@ -228,7 +242,7 @@ see if an order is ready for downloading, showing the status. It’s not
 so useful by itself, but can be combined with the `download` command to
 only start the download once the order is ready:
 
-```console
+```sh
 planet orders wait 65df4eb0-e416-4243-a4d2-38afcf382c30 \
 && planet orders download 65df4eb0-e416-4243-a4d2-38afcf382c30 
 ```
@@ -241,16 +255,17 @@ until the first is done".
 You can also use a unix variable to store the order id of your most recently placed order, 
 and then use that for the wait and download commands:
 
-```console
-orderid=`planet orders list --limit 1 | jq -r .id`
-planet orders wait $orderid && planet orders download $orderid
+```sh
+orderid=$(planet orders list --limit 1 | jq -r .id)
+planet orders wait $orderid
+planet orders download $orderid
 ```
 
 This can be nicer than copying and pasting it in.
 
 You could also save the id right when you place the order:
 
-```console
+```sh
 orderid=`planet orders create request-1.json | jq -r .id`
 ```
 
@@ -261,7 +276,7 @@ To check the current value of `orderid` just run `echo $orderid`.
 You can then combine these all into one call, to create the order and 
 download it when it’s available:
 
-```console
+```sh
 id=`planet orders create request-1.json | jq -r '.id'` && \
 planet orders wait $id && planet orders download $id
 ```
@@ -272,15 +287,17 @@ You can use the `--directory` flag to save the output to a specific directory. T
 call saves it to a directory called `psscene`, at whatever location you are at
 currently:
 
-```console
+```sh
 mkdir psscene
 planet orders download 782b414e-4e34-4f31-86f4-5b757bd062d7 --directory psscene
 ```
 
 You can also specify absolute directories (in this case to my desktop):
 
-```console
-planet orders download 782b414e-4e34-4f31-86f4-5b757bd062d7 --directory /Users/cholmes/Desktop/
+```sh
+planet orders download \
+    782b414e-4e34-4f31-86f4-5b757bd062d7 \
+    --directory /Users/cholmes/Desktop/
 ```
 
 ### Verify checksum
@@ -290,7 +307,7 @@ wasn't corrupted along the way (during download, etc). It checks that the bytes
 downloaded are the same as the ones on the server. By default it doesn't show
 anything if the checksums match.
 
-```console
+```sh
 planet orders download 782b414e-4e34-4f31-86f4-5b757bd062d7 --checksum MD5
 ```
 
@@ -358,9 +375,14 @@ or it is also stored in the repo in the [request-json/](request-json/) directory
 You can move that geometry to your current directory and use the following command, or
 tweak the geometry.geojson to refer to where you downloaded it.
 
-```console
-planet orders request --item-type PSScene --bundle analytic_sr_udm2 --clip geometry.geojson --name clipped-geom \
- 20220605_124027_64_242b | planet orders create - 
+```sh
+planet orders request \
+    --item-type PSScene \
+    --bundle analytic_sr_udm2 \
+    --clip geometry.geojson \
+    --name clipped-geom \
+    20220605_124027_64_242b \
+    | planet orders create -
 ```
 
 ### Additional Tools
@@ -407,9 +429,13 @@ Example: `tools.json`
 
 Ordering two scenes is easy, just add another id:
 
-```console
-planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Two Scenes' \
- 20220605_124027_64_242b,20220605_124025_34_242b | planet orders create - 
+```sh
+planet orders request \
+    --item-type PSScene \
+    --bundle analytic_sr_udm2 \
+    --name 'Two Scenes' \
+    20220605_124027_64_242b,20220605_124025_34_242b \
+    | planet orders create -
 ```
 
 And then you can composite them together, using the 'tools' json. You can 
@@ -427,9 +453,15 @@ use this, just save it into a file called [tools-composite.json](https://raw.git
 Once you’ve got it saved you call the `--tools` flag to refer to the JSON file, and you 
 can pipe that to `orders create`.
 
-```console
-planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Two Scenes Composited' \
- 20220605_124027_64_242b,20220605_124025_34_242b --no-stac --tools tools-composite.json | planet orders create - 
+```sh
+planet orders request \
+    --item-type PSScene \
+    --bundle analytic_sr_udm2 \
+    --name 'Two Scenes Composited' \
+    20220605_124027_64_242b,20220605_124025_34_242b \
+    --no-stac \
+    --tools tools-composite.json \
+    | planet orders create -
 ```
 
 Note that we add the `--no-stac` option as [STAC Metadata](#stac-metadata) is not yet supported by the composite 
@@ -439,7 +471,6 @@ operation, but STAC metadata is requested by default with the CLI.
 
 If you'd like to ensure the above order is a Cloud-Optimized Geotiff then you can request it 
 as COG in the file format tool.
-
 
 ```json
 [
@@ -453,9 +484,13 @@ as COG in the file format tool.
 
 The following command just shows the output with [tools-cog.json](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/tools-cog.json):
 
-```console
-planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'COG Order' \
- 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-cog.json
+```sh
+planet orders request \
+    --item-type PSScene \
+    --bundle analytic_sr_udm2 \
+    --name 'COG Order' \
+    20220605_124027_64_242b,20220605_124025_34_242b \
+    --tools tools-cog.json
 ```
 
 As shown above you can also pipe that output directly in to `orders create`. 
@@ -466,7 +501,7 @@ To clip and composite you need to specify the clip in the tools (instead of `--c
 not use `--clip` and `--tools` in the same call. There is not yet CLI calls to generate the `tools.json`,
 so you can just use the [following json](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/tools-clip-composite.json):
 
-```
+```json
 [
     {
         "composite": {}
@@ -505,17 +540,29 @@ so you can just use the [following json](https://raw.githubusercontent.com/plane
 ]
 ```
 
-```console
-planet orders request --item-type PSScene --bundle analytic_sr_udm2 --no-stac --name 'Two Scenes Clipped and Composited' \
- 20220605_124027_64_242b,20220605_124025_34_242b --tools tools-clip-composite.json | planet orders create -
+```sh
+planet orders request \
+    --item-type PSScene \
+    --bundle analytic_sr_udm2 \
+    --no-stac \
+    --name 'Two Scenes Clipped and Composited' \
+    20220605_124027_64_242b,20220605_124025_34_242b \
+    --tools tools-clip-composite.json \
+    | planet orders create -
 ```
 
 One cool little trick is that you can even stream in the JSON directly with `curl`, piping it into the request:
 
-```console
+```sh
 curl -s https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/tools-clip-composite.json \
-| planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Streaming Clip & Composite' --no-stac \
- 20220605_124027_64_242b,20220605_124025_34_242b --tools - | planet orders create - 
+    | planet orders request \
+        --item-type PSScene \
+        --bundle analytic_sr_udm2 \
+        --name 'Streaming Clip & Composite' \
+        --no-stac \
+        20220605_124027_64_242b,20220605_124025_34_242b \
+        --tools - \
+    | planet orders create -
 ```
 
 ### Harmonize
@@ -534,7 +581,7 @@ The harmonize tool allows you to compare data to different generations of satell
 
 You may create an order request by calling [`tools-harmonize.json`](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/tools-harmonize.json) with `--tools`.
 
-```console
+```sh
 planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Harmonized data' 20200925_161029_69_2223 --tools tools-harmonize.json
 ```
 
@@ -548,8 +595,13 @@ many GIS and geospatial [STAC-enabled tools](https://stacindex.org/ecosystem). T
 STAC metadata by default, as the STAC files are small and often more useful than the default JSON metadata.
 You can easily turn off STAC output request with the `--no-stac` command:
 
-```
-planet orders request --item-type PSScene --bundle visual --name 'No STAC' --no-stac 20220605_124027_64_242b
+```sh
+planet orders request \
+    --item-type PSScene \
+    --bundle visual \
+    --name 'No STAC' \
+    --no-stac \
+    20220605_124027_64_242b
 ```
 
 Currently this needs to be done for any 'composite' operation, as STAC output from composites is not yet 
@@ -566,7 +618,8 @@ the options and format given in
 An example would be:
 
 Example: `cloudconfig.json`
-```
+
+```json
 {
     "amazon_s3": {
         "aws_access_key_id": "aws_access_key_id",
@@ -584,7 +637,7 @@ One useful thing to note is that the order JSON that reports status and location
 It reports all the parameters that were used to make the previous order, but you can also use it directly as a
 request. So the following call is a quick way to exactly redo a previous order request:
 
-```console
+```sh
 planet orders get <order-id> | planet orders create -
 ```
 
@@ -635,56 +688,69 @@ You’ll need to use a full orders request JSON.
 
 Once you’ve got the JSON, the other commands are all the same. Use create to submit it to the API:
 
-```
+```sh
 planet orders create basemap-order.json
 ```
 
 See the status of the order you just submitted:
 
-```
+```sh
 planet orders list --limit 1
 ```
 
 Extract the ID:
 
-```
+```sh
 planet orders list --limit 1 | jq -r .id 
 ```
 
 Use that ID to wait and download when it’s ready:
 
-```
-planet orders wait 605b5472-de61-4563-88ae-d43417d3ed96 && planet orders download 605b5472-de61-4563-88ae-d43417d3ed96
+```sh
+orderid=605b5472-de61-4563-88ae-d43417d3ed96
+planet orders wait $orderid
+planet orders download $orderid
 ```
 
 You can also list only the orders you submitted that are for basemaps, using `jq` to filter client side:
 
-```
+```sh
 planet orders list | jq -s '.[] | select(.source_type == "basemaps")'
 ```
 
 #### Bringing it all together
 
-The cool thing is you can combine the data and order commands, to make calls like ordering the most recent skysat
-image that was published:
+The cool thing is you can combine the data and order commands, to make calls 
+like ordering the most recent skysat image that was published:
 
-
-```console
-planet orders request --item-type SkySatCollect --bundle analytic --name 'SkySat Latest' \
- `planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 --filter - | jq -r .id` \
-| planet orders create - 
+```sh
+latest_id=$(planet data filter | planet data search SkySatCollect --sort 'acquired desc' --limit 1 --filter - | jq -r .id)
+planet orders request \
+    --item-type SkySatCollect \
+    --bundle analytic \
+    --name 'SkySat Latest' \
+    $latest_id \
+    | planet orders create -
 ```
 
 Or get the 5 latest cloud free images in an area and create an order that clips to that area, using 
 [geometry.geojson](data/geometry.geojson) from above:
 
-```console
-ids=`planet data filter --geom geometry.geojson --range clear_percent gt 90 | planet data \
-search PSScene --limit 5 --filter - | jq -r .id | tr '\n' , | sed 's/.$//'`
-planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Clipped Scenes'  \
- $ids --clip geometry.geojson | planet orders create -
+```sh
+ids=$(planet data filter --geom geometry.geojson --range clear_percent gt 90 \
+    | planet data search PSScene --limit 5 --filter - \
+    | jq -r .id \
+    | tr '\n' ',' \
+    | sed 's/.$//'
+)
+planet orders request \
+    --item-type PSScene \
+    --bundle analytic_sr_udm2 \
+    --name 'Clipped Scenes' \
+    $ids \
+    --clip geometry.geojson \
+    | planet orders create -
 ```
 
 This one uses some advanced unix capabilities like `sed` and `tr`, along with unix variables, so more
-properly belongs in the [CLI Tips & Tricks](cli-tips-tricks.md), but we’ll leave it here to give a taste
-of what’s possible.
+properly belongs in the [CLI Tips & Tricks](cli-tips-tricks.md), but we’ll leave it here to give a taste of what’s possible.

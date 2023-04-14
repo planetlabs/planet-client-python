@@ -180,7 +180,7 @@ get it with `get` and then alter the values.
 
 ```sh
 planet subscriptions update cb817760-1f07-4ee7-bba6-bcac5346343f \
-my-updated-subscriptions.json
+    my-updated-subscriptions.json
 ```
 
 ### Cancel a subscription
@@ -208,9 +208,11 @@ of this is quite similar to a Data API search request, though with more required
 required commands would be a request like:
 
 ```sh
-planet subscriptions request-catalog --item-types PSScene \
---asset-types ortho_analytic_8b --geometry geometry.geojson \
---start-time 2023-03-17T04:08:00.0Z
+planet subscriptions request-catalog \
+    --item-types PSScene \
+    --asset-types ortho_analytic_8b \
+    --geometry geometry.geojson \
+    --start-time 2023-03-17T04:08:00.0Z
 ```
 
 You request which item types you want to deliver, and the asset types for it. Note that the `asset-types` are a bit 
@@ -265,9 +267,12 @@ is not flexible to input like the orders command.
 RRule lets you specify a subscription that repeats at various time intervals:
 
 ```sh
-planet subscriptions request-catalog --item-types PSScene --asset-types \
-ortho_analytic_8b --geometry geometry.geojson --start-time 2023-03-17T04:08:00.0Z \
---rrule 'FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10'
+planet subscriptions request-catalog \
+    --item-types PSScene \
+    --asset-types ortho_analytic_8b \
+    --geometry geometry.geojson \
+    --start-time 2023-03-17T04:08:00.0Z \
+    --rrule 'FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10'
 ```
 
 For more information on the `rrule` parameter see the [recurrence rules](https://developers.planet.com/docs/subscriptions/source/#rrules-recurrence-rules)
@@ -279,17 +284,24 @@ You can pass in a filter from the data API:
 
 ```sh
 planet data filter --range clear_percent gt 90 > filter.json
-planet subscriptions request-catalog --item-types PSScene --asset-types \
-ortho_analytic_8b --geometry geometry.geojson \
---start-time 2022-08-24T00:00:00-07:00 --filter filter.json
+planet subscriptions request-catalog \
+    --item-types PSScene \
+    --asset-types ortho_analytic_8b \
+    --geometry geometry.geojson \
+    --start-time 2022-08-24T00:00:00-07:00 \
+    --filter filter.json
 ```
 
 And you can even pipe it in directly:
 
 ```sh
-planet data filter --range clear_percent gt 90 | planet subscriptions \
-request-catalog --item-types PSScene --asset-types ortho_analytic_8b \
---geometry geometry.geojson --start-time 2022-08-24T00:00:00-07:00 --filter -
+planet data filter --range clear_percent gt 90 \
+    | planet subscriptions request-catalog \
+        --item-types PSScene \
+        --asset-types ortho_analytic_8b \
+        --geometry geometry.geojson \
+        --start-time 2022-08-24T00:00:00-07:00 \
+        --filter -
 ```
 
 Do not bother with geometry or date filters, as they will be ignored in favor of the `--start-time` and `--geometry` values that are required.
@@ -301,9 +313,12 @@ request.
 
 ```sh
 planet data filter --range clear_percent gt 90 > filter.json
-planet subscriptions request-catalog --item-types PSScene --asset-types \
-ortho_analytic_8b --geometry geometry.geojson --start-time 2022-08-24T00:00:00-07:00 \
---filter filter.json > request-catalog.json
+planet subscriptions request-catalog \
+    --item-types PSScene \
+    --asset-types ortho_analytic_8b \
+    --geometry geometry.geojson \
+    --start-time 2022-08-24T00:00:00-07:00 \
+    --filter filter.json > request-catalog.json
 ```
 
 ### Subscription Tools
@@ -438,14 +453,22 @@ Once you’ve got all your sub-blocks of JSON saved you’re ready to make a com
 subscriptions request with the `subscriptions request` command:
 
 ```sh
-planet subscriptions request --name 'First Subscription' --source request-catalog.json \
---tools tools.json --delivery cloud-delivery.json --pretty
+planet subscriptions request \
+    --name 'First Subscription' \
+    --source request-catalog.json \
+    --tools tools.json \
+    --delivery cloud-delivery.json \
+    --pretty
 ```
 
 The above will print it nicely out so you can see the full request. You can write it out
 as a file, or pipe it directly into `subscriptions create` or `subscriptions update`:
 
 ```sh
-planet subscriptions request --name 'First Subscription' --source request-catalog.json \
---tools tools.json --delivery cloud-delivery.json | planet subscriptiosn create -
+planet subscriptions request \
+    --name 'First Subscription' \
+    --source request-catalog.json \
+    --tools tools.json \
+    --delivery cloud-delivery.json \
+    | planet subscriptions create -
 ```
