@@ -19,7 +19,6 @@ import os
 from pathlib import Path
 import re
 
-from httpx import URL
 import pytest
 
 from planet import models
@@ -30,7 +29,7 @@ LOGGER = logging.getLogger(__name__)
 
 def test_StreamingBody_name_filename():
     r = MagicMock(name='response')
-    r.url = URL('https://planet.com/path/to/example.tif?foo=f6f1')
+    r.url = 'https://planet.com/path/to/example.tif?foo=f6f1'
     r.headers = {
         'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
         'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
@@ -45,7 +44,7 @@ def test_StreamingBody_name_filename():
 
 def test_StreamingBody_name_url():
     r = MagicMock(name='response')
-    r.url = URL('https://planet.com/path/to/example.tif?foo=f6f1')
+    r.url = 'https://planet.com/path/to/example.tif?foo=f6f1'
     r.headers = {
         'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
         'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
@@ -60,7 +59,7 @@ def test_StreamingBody_name_url():
 
 def test_StreamingBody_name_content():
     r = MagicMock(name='response')
-    r.url = URL('https://planet.com/path/to/noname/')
+    r.url = 'https://planet.com/path/to/noname/'
     r.headers = {
         'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
         'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
@@ -102,12 +101,12 @@ def test__get_filename_from_headers(headers, expected):
 @pytest.mark.parametrize(
     'url,expected',
     [
-        (URL('https://planet.com/'), None),
-        (URL('https://planet.com/path/to/'), None),
-        (URL('https://planet.com/path/to/example.tif'), 'example.tif'),
-        (URL('https://planet.com/path/to/example.tif?foo=f6f1&bar=baz'),
+        ('https://planet.com/', None),
+        ('https://planet.com/path/to/', None),
+        ('https://planet.com/path/to/example.tif', 'example.tif'),
+        ('https://planet.com/path/to/example.tif?foo=f6f1&bar=baz',
          'example.tif'),
-        (URL('https://planet.com/path/to/example.tif?foo=f6f1#quux'),
+        ('https://planet.com/path/to/example.tif?foo=f6f1#quux',
          'example.tif'),
     ])
 def test__get_filename_from_url(url, expected):
