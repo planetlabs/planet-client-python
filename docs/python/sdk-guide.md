@@ -217,7 +217,7 @@ asyncio.run(main())
 
 ```
 
-So given the order object created with the call to `create_request()`, [above](#create-an-order-request), the following code creates an Orders API client and uses that client to generate an order.
+So given the order object created with the call to `create_request()`, [above](#create-an-order-request), the following code creates an Orders API client and uses that client to create and order.
 
 ```python
 async def main():
