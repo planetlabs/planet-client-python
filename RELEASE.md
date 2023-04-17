@@ -63,3 +63,7 @@ then
   $ nox -s publish-pypi
 ```
 this approach requires specifying the pypi/testpypi api token as the password at the prompt.
+
+## Conda builds
+
+When stable, not pre-release, files are uploaded to PyPI, a bot will detect them and make an automated PR to https://github.com/conda-forge/planet-feedstock/pulls. When a Conda-forge maintainer merges that PR, a package will be built for the new version and will be published to https://anaconda.org/conda-forge/planet/files.
