@@ -23,7 +23,6 @@ the AOIs and get the image ids.
 import json
 from pathlib import Path
 import planet
-import asyncio
 
 
 # create_order()
