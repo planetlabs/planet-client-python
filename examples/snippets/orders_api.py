@@ -21,6 +21,7 @@ interest (AOI), so they cannot be combined into one order.
 the AOIs and get the image ids.
 """
 import json
+from pathlib import Path
 import planet
 
 
@@ -50,18 +51,46 @@ async def cancel_order(order_id):
         json_resp = await client.cancel_order(order_id)
     return json.dumps(json_resp)
 
+
 # cancel_orders()
+async def cancel_orders(order_id1, order_id2):
+    '''Code snippet for cancel_order.'''
+    order_ids = [order_id1, order_id2]
+    async with planet.Session() as sess:
+        client = sess.client('orders')
+        json_resp = await client.cancel_order(order_ids)
+    return json.dumps(json_resp)
+
 
 # aggregated_order_stats()
+async def aggregated_order_stats():
+    '''Code snippet for aggregated_order_stats.'''
+    async with planet.Session() as sess:
+        client = sess.client('orders')
+        json_resp = await client.aggregated_order_stats()
+    return json.dumps(json_resp)
+
 
 # download_asset()
+async def download_asset(dl_url, directory):
+    '''Code snippet for download_asset.'''
+    async with planet.Session() as sess:
+        client = sess.client('orders')
+        filename = await client.download_asset(dl_url, directory=directory)
+    dl_path = Path(directory, filename)
+    return dl_path
 
 # download_order()
 
+
 # validate_checksum()
+
 
 # wait()
 
+
 # list_orders()
 
-# 
+
+# import asyncio
+# resp = asyncio.run(aggregated_order_stats())
