@@ -26,43 +26,85 @@ import planet
 
 
 # search
+async def search(item_types, search_filter, name, sort, limit):
+    '''Code snippet for search.'''
+    async with planet.Session() as sess:
+        client = sess.client('data')
+        async for item in client.search(item_types=item_types,
+                                        search_filter=search_filter,
+                                        name=name,
+                                        sort=sort,
+                                        limit=limit):
+            print(item)
 
 
 # create_search
+async def create_search(item_types, search_filter, name):
+    '''Code snippet for create_search.'''
+    async with planet.Session() as sess:
+        client = sess.client('data')
+        items = await client.create_search(item_types=item_types,
+                                           search_filter=search_filter,
+                                           name=name)
+        print(items)
 
 
 # update_search
+async def update_search(search_id, item_types, search_filter, name):
+    '''Code snippet for update_search.'''
+    async with planet.Session() as sess:
+        client = sess.client('data')
+        items = await client.update_search(search_id=search_id,
+                                           item_types=item_types,
+                                           search_filter=search_filter,
+                                           name=name)
+        print(items)
 
 
 # list_searches
+async def list_searches(sort, search_type, limit):
+    '''Code snippet for list_searches.'''
+    async with planet.Session() as sess:
+        client = sess.client('data')
+        async for item in client.list_searches(sort=sort,
+                                               search_type=search_type,
+                                               limit=limit):
+            print(item)
 
 
 # delete_search
+async def delete_search(search_id):
+    '''Code snippet for delete_search.'''
+    async with planet.Session() as sess:
+        client = sess.client('data')
+        await client.delete_search(search_id)
 
 
 # get_search
-
+async def get_search(search_id):
+    '''Code snippet for get_search.'''
+    async with planet.Session() as sess:
+        client = sess.client('data')
+        items = await client.get_search(search_id)
+        print(items)
 
 # run_search
 
-
 # get_stats
-
 
 # list_item_assets
 
-
 # get_asset
-
 
 # activate_asset
 
-
 # wait_asset
-
 
 # download_asset w/o checksum
 
-
 # download_asset w checksum
 
+
+# Create search filters
+def create_filters():
+    pass
