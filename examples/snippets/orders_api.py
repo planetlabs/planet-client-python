@@ -80,17 +80,43 @@ async def download_asset(dl_url, directory):
     dl_path = Path(directory, filename)
     return dl_path
 
-# download_order()
+
+# download_order() w/o checksum
+async def download_order_without_checksum(order_id, directory):
+    '''Code snippet for download_order without checksum.'''
+    async with planet.Session() as sess:
+        client = sess.client('orders')
+        filenames = await client.download_order(order_id, directory=directory)
+    dl_path = Path(directory, filenames)
+    return dl_path
 
 
-# validate_checksum()
+# download_order() w checksum
+async def download_order_with_checksum(order_id, directory):
+    '''Code snippet for download_order with checksum.'''
+    # Options: 'MD5' or 'SHA256'
+    checksum = 'MD5'
+    async with planet.Session() as sess:
+        client = sess.client('orders')
+        filenames = await client.download_order(order_id, directory=directory)
+        client.validate_checksum(Path(directory, order_id), checksum)
+    dl_path = Path(directory, filenames)
+    return dl_path
 
 
 # wait()
+async def wait(order_id):
+    '''Code snippet for wait.'''
+    async with planet.Session() as sess:
+        client = sess.client('orders')
+        state = await client.wait(order_id)
+    print(state)
 
 
 # list_orders()
-
-
-# import asyncio
-# resp = asyncio.run(aggregated_order_stats())
+async def list_orders():
+    '''Code snippet for list_orders.'''
+    async with planet.Session() as sess:
+        client = sess.client('orders')
+        async for order in client.list_orders():
+            print(order)
