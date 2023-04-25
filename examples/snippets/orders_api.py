@@ -23,6 +23,7 @@ the AOIs and get the image ids.
 import json
 from pathlib import Path
 import planet
+import asyncio
 
 
 # create_order()
@@ -120,3 +121,47 @@ async def list_orders():
         client = sess.client('orders')
         async for order in client.list_orders():
             print(order)
+
+
+def create_request():
+    # The Orders API will be asked to mask, or clip, results to
+    # this area of interest.
+    aoi = {
+        "type":
+        "Polygon",
+        "coordinates": [[[-91.198465, 42.893071], [-91.121931, 42.893071],
+                         [-91.121931, 42.946205], [-91.198465, 42.946205],
+                         [-91.198465, 42.893071]]]
+    }
+
+    # In practice, you will use a Data API search to find items, but
+    # for this example take them as given.
+    items = ['20200925_161029_69_2223', '20200925_161027_48_2223']
+
+    order = planet.order_request.build_request(
+        name='iowa_order',
+        products=[
+            planet.order_request.product(item_ids=items,
+                                         product_bundle='analytic_udm2',
+                                         item_type='PSScene')
+        ],
+        tools=[planet.order_request.clip_tool(aoi=aoi)])
+
+    return order
+
+
+async def order_example():
+    # Create an order request
+    request = create_request()
+
+    # Create order
+    order = await create_order(request)
+
+    # Get order ID
+    order_id = order['id']
+
+    # Wait for download to be ready
+    await wait(order_id)
+
+    # Download order
+    _ = await download_order_with_checksum(order_id, './')
