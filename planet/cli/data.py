@@ -310,16 +310,18 @@ async def search(ctx, item_types, filter, limit, name, sort, ids_only, pretty):
     parameter will be applied to the stored quick search.
     """
     async with data_client(ctx) as cl:
-
+        item_ids = []
         async for item in cl.search(item_types,
                                     search_filter=filter,
                                     name=name,
                                     sort=sort,
                                     limit=limit):
             if ids_only:
-                echo_json(item['id'], pretty)
+                item_ids.append(item['id'])
             else:
                 echo_json(item, pretty)
+        if ids_only:
+            click.echo(', '.join(item_ids))
 
 
 @data.command(epilog=valid_item_string)
