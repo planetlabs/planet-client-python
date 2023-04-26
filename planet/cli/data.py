@@ -294,7 +294,7 @@ def filter(ctx,
               help='Field and direction to order results by.')
 @click.option('--ids-only', is_flag=True, help='Returns only the item IDs.')
 @pretty
-async def search(ctx, item_types, filter, limit, name, sort, pretty, ids_only):
+async def search(ctx, item_types, filter, limit, name, sort, ids_only, pretty):
     """Execute a structured item search.
 
     This function outputs a series of GeoJSON descriptions, one for each of the
