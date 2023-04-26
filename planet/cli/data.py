@@ -292,8 +292,9 @@ def filter(ctx,
               default=SEARCH_SORT_DEFAULT,
               show_default=True,
               help='Field and direction to order results by.')
+@click.option('--ids-only', is_flag=True, help='Returns only the item IDs.')
 @pretty
-async def search(ctx, item_types, filter, limit, name, sort, pretty):
+async def search(ctx, item_types, filter, limit, name, sort, pretty, ids_only):
     """Execute a structured item search.
 
     This function outputs a series of GeoJSON descriptions, one for each of the
@@ -315,7 +316,10 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
                                     name=name,
                                     sort=sort,
                                     limit=limit):
-            echo_json(item, pretty)
+            if ids_only:
+                echo_json(item['id'], pretty)
+            else:
+                echo_json(item, pretty)
 
 
 @data.command(epilog=valid_item_string)
