@@ -30,7 +30,7 @@ async def create_order(request):
     '''Code snippet for create_order.'''
     async with planet.Session() as sess:
         client = sess.client('orders')
-        order = await client.create_order(request)
+        order = await client.create_order(request=request)
     return order
 
 
@@ -39,7 +39,7 @@ async def get_order(order_id):
     '''Code snippet for get_order.'''
     async with planet.Session() as sess:
         client = sess.client('orders')
-        order = await client.get_order(order_id)
+        order = await client.get_order(order_id=order_id)
     return order
 
 
@@ -48,7 +48,7 @@ async def cancel_order(order_id):
     '''Code snippet for cancel_order.'''
     async with planet.Session() as sess:
         client = sess.client('orders')
-        json_resp = await client.cancel_order(order_id)
+        json_resp = await client.cancel_order(order_id=order_id)
     return json.dumps(json_resp)
 
 
@@ -58,7 +58,7 @@ async def cancel_orders(order_id1, order_id2):
     order_ids = [order_id1, order_id2]
     async with planet.Session() as sess:
         client = sess.client('orders')
-        json_resp = await client.cancel_order(order_ids)
+        json_resp = await client.cancel_order(order_ids=order_ids)
     return json.dumps(json_resp)
 
 
@@ -76,7 +76,8 @@ async def download_asset(dl_url, directory):
     '''Code snippet for download_asset.'''
     async with planet.Session() as sess:
         client = sess.client('orders')
-        filename = await client.download_asset(dl_url, directory=directory)
+        filename = await client.download_asset(location=dl_url,
+                                               directory=directory)
     dl_path = Path(directory, filename)
     return dl_path
 
@@ -98,7 +99,7 @@ async def download_order_with_checksum(order_id, directory):
     checksum = 'MD5'
     async with planet.Session() as sess:
         client = sess.client('orders')
-        filenames = await client.download_order(order_id, directory=directory)
+        filenames = await client.download_order(order_id=order_id, directory=directory)
         client.validate_checksum(Path(directory, order_id), checksum)
     dl_path = Path(directory, filenames)
     return dl_path
@@ -109,7 +110,7 @@ async def wait(order_id):
     '''Code snippet for wait.'''
     async with planet.Session() as sess:
         client = sess.client('orders')
-        _ = await client.wait(order_id, callback=print)
+        _ = await client.wait(order_id=order_id, callback=print)
 
 
 # list_orders()
