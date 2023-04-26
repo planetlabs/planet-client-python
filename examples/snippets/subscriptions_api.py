@@ -39,11 +39,15 @@ def create_request():
         "type":
         "Polygon"
     }
-    source = catalog_source(["PSScene"], ["ortho_analytic_4b"],
-                            geom,
-                            datetime(2021, 3, 1))
-    delivery = amazon_s3(ACCESS_KEY_ID, SECRET_ACCESS_KEY, "test", "us-east-1")
-    tools = harmonize_tool("Sentinel-2")
+    source = catalog_source(item_types=["PSScene"],
+                            asset_types=["ortho_analytic_4b"],
+                            geometry=geom,
+                            start_time=datetime(2021, 3, 1))
+    delivery = amazon_s3(aws_access_key_id="ACCESS-KEY-ID",
+                         aws_secret_access_key="SECRET_ACCESS_KEY",
+                         bucket="test_bucket",
+                         aws_region="us-east-1")
+    tools = harmonize_tool(target_sensor="Sentinel-2")
 
     # Build your subscriptions request
     subscription_request = build_request(name='test_subscription',
@@ -67,7 +71,7 @@ async def create_subscription(request):
     '''Code snippet for create_subscription.'''
     async with planet.Session() as sess:
         client = sess.client('subscriptions')
-        sub = await client.create_subscription(request)
+        sub = await client.create_subscription(request=request)
         return sub
 
 
@@ -76,7 +80,7 @@ async def cancel_subscription(subscription_id):
     '''Code snippet for cancel_subscription.'''
     async with planet.Session() as sess:
         client = sess.client('subscriptions')
-        _ = await client.cancel_subscription(subscription_id)
+        _ = await client.cancel_subscription(subscription_id=subscription_id)
 
 
 # update_subscription
@@ -84,7 +88,8 @@ async def update_subscription(subscription_id, request):
     '''Code snippet for update_subscription.'''
     async with planet.Session() as sess:
         client = sess.client('subscriptions')
-        sub = await client.update_subscription(subscription_id, request)
+        sub = await client.update_subscription(subscription_id=subscription_id,
+                                               request=request)
         return sub
 
 
@@ -93,7 +98,7 @@ async def get_subscription(subscription_id):
     '''Code snippet for get_subscription.'''
     async with planet.Session() as sess:
         client = sess.client('subscriptions')
-        sub = await client.get_subscription(subscription_id)
+        sub = await client.get_subscription(subscription_id=subscription_id)
         return sub
 
 
@@ -102,7 +107,7 @@ async def get_results(subscription_id, status, limit):
     '''Code snippet for get_results.'''
     async with planet.Session() as sess:
         client = sess.client('subscriptions')
-        async for result in client.get_results(subscription_id,
+        async for result in client.get_results(subscription_id=subscription_id,
                                                status=status,
                                                limit=limit):
             return result
