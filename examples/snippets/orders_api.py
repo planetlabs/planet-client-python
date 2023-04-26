@@ -109,7 +109,7 @@ async def wait(order_id):
     '''Code snippet for wait.'''
     async with planet.Session() as sess:
         client = sess.client('orders')
-        state = await client.wait(order_id, callback=print)
+        _ = await client.wait(order_id, callback=print)
 
 
 # list_orders()
