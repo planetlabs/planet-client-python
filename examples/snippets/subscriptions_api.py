@@ -28,7 +28,7 @@ from planet.subscription_request import build_request, catalog_source, amazon_s3
 def create_request():
     '''Create a subscription request.'''
 
-    # Geometry you wish to clip to
+    # Area of interest for the subscription
     geom = {
         "coordinates":
         [[[139.5648193359375,
