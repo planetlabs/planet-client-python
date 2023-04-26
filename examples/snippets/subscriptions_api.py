@@ -21,10 +21,36 @@ interest (AOI), so they cannot be combined into one order.
 the AOIs and get the image ids.
 """
 import planet
+from datetime import datetime
+from planet.subscription_request import build_request, catalog_source, amazon_s3, harmonize_tool
 
 
 def create_request():
-    pass
+    '''Create a subscription request.'''
+
+    # Geometry you wish to clip to
+    geom = {
+        "coordinates":
+        [[[139.5648193359375,
+           35.42374884923695], [140.1031494140625, 35.42374884923695],
+          [140.1031494140625,
+           35.77102915686019], [139.5648193359375, 35.77102915686019],
+          [139.5648193359375, 35.42374884923695]]],
+        "type":
+        "Polygon"
+    }
+    source = catalog_source(["PSScene"], ["ortho_analytic_4b"],
+                            geom,
+                            datetime(2021, 3, 1))
+    delivery = amazon_s3(ACCESS_KEY_ID, SECRET_ACCESS_KEY, "test", "us-east-1")
+    tools = harmonize_tool("Sentinel-2")
+
+    # Build your subscriptions request
+    subscription_request = build_request(name='test_subscription',
+                                         source=source,
+                                         delivery=delivery,
+                                         tools=tools)
+    return subscription_request
 
 
 # list_subscriptions
