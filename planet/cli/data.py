@@ -321,7 +321,7 @@ async def search(ctx, item_types, filter, limit, name, sort, ids_only, pretty):
             else:
                 echo_json(item, pretty)
         if ids_only:
-            click.echo(', '.join(item_ids))
+            click.echo(','.join(item_ids))
 
 
 @data.command(epilog=valid_item_string)
@@ -375,19 +375,26 @@ async def search_create(ctx, item_types, filter, name, daily_email, pretty):
               default=LIST_SEARCH_TYPE_DEFAULT,
               show_default=True,
               help='Search type filter.')
+@click.option('--ids-only', is_flag=True, help='Returns only the item IDs.')
 @limit
 @pretty
-async def search_list(ctx, sort, search_type, limit, pretty):
+async def search_list(ctx, sort, search_type, limit, ids_only, pretty):
     """List saved searches.
 
     This function outputs a full JSON description of the saved searches,
     optionally pretty-printed.
     """
     async with data_client(ctx) as cl:
+        item_ids = []
         async for item in cl.list_searches(sort=sort,
                                            search_type=search_type,
                                            limit=limit):
-            echo_json(item, pretty)
+            if ids_only:
+                item_ids.append(item['id'])
+            else:
+                echo_json(item, pretty)
+        if ids_only:
+            click.echo(','.join(item_ids))
 
 
 @data.command()
