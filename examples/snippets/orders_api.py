@@ -122,6 +122,8 @@ async def list_orders():
 
 
 def create_request():
+    '''Create an order request.'''
+
     # The Orders API will be asked to mask, or clip, results to
     # this area of interest.
     aoi = {
