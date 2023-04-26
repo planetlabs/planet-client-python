@@ -99,7 +99,8 @@ async def download_order_with_checksum(order_id, directory):
     checksum = 'MD5'
     async with planet.Session() as sess:
         client = sess.client('orders')
-        filenames = await client.download_order(order_id=order_id, directory=directory)
+        filenames = await client.download_order(order_id=order_id,
+                                                directory=directory)
         client.validate_checksum(Path(directory, order_id), checksum)
     dl_path = Path(directory, filenames)
     return dl_path
