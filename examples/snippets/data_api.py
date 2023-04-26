@@ -186,6 +186,8 @@ async def download_asset_with_checksum(item_type,
 
 # Create search filters
 def create_search_filter():
+    '''Create a search filter.'''
+
     # Geometry you wish to clip to
     with open("aoi.geojson") as f:
         geom = json.loads(f.read())
