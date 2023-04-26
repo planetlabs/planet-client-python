@@ -22,7 +22,10 @@ the AOIs and get the image ids.
 """
 import planet
 from datetime import datetime
-from planet.subscription_request import build_request, catalog_source, amazon_s3, harmonize_tool
+from planet.subscription_request import (build_request,
+                                         catalog_source,
+                                         amazon_s3,
+                                         harmonize_tool)
 
 
 def create_request():
