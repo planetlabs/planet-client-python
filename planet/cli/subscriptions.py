@@ -77,14 +77,23 @@ def subscriptions(ctx, base_url):
     default=None,
     help="Select subscriptions in one or more states. Default is all.")
 @limit
+@click.option('--ids-only',
+              is_flag=True,
+              help='Returns only the subscription ID.')
 @click.pass_context
 @translate_exceptions
 @coro
-async def list_subscriptions_cmd(ctx, status, limit, pretty):
+async def list_subscriptions_cmd(ctx, status, limit, ids_only, pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
     async with subscriptions_client(ctx) as client:
+        subscription_ids = []
         async for sub in client.list_subscriptions(status=status, limit=limit):
-            echo_json(sub, pretty)
+            if ids_only:
+                subscription_ids.append(sub['id'])
+            else:
+                echo_json(sub, pretty)
+        if ids_only:
+            click.echo(','.join(subscription_ids))
 
 
 @subscriptions.command(name='create')
