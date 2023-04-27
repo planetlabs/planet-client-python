@@ -375,26 +375,19 @@ async def search_create(ctx, item_types, filter, name, daily_email, pretty):
               default=LIST_SEARCH_TYPE_DEFAULT,
               show_default=True,
               help='Search type filter.')
-@click.option('--ids-only', is_flag=True, help='Returns only the item IDs.')
 @limit
 @pretty
-async def search_list(ctx, sort, search_type, limit, ids_only, pretty):
+async def search_list(ctx, sort, search_type, limit, pretty):
     """List saved searches.
 
     This function outputs a full JSON description of the saved searches,
     optionally pretty-printed.
     """
     async with data_client(ctx) as cl:
-        item_ids = []
         async for item in cl.list_searches(sort=sort,
                                            search_type=search_type,
                                            limit=limit):
-            if ids_only:
-                item_ids.append(item['id'])
-            else:
-                echo_json(item, pretty)
-        if ids_only:
-            click.echo(','.join(item_ids))
+            echo_json(item, pretty)
 
 
 @data.command()
@@ -408,16 +401,23 @@ async def search_list(ctx, sort, search_type, limit, ids_only, pretty):
               show_default=True,
               help='Field and direction to order results by.')
 @limit
+@click.option('--ids-only', is_flag=True, help='Returns only the item IDs.')
 @pretty
-async def search_run(ctx, search_id, sort, limit, pretty):
+async def search_run(ctx, search_id, sort, limit, ids_only, pretty):
     """Execute a saved structured item search.
 
     This function outputs a series of GeoJSON descriptions, one for each of the
     returned items, optionally pretty-printed.
     """
     async with data_client(ctx) as cl:
+        item_ids = []
         async for item in cl.run_search(search_id, sort=sort, limit=limit):
-            echo_json(item, pretty)
+            if ids_only:
+                item_ids.append(item['id'])
+            else:
+                echo_json(item, pretty)
+        if ids_only:
+            click.echo(','.join(item_ids))
 
 
 @data.command(epilog=valid_item_string)
