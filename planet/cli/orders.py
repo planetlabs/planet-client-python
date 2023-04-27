@@ -209,9 +209,8 @@ async def download(ctx, order_id, overwrite, directory, checksum):
 @translate_exceptions
 @coro
 @click.argument("request", type=types.JSON())
-@click.option('--ids-only', is_flag=True, help='Returns only the item IDs.')
 @pretty
-async def create(ctx, request: str, ids_only, pretty):
+async def create(ctx, request: str, pretty):
     '''Create an order.
 
     This command outputs the created order description, optionally
@@ -222,10 +221,6 @@ async def create(ctx, request: str, ids_only, pretty):
     '''
     async with orders_client(ctx) as cl:
         order = await cl.create_order(request)
-    if ids_only:
-        item_ids = order['products'][0]['item_ids']
-        click.echo(','.join(item_ids))
-    else:
         echo_json(order, pretty)
 
 
