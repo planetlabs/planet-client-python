@@ -6,12 +6,12 @@ TODO: Update narrative and snippets to be SDK instead of CLI.
 
 ## Introduction
 
-The `planet subscriptions` command enables interaction with the 
+The `SubscriptionsClient` enables interaction with the 
 [Subscriptions API](https://developers.planet.com/apis/subscriptions/)
-that make it possible to set up a recurring search criteria. Using `planet subscriptions`, you can automatically process
-and deliver new imagery to a cloud bucket. It also has a powerful 'backfill' capability
-to bulk order historical imagery to your area of interest. This tutorial takes you
-through the main commands available in the CLI.
+that make it possible to set up a recurring search criteria. Using the subscriptions api 
+you can automatically process and deliver new imagery to a cloud bucket. It also 
+has a powerful 'backfill' capability to bulk order historical imagery to your area of interest. 
+This tutorial takes you through the main commands available for subscriptions in the SDK
 
 ## Core Workflows
 
@@ -113,8 +113,9 @@ just replace the 'delivery' section with your cloud credentials, see the
 [core subscriptions delivery docs](https://developers.planet.com/docs/subscriptions/delivery/) 
 for more information.
 
-To create a new subscription with the CLI, use the `create` command and the json file you just created:
+To create a new subscription with the CLI, use the `create_subscription` method and the json file you just created:
 
+TODO: Python snippet here:
 ```sh
 planet subscriptions create my-subscription.json
 ```
@@ -126,6 +127,7 @@ planet subscriptions create my-subscription.json
 
 Now that you’ve got a subscription working you can make use of the other commands.
 
+TODO: Python snippet here, should probably have it print too:
 ```sh
 planet subscriptions list
 ```
@@ -133,11 +135,15 @@ planet subscriptions list
 outputs the JSON for your first 100 subscriptions. If you'd like more you can set the `--limit` 
 parameter higher, or you can set it to 0 and there will be no limit. 
 
+TODO: Update narrative here, maybe example? How do we get python to print json nicely? Or does it do it by default?
+
 You can get nicer formatting with `--pretty` or pipe it into `jq`, just like the other Planet
 CLI’s.
 
-The `list` command also supports filtering by the status of the subscription:
+The `list_subscriptions` method also supports filtering by the status of the subscription:
 
+
+TODO: Python snippet here:
 ```sh
 planet subscriptions list --status running
 ```
@@ -148,16 +154,18 @@ gives you just the currently active subscriptions. The other available statuses 
 ### Get Subscription
 
 To get the full details on a single subscription you can take the id from your list and use the
-`get` command:
+`get_subscription` method:
 
+TODO: Python snippet here:
 ```sh
 planet subscriptions get cb817760-1f07-4ee7-bba6-bcac5346343f
 ```
 
 ### Subscription Results
 
-To see what items have been delivered to your cloud bucket you can use the `results` command:
+To see what items have been delivered to your cloud bucket you can use the `get_results` method:
 
+TODO: Python snippet here:
 ```sh
 planet subscriptions results cb817760-1f07-4ee7-bba6-bcac5346343f
 ```
@@ -167,18 +175,21 @@ set a higher limit, or set it to 0 to see all results (this can be quite large w
 
 You can also filter by status:
 
+TODO: Python snippet here:
 ```sh
 planet subscriptions results --status processing
 ```
 
-The available statuses are `created`, `queued`, `processing`, `failed`, and `success`. Note it’s quite useful
-to use `jq` to help filter out results as well.  
+The available statuses are `created`, `queued`, `processing`, `failed`, and `success`. 
 
 ### Update Subscription
 
 You can update a subscription that is running, for example to change the 'tools' it’s using or to alter
 its geometry. To do this you must submit the full subscription creation JSON, so the easiest way is to
-get it with `get` and then alter the values.
+get it with `get_subscription` and then alter the values.
+
+TODO: Python snippet here - is there a way to programmatically update the resulting json? Could be nice to show that
+like change the asset type from 8 band to 4 band
 
 ```sh
 planet subscriptions update cb817760-1f07-4ee7-bba6-bcac5346343f \
@@ -187,8 +198,9 @@ planet subscriptions update cb817760-1f07-4ee7-bba6-bcac5346343f \
 
 ### Cancel a subscription
 
-Cancelling a subscription is simple with the CLI:
+Cancelling a subscription is simple with the SDK:
 
+TODO: Python snippet here:
 ```sh
 planet subscriptions cancel cb817760-1f07-4ee7-bba6-bcac5346343f
 ```
@@ -202,13 +214,14 @@ There are a couple of commands that can assist in creating the subscription JSON
 A subscription request is a pretty complicated command, consisting of a search, a cloud delivery, as well as 
 tools to process the data plus notifications on the status. 
 
-### Catalog Request
+### Catalog Source
 
-The first place to start is the `request-catalog` command, which generates all the JSON for the 
+The first place to start is the `catalog-source` command, which generates all the JSON for the 
 [catalog source](https://developers.planet.com/docs/subscriptions/source/#catalog-source-type) block. The core
 of this is quite similar to a Data API search request, though with more required fields. The minimal
 required commands would be a request like:
 
+TODO: Python snippet here:
 ```sh
 planet subscriptions request-catalog \
     --item-types PSScene \
@@ -268,6 +281,7 @@ is not flexible to input like the orders command.
 
 RRule lets you specify a subscription that repeats at various time intervals:
 
+TODO: Python snippet here:
 ```sh
 planet subscriptions request-catalog \
     --item-types PSScene \
@@ -284,6 +298,7 @@ documentation.
 
 You can pass in a filter from the data API:
 
+TODO: Python snippet here:
 ```sh
 planet data filter --range clear_percent gt 90 > filter.json
 planet subscriptions request-catalog \
@@ -294,25 +309,14 @@ planet subscriptions request-catalog \
     --filter filter.json
 ```
 
-And you can even pipe it in directly:
-
-```sh
-planet data filter --range clear_percent gt 90 \
-    | planet subscriptions request-catalog \
-        --item-types PSScene \
-        --asset-types ortho_analytic_8b \
-        --geometry geometry.geojson \
-        --start-time 2022-08-24T00:00:00-07:00 \
-        --filter -
-```
-
 Do not bother with geometry or date filters, as they will be ignored in favor of the `--start-time` and `--geometry` values that are required.
 
 #### Saving the output
 
-You’ll likely want to save the output of your `request-catalog` call to disk, so that you can more easily use it in constructing the complete subscription
+You may want to save the output of your `catalog-source` to disk, so that you can use it in the future to construct the complete subscription
 request. 
 
+TODO: Python snippet here:
 ```sh
 planet data filter --range clear_percent gt 90 > filter.json
 planet subscriptions request-catalog \
@@ -337,7 +341,11 @@ Subscriptions API and it creates new images that only have pixels within the geo
 gave it. We’ll use the same geometry from [above](#geometry), as it is quite
 typical to use the same subscription geometry as the clip geometry, so you don't get
 any pixels outside of your area of interest (99.9% of all subscriptions use the clip
-tool, so it’s strongly recommended to also use clip). The proper 'clip' tool for it
+tool, so it’s strongly recommended to also use clip). 
+
+TODO: Make the JSON just the geometry, and show python snippet for the clip tool
+
+The proper 'clip' tool for it
 would be:
 
 ```json
@@ -380,97 +388,58 @@ would be:
 You can save this tools as `tools.json` to include in the `subscriptions request` 
 command.
 
-#### Additional Tools
+#### File Format Tool
 
-There are some other tools that are often good to include. To use more than one tool
-just put them in an array in the JSON:
+TODO: Narrative on file format
+TODO: Python snippet here:
 
-The toolchain options and format are given in
-[Supported Tools](https://developers.planet.com/docs/subscriptions/tools/#supported-tools)
-section of the subscriptions docs:
+#### Harmonize Tool
 
-Example: `more-tools.json`
-```
-[
-    {
-        "type": "toar",
-        "parameters":
-        {
-            "scale_factor": 10000
-        }
-    },
-    {
-        "type": "reproject",
-        "parameters":
-        {
-            "projection": "WGS84",
-            "kernel": "cubic"
-        }
-    },
-    {
-        "type": "harmonize",
-        "parameters":
-        {
-            "target_sensor": "Sentinel-2"
-        }
-    },
-    {
-        "type": "file_format",
-        "parameters":
-        {
-            "format": "COG"
-        }
-    }
-]
-```
+TODO: Narrative on file format
+TODO: Python snippet here:
+
+#### Reproject Tool
+
+TODO: Narrative on file format
+TODO: Python snippet here:
+
+#### TOAR Tool
+
+TODO: Narrative on file format
+TODO: Python snippet here:
+
+#### Band Math Tool
+
+TODO: Narrative on file format
+TODO: Python snippet here:
 
 ### Delivery
 
-One other essential block is the `delivery` JSON. Like with tools there is no convenience 
-method, as of yet. You must write out the JSON for this section.
+One other essential part of the request is the `delivery` - the cloud delivery. 
 You can find the full documentation for the delivery options in
 the [Subscriptions Delivery documentation](https://developers.planet.com/docs/subscriptions/delivery/).
 
-An example of a delivery.json file that you would save as a file to pass into the 
-`subscriptions request` command is:
+#### S3 Delivery
 
-```json
-{
-    "type": "azure_blob_storage",
-    "parameters":
-    {
-        "account": "accountname",
-        "container": "containername",
-        "sas_token": "sv=2017-04-17u0026si=writersr=cu0026sig=LGqc",
-        "storage_endpoint_suffix": "core.windows.net"
-    }
-}
-```
+TODO: Narrative on file format
+TODO: Python snippet here:
 
-The main documentation page also has the parameters for Google Cloud, AWS and Oracle.
+#### Azure Delivery
+
+TODO: Narrative on file format
+TODO: Python snippet here:
+
+#### Google Cloud Delivery
+
+TODO: Narrative on file format
+TODO: Python snippet here:
+
+#### Oracle Cloud Delivery
+
+TODO: Narrative on file format
+TODO: Python snippet here:
 
 ### Subscriptions Request
 
-Once you’ve got all your sub-blocks of JSON saved you’re ready to make a complete 
-subscriptions request with the `subscriptions request` command:
-
-```sh
-planet subscriptions request \
-    --name 'First Subscription' \
-    --source request-catalog.json \
-    --tools tools.json \
-    --delivery cloud-delivery.json \
-    --pretty
-```
-
-The above will print it nicely out so you can see the full request. You can write it out
-as a file, or pipe it directly into `subscriptions create` or `subscriptions update`:
-
-```sh
-planet subscriptions request \
-    --name 'First Subscription' \
-    --source request-catalog.json \
-    --tools tools.json \
-    --delivery cloud-delivery.json \
-    | planet subscriptions create -
-```
+TODO: Narrative on making a request that you've built up with convenience methods
+TODO: Python snippet here:
