@@ -40,10 +40,8 @@ lint_requires = ['flake8', 'mypy', 'yapf']
 doc_requires = [
     'mkdocs==1.3',
     'mkdocs-click==0.7.0',
-    'mkdocs-material',
-    'mkdocstrings==0.18.1',
-    'pymdown-extensions==9.11',
-    'Pygments>=2.12'
+    'mkdocs-material==8.2.11',
+    'mkdocstrings==0.18.1'
 ]
 
 setup(
