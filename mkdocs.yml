@@ -81,10 +81,6 @@ nav:
     - cli/cli-reference.md
   - "Python":
     - python/sdk-guide.md
-    - python/sdk-intro.md 
-    - python/sdk-data.md
-    - python/sdk-orders.md
-    - python/sdk-subscriptions.md
     - python/sdk-reference.md
   - "Resources":
     - resources/index.md
@@ -95,6 +91,5 @@ markdown_extensions:
   - pymdownx.superfences
   - mkdocs-click
   - admonition
-  - pymdownx.snippets
   - toc:
       permalink: True
