@@ -25,34 +25,60 @@ import planet
 from planet import data_filter
 import json
 from datetime import datetime
+import pytest
+
+
+@pytest.fixture
+def search_filter(get_test_file_json):
+    filename = 'data_search_filter_2022-01.json'
+    return get_test_file_json(filename)
+
+
+@pytest.fixture
+def item_descriptions(get_test_file_json):
+    item_ids = [
+        '20220125_075509_67_1061',
+        '20220125_075511_17_1061',
+        '20220125_075650_17_1061'
+    ]
+    items = [get_test_file_json(f'data_item_{id}.json') for id in item_ids]
+    return items
 
 
 # search
-async def search(item_types, search_filter, name, sort, limit):
+@pytest.mark.anyio
+async def test_snippet_search(search_filter):
     '''Code snippet for search.'''
+    # --8<-- [start:search]
     async with planet.Session() as sess:
         client = sess.client('data')
-        async for item in client.search(item_types=item_types,
-                                        search_filter=search_filter,
-                                        name=name,
-                                        sort=sort,
-                                        limit=limit):
-            return item
+        items_list = [
+            i async for i in client.search(['PSScene'],
+                                           search_filter=search_filter,
+                                           name="My Search",
+                                           sort="acquired asc",
+                                           limit=10)
+        ]
+    # --8<-- [start:search]
+    assert len(items_list) == 10
 
 
 # create_search
-async def create_search(item_types, search_filter, name):
+async def test_snippet_create_search(item_types, search_filter, name):
     '''Code snippet for create_search.'''
     async with planet.Session() as sess:
         client = sess.client('data')
-        items = await client.create_search(item_types=item_types,
+        items = await client.create_search(item_types="PSScene",
                                            search_filter=search_filter,
                                            name=name)
         return items
 
 
 # update_search
-async def update_search(search_id, item_types, search_filter, name):
+async def test_snippet_update_search(search_id,
+                                     item_types,
+                                     search_filter,
+                                     name):
     '''Code snippet for update_search.'''
     async with planet.Session() as sess:
         client = sess.client('data')
@@ -64,7 +90,7 @@ async def update_search(search_id, item_types, search_filter, name):
 
 
 # list_searches
-async def list_searches(sort, search_type, limit):
+async def test_snippet_list_searches(sort, search_type, limit):
     '''Code snippet for list_searches.'''
     async with planet.Session() as sess:
         client = sess.client('data')
@@ -75,7 +101,7 @@ async def list_searches(sort, search_type, limit):
 
 
 # delete_search
-async def delete_search(search_id):
+async def test_snippet_delete_search(search_id):
     '''Code snippet for delete_search.'''
     async with planet.Session() as sess:
         client = sess.client('data')
@@ -83,7 +109,7 @@ async def delete_search(search_id):
 
 
 # get_search
-async def get_search(search_id):
+async def test_snippet_get_search(search_id):
     '''Code snippet for get_search.'''
     async with planet.Session() as sess:
         client = sess.client('data')
@@ -92,7 +118,7 @@ async def get_search(search_id):
 
 
 # run_search
-async def run_search(search_id):
+async def test_snippet_run_search(search_id):
     '''Code snippet for run_search.'''
     async with planet.Session() as sess:
         client = sess.client('data')
@@ -101,7 +127,7 @@ async def run_search(search_id):
 
 
 # get_stats
-async def get_stats(item_types, search_filter, interval):
+async def test_snippet_get_stats(item_types, search_filter, interval):
     '''Code snippet for get_stats.'''
     async with planet.Session() as sess:
         client = sess.client('data')
@@ -112,7 +138,7 @@ async def get_stats(item_types, search_filter, interval):
 
 
 # list_item_assets
-async def list_item_assets(item_type_id, item_id):
+async def test_snippet_list_item_assets(item_type_id, item_id):
     '''Code snippet for list_item_assets.'''
     async with planet.Session() as sess:
         client = sess.client('data')
@@ -121,7 +147,7 @@ async def list_item_assets(item_type_id, item_id):
 
 
 # get_asset
-async def get_asset(item_type, item_id, asset_type):
+async def test_snippet_get_asset(item_type, item_id, asset_type):
     '''Code snippet for get_asset.'''
     async with planet.Session() as sess:
         client = sess.client('data')
@@ -130,7 +156,7 @@ async def get_asset(item_type, item_id, asset_type):
 
 
 # activate_asset
-async def activate_asset(item_type, item_id, asset_type):
+async def test_snippet_activate_asset(item_type, item_id, asset_type):
     '''Code snippet for activate_asset.'''
     async with planet.Session() as sess:
         client = sess.client('data')
@@ -139,7 +165,7 @@ async def activate_asset(item_type, item_id, asset_type):
 
 
 # wait_asset
-async def wait_asset(item_type, item_id, asset_type):
+async def test_snippet_wait_asset(item_type, item_id, asset_type):
     '''Code snippet for wait_asset.'''
     async with planet.Session() as sess:
         client = sess.client('data')
@@ -148,12 +174,12 @@ async def wait_asset(item_type, item_id, asset_type):
 
 
 # download_asset w/o checksum
-async def download_asset_without_checksum(item_type,
-                                          item_id,
-                                          asset_type,
-                                          filename,
-                                          directory,
-                                          overwrite):
+async def test_snippet_download_asset_without_checksum(item_type,
+                                                       item_id,
+                                                       asset_type,
+                                                       filename,
+                                                       directory,
+                                                       overwrite):
     '''Code snippet for download_asset without a checksum.'''
     async with planet.Session() as sess:
         client = sess.client('data')
@@ -166,12 +192,12 @@ async def download_asset_without_checksum(item_type,
 
 
 # download_asset w/ checksum
-async def download_asset_with_checksum(item_type,
-                                       item_id,
-                                       asset_type,
-                                       filename,
-                                       directory,
-                                       overwrite):
+async def test_snippet_download_asset_with_checksum(item_type,
+                                                    item_id,
+                                                    asset_type,
+                                                    filename,
+                                                    directory,
+                                                    overwrite):
     '''Code snippet for download_asset with a checksum.'''
     async with planet.Session() as sess:
         client = sess.client('data')
