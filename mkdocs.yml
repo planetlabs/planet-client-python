@@ -95,6 +95,8 @@ markdown_extensions:
   - pymdownx.superfences
   - mkdocs-click
   - admonition
+  - pymdownx.inlinehilite
   - pymdownx.snippets
+      dedent_subsections: True
   - toc:
       permalink: True
