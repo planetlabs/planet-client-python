@@ -70,11 +70,11 @@ class DataClient:
     Example:
         ```python
         >>> import asyncio
-        >>> from planet import Session, DataClient
+        >>> from planet import Session
         >>>
         >>> async def main():
         ...     async with Session() as sess:
-        ...         cl = DataClient(sess)
+        ...         cl = sess.client('data')
         ...         # use client here
         ...
         >>> asyncio.run(main())

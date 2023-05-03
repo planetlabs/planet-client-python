@@ -72,11 +72,11 @@ class OrdersClient:
     Example:
         ```python
         >>> import asyncio
-        >>> from planet import Session, OrdersClient
+        >>> from planet import Session
         >>>
         >>> async def main():
         ...     async with Session() as sess:
-        ...         cl = OrdersClient(sess)
+        ...         cl = sess.client('orders')
         ...         # use client here
         ...
         >>> asyncio.run(main())
@@ -119,7 +119,7 @@ class OrdersClient:
 
         ```python
         >>> import asyncio
-        >>> from planet import Session, OrdersClient
+        >>> from planet import Session
         >>> from planet.order_request import build_request, product
         >>>
         >>> async def main():
@@ -129,7 +129,7 @@ class OrdersClient:
         ...         [product(image_ids, 'analytic_udm2', 'psscene')]
         ...     )
         ...     async with Session() as sess:
-        ...         cl = OrdersClient(sess)
+        ...         cl = sess.client('orders')
         ...         order = await cl.create_order(request)
         ...
         >>> asyncio.run(main())
