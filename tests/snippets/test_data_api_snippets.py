@@ -45,7 +45,6 @@ def item_descriptions(get_test_file_json):
     return items
 
 
-# search
 @pytest.mark.anyio
 async def test_snippet_search(search_filter):
     '''Code snippet for search.'''
@@ -53,40 +52,43 @@ async def test_snippet_search(search_filter):
     async with planet.Session() as sess:
         client = sess.client('data')
         items_list = [
-            i async for i in client.search(['PSScene'],
-                                           search_filter=search_filter,
-                                           name="My Search",
-                                           sort="acquired asc",
-                                           limit=10)
+            item async for item in client.search(['PSScene'],
+                                                 search_filter=search_filter,
+                                                 name="My Search",
+                                                 sort="acquired asc",
+                                                 limit=10)
         ]
-    # --8<-- [start:search]
+    # --8<-- [end:search]
     assert len(items_list) == 10
 
 
-# create_search
-async def test_snippet_create_search(item_types, search_filter, name):
+@pytest.mark.anyio
+async def test_snippet_create_search(search_filter):
     '''Code snippet for create_search.'''
+    # --8<-- [start:create_search]
     async with planet.Session() as sess:
         client = sess.client('data')
-        items = await client.create_search(item_types="PSScene",
-                                           search_filter=search_filter,
-                                           name=name)
-        return items
+        response = await client.create_search(item_types=['PSScene'],
+                                              search_filter=search_filter,
+                                              name="My Search")
+    # --8<-- [end:create_search]
+    assert 'PSScene' in response['item_types']
 
 
-# update_search
-async def test_snippet_update_search(search_id,
-                                     item_types,
-                                     search_filter,
-                                     name):
+@pytest.mark.anyio
+async def test_snippet_update_search(search_filter):
     '''Code snippet for update_search.'''
+    # --8<-- [start:update_search]
     async with planet.Session() as sess:
         client = sess.client('data')
-        items = await client.update_search(search_id=search_id,
-                                           item_types=item_types,
-                                           search_filter=search_filter,
-                                           name=name)
-        return items
+        response = await client.update_search(
+            search_id='66722b2c8d184d4f9fb8b8fcf9d1a08c',
+            item_types=['PSScene'],
+            search_filter=search_filter,
+            name="My Search")
+    # --8<-- [end:update_search]
+    assert 'PSScene' not in response['item_types']
+    assert '66722b2c8d184d4f9fb8b8fcf9d1a08c' in response['id']
 
 
 # list_searches
