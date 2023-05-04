@@ -25,6 +25,25 @@ class SubscriptionsClient:
     exceptions raised by this class are categorized by HTTP client
     (4xx) or server (5xx) errors. This client's level of abstraction is
     low.
+
+    
+
+    High-level asynchronous access to Planet's orders API.
+
+    Example:
+        ```python
+        >>> import asyncio
+        >>> from planet import Session
+        >>>
+        >>> async def main():
+        ...     async with Session() as sess:
+        ...         cl = sess.client('subscriptions')
+        ...         # use client here
+        ...
+        >>> asyncio.run(main())
+
+        ```
+    
     """
 
     def __init__(self,
