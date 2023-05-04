@@ -26,7 +26,7 @@ class SubscriptionsClient:
     (4xx) or server (5xx) errors. This client's level of abstraction is
     low.
 
-    High-level asynchronous access to Planet's orders API:
+    High-level asynchronous access to Planet's subscriptions API:
 
     Example:
         ```python
