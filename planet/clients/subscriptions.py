@@ -28,7 +28,7 @@ class SubscriptionsClient:
 
 
 
-    High-level asynchronous access to Planet's orders API.
+    High-level asynchronous access to Planet's Subscriptions API.
 
     Example:
         ```python
