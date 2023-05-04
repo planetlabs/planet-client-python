@@ -65,7 +65,7 @@ class Searches(Paged):
 
 
 class DataClient:
-    """Low-level asynchronous access to Planet's data API.
+    """High-level asynchronous access to Planet's data API.
 
     Example:
         ```python
