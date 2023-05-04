@@ -65,16 +65,16 @@ class Searches(Paged):
 
 
 class DataClient:
-    """Low-level asynchronous access to Planet's data API.
+    """High-level asynchronous access to Planet's data API.
 
     Example:
         ```python
         >>> import asyncio
-        >>> from planet import Session, DataClient
+        >>> from planet import Session
         >>>
         >>> async def main():
         ...     async with Session() as sess:
-        ...         cl = DataClient(sess)
+        ...         cl = sess.client('data')
         ...         # use client here
         ...
         >>> asyncio.run(main())
