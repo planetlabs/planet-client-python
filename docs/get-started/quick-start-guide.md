@@ -22,7 +22,7 @@ Yes. Even if you’re not writing code—and only using the "no code" CLI part o
 Install the Planet SDK for Python using [pip](https://pip.pypa.io):
 
 ```console
-$ pip install planet --pre --user
+$ pip install planet --user
 ```
 
 The [--user](https://pip.pypa.io/en/stable/user_guide/#user-installs) flag ensures the Python packages are installed relative to your user home folder. It is recommended for those new to pip.
