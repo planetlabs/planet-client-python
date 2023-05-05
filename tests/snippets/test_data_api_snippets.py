@@ -20,7 +20,6 @@ interest (AOI), so they cannot be combined into one order.
 [Planet Explorer](https://www.planet.com/explorer/) was used to define
 the AOIs and get the image ids.
 """
-from pathlib import Path
 import planet
 from planet import data_filter
 import json
@@ -214,45 +213,36 @@ async def test_snippet_wait_asset():
                                        asset_type_id='basic_udm2')
         _ = await client.wait_asset(asset, callback=print)
     # --8<-- [end:wait_asset]
-    assert asset['status'] == 'activating'
-    assert asset == 1
+    assert asset['status'] == 'active'
 
 
-# download_asset w/o checksum
-async def test_snippet_download_asset_without_checksum(item_type,
-                                                       item_id,
-                                                       asset_type,
-                                                       filename,
-                                                       directory,
-                                                       overwrite):
+@pytest.mark.anyio
+async def test_snippet_download_asset_without_checksum():
     '''Code snippet for download_asset without a checksum.'''
+    # --8<-- [start:download_asset_without_checksum]
     async with planet.Session() as sess:
         client = sess.client('data')
-        asset = await client.get_asset(item_type, item_id, asset_type)
-        path = await client.download_asset(asset=asset,
-                                           filename=filename,
-                                           directory=Path(directory),
-                                           overwrite=overwrite)
-        return path
+        asset = await client.get_asset(item_type_id='PSScene',
+                                       item_id='20221003_002705_38_2461',
+                                       asset_type_id='basic_udm2')
+        path = await client.download_asset(asset=asset)
+    # --8<-- [end:download_asset_without_checksum]
+    assert path.exists()
 
 
-# download_asset w/ checksum
-async def test_snippet_download_asset_with_checksum(item_type,
-                                                    item_id,
-                                                    asset_type,
-                                                    filename,
-                                                    directory,
-                                                    overwrite):
+@pytest.mark.anyio
+async def test_snippet_download_asset_with_checksum():
     '''Code snippet for download_asset with a checksum.'''
+    # --8<-- [start:download_asset_with_checksum]
     async with planet.Session() as sess:
         client = sess.client('data')
-        asset = await client.get_asset(item_type, item_id, asset_type)
-        path = await client.download_asset(asset=asset,
-                                           filename=filename,
-                                           directory=Path(directory),
-                                           overwrite=overwrite)
+        asset = await client.get_asset(item_type_id='PSScene',
+                                       item_id='20221003_002705_38_2461',
+                                       asset_type_id='basic_udm2')
+        path = await client.download_asset(asset=asset)
         client.validate_checksum(asset, path)
-        return path
+    # --8<-- [end:download_asset_with_checksum]
+    assert path.exists()
 
 
 # Create search filters
