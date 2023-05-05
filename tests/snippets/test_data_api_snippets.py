@@ -89,90 +89,133 @@ async def test_snippet_update_search(search_filter):
     # --8<-- [end:update_search]
     assert 'PSScene' not in response['item_types']
     assert '66722b2c8d184d4f9fb8b8fcf9d1a08c' in response['id']
+    # TO DO: use a mocked search_id
 
 
-# list_searches
-async def test_snippet_list_searches(sort, search_type, limit):
+@pytest.mark.anyio
+async def test_snippet_list_searches():
     '''Code snippet for list_searches.'''
+    # --8<-- [start:list_searches]
     async with planet.Session() as sess:
         client = sess.client('data')
-        async for item in client.list_searches(sort=sort,
-                                               search_type=search_type,
-                                               limit=limit):
-            return item
+        search_list = [
+            item async for item in client.list_searches(
+                sort='created asc', search_type="saved", limit=10)
+        ]
+    # --8<-- [end:list_searches]
+    assert len(search_list)
+    # Verifying sort='created asc'
+    parsed_search_list = [
+        datetime.strptime(search['created'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        for search in search_list
+    ]
+    assert sorted(parsed_search_list) == parsed_search_list
 
 
-# delete_search
+@pytest.mark.anyio
 async def test_snippet_delete_search(search_id):
     '''Code snippet for delete_search.'''
+    # --8<-- [start:delete_search]
     async with planet.Session() as sess:
         client = sess.client('data')
-        await client.delete_search(search_id)
+        await client.delete_search(search_id='some-id')
+    # --8<-- [end:delete_search]
+    # TO DO: assert something
 
 
-# get_search
-async def test_snippet_get_search(search_id):
+@pytest.mark.anyio
+async def test_snippet_get_search():
     '''Code snippet for get_search.'''
+    # --8<-- [start:get_search]
     async with planet.Session() as sess:
         client = sess.client('data')
-        items = await client.get_search(search_id)
-        return items
+        search = await client.get_search(
+            search_id='66722b2c8d184d4f9fb8b8fcf9d1a08c')
+    # --8<-- [start:get_search]
+    assert len(search) == 1
+    assert search['id'] == '66722b2c8d184d4f9fb8b8fcf9d1a08c'
 
 
-# run_search
-async def test_snippet_run_search(search_id):
+@pytest.mark.anyio
+async def test_snippet_run_search():
     '''Code snippet for run_search.'''
+    # --8<-- [start:run_search]
     async with planet.Session() as sess:
         client = sess.client('data')
-        async for item in client.run_search(search_id):
-            return item
+        items_list = [
+            i async for i in client.run_search(
+                search_id='66722b2c8d184d4f9fb8b8fcf9d1a08c', limit=10)
+        ]
+    # --8<-- [end:run_search]
+    assert len(items_list) == 10
 
 
-# get_stats
-async def test_snippet_get_stats(item_types, search_filter, interval):
+@pytest.mark.anyio
+async def test_snippet_get_stats(search_filter):
     '''Code snippet for get_stats.'''
+    # --8<-- [start:get_stats]
     async with planet.Session() as sess:
         client = sess.client('data')
-        items = await client.get_stats(item_types=item_types,
+        stats = await client.get_stats(item_types=['PSScene'],
                                        search_filter=search_filter,
-                                       interval=interval)
-        return items
+                                       interval="month")
+    # --8<-- [end:get_stats]
+    assert stats['interval'] == 'month'
+    assert len(stats['buckets']) != 0
 
 
-# list_item_assets
-async def test_snippet_list_item_assets(item_type_id, item_id):
+@pytest.mark.anyio
+async def test_snippet_list_item_assets():
     '''Code snippet for list_item_assets.'''
+    # --8<-- [start:list_item_assets]
     async with planet.Session() as sess:
         client = sess.client('data')
-        assets = await client.list_item_assets(item_type_id, item_id)
-    return assets
+        assets = await client.list_item_assets(
+            item_type_id='PSScene', item_id='20221003_002705_38_2461')
+    # --8<-- [end:list_item_assets]
+    assert len(assets) == 14
 
 
-# get_asset
-async def test_snippet_get_asset(item_type, item_id, asset_type):
+@pytest.mark.anyio
+async def test_snippet_get_asset():
     '''Code snippet for get_asset.'''
+    # --8<-- [start:get_asset]
     async with planet.Session() as sess:
         client = sess.client('data')
-        asset = await client.get_asset(item_type, item_id, asset_type)
-    return asset
+        asset = await client.get_asset(item_type_id='PSScene',
+                                       item_id='20221003_002705_38_2461',
+                                       asset_type_id='basic_udm2')
+    # --8<-- [end:get_asset]
+    assert asset['type'] == 'basic_udm2'
 
 
-# activate_asset
-async def test_snippet_activate_asset(item_type, item_id, asset_type):
+@pytest.mark.anyio
+async def test_snippet_activate_asset():
     '''Code snippet for activate_asset.'''
+    # --8<-- [start:activate_asset]
     async with planet.Session() as sess:
         client = sess.client('data')
-        asset = await client.get_asset(item_type, item_id, asset_type)
+        asset = await client.get_asset(item_type_id='PSScene',
+                                       item_id='20221003_002705_38_2461',
+                                       asset_type_id='basic_udm2')
         await client.activate_asset(asset)
+    # --8<-- [end:activate_asset]
+    assert asset['status'] == 'active'
 
 
-# wait_asset
-async def test_snippet_wait_asset(item_type, item_id, asset_type):
+@pytest.mark.anyio
+async def test_snippet_wait_asset():
     '''Code snippet for wait_asset.'''
+    # --8<-- [start:wait_asset]
     async with planet.Session() as sess:
         client = sess.client('data')
-        asset = await client.get_asset(item_type, item_id, asset_type)
+        asset = await client.get_asset(item_type_id='PSScene',
+                                       item_id='20221003_002705_38_2461',
+                                       asset_type_id='basic_udm2')
         _ = await client.wait_asset(asset, callback=print)
+    # --8<-- [end:wait_asset]
+    assert asset['status'] == 'activating'
+    assert asset == 1
 
 
 # download_asset w/o checksum
