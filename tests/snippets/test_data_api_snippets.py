@@ -33,17 +33,6 @@ def search_filter(get_test_file_json):
     return get_test_file_json(filename)
 
 
-@pytest.fixture
-def item_descriptions(get_test_file_json):
-    item_ids = [
-        '20220125_075509_67_1061',
-        '20220125_075511_17_1061',
-        '20220125_075650_17_1061'
-    ]
-    items = [get_test_file_json(f'data_item_{id}.json') for id in item_ids]
-    return items
-
-
 @pytest.mark.anyio
 async def test_snippet_search(search_filter):
     '''Code snippet for search.'''
