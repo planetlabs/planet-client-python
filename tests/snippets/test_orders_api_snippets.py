@@ -21,6 +21,7 @@ interest (AOI), so they cannot be combined into one order.
 the AOIs and get the image ids.
 """
 import json
+import os
 from pathlib import Path
 import planet
 import pytest
@@ -105,7 +106,6 @@ async def test_snippet_cancel_order():
     assert order['state'] == 'cancelled'
 
 
-# cancel_orders()
 @pytest.mark.anyio
 async def test_snippets_cancel_multiple_orders():
     '''Code snippet for cancel_order.'''
@@ -118,42 +118,60 @@ async def test_snippets_cancel_multiple_orders():
         client = sess.client('orders')
         orders = await client.cancel_orders(order_ids=[order_id1, order_id2])
     # --8<-- [end:cancel_orders]
-    assert order1['state'] == 'cancelled'
-    assert order2['state'] == 'cancelled'
+    assert orders['result']['succeeded']['count'] == 2
 
 
-# aggregated_order_stats()
-async def aggregated_order_stats():
+@pytest.mark.anyio
+async def test_snippet_aggregated_order_stats():
     '''Code snippet for aggregated_order_stats.'''
+    # --8<-- [start:aggregated_order_stats]
     async with planet.Session() as sess:
         client = sess.client('orders')
         json_resp = await client.aggregated_order_stats()
-    return json.dumps(json_resp)
+    # --8<-- [start:aggregated_order_stats]
+    assert 'organization' and 'user' in [key for key in json_resp.keys()]
 
 
-# download_asset()
-async def download_asset(dl_url, directory):
+@pytest.mark.anyio
+async def test_snippet_download_asset_orders_api_checksum():
     '''Code snippet for download_asset.'''
+    # order = await test_snippet_create_order()
+    # order_id = order['id']
+    order_id = "decde86f-a57a-45bd-89f9-2af49a661e25"
+    # --8<-- [start:download_asset]
     async with planet.Session() as sess:
         client = sess.client('orders')
-        filename = await client.download_asset(location=dl_url,
-                                               directory=directory)
-    dl_path = Path(directory, filename)
-    return dl_path
+        order = await client.get_order(order_id=order_id)
+        # Find order info
+        info = order['_links']['results']
+        # Find and download the the composite.tif file
+        for i in info:
+            if 'composite.tif' in i['name']:
+                location = i['location']
+                filename = await client.download_asset(location=location)
+                # --8<-- [end:download_asset]
+                assert filename.exists()
+                os.remove(filename)
+            else:
+                pass
 
 
-# download_order() w/o checksum
-async def download_order_without_checksum(order_id, directory):
-    '''Code snippet for download_order without checksum.'''
+# download_order() w.0 checksum
+async def download_order_without_checksum():
+    '''Code snippet for download_order with checksum.'''
+    # Options: 'MD5' or 'SHA256'
+    checksum = 'MD5'
     async with planet.Session() as sess:
         client = sess.client('orders')
-        filenames = await client.download_order(order_id, directory=directory)
+        filenames = await client.download_order(order_id=order_id,
+                                                directory=directory)
+        client.validate_checksum(Path(directory, order_id), checksum)
     dl_path = Path(directory, filenames)
     return dl_path
 
 
 # download_order() w checksum
-async def download_order_with_checksum(order_id, directory):
+async def download_order_with_checksum():
     '''Code snippet for download_order with checksum.'''
     # Options: 'MD5' or 'SHA256'
     checksum = 'MD5'
