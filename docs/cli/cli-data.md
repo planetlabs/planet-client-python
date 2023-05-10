@@ -223,7 +223,7 @@ planet data filter --geom geometry.geojson | planet data search --limit 500 PSSc
 ```
 
 Creating geometries for search can be annoying in a command-line workflow, but there are some ideas in the
-[Advanced CLI Tutorial](cli-plus-tutorial.md#geometry-inputs).
+[Advanced CLI Tutorial](cli-tips-tricks.md#geometry-inputs).
 
 ### Date Filter
 
