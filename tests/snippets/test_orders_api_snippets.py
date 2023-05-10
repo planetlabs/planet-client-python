@@ -23,43 +23,103 @@ the AOIs and get the image ids.
 import json
 from pathlib import Path
 import planet
+import pytest
 
 
-# create_order()
-async def create_order(request):
-    '''Code snippet for create_order.'''
-    async with planet.Session() as sess:
-        client = sess.client('orders')
-        order = await client.create_order(request=request)
+@pytest.fixture
+def create_request():
+    '''Create an order request.'''
+
+    # The Orders API will be asked to mask, or clip, results to
+    # this area of interest.
+    aoi = {
+        "type":
+        "Polygon",
+        "coordinates": [[[-91.198465, 42.893071], [-91.121931, 42.893071],
+                         [-91.121931, 42.946205], [-91.198465, 42.946205],
+                         [-91.198465, 42.893071]]]
+    }
+
+    # In practice, you will use a Data API search to find items, but
+    # for this example take them as given.
+    items = ['20200925_161029_69_2223', '20200925_161027_48_2223']
+
+    order = planet.order_request.build_request(
+        name='iowa_order',
+        products=[
+            planet.order_request.product(item_ids=items,
+                                         product_bundle='analytic_udm2',
+                                         item_type='PSScene')
+        ],
+        tools=[planet.order_request.clip_tool(aoi=aoi)])
+
     return order
 
 
-# get_order()
-async def get_order(order_id):
+@pytest.mark.anyio
+async def test_snippet_create_order():
+    '''Code snippet for create_order.'''
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": ['20230508_155304_44_2480'],
+            "item_type": "PSScene",
+            "product_bundle": "analytic_udm2"
+        }],
+    }
+    # --8<-- [start:create_order]
+    async with planet.Session() as sess:
+        client = sess.client('orders')
+        order = await client.create_order(request=order_request)
+    # --8<-- [end:create_order]
+    return order
+    assert len(order['id']) > 0
+
+
+@pytest.mark.anyio
+async def test_snippet_get_order():
     '''Code snippet for get_order.'''
+    order = await test_snippet_create_order()
+    order_id = order['id']
+    # --8<-- [start:get_order]
     async with planet.Session() as sess:
         client = sess.client('orders')
         order = await client.get_order(order_id=order_id)
-    return order
+    # --8<-- [end:get_order]
+    assert len(order['id']) > 0
+    # TO DO: get order ID some other way
 
 
-# cancel_order()
-async def cancel_order(order_id):
+@pytest.mark.anyio
+async def test_snippet_cancel_order():
     '''Code snippet for cancel_order.'''
+    order = await test_snippet_create_order()
+    order_id = order['id']
+    # --8<-- [start:cancel_order]
     async with planet.Session() as sess:
         client = sess.client('orders')
-        json_resp = await client.cancel_order(order_id=order_id)
-    return json.dumps(json_resp)
+        order = await client.cancel_order(order_id=order_id)
+    # --8<-- [end:cancel_order]
+    # TO DO: get order ID some other way
+    assert order['state'] == 'cancelled'
 
 
 # cancel_orders()
-async def cancel_orders(order_id1, order_id2):
+@pytest.mark.anyio
+async def test_snippets_cancel_multiple_orders():
     '''Code snippet for cancel_order.'''
-    order_ids = [order_id1, order_id2]
+    order1 = await test_snippet_create_order()
+    order2 = await test_snippet_create_order()
+    order_id1 = order1['id']
+    order_id2 = order2['id']
+    # --8<-- [start:cancel_orders]
     async with planet.Session() as sess:
         client = sess.client('orders')
-        json_resp = await client.cancel_order(order_ids=order_ids)
-    return json.dumps(json_resp)
+        orders = await client.cancel_orders(order_ids=[order_id1, order_id2])
+    # --8<-- [end:cancel_orders]
+    assert order1['state'] == 'cancelled'
+    assert order2['state'] == 'cancelled'
 
 
 # aggregated_order_stats()
@@ -121,35 +181,6 @@ async def list_orders():
         client = sess.client('orders')
         async for order in client.list_orders():
             return order
-
-
-def create_request():
-    '''Create an order request.'''
-
-    # The Orders API will be asked to mask, or clip, results to
-    # this area of interest.
-    aoi = {
-        "type":
-        "Polygon",
-        "coordinates": [[[-91.198465, 42.893071], [-91.121931, 42.893071],
-                         [-91.121931, 42.946205], [-91.198465, 42.946205],
-                         [-91.198465, 42.893071]]]
-    }
-
-    # In practice, you will use a Data API search to find items, but
-    # for this example take them as given.
-    items = ['20200925_161029_69_2223', '20200925_161027_48_2223']
-
-    order = planet.order_request.build_request(
-        name='iowa_order',
-        products=[
-            planet.order_request.product(item_ids=items,
-                                         product_bundle='analytic_udm2',
-                                         item_type='PSScene')
-        ],
-        tools=[planet.order_request.clip_tool(aoi=aoi)])
-
-    return order
 
 
 async def order_example():
