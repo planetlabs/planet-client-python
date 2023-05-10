@@ -25,6 +25,7 @@ from planet import data_filter
 import json
 from datetime import datetime
 import pytest
+import os
 
 
 @pytest.fixture
@@ -206,7 +207,7 @@ async def test_snippet_wait_asset():
 
 
 @pytest.mark.anyio
-async def test_snippet_download_asset_without_checksum():
+async def test_snippet_download_asset_data_api_without_checksum():
     '''Code snippet for download_asset without a checksum.'''
     # --8<-- [start:download_asset_without_checksum]
     async with planet.Session() as sess:
@@ -217,10 +218,11 @@ async def test_snippet_download_asset_without_checksum():
         path = await client.download_asset(asset=asset)
     # --8<-- [end:download_asset_without_checksum]
     assert path.exists()
+    os.remove(path)
 
 
 @pytest.mark.anyio
-async def test_snippet_download_asset_with_checksum():
+async def test_snippet_download_asset_data_api_with_checksum():
     '''Code snippet for download_asset with a checksum.'''
     # --8<-- [start:download_asset_with_checksum]
     async with planet.Session() as sess:
@@ -232,6 +234,7 @@ async def test_snippet_download_asset_with_checksum():
         client.validate_checksum(asset, path)
     # --8<-- [end:download_asset_with_checksum]
     assert path.exists()
+    os.remove(path)
 
 
 # Create search filters
