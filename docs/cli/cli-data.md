@@ -132,7 +132,7 @@ planet data search PSScene | planet collect - > planet-search.geojson
 ```
 
 This you can then open with your favorite GIS program, or see this 
-[geometry visualization](cli-plus-tutorial.md#geometry-inputs) section for some ideas that flow a bit better with 
+[geometry visualization](cli-tips-tricks.md#geometry-inputs) section for some ideas that flow a bit better with 
 the command-line.
 
 ### Sort
@@ -223,7 +223,7 @@ planet data filter --geom geometry.geojson | planet data search --limit 500 PSSc
 ```
 
 Creating geometries for search can be annoying in a command-line workflow, but there are some ideas in the
-[Advanced CLI Tutorial](cli-plus-tutorial.md#geometry-inputs).
+[Advanced CLI Tutorial](cli-tips-tricks.md#geometry-inputs).
 
 ### Date Filter
 
