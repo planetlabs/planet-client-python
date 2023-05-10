@@ -19,7 +19,9 @@ import json
 import logging
 import os
 import pathlib
+import stat
 import typing
+from typing import Optional
 
 import httpx
 import jwt
@@ -27,7 +29,6 @@ import jwt
 from . import http
 from .constants import ENV_API_KEY, PLANET_BASE_URL, SECRET_FILE_PATH
 from .exceptions import AuthException
-from typing import Optional
 
 LOGGER = logging.getLogger(__name__)
 
@@ -226,8 +227,15 @@ class APIKeyAuth(httpx.BasicAuth, Auth):
 
 class _SecretFile:
 
-    def __init__(self, path):
-        self.path = path
+    def __init__(self, path: typing.Union[str, pathlib.Path]):
+        self.path = pathlib.Path(path)
+
+        self.permissions = stat.S_IRUSR | stat.S_IWUSR  # user rw
+
+        # in sdk versions <=2.0.0, secret file was created with the wrong
+        # permissions, fix this automatically as well as catching the unlikely
+        # cases where the permissions get changed externally
+        self._enforce_permissions()
 
     def write(self, contents: dict):
         try:
@@ -240,7 +248,11 @@ class _SecretFile:
 
     def _write(self, contents: dict):
         LOGGER.debug(f'Writing to {self.path}')
-        with open(self.path, 'w') as fp:
+
+        def opener(path, flags):
+            return os.open(path, flags, self.permissions)
+
+        with open(self.path, 'w', opener=opener) as fp:
             fp.write(json.dumps(contents))
 
     def read(self) -> dict:
@@ -248,3 +260,17 @@ class _SecretFile:
         with open(self.path, 'r') as fp:
             contents = json.loads(fp.read())
         return contents
+
+    def _enforce_permissions(self):
+        '''if the file's permissions are not what they should be, fix them'''
+        try:
+            # in octal, permissions is the last three bits of the mode
+            file_permissions = self.path.stat().st_mode & 0o777
+            if file_permissions != self.permissions:
+                LOGGER.debug(
+                    f'{self.path} permissions are {oct(file_permissions)}, '
+                    f'should be {oct(self.permissions)}. Fixing.')
+                self.path.chmod(self.permissions)
+        except FileNotFoundError:
+            # just skip it if the secret file doesn't exist
+            pass
