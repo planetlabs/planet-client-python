@@ -1,3 +1,18 @@
+2.0.1 (2023-05-10)
+
+Fixed:
+- Fix security issue where secret file was being created with read access other
+  users on the machine. Automatically fixes the file permissions to only read
+  and write the first time the file is accessed and continues to enforce the
+  proper file permissions going forward.
+
+Docs:
+- Fixed broken links on "CLI for Data API Tutorial" page (#952).
+- Protect against injecting javascript:URI into edited href tags in docs (#934).
+- Remove --pre --user from pip install instructions (#948).
+- Update the syntax of example code in the docstrings in the Order and Data
+  clients and add example code to the Subscriptions client docstring (#943).
+
 2.0.0 (2023-04-17)
 
 User Interface Changes:
