@@ -263,14 +263,9 @@ class _SecretFile:
 
     def _enforce_permissions(self):
         '''if the file's permissions are not what they should be, fix them'''
-        try:
+        if self.path.exists():
             # in octal, permissions is the last three bits of the mode
             file_permissions = self.path.stat().st_mode & 0o777
             if file_permissions != self.permissions:
-                LOGGER.debug(
-                    f'{self.path} permissions are {oct(file_permissions)}, '
-                    f'should be {oct(self.permissions)}. Fixing.')
+                LOGGER.info('Fixing planet secret file permissions.')
                 self.path.chmod(self.permissions)
-        except FileNotFoundError:
-            # just skip it if the secret file doesn't exist
-            pass
