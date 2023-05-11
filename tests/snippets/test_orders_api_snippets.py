@@ -20,7 +20,7 @@ interest (AOI), so they cannot be combined into one order.
 [Planet Explorer](https://www.planet.com/explorer/) was used to define
 the AOIs and get the image ids.
 """
-import json
+import shutil
 import os
 from pathlib import Path
 import planet
@@ -58,7 +58,7 @@ def create_request():
 
 
 @pytest.mark.anyio
-async def test_snippet_create_order():
+async def test_snippet_orders_create_order():
     '''Code snippet for create_order.'''
     order_request = {
         "name":
@@ -79,9 +79,9 @@ async def test_snippet_create_order():
 
 
 @pytest.mark.anyio
-async def test_snippet_get_order():
+async def test_snippet_orders_get_order():
     '''Code snippet for get_order.'''
-    order = await test_snippet_create_order()
+    order = await test_snippet_orders_create_order()
     order_id = order['id']
     # --8<-- [start:get_order]
     async with planet.Session() as sess:
@@ -93,9 +93,9 @@ async def test_snippet_get_order():
 
 
 @pytest.mark.anyio
-async def test_snippet_cancel_order():
+async def test_snippet_orders_cancel_order():
     '''Code snippet for cancel_order.'''
-    order = await test_snippet_create_order()
+    order = await test_snippet_orders_create_order()
     order_id = order['id']
     # --8<-- [start:cancel_order]
     async with planet.Session() as sess:
@@ -109,8 +109,8 @@ async def test_snippet_cancel_order():
 @pytest.mark.anyio
 async def test_snippets_cancel_multiple_orders():
     '''Code snippet for cancel_order.'''
-    order1 = await test_snippet_create_order()
-    order2 = await test_snippet_create_order()
+    order1 = await test_snippet_orders_create_order()
+    order2 = await test_snippet_orders_create_order()
     order_id1 = order1['id']
     order_id2 = order2['id']
     # --8<-- [start:cancel_orders]
@@ -122,7 +122,7 @@ async def test_snippets_cancel_multiple_orders():
 
 
 @pytest.mark.anyio
-async def test_snippet_aggregated_order_stats():
+async def test_snippet_orders_aggregated_order_stats():
     '''Code snippet for aggregated_order_stats.'''
     # --8<-- [start:aggregated_order_stats]
     async with planet.Session() as sess:
@@ -133,9 +133,9 @@ async def test_snippet_aggregated_order_stats():
 
 
 @pytest.mark.anyio
-async def test_snippet_download_asset_orders_api_checksum():
+async def test_snippet_orders_download_asset():
     '''Code snippet for download_asset.'''
-    # order = await test_snippet_create_order()
+    # order = await test_snippet_orders_create_order()
     # order_id = order['id']
     order_id = "decde86f-a57a-45bd-89f9-2af49a661e25"
     # --8<-- [start:download_asset]
@@ -156,63 +156,61 @@ async def test_snippet_download_asset_orders_api_checksum():
                 pass
 
 
-# download_order() w.0 checksum
-async def download_order_without_checksum():
-    '''Code snippet for download_order with checksum.'''
-    # Options: 'MD5' or 'SHA256'
-    checksum = 'MD5'
+@pytest.mark.anyio
+async def test_snippet_orders_download_order_without_checksum():
+    '''Code snippet for download_order without checksum.'''
+    order_id = "decde86f-a57a-45bd-89f9-2af49a661e25"
+    # --8<-- [start:download_order_without_checksum]
     async with planet.Session() as sess:
         client = sess.client('orders')
-        filenames = await client.download_order(order_id=order_id,
-                                                directory=directory)
-        client.validate_checksum(Path(directory, order_id), checksum)
-    dl_path = Path(directory, filenames)
-    return dl_path
+        filenames = await client.download_order(order_id=order_id)
+    # --8<-- [end:download_order_without_checksum]
+    assert all([filename.exists() for filename in filenames])
+    shutil.rmtree(filenames[0].parent)
 
 
-# download_order() w checksum
-async def download_order_with_checksum():
+@pytest.mark.anyio
+async def test_snippet_orders_download_order_with_checksum():
     '''Code snippet for download_order with checksum.'''
-    # Options: 'MD5' or 'SHA256'
-    checksum = 'MD5'
+    order_id = "decde86f-a57a-45bd-89f9-2af49a661e25"
+    # --8<-- [start:download_order_without_checksum]
     async with planet.Session() as sess:
         client = sess.client('orders')
-        filenames = await client.download_order(order_id=order_id,
-                                                directory=directory)
-        client.validate_checksum(Path(directory, order_id), checksum)
-    dl_path = Path(directory, filenames)
-    return dl_path
+        filenames = await client.download_order(order_id=order_id)
+        client.validate_checksum(directory=Path(order_id), checksum="MD5")
+    # --8<-- [end:download_order_without_checksum]
+    assert all([filename.exists() for filename in filenames])
+    shutil.rmtree(filenames[0].parent)
 
 
-# wait()
-async def wait(order_id):
+@pytest.mark.anyio
+async def test_snippet_orders_wait():
     '''Code snippet for wait.'''
+    order_id = "decde86f-a57a-45bd-89f9-2af49a661e25"
+    # --8<-- [start:wait]
     async with planet.Session() as sess:
         client = sess.client('orders')
-        _ = await client.wait(order_id=order_id, callback=print)
+        state = await client.wait(order_id=order_id)
+    # --8<-- [end:wait]
+    assert state == 'success'
 
 
-# list_orders()
-async def list_orders():
+@pytest.mark.anyio
+async def test_snippet_orders_list_orders():
     '''Code snippet for list_orders.'''
+    # --8<-- [start:list_orders]
     async with planet.Session() as sess:
         client = sess.client('orders')
-        async for order in client.list_orders():
-            return order
-
-
-async def order_example():
-    # Create an order request
-    request = create_request()
-
-    # Create order
-    order = await create_order(request)
-
-    # Get order ID
-    order_id = order['id']
-
-    # Wait for download to be ready
-    await wait(order_id)
-
-    # Download order
-    _ = await download_order_with_checksum(order_id, './')
+        order_descriptions = [order async for order in client.list_orders()]
+    # --8<-- [start:list_orders]
+    assert order_descriptions[0].keys() == {
+        '_links',
+        'created_on',
+        'error_hints',
+        'id',
+        'last_message',
+        'last_modified',
+        'name',
+        'products',
+        'state'
+    }
