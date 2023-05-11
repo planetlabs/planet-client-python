@@ -31,7 +31,7 @@ def test_secretfile_read():
 
 @pytest.fixture
 def secret_path(monkeypatch, tmp_path):
-    secret_path = str(tmp_path / '.test')
+    secret_path = tmp_path / '.test'
     monkeypatch.setattr(auth, 'SECRET_FILE_PATH', secret_path)
     yield secret_path
 
@@ -138,3 +138,19 @@ def test_Auth_store_exists(tmp_path):
 
     with open(secret_path, 'r') as fp:
         assert json.loads(fp.read()) == {"key": "test", "existing": "exists"}
+
+
+def test__SecretFile_permissions_doesnotexist(secret_path):
+    '''No exception is raised if the file doesn't exist'''
+    auth._SecretFile(secret_path)
+
+
+def test__SecretFile_permissions_incorrect(secret_path):
+    '''Incorrect permissions are fixed'''
+    with open(secret_path, 'w') as fp:
+        fp.write('{"existing": "exists"}')
+
+    secret_path.chmod(0o666)
+
+    auth._SecretFile(secret_path)
+    assert secret_path.stat().st_mode & 0o777 == 0o600
