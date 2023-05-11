@@ -35,7 +35,7 @@ def search_filter(get_test_file_json):
 
 
 @pytest.mark.anyio
-async def test_snippet_search(search_filter):
+async def test_snippet_data_search(search_filter):
     '''Code snippet for search.'''
     # --8<-- [start:search]
     async with planet.Session() as sess:
@@ -52,7 +52,7 @@ async def test_snippet_search(search_filter):
 
 
 @pytest.mark.anyio
-async def test_snippet_create_search(search_filter):
+async def test_snippet_data_create_search(search_filter):
     '''Code snippet for create_search.'''
     # --8<-- [start:create_search]
     async with planet.Session() as sess:
@@ -62,10 +62,11 @@ async def test_snippet_create_search(search_filter):
                                               name="My Search")
     # --8<-- [end:create_search]
     assert 'PSScene' in response['item_types']
+    return response
 
 
 @pytest.mark.anyio
-async def test_snippet_update_search(search_filter):
+async def test_snippet_data_update_search(search_filter):
     '''Code snippet for update_search.'''
     # --8<-- [start:update_search]
     async with planet.Session() as sess:
@@ -76,13 +77,13 @@ async def test_snippet_update_search(search_filter):
             search_filter=search_filter,
             name="My Search")
     # --8<-- [end:update_search]
-    assert 'PSScene' not in response['item_types']
+    assert ['PSScene'] not in response['item_types']
     assert '66722b2c8d184d4f9fb8b8fcf9d1a08c' in response['id']
     # TO DO: use a mocked search_id
 
 
 @pytest.mark.anyio
-async def test_snippet_list_searches():
+async def test_snippet_data_list_searches():
     '''Code snippet for list_searches.'''
     # --8<-- [start:list_searches]
     async with planet.Session() as sess:
@@ -92,7 +93,7 @@ async def test_snippet_list_searches():
                 sort='created asc', search_type="saved", limit=10)
         ]
     # --8<-- [end:list_searches]
-    assert len(search_list)
+    assert len(search_list) == 10
     # Verifying sort='created asc'
     parsed_search_list = [
         datetime.strptime(search['created'], '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -102,18 +103,24 @@ async def test_snippet_list_searches():
 
 
 @pytest.mark.anyio
-async def test_snippet_delete_search(search_id):
+async def test_snippet_data_delete_search(search_filter):
     '''Code snippet for delete_search.'''
+    new_search = await test_snippet_data_create_search(search_filter)
+    search_id = new_search['id']
     # --8<-- [start:delete_search]
     async with planet.Session() as sess:
         client = sess.client('data')
-        await client.delete_search(search_id='some-id')
+        await client.delete_search(search_id=search_id)
     # --8<-- [end:delete_search]
-    # TO DO: assert something
+        search_list = [
+                item async for item in client.list_searches(
+                    sort='created asc', search_type="saved", limit=10)
+            ]
+    assert search_id not in [search['id'] for search in search_list]
 
 
 @pytest.mark.anyio
-async def test_snippet_get_search():
+async def test_snippet_data_get_search():
     '''Code snippet for get_search.'''
     # --8<-- [start:get_search]
     async with planet.Session() as sess:
@@ -121,12 +128,12 @@ async def test_snippet_get_search():
         search = await client.get_search(
             search_id='66722b2c8d184d4f9fb8b8fcf9d1a08c')
     # --8<-- [start:get_search]
-    assert len(search) == 1
+    assert len(search) == 10
     assert search['id'] == '66722b2c8d184d4f9fb8b8fcf9d1a08c'
 
 
 @pytest.mark.anyio
-async def test_snippet_run_search():
+async def test_snippet_data_run_search():
     '''Code snippet for run_search.'''
     # --8<-- [start:run_search]
     async with planet.Session() as sess:
@@ -140,7 +147,7 @@ async def test_snippet_run_search():
 
 
 @pytest.mark.anyio
-async def test_snippet_get_stats(search_filter):
+async def test_snippet_data_get_stats(search_filter):
     '''Code snippet for get_stats.'''
     # --8<-- [start:get_stats]
     async with planet.Session() as sess:
@@ -154,7 +161,7 @@ async def test_snippet_get_stats(search_filter):
 
 
 @pytest.mark.anyio
-async def test_snippet_list_item_assets():
+async def test_snippet_data_list_item_assets():
     '''Code snippet for list_item_assets.'''
     # --8<-- [start:list_item_assets]
     async with planet.Session() as sess:
@@ -166,7 +173,7 @@ async def test_snippet_list_item_assets():
 
 
 @pytest.mark.anyio
-async def test_snippet_get_asset():
+async def test_snippet_data_get_asset():
     '''Code snippet for get_asset.'''
     # --8<-- [start:get_asset]
     async with planet.Session() as sess:
@@ -179,7 +186,7 @@ async def test_snippet_get_asset():
 
 
 @pytest.mark.anyio
-async def test_snippet_activate_asset():
+async def test_snippet_data_activate_asset():
     '''Code snippet for activate_asset.'''
     # --8<-- [start:activate_asset]
     async with planet.Session() as sess:
@@ -193,7 +200,7 @@ async def test_snippet_activate_asset():
 
 
 @pytest.mark.anyio
-async def test_snippet_wait_asset():
+async def test_snippet_data_wait_asset():
     '''Code snippet for wait_asset.'''
     # --8<-- [start:wait_asset]
     async with planet.Session() as sess:
@@ -207,7 +214,7 @@ async def test_snippet_wait_asset():
 
 
 @pytest.mark.anyio
-async def test_snippet_download_asset_data_api_without_checksum():
+async def test_snippet_data_download_asset_without_checksum():
     '''Code snippet for download_asset without a checksum.'''
     # --8<-- [start:download_asset_without_checksum]
     async with planet.Session() as sess:
@@ -222,7 +229,7 @@ async def test_snippet_download_asset_data_api_without_checksum():
 
 
 @pytest.mark.anyio
-async def test_snippet_download_asset_data_api_with_checksum():
+async def test_snippet_data_download_asset_with_checksum():
     '''Code snippet for download_asset with a checksum.'''
     # --8<-- [start:download_asset_with_checksum]
     async with planet.Session() as sess:
