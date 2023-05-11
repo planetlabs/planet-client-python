@@ -74,8 +74,8 @@ async def test_snippet_orders_create_order():
         client = sess.client('orders')
         order = await client.create_order(request=order_request)
     # --8<-- [end:create_order]
-    return order
     assert len(order['id']) > 0
+    return order
 
 
 @pytest.mark.anyio
