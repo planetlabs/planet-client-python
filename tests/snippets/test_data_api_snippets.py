@@ -111,11 +111,11 @@ async def test_snippet_data_delete_search(search_filter):
     async with planet.Session() as sess:
         client = sess.client('data')
         await client.delete_search(search_id=search_id)
-    # --8<-- [end:delete_search]
+        # --8<-- [end:delete_search]
         search_list = [
-                item async for item in client.list_searches(
-                    sort='created asc', search_type="saved", limit=10)
-            ]
+            item async for item in client.list_searches(
+                sort='created asc', search_type="saved", limit=10)
+        ]
     assert search_id not in [search['id'] for search in search_list]
 
 

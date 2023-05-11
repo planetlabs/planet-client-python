@@ -80,7 +80,7 @@ async def test_snippet_orders_create_order():
 
 @pytest.mark.anyio
 async def test_snippet_orders_get_order():
-    '''Code snippet for get_orders.'''
+    '''Code snippet for get_order.'''
     order = await test_snippet_orders_create_order()
     order_id = order['id']
     # --8<-- [start:get_order]
