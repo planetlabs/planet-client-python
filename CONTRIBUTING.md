@@ -9,7 +9,7 @@ document explains how to contribute successfully.
 
 #### Development Branch
 
-Implementation of new features will be tracked in the `main` branch while bug
+Implementation of new features will be tracked in the `main` branch, while bug
 fixes and doc changes for the latest release will be tracked in the maintenance
 branch, called `maint-RELEASE_VERSION`. All work will be performed in a
 new development branch starting with the appropriate base branch and merged
