@@ -9,10 +9,24 @@ document explains how to contribute successfully.
 
 #### Development Branch
 
-Most work should start with the latest instance of the `main` branch and be performed in a development branch:
+Implementation of new features will be tracked in the `main` branch, while bug
+fixes and doc changes for the latest release will be tracked in the maintenance
+branch, called `maint-RELEASE_VERSION`. All work will be performed in a
+new development branch starting with the appropriate base branch and merged
+back into that branch.
+
+For new features:
 
 ```console
 git checkout main
+git pull
+git checkout -b new-branch-name
+```
+
+For example, for bug fixes and doc changes to release version 2.0:
+
+```console
+git checkout maint-2.0
 git pull
 git checkout -b new-branch-name
 ```
@@ -26,6 +40,8 @@ Please use the following naming convention for development branchs:
 For example: `release-contributing-691` for [ticket 691](https://github.com/planetlabs/planet-client-python/issues/691).
 
 ### Pull Requests
+
+NOTE: Make sure to set the appropriate base branch for PRs. See Development Branch above for appriopriate branch.
 
 The Pull Request requirements are included in the pull request template as a list of checkboxes.
 
