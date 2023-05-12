@@ -23,10 +23,10 @@ git pull
 git checkout -b new-branch-name
 ```
 
-For bug fixes and doc changes to release version 2.0.1:
+For example, for bug fixes and doc changes to release version 2.0:
 
 ```console
-git checkout maint-2.0.1
+git checkout maint-2.0
 git pull
 git checkout -b new-branch-name
 ```
