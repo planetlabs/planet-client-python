@@ -304,6 +304,8 @@ async def request(ctx,
 
     if cloudconfig:
         delivery = planet.order_request.delivery(cloud_config=cloudconfig)
+        if "google_earth_engine" in cloudconfig:
+            stac = False
     else:
         delivery = None
 

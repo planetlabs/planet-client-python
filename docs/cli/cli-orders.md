@@ -602,11 +602,13 @@ planet orders request \
     --name 'No STAC' \
     --no-stac \
     20220605_124027_64_242b
-```
+``` 
 
 Currently this needs to be done for any 'composite' operation, as STAC output from composites is not yet 
 supported (but is coming). You can explicitly add `--stac`, but it is the default, so does not need to
 be included. For more information about Planet’s STAC output see the [Orders API documentation](https://developers.planet.com/apis/orders/delivery/#stac-metadata).
+
+Orders with Google Earth Engine delivery will force the STAC flag to false.
 
 ### Cloud Delivery
 
