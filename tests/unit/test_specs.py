@@ -103,6 +103,11 @@ def test_validate_item_type_notsupported_itemtype():
         specs.validate_item_type('notsupported')
 
 
+def test_validate_data_item_type():
+    '''ensure skysatvideo is included'''
+    specs.validate_data_item_type('skysatvideo')
+
+
 def test_validate_order_type_supported():
     assert 'full' == specs.validate_order_type('FULL')
 

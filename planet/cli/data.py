@@ -29,7 +29,7 @@ from planet.clients.data import (SEARCH_SORT,
                                  STATS_INTERVAL)
 
 from planet.specs import (get_item_types,
-                          validate_item_type,
+                          validate_data_item_type,
                           SpecificationException)
 
 from . import types
@@ -75,7 +75,7 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
     item types.'''
     try:
         for item_type in item_types:
-            validate_item_type(item_type)
+            validate_data_item_type(item_type)
         return item_types
     except SpecificationException as e:
         raise click.BadParameter(str(e))
@@ -85,7 +85,7 @@ def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
     '''Validates the item type provided by comparing it to all supported
     item types.'''
     try:
-        validate_item_type(item_type)
+        validate_data_item_type(item_type)
     except SpecificationException as e:
         raise click.BadParameter(str(e))
 

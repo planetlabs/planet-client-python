@@ -70,6 +70,15 @@ def validate_item_type(item_type):
     return _validate_field(item_type, supported_item_types, 'item_type')
 
 
+def validate_data_item_type(item_type):
+    '''Item types supported by the data api.'''
+    # This is a quick-fix for gh-956
+    # Ideally, data api will provide it's own source
+    orders_supported_item_types = get_item_types()
+    supported_item_types = orders_supported_item_types | {'SkySatVideo'}
+    return _validate_field(item_type, supported_item_types, 'item_type')
+
+
 def validate_order_type(order_type):
     return _validate_field(order_type, SUPPORTED_ORDER_TYPES, 'order_type')
 
