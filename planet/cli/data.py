@@ -28,7 +28,7 @@ from planet.clients.data import (SEARCH_SORT,
                                  SEARCH_SORT_DEFAULT,
                                  STATS_INTERVAL)
 
-from planet.specs import (get_item_types,
+from planet.specs import (get_data_item_types,
                           validate_data_item_type,
                           SpecificationException)
 
@@ -38,8 +38,8 @@ from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
 
-ALL_ITEM_TYPES = get_item_types()
-valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(ALL_ITEM_TYPES)
+valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(
+    get_data_item_types())
 
 
 @asynccontextmanager
