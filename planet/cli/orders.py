@@ -263,7 +263,8 @@ async def create(ctx, request: str, pretty):
     default=True,
     is_flag=True,
     help="""Include or exclude metadata in SpatioTemporal Asset Catalog (STAC)
-    format. Not specifying either defaults to including it (--stac).""")
+    format. Not specifying either defaults to including it (--stac), except
+    for orders with google_earth_engine delivery""")
 @pretty
 async def request(ctx,
                   item_type,
