@@ -28,8 +28,8 @@ from planet.clients.data import (SEARCH_SORT,
                                  SEARCH_SORT_DEFAULT,
                                  STATS_INTERVAL)
 
-from planet.specs import (get_item_types,
-                          validate_item_type,
+from planet.specs import (get_data_item_types,
+                          validate_data_item_type,
                           SpecificationException)
 
 from . import types
@@ -38,8 +38,8 @@ from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
 
-ALL_ITEM_TYPES = get_item_types()
-valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(ALL_ITEM_TYPES)
+valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(
+    get_data_item_types())
 
 
 @asynccontextmanager
@@ -75,7 +75,7 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
     item types.'''
     try:
         for item_type in item_types:
-            validate_item_type(item_type)
+            validate_data_item_type(item_type)
         return item_types
     except SpecificationException as e:
         raise click.BadParameter(str(e))
@@ -85,7 +85,7 @@ def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
     '''Validates the item type provided by comparing it to all supported
     item types.'''
     try:
-        validate_item_type(item_type)
+        validate_data_item_type(item_type)
     except SpecificationException as e:
         raise click.BadParameter(str(e))
 
