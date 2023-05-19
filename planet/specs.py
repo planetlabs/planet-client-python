@@ -71,16 +71,14 @@ def validate_item_type(item_type):
 
 
 def validate_data_item_type(item_type):
-    '''Item types supported by the data api.'''
-    # This is a quick-fix for gh-956
+    '''Validate and correct capitalization of data api item type.'''
     return _validate_field(item_type, get_data_item_types(), 'item_type')
 
 
 def get_data_item_types():
-    # This is a quick-fix for gh-956
-    orders_item_types = get_item_types()
-    data_item_types = orders_item_types | {'SkySatVideo'}
-    return data_item_types
+    '''Item types supported by the data api.'''
+    # This is a quick-fix for gh-956, to be superseded by gh-960
+    return get_item_types() | {'SkySatVideo'}
 
 
 def validate_order_type(order_type):
