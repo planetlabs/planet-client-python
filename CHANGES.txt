@@ -1,3 +1,12 @@
+2.0.2 (2023-05-24)
+
+Fixed:
+- Fixed bug where SkySatVideo was not recognized as a valid data api item type.
+- Fixed wheel name to indicate that only python 3 is supported and updated
+  build metadata to indicate that the package is now a stable release and only
+  supports Python 3.
+
+
 2.0.1 (2023-05-10)
 
 Fixed:
@@ -12,6 +21,7 @@ Docs:
 - Remove --pre --user from pip install instructions (#948).
 - Update the syntax of example code in the docstrings in the Order and Data
   clients and add example code to the Subscriptions client docstring (#943).
+
 
 2.0.0 (2023-04-17)
 
