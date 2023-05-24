@@ -4,57 +4,37 @@
 
 Releasing is a two-step process: (1) releasing on Github and test.pypi and (2) releasing to pypi. Releasing on Github will automatically trigger a release on test.pypi via a Github Action. Following manual confirmation of a successful and satisfactory release on test.pypi, release on pypi is triggered manually with the Github Action "Automatically Publish on TestPyPi". There is also an option to publish to test.pypi and pypi from your local machine.
 
-The first step in a release is determining if the release is a feature release or a maintenance release. A maintenance release is a backward compatible bug fix or documentation change, while a feature release adds functionality in a backward compatible manner.
-
 #### Release Naming Conventions
-
-This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html), which specifies a version number as MAJOR.MINOR.PATCH with a feature release mapped to a MINOR version and a maintenance release mapped to a PATCH.
 
 The following are the release naming conventions:
 
 1. Current Dev Version is obtained from `planet/__version__.py`
-    * For maintenance release, the format is `{MAJOR.MINOR.PATCH}dev`
-    * For feature release, the format is `{MAJOR.MINOR}dev`
 3. Release Version: Remove `dev` from Current Dev Version
-4. Next Dev Version: Bumped version of Release Version with `dev` added to the end.
-    * For maintenance release, bump PATCH
-    * For feature release, bump MINOR, do not specify PATCH
-5. Source branch: 
-    * For maintenance release, source branch is `maint-{MAJOR.MINOR}`
-    * For feature release, source branch is the main branch, `main`
+4. Next Dev Version: Bumped version of last release with `dev` added to the end.
+    * Bumped version number is determined by [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 
-##### Maintenance Release Example:
+##### Example:
 
-**IF** Current Dev Version ==  `1.1.1dev` **THEN**
-  * Release Version: `1.1.1`
-  * Next Dev Version: `1.1.2dev`
-  * Source Branch: `maint-1.1`
-
-MAINT: YES
-
-##### Feature Release Example:
-
-**IF** Current Dev Version ==  `1.2dev` **THEN**
-  * Release Version: `1.2`
-  * Next Dev Version: `1.3dev`
-  * Source Branch: `main`
-
+**IF** Current Dev Version ==  `1.0.0dev` **THEN**
+  * Release Version: `1.0.0`
+  * Next Dev Version: `1.0.1dev`
 
 ## Release Workflow
 
 The release on Github and PyPi performed from a release branch while the release branch PR is in progress. After the releases, the version in the PR is updated before it is merged. Thus, the version in `main` is not the same as the version of the release.
 
-*NOTE: This section refers to version and branch names given in Release Naming Conventions section above.*
+*NOTE: This section refers to version names given in Release Naming Conventions section above.*
 
-1. Starting from the Source Branch, create a release branch named `release-{Release Version}`
-1. Make the following changes for the release:
-  * Update `CHANGES.txt`, adhering to [Keep a Changelog](https://keepachangelog.com/)
+1. Create a release branch named `release-{Release Version}`
+1. Make the following changes for the release
+  * Update `CHANGES.txt` (**PROPOSAL**: change this to `docs/CHANGELOG.md`)
     * Include added, changed, depricated or removed features and bug fixes.
-       A list of merged PRs and their titles since the last release can be obtained with `git log $PREVIOUS_RELEASE_TAG..HEAD | awk '/Merge pull request/{print;getline;getline;print}'`.
+       A list of merged PRs and their titles since the last release can be obtained with `git log $PREVIOUS_RELEASE_TAG..HEAD | awk '/Merge pull request/{print;getline;getline;print}`.
     * Sort according to importance
+    * **PROPOSAL**: Adhere to [Keep a Changelog](https://keepachangelog.com/)
   * Update `planet/__version__.py` to Release Version
-1. Create a PR for the release branch (named after release branch, description is changelog entry, base is Source Branch), wait for CI to pass
+1. Create a PR for the release branch (named after release branch, description is changelog entry), wait for CI to pass
 1. Create a new github release:
   * Set Tag to Release Version
   * **!!!** Set Target to the release branch **!!!**
@@ -67,10 +47,9 @@ The release on Github and PyPi performed from a release branch while the release
 1. Push a commit to the PR updating `planet/__version__.py` to Next Dev Version
 1. Merge PR
 1. Announce the release through the following avenues:
- * *Planet Internal:* #python and #devrel slack channels
+ * *Planet Internal:* #python slack channel
  * Changelog
-1. Maintenace release only: Merge Source Branch into `main`
-
+ * Twitter
 
 ### Local publishing
 
@@ -83,7 +62,7 @@ then
 ```console
   $ nox -s publish-pypi
 ```
-this approach requires specifying the pypi/testpypi api token as the password at the prompt
+this approach requires specifying the pypi/testpypi api token as the password at the prompt.
 
 ## Conda builds
 
