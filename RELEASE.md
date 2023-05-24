@@ -12,13 +12,15 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html),
 
 The following are the release naming conventions:
 
-1. Current Dev Version is obtained from `planet/__version__.py` in the format `MAJOR.MINOR.PATCHdev`
+1. Current Dev Version is obtained from `planet/__version__.py`
+    * For maintenance release, the format is `{MAJOR.MINOR.PATCH}dev`
+    * For feature release, the format is `{MAJOR.MINOR}dev`
 3. Release Version: Remove `dev` from Current Dev Version
-4. Next Dev Version: Bumped version of last release with `dev` added to the end.
+4. Next Dev Version: Bumped version of Release Version with `dev` added to the end.
     * For maintenance release, bump PATCH
-    * For feature release, bump MINOR and set PATCH to 0
+    * For feature release, bump MINOR, do not specify PATCH
 5. Source branch: 
-    * For maintenance release, source branch is `maint-MAJOR.MINOR`
+    * For maintenance release, source branch is `maint-{MAJOR.MINOR}`
     * For feature release, source branch is the main branch, `main`
 
 
@@ -33,9 +35,9 @@ MAINT: YES
 
 ##### Feature Release Example:
 
-**IF** Current Dev Version ==  `1.1.1dev` **THEN**
-  * Release Version: `1.2.0`
-  * Next Dev Version: `1.1.1dev`
+**IF** Current Dev Version ==  `1.2dev` **THEN**
+  * Release Version: `1.2`
+  * Next Dev Version: `1.3dev`
   * Source Branch: `main`
 
 
@@ -43,7 +45,7 @@ MAINT: YES
 
 The release on Github and PyPi performed from a release branch while the release branch PR is in progress. After the releases, the version in the PR is updated before it is merged. Thus, the version in `main` is not the same as the version of the release.
 
-*NOTE: This section refers to version names given in Release Naming Conventions section above.*
+*NOTE: This section refers to version and branch names given in Release Naming Conventions section above.*
 
 1. Starting from the Source Branch, create a release branch named `release-{Release Version}`
 1. Make the following changes for the release:
@@ -65,9 +67,10 @@ The release on Github and PyPi performed from a release branch while the release
 1. Push a commit to the PR updating `planet/__version__.py` to Next Dev Version
 1. Merge PR
 1. Announce the release through the following avenues:
- * *Planet Internal:* #python slack channel
+ * *Planet Internal:* #python and #devrel slack channels
  * Changelog
- * Twitter
+1. Maintenace release only: Merge Source Branch into `main`
+
 
 ### Local publishing
 
@@ -80,7 +83,7 @@ then
 ```console
   $ nox -s publish-pypi
 ```
-this approach requires specifying the pypi/testpypi api token as the password at the prompt.
+this approach requires specifying the pypi/testpypi api token as the password at the prompt
 
 ## Conda builds
 
