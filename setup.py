@@ -51,12 +51,12 @@ setup(
     long_description=Path("README.md").read_text("utf-8"),
     long_description_content_type="text/markdown",
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
         'Topic :: Scientific/Engineering',
         'Topic :: Software Development',
         'Topic :: Utilities'
