@@ -1,0 +1,12 @@
+stages:
+- test
+sast:
+  stage: test
+include:
+- template: Jobs/SAST.gitlab-ci.yml
+- template: Jobs/Secret-Detection.gitlab-ci.yml
+- template: Jobs/Dependency-Scanning.gitlab-ci.yml
+
+secret_detection:
+  before_script:
+    - cat .gitlab/gitleaks-custom-rules.toml >> /gitleaks.toml
