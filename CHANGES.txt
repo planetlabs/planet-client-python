@@ -1,3 +1,11 @@
+2.0.3 (2023-06-28)
+
+Changed:
+- Orders CLI now forces STAC to false for GEE deliveries. This is due to the
+  Orders API change to surface validation errors when stac is specified for GEE
+  orders.(#957)
+
+
 2.0.2 (2023-05-24)
 
 Fixed:
