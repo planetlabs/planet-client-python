@@ -558,17 +558,17 @@ async def test_run_search_doesnotexist(session):
 async def test_get_stats_success(search_filter, session):
 
     page_response = {
-        "buckets": [{
-            "count": 433638, "start_time": "2022-01-01T00:00:00.000000Z"
-        },
-                    {
-                        "count": 431924,
-                        "start_time": "2022-01-02T00:00:00.000000Z"
-                    },
-                    {
-                        "count": 417138,
-                        "start_time": "2022-01-03T00:00:00.000000Z"
-                    }]
+        "buckets": [
+            {
+                "count": 433638, "start_time": "2022-01-01T00:00:00.000000Z"
+            },
+            {
+                "count": 431924, "start_time": "2022-01-02T00:00:00.000000Z"
+            },
+            {
+                "count": 417138, "start_time": "2022-01-03T00:00:00.000000Z"
+            },
+        ],
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.post(TEST_STATS_URL).return_value = mock_resp
