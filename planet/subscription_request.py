@@ -13,7 +13,7 @@
 # the License.
 """Functionality for preparing subscription requests."""
 from datetime import datetime
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional, List, Mapping
 
 from . import geojson, specs
 from .exceptions import ClientError
@@ -45,12 +45,27 @@ REPROJECT_KERNEL_DEFAULT = 'near'
 
 
 def build_request(name: str,
-                  source: dict,
-                  delivery: dict,
-                  notifications: Optional[dict] = None,
-                  tools: Optional[List[dict]] = None) -> dict:
+                  source: Mapping,
+                  delivery: Mapping,
+                  notifications: Optional[Mapping] = None,
+                  tools: Optional[List[Mapping]] = None,
+                  clip_to_source=False) -> dict:
     """Prepare a subscriptions request.
 
+    Parameters:
+        name: Name of the subscription.
+        source: A source for the subscription, i.e. catalog.
+        delivery: A delivery mechanism e.g. GCS, AWS, Azure, or OCS.
+        notifications: Specify notifications via email/webhook.
+        tools: Tools to apply to the products. The order of operation
+            is determined by the service.
+        clip_to_source: whether to clip to the source geometry or not
+            (the default). If True a clip configuration will be added
+            to the list of requested tools unless an existing clip tool
+            exists. NOTE: the next version of the Subscription API will
+            remove the clip tool option and always clip to the source
+            geometry. Thus this is a preview of the next API version's
+            default behavior.
 
     ```python
     >>> from datetime import datetime
@@ -77,21 +92,26 @@ def build_request(name: str,
 
     ```
 
-    Parameters:
-        name: Name of the subscription.
-        source: A source for the subscription, i.e. catalog.
-        delivery: A delivery mechanism e.g. GCS, AWS, Azure, or OCS.
-        notifications: Specify notifications via email/webhook.
-        tools: Tools to apply to the products. Order defines
-            the toolchain order of operatations.
     """
-    details = {"name": name, "source": source, "delivery": delivery}
+    details = {
+        "name": name, "source": dict(source), "delivery": dict(delivery)
+    }
 
     if notifications:
-        details['notifications'] = notifications
+        details['notifications'] = dict(notifications)
 
     if tools:
-        details['tools'] = tools
+        tool_list = [dict(tool) for tool in tools]
+        if clip_to_source and not any(
+                tool.get('type', None) == 'clip' for tool in tool_list):
+            tool_list.append({
+                'type': 'clip',
+                'parameters': {
+                    'aoi': source['parameters']['geometry']
+                }
+            })
+
+        details['tools'] = tool_list
 
     return details
 
@@ -99,9 +119,9 @@ def build_request(name: str,
 def catalog_source(
     item_types: List[str],
     asset_types: List[str],
-    geometry: dict,
+    geometry: Mapping,
     start_time: datetime,
-    filter: Optional[dict] = None,
+    filter: Optional[Mapping] = None,
     end_time: Optional[datetime] = None,
     rrule: Optional[str] = None,
 ) -> dict:
@@ -142,7 +162,7 @@ def catalog_source(
     parameters = {
         "item_types": item_types,
         "asset_types": asset_types,
-        "geometry": geojson.as_geom(geometry),
+        "geometry": geojson.as_geom(dict(geometry)),
     }
 
     try:
@@ -151,7 +171,7 @@ def catalog_source(
         raise ClientError('Could not convert start_time to an iso string')
 
     if filter:
-        parameters['filter'] = filter
+        parameters['filter'] = dict(filter)
 
     if end_time:
         try:
@@ -348,7 +368,7 @@ def band_math_tool(b1: str,
     return _tool('bandmath', parameters)
 
 
-def clip_tool(aoi: dict) -> dict:
+def clip_tool(aoi: Mapping) -> dict:
     '''Specify a subscriptions API clip tool.
 
     Imagery and udm files will be clipped to your area of interest. nodata
@@ -370,12 +390,12 @@ def clip_tool(aoi: dict) -> dict:
     '''
     valid_types = ['Polygon', 'MultiPolygon']
 
-    geom = geojson.as_geom(aoi)
+    geom = geojson.as_geom(dict(aoi))
     if geom['type'].lower() not in [v.lower() for v in valid_types]:
         raise ClientError(
             f'Invalid geometry type: {geom["type"]} is not in {valid_types}.')
 
-    return _tool('clip', {'aoi': aoi})
+    return _tool('clip', {'aoi': geom})
 
 
 def file_format_tool(file_format: str) -> dict:
