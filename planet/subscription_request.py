@@ -50,7 +50,10 @@ def build_request(name: str,
                   notifications: Optional[Mapping] = None,
                   tools: Optional[List[Mapping]] = None,
                   clip_to_source=False) -> dict:
-    """Prepare a subscriptions request.
+    """Prepare a subscription request.
+
+    The return value can be passed to
+    [planet.clients.subscriptions.SubscriptionsClient.create_subscription][].
 
     Parameters:
         name: Name of the subscription.
@@ -67,6 +70,11 @@ def build_request(name: str,
             geometry. Thus this is a preview of the next API version's
             default behavior.
 
+    Returns:
+        A Python dict representation of a Subscriptions API request for
+        a new subscription.
+
+    Examples:
     ```python
     >>> from datetime import datetime
     >>> from planet.subscription_request import (
@@ -87,12 +95,15 @@ def build_request(name: str,
     ...     ACCESS_KEY_ID, SECRET_ACCESS_KEY, "test", "us-east-1")
     ...
     >>> subscription_request = build_request(
-    ...     'test_subscription', source, delivery)
+    ...     'test_subscription', source=source, delivery=delivery)
     ...
 
     ```
 
     """
+    # Because source and delivery are Mappings we must make copies for
+    # the function's return value. dict() shallow copies a Mapping
+    # and returns a new dict.
     details = {
         "name": name, "source": dict(source), "delivery": dict(delivery)
     }
@@ -102,6 +113,13 @@ def build_request(name: str,
 
     if tools:
         tool_list = [dict(tool) for tool in tools]
+
+        # If clip_to_source is True a clip configuration will be added
+        # to the list of requested tools unless an existing clip tool
+        # exists. NOTE: the next version of the Subscription API will
+        # remove the clip tool option and always clip to the source
+        # geometry. Thus this is a preview of the next API version's
+        # default behavior.
         if clip_to_source and not any(
                 tool.get('type', None) == 'clip' for tool in tool_list):
             tool_list.append({
