@@ -875,11 +875,11 @@ async def test_download_asset(exists,
 
 @respx.mock
 @pytest.mark.anyio
-@pytest.mark.parametrize("hashes_match, md5_entry, expectation",
-                         [(True, True, does_not_raise()),
-                          (False, True, pytest.raises(exceptions.ClientError)),
-                          (True, False, pytest.raises(exceptions.ClientError))]
-                         )
+@pytest.mark.parametrize(
+    "hashes_match, md5_entry, expectation",
+    [(True, True, does_not_raise()),
+     (False, True, pytest.raises(exceptions.ClientError)),
+     (True, False, pytest.raises(exceptions.ClientError))])
 async def test_validate_checksum(hashes_match, md5_entry, expectation, tmpdir):
     test_bytes = b'foo bar'
     testfile = Path(tmpdir / 'test.txt')
