@@ -44,7 +44,7 @@ async def orders_client(ctx):
               default=None,
               help='Assign custom base Orders API URL.')
 def orders(ctx, base_url):
-    '''Commands for interacting with the Orders API'''
+    """Commands for interacting with the Orders API"""
     ctx.obj['BASE_URL'] = base_url
 
 
@@ -59,14 +59,14 @@ def orders(ctx, base_url):
 @limit
 @pretty
 async def list(ctx, state, limit, pretty):
-    '''List orders
+    """List orders
 
     This command prints a sequence of the returned order descriptions,
     optionally pretty-printed.
 
     Order descriptions are sorted by creation date with the last created order
     returned first.
-    '''
+    """
     async with orders_client(ctx) as cl:
         async for o in cl.list_orders(state=state, limit=limit):
             echo_json(o, pretty)
@@ -95,11 +95,11 @@ async def get(ctx, order_id, pretty):
 @coro
 @click.argument('order_id', type=click.UUID)
 async def cancel(ctx, order_id):
-    '''Cancel order by order ID.
+    """Cancel order by order ID.
 
     This command cancels a queued order and outputs the cancelled order
     details.
-    '''
+    """
     async with orders_client(ctx) as cl:
         json_resp = await cl.cancel_order(str(order_id))
 
@@ -207,14 +207,14 @@ async def download(ctx, order_id, overwrite, directory, checksum):
 @click.argument("request", type=types.JSON())
 @pretty
 async def create(ctx, request: str, pretty):
-    '''Create an order.
+    """Create an order.
 
     This command outputs the created order description, optionally
     pretty-printed.
 
     REQUEST is the full description of the order to be created. It must be JSON
     and can be specified a json string, filename, or '-' for stdin.
-    '''
+    """
     async with orders_client(ctx) as cl:
         order = await cl.create_order(request)
 

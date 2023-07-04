@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-'''Test Orders CLI'''
+"""Test Orders CLI"""
 import copy
 import hashlib
 from http import HTTPStatus
@@ -342,7 +342,7 @@ def test_cli_orders_download_default(invoke, mock_download_response, oid):
 
 @respx.mock
 def test_cli_orders_download_checksum(invoke, mock_download_response, oid):
-    '''checksum is successful'''
+    """checksum is successful"""
     mock_download_response()
 
     runner = CliRunner()

@@ -41,12 +41,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 class NoMatchException(Exception):
-    '''No match was found'''
+    """No match was found"""
     pass
 
 
 class SpecificationException(Exception):
-    '''No match was found'''
+    """No match was found"""
 
     def __init__(self, value, supported, field_name):
         self.value = value
@@ -71,12 +71,12 @@ def validate_item_type(item_type):
 
 
 def validate_data_item_type(item_type):
-    '''Validate and correct capitalization of data api item type.'''
+    """Validate and correct capitalization of data api item type."""
     return _validate_field(item_type, get_data_item_types(), 'item_type')
 
 
 def get_data_item_types():
-    '''Item types supported by the data api.'''
+    """Item types supported by the data api."""
     # This is a quick-fix for gh-956, to be superseded by gh-960
     return get_item_types() | {'SkySatVideo'}
 
@@ -121,7 +121,7 @@ def validate_supported_bundles(item_type, bundle, all_product_bundles):
 
 
 def validate_asset_type(item_type, asset_type):
-    '''Validates an asset type for a given item type.'''
+    """Validates an asset type for a given item type."""
     item_type = validate_item_type(item_type)
     supported_assets = get_supported_assets(item_type)
 
@@ -135,11 +135,11 @@ def _get_product_bundle_spec():
 
 
 def get_match(test_entry, spec_entries, field_name):
-    '''Find and return matching spec entry regardless of capitalization.
+    """Find and return matching spec entry regardless of capitalization.
 
     This is helpful for working with the API spec, where the capitalization
     is hard to remember but must be exact otherwise the API throws an
-    exception.'''
+    exception."""
     try:
         match = next(e for e in spec_entries
                      if e.lower() == test_entry.lower())
@@ -150,7 +150,7 @@ def get_match(test_entry, spec_entries, field_name):
 
 
 def get_product_bundles(item_type=None):
-    '''Get product bundles supported by Orders API.'''
+    """Get product bundles supported by Orders API."""
     spec = _get_product_bundle_spec()
 
     if item_type:
@@ -168,8 +168,8 @@ def get_product_bundles(item_type=None):
 
 
 def get_item_types(product_bundle=None):
-    '''If given product bundle, get specific item types supported by Orders
-    API. Otherwise, get all item types supported by Orders API.'''
+    """If given product bundle, get specific item types supported by Orders
+    API. Otherwise, get all item types supported by Orders API."""
     spec = _get_product_bundle_spec()
 
     if product_bundle:
@@ -184,7 +184,7 @@ def get_item_types(product_bundle=None):
 
 
 def get_supported_assets(item_type):
-    '''Get all assets supported by a given item type.'''
+    """Get all assets supported by a given item type."""
     item_type = validate_item_type(item_type)
     supported_bundles = get_product_bundles(item_type)
     spec = _get_product_bundle_spec()

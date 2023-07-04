@@ -56,7 +56,7 @@ async def data_client(ctx):
               default=None,
               help='Assign custom base Orders API URL.')
 def data(ctx, base_url):
-    '''Commands for interacting with the Data API'''
+    """Commands for interacting with the Data API"""
     ctx.obj['BASE_URL'] = base_url
 
 
@@ -71,8 +71,8 @@ def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
 
 
 def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
-    '''Validates each item types provided by comparing them to all supported
-    item types.'''
+    """Validates each item types provided by comparing them to all supported
+    item types."""
     try:
         for item_type in item_types:
             validate_data_item_type(item_type)
@@ -82,8 +82,8 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
 
 
 def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
-    '''Validates the item type provided by comparing it to all supported
-    item types.'''
+    """Validates the item type provided by comparing it to all supported
+    item types."""
     try:
         validate_data_item_type(item_type)
     except SpecificationException as e:
@@ -93,7 +93,7 @@ def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
 
 
 def check_search_id(ctx, param, search_id) -> str:
-    '''Ensure search id is a valix hex string'''
+    """Ensure search id is a valix hex string"""
     try:
         _ = DataClient._check_search_id(search_id)
     except exceptions.ClientError as e:
@@ -580,7 +580,7 @@ async def asset_download(ctx,
 @click.argument("item_id")
 @click.argument("asset_type")
 async def asset_activate(ctx, item_type, item_id, asset_type):
-    '''Activate an asset.'''
+    """Activate an asset."""
     async with data_client(ctx) as cl:
         asset = await cl.get_asset(item_type, item_id, asset_type)
         await cl.activate_asset(asset)
@@ -603,11 +603,11 @@ async def asset_activate(ctx, item_type, item_id, asset_type):
               show_default=True,
               help='Maximum number of polls. Set to zero for no limit.')
 async def asset_wait(ctx, item_type, item_id, asset_type, delay, max_attempts):
-    '''Wait for an asset to be activated.
+    """Wait for an asset to be activated.
 
     Returns when the asset status has reached "activated" and the asset is
     available.
-    '''
+    """
     quiet = ctx.obj['QUIET']
     async with data_client(ctx) as cl:
         asset = await cl.get_asset(item_type, item_id, asset_type)
@@ -629,7 +629,7 @@ async def asset_wait(ctx, item_type, item_id, asset_type, delay, max_attempts):
 # @click.argument("asset_type_id")
 # @pretty
 # async def asset_get(ctx, item_type, item_id, asset_type_id, pretty):
-#     '''Get an item asset.'''
+#     """Get an item asset."""
 #     async with data_client(ctx) as cl:
 #         asset = await cl.get_asset(item_type, item_id, asset_type_id)
 #     echo_json(asset, pretty)

@@ -85,7 +85,7 @@ def docs(session):
 
 @nox.session
 def watch(session):
-    '''Build and serve live docs for editing'''
+    """Build and serve live docs for editing"""
     session.install("-e", ".[docs]")
 
     session.run("mkdocs", "serve")
@@ -104,7 +104,7 @@ def examples(session):
 
 @nox.session
 def build(session):
-    '''Build package'''
+    """Build package"""
     # check preexisting
     exist_but_should_not = [p for p in BUILD_DIRS if Path(p).is_dir()]
     if exist_but_should_not:
@@ -119,7 +119,7 @@ def build(session):
 
 @nox.session
 def clean(session):
-    '''Remove build directories'''
+    """Remove build directories"""
     to_remove = [Path(d) for d in BUILD_DIRS if Path(d).is_dir()]
     for p in to_remove:
         shutil.rmtree(p)
@@ -127,13 +127,13 @@ def clean(session):
 
 @nox.session
 def publish_testpypi(session):
-    '''Publish to TestPyPi using API token'''
+    """Publish to TestPyPi using API token"""
     _publish(session, 'testpypi')
 
 
 @nox.session
 def publish_pypi(session):
-    '''Publish to PyPi using API token'''
+    """Publish to PyPi using API token"""
     _publish(session, 'pypi')
 
 
