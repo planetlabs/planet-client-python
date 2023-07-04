@@ -39,18 +39,22 @@ def coverage(session):
 
 @nox.session(python=["3.8", "3.9", "3.10", "3.11", "3.12"])
 def test(session):
+    session.run('python', '-m', 'ensurepip', '--upgrade')
+    session.install('-U', 'setuptools')
     session.install(".[test]")
 
     options = session.posargs
     # -W=error raises pytest warnings to errors so they are caught by CI
     # to exclude some warnings, see
     # https://docs.python.org/3/library/warnings.html#temporarily-suppressing-warnings
-    session.run('pytest',
+    session.run('python',
+                '-m',
+                'pytest',
                 '--ignore',
                 'examples/',
                 '-v',
-                '-W=error',
-                '-W=ignore::DeprecationWarning:tqdm',
+                '-Werror',
+                '-Wignore::DeprecationWarning:tqdm.std',
                 *options)
 
 
