@@ -205,10 +205,10 @@ async def list_subscription_results_cmd(ctx,
     '--notifications',
     type=types.JSON(),
     help='Notifications JSON. Can be a string, filename, or - for stdin.')
-@click.option('--tools',
-              type=types.JSON(),
-              help='Toolchain JSON. Can be a string, filename, or - for stdin.'
-              )
+@click.option(
+    '--tools',
+    type=types.JSON(),
+    help='Toolchain JSON. Can be a string, filename, or - for stdin.')
 @pretty
 def request(name, source, delivery, notifications, tools, pretty):
     """Generate a subscriptions request."""
@@ -247,10 +247,10 @@ def request(name, source, delivery, notifications, tools, pretty):
 @click.option('--rrule',
               type=str,
               help='iCalendar recurrance rule to specify recurrances.')
-@click.option('--filter',
-              type=types.JSON(),
-              help='Search filter.  Can be a string, filename, or - for stdin.'
-              )
+@click.option(
+    '--filter',
+    type=types.JSON(),
+    help='Search filter.  Can be a string, filename, or - for stdin.')
 @pretty
 def request_catalog(item_types,
                     asset_types,
