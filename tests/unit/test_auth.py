@@ -141,12 +141,12 @@ def test_Auth_store_exists(tmp_path):
 
 
 def test__SecretFile_permissions_doesnotexist(secret_path):
-    '''No exception is raised if the file doesn't exist'''
+    """No exception is raised if the file doesn't exist"""
     auth._SecretFile(secret_path)
 
 
 def test__SecretFile_permissions_incorrect(secret_path):
-    '''Incorrect permissions are fixed'''
+    """Incorrect permissions are fixed"""
     with open(secret_path, 'w') as fp:
         fp.write('{"existing": "exists"}')
 

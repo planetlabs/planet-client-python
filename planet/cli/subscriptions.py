@@ -18,8 +18,8 @@ valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(ALL_ITEM_TYPES)
 
 
 def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
-    '''Validates each item types provided by comparing them to all supported
-    item types.'''
+    """Validates each item types provided by comparing them to all supported
+    item types."""
     try:
         for item_type in item_types:
             validate_item_type(item_type)
@@ -29,8 +29,8 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
 
 
 def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
-    '''Validates the item type provided by comparing it to all supported
-    item types.'''
+    """Validates the item type provided by comparing it to all supported
+    item types."""
     try:
         validate_item_type(item_type)
     except SpecificationException as e:
@@ -53,7 +53,7 @@ async def subscriptions_client(ctx):
               default=None,
               help='Assign custom base Subscriptions API URL.')
 def subscriptions(ctx, base_url):
-    '''Commands for interacting with the Subscriptions API'''
+    """Commands for interacting with the Subscriptions API"""
     ctx.obj['BASE_URL'] = base_url
 
 

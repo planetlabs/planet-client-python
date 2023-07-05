@@ -192,7 +192,7 @@ class _Limiter:
 
 
 class Session(BaseSession):
-    '''Context manager for asynchronous communication with the Planet service.
+    """Context manager for asynchronous communication with the Planet service.
 
     The default behavior is to read authentication information stored in the
     secret file. This behavior can be overridden by providing an `auth.Auth`
@@ -226,7 +226,7 @@ class Session(BaseSession):
     >>> asyncio.run(main())
 
     ```
-    '''
+    """
 
     def __init__(self, auth: Optional[AuthType] = None):
         """Initialize a Session.

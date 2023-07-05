@@ -41,8 +41,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Orders(Paged):
-    '''Asynchronous iterator over Orders from a paged response describing
-    orders.'''
+    """Asynchronous iterator over Orders from a paged response describing
+    orders."""
     ITEMS_KEY = 'orders'
 
 
@@ -113,7 +113,7 @@ class OrdersClient:
         return f'{self._base_url}{STATS_PATH}'
 
     async def create_order(self, request: dict) -> dict:
-        '''Create an order request.
+        """Create an order request.
 
         Example:
 
@@ -143,7 +143,7 @@ class OrdersClient:
 
         Raises:
             planet.exceptions.APIError: On API error.
-        '''
+        """
         url = self._orders_url()
         response = await self._session.request(method='POST',
                                                url=url,
@@ -151,7 +151,7 @@ class OrdersClient:
         return response.json()
 
     async def get_order(self, order_id: str) -> dict:
-        '''Get order details by Order ID.
+        """Get order details by Order ID.
 
         Parameters:
             order_id: The ID of the order
@@ -162,7 +162,7 @@ class OrdersClient:
         Raises:
             planet.exceptions.ClientError: If order_id is not a valid UUID.
             planet.exceptions.APIError: On API error.
-        '''
+        """
         self._check_order_id(order_id)
         url = f'{self._orders_url()}/{order_id}'
 
@@ -170,7 +170,7 @@ class OrdersClient:
         return response.json()
 
     async def cancel_order(self, order_id: str) -> dict:
-        '''Cancel a queued order.
+        """Cancel a queued order.
 
         Parameters:
             order_id: The ID of the order
@@ -181,7 +181,7 @@ class OrdersClient:
         Raises:
             planet.exceptions.ClientError: If order_id is not a valid UUID.
             planet.exceptions.APIError: On API error.
-        '''
+        """
         self._check_order_id(order_id)
         url = f'{self._orders_url()}/{order_id}'
 
@@ -190,7 +190,7 @@ class OrdersClient:
 
     async def cancel_orders(self,
                             order_ids: Optional[List[str]] = None) -> dict:
-        '''Cancel queued orders in bulk.
+        """Cancel queued orders in bulk.
 
         Parameters:
             order_ids: The IDs of the orders. If empty or None, all orders in a
@@ -203,7 +203,7 @@ class OrdersClient:
             planet.exceptions.ClientError: If an entry in order_ids is not a
                 valid UUID.
             planet.exceptions.APIError: On API error.
-        '''
+        """
         url = f'{self._base_url}{BULK_PATH}/cancel'
         cancel_body = {}
         if order_ids:
@@ -218,14 +218,14 @@ class OrdersClient:
         return response.json()
 
     async def aggregated_order_stats(self) -> dict:
-        '''Get aggregated counts of active orders.
+        """Get aggregated counts of active orders.
 
         Returns:
             Aggregated order counts
 
         Raises:
             planet.exceptions.APIError: On API error.
-        '''
+        """
         url = self._stats_url()
         response = await self._session.request(method='GET', url=url)
         return response.json()

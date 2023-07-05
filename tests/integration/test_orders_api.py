@@ -52,9 +52,9 @@ def original_content():
 
 @pytest.fixture
 def create_download_mock(downloaded_content, order_description, oid):
-    '''
+    """
     Mock an HTTP response for download.
-    '''
+    """
 
     def f():
         # Create mock HTTP response
@@ -776,10 +776,10 @@ async def test_download_order_overwrite_true_preexisting_data(
         create_download_mock,
         original_content,
         downloaded_content):
-    '''
+    """
     Test if download_order() overwrites pre-existing data with
     overwrite flag set to True.
-    '''
+    """
 
     # Save JSON to a temporary file
     with open(Path(tmpdir, 'file.json'), "a") as out_file:
@@ -798,10 +798,10 @@ async def test_download_order_overwrite_true_preexisting_data(
 @pytest.mark.anyio
 async def test_download_order_overwrite_false_preexisting_data(
         tmpdir, oid, session, create_download_mock, original_content):
-    '''
+    """
     Test if download_order() does not overwrite pre-existing
     data with overwrite flag set to False.
-    '''
+    """
 
     # Save JSON to a temporary file
     with open(Path(tmpdir, 'file.json'), "a") as out_file:
@@ -820,10 +820,10 @@ async def test_download_order_overwrite_false_preexisting_data(
 @pytest.mark.anyio
 async def test_download_order_overwrite_true_nonexisting_data(
         tmpdir, oid, session, create_download_mock, downloaded_content):
-    '''
+    """
     Test if download_order() downloads data with overwrite flag
     set to true without pre-existing data.
-    '''
+    """
 
     create_download_mock()
     cl = OrdersClient(session, base_url=TEST_URL)
@@ -837,10 +837,10 @@ async def test_download_order_overwrite_true_nonexisting_data(
 @pytest.mark.anyio
 async def test_download_order_overwrite_false_nonexisting_data(
         tmpdir, oid, session, create_download_mock, downloaded_content):
-    '''
+    """
     Test if download_order() downloads data with overwrite flag
     set to false without pre-existing data.
-    '''
+    """
 
     create_download_mock()
     cl = OrdersClient(session, base_url=TEST_URL)
