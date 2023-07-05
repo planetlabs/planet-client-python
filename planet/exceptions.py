@@ -20,56 +20,56 @@ class PlanetError(Exception):
 
 
 class APIError(PlanetError):
-    '''General unexpected API response'''
+    """General unexpected API response"""
 
 
 class BadQuery(APIError):
-    '''Invalid inputs, HTTP 400'''
+    """Invalid inputs, HTTP 400"""
     pass
 
 
 class InvalidAPIKey(APIError):
-    '''Invalid key, HTTP 401'''
+    """Invalid key, HTTP 401"""
     pass
 
 
 class NoPermission(APIError):
-    '''Insufficient permissions, HTTP 403'''
+    """Insufficient permissions, HTTP 403"""
     pass
 
 
 class MissingResource(APIError):
-    '''Request for non existing resource, HTTP 404'''
+    """Request for non existing resource, HTTP 404"""
     pass
 
 
 class Conflict(APIError):
-    '''Request conflict with current state of the target resource, HTTP 409'''
+    """Request conflict with current state of the target resource, HTTP 409"""
     pass
 
 
 class TooManyRequests(APIError):
-    '''Too many requests, HTTP 429'''
+    """Too many requests, HTTP 429"""
     pass
 
 
 class OverQuota(APIError):
-    '''Quota exceeded, HTTP 429'''
+    """Quota exceeded, HTTP 429"""
     pass
 
 
 class ServerError(APIError):
-    '''Unexpected internal server error, HTTP 500'''
+    """Unexpected internal server error, HTTP 500"""
     pass
 
 
 class BadGateway(APIError):
-    '''Bad gateway, HTTP 502'''
+    """Bad gateway, HTTP 502"""
     pass
 
 
 class InvalidIdentity(APIError):
-    '''Raised when logging in with invalid credentials'''
+    """Raised when logging in with invalid credentials"""
     pass
 
 
@@ -79,12 +79,12 @@ class ClientError(PlanetError):
 
 
 class AuthException(ClientError):
-    '''Exceptions encountered during authentication'''
+    """Exceptions encountered during authentication"""
     pass
 
 
 class PagingError(ClientError):
-    '''For errors that occur during paging.'''
+    """For errors that occur during paging."""
     pass
 
 

@@ -31,7 +31,7 @@ def build_request(name: str,
                   order_type: Optional[str] = None,
                   tools: Optional[List[dict]] = None,
                   stac: Optional[dict] = None) -> dict:
-    '''Prepare an order request.
+    """Prepare an order request.
 
     ```python
     >>> from planet.order_request import (
@@ -69,7 +69,7 @@ def build_request(name: str,
     Raises:
         planet.specs.SpecificationException: If order_type is not a valid
             order type.
-    '''
+    """
     details: Dict[str, Any] = {'name': name, 'products': products}
 
     if subscription_id:
@@ -98,7 +98,7 @@ def product(item_ids: List[str],
             product_bundle: str,
             item_type: str,
             fallback_bundle: Optional[str] = None) -> dict:
-    '''Product description for an order detail.
+    """Product description for an order detail.
 
     Parameters:
         item_ids: IDs of the catalog items to include in the order.
@@ -113,7 +113,7 @@ def product(item_ids: List[str],
         planet.specs.SpecificationException: If bundle or fallback bundle
             are not valid bundles or if item_type is not valid for the given
             bundle or fallback bundle.
-    '''
+    """
     item_type = specs.validate_item_type(item_type)
     validated_product_bundle = specs.validate_bundle(item_type, product_bundle)
 
@@ -135,14 +135,14 @@ def product(item_ids: List[str],
 def notifications(email: Optional[bool] = None,
                   webhook_url: Optional[str] = None,
                   webhook_per_order: Optional[bool] = None) -> dict:
-    '''Notifications description for an order detail.
+    """Notifications description for an order detail.
 
     Parameters:
         email: Enable email notifications for an order.
         webhook_url: URL for notification when the order is ready.
         webhook_per_order: Request a single webhook call per order instead
             of one call per each delivered item.
-    '''
+    """
     notifications_dict: Dict[str, Union[dict, bool]] = {}
 
     if webhook_url:
@@ -166,7 +166,7 @@ def delivery(archive_type: Optional[str] = None,
              single_archive: bool = False,
              archive_filename: Optional[str] = None,
              cloud_config: Optional[dict] = None) -> dict:
-    '''Order delivery configuration.
+    """Order delivery configuration.
 
     Example:
         ```python
@@ -195,7 +195,7 @@ def delivery(archive_type: Optional[str] = None,
 
     Raises:
         planet.specs.SpecificationException: If archive_type is not valid.
-    '''
+    """
     if archive_type:
         archive_type = specs.validate_archive_type(archive_type)
 
@@ -214,7 +214,7 @@ def amazon_s3(aws_access_key_id: str,
               bucket: str,
               aws_region: str,
               path_prefix: Optional[str] = None) -> dict:
-    '''Amazon S3 Cloud configuration.
+    """Amazon S3 Cloud configuration.
 
     Parameters:
         aws_access_key_id: S3 account access key.
@@ -224,7 +224,7 @@ def amazon_s3(aws_access_key_id: str,
         path_prefix: Custom string to prepend to the files delivered to the
             bucket. A slash (/) character will be treated as a "folder".
             Any other characters will be added as a prefix to the files.
-    '''
+    """
     cloud_details = {
         'aws_access_key_id': aws_access_key_id,
         'aws_secret_access_key': aws_secret_access_key,
@@ -243,7 +243,7 @@ def azure_blob_storage(account: str,
                        sas_token: str,
                        storage_endpoint_suffix: Optional[str] = None,
                        path_prefix: Optional[str] = None) -> dict:
-    '''Azure Blob Storage configuration.
+    """Azure Blob Storage configuration.
 
     Parameters:
         account: Azure account.
@@ -254,7 +254,7 @@ def azure_blob_storage(account: str,
         path_prefix: Custom string to prepend to the files delivered to the
             bucket. A slash (/) character will be treated as a "folder".
             Any other characters will be added as a prefix to the files.
-    '''
+    """
     cloud_details = {
         'account': account,
         'container': container,
@@ -273,7 +273,7 @@ def azure_blob_storage(account: str,
 def google_cloud_storage(bucket: str,
                          credentials: str,
                          path_prefix: Optional[str] = None) -> dict:
-    '''Google Cloud Storage configuration.
+    """Google Cloud Storage configuration.
 
     Parameters:
         bucket: GCS bucket name.
@@ -281,7 +281,7 @@ def google_cloud_storage(bucket: str,
         path_prefix: Custom string to prepend to the files delivered to the
             bucket. A slash (/) character will be treated as a "folder".
             Any other characters will be added as a prefix to the files.
-    '''
+    """
     cloud_details = {
         'bucket': bucket,
         'credentials': credentials,
@@ -294,12 +294,12 @@ def google_cloud_storage(bucket: str,
 
 
 def google_earth_engine(project: str, collection: str) -> dict:
-    '''Google Earth Engine configuration.
+    """Google Earth Engine configuration.
 
     Parameters:
         project: GEE project name.
         collection: GEE Image Collection name.
-    '''
+    """
     cloud_details = {
         'project': project,
         'collection': collection,
@@ -308,7 +308,7 @@ def google_earth_engine(project: str, collection: str) -> dict:
 
 
 def _tool(name: str, parameters: dict) -> dict:
-    '''Create the API spec representation of a tool.
+    """Create the API spec representation of a tool.
 
     See [Tools and Toolchains](
     https://developers.planet.com/docs/orders/tools-toolchains/)
@@ -321,13 +321,13 @@ def _tool(name: str, parameters: dict) -> dict:
     Raises:
         planet.specs.SpecificationException: If name is not the name of a valid
             Orders API tool.
-    '''
+    """
     name = specs.validate_tool(name)
     return {name: parameters}
 
 
 def clip_tool(aoi: dict) -> dict:
-    '''Create the API spec representation of a clip tool.
+    """Create the API spec representation of a clip tool.
 
     Example:
         ```python
@@ -350,7 +350,7 @@ def clip_tool(aoi: dict) -> dict:
     Raises:
         planet.exceptions.ClientError: If GeoJSON is not a valid polygon or
             multipolygon.
-    '''
+    """
     valid_types = ['Polygon', 'MultiPolygon']
 
     geom = geojson.as_geom(aoi)
@@ -361,23 +361,23 @@ def clip_tool(aoi: dict) -> dict:
 
 
 def composite_tool() -> dict:
-    '''Create the API spec representation of a composite tool.
-    '''
+    """Create the API spec representation of a composite tool.
+    """
     return _tool('composite', {})
 
 
 def coregister_tool(anchor_item: str) -> dict:
-    '''Create the API spec representation of a coregister tool.
+    """Create the API spec representation of a coregister tool.
 
     Parameters:
         anchor_item: The item_id of the item to which all other items should be
             coregistered.
-    '''
+    """
     return _tool('coregister', {'anchor_item': anchor_item})
 
 
 def file_format_tool(file_format: str) -> dict:
-    '''Create the API spec representation of a file format tool.
+    """Create the API spec representation of a file format tool.
 
     Parameters:
         file_format: The format of the tool output. Either 'COG' or 'PL_NITF'.
@@ -385,7 +385,7 @@ def file_format_tool(file_format: str) -> dict:
     Raises:
         planet.specs.SpecificationException: If file_format is not one of
             'COG' or 'PL_NITF'
-    '''
+    """
     file_format = specs.validate_file_format(file_format)
     return _tool('file_format', {'format': file_format})
 
@@ -393,7 +393,7 @@ def file_format_tool(file_format: str) -> dict:
 def reproject_tool(projection: str,
                    resolution: Optional[float] = None,
                    kernel: Optional[str] = None) -> dict:
-    '''Create the API spec representation of a reproject tool.
+    """Create the API spec representation of a reproject tool.
 
     Parameters:
         projection: A coordinate system in the form EPSG:n. (ex. EPSG:4326 for
@@ -406,7 +406,7 @@ def reproject_tool(projection: str,
         kernel: The resampling kernel used. The API default is "near". This
             parameter also supports "bilinear", "cubic", "cubicspline",
             "lanczos", "average" and "mode".
-    '''
+    """
     parameters = dict((k, v) for k, v in locals().items() if v)
     return _tool('reproject', parameters)
 
@@ -417,7 +417,7 @@ def tile_tool(tile_size: int,
               pixel_size: Optional[float] = None,
               name_template: Optional[str] = None,
               conformal_x_scaling: Optional[bool] = None) -> dict:
-    '''Create the API spec representation of a reproject tool.
+    """Create the API spec representation of a reproject tool.
 
     Parameters:
         tile_size: Height and width of output tiles in pixels and lines
@@ -432,20 +432,20 @@ def tile_tool(tile_size: int,
             The API default is "{tilex}_{tiley}.tif" resulting in filenames
             like 128_200.tif. The {tilex} and {tiley} parameters can be of the
             form {tilex:06d} to produce a fixed width field with leading zeros.
-    '''
+    """
     parameters = dict((k, v) for k, v in locals().items() if v)
     return _tool('tile', parameters)
 
 
 def toar_tool(scale_factor: Optional[int] = None) -> dict:
-    '''Create the API spec representation of a TOAR tool.
+    """Create the API spec representation of a TOAR tool.
 
     Parameters:
         scale_factor: Scale factor applied to convert 0.0 to 1.0 reflectance
             floating point values to a value that fits in 16bit integer pixels.
             The API default is 10000. Values over 65535 could result in high
             reflectances not fitting in 16bit integers.
-    '''
+    """
     parameters = {}
     if scale_factor:
         parameters['scale_factor'] = scale_factor
@@ -453,7 +453,7 @@ def toar_tool(scale_factor: Optional[int] = None) -> dict:
 
 
 def harmonize_tool(target_sensor: str) -> dict:
-    '''Create the API spec representation of a harmonize tool.
+    """Create the API spec representation of a harmonize tool.
 
     Parameters:
         target_sensor: A value indicating to what sensor the input asset types
@@ -461,7 +461,7 @@ def harmonize_tool(target_sensor: str) -> dict:
 
     Raises:
         planet.exceptions.ClientError: If target_sensor is not valid.
-    '''
+    """
 
     try:
         target_sensor = specs.get_match(target_sensor,
@@ -489,7 +489,7 @@ def band_math_tool(b1: str,
                    b14: Optional[str] = None,
                    b15: Optional[str] = None,
                    pixel_type: str = specs.BAND_MATH_PIXEL_TYPE_DEFAULT):
-    '''Specify an Orders API band math tool.
+    """Specify an Orders API band math tool.
 
     The parameters of the bandmath tool define how each output band in the
     derivative product should be produced, referencing the product inputs’
@@ -518,7 +518,7 @@ def band_math_tool(b1: str,
 
     Raises:
         planet.exceptions.ClientError: If pixel_type is not valid.
-    '''  # noqa
+    """  # noqa
     try:
         pixel_type = specs.get_match(pixel_type,
                                      specs.BAND_MATH_PIXEL_TYPE,

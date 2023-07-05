@@ -104,7 +104,7 @@ def test_validate_item_type_notsupported_itemtype():
 
 
 def test_validate_data_item_type():
-    '''ensure skysatvideo is included'''
+    """ensure skysatvideo is included"""
     specs.validate_data_item_type('skysatvideo')
 
 
@@ -181,8 +181,8 @@ def test_get_supported_assets_not_supported_item_type():
 
 
 def test_validate_asset_type_supported():
-    '''Ensures that a validated asset type for a given item type matches the
-    the given asset type.'''
+    """Ensures that a validated asset type for a given item type matches the
+    the given asset type."""
     assert TEST_ASSET_TYPE == specs.validate_asset_type(
         TEST_ITEM_TYPE, TEST_ASSET_TYPE)
 

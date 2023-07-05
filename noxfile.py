@@ -37,15 +37,25 @@ def coverage(session):
     session.run('coverage', 'report')
 
 
-@nox.session(python=["3.7", "3.8", "3.9", "3.10", "3.11"])
+@nox.session(python=["3.8", "3.9", "3.10", "3.11", "3.12"])
 def test(session):
+    session.run('python', '-m', 'ensurepip', '--upgrade')
+    session.install('-U', 'setuptools')
     session.install(".[test]")
 
     options = session.posargs
     # -W=error raises pytest warnings to errors so they are caught by CI
     # to exclude some warnings, see
     # https://docs.python.org/3/library/warnings.html#temporarily-suppressing-warnings
-    session.run('pytest', '--ignore', 'examples/', '-v', '-W=error', *options)
+    session.run('python',
+                '-m',
+                'pytest',
+                '--ignore',
+                'examples/',
+                '-v',
+                '-Werror',
+                '-Wignore::DeprecationWarning:tqdm.std',
+                *options)
 
 
 @nox.session
@@ -85,7 +95,7 @@ def docs(session):
 
 @nox.session
 def watch(session):
-    '''Build and serve live docs for editing'''
+    """Build and serve live docs for editing"""
     session.install("-e", ".[docs]")
 
     session.run("mkdocs", "serve")
@@ -104,7 +114,7 @@ def examples(session):
 
 @nox.session
 def build(session):
-    '''Build package'''
+    """Build package"""
     # check preexisting
     exist_but_should_not = [p for p in BUILD_DIRS if Path(p).is_dir()]
     if exist_but_should_not:
@@ -119,7 +129,7 @@ def build(session):
 
 @nox.session
 def clean(session):
-    '''Remove build directories'''
+    """Remove build directories"""
     to_remove = [Path(d) for d in BUILD_DIRS if Path(d).is_dir()]
     for p in to_remove:
         shutil.rmtree(p)
@@ -127,13 +137,13 @@ def clean(session):
 
 @nox.session
 def publish_testpypi(session):
-    '''Publish to TestPyPi using API token'''
+    """Publish to TestPyPi using API token"""
     _publish(session, 'testpypi')
 
 
 @nox.session
 def publish_pypi(session):
-    '''Publish to PyPi using API token'''
+    """Publish to PyPi using API token"""
     _publish(session, 'pypi')
 
 

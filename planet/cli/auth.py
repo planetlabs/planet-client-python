@@ -31,7 +31,7 @@ LOGGER = logging.getLogger(__name__)
               default=None,
               help='Assign custom base Auth API URL.')
 def auth(ctx, base_url):
-    '''Commands for working with Planet authentication'''
+    """Commands for working with Planet authentication"""
     ctx.obj['BASE_URL'] = base_url
 
 
@@ -47,7 +47,7 @@ def auth(ctx, base_url):
                        confirmation_prompt=False,
                        help=('Account password. Will not be saved.'))
 def init(ctx, email, password):
-    '''Obtain and store authentication information'''
+    """Obtain and store authentication information"""
     base_url = ctx.obj['BASE_URL']
     plauth = planet.Auth.from_login(email, password, base_url=base_url)
     plauth.store()
@@ -61,7 +61,7 @@ def init(ctx, email, password):
 @auth.command()
 @translate_exceptions
 def value():
-    '''Print the stored authentication information'''
+    """Print the stored authentication information"""
     click.echo(planet.Auth.from_file().value)
 
 
@@ -69,7 +69,7 @@ def value():
 @translate_exceptions
 @click.argument('key')
 def store(key):
-    '''Store authentication information'''
+    """Store authentication information"""
     plauth = planet.Auth.from_key(key)
     if click.confirm('This overrides the stored value. Continue?'):
         plauth.store()

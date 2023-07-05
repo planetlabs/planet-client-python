@@ -143,7 +143,7 @@ def catalog_source(
     end_time: Optional[datetime] = None,
     rrule: Optional[str] = None,
 ) -> dict:
-    '''Catalog subscription source.
+    """Catalog subscription source.
 
     Parameters:
     item_types: The class of spacecraft and processing level of the
@@ -164,7 +164,7 @@ def catalog_source(
     Raises:
         planet.exceptions.ClientError: If start_time or end_time are not valid
             datetimes
-    '''
+    """
     if len(item_types) > 1:
         raise ClientError(
             "Subscription can only be successfully created if one item type",
@@ -220,14 +220,14 @@ def amazon_s3(aws_access_key_id: str,
               aws_secret_access_key: str,
               bucket: str,
               aws_region: str) -> dict:
-    '''Delivery to Amazon S3.
+    """Delivery to Amazon S3.
 
     Parameters:
         aws_access_key_id: S3 account access key.
         aws_secret_access_key: S3 account secret key.
         bucket: The name of the bucket that will receive the order output.
         aws_region: The region where the bucket lives in AWS.
-    '''
+    """
     parameters = {
         'aws_access_key_id': aws_access_key_id,
         'aws_secret_access_key': aws_secret_access_key,
@@ -242,7 +242,7 @@ def azure_blob_storage(account: str,
                        container: str,
                        sas_token: str,
                        storage_endpoint_suffix: Optional[str] = None) -> dict:
-    '''Delivery to Azure Blob Storage.
+    """Delivery to Azure Blob Storage.
 
     Parameters:
         account: Azure account.
@@ -251,7 +251,7 @@ def azure_blob_storage(account: str,
             without a leading '?'.
         storage_endpoint_suffix: Deliver order to a sovereign cloud. The
             default is "core.windows.net".
-    '''
+    """
     parameters = {
         'account': account,
         'container': container,
@@ -265,12 +265,12 @@ def azure_blob_storage(account: str,
 
 
 def google_cloud_storage(credentials: str, bucket: str) -> dict:
-    '''Delivery to Google Cloud Storage.
+    """Delivery to Google Cloud Storage.
 
     Parameters:
         credentials: JSON-string of service account for bucket.
         bucket: GCS bucket name.
-    '''
+    """
     parameters = {
         'bucket': bucket,
         'credentials': credentials,
@@ -284,7 +284,7 @@ def oracle_cloud_storage(customer_access_key_id: str,
                          bucket: str,
                          region: str,
                          namespace: str) -> dict:
-    '''Delivery to Oracle Cloud Storage.
+    """Delivery to Oracle Cloud Storage.
 
     Parameters:
         customer_access_key_id: Customer Secret Key credentials.
@@ -292,7 +292,7 @@ def oracle_cloud_storage(customer_access_key_id: str,
         bucket: The name of the bucket that will receive the order output.
         region: The region where the bucket lives in Oracle.
         namespace: Object Storage namespace name.
-    '''
+    """
     parameters = {
         'customer_access_key_id': customer_access_key_id,
         'customer_secret_key': customer_secret_key,
@@ -305,7 +305,7 @@ def oracle_cloud_storage(customer_access_key_id: str,
 
 
 def notifications(url: str, topics: List[str]) -> dict:
-    '''Specify a subscriptions API notification.
+    """Specify a subscriptions API notification.
 
     Webhook notifications proactively notify you when a subscription matches
     and delivers an item so you have confidence that you have all the expected
@@ -314,7 +314,7 @@ def notifications(url: str, topics: List[str]) -> dict:
     Parameters:
         url: location of webhook/callback where you expect to receive updates.
         topics: Event types that you can choose to be notified about.
-    '''
+    """
     for i, t in enumerate(topics):
         try:
             topics[i] = specs.get_match(t, NOTIFICATIONS_TOPICS, 'topic')
@@ -344,7 +344,7 @@ def band_math_tool(b1: str,
                    b14: Optional[str] = None,
                    b15: Optional[str] = None,
                    pixel_type: str = specs.BAND_MATH_PIXEL_TYPE_DEFAULT):
-    '''Specify a subscriptions API band math tool.
+    """Specify a subscriptions API band math tool.
 
     The parameters of the bandmath tool define how each output band in the
     derivative product should be produced, referencing the product inputs’
@@ -373,7 +373,7 @@ def band_math_tool(b1: str,
 
     Raises:
         planet.exceptions.ClientError: If pixel_type is not valid.
-    '''  # noqa
+    """  # noqa
     try:
         pixel_type = specs.get_match(pixel_type,
                                      specs.BAND_MATH_PIXEL_TYPE,
@@ -387,7 +387,7 @@ def band_math_tool(b1: str,
 
 
 def clip_tool(aoi: Mapping) -> dict:
-    '''Specify a subscriptions API clip tool.
+    """Specify a subscriptions API clip tool.
 
     Imagery and udm files will be clipped to your area of interest. nodata
     pixels will be preserved. Xml file attributes “filename”, “numRows”,
@@ -405,7 +405,7 @@ def clip_tool(aoi: Mapping) -> dict:
     Raises:
         planet.exceptions.ClientError: If aoi is not a valid polygon or
             multipolygon.
-    '''
+    """
     valid_types = ['Polygon', 'MultiPolygon']
 
     geom = geojson.as_geom(dict(aoi))
@@ -417,14 +417,14 @@ def clip_tool(aoi: Mapping) -> dict:
 
 
 def file_format_tool(file_format: str) -> dict:
-    '''Specify a subscriptions API file format tool.
+    """Specify a subscriptions API file format tool.
 
     Parameters:
         file_format: The format of the tool output. Either "COG" or "PL_NITF".
 
     Raises:
         planet.exceptions.ClientError: If file_format is not valid.
-    '''
+    """
     try:
         file_format = specs.validate_file_format(file_format)
     except specs.SpecificationException as e:
@@ -434,7 +434,7 @@ def file_format_tool(file_format: str) -> dict:
 
 
 def harmonize_tool(target_sensor: str) -> dict:
-    '''Specify a subscriptions API harmonize tool.
+    """Specify a subscriptions API harmonize tool.
 
     Each sensor value transforms items captured by a defined set of instrument
     IDs. Items which have not been captured by that defined set of instrument
@@ -446,7 +446,7 @@ def harmonize_tool(target_sensor: str) -> dict:
 
     Raises:
         planet.exceptions.ClientError: If target_sensor is not valid.
-    '''
+    """
     try:
         target_sensor = specs.get_match(target_sensor,
                                         specs.HARMONIZE_TOOL_TARGET_SENSORS,
@@ -460,7 +460,7 @@ def harmonize_tool(target_sensor: str) -> dict:
 def reproject_tool(projection: str,
                    resolution: Optional[float] = None,
                    kernel: str = REPROJECT_KERNEL_DEFAULT) -> dict:
-    '''Specify a subscriptions API reproject tool.
+    """Specify a subscriptions API reproject tool.
 
     Parameters:
         projection: A coordinate system in the form EPSG:n (for example,
@@ -475,7 +475,7 @@ def reproject_tool(projection: str,
 
     Raises:
         planet.exceptions.ClientError: If kernel is not valid.
-    '''
+    """
     try:
         kernel = specs.get_match(kernel, REPROJECT_KERNEL, 'kernel')
     except specs.SpecificationException as e:
@@ -489,7 +489,7 @@ def reproject_tool(projection: str,
 
 
 def toar_tool(scale_factor: int = 10000) -> dict:
-    '''Specify a subscriptions API reproject tool.
+    """Specify a subscriptions API reproject tool.
 
     The toar tool supports the analytic asset type for PSScene, PSOrthoTile,
     and REOrthoTile item types. In addition to the analytic asset, the
@@ -500,5 +500,5 @@ def toar_tool(scale_factor: int = 10000) -> dict:
             floating point values to a value that fits in 16bit integer pixels.
             The API default is 10000. Values over 65535 could result in high
             reflectances not fitting in 16bit integers.
-    '''
+    """
     return _tool('toar', {'scale_factor': scale_factor})

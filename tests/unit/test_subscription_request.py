@@ -117,8 +117,8 @@ def test_catalog_source_success(geom_geojson):
 
 def test_catalog_source_featurecollection(featurecollection_geojson,
                                           geom_geojson):
-    '''geojson specified as featurecollection is simplified down to just
-    the geometry'''
+    """geojson specified as featurecollection is simplified down to just
+    the geometry"""
     res = subscription_request.catalog_source(
         item_types=["PSScene"],
         asset_types=["ortho_analytic_4b"],

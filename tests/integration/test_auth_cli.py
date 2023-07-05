@@ -36,10 +36,10 @@ def test_secretfile_read():
 
 @pytest.fixture
 def redirect_secretfile(tmp_path):
-    '''patch the cli so it works with a temporary secretfile
+    """patch the cli so it works with a temporary secretfile
 
     this is to avoid collisions with the actual planet secretfile
-    '''
+    """
     secretfile_path = tmp_path / 'secret.json'
 
     with pytest.MonkeyPatch.context() as mp:
