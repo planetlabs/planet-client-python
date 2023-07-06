@@ -24,7 +24,7 @@ from .cmds import translate_exceptions
 LOGGER = logging.getLogger(__name__)
 
 
-@click.group()
+@click.group()  # type: ignore
 @click.pass_context
 @click.option('-u',
               '--base-url',
@@ -35,7 +35,7 @@ def auth(ctx, base_url):
     ctx.obj['BASE_URL'] = base_url
 
 
-@auth.command()
+@auth.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @click.option(
@@ -58,14 +58,14 @@ def init(ctx, email, password):
         click.echo(f'export {ENV_API_KEY}=$(planet auth value)')
 
 
-@auth.command()
+@auth.command()  # type: ignore
 @translate_exceptions
 def value():
     """Print the stored authentication information"""
     click.echo(planet.Auth.from_file().value)
 
 
-@auth.command()
+@auth.command()  # type: ignore
 @translate_exceptions
 @click.argument('key')
 def store(key):

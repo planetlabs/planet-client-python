@@ -20,6 +20,7 @@ limit = click.option(
     default=100,
     show_default=True,
     help="""Maximum number of results to return. When set to 0, no maximum is
-        applied.""")
+        applied.""")  # type: ignore
 
-pretty = click.option('--pretty', is_flag=True, help='Format JSON output.')
+pretty = click.option('--pretty', is_flag=True,
+                      help='Format JSON output.')  # type: ignore

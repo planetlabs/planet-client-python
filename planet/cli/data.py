@@ -49,7 +49,7 @@ async def data_client(ctx):
         yield cl
 
 
-@click.group()
+@click.group()  # type: ignore
 @click.pass_context
 @click.option('-u',
               '--base-url',
@@ -149,7 +149,7 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     return [_func(v) for v in values] if values else None
 
 
-@data.command()
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @click.option('--asset',
@@ -274,7 +274,7 @@ def filter(ctx,
     echo_json(filt, pretty)
 
 
-@data.command(epilog=valid_item_string)
+@data.command(epilog=valid_item_string)  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -318,7 +318,7 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
             echo_json(item, pretty)
 
 
-@data.command(epilog=valid_item_string)
+@data.command(epilog=valid_item_string)  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -355,7 +355,7 @@ async def search_create(ctx, item_types, filter, name, daily_email, pretty):
         echo_json(items, pretty)
 
 
-@data.command()
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -384,7 +384,7 @@ async def search_list(ctx, sort, search_type, limit, pretty):
             echo_json(item, pretty)
 
 
-@data.command()
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -407,7 +407,7 @@ async def search_run(ctx, search_id, sort, limit, pretty):
             echo_json(item, pretty)
 
 
-@data.command(epilog=valid_item_string)
+@data.command(epilog=valid_item_string)  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -438,7 +438,7 @@ async def stats(ctx, item_types, filter, interval):
         echo_json(items)
 
 
-@data.command()
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -455,7 +455,7 @@ async def search_get(ctx, search_id, pretty):
         echo_json(items, pretty)
 
 
-@data.command()
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -467,7 +467,7 @@ async def search_delete(ctx, search_id):
         await cl.delete_search(search_id)
 
 
-@data.command(epilog=valid_item_string)
+@data.command(epilog=valid_item_string)  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -510,7 +510,7 @@ async def search_update(ctx,
         echo_json(items, pretty)
 
 
-@data.command(epilog=valid_item_string)
+@data.command(epilog=valid_item_string)  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -572,7 +572,7 @@ async def asset_download(ctx,
             cl.validate_checksum(asset, path)
 
 
-@data.command(epilog=valid_item_string)
+@data.command(epilog=valid_item_string)  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -586,7 +586,7 @@ async def asset_activate(ctx, item_type, item_id, asset_type):
         await cl.activate_asset(asset)
 
 
-@data.command(epilog=valid_item_string)
+@data.command(epilog=valid_item_string)  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
