@@ -65,7 +65,8 @@ def test_build_request_success(geom_geojson):
     assert res == expected
 
 
-def test_build_request_clip_to_source(geom_geojson):
+def test_build_request_clip_to_source_success(geom_geojson):
+    """Without a clip tool we can clip to source."""
     source = {
         "type": "catalog",
         "parameters": {
@@ -77,7 +78,7 @@ def test_build_request_clip_to_source(geom_geojson):
             "asset_types": ["ortho_analytic_4b"]
         }
     }
-    res = subscription_request.build_request(
+    req = subscription_request.build_request(
         'test',
         source=source,
         delivery={},
@@ -86,8 +87,35 @@ def test_build_request_clip_to_source(geom_geojson):
         }],
         clip_to_source=True,
     )
-    assert res["tools"][1]["type"] == "clip"
-    assert res["tools"][1]["parameters"]["aoi"] == geom_geojson
+    assert req["tools"][1]["type"] == "clip"
+    assert req["tools"][1]["parameters"]["aoi"] == geom_geojson
+
+
+def test_build_request_clip_to_source_failure(geom_geojson):
+    """With a clip tool we can not clip to source."""
+    source = {
+        "type": "catalog",
+        "parameters": {
+            "geometry": geom_geojson,
+            "start_time": "2021-03-01T00:00:00Z",
+            "end_time": "2023-11-01T00:00:00Z",
+            "rrule": "FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
+            "item_types": ["PSScene"],
+            "asset_types": ["ortho_analytic_4b"]
+        }
+    }
+    with pytest.raises(exceptions.ClientError):
+        subscription_request.build_request(
+            'test',
+            source=source,
+            delivery={},
+            tools=[{
+                'type': 'clip'
+            }, {
+                'type': 'hammer'
+            }],
+            clip_to_source=True,
+        )
 
 
 def test_catalog_source_success(geom_geojson):

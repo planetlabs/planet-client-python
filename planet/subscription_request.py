@@ -50,7 +50,7 @@ def build_request(name: str,
                   notifications: Optional[Mapping] = None,
                   tools: Optional[List[Mapping]] = None,
                   clip_to_source=False) -> dict:
-    """Prepare a subscription request.
+    """Construct a Subscriptions API request.
 
     The return value can be passed to
     [planet.clients.subscriptions.SubscriptionsClient.create_subscription][].
@@ -75,6 +75,10 @@ def build_request(name: str,
     Returns:
         A Python dict representation of a Subscriptions API request for
         a new subscription.
+
+    Raises:
+        ClientError when a valid Subscriptions API request can't be
+        constructed.
 
     Examples:
     ```python
@@ -117,18 +121,22 @@ def build_request(name: str,
 
         # If clip_to_source is True a clip configuration will be added
         # to the list of requested tools unless an existing clip tool
-        # exists. NOTE: the next version of the Subscription API will
-        # remove the clip tool option and always clip to the source
-        # geometry. Thus this is a preview of the next API version's
-        # default behavior.
-        if clip_to_source and not any(
-                tool.get('type', None) == 'clip' for tool in tool_list):
-            tool_list.append({
-                'type': 'clip',
-                'parameters': {
-                    'aoi': source['parameters']['geometry']
-                }
-            })
+        # exists. In that case an exception is raised. NOTE: the next
+        # version of the Subscription API will remove the clip tool
+        # option and always clip to the source geometry. Thus this is a
+        # preview of the next API version's default behavior.
+        if clip_to_source:
+            if any(tool.get('type', None) == 'clip' for tool in tool_list):
+                raise ClientError(
+                    "clip_to_source option conflicts with a configured clip tool."
+                )
+            else:
+                tool_list.append({
+                    'type': 'clip',
+                    'parameters': {
+                        'aoi': source['parameters']['geometry']
+                    }
+                })
 
         details['tools'] = tool_list
 
