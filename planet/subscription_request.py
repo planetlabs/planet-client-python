@@ -63,12 +63,14 @@ def build_request(name: str,
         tools: Tools to apply to the products. The order of operation
             is determined by the service.
         clip_to_source: whether to clip to the source geometry or not
-            (the default). If True a clip configuration will be added
-            to the list of requested tools unless an existing clip tool
-            exists. NOTE: the next version of the Subscription API will
-            remove the clip tool option and always clip to the source
-            geometry. Thus this is a preview of the next API version's
-            default behavior.
+            (the default). If True a clip configuration will be added to
+            the list of requested tools unless an existing clip tool
+            exists.  NOTE: Not all data layers support clipping, please
+            consult the Product reference before using this option.
+            NOTE: the next version of the Subscription API will remove
+            the clip tool option and always clip to the source geometry.
+            Thus this is a preview of the next API version's default
+            behavior.
 
     Returns:
         A Python dict representation of a Subscriptions API request for
@@ -99,7 +101,6 @@ def build_request(name: str,
     ...
 
     ```
-
     """
     # Because source and delivery are Mappings we must make copies for
     # the function's return value. dict() shallow copies a Mapping
