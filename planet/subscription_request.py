@@ -154,6 +154,7 @@ def catalog_source(
     publishing_stages: Optional[Sequence[Literal["preview",
                                                  "standard",
                                                  "finalized"]]] = None,
+    time_range_type: Optional[Literal["acquired", "published"]] = None,
 ) -> dict:
     """Construct a Catalog subscription source.
 
@@ -201,6 +202,7 @@ def catalog_source(
         ...     },
         ...     start_time=datetime(2021, 3, 1),
         ...     publishing_stages=["standard"],
+        ...     time_range_type="acquired",
         ... )
         >>> request = build_request(
         ...     "Standard PSScene Ortho Analytic",
@@ -246,6 +248,9 @@ def catalog_source(
 
     if publishing_stages:
         parameters['publishing_stages'] = list(set(publishing_stages))
+
+    if time_range_type:
+        parameters['time_range_type'] = time_range_type
 
     return {"type": "catalog", "parameters": parameters}
 
