@@ -85,3 +85,6 @@ section.mdx-container::before{
     }
 }
 
+.highlight .gp, .highlight .go { /* Generic.Prompt, Generic.Output */
+    user-select: none;
+  }

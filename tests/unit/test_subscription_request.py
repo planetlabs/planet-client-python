@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from datetime import datetime
+import itertools
 import logging
 
 import pytest
@@ -366,3 +367,27 @@ def test_pv_source_success(geom_geojson):
     assert params["id"] == "VAR1-abcd"
     assert params["geometry"] == geom_geojson
     assert params["start_time"].startswith("2021-03-01")
+
+
+@pytest.mark.parametrize(
+    # Test all the combinations of the three options plus some with dupes.
+    "publishing_stages",
+    list(
+        itertools.chain.from_iterable(
+            itertools.combinations(["preview", "standard", "finalized"], i)
+            for i in range(1, 4))) + [("preview", "preview"),
+                                      ("preview", "finalized", "preview")])
+def test_catalog_source_publishing_stages(publishing_stages, geom_geojson):
+    """Configure publishing stages for a catalog source."""
+    source = subscription_request.catalog_source(
+        item_types=["PSScene"],
+        asset_types=["ortho_analytic_4b"],
+        geometry=geom_geojson,
+        start_time=datetime(2021, 3, 1),
+        end_time=datetime(2023, 11, 1),
+        rrule="FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
+        publishing_stages=publishing_stages,
+    )
+
+    assert source["parameters"]["publishing_stages"] == list(
+        set(publishing_stages))
