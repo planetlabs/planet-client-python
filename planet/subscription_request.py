@@ -49,7 +49,7 @@ def build_request(name: str,
                   delivery: Mapping,
                   notifications: Optional[Mapping] = None,
                   tools: Optional[List[Mapping]] = None,
-                  clip_to_source=False) -> dict:
+                  clip_to_source: Optional[bool] = False) -> dict:
     """Construct a Subscriptions API request.
 
     The return value can be passed to
@@ -267,15 +267,11 @@ def planetary_variable_source(
         ...     "SWC-AMSR2-C_V1.0_100",
         ...     geometry={
         ...         "type": "Polygon",
-        ...         "coordinates": [
-        ...             [
-        ...                 [37.791595458984375, 14.84923123791421],
-        ...                 [37.90214538574219, 14.84923123791421],
-        ...                 [37.90214538574219, 14.945448293647944],
-        ...                 [37.791595458984375, 14.945448293647944],
-        ...                 [37.791595458984375, 14.84923123791421]
-        ...             ]
-        ...         ]
+        ...         "coordinates": [[[37.791595458984375, 14.84923123791421],
+        ...                         [37.90214538574219, 14.84923123791421],
+        ...                         [37.90214538574219, 14.945448293647944],
+        ...                         [37.791595458984375, 14.945448293647944],
+        ...                         [37.791595458984375, 14.84923123791421]]]
         ...     },
         ...     start_time=datetime(2021, 3, 1)
         ... )

@@ -1,10 +1,11 @@
 2.1.0 (TBD)
 
 Added:
-- A subscription_request.planetary_variable_source function has been added ().
+- A subscription_request.planetary_variable_source function has been added
+  (#976).
 - The subscription_request.build_request function has a new option to clip to
-  the subscription's source geometry. This is a preview of the default
-  behavior of the next version of the Subscriptions API ().
+  the subscription's source geometry. This is a preview of the default behavior
+  of the next version of the Subscriptions API (#971).
 
 2.0.3 (2023-06-28)
 
