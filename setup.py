@@ -24,7 +24,9 @@ with open('planet/__version__.py') as f:
             continue
 
 install_requires = [
-    'click>=8.0.0',
+    # click 8.1.4 breaks our mypy check, see
+    # https://github.com/pallets/click/issues/2558.
+    'click>8.0,<8.1.4',
     'geojson',
     'httpx>=0.23.0',
     'jsonschema',

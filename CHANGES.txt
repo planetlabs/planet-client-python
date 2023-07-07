@@ -1,3 +1,10 @@
+2.1.0 (TBD)
+
+Added:
+- The subscription_request.build_request function has a new option to clip to
+  the subscription's source geometry. This is a preview of the default
+  behavior of the next version of the Subscriptions API.
+
 2.0.3 (2023-06-28)
 
 Changed:
