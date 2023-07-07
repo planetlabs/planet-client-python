@@ -13,7 +13,7 @@
 # the License.
 """Functionality for preparing subscription requests."""
 from datetime import datetime
-from typing import Any, Dict, Optional, List, Mapping
+from typing import Any, Dict, Optional, List, Literal, Mapping
 
 from . import geojson, specs
 from .exceptions import ClientError
@@ -73,12 +73,12 @@ def build_request(name: str,
             behavior.
 
     Returns:
-        A Python dict representation of a Subscriptions API request for
-        a new subscription.
+        dict: a representation of a Subscriptions API request for
+            a new subscription.
 
     Raises:
-        ClientError when a valid Subscriptions API request can't be
-        constructed.
+        ClientError: when a valid Subscriptions API request can't be
+            constructed.
 
     Examples:
     ```python
@@ -152,27 +152,34 @@ def catalog_source(
     end_time: Optional[datetime] = None,
     rrule: Optional[str] = None,
 ) -> dict:
-    """Catalog subscription source.
+    """Construct a Catalog subscription source.
+
+    The return value can be passed to
+    [planet.subscription_request.build_request][].
 
     Parameters:
-    item_types: The class of spacecraft and processing level of the
-        subscription's matching items, e.g. PSScene.
-    asset_types: The data products which will be delivered for all subscription
-        matching items. An item will only match and deliver if all specified
-        asset types are published for that item.
-    geometry: The area of interest of the subscription that will be used to
-        determine matches.
-    start_time: The start time of the subscription. This time can be in the
-        past or future.
-    filter: The filter criteria based on item-level metadata.
-    end_time: The end time of the subscription. This time can be in the past or
-        future, and must be after the start_time.
-    rrule: The recurrence rule, given in iCalendar RFC 5545 format. Only
-        monthly recurrences are supported at this time.
+        item_types: The class of spacecraft and processing level of the
+            subscription's matching items, e.g. PSScene.
+        asset_types: The data products which will be delivered for all
+            subscription matching items. An item will only match and
+            deliver if all specified asset types are published for that
+            item.
+        geometry: The area of interest of the subscription that will be
+            used to determine matches.
+        start_time: The start time of the subscription. This time can be
+            in the past or future.
+        filter: The filter criteria based on item-level metadata.
+        end_time: The end time of the subscription. This time can be in
+            the past or future, and must be after the start_time.
+        rrule: The recurrence rule, given in iCalendar RFC 5545 format.
+            Only monthly recurrences are supported at this time.
+
+    Returns:
+        dict: a representation of a subscription source.
 
     Raises:
-        planet.exceptions.ClientError: If start_time or end_time are not valid
-            datetimes
+        ClientError: if a source can not be
+            configured.
     """
     if len(item_types) > 1:
         raise ClientError(
@@ -210,6 +217,90 @@ def catalog_source(
         parameters['rrule'] = rrule
 
     return {"type": "catalog", "parameters": parameters}
+
+
+def planetary_variable_source(
+    var_type: Literal["biomass_proxy",
+                      "land_surface_temperature",
+                      "soil_water_content",
+                      "vegetation_optical_depth"],
+    var_id: str,
+    geometry: Mapping,
+    start_time: datetime,
+    end_time: Optional[datetime] = None,
+) -> dict:
+    """Construct a Planetary Variable subscription source.
+
+    Planetary Variables come in 4 types and are further subdivided
+    within these types. See [Subscribing to Planetary
+    Variables](https://developers.planet.com/docs/subscriptions/pvs-subs/#planetary-variables-types-and-ids)
+    for details.
+
+    The return value can be passed to
+    [planet.subscription_request.build_request][].
+
+    Note: this function does not validate variable types and ids.
+
+    Parameters:
+        var_type: one of "biomass_proxy", "land_surface_temperature",
+            "soil_water_content", or "vegetation_optical_depth".
+        var_id: a value such as "SWC-AMSR2-C_V1.0_100" for soil water
+            content derived from AMSR2 C band.
+        geometry: The area of interest of the subscription that will be
+            used to determine matches.
+        start_time: The start time of the subscription. This time can be
+            in the past or future.
+        end_time: The end time of the subscription. This time can be in
+            the past or future, and must be after the start_time.
+
+    Returns:
+        dict: a representation of a subscription source.
+
+    Raises:
+        ClientError: if a source can not be
+            configured.
+
+    Examples:
+        ```python
+        >>> source = planetary_variables_source(
+        ...     "soil_water_content",
+        ...     "SWC-AMSR2-C_V1.0_100",
+        ...     geometry={
+        ...         "type": "Polygon",
+        ...         "coordinates": [
+        ...             [
+        ...                 [37.791595458984375, 14.84923123791421],
+        ...                 [37.90214538574219, 14.84923123791421],
+        ...                 [37.90214538574219, 14.945448293647944],
+        ...                 [37.791595458984375, 14.945448293647944],
+        ...                 [37.791595458984375, 14.84923123791421]
+        ...             ]
+        ...         ]
+        ...     },
+        ...     start_time=datetime(2021, 3, 1)
+        ... )
+        >>> request = build_request(source=source, ...)
+        ```
+    """
+    # TODO: validation of variable types and ids.
+
+    parameters = {
+        "id": var_id,
+        "geometry": geojson.as_geom(dict(geometry)),
+    }
+
+    try:
+        parameters['start_time'] = _datetime_to_rfc3339(start_time)
+    except AttributeError:
+        raise ClientError('Could not convert start_time to an iso string')
+
+    if end_time:
+        try:
+            parameters['end_time'] = _datetime_to_rfc3339(end_time)
+        except AttributeError:
+            raise ClientError('Could not convert end_time to an iso string')
+
+    return {"type": var_type, "parameters": parameters}
 
 
 def _datetime_to_rfc3339(value: datetime) -> str:
