@@ -46,7 +46,7 @@ async def subscriptions_client(ctx):
         yield cl
 
 
-@click.group()
+@click.group()  # type: ignore
 @click.pass_context
 @click.option('-u',
               '--base-url',
@@ -60,7 +60,7 @@ def subscriptions(ctx, base_url):
 # We want our command to be known as "list" on the command line but
 # don't want to clobber Python's built-in "list". We'll define the
 # command function as "list_subscriptions".
-@subscriptions.command(name="list")
+@subscriptions.command(name="list")  # type: ignore
 @pretty
 @click.option(
     '--status',
@@ -87,7 +87,7 @@ async def list_subscriptions_cmd(ctx, status, limit, pretty):
             echo_json(sub, pretty)
 
 
-@subscriptions.command(name='create')
+@subscriptions.command(name='create')  # type: ignore
 @click.argument('request', type=types.JSON())
 @pretty
 @click.pass_context
@@ -107,7 +107,7 @@ async def create_subscription_cmd(ctx, request, pretty):
         echo_json(sub, pretty)
 
 
-@subscriptions.command(name='cancel')
+@subscriptions.command(name='cancel')  # type: ignore
 @click.argument('subscription_id')
 @pretty
 @click.pass_context
@@ -119,7 +119,7 @@ async def cancel_subscription_cmd(ctx, subscription_id, pretty):
         _ = await client.cancel_subscription(subscription_id)
 
 
-@subscriptions.command(name='update')
+@subscriptions.command(name='update')  # type: ignore
 @click.argument('subscription_id')
 @click.argument('request', type=types.JSON())
 @pretty
@@ -140,7 +140,7 @@ async def update_subscription_cmd(ctx, subscription_id, request, pretty):
         echo_json(sub, pretty)
 
 
-@subscriptions.command(name='get')
+@subscriptions.command(name='get')  # type: ignore
 @click.argument('subscription_id')
 @pretty
 @click.pass_context
@@ -153,7 +153,7 @@ async def get_subscription_cmd(ctx, subscription_id, pretty):
         echo_json(sub, pretty)
 
 
-@subscriptions.command(name='results')
+@subscriptions.command(name='results')  # type: ignore
 @click.argument('subscription_id')
 @pretty
 @click.option(
@@ -187,7 +187,7 @@ async def list_subscription_results_cmd(ctx,
             echo_json(result, pretty)
 
 
-@subscriptions.command()
+@subscriptions.command()  # type: ignore
 @translate_exceptions
 @click.option('--name',
               required=True,
@@ -220,7 +220,7 @@ def request(name, source, delivery, notifications, tools, pretty):
     echo_json(res, pretty)
 
 
-@subscriptions.command(epilog=valid_item_string)
+@subscriptions.command(epilog=valid_item_string)  # type: ignore
 @translate_exceptions
 @click.option('--item-types',
               required=True,

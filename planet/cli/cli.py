@@ -25,7 +25,7 @@ from . import auth, collect, data, orders, subscriptions
 LOGGER = logging.getLogger(__name__)
 
 
-@click.group()
+@click.group()  # type: ignore
 @click.pass_context
 @click.option('--quiet',
               is_flag=True,
@@ -73,8 +73,8 @@ def _configure_logging(verbosity):
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
-main.add_command(auth.auth)
-main.add_command(data.data)
-main.add_command(orders.orders)
-main.add_command(subscriptions.subscriptions)
-main.add_command(collect.collect)
+main.add_command(auth.auth)  # type: ignore
+main.add_command(data.data)  # type: ignore
+main.add_command(orders.orders)  # type: ignore
+main.add_command(subscriptions.subscriptions)  # type: ignore
+main.add_command(collect.collect)  # type: ignore

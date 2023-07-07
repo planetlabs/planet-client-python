@@ -37,7 +37,7 @@ async def orders_client(ctx):
         yield cl
 
 
-@click.group()
+@click.group()  # type: ignore
 @click.pass_context
 @click.option('-u',
               '--base-url',
@@ -48,7 +48,7 @@ def orders(ctx, base_url):
     ctx.obj['BASE_URL'] = base_url
 
 
-@orders.command()
+@orders.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -72,7 +72,7 @@ async def list(ctx, state, limit, pretty):
             echo_json(o, pretty)
 
 
-@orders.command()
+@orders.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -89,7 +89,7 @@ async def get(ctx, order_id, pretty):
     echo_json(order, pretty)
 
 
-@orders.command()
+@orders.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -106,7 +106,7 @@ async def cancel(ctx, order_id):
     click.echo(json_resp)
 
 
-@orders.command()
+@orders.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -158,7 +158,7 @@ async def wait(ctx, order_id, delay, max_attempts, state):
     click.echo(state)
 
 
-@orders.command()
+@orders.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -200,7 +200,7 @@ async def download(ctx, order_id, overwrite, directory, checksum):
             cl.validate_checksum(Path(directory, str(order_id)), checksum)
 
 
-@orders.command()
+@orders.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -221,7 +221,7 @@ async def create(ctx, request: str, pretty):
     echo_json(order, pretty)
 
 
-@orders.command()
+@orders.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
