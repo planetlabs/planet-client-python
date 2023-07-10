@@ -45,10 +45,10 @@ async def test_snippet_data_search(search_filter):
                                                  search_filter=search_filter,
                                                  name="My Search",
                                                  sort="acquired asc",
-                                                 limit=10)
+                                                 limit=2)
         ]
     # --8<-- [end:search]
-    assert len(items_list) == 10
+    assert len(items_list) == 2
 
 
 @pytest.mark.anyio
@@ -90,10 +90,10 @@ async def test_snippet_data_list_searches():
         client = sess.client('data')
         search_list = [
             item async for item in client.list_searches(
-                sort='created asc', search_type="saved", limit=10)
+                sort='created asc', search_type="saved", limit=2)
         ]
     # --8<-- [end:list_searches]
-    assert len(search_list) == 10
+    assert len(search_list) == 2
     # Verifying sort='created asc'
     parsed_search_list = [
         datetime.strptime(search['created'], '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -114,36 +114,38 @@ async def test_snippet_data_delete_search(search_filter):
         # --8<-- [end:delete_search]
         search_list = [
             item async for item in client.list_searches(
-                sort='created asc', search_type="saved", limit=10)
+                sort='created asc', search_type="saved", limit=2)
         ]
     assert search_id not in [search['id'] for search in search_list]
 
 
 @pytest.mark.anyio
-async def test_snippet_data_get_search():
+async def test_snippet_data_get_search(search_filter):
     '''Code snippet for get_search.'''
+    new_search = await test_snippet_data_create_search(search_filter)
+    search_id = new_search['id']
     # --8<-- [start:get_search]
     async with planet.Session() as sess:
         client = sess.client('data')
-        search = await client.get_search(
-            search_id='66722b2c8d184d4f9fb8b8fcf9d1a08c')
+        search = await client.get_search(search_id=search_id)
     # --8<-- [start:get_search]
     assert len(search) == 10
-    assert search['id'] == '66722b2c8d184d4f9fb8b8fcf9d1a08c'
+    assert search['id'] == search_id
 
 
 @pytest.mark.anyio
-async def test_snippet_data_run_search():
+async def test_snippet_data_run_search(search_filter):
     '''Code snippet for run_search.'''
+    new_search = await test_snippet_data_create_search(search_filter)
+    search_id = new_search['id']
     # --8<-- [start:run_search]
     async with planet.Session() as sess:
         client = sess.client('data')
         items_list = [
-            i async for i in client.run_search(
-                search_id='66722b2c8d184d4f9fb8b8fcf9d1a08c', limit=10)
+            i async for i in client.run_search(search_id=search_id, limit=2)
         ]
     # --8<-- [end:run_search]
-    assert len(items_list) == 10
+    assert len(items_list) == 2
 
 
 @pytest.mark.anyio
