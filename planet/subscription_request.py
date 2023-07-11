@@ -262,7 +262,7 @@ def planetary_variable_source(
 
     Examples:
         ```python
-        >>> source = planetary_variables_source(
+        >>> source = planetary_variable_source(
         ...     "soil_water_content",
         ...     "SWC-AMSR2-C_V1.0_100",
         ...     geometry={
