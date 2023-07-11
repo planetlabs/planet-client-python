@@ -297,8 +297,8 @@ def planetary_variable_source(
             configured.
 
     Examples:
-        ```pycon
-        >>> source = planetary_variables_source(
+        ```python
+        >>> source = planetary_variable_source(
         ...     "soil_water_content",
         ...     "SWC-AMSR2-C_V1.0_100",
         ...     geometry={

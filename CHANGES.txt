@@ -1,8 +1,10 @@
 2.1.0 (TBD)
 
 Added:
-- Support for catalog source publishing stages (#977) and time range types ()
-  have been added to subscription_request.catalog_source.
+- Support for catalog source publishing stages (#977) and time range types
+  (#978) have been added to subscription_request.catalog_source.
+- Add the option to get Planetary Variable subscription results as a CSV file
+  (#981).
 - A subscription_request.planetary_variable_source function has been added
   (#976).
 - The subscription_request.build_request function has a new option to clip to

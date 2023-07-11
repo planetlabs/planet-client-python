@@ -349,22 +349,25 @@ def test_toar_tool_success():
     assert res == expected
 
 
-def test_pv_source_success(geom_geojson):
+@pytest.mark.parametrize(
+    "var_type, var_id",
+    [
+        ("biomass_proxy", "BIOMASS-PROXY_V3.0_10"),  # actual real type and id.
+        ("var1", "VAR1-ABCD"),  # nonsense type and id
+    ])
+def test_pv_source_success(geom_geojson, var_type, var_id):
     """Configure a planetary variable subscription source."""
-    # NOTE: this function does not yet validate type and id.
-    # The nonsense values are intended to fail when the function does
-    # add validation.
     source = subscription_request.planetary_variable_source(
-        "var1",
-        "VAR1-abcd",
+        var_type,
+        var_id,
         geometry=geom_geojson,
         start_time=datetime(2021, 3, 1),
         end_time=datetime(2021, 3, 2),
     )
 
-    assert source["type"] == "var1"
+    assert source["type"] == var_type
     params = source["parameters"]
-    assert params["id"] == "VAR1-abcd"
+    assert params["id"] == var_id
     assert params["geometry"] == geom_geojson
     assert params["start_time"].startswith("2021-03-01")
 
