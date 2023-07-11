@@ -168,7 +168,7 @@ async def get_subscription_cmd(ctx, subscription_id, pretty):
               'csv_flag',
               is_flag=True,
               default=False,
-              help="Get subscription results as an unpaged CSV file.")
+              help="Get subscription results as comma-separated fields.")
 @limit
 # TODO: the following 3 options.
 # –created: timestamp instant or range.
@@ -183,7 +183,26 @@ async def list_subscription_results_cmd(ctx,
                                         status,
                                         csv_flag,
                                         limit):
-    """Gets results of a subscription and prints the API response."""
+    """Print the results of a subscription to stdout.
+
+    The output of this command is a sequence of JSON objects (the
+    default) or a sequence of commna-separated fields (when the --csv
+    option is used), one result per line.
+
+    Examples:
+
+    \b
+        planet subscriptions results SUBSCRIPTION_ID --status=success --limit 10
+
+    where SUBSCRIPTION_ID is the unique identifier for a subscription,
+    prints the last 10 successfully delivered results for that
+    subscription as JSON objects.
+
+    \b
+        planet subscriptions results SUBSCRIPTION_ID --limit 0 --csv > results.csv
+
+    prints all results for a subscription and saves them to a CSV file.
+    """
     async with subscriptions_client(ctx) as client:
         if csv_flag:
             async for result in client.get_results_csv(subscription_id,
@@ -215,10 +234,10 @@ async def list_subscription_results_cmd(ctx,
     '--notifications',
     type=types.JSON(),
     help='Notifications JSON. Can be a string, filename, or - for stdin.')
-@click.option(
-    '--tools',
-    type=types.JSON(),
-    help='Toolchain JSON. Can be a string, filename, or - for stdin.')
+@click.option('--tools',
+              type=types.JSON(),
+              help='Toolchain JSON. Can be a string, filename, or - for stdin.'
+              )
 @pretty
 def request(name, source, delivery, notifications, tools, pretty):
     """Generate a subscriptions request."""
@@ -257,10 +276,10 @@ def request(name, source, delivery, notifications, tools, pretty):
 @click.option('--rrule',
               type=str,
               help='iCalendar recurrance rule to specify recurrances.')
-@click.option(
-    '--filter',
-    type=types.JSON(),
-    help='Search filter.  Can be a string, filename, or - for stdin.')
+@click.option('--filter',
+              type=types.JSON(),
+              help='Search filter.  Can be a string, filename, or - for stdin.'
+              )
 @pretty
 def request_catalog(item_types,
                     asset_types,
