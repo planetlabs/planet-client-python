@@ -186,7 +186,7 @@ async def list_subscription_results_cmd(ctx,
     """Print the results of a subscription to stdout.
 
     The output of this command is a sequence of JSON objects (the
-    default) or a sequence of commna-separated fields (when the --csv
+    default) or a sequence of comma-separated fields (when the --csv
     option is used), one result per line.
 
     Examples:
@@ -194,14 +194,14 @@ async def list_subscription_results_cmd(ctx,
     \b
         planet subscriptions results SUBSCRIPTION_ID --status=success --limit 10
 
-    where SUBSCRIPTION_ID is the unique identifier for a subscription,
-    prints the last 10 successfully delivered results for that
+    Where SUBSCRIPTION_ID is the unique identifier for a subscription,
+    this prints the last 10 successfully delivered results for that
     subscription as JSON objects.
 
     \b
         planet subscriptions results SUBSCRIPTION_ID --limit 0 --csv > results.csv
 
-    prints all results for a subscription and saves them to a CSV file.
+    Prints all results for a subscription and saves them to a CSV file.
     """
     async with subscriptions_client(ctx) as client:
         if csv_flag:
