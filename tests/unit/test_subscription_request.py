@@ -394,3 +394,16 @@ def test_catalog_source_publishing_stages(publishing_stages, geom_geojson):
 
     assert source["parameters"]["publishing_stages"] == list(
         set(publishing_stages))
+
+
+def test_catalog_source_time_range_type_acquired(geom_geojson):
+    """Configure 'acquired' time range type for a catalog source."""
+    source = subscription_request.catalog_source(
+        item_types=["PSScene"],
+        asset_types=["ortho_analytic_4b"],
+        geometry=geom_geojson,
+        start_time=datetime(2021, 3, 1),
+        time_range_type="acquired",
+    )
+
+    assert source["parameters"]["time_range_type"] == "acquired"
