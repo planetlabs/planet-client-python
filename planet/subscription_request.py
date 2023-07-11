@@ -81,30 +81,32 @@ def build_request(name: str,
             constructed.
 
     Examples:
+
     ```python
-    >>> from datetime import datetime
-    >>> from planet.subscription_request import (
-    ...     build_request, catalog_source, amazon_s3)
-    ...
-    ... geom = {
-    ...     "coordinates": [[[139.5648193359375,35.42374884923695],
-    ...                     [140.1031494140625,35.42374884923695],
-    ...                     [140.1031494140625,35.77102915686019],
-    ...                     [139.5648193359375,35.77102915686019],
-    ...                     [139.5648193359375,35.42374884923695]]],
-    ...     "type": "Polygon"
-    ... }
-    >>> source = catalog_source(
-    ...     ["PSScene"], ["ortho_analytic_4b"], geom, datetime(2021,3,1))
+        from datetime import datetime
+        from planet.subscription_request import build_request, catalog_source, amazon_s3
 
-    >>> delivery = amazon_s3(
-    ...     ACCESS_KEY_ID, SECRET_ACCESS_KEY, "test", "us-east-1")
-    ...
-    >>> subscription_request = build_request(
-    ...     'test_subscription', source=source, delivery=delivery)
-    ...
+        geom = {
+            "coordinates": [
+                [
+                    [139.5648193359375, 35.42374884923695],
+                    [140.1031494140625, 35.42374884923695],
+                    [140.1031494140625, 35.77102915686019],
+                    [139.5648193359375, 35.77102915686019],
+                    [139.5648193359375, 35.42374884923695],
+                ]
+            ],
+            "type": "Polygon",
+        }
 
-    ```
+        source = catalog_source(["PSScene"], ["ortho_analytic_4b"], geom, datetime(2021, 3, 1))
+
+        delivery = amazon_s3(ACCESS_KEY_ID, SECRET_ACCESS_KEY, "test", "us-east-1")
+
+        subscription_request = build_request(
+            "test_subscription", source=source, delivery=delivery
+        )
+        ```
     """
     # Because source and delivery are Mappings we must make copies for
     # the function's return value. dict() shallow copies a Mapping
@@ -179,6 +181,7 @@ def catalog_source(
             Only monthly recurrences are supported at this time.
         publishing_stages: A sequence of one or more of the values
             "preview", "standard", or "finalized".
+        time_range_type: "acquired" (new in 2.1.0) or "published".
 
     Returns:
         dict: a representation of a subscription source.
@@ -188,28 +191,30 @@ def catalog_source(
             configured.
 
     Examples:
-        ```pycon
-        >>> source = catalog_source(
-        ...     ["PSScene"],
-        ...     ["ortho_analytic_4b"],
-        ...     geometry={
-        ...         "type": "Polygon",
-        ...         "coordinates": [[[37.791595458984375, 14.84923123791421],
-        ...                         [37.90214538574219, 14.84923123791421],
-        ...                         [37.90214538574219, 14.945448293647944],
-        ...                         [37.791595458984375, 14.945448293647944],
-        ...                         [37.791595458984375, 14.84923123791421]]]
-        ...     },
-        ...     start_time=datetime(2021, 3, 1),
-        ...     publishing_stages=["standard"],
-        ...     time_range_type="acquired",
-        ... )
-        >>> request = build_request(
-        ...     "Standard PSScene Ortho Analytic",
-        ...     source=source,
-        ...     delivery={})
-        ```
 
+        ```python
+        source = catalog_source(
+            ["PSScene"],
+            ["ortho_analytic_4b"],
+            geometry={
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [37.791595458984375, 14.84923123791421],
+                        [37.90214538574219, 14.84923123791421],
+                        [37.90214538574219, 14.945448293647944],
+                        [37.791595458984375, 14.945448293647944],
+                        [37.791595458984375, 14.84923123791421],
+                    ]
+                ],
+            },
+            start_time=datetime(2021, 3, 1),
+            publishing_stages=["standard"],
+            time_range_type="acquired",
+        )
+
+        request = build_request("Standard PSScene Ortho Analytic", source=source, delivery={})
+        ```
     """
     if len(item_types) > 1:
         raise ClientError(
@@ -297,24 +302,31 @@ def planetary_variable_source(
             configured.
 
     Examples:
+
         ```python
-        >>> source = planetary_variable_source(
-        ...     "soil_water_content",
-        ...     "SWC-AMSR2-C_V1.0_100",
-        ...     geometry={
-        ...         "type": "Polygon",
-        ...         "coordinates": [[[37.791595458984375, 14.84923123791421],
-        ...                         [37.90214538574219, 14.84923123791421],
-        ...                         [37.90214538574219, 14.945448293647944],
-        ...                         [37.791595458984375, 14.945448293647944],
-        ...                         [37.791595458984375, 14.84923123791421]]]
-        ...     },
-        ...     start_time=datetime(2021, 3, 1)
-        ... )
-        >>> request = build_request(
-        ...     "Soil Water Content",
-        ...     source=source,
-        ...     delivery={})
+        pv_source = planetary_variables_source(
+            "soil_water_content",
+            "SWC-AMSR2-C_V1.0_100",
+            geometry={
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [37.791595458984375, 14.84923123791421],
+                        [37.90214538574219, 14.84923123791421],
+                        [37.90214538574219, 14.945448293647944],
+                        [37.791595458984375, 14.945448293647944],
+                        [37.791595458984375, 14.84923123791421],
+                    ]
+                ],
+            },
+            start_time=datetime(2021, 3, 1),
+        )
+
+        request = build_request(
+            "soil_water_subscription",
+            source=pv_source,
+            delivery={},
+        )
         ```
     """
     # TODO: validation of variable types and ids.

@@ -1,5 +1,6 @@
 """Tests of the Planet Subscriptions API client."""
 
+import csv
 from datetime import datetime
 from itertools import zip_longest
 import json
@@ -288,7 +289,6 @@ async def test_get_results_csv():
     async with Session() as session:
         client = SubscriptionsClient(session, base_url=TEST_URL)
         results = [res async for res in client.get_results_csv("42")]
-        import csv
         rows = list(csv.reader(results))
         assert rows == [['id', 'status'], ['1234-abcd', 'SUCCESS']]
 

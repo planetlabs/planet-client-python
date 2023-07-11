@@ -1,5 +1,7 @@
 2.1.0 (TBD)
 
+2.1b1 (2023-07-11)
+
 Added:
 - Support for catalog source publishing stages (#977) and time range types
   (#978) have been added to subscription_request.catalog_source.
