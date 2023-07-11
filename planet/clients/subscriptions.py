@@ -268,21 +268,17 @@ class SubscriptionsClient:
         except ClientError:  # pragma: no cover
             raise
 
-    async def get_results_csv(self,
-                              subscription_id: str,
-                              status: Optional[Sequence[Literal[
-                                  "created",
-                                  "queued",
-                                  "processing",
-                                  "failed",
-                                  "success"]]] = None,
-                              **kwargs) -> AsyncIterator[str]:
+    async def get_results_csv(
+        self,
+        subscription_id: str,
+        status: Optional[Sequence[Literal["created",
+                                          "queued",
+                                          "processing",
+                                          "failed",
+                                          "success"]]] = None,
+        limit: int = 100,
+    ) -> AsyncIterator[str]:
         """Iterate over rows of results CSV for a Subscription.
-
-        Notes:
-            The name of this method is based on the API's method name. This
-            method provides iteration over results, it does not get a
-            single result description or return a list of descriptions.
 
         Parameters:
             subscription_id (str): id of a subscription.
