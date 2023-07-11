@@ -13,7 +13,7 @@
 # the License.
 """Functionality for preparing subscription requests."""
 from datetime import datetime
-from typing import Any, Dict, Optional, List, Literal, Mapping
+from typing import Any, Dict, Optional, List, Literal, Mapping, Sequence
 
 from . import geojson, specs
 from .exceptions import ClientError
@@ -151,6 +151,9 @@ def catalog_source(
     filter: Optional[Mapping] = None,
     end_time: Optional[datetime] = None,
     rrule: Optional[str] = None,
+    publishing_stages: Optional[Sequence[Literal["preview",
+                                                 "standard",
+                                                 "finalized"]]] = None,
 ) -> dict:
     """Construct a Catalog subscription source.
 
@@ -173,6 +176,8 @@ def catalog_source(
             the past or future, and must be after the start_time.
         rrule: The recurrence rule, given in iCalendar RFC 5545 format.
             Only monthly recurrences are supported at this time.
+        publishing_stages: A sequence of one or more of the values
+            "preview", "standard", or "finalized".
 
     Returns:
         dict: a representation of a subscription source.
@@ -180,6 +185,29 @@ def catalog_source(
     Raises:
         ClientError: if a source can not be
             configured.
+
+    Examples:
+        ```pycon
+        >>> source = catalog_source(
+        ...     ["PSScene"],
+        ...     ["ortho_analytic_4b"],
+        ...     geometry={
+        ...         "type": "Polygon",
+        ...         "coordinates": [[[37.791595458984375, 14.84923123791421],
+        ...                         [37.90214538574219, 14.84923123791421],
+        ...                         [37.90214538574219, 14.945448293647944],
+        ...                         [37.791595458984375, 14.945448293647944],
+        ...                         [37.791595458984375, 14.84923123791421]]]
+        ...     },
+        ...     start_time=datetime(2021, 3, 1),
+        ...     publishing_stages=["standard"],
+        ... )
+        >>> request = build_request(
+        ...     "Standard PSScene Ortho Analytic",
+        ...     source=source,
+        ...     delivery={})
+        ```
+
     """
     if len(item_types) > 1:
         raise ClientError(
@@ -215,6 +243,9 @@ def catalog_source(
 
     if rrule:
         parameters['rrule'] = rrule
+
+    if publishing_stages:
+        parameters['publishing_stages'] = list(set(publishing_stages))
 
     return {"type": "catalog", "parameters": parameters}
 
@@ -275,7 +306,10 @@ def planetary_variable_source(
         ...     },
         ...     start_time=datetime(2021, 3, 1)
         ... )
-        >>> request = build_request(source=source, ...)
+        >>> request = build_request(
+        ...     "Soil Water Content",
+        ...     source=source,
+        ...     delivery={})
         ```
     """
     # TODO: validation of variable types and ids.
