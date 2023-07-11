@@ -346,3 +346,23 @@ def test_toar_tool_success():
 
     expected = {"type": "toar", "parameters": {"scale_factor": 12345}}
     assert res == expected
+
+
+def test_pv_source_success(geom_geojson):
+    """Configure a planetary variable subscription source."""
+    # NOTE: this function does not yet validate type and id.
+    # The nonsense values are intended to fail when the function does
+    # add validation.
+    source = subscription_request.planetary_variable_source(
+        "var1",
+        "VAR1-abcd",
+        geometry=geom_geojson,
+        start_time=datetime(2021, 3, 1),
+        end_time=datetime(2021, 3, 2),
+    )
+
+    assert source["type"] == "var1"
+    params = source["parameters"]
+    assert params["id"] == "VAR1-abcd"
+    assert params["geometry"] == geom_geojson
+    assert params["start_time"].startswith("2021-03-01")
