@@ -128,7 +128,12 @@ def result_pages(status=None, size=40):
 # must disable the default.
 res_api_mock = respx.mock(assert_all_called=False)
 
-# 1. Request for status: created. Response has three pages.
+# 1. CSV results
+res_api_mock.route(
+    M(url__startswith=TEST_URL), M(params__contains={'format': 'csv'})).mock(
+        side_effect=[Response(200, text="id,status\n1234-abcd,SUCCESS\n")])
+
+# 2. Request for status: created. Response has three pages.
 res_api_mock.route(
     M(url__startswith=TEST_URL),
     M(params__contains={'status': 'created'})).mock(side_effect=[
@@ -136,12 +141,12 @@ res_api_mock.route(
         for page in result_pages(status={'created'}, size=40)
     ])
 
-# 2. Request for status: queued. Response has a single empty page.
+# 3. Request for status: queued. Response has a single empty page.
 res_api_mock.route(M(url__startswith=TEST_URL),
                    M(params__contains={'status': 'queued'})).mock(
                        side_effect=[Response(200, json={'results': []})])
 
-# 3. No status requested. Response is the same as for 1.
+# 4. No status requested. Response is the same as for 1.
 res_api_mock.route(M(url__startswith=TEST_URL)).mock(
     side_effect=[Response(200, json=page) for page in result_pages(size=40)])
 
@@ -274,6 +279,18 @@ async def test_get_results_success():
         client = SubscriptionsClient(session, base_url=TEST_URL)
         results = [res async for res in client.get_results("42")]
         assert len(results) == 100
+
+
+@pytest.mark.anyio
+@res_api_mock
+async def test_get_results_csv():
+    """Subscription CSV fetched, has the expected items."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        results = [res async for res in client.get_results_csv("42")]
+        import csv
+        rows = list(csv.reader(results))
+        assert rows == [['id', 'status'], ['1234-abcd', 'SUCCESS']]
 
 
 paging_cycle_api_mock = respx.mock()

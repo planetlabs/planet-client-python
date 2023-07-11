@@ -1,7 +1,7 @@
 """Planet Subscriptions API Python client."""
 
 import logging
-from typing import AsyncIterator, Optional, Set
+from typing import AsyncIterator, Literal, Optional, Sequence
 
 from planet.exceptions import APIError, ClientError
 from planet.http import Session
@@ -58,7 +58,7 @@ class SubscriptionsClient:
             self._base_url = self._base_url[:-1]
 
     async def list_subscriptions(self,
-                                 status: Optional[Set[str]] = None,
+                                 status: Optional[Sequence[str]] = None,
                                  limit: int = 100) -> AsyncIterator[dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
@@ -216,16 +216,21 @@ class SubscriptionsClient:
 
     async def get_results(self,
                           subscription_id: str,
-                          status: Optional[Set[str]] = None,
+                          status: Optional[Sequence[Literal[
+                              "created",
+                              "queued",
+                              "processing",
+                              "failed",
+                              "success"]]] = None,
                           limit: int = 100) -> AsyncIterator[dict]:
         """Iterate over results of a Subscription.
 
-        Note:
+        Notes:
             The name of this method is based on the API's method name. This
             method provides iteration over results, it does not get a
             single result description or return a list of descriptions.
 
-        Args:
+        Parameters:
             subscription_id (str): id of a subscription.
             status (Set[str]): pass result with status in this set,
                 filter out results with status not in this set.
@@ -252,7 +257,6 @@ class SubscriptionsClient:
             resp = await self._session.request(method='GET',
                                                url=url,
                                                params=params)
-
             async for sub in _ResultsPager(resp,
                                            self._session.request,
                                            limit=limit):
@@ -263,3 +267,45 @@ class SubscriptionsClient:
             raise
         except ClientError:  # pragma: no cover
             raise
+
+    async def get_results_csv(self,
+                              subscription_id: str,
+                              status: Optional[Sequence[Literal[
+                                  "created",
+                                  "queued",
+                                  "processing",
+                                  "failed",
+                                  "success"]]] = None,
+                              **kwargs) -> AsyncIterator[str]:
+        """Iterate over rows of results CSV for a Subscription.
+
+        Notes:
+            The name of this method is based on the API's method name. This
+            method provides iteration over results, it does not get a
+            single result description or return a list of descriptions.
+
+        Parameters:
+            subscription_id (str): id of a subscription.
+            status (Set[str]): pass result with status in this set,
+                filter out results with status not in this set.
+            TODO: created, updated, completed, user_id
+
+        Yields:
+            str: a row from a CSV file.
+
+        Raises:
+            APIError: on an API server error.
+            ClientError: on a client error.
+        """
+        url = f'{self._base_url}/{subscription_id}/results'
+        params = {'status': [val for val in status or {}], 'format': 'csv'}
+
+        # Note: retries are not implemented yet. This project has
+        # retry logic for HTTP requests, but does not handle errors
+        # during streaming. We may want to consider a retry decorator
+        # for this entire method a la stamina:
+        # https://github.com/hynek/stamina.
+        async with self._session._client.stream('GET', url,
+                                                params=params) as response:
+            async for line in response.aiter_lines():
+                yield line

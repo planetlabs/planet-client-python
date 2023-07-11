@@ -306,3 +306,11 @@ def test_request_catalog_success(invoke, geom_geojson):
     ])
     assert json.loads(result.output) == source
     assert result.exit_code == 0  # success.
+
+
+@res_api_mock
+def test_subscriptions_results_csv(invoke):
+    """Get results as CSV."""
+    result = invoke(['results', 'test', '--csv'])
+    assert result.exit_code == 0  # success.
+    assert result.output.splitlines() == ['id,status', '1234-abcd,SUCCESS']
