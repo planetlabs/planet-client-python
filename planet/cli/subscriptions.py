@@ -162,10 +162,13 @@ async def get_subscription_cmd(ctx, subscription_id, pretty):
                        "success"]),
     multiple=True,
     default=None,
-    callback=lambda ctx,
-    param,
-    value: set(value),
+    callback=(lambda ctx, param, value: set(value)),
     help="Select subscription results in one or more states. Default: all.")
+@click.option('--csv',
+              'csv_flag',
+              is_flag=True,
+              default=False,
+              help="Get subscription results as comma-separated fields.")
 @limit
 # TODO: the following 3 options.
 # –created: timestamp instant or range.
@@ -178,13 +181,39 @@ async def list_subscription_results_cmd(ctx,
                                         subscription_id,
                                         pretty,
                                         status,
+                                        csv_flag,
                                         limit):
-    """Gets results of a subscription and prints the API response."""
+    """Print the results of a subscription to stdout.
+
+    The output of this command is a sequence of JSON objects (the
+    default) or a sequence of comma-separated fields (when the --csv
+    option is used), one result per line.
+
+    Examples:
+
+    \b
+        planet subscriptions results SUBSCRIPTION_ID --status=success --limit 10
+
+    Where SUBSCRIPTION_ID is the unique identifier for a subscription,
+    this prints the last 10 successfully delivered results for that
+    subscription as JSON objects.
+
+    \b
+        planet subscriptions results SUBSCRIPTION_ID --limit 0 --csv > results.csv
+
+    Prints all results for a subscription and saves them to a CSV file.
+    """
     async with subscriptions_client(ctx) as client:
-        async for result in client.get_results(subscription_id,
-                                               status=status,
-                                               limit=limit):
-            echo_json(result, pretty)
+        if csv_flag:
+            async for result in client.get_results_csv(subscription_id,
+                                                       status=status,
+                                                       limit=limit):
+                click.echo(result)
+        else:
+            async for result in client.get_results(subscription_id,
+                                                   status=status,
+                                                   limit=limit):
+                echo_json(result, pretty)
 
 
 @subscriptions.command()  # type: ignore
