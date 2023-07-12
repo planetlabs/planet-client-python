@@ -4,8 +4,8 @@
 
 Added:
 - The request command of the subscriptions CLI has a new --clip-to-source
-  option (#xxx).
-- A new request-pv command has been added to the subscriptions CLi (#xxx).
+  option (#988).
+- A new request-pv command has been added to the subscriptions CLi (#988).
 - Support for catalog source publishing stages (#977) and time range types
   (#978) have been added to subscription_request.catalog_source.
 - Add the option to get Planetary Variable subscription results as a CSV file
