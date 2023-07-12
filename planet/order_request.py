@@ -199,6 +199,10 @@ def delivery(archive_type: Optional[str] = None,
     if archive_type:
         archive_type = specs.validate_archive_type(archive_type)
 
+        # for missing archive options set single_archive to false
+        if archive_filename is None and single_archive is False:
+            single_archive = True
+
     fields = ['archive_type', 'single_archive', 'archive_filename']
     values = [archive_type, single_archive, archive_filename]
 
