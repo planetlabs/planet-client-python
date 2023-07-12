@@ -238,14 +238,32 @@ async def list_subscription_results_cmd(ctx,
     '--tools',
     type=types.JSON(),
     help='Toolchain JSON. Can be a string, filename, or - for stdin.')
+@click.option(
+    '--clip-to-source',
+    is_flag=True,
+    default=False,
+    help="Clip to the source geometry without specifying a clip tool.")
 @pretty
-def request(name, source, delivery, notifications, tools, pretty):
-    """Generate a subscriptions request."""
+def request(name,
+            source,
+            delivery,
+            notifications,
+            tools,
+            clip_to_source,
+            pretty):
+    """Generate a subscriptions request.
+
+    Note: the next version of the Subscription API will remove the clip
+    tool option and always clip to the source geometry. Thus the
+    --clip-to-source option is a preview of the next API version's
+    default behavior.
+    """
     res = subscription_request.build_request(name,
                                              source,
                                              delivery,
                                              notifications=notifications,
-                                             tools=tools)
+                                             tools=tools,
+                                             clip_to_source=clip_to_source)
     echo_json(res, pretty)
 
 
@@ -297,4 +315,50 @@ def request_catalog(item_types,
                                               end_time=end_time,
                                               rrule=rrule,
                                               filter=filter)
+    echo_json(res, pretty)
+
+
+@subscriptions.command()  # type: ignore
+@translate_exceptions
+@click.option(
+    '--var-type',
+    required=True,
+    help='Planetary variable type.',
+    type=click.Choice([
+        "biomass_proxy",
+        "land_surface_temperature",
+        "soil_water_content",
+        "vegetation_optical_depth"
+    ]),
+)
+@click.option('--var-id', required=True, help='Planetary variable id.')
+@click.option(
+    '--geometry',
+    required=True,
+    type=types.JSON(),
+    help="""Geometry of the area of interest of the subscription that will be
+    used to determine matches. Can be a string, filename, or - for stdin.""")
+@click.option('--start-time',
+              required=True,
+              type=types.DateTime(),
+              help='Date and time to begin subscription.')
+@click.option('--end-time',
+              type=types.DateTime(),
+              help='Date and time to end subscription.')
+@pretty
+def request_pv(var_type, var_id, geometry, start_time, end_time, pretty):
+    """Generate a Planetary Variable subscription source.
+
+    Planetary Variables come in 4 types and are further subdivided
+    within these types. See [Subscribing to Planetary
+    Variables](https://developers.planet.com/docs/subscriptions/pvs-subs/#planetary-variables-types-and-ids)
+    for details.
+    """
+    res = subscription_request.planetary_variable_source(
+        var_type,
+        var_id,
+        geometry,
+        start_time,
+        end_time=end_time,
+    )
     echo_json(res, pretty)
