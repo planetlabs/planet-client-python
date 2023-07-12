@@ -252,7 +252,7 @@ def test_subscriptions_results_success(invoke, options, expected_count):
 
 
 def test_request_base_success(invoke, geom_geojson):
-    """Request command succeeds"""
+    """Request command succeeds."""
     source = json.dumps({
         "type": "catalog",
         "parameters": {
@@ -285,6 +285,32 @@ def test_request_base_success(invoke, geom_geojson):
     assert result.exit_code == 0  # success.
 
 
+def test_request_base_clip_to_source(invoke, geom_geojson):
+    """Clip to source using command line option."""
+    source = json.dumps({
+        "type": "catalog",
+        "parameters": {
+            "geometry": geom_geojson,
+            "start_time": "2021-03-01T00:00:00Z",
+            "item_types": ["PSScene"],
+            "asset_types": ["ortho_analytic_4b"]
+        }
+    })
+    result = invoke([
+        'request',
+        '--name=test',
+        f'--source={source}',
+        '--delivery={"type": "fake"}',
+        '--clip-to-source'
+    ])
+
+    assert result.exit_code == 0  # success.
+    req = json.loads(result.output)
+    tool = req["tools"][0]
+    assert tool["type"] == "clip"
+    assert tool["parameters"]["aoi"] == geom_geojson
+
+
 def test_request_catalog_success(invoke, geom_geojson):
     """Request-catalog command succeeds"""
     source = {
@@ -314,3 +340,19 @@ def test_subscriptions_results_csv(invoke):
     result = invoke(['results', 'test', '--csv'])
     assert result.exit_code == 0  # success.
     assert result.output.splitlines() == ['id,status', '1234-abcd,SUCCESS']
+
+
+def test_request_pv_success(invoke, geom_geojson):
+    """Request-pv command succeeds"""
+    result = invoke([
+        'request-pv',
+        '--var-type=biomass_proxy',
+        '--var-id=BIOMASS-PROXY_V3.0_10',
+        f"--geometry={json.dumps(geom_geojson)}",
+        '--start-time=2021-03-01T00:00:00'
+    ])
+
+    assert result.exit_code == 0  # success.
+    source = json.loads(result.output)
+    assert source["type"] == "biomass_proxy"
+    assert source["parameters"]["id"] == "BIOMASS-PROXY_V3.0_10"

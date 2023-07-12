@@ -118,8 +118,8 @@ def build_request(name: str,
     if notifications:
         details['notifications'] = dict(notifications)
 
-    if tools:
-        tool_list = [dict(tool) for tool in tools]
+    if tools or clip_to_source:
+        tool_list = [dict(tool) for tool in (tools or [])]
 
         # If clip_to_source is True a clip configuration will be added
         # to the list of requested tools unless an existing clip tool
