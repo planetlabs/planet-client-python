@@ -169,8 +169,7 @@ def test_delivery_missing_archive_details():
             'aws_region': 'aws_region'
         }
     }
-    delivery_config = order_request.delivery('zip',
-                                             False,
+    delivery_config = order_request.delivery(archive_type='zip',
                                              cloud_config=as3_config)
 
     expected = {

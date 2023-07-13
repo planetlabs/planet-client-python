@@ -24,6 +24,5 @@ coverage.xml
 
 # Editors
 .vscode/
-.idea/
 # Docs build
 site
