@@ -266,13 +266,14 @@ async def create(ctx, request: str, pretty):
               show_default=True,
               help="Optionally zip archive all item bundles together.")
 @click.option(
-    '--cloudconfig',
     '--delivery',
+    '--cloudconfig',
     type=types.JSON(),
-    help=("Credentials for cloud storage provider to enable cloud delivery of "
-          "data. Can be a json string, filename, or '-' for stdin. "
-          "Optionally, archive parameters can be set using the same JSON. "
-          "The --delivery option is an alias for this use case."))
+    help=("Delivery configuration, which may include credentials for a cloud "
+          "storage provider, to enable cloud delivery of data, and/or "
+          "parameters for bundling deliveries as zip archives. Can be a JSON "
+          "string, a filename, or '-' for stdin. The --cloudconfig option is "
+          "an alias for this use case."))
 @click.option(
     '--stac/--no-stac',
     default=True,
@@ -292,7 +293,7 @@ async def request(ctx,
                   archive_type,
                   archive_filename,
                   single_archive,
-                  cloudconfig,
+                  delivery,
                   stac,
                   pretty):
     """Generate an order request.
@@ -324,7 +325,7 @@ async def request(ctx,
     delivery = planet.order_request.delivery(archive_type=archive_type,
                                              archive_filename=archive_filename,
                                              single_archive=single_archive,
-                                             cloud_config=cloudconfig)
+                                             cloud_config=delivery)
 
     if stac and "google_earth_engine" not in delivery:
         stac_json = {'stac': {}}

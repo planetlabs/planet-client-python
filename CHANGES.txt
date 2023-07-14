@@ -1,5 +1,11 @@
 2.1.0 (TBD)
 
+- The --cloudconfig option of the request command of the orders CLI has been
+  superseded by a new --delivery option, with --cloudconfig left as an alias.
+  New --archive-type, --archive-filename, and --single-archive options to
+  control the zip archiving of order outputs without any cloud storage delivery
+  have also been added (#990).
+
 2.1b1 (2023-07-11)
 
 Added:
