@@ -174,7 +174,7 @@ def test_delivery_missing_archive_details():
 
     expected = {
         'archive_type': 'zip',
-        'single_archive': True,
+        'archive_filename': "{{name}}_{{order_id}}.zip",
         'amazon_s3': {
             'aws_access_key_id': 'aws_access_key_id',
             'aws_secret_access_key': 'aws_secret_access_key',
