@@ -1,4 +1,4 @@
-2.1.0 (TBD)
+2.1.0 (2023-07-17)
 
 - Support for publishing stages and time range types has been added to the
   subscriptions CLI (#992).
@@ -7,6 +7,7 @@
   New --archive-type, --archive-filename, and --single-archive options to
   control the zip archiving of order outputs without any cloud storage delivery
   have also been added (#990).
+
 
 2.1b1 (2023-07-11)
 
@@ -23,6 +24,7 @@ Added:
 - The subscription_request.build_request function has a new option to clip to
   the subscription's source geometry. This is a preview of the default behavior
   of the next version of the Subscriptions API (#971).
+
 
 2.0.3 (2023-06-28)
 
