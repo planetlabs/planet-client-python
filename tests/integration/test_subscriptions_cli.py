@@ -12,6 +12,7 @@ There are 6 subscriptions commands:
 TODO: tests for 3 options of the planet-subscriptions-results command.
 
 """
+import itertools
 import json
 
 from click.testing import CliRunner
@@ -356,3 +357,46 @@ def test_request_pv_success(invoke, geom_geojson):
     source = json.loads(result.output)
     assert source["type"] == "biomass_proxy"
     assert source["parameters"]["id"] == "BIOMASS-PROXY_V3.0_10"
+
+
+@pytest.mark.parametrize(
+    # Test all the combinations of the three options plus some with dupes.
+    "publishing_stages",
+    list(
+        itertools.chain.from_iterable(
+            itertools.combinations(["preview", "standard", "finalized"], i)
+            for i in range(1, 4))) + [("preview", "preview"),
+                                      ("preview", "finalized", "preview")])
+def test_catalog_source_publishing_stages(invoke,
+                                          geom_geojson,
+                                          publishing_stages):
+    """Catalog source publishing stages are configured."""
+    result = invoke([
+        'request-catalog',
+        '--item-types=PSScene',
+        '--asset-types=ortho_analytic_4b',
+        f"--geometry={json.dumps(geom_geojson)}",
+        '--start-time=2021-03-01T00:00:00',
+    ] + [f'--publishing-stage={stage}' for stage in publishing_stages])
+
+    assert result.exit_code == 0  # success.
+    req = json.loads(result.output)
+    assert req['parameters']['publishing_stages'] == list(
+        set(publishing_stages))
+
+
+@pytest.mark.parametrize("time_range_type", ["acquired", "published"])
+def test_catalog_source_time_range_type(invoke, geom_geojson, time_range_type):
+    """Catalog source time range type is configured."""
+    result = invoke([
+        'request-catalog',
+        '--item-types=PSScene',
+        '--asset-types=ortho_analytic_4b',
+        f"--geometry={json.dumps(geom_geojson)}",
+        '--start-time=2021-03-01T00:00:00',
+        f'--time-range-type={time_range_type}',
+    ])
+
+    assert result.exit_code == 0  # success.
+    req = json.loads(result.output)
+    assert req['parameters']['time_range_type'] == time_range_type

@@ -1,5 +1,6 @@
 2.1.0 (TBD)
 
+- Support for publishing stages and time range types has been added to the subscriptions CLI ().
 - The --cloudconfig option of the request command of the orders CLI has been
   superseded by a new --delivery option, with --cloudconfig left as an alias.
   New --archive-type, --archive-filename, and --single-archive options to

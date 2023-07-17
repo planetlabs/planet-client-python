@@ -237,10 +237,10 @@ async def list_subscription_results_cmd(ctx,
     '--notifications',
     type=types.JSON(),
     help='Notifications JSON. Can be a string, filename, or - for stdin.')
-@click.option(
-    '--tools',
-    type=types.JSON(),
-    help='Toolchain JSON. Can be a string, filename, or - for stdin.')
+@click.option('--tools',
+              type=types.JSON(),
+              help='Toolchain JSON. Can be a string, filename, or - for stdin.'
+              )
 @click.option(
     '--clip-to-source',
     is_flag=True,
@@ -297,10 +297,20 @@ def request(name,
 @click.option('--rrule',
               type=str,
               help='iCalendar recurrance rule to specify recurrances.')
+@click.option('--filter',
+              type=types.JSON(),
+              help='Search filter.  Can be a string, filename, or - for stdin.'
+              )
 @click.option(
-    '--filter',
-    type=types.JSON(),
-    help='Search filter.  Can be a string, filename, or - for stdin.')
+    '--publishing-stage',
+    'publishing_stages',
+    type=click.Choice(["preview", "standard", "finalized"]),
+    multiple=True,
+    help=("Subscribe to results at a particular publishing stage. Multiple "
+          "instances of this option are allowed."))
+@click.option('--time-range-type',
+              type=click.Choice(["acquired", "published"]),
+              help="Subscribe by acquisition time or time of publication.")
 @pretty
 def request_catalog(item_types,
                     asset_types,
@@ -309,15 +319,20 @@ def request_catalog(item_types,
                     end_time,
                     rrule,
                     filter,
+                    publishing_stages,
+                    time_range_type,
                     pretty):
     """Generate a subscriptions request catalog source description."""
-    res = subscription_request.catalog_source(item_types,
-                                              asset_types,
-                                              geometry,
-                                              start_time,
-                                              end_time=end_time,
-                                              rrule=rrule,
-                                              filter=filter)
+    res = subscription_request.catalog_source(
+        item_types,
+        asset_types,
+        geometry,
+        start_time,
+        end_time=end_time,
+        rrule=rrule,
+        filter=filter,
+        publishing_stages=publishing_stages,
+        time_range_type=time_range_type)
     echo_json(res, pretty)
 
 
