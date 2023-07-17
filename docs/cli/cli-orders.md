@@ -639,7 +639,7 @@ Orders with Google Earth Engine delivery will force the STAC flag to false.
 
 ### Cloud Delivery
 
-Another option is to delivery your orders directly to a cloud bucket, like AWS S3 or Google Cloud Storage.
+Another option is to deliver your orders directly to a cloud bucket, like AWS S3 or Google Cloud Storage.
 The file given with the `--delivery` option should contain JSON that follows
 the options and format given in
 [Delivery to Cloud Storage](https://developers.planet.com/docs/orders/delivery/#delivery-to-cloud-storage).

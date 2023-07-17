@@ -174,7 +174,7 @@ planet subscriptions results SUBSCRIPTION_ID --status processing
 The available statuses are `created`, `queued`, `processing`, `failed`, and `success`. Note it’s quite useful
 to use `jq` to help filter out results as well.  
 
-#### Results as comma-seperated values (CSV)
+#### Results as comma-separated values (CSV)
 
 Planetary Variable subscribers can benefit from retrieving results as a CSV. The results contain variable statistics and can serve as data for time series analysis and visualization.
 
