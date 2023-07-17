@@ -157,8 +157,10 @@ planet subscriptions get cb817760-1f07-4ee7-bba6-bcac5346343f
 To see what items have been delivered to your cloud bucket you can use the `results` command:
 
 ```sh
-planet subscriptions results cb817760-1f07-4ee7-bba6-bcac5346343f
+planet subscriptions results SUBSCRIPTION_ID
 ```
+
+`SUBSCRIPTION_ID` above is a placeholder for a unique subscription identifier, which will be a UUID like `cb817760-1f07-4ee7-bba6-bcac5346343f`.
 
 By default this displays the first 100 results. As with other commands, you can use the `--limit` param to 
 set a higher limit, or set it to 0 to see all results (this can be quite large with subscriptions results).
@@ -166,11 +168,21 @@ set a higher limit, or set it to 0 to see all results (this can be quite large w
 You can also filter by status:
 
 ```sh
-planet subscriptions results --status processing
+planet subscriptions results SUBSCRIPTION_ID --status processing
 ```
 
 The available statuses are `created`, `queued`, `processing`, `failed`, and `success`. Note it’s quite useful
 to use `jq` to help filter out results as well.  
+
+#### Results as comma-seperated values (CSV)
+
+Planetary Variable subscribers can benefit from retrieving results as a CSV. The results contain variable statistics and can serve as data for time series analysis and visualization.
+
+```sh
+planet subscriptions results SUBSCRIPTION_ID --csv
+```
+
+*New in version 2.1*
 
 ### Update Subscription
 
@@ -351,51 +363,18 @@ for Orders, future of the versions of the CLI will likely add `tools` convenienc
 
 The most used tool is the `clip` operation, which lets you pass a geometry to the
 Subscriptions API and it creates new images that only have pixels within the geometry you
-gave it. We’ll use the same geometry from [above](#geometry), as it is quite
-typical to use the same subscription geometry as the clip geometry, so you don't get
-any pixels outside of your area of interest (99.9% of all subscriptions use the clip
-tool, so it’s strongly recommended to also use clip). The proper 'clip' tool for it
-would be:
+gave it. 99% of the time you will want to clip to the subscription geometry. The easiest way to do this is to use the `--clip-to-source` option added to the `subscriptions request` command in version 2.1.
 
-```json
-[
-    {
-        "type": "clip",
-        "parameters": {
-            "aoi": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -163.828125,
-                            -44.59046718130883
-                        ],
-                        [
-                            181.7578125,
-                            -44.59046718130883
-                        ],
-                        [
-                            181.7578125,
-                            78.42019327591201
-                        ],
-                        [
-                            -163.828125,
-                            78.42019327591201
-                        ],
-                        [
-                            -163.828125,
-                            -44.59046718130883
-                        ]
-                    ]
-                ]
-            }
-        }
-    }
-]
+```sh
+planet subscriptions request \
+    --name 'Clipped Subscription' \
+    --source request-catalog.json \
+    --delivery cloud-delivery.json \
+    --clip-to-source
 ```
 
-You can save this tools as `tools.json` to include in the `subscriptions request` 
-command.
+*New in version 2.1*
+
 
 #### Additional Tools
 
