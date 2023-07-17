@@ -318,6 +318,28 @@ planet data filter --range clear_percent gt 90 \
 
 Do not bother with geometry or date filters, as they will be ignored in favor of the `--start-time` and `--geometry` values that are required.
 
+#### Publishing stages and time range types
+
+By using the `--time-range-type` you can choose to temporally filter by
+acquisition or publication time. The `--publishing-stage` option allows you to
+receive the earliest preview imagery or wait until finalized imagery is
+available. See [Catalog Source
+Types:Parameters](https://developers.planet.com/docs/subscriptions/source/#parameters)
+for more details.
+
+```sh
+planet subscriptions request-catalog \
+    --item-types PSScene \
+    --asset-types ortho_analytic_8b \
+    --geometry geometry.geojson \
+    --start-time 2022-08-24T00:00:00-07:00 \
+    --time-range-type acquired \
+    --publishing-stage finalized \
+    --filter filter.json
+```
+
+*New in version 2.1*
+
 #### Saving the output
 
 You’ll likely want to save the output of your `request-catalog` call to disk, so that you can more easily use it in constructing the complete subscription
