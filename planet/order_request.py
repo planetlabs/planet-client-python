@@ -199,6 +199,10 @@ def delivery(archive_type: Optional[str] = None,
     if archive_type:
         archive_type = specs.validate_archive_type(archive_type)
 
+        # for missing archive file name
+        if archive_filename is None:
+            archive_filename = "{{name}}_{{order_id}}.zip"
+
     fields = ['archive_type', 'single_archive', 'archive_filename']
     values = [archive_type, single_archive, archive_filename]
 
