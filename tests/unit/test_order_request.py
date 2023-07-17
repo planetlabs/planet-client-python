@@ -160,6 +160,32 @@ def test_delivery():
     assert delivery_config == expected
 
 
+def test_delivery_missing_archive_details():
+    as3_config = {
+        'amazon_s3': {
+            'aws_access_key_id': 'aws_access_key_id',
+            'aws_secret_access_key': 'aws_secret_access_key',
+            'bucket': 'bucket',
+            'aws_region': 'aws_region'
+        }
+    }
+    delivery_config = order_request.delivery(archive_type='zip',
+                                             cloud_config=as3_config)
+
+    expected = {
+        'archive_type': 'zip',
+        'archive_filename': "{{name}}_{{order_id}}.zip",
+        'single_archive': False,
+        'amazon_s3': {
+            'aws_access_key_id': 'aws_access_key_id',
+            'aws_secret_access_key': 'aws_secret_access_key',
+            'bucket': 'bucket',
+            'aws_region': 'aws_region'
+        }
+    }
+    assert delivery_config == expected
+
+
 def test_amazon_s3():
     as3_config = order_request.amazon_s3('aws_access_key_id',
                                          'aws_secret_access_key',

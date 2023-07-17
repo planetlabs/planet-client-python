@@ -196,15 +196,16 @@ def delivery(archive_type: Optional[str] = None,
     Raises:
         planet.specs.SpecificationException: If archive_type is not valid.
     """
-    if archive_type:
-        archive_type = specs.validate_archive_type(archive_type)
-
     config: Dict[str, Any] = {}
 
     if archive_type:
+        archive_type = specs.validate_archive_type(archive_type)
+
+        if archive_filename is None:
+            archive_filename = "{{name}}_{{order_id}}.zip"
+
         config.update(archive_type=archive_type,
-                      archive_filename=archive_filename
-                      or '{{name}}-{{order_id}}.zip',
+                      archive_filename=archive_filename,
                       single_archive=single_archive)
 
     if cloud_config:
