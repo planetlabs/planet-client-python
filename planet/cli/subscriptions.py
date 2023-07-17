@@ -237,10 +237,10 @@ async def list_subscription_results_cmd(ctx,
     '--notifications',
     type=types.JSON(),
     help='Notifications JSON. Can be a string, filename, or - for stdin.')
-@click.option('--tools',
-              type=types.JSON(),
-              help='Toolchain JSON. Can be a string, filename, or - for stdin.'
-              )
+@click.option(
+    '--tools',
+    type=types.JSON(),
+    help='Toolchain JSON. Can be a string, filename, or - for stdin.')
 @click.option(
     '--clip-to-source',
     is_flag=True,
@@ -297,10 +297,10 @@ def request(name,
 @click.option('--rrule',
               type=str,
               help='iCalendar recurrance rule to specify recurrances.')
-@click.option('--filter',
-              type=types.JSON(),
-              help='Search filter.  Can be a string, filename, or - for stdin.'
-              )
+@click.option(
+    '--filter',
+    type=types.JSON(),
+    help='Search filter.  Can be a string, filename, or - for stdin.')
 @click.option(
     '--publishing-stage',
     'publishing_stages',
