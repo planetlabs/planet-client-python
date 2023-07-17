@@ -321,6 +321,25 @@ planet subscriptions request-catalog \
     --filter filter.json > request-catalog.json
 ```
 
+### Planetary Variable Request
+
+Subscribing to Planetary Variables is much like subscribing to imagery from
+Planet's catalog. The `planet subscriptions request-pv` command can construct the source
+part of a Planetary Variable request like `request-catalog` does for cataloged
+imagery. Planetary Variable subscriptions come in 4 types and are further
+subdivided within these types by an identifier. See [Subscribing to Planetary
+Variables](https://developers.planet.com/docs/subscriptions/pvs-subs/#planetary-variables-types-and-ids)
+for details. To constrain data delivery by space and time, you will use the
+`--geometry`, `start-time`, and `end-time` options described above.
+
+```sh
+planet subscriptions request-pv \
+    --var-type biomass_proxy \
+    --var-id BIOMASS-PROXY_V3.0_10 \
+    --geometry geometry.geojson \
+    --start-time 2022-08-24T00:00:00-07:00 > request-pv.json
+```
+
 ### Subscription Tools
 
 Now we’ll dive into some of the tools options for subscriptions. These are quite similar to the tools for 
