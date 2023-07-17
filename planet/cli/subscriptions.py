@@ -226,10 +226,13 @@ async def list_subscription_results_cmd(ctx,
               required=True,
               type=types.JSON(),
               help='Source JSON. Can be a string, filename, or - for stdin.')
-@click.option('--delivery',
-              required=True,
-              type=types.JSON(),
-              help='Delivery JSON. Can be a string, filename, or - for stdin.')
+@click.option(
+    '--delivery',
+    required=True,
+    type=types.JSON(),
+    help=("Delivery configuration, including credentials for a cloud "
+          "storage provider, to enable cloud delivery of data. Can be a "
+          "JSON string, a filename, or '-' for stdin. "))
 @click.option(
     '--notifications',
     type=types.JSON(),

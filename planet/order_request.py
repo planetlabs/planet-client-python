@@ -15,7 +15,7 @@
 """Functionality for preparing order details for use in creating an order"""
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import logging
-from typing import Optional, Any, Dict, List, Union
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 from . import geojson, specs
 from .exceptions import ClientError
@@ -163,9 +163,9 @@ def notifications(email: Optional[bool] = None,
 
 
 def delivery(archive_type: Optional[str] = None,
-             single_archive: bool = False,
+             single_archive: Optional[bool] = False,
              archive_filename: Optional[str] = None,
-             cloud_config: Optional[dict] = None) -> dict:
+             cloud_config: Optional[Mapping] = None) -> dict:
     """Order delivery configuration.
 
     Example:
@@ -196,20 +196,21 @@ def delivery(archive_type: Optional[str] = None,
     Raises:
         planet.specs.SpecificationException: If archive_type is not valid.
     """
+    config: Dict[str, Any] = {}
+
     if archive_type:
         archive_type = specs.validate_archive_type(archive_type)
 
-        # for missing archive file name
         if archive_filename is None:
             archive_filename = "{{name}}_{{order_id}}.zip"
 
-    fields = ['archive_type', 'single_archive', 'archive_filename']
-    values = [archive_type, single_archive, archive_filename]
-
-    config = dict((k, v) for k, v in zip(fields, values) if v)
+        config.update(archive_type=archive_type,
+                      archive_filename=archive_filename,
+                      single_archive=single_archive)
 
     if cloud_config:
         config.update(cloud_config)
+
     return config
 
 

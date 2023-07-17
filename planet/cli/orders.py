@@ -253,11 +253,27 @@ async def create(ctx, request: str, pretty):
               default=False,
               is_flag=True,
               help='Send email notification when order is complete.')
+@click.option('--archive-type',
+              type=click.Choice(['zip']),
+              help="Optionally zip archive each item bundle.")
+@click.option('--archive-filename',
+              default='{{name}}-{{order_id}}.zip',
+              show_default=True,
+              help="Templated filename for archived bundles or orders.")
+@click.option('--single-archive',
+              is_flag=True,
+              default=False,
+              show_default=True,
+              help="Optionally zip archive all item bundles together.")
 @click.option(
+    '--delivery',
     '--cloudconfig',
     type=types.JSON(),
-    help="""Credentials for cloud storage provider to enable cloud delivery of
-    data. Can be a json string, filename, or '-' for stdin.""")
+    help=("Delivery configuration, which may include credentials for a cloud "
+          "storage provider, to enable cloud delivery of data, and/or "
+          "parameters for bundling deliveries as zip archives. Can be a JSON "
+          "string, a filename, or '-' for stdin. The --cloudconfig option is "
+          "an alias for this use case."))
 @click.option(
     '--stac/--no-stac',
     default=True,
@@ -274,7 +290,10 @@ async def request(ctx,
                   clip,
                   tools,
                   email,
-                  cloudconfig,
+                  archive_type,
+                  archive_filename,
+                  single_archive,
+                  delivery,
                   stac,
                   pretty):
     """Generate an order request.
@@ -303,14 +322,12 @@ async def request(ctx,
         except planet.exceptions.ClientError as e:
             raise click.BadParameter(e)
 
-    if cloudconfig:
-        delivery = planet.order_request.delivery(cloud_config=cloudconfig)
-        if "google_earth_engine" in cloudconfig:
-            stac = False
-    else:
-        delivery = None
+    delivery = planet.order_request.delivery(archive_type=archive_type,
+                                             archive_filename=archive_filename,
+                                             single_archive=single_archive,
+                                             cloud_config=delivery)
 
-    if stac:
+    if stac and "google_earth_engine" not in delivery:
         stac_json = {'stac': {}}
     else:
         stac_json = {}

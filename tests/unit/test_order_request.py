@@ -175,6 +175,7 @@ def test_delivery_missing_archive_details():
     expected = {
         'archive_type': 'zip',
         'archive_filename': "{{name}}_{{order_id}}.zip",
+        'single_archive': False,
         'amazon_s3': {
             'aws_access_key_id': 'aws_access_key_id',
             'aws_secret_access_key': 'aws_secret_access_key',
@@ -317,3 +318,14 @@ def test_band_math_tool_invalid_pixel_type():
         order_request.band_math_tool(b1='b1',
                                      b2='arctan(b1)',
                                      pixel_type="invalid")
+
+
+def test_no_archive_items_without_type():
+    """Without an archive type no filename or single option are passed."""
+    delivery_config = order_request.delivery(
+        None, True, TEST_ARCHIVE_FILENAME, cloud_config={"bogus_storage": {}})
+
+    assert "bogus_storage" in delivery_config
+    assert "archive_type" not in delivery_config
+    assert "archive_filename" not in delivery_config
+    assert "single_archive" not in delivery_config
