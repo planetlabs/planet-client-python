@@ -1,5 +1,6 @@
 2.1.0 (2023-07-17)
 
+Added:
 - Support for publishing stages and time range types has been added to the
   subscriptions CLI (#992).
 - The --cloudconfig option of the request command of the orders CLI has been
