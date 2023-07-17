@@ -149,6 +149,33 @@ planet orders request \
 }
 ```
 
+#### Zip archives of bundles and orders
+
+You can request that all files of a bundle be zipped together by using the `--archive-type` option. The only type of archive currently available is "zip".
+
+```sh
+planet orders request \
+    --item-type PSScene \
+    --bundle analytic_sr_udm2 \
+    --name 'My First Zipped Order' \
+    --archive-type zip \
+    20220605_124027_64_242b
+```
+
+You can request that all files of the entire order be zipped together by using the `--single-archive` option.
+
+```sh
+planet orders request \
+    --item-type PSScene \
+    --bundle analytic_sr_udm2 \
+    --name 'My First Zipped Order' \
+    --archive-type zip \
+    --single-archive \
+    20220605_124027_64_242b,20220605_124025_34_242b
+```
+
+*New in version 2.1*
+
 ### Save an Order Request
 
 The above command just prints out the necessary JSON to create an order. To actually use it you can
@@ -613,13 +640,13 @@ Orders with Google Earth Engine delivery will force the STAC flag to false.
 ### Cloud Delivery
 
 Another option is to delivery your orders directly to a cloud bucket, like AWS S3 or Google Cloud Storage.
-The file given with the `--cloudconfig` option should contain JSON that follows
+The file given with the `--delivery` option should contain JSON that follows
 the options and format given in
 [Delivery to Cloud Storage](https://developers.planet.com/docs/orders/delivery/#delivery-to-cloud-storage).
 
 An example would be:
 
-Example: `cloudconfig.json`
+Example: `delivery.json`
 
 ```json
 {
@@ -632,6 +659,12 @@ Example: `cloudconfig.json`
     "archive_type": "zip"
 }
 ```
+
+*New in 2.1*
+
+!!! note
+
+    `--cloudconfig` was the name of this option in version 2.0 and can continue to be used as an alias for `--delivery`.
 
 ### Using Orders output as input
 

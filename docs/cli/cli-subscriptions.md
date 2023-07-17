@@ -157,8 +157,10 @@ planet subscriptions get cb817760-1f07-4ee7-bba6-bcac5346343f
 To see what items have been delivered to your cloud bucket you can use the `results` command:
 
 ```sh
-planet subscriptions results cb817760-1f07-4ee7-bba6-bcac5346343f
+planet subscriptions results SUBSCRIPTION_ID
 ```
+
+`SUBSCRIPTION_ID` above is a placeholder for a unique subscription identifier, which will be a UUID like `cb817760-1f07-4ee7-bba6-bcac5346343f`.
 
 By default this displays the first 100 results. As with other commands, you can use the `--limit` param to 
 set a higher limit, or set it to 0 to see all results (this can be quite large with subscriptions results).
@@ -166,11 +168,21 @@ set a higher limit, or set it to 0 to see all results (this can be quite large w
 You can also filter by status:
 
 ```sh
-planet subscriptions results --status processing
+planet subscriptions results SUBSCRIPTION_ID --status processing
 ```
 
 The available statuses are `created`, `queued`, `processing`, `failed`, and `success`. Note it’s quite useful
 to use `jq` to help filter out results as well.  
+
+#### Results as comma-seperated values (CSV)
+
+Planetary Variable subscribers can benefit from retrieving results as a CSV. The results contain variable statistics and can serve as data for time series analysis and visualization.
+
+```sh
+planet subscriptions results SUBSCRIPTION_ID --csv
+```
+
+*New in version 2.1*
 
 ### Update Subscription
 
@@ -306,6 +318,28 @@ planet data filter --range clear_percent gt 90 \
 
 Do not bother with geometry or date filters, as they will be ignored in favor of the `--start-time` and `--geometry` values that are required.
 
+#### Publishing stages and time range types
+
+By using the `--time-range-type` you can choose to temporally filter by
+acquisition or publication time. The `--publishing-stage` option allows you to
+receive the earliest preview imagery or wait until finalized imagery is
+available. See [Catalog Source
+Types:Parameters](https://developers.planet.com/docs/subscriptions/source/#parameters)
+for more details.
+
+```sh
+planet subscriptions request-catalog \
+    --item-types PSScene \
+    --asset-types ortho_analytic_8b \
+    --geometry geometry.geojson \
+    --start-time 2022-08-24T00:00:00-07:00 \
+    --time-range-type acquired \
+    --publishing-stage finalized \
+    --filter filter.json
+```
+
+*New in version 2.1*
+
 #### Saving the output
 
 You’ll likely want to save the output of your `request-catalog` call to disk, so that you can more easily use it in constructing the complete subscription
@@ -321,6 +355,25 @@ planet subscriptions request-catalog \
     --filter filter.json > request-catalog.json
 ```
 
+### Planetary Variable Request
+
+Subscribing to Planetary Variables is much like subscribing to imagery from
+Planet's catalog. The `planet subscriptions request-pv` command can construct the source
+part of a Planetary Variable request like `request-catalog` does for cataloged
+imagery. Planetary Variable subscriptions come in 4 types and are further
+subdivided within these types by an identifier. See [Subscribing to Planetary
+Variables](https://developers.planet.com/docs/subscriptions/pvs-subs/#planetary-variables-types-and-ids)
+for details. To constrain data delivery by space and time, you will use the
+`--geometry`, `start-time`, and `end-time` options described above.
+
+```sh
+planet subscriptions request-pv \
+    --var-type biomass_proxy \
+    --var-id BIOMASS-PROXY_V3.0_10 \
+    --geometry geometry.geojson \
+    --start-time 2022-08-24T00:00:00-07:00 > request-pv.json
+```
+
 ### Subscription Tools
 
 Now we’ll dive into some of the tools options for subscriptions. These are quite similar to the tools for 
@@ -332,51 +385,18 @@ for Orders, future of the versions of the CLI will likely add `tools` convenienc
 
 The most used tool is the `clip` operation, which lets you pass a geometry to the
 Subscriptions API and it creates new images that only have pixels within the geometry you
-gave it. We’ll use the same geometry from [above](#geometry), as it is quite
-typical to use the same subscription geometry as the clip geometry, so you don't get
-any pixels outside of your area of interest (99.9% of all subscriptions use the clip
-tool, so it’s strongly recommended to also use clip). The proper 'clip' tool for it
-would be:
+gave it. 99% of the time you will want to clip to the subscription geometry. The easiest way to do this is to use the `--clip-to-source` option added to the `subscriptions request` command in version 2.1.
 
-```json
-[
-    {
-        "type": "clip",
-        "parameters": {
-            "aoi": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -163.828125,
-                            -44.59046718130883
-                        ],
-                        [
-                            181.7578125,
-                            -44.59046718130883
-                        ],
-                        [
-                            181.7578125,
-                            78.42019327591201
-                        ],
-                        [
-                            -163.828125,
-                            78.42019327591201
-                        ],
-                        [
-                            -163.828125,
-                            -44.59046718130883
-                        ]
-                    ]
-                ]
-            }
-        }
-    }
-]
+```sh
+planet subscriptions request \
+    --name 'Clipped Subscription' \
+    --source request-catalog.json \
+    --delivery cloud-delivery.json \
+    --clip-to-source
 ```
 
-You can save this tools as `tools.json` to include in the `subscriptions request` 
-command.
+*New in version 2.1*
+
 
 #### Additional Tools
 
