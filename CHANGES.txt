@@ -1,5 +1,9 @@
 2.1.1 (TBD)
 
+Changed:
+- The upper version pin for click has been removed. This project ignores type
+  errors involving click.command() and click.group() since 2.1.0 and does not
+  need to avoid click 8.1.4 or 8.1.5.
 
 2.1.0 (2023-07-17)
 
