@@ -1,6 +1,9 @@
-2.1.1 (TBD)
+2.1.1 (2023-07-20)
 
 Changed:
+- Version 2.1.0 was not compatible with Python 3.7 because of an import of
+  typing.Literal. It is now imported exclusively from typing_extensions and
+  Python 3.7, while EOL, will be supported for a while longer (#).
 - The upper version pin for click has been removed. This project ignores type
   errors involving click.command() and click.group() since 2.1.0 and does not
   need to avoid click 8.1.4 or 8.1.5.
