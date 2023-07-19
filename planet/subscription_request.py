@@ -13,7 +13,9 @@
 # the License.
 """Functionality for preparing subscription requests."""
 from datetime import datetime
-from typing import Any, Dict, Optional, List, Literal, Mapping, Sequence
+from typing import Any, Dict, Optional, List, Mapping, Sequence
+
+from typing_extensions import Literal
 
 from . import geojson, specs
 from .exceptions import ClientError
