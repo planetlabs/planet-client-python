@@ -42,7 +42,8 @@ RETRY_EXCEPTIONS = [
     httpx.ReadTimeout,
     httpx.RemoteProtocolError,
     exceptions.BadGateway,
-    exceptions.TooManyRequests
+    exceptions.TooManyRequests,
+    exceptions.ServerError
 ]
 MAX_RETRIES = 5
 MAX_RETRY_BACKOFF = 64  # seconds
