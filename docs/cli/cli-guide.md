@@ -26,5 +26,5 @@ with Planet’s tools.
 ## CLI Set-up
 
 Getting your CLI set up with your Planet account is covered in the 
-[Quick Start Guide](../getting-started/quick-start-guide.md), so be sure
+[Quick Start Guide](../get-started/quick-start-guide.md), so be sure
 to do that before going into any of the next sections.
