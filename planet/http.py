@@ -19,11 +19,13 @@ from collections import Counter
 from contextlib import asynccontextmanager
 from http import HTTPStatus
 import logging
+from pathlib import Path
 import random
 import time
 from typing import AsyncGenerator, Optional
 
 import httpx
+from tqdm.asyncio import tqdm
 from typing_extensions import Literal
 
 from .auth import Auth, AuthType
@@ -395,26 +397,79 @@ class Session(BaseSession):
 
         return http_resp
 
-    @asynccontextmanager
-    async def stream(
-            self, method: str,
-            url: str) -> AsyncGenerator[models.StreamingResponse, None]:
-        """Submit a request and get the response as a stream context manager.
+    async def write(self,
+                    url: str,
+                    directory: Path,
+                    overwrite: bool,
+                    progress_bar: bool,
+                    filename: Optional[str] = None) -> str:
+        """Write data to local file with limiting and retries.
 
         Parameters:
-            method: HTTP request method.
-            url: Location of the API endpoint.
+            url: Remote location url
+            filename: Custom name to assign to downloaded file.
+            directory: Base directory for file download. This directory will be
+                created if it does not already exist.
+            overwrite: Overwrite any existing files.
+            progress_bar: Show progress bar during download.
 
         Returns:
-            Context manager providing the streaming response.
+            Path to downloaded file.
+
+        Raises:
+            planet.exceptions.APIException: On API error.
+            planet.exceptions.ClientError: When retry limit is exceeded.
+
         """
-        request = self._client.build_request(method=method, url=url)
-        http_response = await self._retry(self._send, request, stream=True)
-        response = models.StreamingResponse(http_response)
-        try:
-            yield response
-        finally:
-            await response.aclose()
+        async def _limited_write():
+            async with self._limiter:
+                dl_path = await self._write(url=url,
+                                            directory=directory,
+                                            overwrite=overwrite,
+                                            progress_bar=progress_bar,
+                                            filename=filename)
+            return dl_path
+
+        return await self._retry(_limited_write)
+
+    async def _write(self,
+                     url: str,
+                     directory: Path,
+                     overwrite: bool,
+                     progress_bar: bool,
+                     filename: Optional[str] = None) -> Path:
+        """Write data to local file. To be used in write()"""
+
+        async with self._client.stream('GET', url) as response:
+
+            dl_path = Path(directory,
+                           filename or _get_filename_from_response(response))
+            dl_path.parent.mkdir(exist_ok=True, parents=True)
+
+            total = int(response.headers["Content-Length"])
+
+            try:
+                mode = 'wb' if overwrite else 'xb'
+                with open(dl_path, mode) as fp:
+                    LOGGER.info(f'Writing {dl_path}, size {total}B')
+
+                    with tqdm(total=total,
+                              unit_scale=True,
+                              unit_divisor=1024 * 1024,
+                              unit='B',
+                              desc=str(filename),
+                              disable=not progress_bar) as progress:
+
+                        previous = response.num_bytes_downloaded
+
+                        async for chunk in response.aiter_bytes():
+                            fp.write(chunk)
+                            new = response.num_bytes_downloaded - previous
+                            progress.update(new - previous)
+                            previous = new
+                        progress.update()
+            except FileExistsError:
+                LOGGER.info(f'File {dl_path} exists, not overwriting')
 
     def client(self,
                name: Literal['data', 'orders', 'subscriptions'],
@@ -438,6 +493,51 @@ class Session(BaseSession):
             return _client_directory[name](self, base_url=base_url)
         except KeyError:
             raise exceptions.ClientError("No such client.")
+
+
+def _get_filename_from_response(response) -> str:
+    """The name of the response resource.
+
+        The default is to use the content-disposition header value from the
+        response. If not found, falls back to resolving the name from the url
+        or generating a random name with the type from the response.
+        """
+    name = (_get_filename_from_headers(response.headers)
+            or _get_filename_from_url(response.url)
+            or _get_random_filename(response.headers.get('content-type')))
+    return name
+
+
+def _get_filename_from_headers(headers):
+    """Get a filename from the Content-Disposition header, if available.
+
+    :param headers dict: a ``dict`` of response headers
+    :returns: a filename (i.e. ``basename``)
+    :rtype: str or None
+    """
+    cd = headers.get('content-disposition', '')
+    match = re.search('filename="?([^"]+)"?', cd)
+    return match.group(1) if match else None
+
+
+def _get_filename_from_url(url: str) -> Optional[str]:
+    """Get a filename from a url.
+
+    Getting a name for Landsat imagery uses this function.
+    """
+    path = urlparse(url).path
+    name = path[path.rfind('/') + 1:]
+    return name or None
+
+
+def _get_random_filename(content_type=None) -> str:
+    """Get a pseudo-random, Planet-looking filename.
+    """
+    extension = mimetypes.guess_extension(content_type or '') or ''
+    characters = string.ascii_letters + '0123456789'
+    letters = ''.join(random.sample(characters, 8))
+    name = 'planet-{}{}'.format(letters, extension)
+    return name
 
 
 class AuthSession(BaseSession):

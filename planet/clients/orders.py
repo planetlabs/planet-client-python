@@ -25,7 +25,7 @@ from pathlib import Path
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
-from ..models import Paged, StreamingBody
+from ..models import Paged
 
 BASE_URL = f'{PLANET_BASE_URL}/compute/ops'
 STATS_PATH = '/stats/orders/v2'
@@ -251,15 +251,15 @@ class OrdersClient:
 
         Raises:
             planet.exceptions.APIError: On API error.
+            planet.exceptions.ClientError: If location is not valid or retry
+                limit is exceeded.
+
         """
-        async with self._session.stream(method='GET', url=location) as resp:
-            body = StreamingBody(resp)
-            dl_path = Path(directory, filename or body.name)
-            dl_path.parent.mkdir(exist_ok=True, parents=True)
-            await body.write(dl_path,
-                             overwrite=overwrite,
-                             progress_bar=progress_bar)
-        return dl_path
+        return await self._session.write(location,
+                                   filename=filename,
+                                   directory=directory,
+                                   overwrite=overwrite,
+                                   progress_bar=progress_bar)
 
     async def download_order(self,
                              order_id: str,
