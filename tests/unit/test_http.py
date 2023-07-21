@@ -17,7 +17,9 @@ import json
 import logging
 from http import HTTPStatus
 import math
-from unittest.mock import patch
+from pathlib import Path
+import re
+from unittest.mock import MagicMock, patch
 
 import httpx
 import respx
@@ -185,7 +187,7 @@ async def test__Limiter_rate_limit(monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_session_contextmanager():
+async def test_Session_contextmanager():
     async with http.Session():
         pass
 
@@ -193,7 +195,7 @@ async def test_session_contextmanager():
 @respx.mock
 @pytest.mark.anyio
 @pytest.mark.parametrize('data', (None, {'boo': 'baa'}))
-async def test_session_request_success(data):
+async def test_Session_request_success(data):
 
     async with http.Session() as ps:
         resp_json = {'foo': 'bar'}
@@ -217,19 +219,7 @@ async def test_session_request_success(data):
 
 @respx.mock
 @pytest.mark.anyio
-async def test_session_stream():
-    async with http.Session() as ps:
-        mock_resp = httpx.Response(HTTPStatus.OK, text='bubba')
-        respx.get(TEST_URL).return_value = mock_resp
-
-        async with ps.stream(method='GET', url=TEST_URL) as resp:
-            chunks = [c async for c in resp.aiter_bytes()]
-            assert chunks[0] == b'bubba'
-
-
-@respx.mock
-@pytest.mark.anyio
-async def test_session_request_retry():
+async def test_Session_request_retry():
     """Test the retry in the Session.request method"""
     async with http.Session() as ps:
         route = respx.get(TEST_URL)
@@ -248,7 +238,7 @@ async def test_session_request_retry():
 
 @respx.mock
 @pytest.mark.anyio
-async def test_session__retry():
+async def test_Session__retry():
     """A unit test for the _retry function"""
 
     async def test_func():
@@ -268,7 +258,7 @@ async def test_session__retry():
         assert args == [(1, 64), (2, 64), (3, 64), (4, 64), (5, 64)]
 
 
-def test__calculate_wait():
+def test_Session__calculate_wait():
     max_retry_backoff = 20
     wait_times = [
         http.Session._calculate_wait(i + 1, max_retry_backoff)
@@ -282,6 +272,59 @@ def test__calculate_wait():
         # this doesn't really test the randomness but does test exponential
         # and threshold
         assert math.floor(wait) == expected
+
+
+@respx.mock
+@pytest.mark.anyio
+async def test_Session_write():
+    """Ensure that write retries and that it passes the correct info to
+    _write_response."""
+    resp_success = httpx.Response(HTTPStatus.OK, json={})
+
+    route = respx.get(TEST_URL)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.TOO_MANY_REQUESTS, json={}), resp_success
+    ]
+
+    with patch('planet.http.Session._write_response') as mock_write_response:
+
+        async with http.Session() as ps:
+            # let's not actually introduce a wait into the tests
+            ps.max_retry_backoff = 0
+
+            await ps.write(TEST_URL, filename='test', directory='testdir')
+
+        req_call_args = mock_write_response.call_args[0]
+        assert req_call_args[0].status_code == resp_success.status_code
+        assert req_call_args[1] == Path('testdir') / 'test'  # filename
+
+
+@pytest.mark.anyio
+async def test_Session__write_response(tmpdir, open_test_img):
+    """Ensure content is downloaded and written to the correct file"""
+
+    async def _aiter_bytes():
+        data = open_test_img.read()
+        v = memoryview(data)
+
+        chunksize = 100
+        for i in range(math.ceil(len(v) / (chunksize))):
+            yield v[i * chunksize:min((i + 1) * chunksize, len(v))]
+
+    r = MagicMock(name='response')
+    r.aiter_bytes = _aiter_bytes
+    r.num_bytes_downloaded = 0
+    r.headers['Content-Length'] = 527
+
+    dl_path = Path(tmpdir) / 'test.tif'
+    async with http.Session() as ps:
+        await ps._write_response(r,
+                                 dl_path,
+                                 overwrite=False,
+                                 progress_bar=False)
+
+    assert dl_path.is_file()
+    assert dl_path.stat().st_size == 527
 
 
 @respx.mock
@@ -304,3 +347,68 @@ def test_authsession__raise_for_status(mock_response):
     with pytest.raises(exceptions.APIError):
         http.AuthSession._raise_for_status(
             mock_response(HTTPStatus.UNAUTHORIZED, json={}))
+
+
+def test__get_filename_from_response():
+    r = MagicMock(name='response')
+    r.url = 'https://planet.com/path/to/example.tif?foo=f6f1'
+    r.headers = {
+        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+        'accept-ranges': 'bytes',
+        'content-type': 'image/tiff',
+        'content-length': '57350256',
+        'content-disposition': 'attachment; filename="open_california.tif"'
+    }
+    assert http._get_filename_from_response(r) == 'open_california.tif'
+
+
+NO_NAME_HEADERS = {
+    'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+    'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+    'accept-ranges': 'bytes',
+    'content-type': 'image/tiff',
+    'content-length': '57350256'
+}
+OPEN_CALIFORNIA_HEADERS = {
+    'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+    'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+    'accept-ranges': 'bytes',
+    'content-type': 'image/tiff',
+    'content-length': '57350256',
+    'content-disposition': 'attachment; filename="open_california.tif"'
+}
+
+
+@pytest.mark.parametrize('headers,expected',
+                         [(OPEN_CALIFORNIA_HEADERS, 'open_california.tif'),
+                          (NO_NAME_HEADERS, None),
+                          ({}, None)])  # yapf: disable
+def test__get_filename_from_headers(headers, expected):
+    assert http._get_filename_from_headers(headers) == expected
+
+
+@pytest.mark.parametrize(
+    'url,expected',
+    [
+        ('https://planet.com/', None),
+        ('https://planet.com/path/to/', None),
+        ('https://planet.com/path/to/example.tif', 'example.tif'),
+        ('https://planet.com/path/to/example.tif?foo=f6f1&bar=baz',
+         'example.tif'),
+        ('https://planet.com/path/to/example.tif?foo=f6f1#quux',
+         'example.tif'),
+    ])
+def test__get_filename_from_url(url, expected):
+    assert http._get_filename_from_url(url) == expected
+
+
+@pytest.mark.parametrize(
+    'content_type,check',
+    [
+        (None,
+         lambda x: re.match(r'^planet-[a-z0-9]{8}$', x, re.I) is not None),
+        ('image/tiff', lambda x: x.endswith(('.tif', '.tiff'))),
+    ])
+def test__get_random_filename(content_type, check):
+    assert check(http._get_random_filename(content_type))

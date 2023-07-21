@@ -256,10 +256,10 @@ class OrdersClient:
 
         """
         return await self._session.write(location,
-                                   filename=filename,
-                                   directory=directory,
-                                   overwrite=overwrite,
-                                   progress_bar=progress_bar)
+                                         filename=filename,
+                                         directory=directory,
+                                         overwrite=overwrite,
+                                         progress_bar=progress_bar)
 
     async def download_order(self,
                              order_id: str,

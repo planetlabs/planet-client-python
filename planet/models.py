@@ -14,16 +14,9 @@
 # limitations under the License.
 """Manage data for requests and responses."""
 import logging
-import mimetypes
-from pathlib import Path
-import random
-import re
-import string
-from typing import AsyncGenerator, Callable, List, Optional
-from urllib.parse import urlparse
+from typing import AsyncGenerator, Callable, List
 
 import httpx
-from tqdm.asyncio import tqdm
 
 from .exceptions import PagingError
 

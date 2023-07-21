@@ -16,13 +16,16 @@
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import asyncio
 from collections import Counter
-from contextlib import asynccontextmanager
 from http import HTTPStatus
 import logging
+import mimetypes
 from pathlib import Path
 import random
+import re
+import string
 import time
-from typing import AsyncGenerator, Optional
+from typing import Optional
+from urllib.parse import urlparse
 
 import httpx
 from tqdm.asyncio import tqdm
@@ -44,8 +47,7 @@ RETRY_EXCEPTIONS = [
     httpx.ReadTimeout,
     httpx.RemoteProtocolError,
     exceptions.BadGateway,
-    exceptions.TooManyRequests,
-    exceptions.ServerError
+    exceptions.TooManyRequests,  # exceptions.ServerError
 ]
 MAX_RETRIES = 5
 MAX_RETRY_BACKOFF = 64  # seconds
@@ -399,10 +401,10 @@ class Session(BaseSession):
 
     async def write(self,
                     url: str,
-                    directory: Path,
-                    overwrite: bool,
-                    progress_bar: bool,
-                    filename: Optional[str] = None) -> str:
+                    filename: Optional[str] = None,
+                    directory: Path = Path('.'),
+                    overwrite: bool = False,
+                    progress_bar: bool = False) -> Path:
         """Write data to local file with limiting and retries.
 
         Parameters:
@@ -421,55 +423,56 @@ class Session(BaseSession):
             planet.exceptions.ClientError: When retry limit is exceeded.
 
         """
+
+        async def _write():
+            async with self._client.stream('GET', url) as response:
+
+                dl_path = Path(
+                    directory,
+                    filename or _get_filename_from_response(response))
+                dl_path.parent.mkdir(exist_ok=True, parents=True)
+
+                await self._write_response(response,
+                                           dl_path,
+                                           overwrite=overwrite,
+                                           progress_bar=progress_bar)
+
+                return dl_path
+
         async def _limited_write():
             async with self._limiter:
-                dl_path = await self._write(url=url,
-                                            directory=directory,
-                                            overwrite=overwrite,
-                                            progress_bar=progress_bar,
-                                            filename=filename)
+                dl_path = await _write()
             return dl_path
 
         return await self._retry(_limited_write)
 
-    async def _write(self,
-                     url: str,
-                     directory: Path,
-                     overwrite: bool,
-                     progress_bar: bool,
-                     filename: Optional[str] = None) -> Path:
-        """Write data to local file. To be used in write()"""
+    async def _write_response(self,
+                              response,
+                              filename,
+                              overwrite,
+                              progress_bar):
+        total = int(response.headers["Content-Length"])
 
-        async with self._client.stream('GET', url) as response:
+        try:
+            mode = 'wb' if overwrite else 'xb'
+            with open(filename, mode) as fp:
 
-            dl_path = Path(directory,
-                           filename or _get_filename_from_response(response))
-            dl_path.parent.mkdir(exist_ok=True, parents=True)
+                with tqdm(total=total,
+                          unit_scale=True,
+                          unit_divisor=1024 * 1024,
+                          unit='B',
+                          desc=str(filename),
+                          disable=not progress_bar) as progress:
+                    previous = response.num_bytes_downloaded
 
-            total = int(response.headers["Content-Length"])
-
-            try:
-                mode = 'wb' if overwrite else 'xb'
-                with open(dl_path, mode) as fp:
-                    LOGGER.info(f'Writing {dl_path}, size {total}B')
-
-                    with tqdm(total=total,
-                              unit_scale=True,
-                              unit_divisor=1024 * 1024,
-                              unit='B',
-                              desc=str(filename),
-                              disable=not progress_bar) as progress:
-
-                        previous = response.num_bytes_downloaded
-
-                        async for chunk in response.aiter_bytes():
-                            fp.write(chunk)
-                            new = response.num_bytes_downloaded - previous
-                            progress.update(new - previous)
-                            previous = new
-                        progress.update()
-            except FileExistsError:
-                LOGGER.info(f'File {dl_path} exists, not overwriting')
+                    async for chunk in response.aiter_bytes():
+                        fp.write(chunk)
+                        new = response.num_bytes_downloaded - previous
+                        progress.update(new - previous)
+                        previous = new
+                    progress.update()
+        except FileExistsError:
+            LOGGER.info(f'File {filename} exists, not overwriting')
 
     def client(self,
                name: Literal['data', 'orders', 'subscriptions'],

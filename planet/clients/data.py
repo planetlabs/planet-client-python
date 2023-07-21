@@ -596,10 +596,10 @@ class DataClient:
                 'asset missing ["location"] entry. Is asset active?')
 
         return await self._session.write(location,
-                                   filename=filename,
-                                   directory=directory,
-                                   overwrite=overwrite,
-                                   progress_bar=progress_bar)
+                                         filename=filename,
+                                         directory=directory,
+                                         overwrite=overwrite,
+                                         progress_bar=progress_bar)
 
     @staticmethod
     def validate_checksum(asset: dict, filename: Path):
