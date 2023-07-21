@@ -1,7 +1,9 @@
 """Planet Subscriptions API Python client."""
 
 import logging
-from typing import AsyncIterator, Literal, Optional, Sequence
+from typing import AsyncIterator, Optional, Sequence
+
+from typing_extensions import Literal
 
 from planet.exceptions import APIError, ClientError
 from planet.http import Session
