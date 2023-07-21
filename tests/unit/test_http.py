@@ -274,6 +274,13 @@ def test_Session__calculate_wait():
         assert math.floor(wait) == expected
 
 
+# just need this for python 3.7
+class AsyncMock(MagicMock):
+
+    async def __call__(self, *args, **kwargs):
+        return super(AsyncMock, self).__call__(*args, **kwargs)
+
+
 @respx.mock
 @pytest.mark.anyio
 async def test_Session_write():
@@ -286,7 +293,8 @@ async def test_Session_write():
         httpx.Response(HTTPStatus.TOO_MANY_REQUESTS, json={}), resp_success
     ]
 
-    with patch('planet.http.Session._write_response') as mock_write_response:
+    with patch('planet.http.Session._write_response',
+               new=AsyncMock()) as mock_write_response:
 
         async with http.Session() as ps:
             # let's not actually introduce a wait into the tests
