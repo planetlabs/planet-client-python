@@ -1,4 +1,10 @@
-Next (TDB)
+2.1.2 (2023-06-28)
+
+Fixed:
+- A single HTTP error response would cause an entire file download to error out.
+  Now, the download is retried using the same logic as retries of other HTTP
+  requests.
+
 
 2.1.1 (2023-07-20)
 
@@ -9,6 +15,7 @@ Changed:
 - The upper version pin for click has been removed. This project ignores type
   errors involving click.command() and click.group() since 2.1.0 and does not
   need to avoid click 8.1.4 or 8.1.5.
+
 
 2.1.0 (2023-07-17)
 
