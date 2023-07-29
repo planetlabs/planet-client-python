@@ -17,7 +17,8 @@ import json
 import logging
 from http import HTTPStatus
 import math
-from unittest.mock import patch
+from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import httpx
 import respx
@@ -26,7 +27,7 @@ import pytest
 
 from planet import exceptions, http
 
-TEST_URL = 'mock://fantastic.com'
+TEST_URL = 'http://www.MockNotRealURL.com'
 
 LOGGER = logging.getLogger(__name__)
 
@@ -185,7 +186,7 @@ async def test__Limiter_rate_limit(monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_session_contextmanager():
+async def test_Session_contextmanager():
     async with http.Session():
         pass
 
@@ -193,7 +194,7 @@ async def test_session_contextmanager():
 @respx.mock
 @pytest.mark.anyio
 @pytest.mark.parametrize('data', (None, {'boo': 'baa'}))
-async def test_session_request_success(data):
+async def test_Session_request_success(data):
 
     async with http.Session() as ps:
         resp_json = {'foo': 'bar'}
@@ -217,19 +218,7 @@ async def test_session_request_success(data):
 
 @respx.mock
 @pytest.mark.anyio
-async def test_session_stream():
-    async with http.Session() as ps:
-        mock_resp = httpx.Response(HTTPStatus.OK, text='bubba')
-        respx.get(TEST_URL).return_value = mock_resp
-
-        async with ps.stream(method='GET', url=TEST_URL) as resp:
-            chunks = [c async for c in resp.aiter_bytes()]
-            assert chunks[0] == b'bubba'
-
-
-@respx.mock
-@pytest.mark.anyio
-async def test_session_request_retry():
+async def test_Session_request_retry():
     """Test the retry in the Session.request method"""
     async with http.Session() as ps:
         route = respx.get(TEST_URL)
@@ -248,7 +237,7 @@ async def test_session_request_retry():
 
 @respx.mock
 @pytest.mark.anyio
-async def test_session__retry():
+async def test_Session__retry():
     """A unit test for the _retry function"""
 
     async def test_func():
@@ -268,7 +257,7 @@ async def test_session__retry():
         assert args == [(1, 64), (2, 64), (3, 64), (4, 64), (5, 64)]
 
 
-def test__calculate_wait():
+def test_Session__calculate_wait():
     max_retry_backoff = 20
     wait_times = [
         http.Session._calculate_wait(i + 1, max_retry_backoff)
@@ -282,6 +271,52 @@ def test__calculate_wait():
         # this doesn't really test the randomness but does test exponential
         # and threshold
         assert math.floor(wait) == expected
+
+
+# just need this for python 3.7
+class AsyncMock(MagicMock):
+
+    async def __call__(self, *args, **kwargs):
+        return super(AsyncMock, self).__call__(*args, **kwargs)
+
+
+@respx.mock
+@pytest.mark.anyio
+async def test_Session_write(open_test_img, tmpdir):
+    """Ensure that write retries and that it writes to the file pointer"""
+
+    async def _stream_img():
+        data = open_test_img.read()
+        v = memoryview(data)
+
+        chunksize = 100
+        for i in range(math.ceil(len(v) / (chunksize))):
+            yield v[i * chunksize:min((i + 1) * chunksize, len(v))]
+
+    img_headers = {
+        'Content-Type': 'image/tiff',
+        'Content-Length': '527',
+        'Content-Disposition': 'attachment; filename="img.tif"'
+    }
+
+    route = respx.get(TEST_URL)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.TOO_MANY_REQUESTS, json={}),
+        httpx.Response(HTTPStatus.OK,
+                       stream=_stream_img(),
+                       headers=httpx.Headers(img_headers))
+    ]
+
+    dl_path = Path(tmpdir, 'test.tif')
+    with open(dl_path, 'wb') as fp:
+        async with http.Session() as ps:
+            # let's not actually introduce a wait into the tests
+            ps.max_retry_backoff = 0
+
+            await ps.write(TEST_URL, fp=fp)
+
+    assert dl_path.is_file()
+    assert dl_path.stat().st_size == 527
 
 
 @respx.mock

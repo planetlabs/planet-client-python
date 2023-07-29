@@ -14,16 +14,11 @@
 # limitations under the License.
 """Manage data for requests and responses."""
 import logging
-import mimetypes
-from pathlib import Path
-import random
 import re
-import string
 from typing import AsyncGenerator, Callable, List, Optional
 from urllib.parse import urlparse
 
 import httpx
-from tqdm.asyncio import tqdm
 
 from .exceptions import PagingError
 
@@ -49,153 +44,65 @@ class Response:
         """HTTP status code"""
         return self._http_response.status_code
 
+    @property
+    def filename(self) -> Optional[str]:
+        """Name of the download file.
+
+        The filename is None if the response does not represent a download.
+        """
+        filename = None
+
+        if self.length is not None:  # is a download file
+            filename = _get_filename_from_response(self._http_response)
+
+        return filename
+
+    @property
+    def length(self) -> Optional[int]:
+        """Length of the download file.
+
+        The length is None if the response does not represent a download.
+        """
+        LOGGER.warning('here')
+        try:
+            length = int(self._http_response.headers["Content-Length"])
+        except KeyError:
+            length = None
+        LOGGER.warning(length)
+        return length
+
     def json(self) -> dict:
         """Response json"""
         return self._http_response.json()
 
 
-class StreamingResponse(Response):
-
-    @property
-    def headers(self) -> httpx.Headers:
-        return self._http_response.headers
-
-    @property
-    def url(self) -> str:
-        return str(self._http_response.url)
-
-    @property
-    def num_bytes_downloaded(self) -> int:
-        return self._http_response.num_bytes_downloaded
-
-    async def aiter_bytes(self):
-        async for c in self._http_response.aiter_bytes():
-            yield c
-
-    async def aclose(self):
-        await self._http_response.aclose()
-
-
-class StreamingBody:
-    """A representation of a streaming resource from the API."""
-
-    def __init__(self, response: StreamingResponse):
-        """Initialize the object.
-
-        Parameters:
-            response: Response that was received from the server.
-        """
-        self._response = response
-
-    @property
-    def name(self) -> str:
-        """The name of this resource.
+def _get_filename_from_response(response) -> Optional[str]:
+    """The name of the response resource.
 
         The default is to use the content-disposition header value from the
         response. If not found, falls back to resolving the name from the url
         or generating a random name with the type from the response.
         """
-        name = (_get_filename_from_headers(self._response.headers)
-                or _get_filename_from_url(self._response.url)
-                or _get_random_filename(
-                    self._response.headers.get('content-type')))
-        return name
-
-    @property
-    def size(self) -> int:
-        """The size of the body."""
-        return int(self._response.headers['Content-Length'])
-
-    async def write(self,
-                    filename: Path,
-                    overwrite: bool = True,
-                    progress_bar: bool = True):
-        """Write the body to a file.
-        Parameters:
-            filename: Name to assign to downloaded file.
-            overwrite: Overwrite any existing files.
-            progress_bar: Show progress bar during download.
-        """
-
-        class _LOG:
-
-            def __init__(self, total, unit, filename, disable):
-                self.total = total
-                self.unit = unit
-                self.disable = disable
-                self.previous = 0
-                self.filename = str(filename)
-
-                if not self.disable:
-                    LOGGER.debug(f'writing to {self.filename}')
-
-            def update(self, new):
-                if new - self.previous > self.unit and not self.disable:
-                    # LOGGER.debug(f'{new-self.previous}')
-                    perc = int(100 * new / self.total)
-                    LOGGER.debug(f'{self.filename}: '
-                                 f'wrote {perc}% of {self.total}')
-                    self.previous = new
-
-        unit = 1024 * 1024
-
-        mode = 'wb' if overwrite else 'xb'
-        try:
-            with open(filename, mode) as fp:
-                _log = _LOG(self.size,
-                            16 * unit,
-                            filename,
-                            disable=progress_bar)
-                with tqdm(total=self.size,
-                          unit_scale=True,
-                          unit_divisor=unit,
-                          unit='B',
-                          desc=str(filename),
-                          disable=not progress_bar) as progress:
-                    previous = self._response.num_bytes_downloaded
-                    async for chunk in self._response.aiter_bytes():
-                        fp.write(chunk)
-                        new = self._response.num_bytes_downloaded
-                        _log.update(new)
-                        progress.update(new - previous)
-                        previous = new
-        except FileExistsError:
-            LOGGER.info(f'File {filename} exists, not overwriting')
+    name = (_get_filename_from_headers(response.headers)
+            or _get_filename_from_url(str(response.url)))
+    return name
 
 
-def _get_filename_from_headers(headers):
-    """Get a filename from the Content-Disposition header, if available.
-
-    :param headers dict: a ``dict`` of response headers
-    :returns: a filename (i.e. ``basename``)
-    :rtype: str or None
-    """
+def _get_filename_from_headers(headers: httpx.Headers) -> Optional[str]:
+    """Get a filename from the Content-Disposition header, if available."""
     cd = headers.get('content-disposition', '')
     match = re.search('filename="?([^"]+)"?', cd)
     return match.group(1) if match else None
 
 
 def _get_filename_from_url(url: str) -> Optional[str]:
-    """Get a filename from a url.
+    """Get a filename from the  url.
 
     Getting a name for Landsat imagery uses this function.
     """
     path = urlparse(url).path
     name = path[path.rfind('/') + 1:]
     return name or None
-
-
-def _get_random_filename(content_type=None):
-    """Get a pseudo-random, Planet-looking filename.
-
-    :returns: a filename (i.e. ``basename``)
-    :rtype: str
-    """
-    extension = mimetypes.guess_extension(content_type or '') or ''
-    characters = string.ascii_letters + '0123456789'
-    letters = ''.join(random.sample(characters, 8))
-    name = 'planet-{}{}'.format(letters, extension)
-    return name
 
 
 class Paged:

@@ -16,12 +16,11 @@
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import asyncio
 from collections import Counter
-from contextlib import asynccontextmanager
 from http import HTTPStatus
 import logging
 import random
 import time
-from typing import AsyncGenerator, Optional
+from typing import Callable, Optional
 
 import httpx
 from typing_extensions import Literal
@@ -42,7 +41,7 @@ RETRY_EXCEPTIONS = [
     httpx.ReadTimeout,
     httpx.RemoteProtocolError,
     exceptions.BadGateway,
-    exceptions.TooManyRequests
+    exceptions.TooManyRequests,
 ]
 MAX_RETRIES = 5
 MAX_RETRY_BACKOFF = 64  # seconds
@@ -327,6 +326,7 @@ class Session(BaseSession):
                         LOGGER.info(f'Retrying: sleeping {wait_time}s')
                         await asyncio.sleep(wait_time)
                 else:
+                    LOGGER.info('Retrying: failed')
                     raise e
 
         self.outcomes.update(['Successful'])
@@ -394,26 +394,32 @@ class Session(BaseSession):
 
         return http_resp
 
-    @asynccontextmanager
-    async def stream(
-            self, method: str,
-            url: str) -> AsyncGenerator[models.StreamingResponse, None]:
-        """Submit a request and get the response as a stream context manager.
+    async def write(self, url: str, fp, callback: Optional[Callable] = None):
+        """Write data to local file with limiting and retries.
 
         Parameters:
-            method: HTTP request method.
-            url: Location of the API endpoint.
+            url: Remote location url.
+            fp: Open write file pointer.
+            callback: Function that handles write progress updates.
 
-        Returns:
-            Context manager providing the streaming response.
+        Raises:
+            planet.exceptions.APIException: On API error.
+
         """
-        request = self._client.build_request(method=method, url=url)
-        http_response = await self._retry(self._send, request, stream=True)
-        response = models.StreamingResponse(http_response)
-        try:
-            yield response
-        finally:
-            await response.aclose()
+
+        async def _limited_write():
+            async with self._limiter:
+                async with self._client.stream('GET', url) as response:
+                    previous = response.num_bytes_downloaded
+
+                    async for chunk in response.aiter_bytes():
+                        fp.write(chunk)
+                        current = response.num_bytes_downloaded
+                        if callback is not None:
+                            callback(current - previous)
+                        previous = current
+
+        await self._retry(_limited_write)
 
     def client(self,
                name: Literal['data', 'orders', 'subscriptions'],

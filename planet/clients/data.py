@@ -20,11 +20,13 @@ import time
 from typing import Any, AsyncIterator, Callable, Dict, List, Optional
 import uuid
 
+from tqdm.asyncio import tqdm
+
 from ..data_filter import empty_filter
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
-from ..models import Paged, StreamingBody
+from ..models import Paged
 from ..specs import validate_data_item_type
 
 BASE_URL = f'{PLANET_BASE_URL}/data/v1/'
@@ -595,13 +597,30 @@ class DataClient:
             raise exceptions.ClientError(
                 'asset missing ["location"] entry. Is asset active?')
 
-        async with self._session.stream(method='GET', url=location) as resp:
-            body = StreamingBody(resp)
-            dl_path = Path(directory, filename or body.name)
-            dl_path.parent.mkdir(exist_ok=True, parents=True)
-            await body.write(dl_path,
-                             overwrite=overwrite,
-                             progress_bar=progress_bar)
+        response = await self._session.request(method='GET', url=location)
+        filename = filename or response.filename
+        if not filename:
+            raise exceptions.ClientError(
+                f'Could not determine filename at {location}')
+
+        dl_path = Path(directory, filename)
+        dl_path.parent.mkdir(exist_ok=True, parents=True)
+        LOGGER.info(f'Downloading {dl_path}')
+
+        try:
+            mode = 'wb' if overwrite else 'xb'
+            with open(dl_path, mode) as fp:
+                with tqdm(total=response.length,
+                          unit_scale=True,
+                          unit_divisor=1024 * 1024,
+                          unit='B',
+                          desc=str(filename),
+                          disable=not progress_bar) as progress:
+                    update = progress.update if progress_bar else LOGGER.debug
+                    await self._session.write(location, fp, update)
+        except FileExistsError:
+            LOGGER.info(f'File {dl_path} exists, not overwriting')
+
         return dl_path
 
     @staticmethod
