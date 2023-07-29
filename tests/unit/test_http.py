@@ -18,7 +18,6 @@ import logging
 from http import HTTPStatus
 import math
 from pathlib import Path
-import re
 from unittest.mock import MagicMock, patch
 
 import httpx
@@ -28,7 +27,7 @@ import pytest
 
 from planet import exceptions, http
 
-TEST_URL = 'mock://fantastic.com'
+TEST_URL = 'http://www.MockNotRealURL.com'
 
 LOGGER = logging.getLogger(__name__)
 
@@ -283,35 +282,10 @@ class AsyncMock(MagicMock):
 
 @respx.mock
 @pytest.mark.anyio
-async def test_Session_write():
-    """Ensure that write retries and that it passes the correct info to
-    _write_response."""
-    resp_success = httpx.Response(HTTPStatus.OK, json={})
+async def test_Session_write(open_test_img, tmpdir):
+    """Ensure that write retries and that it writes to the file pointer"""
 
-    route = respx.get(TEST_URL)
-    route.side_effect = [
-        httpx.Response(HTTPStatus.TOO_MANY_REQUESTS, json={}), resp_success
-    ]
-
-    with patch('planet.http.Session._write_response',
-               new=AsyncMock()) as mock_write_response:
-
-        async with http.Session() as ps:
-            # let's not actually introduce a wait into the tests
-            ps.max_retry_backoff = 0
-
-            await ps.write(TEST_URL, filename='test', directory='testdir')
-
-        req_call_args = mock_write_response.call_args[0]
-        assert req_call_args[0].status_code == resp_success.status_code
-        assert req_call_args[1] == Path('testdir') / 'test'  # filename
-
-
-@pytest.mark.anyio
-async def test_Session__write_response(tmpdir, open_test_img):
-    """Ensure content is downloaded and written to the correct file"""
-
-    async def _aiter_bytes():
+    async def _stream_img():
         data = open_test_img.read()
         v = memoryview(data)
 
@@ -319,17 +293,27 @@ async def test_Session__write_response(tmpdir, open_test_img):
         for i in range(math.ceil(len(v) / (chunksize))):
             yield v[i * chunksize:min((i + 1) * chunksize, len(v))]
 
-    r = MagicMock(name='response')
-    r.aiter_bytes = _aiter_bytes
-    r.num_bytes_downloaded = 0
-    r.headers['Content-Length'] = 527
+    img_headers = {
+        'Content-Type': 'image/tiff',
+        'Content-Length': '527',
+        'Content-Disposition': 'attachment; filename="img.tif"'
+    }
 
-    dl_path = Path(tmpdir) / 'test.tif'
-    async with http.Session() as ps:
-        await ps._write_response(r,
-                                 dl_path,
-                                 overwrite=False,
-                                 progress_bar=False)
+    route = respx.get(TEST_URL)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.TOO_MANY_REQUESTS, json={}),
+        httpx.Response(HTTPStatus.OK,
+                       stream=_stream_img(),
+                       headers=httpx.Headers(img_headers))
+    ]
+
+    dl_path = Path(tmpdir, 'test.tif')
+    with open(dl_path, 'wb') as fp:
+        async with http.Session() as ps:
+            # let's not actually introduce a wait into the tests
+            ps.max_retry_backoff = 0
+
+            await ps.write(TEST_URL, fp=fp)
 
     assert dl_path.is_file()
     assert dl_path.stat().st_size == 527
@@ -355,68 +339,3 @@ def test_authsession__raise_for_status(mock_response):
     with pytest.raises(exceptions.APIError):
         http.AuthSession._raise_for_status(
             mock_response(HTTPStatus.UNAUTHORIZED, json={}))
-
-
-def test__get_filename_from_response():
-    r = MagicMock(name='response')
-    r.url = 'https://planet.com/path/to/example.tif?foo=f6f1'
-    r.headers = {
-        'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
-        'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
-        'accept-ranges': 'bytes',
-        'content-type': 'image/tiff',
-        'content-length': '57350256',
-        'content-disposition': 'attachment; filename="open_california.tif"'
-    }
-    assert http._get_filename_from_response(r) == 'open_california.tif'
-
-
-NO_NAME_HEADERS = {
-    'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
-    'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
-    'accept-ranges': 'bytes',
-    'content-type': 'image/tiff',
-    'content-length': '57350256'
-}
-OPEN_CALIFORNIA_HEADERS = {
-    'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
-    'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
-    'accept-ranges': 'bytes',
-    'content-type': 'image/tiff',
-    'content-length': '57350256',
-    'content-disposition': 'attachment; filename="open_california.tif"'
-}
-
-
-@pytest.mark.parametrize('headers,expected',
-                         [(OPEN_CALIFORNIA_HEADERS, 'open_california.tif'),
-                          (NO_NAME_HEADERS, None),
-                          ({}, None)])  # yapf: disable
-def test__get_filename_from_headers(headers, expected):
-    assert http._get_filename_from_headers(headers) == expected
-
-
-@pytest.mark.parametrize(
-    'url,expected',
-    [
-        ('https://planet.com/', None),
-        ('https://planet.com/path/to/', None),
-        ('https://planet.com/path/to/example.tif', 'example.tif'),
-        ('https://planet.com/path/to/example.tif?foo=f6f1&bar=baz',
-         'example.tif'),
-        ('https://planet.com/path/to/example.tif?foo=f6f1#quux',
-         'example.tif'),
-    ])
-def test__get_filename_from_url(url, expected):
-    assert http._get_filename_from_url(url) == expected
-
-
-@pytest.mark.parametrize(
-    'content_type,check',
-    [
-        (None,
-         lambda x: re.match(r'^planet-[a-z0-9]{8}$', x, re.I) is not None),
-        ('image/tiff', lambda x: x.endswith(('.tif', '.tiff'))),
-    ])
-def test__get_random_filename(content_type, check):
-    assert check(http._get_random_filename(content_type))

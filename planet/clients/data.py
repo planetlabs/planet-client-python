@@ -20,6 +20,8 @@ import time
 from typing import Any, AsyncIterator, Callable, Dict, List, Optional
 import uuid
 
+from tqdm.asyncio import tqdm
+
 from ..data_filter import empty_filter
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
@@ -586,8 +588,8 @@ class DataClient:
 
         Raises:
             planet.exceptions.APIError: On API error.
-            planet.exceptions.ClientError: If asset is not active, asset
-            description is not valid, or retry limit is exceeded.
+            planet.exceptions.ClientError: If asset is not active or asset
+            description is not valid.
         """
         try:
             location = asset['location']
@@ -595,11 +597,31 @@ class DataClient:
             raise exceptions.ClientError(
                 'asset missing ["location"] entry. Is asset active?')
 
-        return await self._session.write(location,
-                                         filename=filename,
-                                         directory=directory,
-                                         overwrite=overwrite,
-                                         progress_bar=progress_bar)
+        response = await self._session.request(method='GET', url=location)
+        filename = filename or response.filename
+        if not filename:
+            raise exceptions.ClientError(
+                f'Could not determine filename at {location}')
+
+        dl_path = Path(directory, filename)
+        dl_path.parent.mkdir(exist_ok=True, parents=True)
+        LOGGER.info(f'Downloading {dl_path}')
+
+        try:
+            mode = 'wb' if overwrite else 'xb'
+            with open(dl_path, mode) as fp:
+                with tqdm(total=response.length,
+                          unit_scale=True,
+                          unit_divisor=1024 * 1024,
+                          unit='B',
+                          desc=str(filename),
+                          disable=not progress_bar) as progress:
+                    update = progress.update if progress_bar else LOGGER.debug
+                    await self._session.write(location, fp, update)
+        except FileExistsError:
+            LOGGER.info(f'File {dl_path} exists, not overwriting')
+
+        return dl_path
 
     @staticmethod
     def validate_checksum(asset: dict, filename: Path):

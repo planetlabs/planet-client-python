@@ -15,12 +15,73 @@
 import logging
 from unittest.mock import MagicMock
 
+import httpx
 import pytest
 
 from planet import models
 from planet.exceptions import PagingError
 
 LOGGER = logging.getLogger(__name__)
+
+NO_NAME_HEADERS = {
+    'date': 'Thu, 14 Feb 2019 16:13:26 GMT',
+    'last-modified': 'Wed, 22 Nov 2017 17:22:31 GMT',
+    'accept-ranges': 'bytes',
+    'Content-Type': 'image/tiff',
+    'Content-Length': '57350256'
+}
+OPEN_CALIFORNIA_HEADERS = httpx.Headers({
+    'date':
+    'Thu, 14 Feb 2019 16:13:26 GMT',
+    'last-modified':
+    'Wed, 22 Nov 2017 17:22:31 GMT',
+    'accept-ranges':
+    'bytes',
+    'Content-Type':
+    'image/tiff',
+    'Content-Length':
+    '57350256',
+    'Content-Disposition':
+    'attachment; filename="open_california.tif"'
+})
+
+
+def test_Response_filename():
+    r = MagicMock(name='response')
+    r.url = 'https://planet.com/path/to/example.tif?foo=f6f1'
+    r.headers = OPEN_CALIFORNIA_HEADERS
+
+    assert models.Response(r).filename == 'open_california.tif'
+
+
+def test__get_filename_from_response():
+    r = MagicMock(name='response')
+    r.url = 'https://planet.com/path/to/example.tif?foo=f6f1'
+    r.headers = OPEN_CALIFORNIA_HEADERS
+    assert models._get_filename_from_response(r) == 'open_california.tif'
+
+
+@pytest.mark.parametrize('headers,expected',
+                         [(OPEN_CALIFORNIA_HEADERS, 'open_california.tif'),
+                          (NO_NAME_HEADERS, None),
+                          ({}, None)])  # yapf: disable
+def test__get_filename_from_headers(headers, expected):
+    assert models._get_filename_from_headers(headers) == expected
+
+
+@pytest.mark.parametrize(
+    'url,expected',
+    [
+        ('https://planet.com/', None),
+        ('https://planet.com/path/to/', None),
+        ('https://planet.com/path/to/example.tif', 'example.tif'),
+        ('https://planet.com/path/to/example.tif?foo=f6f1&bar=baz',
+         'example.tif'),
+        ('https://planet.com/path/to/example.tif?foo=f6f1#quux',
+         'example.tif'),
+    ])
+def test__get_filename_from_url(url, expected):
+    assert models._get_filename_from_url(url) == expected
 
 
 @pytest.mark.anyio

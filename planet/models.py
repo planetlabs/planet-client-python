@@ -14,7 +14,9 @@
 # limitations under the License.
 """Manage data for requests and responses."""
 import logging
-from typing import AsyncGenerator, Callable, List
+import re
+from typing import AsyncGenerator, Callable, List, Optional
+from urllib.parse import urlparse
 
 import httpx
 
@@ -42,9 +44,65 @@ class Response:
         """HTTP status code"""
         return self._http_response.status_code
 
+    @property
+    def filename(self) -> Optional[str]:
+        """Name of the download file.
+
+        The filename is None if the response does not represent a download.
+        """
+        filename = None
+
+        if self.length is not None:  # is a download file
+            filename = _get_filename_from_response(self._http_response)
+
+        return filename
+
+    @property
+    def length(self) -> Optional[int]:
+        """Length of the download file.
+
+        The length is None if the response does not represent a download.
+        """
+        LOGGER.warning('here')
+        try:
+            length = int(self._http_response.headers["Content-Length"])
+        except KeyError:
+            length = None
+        LOGGER.warning(length)
+        return length
+
     def json(self) -> dict:
         """Response json"""
         return self._http_response.json()
+
+
+def _get_filename_from_response(response) -> Optional[str]:
+    """The name of the response resource.
+
+        The default is to use the content-disposition header value from the
+        response. If not found, falls back to resolving the name from the url
+        or generating a random name with the type from the response.
+        """
+    name = (_get_filename_from_headers(response.headers)
+            or _get_filename_from_url(str(response.url)))
+    return name
+
+
+def _get_filename_from_headers(headers: httpx.Headers) -> Optional[str]:
+    """Get a filename from the Content-Disposition header, if available."""
+    cd = headers.get('content-disposition', '')
+    match = re.search('filename="?([^"]+)"?', cd)
+    return match.group(1) if match else None
+
+
+def _get_filename_from_url(url: str) -> Optional[str]:
+    """Get a filename from the  url.
+
+    Getting a name for Landsat imagery uses this function.
+    """
+    path = urlparse(url).path
+    name = path[path.rfind('/') + 1:]
+    return name or None
 
 
 class Paged:

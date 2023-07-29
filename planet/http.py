@@ -18,17 +18,11 @@ import asyncio
 from collections import Counter
 from http import HTTPStatus
 import logging
-import mimetypes
-from pathlib import Path
 import random
-import re
-import string
 import time
-from typing import Optional
-from urllib.parse import urlparse
+from typing import Callable, Optional
 
 import httpx
-from tqdm.asyncio import tqdm
 from typing_extensions import Literal
 
 from .auth import Auth, AuthType
@@ -332,6 +326,7 @@ class Session(BaseSession):
                         LOGGER.info(f'Retrying: sleeping {wait_time}s')
                         await asyncio.sleep(wait_time)
                 else:
+                    LOGGER.info('Retrying: failed')
                     raise e
 
         self.outcomes.update(['Successful'])
@@ -399,80 +394,32 @@ class Session(BaseSession):
 
         return http_resp
 
-    async def write(self,
-                    url: str,
-                    filename: Optional[str] = None,
-                    directory: Path = Path('.'),
-                    overwrite: bool = False,
-                    progress_bar: bool = False) -> Path:
+    async def write(self, url: str, fp, callback: Optional[Callable] = None):
         """Write data to local file with limiting and retries.
 
         Parameters:
-            url: Remote location url
-            filename: Custom name to assign to downloaded file.
-            directory: Base directory for file download. This directory will be
-                created if it does not already exist.
-            overwrite: Overwrite any existing files.
-            progress_bar: Show progress bar during download.
-
-        Returns:
-            Path to downloaded file.
+            url: Remote location url.
+            fp: Open write file pointer.
+            callback: Function that handles write progress updates.
 
         Raises:
             planet.exceptions.APIException: On API error.
-            planet.exceptions.ClientError: When retry limit is exceeded.
 
         """
 
-        async def _write():
-            async with self._client.stream('GET', url) as response:
-
-                dl_path = Path(
-                    directory,
-                    filename or _get_filename_from_response(response))
-                dl_path.parent.mkdir(exist_ok=True, parents=True)
-
-                await self._write_response(response,
-                                           dl_path,
-                                           overwrite=overwrite,
-                                           progress_bar=progress_bar)
-
-                return dl_path
-
         async def _limited_write():
             async with self._limiter:
-                dl_path = await _write()
-            return dl_path
-
-        return await self._retry(_limited_write)
-
-    async def _write_response(self,
-                              response,
-                              filename,
-                              overwrite,
-                              progress_bar):
-        total = int(response.headers["Content-Length"])
-
-        try:
-            mode = 'wb' if overwrite else 'xb'
-            with open(filename, mode) as fp:
-
-                with tqdm(total=total,
-                          unit_scale=True,
-                          unit_divisor=1024 * 1024,
-                          unit='B',
-                          desc=str(filename),
-                          disable=not progress_bar) as progress:
+                async with self._client.stream('GET', url) as response:
                     previous = response.num_bytes_downloaded
 
                     async for chunk in response.aiter_bytes():
                         fp.write(chunk)
-                        new = response.num_bytes_downloaded - previous
-                        progress.update(new - previous)
-                        previous = new
-                    progress.update()
-        except FileExistsError:
-            LOGGER.info(f'File {filename} exists, not overwriting')
+                        current = response.num_bytes_downloaded
+                        if callback is not None:
+                            callback(current - previous)
+                        previous = current
+
+        await self._retry(_limited_write)
 
     def client(self,
                name: Literal['data', 'orders', 'subscriptions'],
@@ -496,51 +443,6 @@ class Session(BaseSession):
             return _client_directory[name](self, base_url=base_url)
         except KeyError:
             raise exceptions.ClientError("No such client.")
-
-
-def _get_filename_from_response(response) -> str:
-    """The name of the response resource.
-
-        The default is to use the content-disposition header value from the
-        response. If not found, falls back to resolving the name from the url
-        or generating a random name with the type from the response.
-        """
-    name = (_get_filename_from_headers(response.headers)
-            or _get_filename_from_url(response.url)
-            or _get_random_filename(response.headers.get('content-type')))
-    return name
-
-
-def _get_filename_from_headers(headers):
-    """Get a filename from the Content-Disposition header, if available.
-
-    :param headers dict: a ``dict`` of response headers
-    :returns: a filename (i.e. ``basename``)
-    :rtype: str or None
-    """
-    cd = headers.get('content-disposition', '')
-    match = re.search('filename="?([^"]+)"?', cd)
-    return match.group(1) if match else None
-
-
-def _get_filename_from_url(url: str) -> Optional[str]:
-    """Get a filename from a url.
-
-    Getting a name for Landsat imagery uses this function.
-    """
-    path = urlparse(url).path
-    name = path[path.rfind('/') + 1:]
-    return name or None
-
-
-def _get_random_filename(content_type=None) -> str:
-    """Get a pseudo-random, Planet-looking filename.
-    """
-    extension = mimetypes.guess_extension(content_type or '') or ''
-    characters = string.ascii_letters + '0123456789'
-    letters = ''.join(random.sample(characters, 8))
-    name = 'planet-{}{}'.format(letters, extension)
-    return name
 
 
 class AuthSession(BaseSession):

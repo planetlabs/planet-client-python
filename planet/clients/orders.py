@@ -15,13 +15,15 @@
 """Functionality for interacting with the orders api"""
 import asyncio
 import logging
+from pathlib import Path
 import time
 from typing import AsyncIterator, Callable, List, Optional
 import uuid
 import json
 import hashlib
 
-from pathlib import Path
+from tqdm.asyncio import tqdm
+
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
@@ -255,11 +257,31 @@ class OrdersClient:
                 limit is exceeded.
 
         """
-        return await self._session.write(location,
-                                         filename=filename,
-                                         directory=directory,
-                                         overwrite=overwrite,
-                                         progress_bar=progress_bar)
+        response = await self._session.request(method='GET', url=location)
+        filename = filename or response.filename
+        length = response.length
+        if not filename:
+            raise exceptions.ClientError(
+                f'Could not determine filename at {location}')
+
+        dl_path = Path(directory, filename)
+        dl_path.parent.mkdir(exist_ok=True, parents=True)
+        LOGGER.info(f'Downloading {dl_path}')
+
+        try:
+            mode = 'wb' if overwrite else 'xb'
+            with open(dl_path, mode) as fp:
+                with tqdm(total=length,
+                          unit_scale=True,
+                          unit_divisor=1024 * 1024,
+                          unit='B',
+                          desc=str(filename),
+                          disable=not progress_bar) as progress:
+                    await self._session.write(location, fp, progress.update)
+        except FileExistsError:
+            LOGGER.info(f'File {dl_path} exists, not overwriting')
+
+        return dl_path
 
     async def download_order(self,
                              order_id: str,

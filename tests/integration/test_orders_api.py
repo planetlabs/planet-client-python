@@ -19,7 +19,6 @@ import hashlib
 from http import HTTPStatus
 import logging
 import math
-import os
 from pathlib import Path
 from unittest.mock import call, create_autospec
 
@@ -587,17 +586,22 @@ async def test_download_asset_img(tmpdir, open_test_img, session):
     # populate request parameter to avoid respx cloning, which throws
     # an error caused by respx and not this code
     # https://github.com/lundberg/respx/issues/130
-    mock_resp = httpx.Response(HTTPStatus.OK,
-                               stream=_stream_img(),
-                               headers=img_headers,
-                               request='donotcloneme')
-    respx.get(dl_url).return_value = mock_resp
+    respx.get(dl_url).side_effect = [
+        httpx.Response(HTTPStatus.OK,
+                       headers=img_headers,
+                       request='donotcloneme'),
+        httpx.Response(HTTPStatus.OK,
+                       stream=_stream_img(),
+                       headers=img_headers,
+                       request='donotcloneme')
+    ]
 
     cl = OrdersClient(session, base_url=TEST_URL)
     filename = await cl.download_asset(dl_url, directory=str(tmpdir))
 
-    assert Path(filename).name == 'img.tif'
-    assert os.path.isfile(filename)
+    assert filename.name == 'img.tif'
+    assert filename.is_file()
+    assert len(filename.read_bytes()) == 527
 
 
 @respx.mock
