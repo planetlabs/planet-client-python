@@ -966,18 +966,12 @@ def test_asset_download_default(invoke,
         for i in range(math.ceil(len(v) / (chunksize))):
             yield v[i * chunksize:min((i + 1) * chunksize, len(v))]
 
-    # populate request parameter to avoid respx cloning, which throws
-    # an error caused by respx and not this code
-    # https://github.com/lundberg/respx/issues/130
-    respx.get(dl_url).side_effect = [
-        httpx.Response(HTTPStatus.OK,
-                       headers=img_headers,
-                       request='donotcloneme'),
-        httpx.Response(HTTPStatus.OK,
-                       stream=_stream_img(),
-                       headers=img_headers,
-                       request='donotcloneme')
-    ]
+    # Mock the response for download_asset
+    mock_resp_download = httpx.Response(HTTPStatus.OK,
+                                        stream=_stream_img(),
+                                        headers=img_headers,
+                                        request='donotcloneme')
+    respx.get(dl_url).return_value = mock_resp_download
 
     runner = CliRunner()
     with runner.isolated_filesystem() as folder:

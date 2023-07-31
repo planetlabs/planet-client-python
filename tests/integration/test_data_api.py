@@ -837,15 +837,11 @@ async def test_download_asset(exists,
     # populate request parameter to avoid respx cloning, which throws
     # an error caused by respx and not this code
     # https://github.com/lundberg/respx/issues/130
-    respx.get(dl_url).side_effect = [
-        httpx.Response(HTTPStatus.OK,
-                       headers=img_headers,
-                       request='donotcloneme'),
-        httpx.Response(HTTPStatus.OK,
-                       stream=_stream_img(),
-                       headers=img_headers,
-                       request='donotcloneme')
-    ]
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               stream=_stream_img(),
+                               headers=img_headers,
+                               request='donotcloneme')
+    respx.get(dl_url).return_value = mock_resp
 
     basic_udm2_asset = {
         "_links": {
@@ -867,8 +863,7 @@ async def test_download_asset(exists,
 
     path = await cl.download_asset(basic_udm2_asset,
                                    directory=tmpdir,
-                                   overwrite=overwrite,
-                                   progress_bar=False)
+                                   overwrite=overwrite)
     assert path.name == 'img.tif'
     assert path.is_file()
 
