@@ -1,5 +1,9 @@
 Next (TDB)
 
+Changed:
+- Running ensurepip and upgrading setuptools is no longer required to test with
+  Python 3.12 on GHA (#1008).
+
 2.1.1 (2023-07-20)
 
 Changed:
