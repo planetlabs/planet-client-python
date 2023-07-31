@@ -35,6 +35,7 @@ TEST_DOWNLOAD_URL = f'{TEST_URL}/download'
 TEST_DOWNLOAD_ACTUAL_URL = f'{TEST_URL}/download_actual'
 TEST_ORDERS_URL = f'{TEST_URL}/orders/v2'
 TEST_STATS_URL = f'{TEST_URL}/stats/orders/v2'
+TEST_ORDER_NAME = 'my-order-name'
 
 LOGGER = logging.getLogger(__name__)
 
@@ -64,6 +65,7 @@ def create_download_mock(downloaded_content, order_description, oid):
                 'location': dl_url, 'name': 'file.json'
             },
         ]
+        order_description['name'] = TEST_ORDER_NAME
 
         get_url = f'{TEST_ORDERS_URL}/{oid}'
         mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
@@ -852,4 +854,24 @@ async def test_download_order_overwrite_false_nonexisting_data(
 
     # Check that the was data downloaded and has the correct contents
     with open(Path(tmpdir, 'file.json')) as f:
+        assert json.load(f) == downloaded_content
+
+
+@respx.mock
+@pytest.mark.anyio
+async def test_download_order_save_to_order_name(
+        tmpdir, oid, session, create_download_mock, downloaded_content):
+    """
+    Test if download_order() downloads data to a directory named after the
+    given order name.
+    """
+
+    create_download_mock()
+    cl = OrdersClient(session, base_url=TEST_URL)
+    filenames = await cl.download_order(oid, save_to_order_name=True,
+                                        directory=str(tmpdir))
+
+    assert filenames == [Path(tmpdir, TEST_ORDER_NAME, 'file.json')]
+    # Check that the was data downloaded and has the correct contents
+    with open(Path(tmpdir, TEST_ORDER_NAME, 'file.json')) as f:
         assert json.load(f) == downloaded_content
