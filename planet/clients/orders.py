@@ -286,6 +286,7 @@ class OrdersClient:
     async def download_order(self,
                              order_id: str,
                              directory: Path = Path('.'),
+                             save_to_order_name: bool = False,
                              overwrite: bool = False,
                              progress_bar: bool = False) -> List[Path]:
         """Download all assets in an order.
@@ -294,6 +295,8 @@ class OrdersClient:
             order_id: The ID of the order.
             directory: Base directory for file download. This directory must
                 already exist.
+            save_to_order_name: Save data to directory named after the given
+                order name.
             overwrite: Overwrite files if they already exist.
             progress_bar: Show progress bar during download.
 
@@ -317,10 +320,17 @@ class OrdersClient:
         info = self._get_download_info(order)
         LOGGER.info(f'downloading {len(info)} assets from order {order_id}')
 
+        if save_to_order_name:
+            order_path = Path(directory, order['name'])
+            for i in info:
+                i['directory'] = Path('')
+        else:
+            order_path = directory
+
         filenames = [
             await self.download_asset(i['location'],
                                       filename=i['filename'],
-                                      directory=directory / i['directory'],
+                                      directory=order_path / i['directory'],
                                       overwrite=overwrite,
                                       progress_bar=progress_bar) for i in info
         ]
