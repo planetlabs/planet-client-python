@@ -29,6 +29,7 @@ install_requires = [
     'httpx>=0.23.0',
     'jsonschema',
     'pyjwt>=2.1',
+    'stamina',
     'tqdm>=4.56',
     'typing-extensions',
 ]

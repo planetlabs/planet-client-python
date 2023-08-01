@@ -566,7 +566,7 @@ async def test_download_asset_md(tmpdir, session):
 
 @respx.mock
 @pytest.mark.anyio
-async def test_download_asset_img(tmpdir, open_test_img, session):
+async def test_download_asset_img_with_retry(tmpdir, open_test_img, session):
     dl_url = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
 
     img_headers = {
@@ -587,9 +587,7 @@ async def test_download_asset_img(tmpdir, open_test_img, session):
     # an error caused by respx and not this code
     # https://github.com/lundberg/respx/issues/130
     respx.get(dl_url).side_effect = [
-        httpx.Response(HTTPStatus.OK,
-                       headers=img_headers,
-                       request='donotcloneme'),
+        httpx.ReadError("no can do!"),
         httpx.Response(HTTPStatus.OK,
                        stream=_stream_img(),
                        headers=img_headers,
