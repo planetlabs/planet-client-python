@@ -14,19 +14,21 @@
 # the License.
 """Functionality for interacting with the orders api"""
 import asyncio
-import logging
-from pathlib import Path
-import time
-from typing import AsyncIterator, Callable, List, Optional
-import uuid
-import json
 import hashlib
+import json
+import logging
+import re
+import time
+import uuid
+from pathlib import Path
+from typing import AsyncIterator, Callable, List, Optional
 
+import stamina
 from tqdm.asyncio import tqdm
 
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
-from ..http import Session
+from ..http import RETRY_EXCEPTIONS, Session
 from ..models import Paged
 
 BASE_URL = f'{PLANET_BASE_URL}/compute/ops'
@@ -232,6 +234,7 @@ class OrdersClient:
         response = await self._session.request(method='GET', url=url)
         return response.json()
 
+    @stamina.retry(on=tuple(RETRY_EXCEPTIONS))
     async def download_asset(self,
                              location: str,
                              filename: Optional[str] = None,
@@ -257,31 +260,49 @@ class OrdersClient:
                 limit is exceeded.
 
         """
-        response = await self._session.request(method='GET', url=location)
-        filename = filename or response.filename
-        length = response.length
-        if not filename:
-            raise exceptions.ClientError(
-                f'Could not determine filename at {location}')
+        async with self._session._limiter, self._session._client.stream('GET', location) as resp:
+            content_length = int(resp.headers.get('content-length'))
 
-        dl_path = Path(directory, filename)
-        dl_path.parent.mkdir(exist_ok=True, parents=True)
-        LOGGER.info(f'Downloading {dl_path}')
+            # Fall back to content-disposition for a filename.
+            if not filename:
+                try:
+                    content_disposition = resp.headers['content-disposition']
+                    match = re.search('filename="?([^"]+)"?',
+                                      content_disposition)
+                    filename = match.group(1)  # type: ignore
+                except (AttributeError, KeyError) as err:
+                    raise exceptions.ClientError(
+                        f'Could not determine filename at {location}') from err
 
-        try:
-            mode = 'wb' if overwrite else 'xb'
-            with open(dl_path, mode) as fp:
-                with tqdm(total=length,
-                          unit_scale=True,
-                          unit_divisor=1024 * 1024,
-                          unit='B',
-                          desc=str(filename),
-                          disable=not progress_bar) as progress:
-                    await self._session.write(location, fp, progress.update)
-        except FileExistsError:
-            LOGGER.info(f'File {dl_path} exists, not overwriting')
+            dl_path = Path(directory, filename)
+            dl_path.parent.mkdir(exist_ok=True, parents=True)
+            LOGGER.info(f'Downloading {dl_path}')
 
-        return dl_path
+            try:
+                mode = 'wb' if overwrite else 'xb'
+                with dl_path.open(mode) as fp:
+                    with tqdm(total=content_length,
+                              unit_scale=True,
+                              unit_divisor=1024 * 1024,
+                              unit='B',
+                              desc=str(filename),
+                              disable=not progress_bar) as progress:
+
+                        previous = resp.num_bytes_downloaded
+
+                        # Size from boto3.s3.transfer.TransferConfig
+                        # io_chunksize. Planet assets are generally
+                        # several MB or more.
+                        async for chunk in resp.aiter_bytes(chunk_size=262144):
+                            fp.write(chunk)
+                            current = resp.num_bytes_downloaded
+                            progress.update(current - previous)
+                            previous = current
+
+            except FileExistsError:
+                LOGGER.info(f'File {dl_path} exists, not overwriting')
+
+            return dl_path
 
     async def download_order(self,
                              order_id: str,
