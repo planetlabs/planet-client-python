@@ -266,7 +266,8 @@ def planetary_variable_source(
     var_type: Literal["biomass_proxy",
                       "land_surface_temperature",
                       "soil_water_content",
-                      "vegetation_optical_depth"],
+                      "vegetation_optical_depth",
+                      "forest_carbon_diligence_30m"],
     var_id: str,
     geometry: Mapping,
     start_time: datetime,
@@ -286,7 +287,8 @@ def planetary_variable_source(
 
     Parameters:
         var_type: one of "biomass_proxy", "land_surface_temperature",
-            "soil_water_content", or "vegetation_optical_depth".
+            "soil_water_content", "vegetation_optical_depth", or
+            "forest_carbon_diligence_30m".
         var_id: a value such as "SWC-AMSR2-C_V1.0_100" for soil water
             content derived from AMSR2 C band.
         geometry: The area of interest of the subscription that will be
