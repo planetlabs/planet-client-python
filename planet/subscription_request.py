@@ -13,7 +13,8 @@
 # the License.
 """Functionality for preparing subscription requests."""
 from datetime import datetime
-from typing import Any, Dict, Optional, List, Mapping, Sequence
+from dataclasses import dataclass, asdict
+from typing import Any, Dict, Optional, List, Mapping, Sequence, Union
 
 from typing_extensions import Literal
 
@@ -651,3 +652,63 @@ def toar_tool(scale_factor: int = 10000) -> dict:
             reflectances not fitting in 16bit integers.
     """
     return _tool('toar', {'scale_factor': scale_factor})
+
+
+@dataclass
+class FilterValue:
+    """Represents a filter value with optional greater than or equal to (gte)
+    and less than or equal to (lte) constraints.
+
+    Attributes:
+        gte (Optional[float]): The minimum threshold value for the filter.
+        lte (Optional[float]): The maximum threshold value for the filter.
+    """
+
+    gte: Optional[float] = None
+    lte: Optional[float] = None
+
+
+def cloud_filter_tool(
+    clear_percent: Optional[FilterValue] = None,
+    cloud_percent: Optional[FilterValue] = None,
+    shadow_percent: Optional[FilterValue] = None,
+    heavy_haze_percent: Optional[FilterValue] = None,
+    light_haze_percent: Optional[FilterValue] = None,
+    snow_ice_percent: Optional[FilterValue] = None,
+) -> Dict[str, Dict[str, Union[float, int]]]:
+    """Specify a subscriptions API cloud_filter tool.
+
+    The cloud_filter tool filters imagery after the clip tool has run and certain
+    metadata values have been updated to pertain to the clip AOI. This tool offers
+    a more detailed filtering of cloudy imagery than what can be achieved using
+    only catalog source filters. For instance, you might want to receive only images
+    that, after clipping, have a cloud_percent value of less than or equal to 25%.
+
+    Parameters:
+        clear_percent: Filters for images based on the percentage of clear sky.
+        cloud_percent: Filters for images based on the percentage of cloud cover.
+        shadow_percent: Filters for images based on the percentage of shadow cover.
+        heavy_haze_percent: Filters for images based on the percentage of heavy haze cover.
+        light_haze_percent: Filters for images based on the percentage of light haze cover.
+        snow_ice_percent: Filters for images based on the percentage of snow or ice cover.
+    """
+    filters = {
+        "clear_percent": clear_percent,
+        "cloud_percent": cloud_percent,
+        "shadow_percent": shadow_percent,
+        "heavy_haze_percent": heavy_haze_percent,
+        "light_haze_percent": light_haze_percent,
+        "snow_ice_percent": snow_ice_percent,
+    }
+
+    result = {}
+
+    for key, value in filters.items():
+        if value:
+            inner_dict = asdict(value)
+            result[key] = {
+                k: v
+                for k, v in inner_dict.items() if v is not None
+            }
+
+    return _tool("cloud_filter", result)
