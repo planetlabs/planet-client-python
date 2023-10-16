@@ -346,7 +346,8 @@ def request_catalog(item_types,
         "biomass_proxy",
         "land_surface_temperature",
         "soil_water_content",
-        "vegetation_optical_depth"
+        "vegetation_optical_depth",
+        "forest_carbon_diligence_30m"
     ]),
 )
 @click.option('--var-id', required=True, help='Planetary variable id.')
