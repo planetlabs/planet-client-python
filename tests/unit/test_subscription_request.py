@@ -407,3 +407,22 @@ def test_catalog_source_time_range_type_acquired(geom_geojson):
     )
 
     assert source["parameters"]["time_range_type"] == "acquired"
+
+
+def test_cloud_filter_tool_success():
+    res = subscription_request.cloud_filter_tool(
+        clear_percent=subscription_request.FilterValue(gte=90),
+        cloud_percent=subscription_request.FilterValue(lte=10, gte=5))
+    expected = {
+        "type": "cloud_filter",
+        "parameters": {
+            "clear_percent": {
+                "gte": 90
+            },
+            "cloud_percent": {
+                "lte": 10, "gte": 5
+            }
+        }
+    }
+
+    assert res == expected
