@@ -1,3 +1,9 @@
+2.2.0 (2023-10-16)
+
+Added:
+- Support for forest_carbon_diligence_30m data layer in Subscriptions API (#1012).
+- Support for cloud_filter tool in Subscriptions API (#1014).
+
 2.1.1 (2023-07-20)
 
 Changed:
@@ -208,7 +214,7 @@ package is coming soon. The highlights are
 - Requirement of Python version 3.7 or newer.
 - Support for Planet Data, Orders, and Subscription APIs.
 - A Python package (the SDK) with asyncio support.
-- A new and improved command line interface (the CLI). 
+- A new and improved command line interface (the CLI).
 
 1.4.6 (2020-05-18)
 
@@ -257,7 +263,7 @@ package is coming soon. The highlights are
 - report the default value for item limit
 - replace hardcoded values with global variables
 - add header for data examples in Examples page
-- adding before, after options, separating `features list` from `features 
+- adding before, after options, separating `features list` from `features
 - Added default limit of 100 to `analytics collections features list`
 - Added separate `analytics collections features list-all` that will keep retrieving results with no limit
 - Added before, after options to both `analytics collections features list` and `analytics collections features list-all`
