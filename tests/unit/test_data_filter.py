@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from datetime import datetime, timedelta, tzinfo
+from datetime import datetime, timedelta, tzinfo, timezone
 import logging
 import pytest
 
@@ -115,7 +115,9 @@ class TZTest(tzinfo):
      (datetime(2022, 6, 1, 1, 1), '2022-06-01T01:01:00Z'),
      (datetime(2022, 6, 1, 1), '2022-06-01T01:00:00Z'),
      (datetime(2022, 6, 1, 1, tzinfo=TZTest(0)), '2022-06-01T01:00:00Z'),
-     (datetime(2022, 6, 1, 1, tzinfo=TZTest(1)), '2022-06-01T01:00:00+01:00')])
+     (datetime(2022, 6, 1, 1, tzinfo=TZTest(1)), '2022-06-01T01:00:00+01:00'),
+     (datetime(2022, 6, 1, 1, tzinfo=timezone(timedelta(0))),
+      '2022-06-01T01:00:00+00:00')])
 def test__datetime_to_rfc3339_basic(dtime, expected):
     assert data_filter._datetime_to_rfc3339(dtime) == expected
 
