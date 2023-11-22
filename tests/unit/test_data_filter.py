@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from datetime import datetime, timedelta, tzinfo, timezone
+from datetime import datetime, timedelta, timezone
 import logging
 import pytest
 
@@ -98,24 +98,14 @@ def test__range_filter_no_conditionals():
                                   callback=_test_callback)
 
 
-class TZTest(tzinfo):
-
-    def __init__(self, offset=None):
-        self.offset = offset
-        super().__init__()
-
-    def utcoffset(self, dt):
-        return timedelta(hours=self.offset) if self.offset else None
-
-
 @pytest.mark.parametrize(
     "dtime,expected",
     [(datetime(2022, 5, 1, 1, 0, 0, 1), '2022-05-01T01:00:00.000001Z'),
      (datetime(2022, 5, 1, 1, 0, 1), '2022-05-01T01:00:01Z'),
      (datetime(2022, 6, 1, 1, 1), '2022-06-01T01:01:00Z'),
      (datetime(2022, 6, 1, 1), '2022-06-01T01:00:00Z'),
-     (datetime(2022, 6, 1, 1, tzinfo=TZTest(0)), '2022-06-01T01:00:00Z'),
-     (datetime(2022, 6, 1, 1, tzinfo=TZTest(1)), '2022-06-01T01:00:00+01:00'),
+     (datetime(2022, 6, 1, 1, tzinfo=timezone(timedelta(hours=1))),
+      '2022-06-01T01:00:00+01:00'),
      (datetime(2022, 6, 1, 1, tzinfo=timezone(timedelta(0))),
       '2022-06-01T01:00:00+00:00')])
 def test__datetime_to_rfc3339_basic(dtime, expected):
