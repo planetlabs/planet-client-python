@@ -358,7 +358,7 @@ def planetary_variable_source(
 def _datetime_to_rfc3339(value: datetime) -> str:
     """Converts the datetime to an RFC3339 string"""
     iso = value.isoformat()
-    if not value.utcoffset():
+    if value.utcoffset() is None:
         # rfc3339 needs a Z if there is no timezone offset
         iso += 'Z'
     return iso
