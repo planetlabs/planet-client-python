@@ -292,8 +292,9 @@ def filter(ctx,
               default=SEARCH_SORT_DEFAULT,
               show_default=True,
               help='Field and direction to order results by.')
+@click.option('--ids-only', is_flag=True, help='Returns only the item IDs.')
 @pretty
-async def search(ctx, item_types, filter, limit, name, sort, pretty):
+async def search(ctx, item_types, filter, limit, name, sort, ids_only, pretty):
     """Execute a structured item search.
 
     This function outputs a series of GeoJSON descriptions, one for each of the
@@ -309,13 +310,18 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
     parameter will be applied to the stored quick search.
     """
     async with data_client(ctx) as cl:
-
+        item_ids = []
         async for item in cl.search(item_types,
                                     search_filter=filter,
                                     name=name,
                                     sort=sort,
                                     limit=limit):
-            echo_json(item, pretty)
+            if ids_only:
+                item_ids.append(item['id'])
+            else:
+                echo_json(item, pretty)
+        if ids_only:
+            click.echo(','.join(item_ids))
 
 
 @data.command(epilog=valid_item_string)  # type: ignore
@@ -395,16 +401,23 @@ async def search_list(ctx, sort, search_type, limit, pretty):
               show_default=True,
               help='Field and direction to order results by.')
 @limit
+@click.option('--ids-only', is_flag=True, help='Returns only the item IDs.')
 @pretty
-async def search_run(ctx, search_id, sort, limit, pretty):
+async def search_run(ctx, search_id, sort, limit, ids_only, pretty):
     """Execute a saved structured item search.
 
     This function outputs a series of GeoJSON descriptions, one for each of the
     returned items, optionally pretty-printed.
     """
     async with data_client(ctx) as cl:
+        item_ids = []
         async for item in cl.run_search(search_id, sort=sort, limit=limit):
-            echo_json(item, pretty)
+            if ids_only:
+                item_ids.append(item['id'])
+            else:
+                echo_json(item, pretty)
+        if ids_only:
+            click.echo(','.join(item_ids))
 
 
 @data.command(epilog=valid_item_string)  # type: ignore

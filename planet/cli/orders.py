@@ -77,16 +77,20 @@ async def list(ctx, state, limit, pretty):
 @translate_exceptions
 @coro
 @click.argument('order_id', type=click.UUID)
+@click.option('--ids-only', is_flag=True, help='Returns only the item IDs.')
 @pretty
-async def get(ctx, order_id, pretty):
+async def get(ctx, order_id, ids_only, pretty):
     """Get order
 
     This command outputs the order description, optionally pretty-printed.
     """
     async with orders_client(ctx) as cl:
         order = await cl.get_order(str(order_id))
-
-    echo_json(order, pretty)
+    if ids_only:
+        item_ids = order['products'][0]['item_ids']
+        click.echo(','.join(item_ids))
+    else:
+        echo_json(order, pretty)
 
 
 @orders.command()  # type: ignore
@@ -217,8 +221,7 @@ async def create(ctx, request: str, pretty):
     """
     async with orders_client(ctx) as cl:
         order = await cl.create_order(request)
-
-    echo_json(order, pretty)
+        echo_json(order, pretty)
 
 
 @orders.command()  # type: ignore
