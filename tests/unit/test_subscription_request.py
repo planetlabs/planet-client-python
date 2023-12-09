@@ -197,6 +197,25 @@ def test_amazon_s3_success():
     }
 
 
+def test_amazon_s3_path_prefix_success():
+    res = subscription_request.amazon_s3(aws_access_key_id='keyid',
+                                         aws_secret_access_key='accesskey',
+                                         bucket='bucket',
+                                         aws_region='region',
+                                         path_prefix="prefix")
+
+    assert res == {
+        "type": "amazon_s3",
+        "parameters": {
+            "aws_access_key_id": "keyid",
+            "aws_secret_access_key": "accesskey",
+            "bucket": "bucket",
+            "aws_region": "region",
+            "path_prefix": "prefix"
+        }
+    }
+
+
 def test_azure_blob_storage_success():
     res = subscription_request.azure_blob_storage(
         account='act',
@@ -215,6 +234,26 @@ def test_azure_blob_storage_success():
     }
 
 
+def test_azure_blob_storage_path_prefix_success():
+    res = subscription_request.azure_blob_storage(
+        account='act',
+        container='container',
+        sas_token='sastoken',
+        storage_endpoint_suffix='suffix',
+        path_prefix="prefix")
+
+    assert res == {
+        "type": "azure_blob_storage",
+        "parameters": {
+            "account": "act",
+            "container": "container",
+            "sas_token": "sastoken",
+            "storage_endpoint_suffix": "suffix",
+            "path_prefix": "prefix"
+        }
+    }
+
+
 def test_google_cloud_storage_success():
     res = subscription_request.google_cloud_storage(credentials='cred',
                                                     bucket='bucket')
@@ -223,6 +262,19 @@ def test_google_cloud_storage_success():
         "type": "google_cloud_storage",
         "parameters": {
             "bucket": "bucket", "credentials": "cred"
+        }
+    }
+
+
+def test_google_cloud_storage_path_prefix_success():
+    res = subscription_request.google_cloud_storage(credentials='cred',
+                                                    bucket='bucket',
+                                                    path_prefix="prefix")
+
+    assert res == {
+        "type": "google_cloud_storage",
+        "parameters": {
+            "bucket": "bucket", "credentials": "cred", "path_prefix": "prefix"
         }
     }
 
@@ -243,6 +295,28 @@ def test_oracle_cloud_storage_success():
             "bucket": "bucket",
             "region": "region",
             "namespace": "namespace"
+        }
+    }
+
+
+def test_oracle_cloud_storage_path_prefix_success():
+    res = subscription_request.oracle_cloud_storage(
+        customer_access_key_id='keyid',
+        customer_secret_key='secretkey',
+        bucket='bucket',
+        region='region',
+        namespace='namespace',
+        path_prefix="prefix")
+
+    assert res == {
+        "type": "oracle_cloud_storage",
+        "parameters": {
+            "customer_access_key_id": "keyid",
+            "customer_secret_key": "secretkey",
+            "bucket": "bucket",
+            "region": "region",
+            "namespace": "namespace",
+            "path_prefix": "prefix"
         }
     }
 

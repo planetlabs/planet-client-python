@@ -371,7 +371,8 @@ def _delivery(type: str, parameters: dict) -> dict:
 def amazon_s3(aws_access_key_id: str,
               aws_secret_access_key: str,
               bucket: str,
-              aws_region: str) -> dict:
+              aws_region: str,
+              path_prefix: Optional[str] = None) -> dict:
     """Delivery to Amazon S3.
 
     Parameters:
@@ -379,6 +380,7 @@ def amazon_s3(aws_access_key_id: str,
         aws_secret_access_key: S3 account secret key.
         bucket: The name of the bucket that will receive the order output.
         aws_region: The region where the bucket lives in AWS.
+        path_prefix: Path prefix for deliveries.
     """
     parameters = {
         'aws_access_key_id': aws_access_key_id,
@@ -387,13 +389,17 @@ def amazon_s3(aws_access_key_id: str,
         'aws_region': aws_region,
     }
 
+    if path_prefix:
+        parameters['path_prefix'] = path_prefix
+
     return _delivery('amazon_s3', parameters)
 
 
 def azure_blob_storage(account: str,
                        container: str,
                        sas_token: str,
-                       storage_endpoint_suffix: Optional[str] = None) -> dict:
+                       storage_endpoint_suffix: Optional[str] = None,
+                       path_prefix: Optional[str] = None) -> dict:
     """Delivery to Azure Blob Storage.
 
     Parameters:
@@ -403,6 +409,7 @@ def azure_blob_storage(account: str,
             without a leading '?'.
         storage_endpoint_suffix: Deliver order to a sovereign cloud. The
             default is "core.windows.net".
+        path_prefix: Path prefix for deliveries.
     """
     parameters = {
         'account': account,
@@ -413,20 +420,29 @@ def azure_blob_storage(account: str,
     if storage_endpoint_suffix:
         parameters['storage_endpoint_suffix'] = storage_endpoint_suffix
 
+    if path_prefix:
+        parameters['path_prefix'] = path_prefix
+
     return _delivery('azure_blob_storage', parameters)
 
 
-def google_cloud_storage(credentials: str, bucket: str) -> dict:
+def google_cloud_storage(credentials: str,
+                         bucket: str,
+                         path_prefix: Optional[str] = None) -> dict:
     """Delivery to Google Cloud Storage.
 
     Parameters:
         credentials: JSON-string of service account for bucket.
         bucket: GCS bucket name.
+        path_prefix: Path prefix for deliveries.
     """
     parameters = {
         'bucket': bucket,
         'credentials': credentials,
     }
+
+    if path_prefix:
+        parameters['path_prefix'] = path_prefix
 
     return _delivery('google_cloud_storage', parameters)
 
@@ -435,7 +451,8 @@ def oracle_cloud_storage(customer_access_key_id: str,
                          customer_secret_key: str,
                          bucket: str,
                          region: str,
-                         namespace: str) -> dict:
+                         namespace: str,
+                         path_prefix: Optional[str] = None) -> dict:
     """Delivery to Oracle Cloud Storage.
 
     Parameters:
@@ -444,6 +461,7 @@ def oracle_cloud_storage(customer_access_key_id: str,
         bucket: The name of the bucket that will receive the order output.
         region: The region where the bucket lives in Oracle.
         namespace: Object Storage namespace name.
+        path_prefix: Path prefix for deliveries.
     """
     parameters = {
         'customer_access_key_id': customer_access_key_id,
@@ -452,6 +470,9 @@ def oracle_cloud_storage(customer_access_key_id: str,
         'region': region,
         'namespace': namespace
     }
+
+    if path_prefix:
+        parameters['path_prefix'] = path_prefix
 
     return _delivery('oracle_cloud_storage', parameters)
 
