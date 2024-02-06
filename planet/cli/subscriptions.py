@@ -243,7 +243,7 @@ async def list_subscription_results_cmd(ctx,
     help='Toolchain JSON. Can be a string, filename, or - for stdin.')
 @click.option(
     '--hosting',
-    types=types.JSON(),
+    type=types.JSON(),
     help='Hosting JSON.  Can be a string, a filename, or - for stdin.')
 @click.option(
     '--clip-to-source',
