@@ -21,12 +21,13 @@ import pytest
 from planet.cli import cli
 
 from test_subscriptions_api import (api_mock,
-                                    failing_api_mock,
-                                    create_mock,
-                                    update_mock,
                                     cancel_mock,
+                                    create_mock,
+                                    failing_api_mock,
                                     get_mock,
+                                    patch_mock,
                                     res_api_mock,
+                                    update_mock,
                                     TEST_URL)
 
 # CliRunner doesn't agree with empty options, so a list of option
@@ -190,6 +191,34 @@ def test_subscriptions_update_success(invoke):
 
     assert result.exit_code == 0  # success.
     assert json.loads(result.output)['name'] == 'new_name'
+
+
+@failing_api_mock
+def test_subscriptions_patch_failure(invoke):
+    """Patch command exits gracefully from an API error."""
+    result = invoke(
+        ['patch', 'test', json.dumps(GOOD_SUB_REQUEST)],
+        # Note: catch_exceptions=True (the default) is required if we want
+        # to exercise the "translate_exceptions" decorator and test for
+        # failure.
+        catch_exceptions=True)
+
+    assert result.exit_code == 1  # failure.
+
+
+@patch_mock
+def test_subscriptions_patch_success(invoke):
+    """Patch command succeeds."""
+    request = {'name': 'test patch'}
+    result = invoke(
+        ['patch', 'test', json.dumps(request)],
+        # Note: catch_exceptions=True (the default) is required if we want
+        # to exercise the "translate_exceptions" decorator and test for
+        # failure.
+        catch_exceptions=True)
+
+    assert result.exit_code == 0  # success.
+    assert json.loads(result.output)['name'] == request['name']
 
 
 @failing_api_mock

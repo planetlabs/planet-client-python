@@ -33,7 +33,7 @@ git checkout -b new-branch-name
 
 #### Branch Naming
 
-Please use the following naming convention for development branchs:
+Please use the following naming convention for development branches:
 
 `{up to 3-word summary of topic, separated by a dash)-{ticket number}`
 
@@ -41,7 +41,7 @@ For example: `release-contributing-691` for [ticket 691](https://github.com/plan
 
 ### Pull Requests
 
-NOTE: Make sure to set the appropriate base branch for PRs. See Development Branch above for appriopriate branch.
+NOTE: Make sure to set the appropriate base branch for PRs. See Development Branch above for appropriate branch.
 
 The Pull Request requirements are included in the pull request template as a list of checkboxes.
 

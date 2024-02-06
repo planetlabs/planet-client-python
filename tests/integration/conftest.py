@@ -28,7 +28,6 @@ def test_disable_limiter(monkeypatch):
 
 
 @pytest.fixture
-@pytest.mark.anyio
 async def session():
     async with planet.Session() as ps:
         yield ps
