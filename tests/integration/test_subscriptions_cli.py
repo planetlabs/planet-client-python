@@ -1,13 +1,14 @@
 """Tests of the Subscriptions CLI (aka planet-subscriptions)
 
-There are 6 subscriptions commands:
+There are 7 subscriptions commands:
 
-[x] planet subscriptions list
-[x] planet subscriptions get
-[x] planet subscriptions results
-[x] planet subscriptions create
-[x] planet subscriptions update
 [x] planet subscriptions cancel
+[x] planet subscriptions create
+[x] planet subscriptions get
+[x] planet subscriptions list
+[x] planet subscriptions patch
+[x] planet subscriptions results
+[x] planet subscriptions update
 
 TODO: tests for 3 options of the planet-subscriptions-results command.
 
