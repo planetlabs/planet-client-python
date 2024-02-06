@@ -52,6 +52,7 @@ def build_request(name: str,
                   delivery: Mapping,
                   notifications: Optional[Mapping] = None,
                   tools: Optional[List[Mapping]] = None,
+                  hosting: Optional[Mapping] = None,
                   clip_to_source: Optional[bool] = False) -> dict:
     """Construct a Subscriptions API request.
 
@@ -65,6 +66,7 @@ def build_request(name: str,
         notifications: Specify notifications via email/webhook.
         tools: Tools to apply to the products. The order of operation
             is determined by the service.
+        hosting: TO DO!!!
         clip_to_source: whether to clip to the source geometry or not
             (the default). If True a clip configuration will be added to
             the list of requested tools unless an existing clip tool
@@ -106,8 +108,10 @@ def build_request(name: str,
 
         delivery = amazon_s3(ACCESS_KEY_ID, SECRET_ACCESS_KEY, "test", "us-east-1")
 
+        hosting = TO DO
+
         subscription_request = build_request(
-            "test_subscription", source=source, delivery=delivery
+            "test_subscription", source=source, delivery=delivery, hosting=hosting
         )
         ```
     """
@@ -144,6 +148,9 @@ def build_request(name: str,
                 })
 
         details['tools'] = tool_list
+
+    if hosting:
+        details['hosting'] = dict(hosting)
 
     return details
 
@@ -735,3 +742,16 @@ def cloud_filter_tool(
             }
 
     return _tool("cloud_filter", result)
+
+
+def _hosting(type: str, parameters: dict) -> dict:
+    return {"type": type, "parameters": parameters}
+
+
+def sentinel_hub(collection_id: Optional[str]) -> dict:
+    """TO DO
+    """
+    parameters = {}
+    if collection_id:
+        parameters['collection_id'] = collection_id
+    return _hosting("sentinel_hub", parameters)
