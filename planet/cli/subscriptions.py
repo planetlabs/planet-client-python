@@ -249,7 +249,6 @@ async def list_subscription_results_cmd(ctx,
               help='Source JSON. Can be a string, filename, or - for stdin.')
 @click.option(
     '--delivery',
-    required=True,
     type=types.JSON(),
     help=("Delivery configuration, including credentials for a cloud "
           "storage provider, to enable cloud delivery of data. Can be a "
@@ -263,6 +262,10 @@ async def list_subscription_results_cmd(ctx,
     type=types.JSON(),
     help='Toolchain JSON. Can be a string, filename, or - for stdin.')
 @click.option(
+    '--hosting',
+    type=types.JSON(),
+    help='Hosting JSON.  Can be a string, a filename, or - for stdin.')
+@click.option(
     '--clip-to-source',
     is_flag=True,
     default=False,
@@ -273,6 +276,7 @@ def request(name,
             delivery,
             notifications,
             tools,
+            hosting,
             clip_to_source,
             pretty):
     """Generate a subscriptions request.
@@ -287,6 +291,7 @@ def request(name,
                                              delivery,
                                              notifications=notifications,
                                              tools=tools,
+                                             hosting=hosting,
                                              clip_to_source=clip_to_source)
     echo_json(res, pretty)
 

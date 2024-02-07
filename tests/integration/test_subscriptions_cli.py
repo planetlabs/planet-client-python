@@ -95,11 +95,16 @@ def test_subscriptions_create_failure(invoke):
 # It must be updated when we begin to test against a more strict
 # imitation of the Planet Subscriptions API.
 GOOD_SUB_REQUEST = {'name': 'lol', 'delivery': True, 'source': 'wut'}
+GOOD_SUB_REQUEST_WITH_HOSTING = {
+    'name': 'lol', 'source': 'wut', 'hosting': True
+}
 
 
 @pytest.mark.parametrize('cmd_arg, runner_input',
                          [('-', json.dumps(GOOD_SUB_REQUEST)),
-                          (json.dumps(GOOD_SUB_REQUEST), None)])
+                          (json.dumps(GOOD_SUB_REQUEST), None),
+                          ('-', json.dumps(GOOD_SUB_REQUEST_WITH_HOSTING)),
+                          (json.dumps(GOOD_SUB_REQUEST_WITH_HOSTING), None)])
 @create_mock
 def test_subscriptions_create_success(invoke, cmd_arg, runner_input):
     """Subscriptions creation succeeds with a valid subscription request."""
