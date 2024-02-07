@@ -127,7 +127,7 @@ async def cancel_subscription_cmd(ctx, subscription_id, pretty):
 @translate_exceptions
 @coro
 async def update_subscription_cmd(ctx, subscription_id, request, pretty):
-    """Update a subscription.
+    """Update a subscription via PUT.
 
     Updates a subscription and prints the updated subscription description,
     optionally pretty-printed.
@@ -137,6 +137,27 @@ async def update_subscription_cmd(ctx, subscription_id, request, pretty):
     """
     async with subscriptions_client(ctx) as client:
         sub = await client.update_subscription(subscription_id, request)
+        echo_json(sub, pretty)
+
+
+@subscriptions.command(name='patch')  # type: ignore
+@click.argument('subscription_id')
+@click.argument('request', type=types.JSON())
+@pretty
+@click.pass_context
+@translate_exceptions
+@coro
+async def patch_subscription_cmd(ctx, subscription_id, request, pretty):
+    """Update a subscription via PATCH.
+
+    Updates a subscription and prints the updated subscription description,
+    optionally pretty-printed.
+
+    REQUEST only requires the attributes to be changed. It must be
+    JSON and can be specified a json string, filename, or '-' for stdin.
+    """
+    async with subscriptions_client(ctx) as client:
+        sub = await client.patch_subscription(subscription_id, request)
         echo_json(sub, pretty)
 
 

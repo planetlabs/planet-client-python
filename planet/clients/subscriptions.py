@@ -160,11 +160,12 @@ class SubscriptionsClient:
 
     async def update_subscription(self, subscription_id: str,
                                   request: dict) -> dict:
-        """Update (edit) a Subscription.
+        """Update (edit) a Subscription via PUT.
 
         Args
             subscription_id (str): id of the subscription to update.
-            request (dict): subscription content for update.
+            request (dict): subscription content for update, full
+                payload is required.
 
         Returns:
             dict: description of the updated subscription.
@@ -177,6 +178,38 @@ class SubscriptionsClient:
 
         try:
             resp = await self._session.request(method='PUT',
+                                               url=url,
+                                               json=request)
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
+        else:
+            sub = resp.json()
+            return sub
+
+    async def patch_subscription(self, subscription_id: str,
+                                 request: dict) -> dict:
+        """Update (edit) a Subscription via PATCH.
+
+        Args
+            subscription_id (str): id of the subscription to update.
+            request (dict): subscription content for update, only
+                attributes to update are required.
+
+        Returns:
+            dict: description of the updated subscription.
+
+        Raises:
+            APIError: on an API server error.
+            ClientError: on a client error.
+        """
+        url = f'{self._base_url}/{subscription_id}'
+
+        try:
+            resp = await self._session.request(method='PATCH',
                                                url=url,
                                                json=request)
         # Forward APIError. We don't strictly need this clause, but it

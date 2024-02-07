@@ -72,8 +72,8 @@ api_mock.route(M(url=TEST_URL)).mock(
 
 
 # The "creation", "update", and "cancel" mock APIs return submitted
-# data to the caller. They are used to test methods that rely on POST
-# or PUT.
+# data to the caller. They are used to test methods that rely on POST,
+# PATCH, or PUT.
 def modify_response(request):
     if request.content:
         return Response(200, json=json.loads(request.content))
@@ -88,6 +88,10 @@ create_mock.route(M(url=TEST_URL),
 update_mock = respx.mock()
 update_mock.route(M(url=f'{TEST_URL}/test'),
                   method='PUT').mock(side_effect=modify_response)
+
+patch_mock = respx.mock()
+patch_mock.route(M(url=f'{TEST_URL}/test'),
+                 method='PATCH').mock(side_effect=modify_response)
 
 cancel_mock = respx.mock()
 cancel_mock.route(M(url=f'{TEST_URL}/test/cancel'),
@@ -232,14 +236,24 @@ async def test_update_subscription_failure():
 @pytest.mark.anyio
 @update_mock
 async def test_update_subscription_success():
-    """Subscription is created, description has the expected items."""
+    """Subscription is updated, description has the expected items."""
     async with Session() as session:
         client = SubscriptionsClient(session, base_url=TEST_URL)
         sub = await client.update_subscription(
             "test", {
-                'name': 'test', 'delivery': "no, thanks", 'source': 'test'
+                "name": "test", "delivery": "no, thanks", "source": "test"
             })
-        assert sub['delivery'] == "no, thanks"
+        assert sub["delivery"] == "no, thanks"
+
+
+@pytest.mark.anyio
+@patch_mock
+async def test_patch_subscription_success():
+    """Subscription is patched, description has the expected items."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        sub = await client.patch_subscription("test", {"name": "test patch"})
+        assert sub["name"] == "test patch"
 
 
 @pytest.mark.anyio
