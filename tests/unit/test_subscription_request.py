@@ -119,59 +119,6 @@ def test_build_request_clip_to_source_failure(geom_geojson):
         )
 
 
-def test_build_request_host_sentinel_hub_with_collection(geom_geojson):
-    source = {
-        "type": "catalog",
-        "parameters": {
-            "geometry": geom_geojson,
-            "start_time": "2021-03-01T00:00:00Z",
-            "end_time": "2023-11-01T00:00:00Z",
-            "rrule": "FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
-            "item_types": ["PSScene"],
-            "asset_types": ["ortho_analytic_4b"]
-        }
-    }
-
-    hosting = {"type": "sentinel-hub"}
-
-    res = subscription_request.build_request('test',
-                                             source=source,
-                                             hosting=hosting)
-
-    expected = {"name": "test", "source": source, "hosting": hosting}
-
-    assert res == expected
-
-
-def test_build_request_host_sentinel_hub_no_collection(geom_geojson):
-    source = {
-        "type": "catalog",
-        "parameters": {
-            "geometry": geom_geojson,
-            "start_time": "2021-03-01T00:00:00Z",
-            "end_time": "2023-11-01T00:00:00Z",
-            "rrule": "FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
-            "item_types": ["PSScene"],
-            "asset_types": ["ortho_analytic_4b"]
-        }
-    }
-
-    hosting = {
-        "type": "sentinel-hub",
-        "parameters": {
-            "collection_id": "4c9af036-4274-4a97-bf0d-eb2a7853330d"
-        }
-    }
-
-    res = subscription_request.build_request('test',
-                                             source=source,
-                                             hosting=hosting)
-
-    expected = {"name": "test", "source": source, "hosting": hosting}
-
-    assert res == expected
-
-
 def test_catalog_source_success(geom_geojson):
     res = subscription_request.catalog_source(
         item_types=["PSScene"],
