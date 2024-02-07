@@ -66,7 +66,7 @@ def build_request(name: str,
         notifications: Specify notifications via email/webhook.
         tools: Tools to apply to the products. The order of operation
             is determined by the service.
-        hosting: TO DO!!!
+        hosting: A hosting destination e.g. Sentinel Hub.
         clip_to_source: whether to clip to the source geometry or not
             (the default). If True a clip configuration will be added to
             the list of requested tools unless an existing clip tool
@@ -108,7 +108,7 @@ def build_request(name: str,
 
         delivery = amazon_s3(ACCESS_KEY_ID, SECRET_ACCESS_KEY, "test", "us-east-1")
 
-        hosting = TO DO
+        hosting = sentinel_hub("2716077c-191e-4e47-9e3f-01c9c429f88d")
 
         subscription_request = build_request(
             "test_subscription", source=source, delivery=delivery, hosting=hosting
@@ -752,7 +752,14 @@ def _hosting(type: str, parameters: dict) -> dict:
 
 
 def sentinel_hub(collection_id: Optional[str]) -> dict:
-    """TO DO
+    """Specify a Sentinel Hub hosting destination.
+
+    Requires the user to have a Sentinel Hub account linked with their Planet
+    account.  Subscriptions API will create a new collection to deliver data to
+    if collection_id is omitted from the request.
+
+    Parameters:
+        collection_id: Sentinel Hub collection
     """
     parameters = {}
     if collection_id:
