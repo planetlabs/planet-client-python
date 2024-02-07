@@ -49,7 +49,7 @@ REPROJECT_KERNEL_DEFAULT = 'near'
 
 def build_request(name: str,
                   source: Mapping,
-                  delivery: Mapping,
+                  delivery: Optional[Mapping] = None,
                   notifications: Optional[Mapping] = None,
                   tools: Optional[List[Mapping]] = None,
                   hosting: Optional[Mapping] = None,
@@ -115,12 +115,15 @@ def build_request(name: str,
         )
         ```
     """
-    # Because source and delivery are Mappings we must make copies for
+    # Because source is a Mapping we must make copies for
     # the function's return value. dict() shallow copies a Mapping
     # and returns a new dict.
     details = {
-        "name": name, "source": dict(source), "delivery": dict(delivery)
+        "name": name, "source": dict(source)
     }
+
+    if delivery:
+        details['delivery'] = dict(delivery)
 
     if notifications:
         details['notifications'] = dict(notifications)

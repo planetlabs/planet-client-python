@@ -201,6 +201,18 @@ async def test_create_subscription_success():
 
 
 @pytest.mark.anyio
+@create_mock
+async def test_create_subscription_with_hosting_success():
+    """Subscription is created, description has the expected items."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        sub = await client.create_subscription({
+            'name': 'test', 'source': 'test', 'hosting': 'yes, please'
+        })
+        assert sub['name'] == 'test'
+
+
+@pytest.mark.anyio
 @failing_api_mock
 async def test_cancel_subscription_failure():
     """APIError is raised if there is a server error."""
