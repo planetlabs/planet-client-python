@@ -118,9 +118,7 @@ def build_request(name: str,
     # Because source is a Mapping we must make copies for
     # the function's return value. dict() shallow copies a Mapping
     # and returns a new dict.
-    details = {
-        "name": name, "source": dict(source)
-    }
+    details = {"name": name, "source": dict(source)}
 
     if delivery:
         details['delivery'] = dict(delivery)
@@ -761,6 +759,7 @@ def sentinel_hub(collection_id: Optional[str]) -> dict:
     Parameters:
         collection_id: Sentinel Hub collection
     """
+
     parameters = {}
     if collection_id:
         parameters['collection_id'] = collection_id

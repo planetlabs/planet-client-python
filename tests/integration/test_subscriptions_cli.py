@@ -93,7 +93,9 @@ def test_subscriptions_create_failure(invoke):
 # It must be updated when we begin to test against a more strict
 # imitation of the Planet Subscriptions API.
 GOOD_SUB_REQUEST = {'name': 'lol', 'delivery': True, 'source': 'wut'}
-GOOD_SUB_REQUEST_WITH_HOSTING = {'name': 'lol', 'source': 'wut', 'hosting': True}
+GOOD_SUB_REQUEST_WITH_HOSTING = {
+    'name': 'lol', 'source': 'wut', 'hosting': True
+}
 
 
 @pytest.mark.parametrize('cmd_arg, runner_input',

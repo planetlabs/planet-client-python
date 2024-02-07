@@ -138,11 +138,7 @@ def test_build_request_host_sentinel_hub_with_collection(geom_geojson):
                                              source=source,
                                              hosting=hosting)
 
-    expected = {
-        "name": "test",
-        "source": source,
-        "hosting": hosting
-    }
+    expected = {"name": "test", "source": source, "hosting": hosting}
 
     assert res == expected
 
@@ -160,17 +156,18 @@ def test_build_request_host_sentinel_hub_no_collection(geom_geojson):
         }
     }
 
-    hosting = {"type": "sentinel-hub", "parameters": {"collection_id": "4c9af036-4274-4a97-bf0d-eb2a7853330d"}}
+    hosting = {
+        "type": "sentinel-hub",
+        "parameters": {
+            "collection_id": "4c9af036-4274-4a97-bf0d-eb2a7853330d"
+        }
+    }
 
     res = subscription_request.build_request('test',
                                              source=source,
                                              hosting=hosting)
 
-    expected = {
-        "name": "test",
-        "source": source,
-        "hosting": hosting
-    }
+    expected = {"name": "test", "source": source, "hosting": hosting}
 
     assert res == expected
 
