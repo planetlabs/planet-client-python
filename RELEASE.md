@@ -68,7 +68,7 @@ The release on Github and PyPi performed from a release branch while the release
 1. Announce the release through the following avenues:
  * *Planet Internal:* #python and #devrel slack channels
  * Changelog
-1. Maintenace release only: Merge release tag into `main`
+1. Maintenance release only: Merge release tag into `main`
 
 
 ### Local publishing
