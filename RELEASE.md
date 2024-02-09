@@ -49,7 +49,7 @@ The release on Github and PyPi performed from a release branch while the release
 1. Starting from the Source Branch, create a release branch named `release-{Release Version}`
 1. Make the following changes for the release:
   * Update `CHANGES.txt`, adhering to [Keep a Changelog](https://keepachangelog.com/)
-    * Include added, changed, depricated or removed features and bug fixes.
+    * Include added, changed, deprecated or removed features and bug fixes.
        A list of merged PRs and their titles since the last release can be obtained with `git log $PREVIOUS_RELEASE_TAG..HEAD | awk '/Merge pull request/{print;getline;getline;print}'`.
     * Sort according to importance
   * Update `planet/__version__.py` to Release Version
@@ -68,7 +68,7 @@ The release on Github and PyPi performed from a release branch while the release
 1. Announce the release through the following avenues:
  * *Planet Internal:* #python and #devrel slack channels
  * Changelog
-1. Maintenace release only: Merge release tag into `main`
+1. Maintenance release only: Merge release tag into `main`
 
 
 ### Local publishing
