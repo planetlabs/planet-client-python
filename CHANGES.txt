@@ -1,3 +1,8 @@
+2.4.0 (2024-03-19)
+
+Added:
+- Support Subscriptions API hosting block for Sentinel Hub (#1023).
+
 2.3.0 (2024-02-09)
 
 Added:
