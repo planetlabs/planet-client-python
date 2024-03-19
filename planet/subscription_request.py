@@ -49,9 +49,10 @@ REPROJECT_KERNEL_DEFAULT = 'near'
 
 def build_request(name: str,
                   source: Mapping,
-                  delivery: Mapping,
+                  delivery: Optional[Mapping] = None,
                   notifications: Optional[Mapping] = None,
                   tools: Optional[List[Mapping]] = None,
+                  hosting: Optional[Mapping] = None,
                   clip_to_source: Optional[bool] = False) -> dict:
     """Construct a Subscriptions API request.
 
@@ -65,6 +66,7 @@ def build_request(name: str,
         notifications: Specify notifications via email/webhook.
         tools: Tools to apply to the products. The order of operation
             is determined by the service.
+        hosting: A hosting destination e.g. Sentinel Hub.
         clip_to_source: whether to clip to the source geometry or not
             (the default). If True a clip configuration will be added to
             the list of requested tools unless an existing clip tool
@@ -106,17 +108,20 @@ def build_request(name: str,
 
         delivery = amazon_s3(ACCESS_KEY_ID, SECRET_ACCESS_KEY, "test", "us-east-1")
 
+        hosting = sentinel_hub("2716077c-191e-4e47-9e3f-01c9c429f88d")
+
         subscription_request = build_request(
-            "test_subscription", source=source, delivery=delivery
+            "test_subscription", source=source, delivery=delivery, hosting=hosting
         )
         ```
     """
-    # Because source and delivery are Mappings we must make copies for
+    # Because source is a Mapping we must make copies for
     # the function's return value. dict() shallow copies a Mapping
     # and returns a new dict.
-    details = {
-        "name": name, "source": dict(source), "delivery": dict(delivery)
-    }
+    details = {"name": name, "source": dict(source)}
+
+    if delivery:
+        details['delivery'] = dict(delivery)
 
     if notifications:
         details['notifications'] = dict(notifications)
@@ -144,6 +149,9 @@ def build_request(name: str,
                 })
 
         details['tools'] = tool_list
+
+    if hosting:
+        details['hosting'] = dict(hosting)
 
     return details
 
@@ -735,3 +743,24 @@ def cloud_filter_tool(
             }
 
     return _tool("cloud_filter", result)
+
+
+def _hosting(type: str, parameters: dict) -> dict:
+    return {"type": type, "parameters": parameters}
+
+
+def sentinel_hub(collection_id: Optional[str]) -> dict:
+    """Specify a Sentinel Hub hosting destination.
+
+    Requires the user to have a Sentinel Hub account linked with their Planet
+    account.  Subscriptions API will create a new collection to deliver data to
+    if collection_id is omitted from the request.
+
+    Parameters:
+        collection_id: Sentinel Hub collection
+    """
+
+    parameters = {}
+    if collection_id:
+        parameters['collection_id'] = collection_id
+    return _hosting("sentinel_hub", parameters)
