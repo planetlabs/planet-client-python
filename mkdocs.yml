@@ -49,6 +49,7 @@ extra_css:
     
 plugins:
   - search
+  - with-pdf
   - mkdocstrings:
       handlers:
         python:
