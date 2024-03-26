@@ -11,6 +11,7 @@ from .options import limit, pretty
 from .session import CliSession
 from planet.clients.subscriptions import SubscriptionsClient
 from .. import subscription_request
+from ..subscription_request import sentinel_hub
 from ..specs import get_item_types, validate_item_type, SpecificationException
 
 ALL_ITEM_TYPES = get_item_types()
@@ -87,13 +88,23 @@ async def list_subscriptions_cmd(ctx, status, limit, pretty):
             echo_json(sub, pretty)
 
 
-@subscriptions.command(name='create')  # type: ignore
-@click.argument('request', type=types.JSON())
+@subscriptions.command(name="create")  # type: ignore
+@click.argument("request", type=types.JSON())
+@click.option(
+    "--hosting",
+    default=None,
+    help='Hosting type. Currently, only "sentinel_hub" is supported.',
+)
+@click.option(
+    "--collection_id",
+    default=None,
+    help="Optional collection ID for Sentinel Hub. If omitted, a new collection will be created.",
+)
 @pretty
 @click.pass_context
 @translate_exceptions
 @coro
-async def create_subscription_cmd(ctx, request, pretty):
+async def create_subscription_cmd(ctx, request, hosting, collection_id, pretty):
     """Create a subscription.
 
     Submits a subscription request for creation and prints the created
@@ -102,6 +113,11 @@ async def create_subscription_cmd(ctx, request, pretty):
     REQUEST is the full description of the subscription to be created. It must
     be JSON and can be specified a json string, filename, or '-' for stdin.
     """
+    
+    if hosting or hosting.lower() == "sentinel_hub":
+        hosting_info = sentinel_hub(collection_id)
+        request["hosting"] = hosting_info
+
     async with subscriptions_client(ctx) as client:
         sub = await client.create_subscription(request)
         echo_json(sub, pretty)
