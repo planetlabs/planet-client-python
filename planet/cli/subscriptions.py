@@ -1,4 +1,5 @@
 """Subscriptions CLI"""
+
 from contextlib import asynccontextmanager
 from typing import List, Optional
 
@@ -11,6 +12,7 @@ from .options import limit, pretty
 from .session import CliSession
 from planet.clients.subscriptions import SubscriptionsClient
 from .. import subscription_request
+from ..subscription_request import sentinel_hub
 from ..specs import get_item_types, validate_item_type, SpecificationException
 
 ALL_ITEM_TYPES = get_item_types()
@@ -42,19 +44,18 @@ def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
 @asynccontextmanager
 async def subscriptions_client(ctx):
     async with CliSession() as sess:
-        cl = SubscriptionsClient(sess, base_url=ctx.obj['BASE_URL'])
+        cl = SubscriptionsClient(sess, base_url=ctx.obj["BASE_URL"])
         yield cl
 
 
 @click.group()  # type: ignore
 @click.pass_context
-@click.option('-u',
-              '--base-url',
-              default=None,
-              help='Assign custom base Subscriptions API URL.')
+@click.option(
+    "-u", "--base-url", default=None, help="Assign custom base Subscriptions API URL."
+)
 def subscriptions(ctx, base_url):
     """Commands for interacting with the Subscriptions API"""
-    ctx.obj['BASE_URL'] = base_url
+    ctx.obj["BASE_URL"] = base_url
 
 
 # We want our command to be known as "list" on the command line but
@@ -63,19 +64,22 @@ def subscriptions(ctx, base_url):
 @subscriptions.command(name="list")  # type: ignore
 @pretty
 @click.option(
-    '--status',
-    type=click.Choice([
-        "running",
-        "cancelled",
-        "preparing",
-        "pending",
-        "completed",
-        "suspended",
-        "failed"
-    ]),
+    "--status",
+    type=click.Choice(
+        [
+            "running",
+            "cancelled",
+            "preparing",
+            "pending",
+            "completed",
+            "suspended",
+            "failed",
+        ]
+    ),
     multiple=True,
     default=None,
-    help="Select subscriptions in one or more states. Default is all.")
+    help="Select subscriptions in one or more states. Default is all.",
+)
 @limit
 @click.pass_context
 @translate_exceptions
@@ -87,13 +91,23 @@ async def list_subscriptions_cmd(ctx, status, limit, pretty):
             echo_json(sub, pretty)
 
 
-@subscriptions.command(name='create')  # type: ignore
-@click.argument('request', type=types.JSON())
+@subscriptions.command(name="create")  # type: ignore
+@click.argument("request", type=types.JSON())
+@click.option(
+    "--hosting",
+    default=None,
+    help='Hosting type. Currently, only "sentinel_hub" is supported.',
+)
+@click.option(
+    "--collection_id",
+    default=None,
+    help="Optional collection ID for Sentinel Hub. If omitted, a new collection will be created.",
+)
 @pretty
 @click.pass_context
 @translate_exceptions
 @coro
-async def create_subscription_cmd(ctx, request, pretty):
+async def create_subscription_cmd(ctx, request, hosting, collection_id, pretty):
     """Create a subscription.
 
     Submits a subscription request for creation and prints the created
@@ -102,13 +116,18 @@ async def create_subscription_cmd(ctx, request, pretty):
     REQUEST is the full description of the subscription to be created. It must
     be JSON and can be specified a json string, filename, or '-' for stdin.
     """
+
+    if hosting or hosting.lower() == "sentinel_hub":
+        hosting_info = sentinel_hub(collection_id)
+        request["hosting"] = hosting_info
+
     async with subscriptions_client(ctx) as client:
         sub = await client.create_subscription(request)
         echo_json(sub, pretty)
 
 
-@subscriptions.command(name='cancel')  # type: ignore
-@click.argument('subscription_id')
+@subscriptions.command(name="cancel")  # type: ignore
+@click.argument("subscription_id")
 @pretty
 @click.pass_context
 @translate_exceptions
@@ -119,9 +138,9 @@ async def cancel_subscription_cmd(ctx, subscription_id, pretty):
         _ = await client.cancel_subscription(subscription_id)
 
 
-@subscriptions.command(name='update')  # type: ignore
-@click.argument('subscription_id')
-@click.argument('request', type=types.JSON())
+@subscriptions.command(name="update")  # type: ignore
+@click.argument("subscription_id")
+@click.argument("request", type=types.JSON())
 @pretty
 @click.pass_context
 @translate_exceptions
@@ -140,9 +159,9 @@ async def update_subscription_cmd(ctx, subscription_id, request, pretty):
         echo_json(sub, pretty)
 
 
-@subscriptions.command(name='patch')  # type: ignore
-@click.argument('subscription_id')
-@click.argument('request', type=types.JSON())
+@subscriptions.command(name="patch")  # type: ignore
+@click.argument("subscription_id")
+@click.argument("request", type=types.JSON())
 @pretty
 @click.pass_context
 @translate_exceptions
@@ -161,8 +180,8 @@ async def patch_subscription_cmd(ctx, subscription_id, request, pretty):
         echo_json(sub, pretty)
 
 
-@subscriptions.command(name='get')  # type: ignore
-@click.argument('subscription_id')
+@subscriptions.command(name="get")  # type: ignore
+@click.argument("subscription_id")
 @pretty
 @click.pass_context
 @translate_exceptions
@@ -174,22 +193,24 @@ async def get_subscription_cmd(ctx, subscription_id, pretty):
         echo_json(sub, pretty)
 
 
-@subscriptions.command(name='results')  # type: ignore
-@click.argument('subscription_id')
+@subscriptions.command(name="results")  # type: ignore
+@click.argument("subscription_id")
 @pretty
 @click.option(
-    '--status',
-    type=click.Choice(["created", "queued", "processing", "failed",
-                       "success"]),
+    "--status",
+    type=click.Choice(["created", "queued", "processing", "failed", "success"]),
     multiple=True,
     default=None,
     callback=(lambda ctx, param, value: set(value)),
-    help="Select subscription results in one or more states. Default: all.")
-@click.option('--csv',
-              'csv_flag',
-              is_flag=True,
-              default=False,
-              help="Get subscription results as comma-separated fields.")
+    help="Select subscription results in one or more states. Default: all.",
+)
+@click.option(
+    "--csv",
+    "csv_flag",
+    is_flag=True,
+    default=False,
+    help="Get subscription results as comma-separated fields.",
+)
 @limit
 # TODO: the following 3 options.
 # –created: timestamp instant or range.
@@ -198,12 +219,9 @@ async def get_subscription_cmd(ctx, subscription_id, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-async def list_subscription_results_cmd(ctx,
-                                        subscription_id,
-                                        pretty,
-                                        status,
-                                        csv_flag,
-                                        limit):
+async def list_subscription_results_cmd(
+    ctx, subscription_id, pretty, status, csv_flag, limit
+):
     """Print the results of a subscription to stdout.
 
     The output of this command is a sequence of JSON objects (the
@@ -226,59 +244,65 @@ async def list_subscription_results_cmd(ctx,
     """
     async with subscriptions_client(ctx) as client:
         if csv_flag:
-            async for result in client.get_results_csv(subscription_id,
-                                                       status=status,
-                                                       limit=limit):
+            async for result in client.get_results_csv(
+                subscription_id, status=status, limit=limit
+            ):
                 click.echo(result)
         else:
-            async for result in client.get_results(subscription_id,
-                                                   status=status,
-                                                   limit=limit):
+            async for result in client.get_results(
+                subscription_id, status=status, limit=limit
+            ):
                 echo_json(result, pretty)
 
 
 @subscriptions.command()  # type: ignore
 @translate_exceptions
-@click.option('--name',
-              required=True,
-              type=str,
-              help='Subscription name. Does not need to be unique.')
-@click.option('--source',
-              required=True,
-              type=types.JSON(),
-              help='Source JSON. Can be a string, filename, or - for stdin.')
 @click.option(
-    '--delivery',
+    "--name",
+    required=True,
+    type=str,
+    help="Subscription name. Does not need to be unique.",
+)
+@click.option(
+    "--source",
+    required=True,
     type=types.JSON(),
-    help=("Delivery configuration, including credentials for a cloud "
-          "storage provider, to enable cloud delivery of data. Can be a "
-          "JSON string, a filename, or '-' for stdin. "))
+    help="Source JSON. Can be a string, filename, or - for stdin.",
+)
 @click.option(
-    '--notifications',
+    "--delivery",
     type=types.JSON(),
-    help='Notifications JSON. Can be a string, filename, or - for stdin.')
+    help=(
+        "Delivery configuration, including credentials for a cloud "
+        "storage provider, to enable cloud delivery of data. Can be a "
+        "JSON string, a filename, or '-' for stdin. "
+    ),
+)
 @click.option(
-    '--tools',
+    "--notifications",
     type=types.JSON(),
-    help='Toolchain JSON. Can be a string, filename, or - for stdin.')
+    help="Notifications JSON. Can be a string, filename, or - for stdin.",
+)
 @click.option(
-    '--hosting',
+    "--tools",
     type=types.JSON(),
-    help='Hosting JSON.  Can be a string, a filename, or - for stdin.')
+    help="Toolchain JSON. Can be a string, filename, or - for stdin.",
+)
 @click.option(
-    '--clip-to-source',
+    "--hosting",
+    type=types.JSON(),
+    help="Hosting JSON.  Can be a string, a filename, or - for stdin.",
+)
+@click.option(
+    "--clip-to-source",
     is_flag=True,
     default=False,
-    help="Clip to the source geometry without specifying a clip tool.")
+    help="Clip to the source geometry without specifying a clip tool.",
+)
 @pretty
-def request(name,
-            source,
-            delivery,
-            notifications,
-            tools,
-            hosting,
-            clip_to_source,
-            pretty):
+def request(
+    name, source, delivery, notifications, tools, hosting, clip_to_source, pretty
+):
     """Generate a subscriptions request.
 
     Note: the next version of the Subscription API will remove the clip
@@ -286,68 +310,85 @@ def request(name,
     --clip-to-source option is a preview of the next API version's
     default behavior.
     """
-    res = subscription_request.build_request(name,
-                                             source,
-                                             delivery,
-                                             notifications=notifications,
-                                             tools=tools,
-                                             hosting=hosting,
-                                             clip_to_source=clip_to_source)
+    res = subscription_request.build_request(
+        name,
+        source,
+        delivery,
+        notifications=notifications,
+        tools=tools,
+        hosting=hosting,
+        clip_to_source=clip_to_source,
+    )
     echo_json(res, pretty)
 
 
 @subscriptions.command(epilog=valid_item_string)  # type: ignore
 @translate_exceptions
-@click.option('--item-types',
-              required=True,
-              help='Item type for requested item ids.',
-              type=types.CommaSeparatedString(),
-              callback=check_item_types)
-@click.option('--asset-types',
-              required=True,
-              type=types.CommaSeparatedString(),
-              help='One or more comma-separated asset types.')
 @click.option(
-    '--geometry',
+    "--item-types",
+    required=True,
+    help="Item type for requested item ids.",
+    type=types.CommaSeparatedString(),
+    callback=check_item_types,
+)
+@click.option(
+    "--asset-types",
+    required=True,
+    type=types.CommaSeparatedString(),
+    help="One or more comma-separated asset types.",
+)
+@click.option(
+    "--geometry",
     required=True,
     type=types.JSON(),
     help="""Geometry of the area of interest of the subscription that will be
-    used to determine matches. Can be a string, filename, or - for stdin.""")
-@click.option('--start-time',
-              required=True,
-              type=types.DateTime(),
-              help='Date and time to begin subscription.')
-@click.option('--end-time',
-              type=types.DateTime(),
-              help='Date and time to end subscription.')
-@click.option('--rrule',
-              type=str,
-              help='iCalendar recurrance rule to specify recurrances.')
+    used to determine matches. Can be a string, filename, or - for stdin.""",
+)
 @click.option(
-    '--filter',
+    "--start-time",
+    required=True,
+    type=types.DateTime(),
+    help="Date and time to begin subscription.",
+)
+@click.option(
+    "--end-time", type=types.DateTime(), help="Date and time to end subscription."
+)
+@click.option(
+    "--rrule", type=str, help="iCalendar recurrance rule to specify recurrances."
+)
+@click.option(
+    "--filter",
     type=types.JSON(),
-    help='Search filter.  Can be a string, filename, or - for stdin.')
+    help="Search filter.  Can be a string, filename, or - for stdin.",
+)
 @click.option(
-    '--publishing-stage',
-    'publishing_stages',
+    "--publishing-stage",
+    "publishing_stages",
     type=click.Choice(["preview", "standard", "finalized"]),
     multiple=True,
-    help=("Subscribe to results at a particular publishing stage. Multiple "
-          "instances of this option are allowed."))
-@click.option('--time-range-type',
-              type=click.Choice(["acquired", "published"]),
-              help="Subscribe by acquisition time or time of publication.")
+    help=(
+        "Subscribe to results at a particular publishing stage. Multiple "
+        "instances of this option are allowed."
+    ),
+)
+@click.option(
+    "--time-range-type",
+    type=click.Choice(["acquired", "published"]),
+    help="Subscribe by acquisition time or time of publication.",
+)
 @pretty
-def request_catalog(item_types,
-                    asset_types,
-                    geometry,
-                    start_time,
-                    end_time,
-                    rrule,
-                    filter,
-                    publishing_stages,
-                    time_range_type,
-                    pretty):
+def request_catalog(
+    item_types,
+    asset_types,
+    geometry,
+    start_time,
+    end_time,
+    rrule,
+    filter,
+    publishing_stages,
+    time_range_type,
+    pretty,
+):
     """Generate a subscriptions request catalog source description."""
     res = subscription_request.catalog_source(
         item_types,
@@ -358,38 +399,44 @@ def request_catalog(item_types,
         rrule=rrule,
         filter=filter,
         publishing_stages=publishing_stages,
-        time_range_type=time_range_type)
+        time_range_type=time_range_type,
+    )
     echo_json(res, pretty)
 
 
 @subscriptions.command()  # type: ignore
 @translate_exceptions
 @click.option(
-    '--var-type',
+    "--var-type",
     required=True,
-    help='Planetary variable type.',
-    type=click.Choice([
-        "biomass_proxy",
-        "land_surface_temperature",
-        "soil_water_content",
-        "vegetation_optical_depth",
-        "forest_carbon_diligence_30m"
-    ]),
+    help="Planetary variable type.",
+    type=click.Choice(
+        [
+            "biomass_proxy",
+            "land_surface_temperature",
+            "soil_water_content",
+            "vegetation_optical_depth",
+            "forest_carbon_diligence_30m",
+        ]
+    ),
 )
-@click.option('--var-id', required=True, help='Planetary variable id.')
+@click.option("--var-id", required=True, help="Planetary variable id.")
 @click.option(
-    '--geometry',
+    "--geometry",
     required=True,
     type=types.JSON(),
     help="""Geometry of the area of interest of the subscription that will be
-    used to determine matches. Can be a string, filename, or - for stdin.""")
-@click.option('--start-time',
-              required=True,
-              type=types.DateTime(),
-              help='Date and time to begin subscription.')
-@click.option('--end-time',
-              type=types.DateTime(),
-              help='Date and time to end subscription.')
+    used to determine matches. Can be a string, filename, or - for stdin.""",
+)
+@click.option(
+    "--start-time",
+    required=True,
+    type=types.DateTime(),
+    help="Date and time to begin subscription.",
+)
+@click.option(
+    "--end-time", type=types.DateTime(), help="Date and time to end subscription."
+)
 @pretty
 def request_pv(var_type, var_id, geometry, start_time, end_time, pretty):
     """Generate a Planetary Variable subscription source.
