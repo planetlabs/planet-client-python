@@ -98,15 +98,13 @@ async def list_subscriptions_cmd(ctx, status, limit, pretty):
 @click.option(
     "--collection_id",
     default=None,
-    help=
-    "Optional collection ID for Sentinel Hub. If omitted, a new collection will be created.",
+    help="Optional collection ID for Sentinel Hub. If omitted, a new collection will be created.",
 )
 @pretty
 @click.pass_context
 @translate_exceptions
 @coro
-async def create_subscription_cmd(ctx, request, hosting, collection_id, 
-                pretty):
+async def create_subscription_cmd(ctx, request, hosting, collection_id, pretty):
     """Create a subscription.
 
     Submits a subscription request for creation and prints the created
