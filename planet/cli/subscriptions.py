@@ -113,8 +113,8 @@ async def create_subscription_cmd(ctx, request, hosting, collection_id, pretty):
     REQUEST is the full description of the subscription to be created. It must
     be JSON and can be specified a json string, filename, or '-' for stdin.
     """
-    
-    if hosting or hosting.lower() == "sentinel_hub":
+
+    if hosting == "sentinel_hub":
         hosting_info = sentinel_hub(collection_id)
         request["hosting"] = hosting_info
 
