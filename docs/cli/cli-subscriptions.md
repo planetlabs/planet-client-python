@@ -120,6 +120,17 @@ planet subscriptions create my-subscription.json
 !!!note "Note"
     The above command assumes that you’ve saved the subscriptions JSON as `my-subscription.json` and that you’ve replaced the delivery information with your own bucket and credentials.
 
+#### Create a Subscription with Hosting and Collection ID
+
+In addition to the basic subscription creation process, you can now specify hosting options and a collection ID directly in the create command. 
+
+```sh
+planet subscriptions create my-subscription.json --hosting sentinel_hub --collection_id ba8f7274-aacc-425e-8a38-e21517bfbeff
+```
+
+- The --hosting option is optional and currently supports sentinel_hub as its only value.
+- The --collection_id is also optional. If you decide to use this, ensure that the subscription request and the collection have matching bands. If you're unsure, allow the system to create a new collection for you by omitting the --collection_id option. This will ensure the newly set-up collection is configured correctly, and you can subsequently add items to this collection as needed.
+
 ### List Subscriptions
 
 Now that you’ve got a subscription working you can make use of the other commands.
