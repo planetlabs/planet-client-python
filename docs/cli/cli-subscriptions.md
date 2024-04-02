@@ -480,8 +480,22 @@ The main documentation page also has the parameters for Google Cloud, AWS and Or
 
 ### Subscriptions Request
 
-Once you’ve got all your sub-blocks of JSON saved you’re ready to make a complete 
-subscriptions request with the `subscriptions request` command:
+When creating a new subscription, you can include hosting options directly using the --hosting and --collection-id flags.
+
+- The --hosting option is optional and currently supports sentinel_hub as its only value.
+- The --collection_id is also optional. If you decide to use this, ensure that the subscription request and the collection have matching bands. If you're unsure, allow the system to create a new collection for you by omitting the --collection_id option. This will ensure the newly set-up collection is configured correctly, and you can subsequently add items to this collection as needed.
+- You may also input --hosting as a JSON file. The file should be formatted:
+
+```json
+"hosting": {
+  "parameters": {
+    "collection_id": "4bdef85c-3f50-4006-a713-2350da665f80"
+  },
+  "type": "sentinel_hub"
+},
+```
+
+Once you’ve got all your sub-blocks of JSON saved you’re ready to make a complete subscriptions request with the `subscriptions request` command:
 
 ```sh
 planet subscriptions request \
@@ -489,6 +503,7 @@ planet subscriptions request \
     --source request-catalog.json \
     --tools tools.json \
     --delivery cloud-delivery.json \
+    --hosting sentinel_hub \
     --pretty
 ```
 
