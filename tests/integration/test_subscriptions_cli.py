@@ -444,7 +444,7 @@ def test_catalog_source_time_range_type(invoke, geom_geojson, time_range_type):
         ("--hosting=sentinel_hub", "--collection-id=7ff105c4-e0de-4910-96db-8345d86ab734", True),
     ]
 )
-def test_request_base_hosting(invoke, geom_geojson, hosting_option, collection_id_option, expected_success):
+def test_request_hosting(invoke, geom_geojson, hosting_option, collection_id_option, expected_success):
     """Test request command with various hosting and collection ID options."""
     source = json.dumps({
         "type": "catalog",
