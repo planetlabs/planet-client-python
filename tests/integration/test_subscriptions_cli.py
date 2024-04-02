@@ -464,7 +464,7 @@ def test_request_base_hosting(invoke, geom_geojson, hosting_option, collection_i
         f'--source={source}',
         hosting_option,
     ]
-    
+
     if collection_id_option:
         cmd.append(collection_id_option)
 
