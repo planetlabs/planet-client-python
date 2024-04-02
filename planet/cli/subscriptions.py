@@ -95,12 +95,10 @@ async def list_subscriptions_cmd(ctx, status, limit, pretty):
     default=None,
     help='Hosting type. Currently, only "sentinel_hub" is supported.',
 )
-@click.option(
-    "--collection_id",
-    default=None,
-    help=
-    'Optional collection ID for Sentinel Hub. If omitted, a new collection will be created.',
-)
+@click.option("--collection-id",
+              default=None,
+              help='Collection ID for Sentinel Hub.'
+              'If omitted, a new collection will be created.')
 @pretty
 @click.pass_context
 @translate_exceptions
@@ -281,14 +279,17 @@ async def list_subscription_results_cmd(ctx,
     help='Toolchain JSON. Can be a string, filename, or - for stdin.')
 @click.option(
     '--hosting',
-    type=types.JSON(),
-    help='Hosting JSON.  Can be a string, a filename, or - for stdin. Currently, only "sentinel_hub" is supported.')
+    default=None,
+    help='Hosting configuration. Can be JSON, "sentinel_hub", or omitted.')
 @click.option(
     '--clip-to-source',
     is_flag=True,
     default=False,
     help="Clip to the source geometry without specifying a clip tool.")
-@click.option("--collection-id", default=None, help='Optional collection ID for Sentinel Hub. If omitted, a new collection will be created.')
+@click.option("--collection-id",
+              default=None,
+              help='Collection ID for Sentinel Hub.'
+              'If omitted, a new collection will be created.')
 @pretty
 def request(name,
             source,
