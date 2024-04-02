@@ -99,7 +99,7 @@ async def list_subscriptions_cmd(ctx, status, limit, pretty):
     "--collection_id",
     default=None,
     help=
-    "Optional collection ID for Sentinel Hub. If omitted, a new collection will be created.",
+    'Optional collection ID for Sentinel Hub. If omitted, a new collection will be created.',
 )
 @pretty
 @click.pass_context
@@ -282,12 +282,13 @@ async def list_subscription_results_cmd(ctx,
 @click.option(
     '--hosting',
     type=types.JSON(),
-    help='Hosting JSON.  Can be a string, a filename, or - for stdin.')
+    help='Hosting JSON.  Can be a string, a filename, or - for stdin. Currently, only "sentinel_hub" is supported.')
 @click.option(
     '--clip-to-source',
     is_flag=True,
     default=False,
     help="Clip to the source geometry without specifying a clip tool.")
+@click.option("--collection-id", default=None, help='Optional collection ID for Sentinel Hub. If omitted, a new collection will be created.')
 @pretty
 def request(name,
             source,
@@ -295,6 +296,7 @@ def request(name,
             notifications,
             tools,
             hosting,
+            collection_id,
             clip_to_source,
             pretty):
     """Generate a subscriptions request.
@@ -304,12 +306,14 @@ def request(name,
     --clip-to-source option is a preview of the next API version's
     default behavior.
     """
+
     res = subscription_request.build_request(name,
                                              source,
                                              delivery,
                                              notifications=notifications,
                                              tools=tools,
                                              hosting=hosting,
+                                             collection_id=collection_id,
                                              clip_to_source=clip_to_source)
     echo_json(res, pretty)
 
@@ -367,6 +371,7 @@ def request_catalog(item_types,
                     time_range_type,
                     pretty):
     """Generate a subscriptions request catalog source description."""
+
     res = subscription_request.catalog_source(
         item_types,
         asset_types,
