@@ -114,6 +114,11 @@ async def create_subscription_cmd(ctx, request, pretty, **kwargs):
 
     REQUEST is the full description of the subscription to be created. It must
     be JSON and can be specified a json string, filename, or '-' for stdin.
+
+    Other flag options are hosting and collection_id. The hosting flag
+    specifies the hosting type, and the collection_id flag specifies the
+    collection ID for Sentinel Hub. If the collection_id is omitted, a new
+    collection will be created.
     """
 
     hosting = kwargs.get("hosting", None)
