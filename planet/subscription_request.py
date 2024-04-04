@@ -52,7 +52,8 @@ def build_request(name: str,
                   delivery: Optional[Mapping] = None,
                   notifications: Optional[Mapping] = None,
                   tools: Optional[List[Mapping]] = None,
-                  hosting: Optional[Mapping] = None,
+                  hosting: Optional[Union[Mapping, str]] = None,
+                  collection_id: Optional[str] = None,
                   clip_to_source: Optional[bool] = False) -> dict:
     """Construct a Subscriptions API request.
 
@@ -150,8 +151,15 @@ def build_request(name: str,
 
         details['tools'] = tool_list
 
-    if hosting:
-        details['hosting'] = dict(hosting)
+    if hosting == "sentinel_hub":
+        hosting_info: Dict[str, Any] = {
+            "type": "sentinel_hub", "parameters": {}
+        }
+        if collection_id:
+            hosting_info["parameters"]["collection_id"] = collection_id
+        details['hosting'] = hosting_info
+    elif isinstance(hosting, dict):
+        details['hosting'] = hosting
 
     return details
 

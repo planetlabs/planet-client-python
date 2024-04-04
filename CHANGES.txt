@@ -1,7 +1,9 @@
-
+2.5.0 (2024-04-04)
 
 Added:
- - Support for field_boundaries_sentinel_2_p1m in Subscriptions API (#1026)
+- Support Subscriptions API hosting block for Sentinel Hub in the CLI (#1029).
+
+- Support for field_boundaries_sentinel_2_p1m in Subscriptions API (#1026)
 
 2.4.0 (2024-03-19)
 
