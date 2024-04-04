@@ -504,6 +504,7 @@ planet subscriptions request \
     --tools tools.json \
     --delivery cloud-delivery.json \
     --hosting sentinel_hub \
+    -- collection_id 4bdef85c-3f50-4006-a713-2350da665f80 \
     --pretty
 ```
 
