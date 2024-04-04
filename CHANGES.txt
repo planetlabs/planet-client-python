@@ -1,4 +1,4 @@
-2.5.0 (2024-03-27)
+2.5.0 (2024-04-04)
 
 Added:
 - Support Subscriptions API hosting block for Sentinel Hub in the CLI (#1029).
