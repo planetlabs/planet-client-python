@@ -92,6 +92,7 @@ async def list_subscriptions_cmd(ctx, status, limit, pretty):
 @click.argument("request", type=types.JSON())
 @click.option(
     "--hosting",
+    type=click.Choice(["sentinel_hub",]),
     default=None,
     help='Hosting type. Currently, only "sentinel_hub" is supported.',
 )
@@ -103,8 +104,7 @@ async def list_subscriptions_cmd(ctx, status, limit, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-async def create_subscription_cmd(ctx, request, hosting, collection_id,
-                                  pretty):
+async def create_subscription_cmd(ctx, request, pretty, **kwargs):
     """Create a subscription.
 
     Submits a subscription request for creation and prints the created
@@ -113,6 +113,9 @@ async def create_subscription_cmd(ctx, request, hosting, collection_id,
     REQUEST is the full description of the subscription to be created. It must
     be JSON and can be specified a json string, filename, or '-' for stdin.
     """
+
+    hosting = kwargs.get("hosting", None)
+    collection_id = kwargs.get("collection_id", None)
 
     if hosting == "sentinel_hub":
         hosting_info = sentinel_hub(collection_id)
@@ -280,6 +283,7 @@ async def list_subscription_results_cmd(ctx,
 @click.option(
     '--hosting',
     default=None,
+    type=click.Choice(["sentinel_hub",]),
     help='Hosting configuration. Can be JSON, "sentinel_hub", or omitted.')
 @click.option(
     '--clip-to-source',
