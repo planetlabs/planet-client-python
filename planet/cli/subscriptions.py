@@ -410,7 +410,8 @@ def request_catalog(item_types,
         "land_surface_temperature",
         "soil_water_content",
         "vegetation_optical_depth",
-        "forest_carbon_diligence_30m"
+        "forest_carbon_diligence_30m",
+        "field_boundaries_sentinel_2_p1m"
     ]),
 )
 @click.option('--var-id', required=True, help='Planetary variable id.')
