@@ -435,3 +435,44 @@ def test_catalog_source_time_range_type(invoke, geom_geojson, time_range_type):
     assert result.exit_code == 0  # success.
     req = json.loads(result.output)
     assert req['parameters']['time_range_type'] == time_range_type
+
+
+@pytest.mark.parametrize(
+    "hosting_option, collection_id_option, expected_success",
+    [
+        ("--hosting=sentinel_hub", None, True),
+        ("--hosting=sentinel_hub",
+         "--collection-id=7ff105c4-e0de-4910-96db-8345d86ab734",
+         True),
+    ])
+def test_request_hosting(invoke,
+                         geom_geojson,
+                         hosting_option,
+                         collection_id_option,
+                         expected_success):
+    """Test request command with various hosting and collection ID options."""
+    source = json.dumps({
+        "type": "catalog",
+        "parameters": {
+            "geometry": geom_geojson,
+            "start_time": "2021-03-01T00:00:00Z",
+            "end_time": "2023-11-01T00:00:00Z",
+            "rrule": "FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
+            "item_types": ["PSScene"],
+            "asset_types": ["ortho_analytic_4b"]
+        }
+    })
+
+    cmd = [
+        'request',
+        '--name=test',
+        f'--source={source}',
+        hosting_option,
+    ]
+
+    if collection_id_option:
+        cmd.append(collection_id_option)
+
+    result = invoke(cmd)
+
+    assert result.exit_code == 0, "Expected command to succeed."

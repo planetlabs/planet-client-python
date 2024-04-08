@@ -52,7 +52,8 @@ def build_request(name: str,
                   delivery: Optional[Mapping] = None,
                   notifications: Optional[Mapping] = None,
                   tools: Optional[List[Mapping]] = None,
-                  hosting: Optional[Mapping] = None,
+                  hosting: Optional[Union[Mapping, str]] = None,
+                  collection_id: Optional[str] = None,
                   clip_to_source: Optional[bool] = False) -> dict:
     """Construct a Subscriptions API request.
 
@@ -150,8 +151,15 @@ def build_request(name: str,
 
         details['tools'] = tool_list
 
-    if hosting:
-        details['hosting'] = dict(hosting)
+    if hosting == "sentinel_hub":
+        hosting_info: Dict[str, Any] = {
+            "type": "sentinel_hub", "parameters": {}
+        }
+        if collection_id:
+            hosting_info["parameters"]["collection_id"] = collection_id
+        details['hosting'] = hosting_info
+    elif isinstance(hosting, dict):
+        details['hosting'] = hosting
 
     return details
 
@@ -276,7 +284,8 @@ def planetary_variable_source(
                       "land_surface_temperature",
                       "soil_water_content",
                       "vegetation_optical_depth",
-                      "forest_carbon_diligence_30m"],
+                      "forest_carbon_diligence_30m",
+                      "field_boundaries_sentinel_2_p1m"],
     var_id: str,
     geometry: Mapping,
     start_time: datetime,
@@ -296,8 +305,8 @@ def planetary_variable_source(
 
     Parameters:
         var_type: one of "biomass_proxy", "land_surface_temperature",
-            "soil_water_content", "vegetation_optical_depth", or
-            "forest_carbon_diligence_30m".
+            "soil_water_content", "vegetation_optical_depth",
+            "forest_carbon_diligence_30m, or field_boundaries_sentinel_2_p1m".
         var_id: a value such as "SWC-AMSR2-C_V1.0_100" for soil water
             content derived from AMSR2 C band.
         geometry: The area of interest of the subscription that will be
