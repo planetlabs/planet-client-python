@@ -238,9 +238,10 @@ def geometry_filter(geom: dict) -> dict:
         geom: GeoJSON describing the filter geometry, feature, or feature
             collection.
     """
-    return _field_filter('GeometryFilter',
-                         field_name='geometry',
-                         config=geojson.as_geom(geom))
+    geom_filter = _field_filter('GeometryFilter',
+                                field_name='geometry',
+                                config=geojson.validate_geom_as_geojson(geom))
+    return geom_filter
 
 
 def number_in_filter(field_name: str, values: List[float]) -> dict:

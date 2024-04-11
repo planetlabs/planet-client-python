@@ -373,19 +373,21 @@ def test_request_catalog_success(invoke, geom_geojson):
 @res_api_mock
 def test_subscriptions_results_csv(invoke):
     """Get results as CSV."""
-    result = invoke(['results', 'test', '--csv'])
+    result = invoke(["results", "test", "--csv"])
     assert result.exit_code == 0  # success.
-    assert result.output.splitlines() == ['id,status', '1234-abcd,SUCCESS']
+    assert result.output.splitlines() == ["id,status", "1234-abcd,SUCCESS"]
 
 
-def test_request_pv_success(invoke, geom_geojson):
+@pytest.mark.parametrize("geom", ["geom_geojson", "geom_reference"])
+def test_request_pv_success(invoke, geom, request):
     """Request-pv command succeeds"""
+    geom = request.getfixturevalue(geom)
     result = invoke([
-        'request-pv',
-        '--var-type=biomass_proxy',
-        '--var-id=BIOMASS-PROXY_V3.0_10',
-        f"--geometry={json.dumps(geom_geojson)}",
-        '--start-time=2021-03-01T00:00:00'
+        "request-pv",
+        "--var-type=biomass_proxy",
+        "--var-id=BIOMASS-PROXY_V3.0_10",
+        f"--geometry={json.dumps(geom)}",
+        "--start-time=2021-03-01T00:00:00",
     ])
 
     assert result.exit_code == 0  # success.

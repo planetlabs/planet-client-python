@@ -39,6 +39,18 @@ getting the geometry input for searching or clipping. Hand-editing GeoJSON is a 
 people will open up a desktop tool like QGIS or ArcGIS Pro and save the file. But there are a few 
 tools that can get you back into the CLI workflow more quickly.
 
+#### Use the Features API
+Rather than using GeoJSON in the SDK, upload your GeoJSON to the [Features API](https://developers.planet.com/docs/apis/features/) and use references
+across the system with the sdk.
+References are used in the geometry block of our services like:
+```json
+"geometry":
+    {
+        "content": "pl:features/my/[collection-id]/[feature-id]",
+        "type": "ref"
+    }
+```
+
 #### Draw with GeoJSON.io
 
 One great tool for quickly drawing on a map and getting GeoJSON output is 

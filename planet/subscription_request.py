@@ -250,7 +250,7 @@ def catalog_source(
     parameters = {
         "item_types": item_types,
         "asset_types": asset_types,
-        "geometry": geojson.as_geom(dict(geometry)),
+        "geometry": geojson.as_geom_or_ref(dict(geometry)),
     }
 
     try:
@@ -355,7 +355,7 @@ def planetary_variable_source(
 
     parameters = {
         "id": var_id,
-        "geometry": geojson.as_geom(dict(geometry)),
+        "geometry": geojson.as_geom_or_ref(dict(geometry)),
     }
 
     try:
@@ -596,9 +596,9 @@ def clip_tool(aoi: Mapping) -> dict:
         planet.exceptions.ClientError: If aoi is not a valid polygon or
             multipolygon.
     """
-    valid_types = ['Polygon', 'MultiPolygon']
+    valid_types = ['Polygon', 'MultiPolygon', 'ref']
 
-    geom = geojson.as_geom(dict(aoi))
+    geom = geojson.as_geom_or_ref(dict(aoi))
     if geom['type'].lower() not in [v.lower() for v in valid_types]:
         raise ClientError(
             f'Invalid geometry type: {geom["type"]} is not in {valid_types}.')

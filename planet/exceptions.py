@@ -90,3 +90,7 @@ class PagingError(ClientError):
 
 class GeoJSONError(ClientError):
     """Errors that occur due to invalid GeoJSON"""
+
+
+class FeatureError(ClientError):
+    """Errors that occur due to incorrectly formatted feature reference"""

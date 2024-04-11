@@ -108,14 +108,24 @@ def geom_geojson():
     # these need to be tuples, not list, or they will be changed
     # by shapely
     return {
-        "type":
-        "Polygon",
-        "coordinates":
-        [[[37.791595458984375, 14.84923123791421],
-          [37.90214538574219, 14.84923123791421],
-          [37.90214538574219, 14.945448293647944],
-          [37.791595458984375, 14.945448293647944],
-          [37.791595458984375, 14.84923123791421]]]
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [37.791595458984375, 14.84923123791421],
+                [37.90214538574219, 14.84923123791421],
+                [37.90214538574219, 14.945448293647944],
+                [37.791595458984375, 14.945448293647944],
+                [37.791595458984375, 14.84923123791421],
+            ]
+        ],
+    }  # yapf: disable
+
+
+@pytest.fixture
+def geom_reference():
+    return {
+        "type": "ref",
+        "content": "pl:features/my/water-fields-RqB0NZ5/rmQEGqm",
     }  # yapf: disable
 
 

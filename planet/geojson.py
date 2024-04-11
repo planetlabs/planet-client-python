@@ -12,7 +12,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-"""Functionality for interacting with GeoJSON."""
+"""Functionality for interacting with GeoJSON and planet references."""
 import json
 import logging
 import typing
@@ -21,14 +21,14 @@ import geojson as gj
 from jsonschema import Draft7Validator
 
 from .constants import DATA_DIR
-from .exceptions import GeoJSONError
+from .exceptions import GeoJSONError, FeatureError
 
-GEOJSON_TYPES = ['Feature']
+GEOJSON_TYPES = ["Feature"]
 
 LOGGER = logging.getLogger(__name__)
 
 
-def as_geom(data: dict) -> dict:
+def as_geom_or_ref(data: dict) -> dict:
     """Extract the geometry from GeoJSON and validate.
 
     Parameters:
@@ -42,13 +42,30 @@ def as_geom(data: dict) -> dict:
             or FeatureCollection or if more than one Feature is in a
             FeatureCollection.
     """
-    geom = geom_from_geojson(data)
-    validate_geom(geom)
-    return geom
+    geom_type = data['type']
+    if geom_type == 'ref':
+        return as_ref(data)
+    else:
+        geom = geom_from_geojson(data)
+        validate_geom_as_geojson(geom)
+        return geom
+
+
+def as_ref(data: dict) -> dict:
+    geom_type = data['type']
+    if geom_type.lower() != 'ref':
+        raise FeatureError(
+            f'Invalid geometry reference: {geom_type} is not a reference (the type should be "ref").'
+        )
+    if "content" not in data:
+        raise FeatureError(
+            'Invalid geometry reference: Missing content block that contains the reference.'
+        )
+    return data
 
 
 def as_polygon(data: dict) -> dict:
-    geom = as_geom(data)
+    geom = as_geom_or_ref(data)
     geom_type = geom['type']
     if geom_type.lower() != 'polygon':
         raise GeoJSONError(
@@ -75,7 +92,7 @@ def geom_from_geojson(data: dict) -> dict:
     else:
         try:
             # feature
-            ret = as_geom(data['geometry'])
+            ret = as_geom_or_ref(data['geometry'])
         except KeyError:
             try:
                 # FeatureCollection
@@ -88,11 +105,11 @@ def geom_from_geojson(data: dict) -> dict:
                     'FeatureCollection has multiple features. Only one feature'
                     ' can be used to get geometry.')
 
-            ret = as_geom(features[0])
+            ret = as_geom_or_ref(features[0])
     return ret
 
 
-def validate_geom(data: dict):
+def validate_geom_as_geojson(data: dict):
     """Validate GeoJSON geometry.
 
     Parameters:
@@ -101,23 +118,26 @@ def validate_geom(data: dict):
     Raises:
         planet.exceptions.GeoJSONError: If data is not a valid GeoJSON
         geometry.
+    Returns:
+        GeoJSON
     """
+    data = geom_from_geojson(data)
     if 'type' not in data:
-        raise GeoJSONError("Missing 'type' key.")
+        raise GeoJSONError('Missing "type" key.')
     if 'coordinates' not in data:
-        raise GeoJSONError("Missing 'coordinates' key.")
+        raise GeoJSONError('Missing "coordinates" key.')
 
     try:
-        cls = getattr(gj, data["type"])
-        obj = cls(data["coordinates"])
+        cls = getattr(gj, data['type'])
+        obj = cls(data['coordinates'])
         if not obj.is_valid:
             raise GeoJSONError(obj.errors())
     except AttributeError as err:
-        raise GeoJSONError("Not a GeoJSON geometry type") from err
+        raise GeoJSONError('Not a GeoJSON geometry type') from err
     except ValueError as err:
-        raise GeoJSONError("Not a GeoJSON coordinate value") from err
+        raise GeoJSONError('Not a GeoJSON coordinate value') from err
 
-    return
+    return data
 
 
 def as_featurecollection(features: typing.List[dict]) -> dict:
