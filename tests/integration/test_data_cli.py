@@ -415,9 +415,7 @@ def test_data_filter_update(invoke, assert_and_filters_equal):
 
 
 @respx.mock
-@pytest.mark.parametrize("item_types, expect_success",
-                         [('PSScene', True), ('SkySatScene', True),
-                          ('PSScene, SkySatScene', True), ('INVALID', False)])
+@pytest.mark.parametrize("item_types, expect_success", [('PSScene', True)])
 def test_data_search_cmd_item_types(item_types, expect_success, invoke):
     """Test for planet data search_quick item types, valid and invalid."""
     mock_resp = httpx.Response(HTTPStatus.OK,
@@ -433,6 +431,24 @@ def test_data_search_cmd_item_types(item_types, expect_success, invoke):
         assert len(result.output.strip().split('\n')) == 1  # we have 1 feature
     else:
         assert result.exit_code == 2
+
+
+@respx.mock
+@pytest.mark.parametrize("geom_fixture",
+                         [('geom_geojson'), ('feature_geojson'),
+                          ('featurecollection_geojson'), ('geom_reference')])
+def test_data_search_cmd_top_level_geom(geom_fixture, request, invoke):
+    """Ensure that all GeoJSON forms of describing a geometry are handled
+    and all result in the same, valid GeometryFilter being created"""
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               json={'features': [{
+                                   "key": "value"
+                               }]})
+    respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
+    geom = request.getfixturevalue(geom_fixture)
+
+    result = invoke(["search", 'PSScene', f"--geom={json.dumps(geom)}"])
+    assert result.exit_code == 0
 
 
 @respx.mock

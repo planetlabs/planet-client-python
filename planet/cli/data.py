@@ -19,7 +19,7 @@ from pathlib import Path
 import click
 
 from planet.reporting import AssetStatusBar
-from planet import data_filter, DataClient, exceptions
+from planet import data_filter, DataClient, exceptions, geojson
 from planet.clients.data import (SEARCH_SORT,
                                  LIST_SEARCH_TYPE,
                                  LIST_SEARCH_TYPE_DEFAULT,
@@ -79,6 +79,11 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
         return item_types
     except SpecificationException as e:
         raise click.BadParameter(str(e))
+
+
+def check_geom(ctx, param, geometry: Optional[dict]) -> Optional[dict]:
+    """Validates geometry as GeoJSON or feature ref(s)."""
+    return geojson.as_geom_or_ref(geometry) if geometry else None
 
 
 def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
@@ -281,6 +286,7 @@ def filter(ctx,
 @click.argument("item_types",
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
+@click.option("--geom", type=types.JSON(), callback=check_geom)
 @click.option('--filter',
               type=types.JSON(),
               help="""Apply specified filter to search. Can be a json string,
@@ -293,7 +299,7 @@ def filter(ctx,
               show_default=True,
               help='Field and direction to order results by.')
 @pretty
-async def search(ctx, item_types, filter, limit, name, sort, pretty):
+async def search(ctx, item_types, geom, filter, limit, name, sort, pretty):
     """Execute a structured item search.
 
     This function outputs a series of GeoJSON descriptions, one for each of the
@@ -311,6 +317,7 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
     async with data_client(ctx) as cl:
 
         async for item in cl.search(item_types,
+                                    geometry=geom,
                                     search_filter=filter,
                                     name=name,
                                     sort=sort,
@@ -325,6 +332,7 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
 @click.argument("item_types",
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
+@click.option("--geom", type=types.JSON(), callback=check_geom)
 @click.option(
     '--filter',
     type=types.JSON(),
@@ -339,7 +347,13 @@ async def search(ctx, item_types, filter, limit, name, sort, pretty):
               is_flag=True,
               help='Send a daily email when new results are added.')
 @pretty
-async def search_create(ctx, item_types, filter, name, daily_email, pretty):
+async def search_create(ctx,
+                        item_types,
+                        geom,
+                        filter,
+                        name,
+                        daily_email,
+                        pretty):
     """Create a new saved structured item search.
 
     This function outputs a full JSON description of the created search,
@@ -349,6 +363,7 @@ async def search_create(ctx, item_types, filter, name, daily_email, pretty):
     """
     async with data_client(ctx) as cl:
         items = await cl.create_search(item_types=item_types,
+                                       geometry=geom,
                                        search_filter=filter,
                                        name=name,
                                        enable_email=daily_email)
@@ -485,6 +500,7 @@ async def search_delete(ctx, search_id):
               type=str,
               required=True,
               help='Name of the saved search.')
+@click.option("--geom", type=types.JSON(), callback=check_geom, default=None)
 @click.option('--daily-email',
               is_flag=True,
               help='Send a daily email when new results are added.')
@@ -493,6 +509,7 @@ async def search_update(ctx,
                         search_id,
                         item_types,
                         filter,
+                        geom,
                         name,
                         daily_email,
                         pretty):
@@ -504,9 +521,10 @@ async def search_update(ctx,
     async with data_client(ctx) as cl:
         items = await cl.update_search(search_id,
                                        item_types,
-                                       filter,
-                                       name,
-                                       daily_email)
+                                       search_filter=filter,
+                                       name=name,
+                                       geometry=geom,
+                                       enable_email=daily_email)
         echo_json(items, pretty)
 
 
