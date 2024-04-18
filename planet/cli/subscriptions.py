@@ -406,6 +406,7 @@ def request_catalog(item_types,
     required=True,
     help='Planetary variable type.',
     type=click.Choice([
+        "analysis_ready_ps",
         "biomass_proxy",
         "land_surface_temperature",
         "soil_water_content",
