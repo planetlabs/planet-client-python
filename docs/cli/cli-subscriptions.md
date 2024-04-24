@@ -4,7 +4,7 @@ title: CLI for Subscriptions API Tutorial
 
 ## Introduction
 
-The `planet subscriptions` command enables interaction with the 
+The `planet subscriptions` command enables interaction with the
 [Subscriptions API](https://developers.planet.com/apis/subscriptions/)
 that make it possible to set up a recurring search criteria. Using `planet subscriptions`, you can automatically process
 and deliver new imagery to a cloud bucket. It also has a powerful 'backfill' capability
@@ -15,7 +15,7 @@ through the main commands available in the CLI.
 
 ### Create a Subscription
 
-Since there is no UI to easily create subscriptions we’ll start with making a new one. 
+Since there is no UI to easily create subscriptions we’ll start with making a new one.
 
 ```json
 {
@@ -104,11 +104,11 @@ Since there is no UI to easily create subscriptions we’ll start with making a 
 }
 ```
 
-This is a full subscriptions JSON request, with the credentials redacted, so you’ll have 
-to replace your own for it to work. Below we’ll show the convenience methods that will 
-help create a custom one more easily. If you'd like to get things working for now then 
-just replace the 'delivery' section with your cloud credentials, see the 
-[core subscriptions delivery docs](https://developers.planet.com/docs/subscriptions/delivery/) 
+This is a full subscriptions JSON request, with the credentials redacted, so you’ll have
+to replace your own for it to work. Below we’ll show the convenience methods that will
+help create a custom one more easily. If you'd like to get things working for now then
+just replace the 'delivery' section with your cloud credentials, see the
+[core subscriptions delivery docs](https://developers.planet.com/docs/subscriptions/delivery/)
 for more information.
 
 To create a new subscription with the CLI, use the `create` command and the json file you just created:
@@ -122,7 +122,7 @@ planet subscriptions create my-subscription.json
 
 #### Create a Subscription with Hosting and Collection ID
 
-In addition to the basic subscription creation process, you can now specify hosting options and a collection ID directly in the create command. 
+In addition to the basic subscription creation process, you can now specify hosting options and a collection ID directly in the create command.
 
 ```sh
 planet subscriptions create my-subscription.json --hosting sentinel_hub --collection_id ba8f7274-aacc-425e-8a38-e21517bfbeff
@@ -139,8 +139,8 @@ Now that you’ve got a subscription working you can make use of the other comma
 planet subscriptions list
 ```
 
-outputs the JSON for your first 100 subscriptions. If you'd like more you can set the `--limit` 
-parameter higher, or you can set it to 0 and there will be no limit. 
+outputs the JSON for your first 100 subscriptions. If you'd like more you can set the `--limit`
+parameter higher, or you can set it to 0 and there will be no limit.
 
 You can get nicer formatting with `--pretty` or pipe it into `jq`, just like the other Planet
 CLI’s.
@@ -173,7 +173,7 @@ planet subscriptions results SUBSCRIPTION_ID
 
 `SUBSCRIPTION_ID` above is a placeholder for a unique subscription identifier, which will be a UUID like `cb817760-1f07-4ee7-bba6-bcac5346343f`.
 
-By default this displays the first 100 results. As with other commands, you can use the `--limit` param to 
+By default this displays the first 100 results. As with other commands, you can use the `--limit` param to
 set a higher limit, or set it to 0 to see all results (this can be quite large with subscriptions results).
 
 You can also filter by status:
@@ -183,7 +183,7 @@ planet subscriptions results SUBSCRIPTION_ID --status processing
 ```
 
 The available statuses are `created`, `queued`, `processing`, `failed`, and `success`. Note it’s quite useful
-to use `jq` to help filter out results as well.  
+to use `jq` to help filter out results as well.
 
 #### Results as comma-separated values (CSV)
 
@@ -192,8 +192,6 @@ Planetary Variable subscribers can benefit from retrieving results as a CSV. The
 ```sh
 planet subscriptions results SUBSCRIPTION_ID --csv
 ```
-
-*New in version 2.1*
 
 ### Update Subscription
 
@@ -206,7 +204,16 @@ planet subscriptions update cb817760-1f07-4ee7-bba6-bcac5346343f \
     my-updated-subscriptions.json
 ```
 
-### Cancel a subscription
+### Update Subscription Via Patch
+
+To update a running subscription with *only* the attributes to be updated, use the `patch` method.
+
+```sh
+planet subscriptions patch cb817760-1f07-4ee7-bba6-bcac5346343f \
+    patched-attributes.json
+```
+
+### Cancel Subscription
 
 Cancelling a subscription is simple with the CLI:
 
@@ -220,12 +227,12 @@ continue to list and get it.
 ## Subscription Request Conveniences
 
 There are a couple of commands that can assist in creating the subscription JSON, used for creation and updates.
-A subscription request is a pretty complicated command, consisting of a search, a cloud delivery, as well as 
-tools to process the data plus notifications on the status. 
+A subscription request is a pretty complicated command, consisting of a search, a cloud delivery, as well as
+tools to process the data plus notifications on the status.
 
 ### Catalog Request
 
-The first place to start is the `request-catalog` command, which generates all the JSON for the 
+The first place to start is the `request-catalog` command, which generates all the JSON for the
 [catalog source](https://developers.planet.com/docs/subscriptions/source/#catalog-source-type) block. The core
 of this is quite similar to a Data API search request, though with more required fields. The minimal
 required commands would be a request like:
@@ -238,7 +245,7 @@ planet subscriptions request-catalog \
     --start-time 2023-03-17T04:08:00.0Z
 ```
 
-You request which item types you want to deliver, and the asset types for it. Note that the `asset-types` are a bit 
+You request which item types you want to deliver, and the asset types for it. Note that the `asset-types` are a bit
 different than the `--bundle` command in Orders, a bundle is a set of asset-types. You can see the list of asset types
 for [PSScene](https://developers.planet.com/docs/data/psscene/#available-asset-types), [SkySatCollect](https://developers.planet.com/docs/data/skysatcollect/),
 and [SkySatScene](https://developers.planet.com/docs/data/skysatscene/#available-asset-types). The other item-types
@@ -299,7 +306,7 @@ planet subscriptions request-catalog \
 ```
 
 For more information on the `rrule` parameter see the [recurrence rules](https://developers.planet.com/docs/subscriptions/source/#rrules-recurrence-rules)
-documentation.  
+documentation.
 
 #### Filter
 
@@ -354,7 +361,7 @@ planet subscriptions request-catalog \
 #### Saving the output
 
 You’ll likely want to save the output of your `request-catalog` call to disk, so that you can more easily use it in constructing the complete subscription
-request. 
+request.
 
 ```sh
 planet data filter --range clear_percent gt 90 > filter.json
@@ -387,10 +394,10 @@ planet subscriptions request-pv \
 
 ### Subscription Tools
 
-Now we’ll dive into some of the tools options for subscriptions. These are quite similar to the tools for 
-orders, but unfortunately the syntax is subtly different, and there are less tools supported. Just like 
+Now we’ll dive into some of the tools options for subscriptions. These are quite similar to the tools for
+orders, but unfortunately the syntax is subtly different, and there are less tools supported. Just like
 for Orders, future of the versions of the CLI will likely add `tools` convenience methods, you can follow issue
-[#601](https://github.com/planetlabs/planet-client-python/issues/601). 
+[#601](https://github.com/planetlabs/planet-client-python/issues/601).
 
 #### Clipping
 
@@ -455,12 +462,12 @@ Example: `more-tools.json`
 
 ### Delivery
 
-One other essential block is the `delivery` JSON. Like with tools there is no convenience 
+One other essential block is the `delivery` JSON. Like with tools there is no convenience
 method, as of yet. You must write out the JSON for this section.
 You can find the full documentation for the delivery options in
 the [Subscriptions Delivery documentation](https://developers.planet.com/docs/subscriptions/delivery/).
 
-An example of a delivery.json file that you would save as a file to pass into the 
+An example of a delivery.json file that you would save as a file to pass into the
 `subscriptions request` command is:
 
 ```json
