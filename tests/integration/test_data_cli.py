@@ -436,7 +436,8 @@ def test_data_search_cmd_item_types(item_types, expect_success, invoke):
 @respx.mock
 @pytest.mark.parametrize("geom_fixture",
                          [('geom_geojson'), ('feature_geojson'),
-                          ('featurecollection_geojson'), ('geom_reference')])
+                          ('featurecollection_geojson'), ('geom_reference'),
+                          ("str_geom_reference")])
 def test_data_search_cmd_top_level_geom(geom_fixture, request, invoke):
     """Ensure that all GeoJSON forms of describing a geometry are handled
     and all result in the same, valid GeometryFilter being created"""
@@ -446,8 +447,10 @@ def test_data_search_cmd_top_level_geom(geom_fixture, request, invoke):
                                }]})
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
     geom = request.getfixturevalue(geom_fixture)
+    if isinstance(geom, dict):
+        geom = json.dumps(geom)
 
-    result = invoke(["search", 'PSScene', f"--geom={json.dumps(geom)}"])
+    result = invoke(["search", 'PSScene', f"--geom={geom}"])
     assert result.exit_code == 0
 
 

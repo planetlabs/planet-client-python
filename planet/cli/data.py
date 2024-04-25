@@ -15,7 +15,6 @@
 from typing import List, Optional
 from contextlib import asynccontextmanager
 from pathlib import Path
-
 import click
 
 from planet.reporting import AssetStatusBar
@@ -81,9 +80,15 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
         raise click.BadParameter(str(e))
 
 
-def check_geom(ctx, param, geometry: Optional[dict]) -> Optional[dict]:
+def check_geom(ctx, param, geometry) -> Optional[dict]:
     """Validates geometry as GeoJSON or feature ref(s)."""
-    return geojson.as_geom_or_ref(geometry) if geometry else None
+    if isinstance(geometry, dict):
+        return geojson.as_geom_or_ref(geometry)
+    geoms = {}
+    if geometry:
+        for geom in geometry:
+            geoms.update(geojson.as_geom_or_ref(geom))
+    return geoms if geoms else None
 
 
 def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
@@ -286,7 +291,7 @@ def filter(ctx,
 @click.argument("item_types",
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
-@click.option("--geom", type=types.JSON(), callback=check_geom)
+@click.option("--geom", type=types.Geometry(), callback=check_geom)
 @click.option('--filter',
               type=types.JSON(),
               help="""Apply specified filter to search. Can be a json string,
@@ -332,7 +337,7 @@ async def search(ctx, item_types, geom, filter, limit, name, sort, pretty):
 @click.argument("item_types",
                 type=types.CommaSeparatedString(),
                 callback=check_item_types)
-@click.option("--geom", type=types.JSON(), callback=check_geom)
+@click.option("--geom", type=types.Geometry(), callback=check_geom)
 @click.option(
     '--filter',
     type=types.JSON(),
@@ -500,7 +505,10 @@ async def search_delete(ctx, search_id):
               type=str,
               required=True,
               help='Name of the saved search.')
-@click.option("--geom", type=types.JSON(), callback=check_geom, default=None)
+@click.option("--geom",
+              type=types.Geometry(),
+              callback=check_geom,
+              default=None)
 @click.option('--daily-email',
               is_flag=True,
               help='Send a daily email when new results are added.')

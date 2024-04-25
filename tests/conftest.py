@@ -122,6 +122,11 @@ def geom_geojson():
 
 
 @pytest.fixture
+def str_geom_reference():
+    return "pl:features/my/water-fields-RqB0NZ5/rmQEGqm"
+
+
+@pytest.fixture
 def geom_reference():
     return {
         "type": "ref",

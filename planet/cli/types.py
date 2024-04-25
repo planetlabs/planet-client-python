@@ -93,6 +93,20 @@ class JSON(click.ParamType):
         return convdict
 
 
+class Geometry(click.ParamType):
+    name = 'geom'
+
+    def __init__(self):
+        self.types = [JSON(), CommaSeparatedString()]
+
+    def convert(self, value, param, ctx):
+        for type in self.types:
+            try:
+                return type.convert(value, param, ctx)
+            except click.BadParameter:
+                continue
+
+
 class Field(click.ParamType):
     """Clarify that this entry is for a field"""
     name = 'field'

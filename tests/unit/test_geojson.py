@@ -99,7 +99,7 @@ def test_validate_geom_as_geojson_empty_coordinates(geom_geojson):
     _ = geojson.validate_geom_as_geojson(geom_geojson)
 
 
-def test_as_geom_or_ref(geom_geojson):
+def test_as_geojson(geom_geojson):
     assert geojson.as_geom_or_ref(geom_geojson) == geom_geojson
 
 
@@ -107,8 +107,21 @@ def test_as_polygon(geom_geojson):
     assert geojson.as_polygon(geom_geojson) == geom_geojson
 
 
-def test_as_reference(geom_reference):
+def test_as_ref(geom_reference):
     assert geojson.as_ref(geom_reference) == geom_reference
+
+
+def test_as_str_ref(str_geom_reference):
+    geomify_ref = {
+        "type": "ref",
+        "content": str_geom_reference,
+    }
+    assert geojson.as_ref(str_geom_reference) == geomify_ref
+
+
+def test_as_invalid_ref():
+    with pytest.raises(exceptions.FeatureError):
+        geojson.as_ref("some:nonesense/with/nothing")
 
 
 def test_as_polygon_wrong_type(point_geom_geojson):

@@ -167,7 +167,7 @@ def build_request(name: str,
 def catalog_source(
     item_types: List[str],
     asset_types: List[str],
-    geometry: Mapping,
+    geometry: dict,
     start_time: datetime,
     filter: Optional[Mapping] = None,
     end_time: Optional[datetime] = None,
@@ -250,7 +250,7 @@ def catalog_source(
     parameters = {
         "item_types": item_types,
         "asset_types": asset_types,
-        "geometry": geojson.as_geom_or_ref(dict(geometry)),
+        "geometry": geojson.as_geom_or_ref(geometry),
     }
 
     try:
@@ -287,7 +287,7 @@ def planetary_variable_source(
                       "forest_carbon_diligence_30m",
                       "field_boundaries_sentinel_2_p1m"],
     var_id: str,
-    geometry: Mapping,
+    geometry: dict,
     start_time: datetime,
     end_time: Optional[datetime] = None,
 ) -> dict:
@@ -355,7 +355,7 @@ def planetary_variable_source(
 
     parameters = {
         "id": var_id,
-        "geometry": geojson.as_geom_or_ref(dict(geometry)),
+        "geometry": geojson.as_geom_or_ref(geometry),
     }
 
     try:
