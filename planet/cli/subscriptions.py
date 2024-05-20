@@ -451,7 +451,6 @@ def request_pv(var_type, var_id, geometry, start_time, end_time, pretty):
     Variables](https://developers.planet.com/docs/subscriptions/pvs-subs/#planetary-variables-types-and-ids)
     for details.
     """
-    # print("Geom is", geometry)
     res = subscription_request.planetary_variable_source(
         var_type,
         var_id,

@@ -327,15 +327,14 @@ def test_request_base_success(invoke, geom_geojson):
 def test_request_base_clip_to_source(geom_fixture, request, invoke):
     """Clip to source using command line option."""
     geom = request.getfixturevalue(geom_fixture)
-    print("geom is", geom)
     source = json.dumps({
         "type": "catalog",
         "parameters": {
             "geometry": geom,
             "start_time": "2021-03-01T00:00:00Z",
             "item_types": ["PSScene"],
-            "asset_types": ["ortho_analytic_4b"]
-        }
+            "asset_types": ["ortho_analytic_4b"],
+        },
     })
     result = invoke([
         'request',
