@@ -18,7 +18,7 @@ from pathlib import Path
 import click
 
 from planet.reporting import AssetStatusBar
-from planet import data_filter, DataClient, exceptions, geojson
+from planet import data_filter, DataClient, exceptions
 from planet.clients.data import (SEARCH_SORT,
                                  LIST_SEARCH_TYPE,
                                  LIST_SEARCH_TYPE_DEFAULT,
@@ -36,6 +36,7 @@ from .cmds import coro, translate_exceptions
 from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
+from .validators import check_geom
 
 valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(
     get_data_item_types())
@@ -78,17 +79,6 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
         return item_types
     except SpecificationException as e:
         raise click.BadParameter(str(e))
-
-
-def check_geom(ctx, param, geometry) -> Optional[dict]:
-    """Validates geometry as GeoJSON or feature ref(s)."""
-    if isinstance(geometry, dict):
-        return geojson.as_geom_or_ref(geometry)
-    geoms = {}
-    if geometry:
-        for geom in geometry:
-            geoms.update(geojson.as_geom_or_ref(geom))
-    return geoms if geoms else None
 
 
 def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:

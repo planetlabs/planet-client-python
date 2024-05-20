@@ -13,7 +13,7 @@ from planet.clients.subscriptions import SubscriptionsClient
 from .. import subscription_request
 from ..subscription_request import sentinel_hub
 from ..specs import get_item_types, validate_item_type, SpecificationException
-from planet import geojson
+from .validators import check_geom
 
 ALL_ITEM_TYPES = get_item_types()
 valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(ALL_ITEM_TYPES)
@@ -28,17 +28,6 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
         return item_types
     except SpecificationException as e:
         raise click.BadParameter(str(e))
-
-
-def check_geom(ctx, param, geometry) -> Optional[dict]:
-    """Validates geometry as GeoJSON or feature ref(s)."""
-    if isinstance(geometry, dict):
-        return geojson.as_geom_or_ref(geometry)
-    geoms = {}
-    if geometry:
-        for geom in geometry:
-            geoms.update(geojson.as_geom_or_ref(geom))
-    return geoms if geoms else None
 
 
 def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
