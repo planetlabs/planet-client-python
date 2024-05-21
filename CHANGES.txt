@@ -1,3 +1,8 @@
+2.7.0 (2024-05-21)
+
+Added:
+- Support for using feature references in Orders API, Data API and Subscriptions APIs (#1032).
+
 2.6.0 (2024-04-24)
 
 Added:
