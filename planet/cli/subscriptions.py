@@ -13,6 +13,7 @@ from planet.clients.subscriptions import SubscriptionsClient
 from .. import subscription_request
 from ..subscription_request import sentinel_hub
 from ..specs import get_item_types, validate_item_type, SpecificationException
+from .validators import check_geom
 
 ALL_ITEM_TYPES = get_item_types()
 valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(ALL_ITEM_TYPES)
@@ -346,7 +347,8 @@ def request(name,
 @click.option(
     '--geometry',
     required=True,
-    type=types.JSON(),
+    type=types.Geometry(),
+    callback=check_geom,
     help="""Geometry of the area of interest of the subscription that will be
     used to determine matches. Can be a string, filename, or - for stdin.""")
 @click.option('--start-time',
@@ -419,7 +421,8 @@ def request_catalog(item_types,
 @click.option(
     '--geometry',
     required=True,
-    type=types.JSON(),
+    type=types.Geometry(),
+    callback=check_geom,
     help="""Geometry of the area of interest of the subscription that will be
     used to determine matches. Can be a string, filename, or - for stdin.""")
 @click.option('--start-time',

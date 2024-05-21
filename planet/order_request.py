@@ -356,9 +356,9 @@ def clip_tool(aoi: dict) -> dict:
         planet.exceptions.ClientError: If GeoJSON is not a valid polygon or
             multipolygon.
     """
-    valid_types = ['Polygon', 'MultiPolygon']
+    valid_types = ['Polygon', 'MultiPolygon', 'ref']
 
-    geom = geojson.as_geom(aoi)
+    geom = geojson.as_geom_or_ref(aoi)
     if geom['type'].lower() not in [v.lower() for v in valid_types]:
         raise ClientError(
             f'Invalid geometry type: {geom["type"]} is not in {valid_types}.')

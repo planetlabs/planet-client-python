@@ -555,6 +555,40 @@ def test_cli_orders_request_clip_polygon(geom_fixture,
     assert order_request == json.loads(result.output)
 
 
+@pytest.mark.parametrize("geom_fixture", [('geom_reference')])
+def test_cli_orders_request_clip_ref(geom_fixture, request, invoke, stac_json):
+
+    geom = request.getfixturevalue(geom_fixture)
+
+    result = invoke([
+        'request',
+        '--item-type=PSOrthoTile',
+        '--bundle=analytic',
+        '--name=test',
+        '4500474_2133707_2021-05-20_2419',
+        f'--clip={json.dumps(geom)}',
+    ])
+    assert result.exit_code == 0
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": ["4500474_2133707_2021-05-20_2419"],
+            "item_type": "PSOrthoTile",
+            "product_bundle": "analytic",
+        }],
+        "tools": [{
+            'clip': {
+                'aoi': geom
+            }
+        }],
+        "metadata":
+        stac_json
+    }
+    assert order_request == json.loads(result.output)
+
+
 def test_cli_orders_request_clip_multipolygon(multipolygon_geom_geojson,
                                               invoke,
                                               geom_geojson,

@@ -321,16 +321,20 @@ def test_request_base_success(invoke, geom_geojson):
     assert result.exit_code == 0  # success.
 
 
-def test_request_base_clip_to_source(invoke, geom_geojson):
+@pytest.mark.parametrize("geom_fixture",
+                         [('geom_geojson'), ('geom_reference'),
+                          ("str_geom_reference")])
+def test_request_base_clip_to_source(geom_fixture, request, invoke):
     """Clip to source using command line option."""
+    geom = request.getfixturevalue(geom_fixture)
     source = json.dumps({
         "type": "catalog",
         "parameters": {
-            "geometry": geom_geojson,
+            "geometry": geom,
             "start_time": "2021-03-01T00:00:00Z",
             "item_types": ["PSScene"],
-            "asset_types": ["ortho_analytic_4b"]
-        }
+            "asset_types": ["ortho_analytic_4b"],
+        },
     })
     result = invoke([
         'request',
@@ -344,7 +348,7 @@ def test_request_base_clip_to_source(invoke, geom_geojson):
     req = json.loads(result.output)
     tool = req["tools"][0]
     assert tool["type"] == "clip"
-    assert tool["parameters"]["aoi"] == geom_geojson
+    assert tool["parameters"]["aoi"] == geom
 
 
 def test_request_catalog_success(invoke, geom_geojson):
@@ -373,19 +377,24 @@ def test_request_catalog_success(invoke, geom_geojson):
 @res_api_mock
 def test_subscriptions_results_csv(invoke):
     """Get results as CSV."""
-    result = invoke(['results', 'test', '--csv'])
+    result = invoke(["results", "test", "--csv"])
     assert result.exit_code == 0  # success.
-    assert result.output.splitlines() == ['id,status', '1234-abcd,SUCCESS']
+    assert result.output.splitlines() == ["id,status", "1234-abcd,SUCCESS"]
 
 
-def test_request_pv_success(invoke, geom_geojson):
+@pytest.mark.parametrize(
+    "geom", ["geom_geojson", "geom_reference", "str_geom_reference"])
+def test_request_pv_success(invoke, geom, request):
     """Request-pv command succeeds"""
+    geom = request.getfixturevalue(geom)
+    if isinstance(geom, dict):
+        geom = json.dumps(geom)
     result = invoke([
-        'request-pv',
-        '--var-type=biomass_proxy',
-        '--var-id=BIOMASS-PROXY_V3.0_10',
-        f"--geometry={json.dumps(geom_geojson)}",
-        '--start-time=2021-03-01T00:00:00'
+        "request-pv",
+        "--var-type=biomass_proxy",
+        "--var-id=BIOMASS-PROXY_V3.0_10",
+        f"--geometry={geom}",
+        "--start-time=2021-03-01T00:00:00",
     ])
 
     assert result.exit_code == 0  # success.
