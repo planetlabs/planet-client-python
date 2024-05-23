@@ -86,9 +86,8 @@ def build_request(name: str,
         ClientError: when a valid Subscriptions API request can't be
             constructed.
 
-    Examples:
+    Example::
 
-    ```python
         from datetime import datetime
         from planet.subscription_request import build_request, catalog_source, amazon_s3
 
@@ -114,7 +113,6 @@ def build_request(name: str,
         subscription_request = build_request(
             "test_subscription", source=source, delivery=delivery, hosting=hosting
         )
-        ```
     """
     # Because source is a Mapping we must make copies for
     # the function's return value. dict() shallow copies a Mapping
