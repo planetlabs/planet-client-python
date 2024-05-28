@@ -113,11 +113,11 @@ class DataClient:
 
     async def search(self,
                      item_types: List[str],
-                     geometry: Optional[dict] = None,
                      search_filter: Optional[dict] = None,
                      name: Optional[str] = None,
                      sort: Optional[str] = None,
-                     limit: int = 100) -> AsyncIterator[dict]:
+                     limit: int = 100,
+                     geometry: Optional[dict] = None) -> AsyncIterator[dict]:
         """Iterate over results from a quick search.
 
         Quick searches are saved for a short period of time (~month). The
@@ -136,10 +136,10 @@ class DataClient:
             sort: Field and direction to order results by. Valid options are
             given in SEARCH_SORT.
             name: The name of the saved search.
-            geometry: GeoJSON, a feature reference or a list of feature
-                references
             limit: Maximum number of results to return. When set to 0, no
                 maximum is applied.
+            geometry: GeoJSON, a feature reference or a list of feature
+                references
 
         Yields:
             Description of an item.
@@ -173,12 +173,14 @@ class DataClient:
         async for i in Items(response, self._session.request, limit=limit):
             yield i
 
-    async def create_search(self,
-                            item_types: List[str],
-                            search_filter: dict,
-                            name: str,
-                            geometry: Optional[dict] = None,
-                            enable_email: bool = False) -> dict:
+    async def create_search(
+        self,
+        item_types: List[str],
+        search_filter: dict,
+        name: str,
+        enable_email: bool = False,
+        geometry: Optional[dict] = None,
+    ) -> dict:
         """Create a new saved structured item search.
 
         To filter to items you have access to download which are of standard
@@ -199,10 +201,10 @@ class DataClient:
 
         Parameters:
             item_types: The item types to include in the search.
-            geometry: A feature reference or a GeoJSON
             search_filter: Structured search criteria.
             name: The name of the saved search.
             enable_email: Send a daily email when new results are added.
+            geometry: A feature reference or a GeoJSON
 
         Returns:
             Description of the saved search.
@@ -233,17 +235,17 @@ class DataClient:
                             item_types: List[str],
                             search_filter: dict,
                             name: str,
-                            geometry: Optional[dict] = None,
-                            enable_email: bool = False) -> dict:
+                            enable_email: bool = False,
+                            geometry: Optional[dict] = None) -> dict:
         """Update an existing saved search.
 
         Parameters:
             search_id: Saved search identifier.
             item_types: The item types to include in the search.
-            geometry: A feature reference or a GeoJSON
             search_filter: Structured search criteria.
             name: The name of the saved search.
             enable_email: Send a daily email when new results are added.
+            geometry: A feature reference or a GeoJSON
 
         Returns:
             Description of the saved search.
