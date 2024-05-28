@@ -30,7 +30,9 @@ def build_request(name: str,
                   notifications: Optional[dict] = None,
                   order_type: Optional[str] = None,
                   tools: Optional[List[dict]] = None,
-                  stac: Optional[dict] = None) -> dict:
+                  stac: Optional[dict] = None,
+                  hosting: Optional[str] = None,
+                  collection_id: Optional[str] = None) -> dict:
     """Prepare an order request.
 
     ```python
@@ -65,6 +67,9 @@ def build_request(name: str,
         order_type: Accept a partial order, indicated by 'partial'.
         tools: Tools to apply to the products. Order defines
             the toolchain order of operatations.
+        stac: Include STAC metadata.
+        hosting: A hosting destination. E.g. Sentinel Hub.
+        collection_id: A Sentinel Hub collection ID.
 
     Raises:
         planet.specs.SpecificationException: If order_type is not a valid
@@ -90,6 +95,9 @@ def build_request(name: str,
 
     if stac:
         details['metadata'] = stac
+
+    if hosting == 'sentinel_hub':
+        details['hosting'] = sentinel_hub(collection_id)
 
     return details
 
@@ -534,3 +542,11 @@ def band_math_tool(b1: str,
     # e.g. {"b1": "b1", "b2":"arctan(b1)"} if b1 and b2 are specified
     parameters = dict((k, v) for k, v in locals().items() if v)
     return _tool('bandmath', parameters)
+
+
+def sentinel_hub(collection_id: Optional[str] = None) -> dict:
+    """Specify a Sentinel Hub hosting destination."""
+    params = {}
+    if collection_id:
+        params['collection_id'] = collection_id
+    return {'sentinel_hub': params}

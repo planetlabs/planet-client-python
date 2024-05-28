@@ -22,6 +22,7 @@ import planet
 from planet import OrdersClient  # allow mocking
 from . import types
 from .cmds import coro, translate_exceptions
+from ..order_request import sentinel_hub
 from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
@@ -206,7 +207,7 @@ async def download(ctx, order_id, overwrite, directory, checksum):
 @coro
 @click.argument("request", type=types.JSON())
 @pretty
-async def create(ctx, request: str, pretty):
+async def create(ctx, request, pretty, **kwargs):
     """Create an order.
 
     This command outputs the created order description, optionally
@@ -214,7 +215,19 @@ async def create(ctx, request: str, pretty):
 
     REQUEST is the full description of the order to be created. It must be JSON
     and can be specified a json string, filename, or '-' for stdin.
+
+    Other flag options are hosting and collection_id. The hosting flag
+    specifies the hosting type, and the collection_id flag specifies the
+    collection ID for Sentinel Hub. If the collection_id is omitted, a new
+    collection will be created.
     """
+
+    hosting = kwargs.get('hosting')
+    collection_id = kwargs.get('collection_id')
+
+    if hosting == "sentinel_hub":
+        request["hosting"] = sentinel_hub(collection_id)
+
     async with orders_client(ctx) as cl:
         order = await cl.create_order(request)
 
@@ -281,6 +294,13 @@ async def create(ctx, request: str, pretty):
     help="""Include or exclude metadata in SpatioTemporal Asset Catalog (STAC)
     format. Not specifying either defaults to including it (--stac), except
     for orders with google_earth_engine delivery""")
+@click.option('--hosting',
+              type=click.Choice(['sentinel_hub']),
+              help='Hosting for data delivery. '
+              'Currently, only "sentinel_hub" is supported.')
+@click.option('--collection_id',
+              help='Collection ID for Sentinel Hub hosting. '
+              'If omitted, a new collection will be created.')
 @pretty
 async def request(ctx,
                   item_type,
@@ -295,6 +315,8 @@ async def request(ctx,
                   single_archive,
                   delivery,
                   stac,
+                  hosting,
+                  collection_id,
                   pretty):
     """Generate an order request.
 
@@ -337,6 +359,8 @@ async def request(ctx,
                                                  delivery=delivery,
                                                  notifications=notifications,
                                                  tools=tools,
-                                                 stac=stac_json)
+                                                 stac=stac_json,
+                                                 hosting=hosting,
+                                                 collection_id=collection_id)
 
     echo_json(request, pretty)

@@ -768,3 +768,65 @@ def test_cli_orders_request_no_stac(invoke):
         }]
     }
     assert order_request == json.loads(result.output)
+
+
+@respx.mock
+def test_cli_orders_request_hosting_sentinel_hub(invoke, stac_json):
+
+    result = invoke([
+        'request',
+        '--item-type=PSScene',
+        '--bundle=visual',
+        '--name=test',
+        '20220325_131639_20_2402',
+        '--hosting=sentinel_hub',
+    ])
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": ["20220325_131639_20_2402"],
+            "item_type": "PSScene",
+            "product_bundle": "visual",
+        }],
+        "metadata":
+        stac_json,
+        "hosting": {
+            "sentinel_hub": {}
+        }
+    }
+    assert order_request == json.loads(result.output)
+
+
+@respx.mock
+def test_cli_orders_request_hosting_sentinel_hub_collection_id(
+        invoke, stac_json):
+
+    result = invoke([
+        'request',
+        '--item-type=PSScene',
+        '--bundle=visual',
+        '--name=test',
+        '20220325_131639_20_2402',
+        '--hosting=sentinel_hub',
+        '--collection_id=1234'
+    ])
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": ["20220325_131639_20_2402"],
+            "item_type": "PSScene",
+            "product_bundle": "visual",
+        }],
+        "metadata":
+        stac_json,
+        "hosting": {
+            "sentinel_hub": {
+                "collection_id": "1234"
+            }
+        }
+    }
+    assert order_request == json.loads(result.output)
