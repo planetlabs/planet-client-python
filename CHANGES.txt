@@ -1,3 +1,8 @@
+2.7.1 (2024-05-29)
+
+Fixed:
+- Rearranged arguments in Data API search commands to not break existing scripts  (#1038).
+
 2.7.0 (2024-05-21)
 
 Added:
