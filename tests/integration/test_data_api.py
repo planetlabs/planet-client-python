@@ -225,6 +225,43 @@ async def test_search_filter(item_descriptions,
 
 @respx.mock
 @pytest.mark.anyio
+async def test_search_filter_positional_args(item_descriptions,
+                                             search_filter,
+                                             search_response,
+                                             session):
+
+    quick_search_url = f'{TEST_URL}/quick-search'
+    next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
+
+    item1, item2, item3 = item_descriptions
+    page1_response = {
+        "_links": {
+            "_next": next_page_url
+        }, "features": [item1, item2]
+    }
+    mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.post(quick_search_url).return_value = mock_resp1
+
+    page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    cl = DataClient(session, base_url=TEST_URL)
+
+    # search using a positional arg for the filter.
+    items_list = [i async for i in cl.search(['PSScene'], search_filter)]
+
+    # check that request is correct
+    expected_request = {"item_types": ["PSScene"], "filter": search_filter}
+    actual_body = json.loads(respx.calls[0].request.content)
+    assert actual_body == expected_request
+
+    # check that all of the items were returned unchanged
+    assert items_list == item_descriptions
+
+
+@respx.mock
+@pytest.mark.anyio
 async def test_search_sort(item_descriptions,
                            search_filter,
                            search_response,
