@@ -211,7 +211,8 @@ async def test_search_filter(item_descriptions,
 
     cl = DataClient(session, base_url=TEST_URL)
     items_list = [
-        i async for i in cl.search(['PSScene'], search_filter=search_filter)
+        i async for i in cl.search(item_types=['PSScene'],
+                                   search_filter=search_filter)
     ]
 
     # check that request is correct
@@ -332,9 +333,46 @@ async def test_create_search_basic(search_filter, session):
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
     cl = DataClient(session, base_url=TEST_URL)
-    search = await cl.create_search(['PSScene'],
+    search = await cl.create_search(item_types=['PSScene'],
                                     search_filter=search_filter,
                                     name='test')
+
+    # check that request is correct
+    expected_request = {
+        "item_types": ["PSScene"],
+        "filter": search_filter,
+        "name": "test",
+        "__daily_email_enabled": False
+    }
+    actual_body = json.loads(respx.calls[0].request.content)
+    assert actual_body == expected_request
+
+    # check the response is returned unaltered
+    assert search == page_response
+
+
+@respx.mock
+@pytest.mark.anyio
+async def test_create_search_basic_positional_args(search_filter, session):
+    """Test that positional arguments are accepted for create_search"""
+
+    page_response = {
+        "__daily_email_enabled": False,
+        "_links": {
+            "_self": "string", "thumbnail": "string"
+        },
+        "created": "2019-08-24T14:15:22Z",
+        "filter": search_filter,
+        "id": "string",
+        "last_executed": "2019-08-24T14:15:22Z",
+        "name": "test",
+        "updated": "2019-08-24T14:15:22Z"
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.post(TEST_SEARCHES_URL).return_value = mock_resp
+
+    cl = DataClient(session, base_url=TEST_URL)
+    search = await cl.create_search(['PSScene'], search_filter, name='test')
 
     # check that request is correct
     expected_request = {
@@ -441,6 +479,46 @@ async def test_update_search_basic(search_filter, session):
     search = await cl.update_search(VALID_SEARCH_ID,
                                     item_types=['PSScene'],
                                     search_filter=search_filter,
+                                    name='test')
+
+    # check that request is correct
+    expected_request = {
+        "item_types": ["PSScene"],
+        "filter": search_filter,
+        "name": "test",
+        "__daily_email_enabled": False
+    }
+    actual_body = json.loads(respx.calls[0].request.content)
+    assert actual_body == expected_request
+
+    # check the response is returned unaltered
+    assert search == page_response
+
+
+@respx.mock
+@pytest.mark.anyio
+async def test_update_search_basic_positional_args(search_filter, session):
+    """Test that positional arguments are accepted for update_search"""
+
+    page_response = {
+        "__daily_email_enabled": False,
+        "_links": {
+            "_self": "string", "thumbnail": "string"
+        },
+        "created": "2019-08-24T14:15:22Z",
+        "filter": search_filter,
+        "id": VALID_SEARCH_ID,
+        "last_executed": "2019-08-24T14:15:22Z",
+        "name": "test",
+        "updated": "2019-08-24T14:15:22Z"
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.put(
+        f'{TEST_SEARCHES_URL}/{VALID_SEARCH_ID}').return_value = mock_resp
+
+    cl = DataClient(session, base_url=TEST_URL)
+    search = await cl.update_search(VALID_SEARCH_ID, ['PSScene'],
+                                    search_filter,
                                     name='test')
 
     # check that request is correct
