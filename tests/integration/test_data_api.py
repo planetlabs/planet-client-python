@@ -230,22 +230,14 @@ async def test_search_filter_positional_args(item_descriptions,
                                              search_filter,
                                              search_response,
                                              session):
+    """test the search method using positional args"""
 
     quick_search_url = f'{TEST_URL}/quick-search'
-    next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
 
     item1, item2, item3 = item_descriptions
-    page1_response = {
-        "_links": {
-            "_next": next_page_url
-        }, "features": [item1, item2]
-    }
-    mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
-    respx.post(quick_search_url).return_value = mock_resp1
-
-    page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
-    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
-    respx.get(next_page_url).return_value = mock_resp2
+    response = {"features": [item1, item2, item3]}
+    mock_resp = httpx.Response(HTTPStatus.OK, json=response)
+    respx.post(quick_search_url).return_value = mock_resp
 
     cl = DataClient(session, base_url=TEST_URL)
 
