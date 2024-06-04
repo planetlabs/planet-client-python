@@ -329,3 +329,15 @@ def test_no_archive_items_without_type():
     assert "archive_type" not in delivery_config
     assert "archive_filename" not in delivery_config
     assert "single_archive" not in delivery_config
+
+
+def test_sentinel_hub():
+    sh_config = order_request.sentinel_hub()
+    expected = {'sentinel_hub': {}}
+    assert sh_config == expected
+
+
+def test_sentinel_hub_collection_id():
+    sh_config = order_request.sentinel_hub("1234")
+    expected = {'sentinel_hub': {'collection_id': "1234"}}
+    assert sh_config == expected

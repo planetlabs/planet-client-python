@@ -101,7 +101,7 @@ async def list_subscriptions_cmd(ctx, status, limit, pretty):
 )
 @click.option("--collection-id",
               default=None,
-              help='Collection ID for Sentinel Hub.'
+              help='Collection ID for Sentinel Hub hosting. '
               'If omitted, a new collection will be created.')
 @pretty
 @click.pass_context
@@ -302,7 +302,7 @@ async def list_subscription_results_cmd(ctx,
     help="Clip to the source geometry without specifying a clip tool.")
 @click.option("--collection-id",
               default=None,
-              help='Collection ID for Sentinel Hub.'
+              help='Collection ID for Sentinel Hub hosting. '
               'If omitted, a new collection will be created.')
 @pretty
 def request(name,

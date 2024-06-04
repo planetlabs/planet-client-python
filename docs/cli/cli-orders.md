@@ -176,6 +176,26 @@ planet orders request \
 
 *New in version 2.1*
 
+#### Sentinel Hub Hosting
+
+You can deliver your orders directly to Sentinel Hub using the hosting options.
+
+```
+planet orders request \
+    --item-type PSScene \
+    --bundle analytic_sr_udm2 \
+    --name 'My First Order' \
+    20220605_124027_64_242b \
+    --hosting sentinel_hub \
+    --collection_id ba8f7274-aacc-425e-8a38-e21517bfbeff
+```
+
+- The --hosting option is optional and currently supports sentinel_hub as its only value.
+- The --collection_id is also optional. If you decide to use this, ensure that the order request and the collection have matching bands. If you're unsure, allow the system to create a new collection for you by omitting the --collection_id option. This will ensure the newly set-up collection is configured correctly, and you can subsequently add items to this collection as needed.
+
+For more information on Sentinel Hub hosting, see the [Orders API documentation](https://developers.planet.com/apis/orders/delivery/#delivery-to-sentinel-hub-collection) and the [Linking Planet User to Sentinel Hub User
+](https://support.planet.com/hc/en-us/articles/16550358397469-Linking-Planet-User-to-Sentinel-Hub-User) support post.
+
 ### Save an Order Request
 
 The above command just prints out the necessary JSON to create an order. To actually use it you can
@@ -235,6 +255,16 @@ The output of that command is the JSON returned from the server, that reports th
 Note the default output will be a bit more 'flat' - if you'd like the above formatting in your
 command-line just use `jq` as above: `planet orders create request-1.json | jq` (but remember
 if you run that command again it will create a second order).
+
+#### Sentinel Hub Hosting
+
+For convenience, `planet orders create` accepts the same `--hosting` and `--collection_id` options that [`planet orders request`](#sentinel-hub-hosting) does.
+
+```sh
+planet orders create request-1.json \
+    --hosting sentinel_hub \
+    --collection_id ba8f7274-aacc-425e-8a38-e21517bfbeff
+```
 
 ### Create Request and Order in One Call
 

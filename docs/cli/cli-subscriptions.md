@@ -120,17 +120,6 @@ planet subscriptions create my-subscription.json
 !!!note "Note"
     The above command assumes that you’ve saved the subscriptions JSON as `my-subscription.json` and that you’ve replaced the delivery information with your own bucket and credentials.
 
-#### Create a Subscription with Hosting and Collection ID
-
-In addition to the basic subscription creation process, you can now specify hosting options and a collection ID directly in the create command.
-
-```sh
-planet subscriptions create my-subscription.json --hosting sentinel_hub --collection_id ba8f7274-aacc-425e-8a38-e21517bfbeff
-```
-
-- The --hosting option is optional and currently supports sentinel_hub as its only value.
-- The --collection_id is also optional. If you decide to use this, ensure that the subscription request and the collection have matching bands. If you're unsure, allow the system to create a new collection for you by omitting the --collection_id option. This will ensure the newly set-up collection is configured correctly, and you can subsequently add items to this collection as needed.
-
 ### List Subscriptions
 
 Now that you’ve got a subscription working you can make use of the other commands.
@@ -487,33 +476,7 @@ The main documentation page also has the parameters for Google Cloud, AWS and Or
 
 ### Subscriptions Request
 
-When creating a new subscription, you can include hosting options directly using the --hosting and --collection-id flags.
-
-- The --hosting option is optional and currently supports sentinel_hub as its only value.
-- The --collection_id is also optional. If you decide to use this, ensure that the subscription request and the collection have matching bands. If you're unsure, allow the system to create a new collection for you by omitting the --collection_id option. This will ensure the newly set-up collection is configured correctly, and you can subsequently add items to this collection as needed.
-- You may also input --hosting as a JSON file. The file should be formatted:
-
-```json
-"hosting": {
-  "parameters": {
-    "collection_id": "4bdef85c-3f50-4006-a713-2350da665f80"
-  },
-  "type": "sentinel_hub"
-},
-```
-
 Once you’ve got all your sub-blocks of JSON saved you’re ready to make a complete subscriptions request with the `subscriptions request` command:
-
-```sh
-planet subscriptions request \
-    --name 'First Subscription' \
-    --source request-catalog.json \
-    --tools tools.json \
-    --delivery cloud-delivery.json \
-    --hosting sentinel_hub \
-    -- collection_id 4bdef85c-3f50-4006-a713-2350da665f80 \
-    --pretty
-```
 
 The above will print it nicely out so you can see the full request. You can write it out
 as a file, or pipe it directly into `subscriptions create` or `subscriptions update`:
@@ -526,3 +489,23 @@ planet subscriptions request \
     --delivery cloud-delivery.json \
     | planet subscriptions create -
 ```
+
+#### Sentinel Hub Hosting
+
+When creating a new subscription, you can include hosting options directly using the --hosting and --collection-id flags.
+
+- The --hosting option is optional and currently supports sentinel_hub as its only value.
+- The --collection_id is also optional. If you decide to use this, ensure that the subscription request and the collection have matching bands. If you're unsure, allow the system to create a new collection for you by omitting the --collection_id option. This will ensure the newly set-up collection is configured correctly, and you can subsequently add items to this collection as needed.
+- You may also input --hosting as a JSON file. The file should be formatted:
+
+```sh
+planet subscriptions request \
+    --name 'First Subscription' \
+    --source request-catalog.json \
+    --tools tools.json \
+    --hosting sentinel_hub \
+    | planet subscriptions create -
+```
+
+For more information on Sentinel Hub hosting, see the [Subscriptions API documentation](https://developers.planet.com/docs/subscriptions/delivery/#delivery-to-sentinel-hub-collection) and the [Linking Planet User to Sentinel Hub User
+](https://support.planet.com/hc/en-us/articles/16550358397469-Linking-Planet-User-to-Sentinel-Hub-User) support post.
