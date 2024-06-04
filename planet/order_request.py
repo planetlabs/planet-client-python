@@ -68,7 +68,7 @@ def build_request(name: str,
         tools: Tools to apply to the products. Order defines
             the toolchain order of operatations.
         stac: Include STAC metadata.
-        hosting: A hosting destination. E.g. Sentinel Hub.
+        hosting: A hosting destination (e.g. Sentinel Hub).
         collection_id: A Sentinel Hub collection ID.
 
     Raises:
