@@ -206,6 +206,18 @@ async def download(ctx, order_id, overwrite, directory, checksum):
 @translate_exceptions
 @coro
 @click.argument("request", type=types.JSON())
+@click.option(
+    "--hosting",
+    type=click.Choice([
+        "sentinel_hub",
+    ]),
+    default=None,
+    help='Hosting type. Currently, only "sentinel_hub" is supported.',
+)
+@click.option("--collection-id",
+              default=None,
+              help='Collection ID for Sentinel Hub hosting. '
+              'If omitted, a new collection will be created.')
 @pretty
 async def create(ctx, request, pretty, **kwargs):
     """Create an order.
