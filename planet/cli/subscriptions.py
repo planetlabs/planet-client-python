@@ -413,6 +413,7 @@ def request_catalog(item_types,
         "land_surface_temperature",
         "soil_water_content",
         "vegetation_optical_depth",
+        "forest_carbon_monitoring_3m",
         "forest_carbon_diligence_30m",
         "field_boundaries_sentinel_2_p1m"
     ]),
