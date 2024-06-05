@@ -1,3 +1,9 @@
+2.8.0 (2024-06-05)
+
+Added:
+- Support for hosting parameter in Orders API (#1042)
+- New Data API tests (#1041)
+
 2.7.1 (2024-05-29)
 
 Fixed:
