@@ -406,19 +406,12 @@ def request_catalog(item_types,
 @click.option(
     '--var-type',
     required=True,
-    help='Planetary variable type.',
-    type=click.Choice([
-        "analysis_ready_ps",
-        "biomass_proxy",
-        "land_surface_temperature",
-        "soil_water_content",
-        "vegetation_optical_depth",
-        "forest_carbon_monitoring_3m",
-        "forest_carbon_diligence_30m",
-        "field_boundaries_sentinel_2_p1m"
-    ]),
+    help='A Planetary Variable type. See documentation for all available types.'
 )
-@click.option('--var-id', required=True, help='Planetary variable id.')
+@click.option(
+    '--var-id',
+    required=True,
+    help='A Planetary Variable ID. See documenation for all available IDs.')
 @click.option(
     '--geometry',
     required=True,
@@ -438,9 +431,9 @@ def request_pv(var_type, var_id, geometry, start_time, end_time, pretty):
     """Generate a Planetary Variable subscription source.
 
     Planetary Variables come in 4 types and are further subdivided
-    within these types. See [Subscribing to Planetary
-    Variables](https://developers.planet.com/docs/subscriptions/pvs-subs/#planetary-variables-types-and-ids)
-    for details.
+    within these types. See [Subscribing to Planetary Variables](https://developers.planet.com/docs/subscriptions/pvs-subs/#planetary-variables-types-and-ids)
+    or the [OpenAPI spec](https://api.planet.com/subscriptions/v1/spec) for
+    more details.
     """
     res = subscription_request.planetary_variable_source(
         var_type,
