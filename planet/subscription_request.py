@@ -278,14 +278,7 @@ def catalog_source(
 
 
 def planetary_variable_source(
-    var_type: Literal["analysis_ready_ps",
-                      "biomass_proxy",
-                      "land_surface_temperature",
-                      "soil_water_content",
-                      "vegetation_optical_depth",
-                      "forest_carbon_monitoring_3m",
-                      "forest_carbon_diligence_30m",
-                      "field_boundaries_sentinel_2_p1m"],
+    var_type: str,
     var_id: str,
     geometry: dict,
     start_time: datetime,
@@ -294,9 +287,9 @@ def planetary_variable_source(
     """Construct a Planetary Variable subscription source.
 
     Planetary Variables come in 4 types and are further subdivided
-    within these types. See [Subscribing to Planetary
-    Variables](https://developers.planet.com/docs/subscriptions/pvs-subs/#planetary-variables-types-and-ids)
-    for details.
+    within these types. See [Subscribing to Planetary Variables](https://developers.planet.com/docs/subscriptions/pvs-subs/#planetary-variables-types-and-ids)
+    or the [OpenAPI spec](https://api.planet.com/subscriptions/v1/spec) for
+    more details.
 
     The return value can be passed to
     [planet.subscription_request.build_request][].
@@ -304,12 +297,10 @@ def planetary_variable_source(
     Note: this function does not validate variable types and ids.
 
     Parameters:
-        var_type: one of "analysis_ready_ps", "biomass_proxy",
-            "land_surface_temperature", "soil_water_content",
-            "vegetation_optical_depth", "forest_carbon_monitoring_3m",
-            "forest_carbon_diligence_30m, or field_boundaries_sentinel_2_p1m".
-        var_id: a value such as "SWC-AMSR2-C_V1.0_100" for soil water
-            content derived from AMSR2 C band.
+        var_type: Planetary Variable type. See documentation for all
+            available types.
+        var_id: A Planetary Variable ID. See documenation for all
+            available IDs.
         geometry: The area of interest of the subscription that will be
             used to determine matches.
         start_time: The start time of the subscription. This time can be
