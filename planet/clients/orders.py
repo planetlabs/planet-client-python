@@ -16,7 +16,7 @@
 import asyncio
 import logging
 import time
-from typing import AsyncIterator, Callable, List, Optional, Sequence, Union, Dict
+from typing import Any, AsyncIterator, Awaitable, Callable, Dict, Iterator, List, Optional, Sequence, TypeVar, Union
 import uuid
 import json
 import hashlib
@@ -38,6 +38,8 @@ ORDER_STATE_SEQUENCE = \
     ('queued', 'running', 'failed', 'success', 'partial', 'cancelled')
 
 LOGGER = logging.getLogger(__name__)
+
+T = TypeVar("T")
 
 
 class Orders(Paged):
@@ -96,6 +98,10 @@ class OrdersClient:
         self._base_url = base_url or BASE_URL
         if self._base_url.endswith('/'):
             self._base_url = self._base_url[:-1]
+
+    def call_sync(self, f: Awaitable[T]) -> T:
+        """block on an async function call, using the call_sync method of the session"""
+        return self._session.call_sync(f)
 
     @staticmethod
     def _check_order_id(oid):
@@ -432,9 +438,11 @@ class OrdersClient:
             raise exceptions.ClientError(
                 f'{state} must be one of {ORDER_STATE_SEQUENCE}')
 
+
         # loop without end if max_attempts is zero
         # otherwise, loop until num_attempts reaches max_attempts
         num_attempts = 0
+        current_state = "UNKNOWN"
         while not max_attempts or num_attempts < max_attempts:
             t = time.time()
 
@@ -553,3 +561,272 @@ class OrdersClient:
                                                params=params)
         async for o in Orders(response, self._session.request, limit=limit):
             yield o
+
+
+class OrdersAPI:
+    """Orders API client"""
+
+    _client: OrdersClient
+
+    def __init__(self, session: Session, base_url: Optional[str] = None):
+        """
+        Parameters:
+            session: Open session connected to server.
+            base_url: The base URL to use. Defaults to production orders API
+                base url.
+        """
+
+        self._client = OrdersClient(session, base_url)
+
+    def create_order(self, request: Dict) -> Dict:
+        """Create an order.
+
+        Example:
+
+        ```python
+
+        from planet import Planet
+        from planet.order_request import build_request, product
+
+        def main():
+             client = Planet()
+             image_ids = ["20200925_161029_69_2223"]
+             request = build_request(
+                 'test_order',
+                 [product(image_ids, 'analytic_udm2', 'psscene')]
+             )
+             order = client.create_order(request)
+        ```
+
+        Parameters:
+            request: order request definition
+
+        Returns:
+            JSON description of the created order
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        """
+        return self._client.call_sync(self._client.create_order(request))
+
+    def get_order(self, order_id: str) -> Dict:
+        """Get order details by Order ID.
+
+        Parameters:
+            order_id: The ID of the order
+
+        Returns:
+            JSON description of the order
+
+        Raises:
+            planet.exceptions.ClientError: If order_id is not a valid UUID.
+            planet.exceptions.APIError: On API error.
+        """
+        return self._client.call_sync(self._client.get_order(order_id))
+
+
+    def cancel_order(self, order_id: str) -> Dict[str, Any]:
+        """Cancel a queued order.
+
+        Parameters:
+            order_id: The ID of the order
+
+        Returns:
+            Results of the cancel request
+
+        Raises:
+            planet.exceptions.ClientError: If order_id is not a valid UUID.
+            planet.exceptions.APIError: On API error.
+        """
+        return self._client.call_sync(self._client.cancel_order(order_id))
+
+
+    def cancel_orders(self,
+                            order_ids: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Cancel queued orders in bulk.
+
+        Parameters:
+            order_ids: The IDs of the orders. If empty or None, all orders in a
+                pre-running state will be cancelled.
+
+        Returns:
+            Results of the bulk cancel request
+
+        Raises:
+            planet.exceptions.ClientError: If an entry in order_ids is not a
+                valid UUID.
+            planet.exceptions.APIError: On API error.
+        """
+        return self._client.call_sync(self._client.cancel_orders(order_ids))
+
+
+    def aggregated_order_stats(self) -> Dict[str, Any]:
+        """Get aggregated counts of active orders.
+
+        Returns:
+            Aggregated order counts
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        """
+        return self._client.call_sync(self._client.aggregated_order_stats())
+
+    def download_asset(self,
+                             location: str,
+                             filename: Optional[str] = None,
+                             directory: Path = Path('.'),
+                             overwrite: bool = False,
+                             progress_bar: bool = True) -> Path:
+        """Download ordered asset.
+
+        Parameters:
+            location: Download location url including download token.
+            filename: Custom name to assign to downloaded file.
+            directory: Base directory for file download. This directory will be
+                created if it does not already exist.
+            overwrite: Overwrite any existing files.
+            progress_bar: Show progress bar during download.
+
+        Returns:
+            Path to downloaded file.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        """
+        return self._client.call_sync(self._client.download_asset(location,
+                                                                  filename,
+                                                                  directory,
+                                                                  overwrite,
+                                                                  progress_bar))
+
+    def download_order(self,
+                             order_id: str,
+                             directory: Path = Path('.'),
+                             overwrite: bool = False,
+                             progress_bar: bool = False) -> List[Path]:
+        """Download all assets in an order.
+
+        Parameters:
+            order_id: The ID of the order.
+            directory: Base directory for file download. This directory must
+                already exist.
+            overwrite: Overwrite files if they already exist.
+            progress_bar: Show progress bar during download.
+
+        Returns:
+            Paths to downloaded files.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+            planet.exceptions.ClientError: If the order is not in a final
+                state.
+        """
+        return self._client.call_sync(self._client.download_order(order_id, directory,
+                                                                  overwrite, progress_bar))
+
+
+    def validate_checksum(self, directory: Path, checksum: str):
+        """Validate checksums of downloaded files against order manifest.
+
+        For each file entry in the order manifest, the specified checksum given
+        in the manifest file will be validated against the checksum calculated
+        from the downloaded file.
+
+        Parameters:
+            directory: Path to order directory.
+            checksum: The type of checksum hash- 'MD5' or 'SHA256'.
+
+        Raises:
+            planet.exceptions.ClientError: If a file is missing or if checksums
+                do not match.
+        """
+        return self._client.validate_checksum(directory, checksum)
+
+
+    def wait(self,
+                   order_id: str,
+                   state: Optional[str] = None,
+                   delay: int = 5,
+                   max_attempts: int = 200,
+                   callback: Optional[Callable[[str], None]] = None) -> str:
+        """Wait until order reaches desired state.
+
+        Returns the state of the order on the last poll.
+
+        This function polls the Orders API to determine the order state, with
+        the specified delay between each polling attempt, until the
+        order reaches a final state, or earlier state, if specified.
+        If the maximum number of attempts is reached before polling is
+        complete, an exception is raised. Setting 'max_attempts' to zero will
+        result in no limit on the number of attempts.
+
+        Setting 'delay' to zero results in no delay between polling attempts.
+        This will likely result in throttling by the Orders API, which has
+        a rate limit of 10 requests per second. If many orders are being
+        polled asynchronously, consider increasing the delay to avoid
+        throttling.
+
+        By default, polling completes when the order reaches a final state.
+        If 'state' is given, polling will complete when the specified earlier
+        state is reached or passed.
+
+        Example:
+            ```python
+            from planet.reporting import StateBar
+
+            with StateBar() as bar:
+                await wait(order_id, callback=bar.update_state)
+            ```
+
+        Parameters:
+            order_id: The ID of the order.
+            state: State prior to a final state that will end polling.
+            delay: Time (in seconds) between polls.
+            max_attempts: Maximum number of polls. Set to zero for no limit.
+            callback: Function that handles state progress updates.
+
+        Returns
+            State of the order.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+            planet.exceptions.ClientError: If order_id or state is not valid or
+                if the maximum number of attempts is reached before the
+                specified state or a final state is reached.
+        """
+        return self._client.call_sync(self._client.wait(order_id, state, delay, max_attempts, callback))
+
+    def list_orders(self,
+                          state: Optional[str] = None,
+                          limit: int = 100) -> Iterator[dict]:
+        """Iterate over the list of stored orders.
+
+        Order descriptions are sorted by creation date with the last created
+        order returned first.
+
+        Note:
+            The name of this method is based on the API's method name. This
+            method provides iteration over results, it does not get a
+            single result description or return a list of descriptions.
+
+        Parameters:
+            state: Filter orders to given state.
+            limit: Maximum number of results to return. When set to 0, no
+                maximum is applied.
+
+        Yields:
+            Description of an order.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+            planet.exceptions.ClientError: If state is not valid.
+        """
+        results = self._client.list_orders(
+            state, limit
+        )
+
+        try:
+            while True:
+                yield self._client.call_sync(results.__anext__())
+        except StopAsyncIteration:
+            pass

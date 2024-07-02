@@ -6,6 +6,7 @@ from itertools import zip_longest
 import json
 
 from httpx import Response
+from planet.client import Planet
 import pytest
 import respx
 from respx.patterns import M
@@ -216,6 +217,19 @@ async def test_list_subscriptions_success(
         assert len([
             sub async for sub in client.list_subscriptions(status=status)
         ]) == count
+
+@pytest.mark.parametrize("status, count", [({"running"}, 100), ({"failed"}, 0),
+                                           (None, 100)])
+@pytest.mark.anyio
+@api_mock
+async def test_list_subscriptions_success_sync(
+    status,
+    count,
+):
+    """Account subscriptions iterator yields expected descriptions."""
+    client = Planet()
+    client.subscriptions._client._base_url = TEST_URL
+    assert len(list(client.subscriptions.list_subscriptions(status=status))) == count
 
 
 @pytest.mark.parametrize("source_type, count",
