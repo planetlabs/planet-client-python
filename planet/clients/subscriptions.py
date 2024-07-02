@@ -1,12 +1,10 @@
 """Planet Subscriptions API Python client."""
 
-import asyncio
 import logging
 from typing import Any, AsyncIterator, Awaitable, Dict, Iterator, Optional, Sequence, TypeVar, Union, overload
 
 from typing_extensions import Literal
 
-from planet.clients.sync import call_async
 from planet.exceptions import APIError, ClientError
 from planet.http import Session
 from planet.models import Paged
