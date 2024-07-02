@@ -37,8 +37,28 @@ BASE_URL = f'{PLANET_BASE_URL}/v0/auth'
 AuthType = httpx.Auth
 
 
+class TokenAuth(httpx.Auth):
+
+    def __init__(self, token):
+        self._header = f"Bearer {token}"
+
+    def auth_flow(self, request: httpx.Request) -> typing.Generator[httpx.Request, httpx.Response, None]:
+        request.headers["Authorization"] = self._header
+        yield request
+
+
 class Auth(metaclass=abc.ABCMeta):
     """Handle authentication information for use with Planet APIs."""
+
+    @staticmethod
+    def from_keyring() -> Optional[AuthType]:
+        try:
+            import keyring
+            token = keyring.get_password("planet.api", "v2.access")
+            if token:
+                return TokenAuth(token)
+        except ImportError:
+            pass
 
     @staticmethod
     def from_key(key: str) -> AuthType:

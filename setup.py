@@ -28,6 +28,7 @@ install_requires = [
     'geojson',
     'httpx>=0.23.0',
     'jsonschema',
+    'keyring',
     'pyjwt>=2.1',
     'tqdm>=4.56',
     'typing-extensions',

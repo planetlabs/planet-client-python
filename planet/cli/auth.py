@@ -19,6 +19,7 @@ import click
 
 import planet
 from planet.constants import ENV_API_KEY
+from planet.oauth import login_auth_code_flow
 from .cmds import translate_exceptions
 
 LOGGER = logging.getLogger(__name__)
@@ -56,6 +57,19 @@ def init(ctx, email, password):
         click.echo(f'Warning - Environment variable {ENV_API_KEY} already '
                    'exists. To update, with the new value, use the following:')
         click.echo(f'export {ENV_API_KEY}=$(planet auth value)')
+
+
+@auth.command()  # type: ignore
+@translate_exceptions
+def login():
+    try:
+        import keyring
+    except ImportError:
+        raise click.ClickException("please install the keyring package to safely store your credentials")
+    access_token, refresh_token = login_auth_code_flow()
+    keyring.set_password("planet.api", "v2.access", access_token)
+    keyring.set_password("planet.api", "v2.refresh", refresh_token)
+    click.echo("You have successfully logged in! Yay.")
 
 
 @auth.command()  # type: ignore
