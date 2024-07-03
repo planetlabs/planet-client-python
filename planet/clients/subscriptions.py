@@ -1,7 +1,7 @@
 """Planet Subscriptions API Python client."""
 
 import logging
-from typing import Any, AsyncIterator, Awaitable, Dict, Iterator, Optional, Sequence, TypeVar, Union, overload
+from typing import Any, AsyncIterator, Awaitable, Callable, Dict, Iterator, Optional, Sequence, TypeVar, Union, overload
 
 from typing_extensions import Literal
 
@@ -60,7 +60,6 @@ class SubscriptionsClient:
         self._base_url = base_url or BASE_URL
         if self._base_url.endswith('/'):
             self._base_url = self._base_url[:-1]
-
 
     def call_sync(self, f: Awaitable[T]) -> T:
         """block on an async function call, using the call_sync method of the session"""
@@ -381,8 +380,8 @@ class SubscriptionsAPI:
         self._client = SubscriptionsClient(session, base_url)
 
     def list_subscriptions(self,
-                                 status: Optional[Sequence[str]] = None,
-                                 limit: int = 100) -> Iterator[Dict]:
+                           status: Optional[Sequence[str]] = None,
+                           limit: int = 100) -> Iterator[Dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
         Note:
@@ -406,16 +405,13 @@ class SubscriptionsAPI:
             ClientError: on a client error.
         """
 
-        results = self._client.list_subscriptions(
-            status, limit
-        )
+        results = self._client.list_subscriptions(status, limit)
 
         try:
             while True:
                 yield self._client.call_sync(results.__anext__())
         except StopAsyncIteration:
             pass
-
 
     def create_subscription(self, request: Dict) -> Dict:
         """Create a Subscription.
@@ -430,7 +426,8 @@ class SubscriptionsAPI:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        return self._client.call_sync(self._client.create_subscription(request))
+        return self._client.call_sync(
+            self._client.create_subscription(request))
 
     def cancel_subscription(self, subscription_id: str) -> None:
         """Cancel a Subscription.
@@ -445,11 +442,10 @@ class SubscriptionsAPI:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        return self._client.call_sync(self._client.cancel_subscription(subscription_id))
+        return self._client.call_sync(
+            self._client.cancel_subscription(subscription_id))
 
-
-    def update_subscription(self, subscription_id: str,
-                                  request: dict) -> dict:
+    def update_subscription(self, subscription_id: str, request: dict) -> dict:
         """Update (edit) a Subscription via PUT.
 
         Args
@@ -464,10 +460,11 @@ class SubscriptionsAPI:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        return self._client.call_sync(self._client.update_subscription(subscription_id, request))
+        return self._client.call_sync(
+            self._client.update_subscription(subscription_id, request))
 
     def patch_subscription(self, subscription_id: str,
-                                 request: Dict[str, Any]) -> Dict[str, Any]:
+                           request: Dict[str, Any]) -> Dict[str, Any]:
         """Update (edit) a Subscription via PATCH.
 
         Args
@@ -482,7 +479,8 @@ class SubscriptionsAPI:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        return self._client.call_sync(self._client.patch_subscription(subscription_id, request))
+        return self._client.call_sync(
+            self._client.patch_subscription(subscription_id, request))
 
     def get_subscription(self, subscription_id: str) -> Dict[str, Any]:
         """Get a description of a Subscription.
@@ -497,42 +495,58 @@ class SubscriptionsAPI:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        return self._client.call_sync(self._client.get_subscription(subscription_id))
+        return self._client.call_sync(
+            self._client.get_subscription(subscription_id))
 
     @overload
     def get_results(self,
-                          subscription_id: str,
-                          status: Optional[Sequence[Literal[
-                              "created",
-                              "queued",
-                              "processing",
-                              "failed",
-                              "success"]]] = None,
-                          limit: int = 100,
-                          format: Literal["csv"] = "csv") -> Iterator[str]: ...
+                    subscription_id: str,
+                    status: Optional[Sequence[Literal["created",
+                                                      "queued",
+                                                      "processing",
+                                                      "failed",
+                                                      "success"]]] = ...,
+                    limit: int = ...,
+                    *,
+                    format: Literal["csv"]) -> Iterator[str]:
+        ...
 
     @overload
     def get_results(self,
-                          subscription_id: str,
-                          status: Optional[Sequence[Literal[
-                              "created",
-                              "queued",
-                              "processing",
-                              "failed",
-                              "success"]]] = None,
-                          limit: int = 100,
-                          format: Literal["json"] = "json") -> Iterator[Dict[str, Any]]: ...
+                    subscription_id: str,
+                    status: Optional[Sequence[Literal["created",
+                                                      "queued",
+                                                      "processing",
+                                                      "failed",
+                                                      "success"]]],
+                    limit: int,
+                    format: Literal["csv"]) -> Iterator[str]:
+        ...
 
-    def get_results(self,
-                          subscription_id: str,
-                          status: Optional[Sequence[Literal[
-                              "created",
-                              "queued",
-                              "processing",
-                              "failed",
-                              "success"]]] = None,
-                          limit: int = 100,
-                          format: Union[Literal["csv"], Literal["json"]] = "json") -> Iterator[Any]:
+    @overload
+    def get_results(
+            self,
+            subscription_id: str,
+            status: Optional[Sequence[Literal["created",
+                                              "queued",
+                                              "processing",
+                                              "failed",
+                                              "success"]]] = ...,
+            limit: int = ...,
+            format: Literal["json"] = "json") -> Iterator[Dict[str, Any]]:
+        ...
+
+    def get_results(
+        self,
+        subscription_id: str,
+        status: Optional[Sequence[Literal["created",
+                                          "queued",
+                                          "processing",
+                                          "failed",
+                                          "success"]]] = None,
+        limit: int = 100,
+        format: Union[Literal["csv"], Literal["json"]] = "json"
+    ) -> Iterator[Union[Dict[str, Any], str]]:
         """Iterate over results of a Subscription.
 
         Notes:
@@ -557,15 +571,17 @@ class SubscriptionsAPI:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        # choose underlying function based on format arg, defaulting to json/dict
+        # choose underlying function based on format arg, defaulting to json/dict.
+        # declare type ahead of time to make it clear to mypy that the functions
+        # can return either dicts or strings.
+        fn: Callable[[str, Optional[Sequence[Any]], int],
+                     AsyncIterator[Union[str, Dict[str, Any]]]]
         if format == "csv":
             fn = self._client.get_results_csv
         else:
             fn = self._client.get_results
 
-        results = fn(
-            subscription_id, status, limit
-        )
+        results = fn(subscription_id, status, limit)
 
         try:
             while True:
