@@ -118,6 +118,7 @@ async def test_list_orders_basic(order_descriptions, session):
     cl = OrdersClient(session, base_url=TEST_URL)
     assert order_descriptions == [o async for o in cl.list_orders()]
 
+
 @respx.mock
 def test_list_orders_basic_sync(order_descriptions, session):
     next_page_url = TEST_ORDERS_URL + 'blob/?page_marker=IAmATest'
@@ -184,8 +185,8 @@ def test_list_orders_state_success_sync(order_descriptions, session):
 
     # if the value of state doesn't get sent as a url parameter,
     # the mock will fail and this test will fail
-    assert [order1,
-            order2] == list(pl.orders.list_orders(state='failed'))
+    assert [order1, order2] == list(pl.orders.list_orders(state='failed'))
+
 
 @pytest.mark.anyio
 async def test_list_orders_state_invalid(session):
@@ -193,6 +194,7 @@ async def test_list_orders_state_invalid(session):
 
     with pytest.raises(exceptions.ClientError):
         [o async for o in cl.list_orders(state='invalidstate')]
+
 
 def test_list_orders_state_invalid_sync(session):
     pl = Planet()
@@ -253,11 +255,12 @@ async def test_create_order_basic(oid,
 
     assert json.loads(route.calls.last.request.content) == order_request
 
+
 @respx.mock
 def test_create_order_basic_sync(oid,
-                                  order_description,
-                                  order_request,
-                                  session):
+                                 order_description,
+                                 order_request,
+                                 session):
     route = respx.post(TEST_ORDERS_URL)
     route.return_value = httpx.Response(HTTPStatus.OK, json=order_description)
 
@@ -620,6 +623,7 @@ async def test_wait_callback(oid, order_description, session):
     expected = [call(s) for s in ['queued', 'running', 'success']]
     mock_callback.assert_has_calls(expected)
 
+
 @respx.mock
 def test_wait_callback_sync(oid, order_description, session):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
@@ -892,6 +896,7 @@ async def test_validate_checksum_checksum(tmpdir,
     with expectation:
         OrdersClient.validate_checksum(Path(tmpdir), checksum)
 
+
 @respx.mock
 @pytest.mark.parametrize("checksum", [("MD5"), ("SHA256")])
 @pytest.mark.parametrize(
@@ -899,9 +904,9 @@ async def test_validate_checksum_checksum(tmpdir,
     [(b"1", does_not_raise()), (b"1", does_not_raise()),
      (b"does not match", pytest.raises(exceptions.ClientError))])
 def test_validate_checksum_checksum_sync(tmpdir,
-                                          asset1_bytes,
-                                          expectation,
-                                          checksum):
+                                         asset1_bytes,
+                                         expectation,
+                                         checksum):
 
     itemtype1_dir = Path(tmpdir, 'itemtype1')
     itemtype1_dir.mkdir()
@@ -1056,11 +1061,11 @@ async def test_download_order_success(results,
        ])
      ])  # yapf: disable
 def test_download_order_success_sync(results,
-                                      paths,
-                                      tmpdir,
-                                      order_description,
-                                      oid,
-                                      session):
+                                     paths,
+                                     tmpdir,
+                                     order_description,
+                                     oid,
+                                     session):
 
     # Mock an HTTP response for download
     order_description['state'] = 'success'
@@ -1102,7 +1107,6 @@ def test_download_order_success_sync(results,
 
         with open(filenames[1]) as f:
             assert json.load(f) == {'key2': 'value2'}
-
 
 
 @respx.mock

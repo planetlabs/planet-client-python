@@ -707,16 +707,18 @@ class DataAPI:
                 references
         """
 
-        results = self._client.search(
-            item_types, search_filter, name, sort, limit, geometry
-        )
+        results = self._client.search(item_types,
+                                      search_filter,
+                                      name,
+                                      sort,
+                                      limit,
+                                      geometry)
 
         try:
             while True:
                 yield self._client.call_sync(results.__anext__())
         except StopAsyncIteration:
             pass
-
 
     def create_search(
         self,
@@ -757,15 +759,20 @@ class DataAPI:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        return self._client.call_sync(self._client.create_search(item_types, search_filter, name, enable_email, geometry))
+        return self._client.call_sync(
+            self._client.create_search(item_types,
+                                       search_filter,
+                                       name,
+                                       enable_email,
+                                       geometry))
 
     def update_search(self,
-                            search_id: str,
-                            item_types: List[str],
-                            search_filter: Dict[str, Any],
-                            name: str,
-                            enable_email: bool = False,
-                            geometry: Optional[dict] = None) -> Dict[str, Any]:
+                      search_id: str,
+                      item_types: List[str],
+                      search_filter: Dict[str, Any],
+                      name: str,
+                      enable_email: bool = False,
+                      geometry: Optional[dict] = None) -> Dict[str, Any]:
         """Update an existing saved search.
 
         Parameters:
@@ -779,12 +786,18 @@ class DataAPI:
         Returns:
             Description of the saved search.
         """
-        return self._client.call_sync(self._client.update_search(search_id, item_types, search_filter, name, enable_email, geometry))
+        return self._client.call_sync(
+            self._client.update_search(search_id,
+                                       item_types,
+                                       search_filter,
+                                       name,
+                                       enable_email,
+                                       geometry))
 
     def list_searches(self,
-                            sort: str = LIST_SORT_DEFAULT,
-                            search_type: str = LIST_SEARCH_TYPE_DEFAULT,
-                            limit: int = 100) -> Iterator[Dict[str, Any]]:
+                      sort: str = LIST_SORT_DEFAULT,
+                      search_type: str = LIST_SEARCH_TYPE_DEFAULT,
+                      limit: int = 100) -> Iterator[Dict[str, Any]]:
         """Iterate through list of searches available to the user.
 
         Parameters:
@@ -801,9 +814,7 @@ class DataAPI:
             planet.exceptions.ClientError: If sort or search_type are not
                 valid.
         """
-        results = self._client.list_searches(
-            sort, search_type, limit
-        )
+        results = self._client.list_searches(sort, search_type, limit)
 
         try:
             while True:
@@ -837,9 +848,9 @@ class DataAPI:
         return self._client.call_sync(self._client.get_search(search_id))
 
     def run_search(self,
-                         search_id: str,
-                         sort: Optional[str] = None,
-                         limit: int = 100) -> Iterator[Dict[str, Any]]:
+                   search_id: str,
+                   sort: Optional[str] = None,
+                   limit: int = 100) -> Iterator[Dict[str, Any]]:
         """Iterate over results from a saved search.
 
         Note:
@@ -861,10 +872,8 @@ class DataAPI:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If search_id or sort is not valid.
         """
-        
-        results = self._client.run_search(
-            search_id, sort, limit
-        )
+
+        results = self._client.run_search(search_id, sort, limit)
 
         try:
             while True:
@@ -873,9 +882,9 @@ class DataAPI:
             pass
 
     def get_stats(self,
-                        item_types: List[str],
-                        search_filter: Dict[str, Any],
-                        interval: str) -> Dict[str, Any]:
+                  item_types: List[str],
+                  search_filter: Dict[str, Any],
+                  interval: str) -> Dict[str, Any]:
         """Get item search statistics.
 
         Parameters:
@@ -891,9 +900,11 @@ class DataAPI:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If interval is not valid.
         """
-        return self._client.call_sync(self._client.get_stats(item_types, search_filter, interval))
+        return self._client.call_sync(
+            self._client.get_stats(item_types, search_filter, interval))
 
-    def list_item_assets(self, item_type_id: str, item_id: str) -> Dict[str, Any]:
+    def list_item_assets(self, item_type_id: str,
+                         item_id: str) -> Dict[str, Any]:
         """List all assets available for an item.
 
         An asset describes a product that can be derived from an item's source
@@ -911,12 +922,11 @@ class DataAPI:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        return self._client.call_sync(self._client.list_item_assets(item_type_id, item_id))
+        return self._client.call_sync(
+            self._client.list_item_assets(item_type_id, item_id))
 
-    def get_asset(self,
-                        item_type_id: str,
-                        item_id: str,
-                        asset_type_id: str) -> Dict[str, Any]:
+    def get_asset(self, item_type_id: str, item_id: str,
+                  asset_type_id: str) -> Dict[str, Any]:
         """Get an item asset description.
 
         Parameters:
@@ -932,7 +942,8 @@ class DataAPI:
             planet.exceptions.ClientError: If asset type identifier is not
             valid.
         """
-        return self._client.call_sync(self._client.get_asset(item_type_id, item_id, asset_type_id))
+        return self._client.call_sync(
+            self._client.get_asset(item_type_id, item_id, asset_type_id))
 
     def activate_asset(self, asset: Dict[str, Any]):
         """Activate an item asset.
@@ -975,14 +986,15 @@ class DataAPI:
                 not available or if the maximum number of attempts is reached
                 before the asset is active.
         """
-        return self._client.call_sync(self._client.wait_asset(asset, delay, max_attempts, callback))
+        return self._client.call_sync(
+            self._client.wait_asset(asset, delay, max_attempts, callback))
 
     def download_asset(self,
-                             asset: dict,
-                             filename: Optional[str] = None,
-                             directory: Path = Path('.'),
-                             overwrite: bool = False,
-                             progress_bar: bool = True) -> Path:
+                       asset: dict,
+                       filename: Optional[str] = None,
+                       directory: Path = Path('.'),
+                       overwrite: bool = False,
+                       progress_bar: bool = True) -> Path:
         """Download an asset.
 
         The asset must be active before it can be downloaded. This can be
@@ -1008,10 +1020,11 @@ class DataAPI:
             description is not valid.
         """
         return self._client.call_sync(
-            self._client.download_asset(
-                asset, filename, directory, overwrite, progress_bar
-            )
-        )
+            self._client.download_asset(asset,
+                                        filename,
+                                        directory,
+                                        overwrite,
+                                        progress_bar))
 
     def validate_checksum(self, asset: Dict[str, Any], filename: Path):
         """Validate checksum of downloaded file

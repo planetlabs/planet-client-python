@@ -59,9 +59,6 @@ MAX_ACTIVE = 50
 LOGGER = logging.getLogger(__name__)
 
 
-
-
-
 class BaseSession:
 
     @staticmethod
@@ -284,14 +281,13 @@ class Session(BaseSession):
             loop.run_forever()
 
         self._loop = asyncio.new_event_loop()
-        self._loop_thread = threading.Thread(
-            target=_start_background_loop, args=(self._loop,), daemon=True
-        )
+        self._loop_thread = threading.Thread(target=_start_background_loop,
+                                             args=(self._loop, ),
+                                             daemon=True)
         self._loop_thread.start()
 
     def call_sync(self, f: Awaitable[T]) -> T:
         return asyncio.run_coroutine_threadsafe(f, self._loop).result()
-
 
     @classmethod
     async def _raise_for_status(cls, response):

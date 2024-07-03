@@ -103,6 +103,7 @@ async def test_search_basic(item_descriptions, search_response, session):
     # check that all of the items were returned unchanged
     assert items_list == item_descriptions
 
+
 @respx.mock
 def test_search_basic_sync(item_descriptions, search_response, session):
 
@@ -219,13 +220,14 @@ async def test_search_geometry(geom_fixture,
     # check that all of the items were returned unchanged
     assert items_list == item_descriptions
 
+
 @respx.mock
 @pytest.mark.parametrize("geom_fixture", [('geom_geojson'),
                                           ('geom_reference')])
 def test_search_geometry_sync(geom_fixture,
-                               item_descriptions,
-                               session,
-                               request):
+                              item_descriptions,
+                              session,
+                              request):
 
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
@@ -247,8 +249,8 @@ def test_search_geometry_sync(geom_fixture,
     pl.data._client._base_url = TEST_URL
 
     geom = request.getfixturevalue(geom_fixture)
-    items_list = list(pl.data.search(
-            ['PSScene'], name='quick_search', geometry=geom))
+    items_list = list(
+        pl.data.search(['PSScene'], name='quick_search', geometry=geom))
     # check that request is correct
     expected_request = {
         "item_types": ["PSScene"],
@@ -442,8 +444,8 @@ def test_create_search_basic_sync(search_filter, session):
     pl = Planet(session)
     pl.data._client._base_url = TEST_URL
     search = pl.data.create_search(item_types=['PSScene'],
-                                    search_filter=search_filter,
-                                    name='test')
+                                   search_filter=search_filter,
+                                   name='test')
 
     # check that request is correct
     expected_request = {
@@ -457,6 +459,7 @@ def test_create_search_basic_sync(search_filter, session):
 
     # check the response is returned unaltered
     assert search == page_response
+
 
 @respx.mock
 @pytest.mark.anyio
@@ -636,9 +639,9 @@ def test_update_search_basic_sync(search_filter, session):
     pl.data._client._base_url = TEST_URL
 
     search = pl.data.update_search(VALID_SEARCH_ID,
-                                    item_types=['PSScene'],
-                                    search_filter=search_filter,
-                                    name='test')
+                                   item_types=['PSScene'],
+                                   search_filter=search_filter,
+                                   name='test')
 
     # check that request is correct
     expected_request = {
@@ -716,9 +719,9 @@ async def test_list_searches_success(limit,
 @respx.mock
 @pytest.mark.parametrize("limit, expected_list_length", [(None, 4), (3, 3)])
 def test_list_searches_success_sync(limit,
-                                     expected_list_length,
-                                     search_result,
-                                     session):
+                                    expected_list_length,
+                                    search_result,
+                                    session):
     page1_response = {"_links": {}, "searches": [search_result] * 4}
     route = respx.get(TEST_SEARCHES_URL)
     route.return_value = httpx.Response(200, json=page1_response)
@@ -726,9 +729,11 @@ def test_list_searches_success_sync(limit,
     pl = Planet(session)
     pl.data._client._base_url = TEST_URL
 
-    assert len(list(pl.data.list_searches(limit=limit))) == expected_list_length
+    assert len(list(
+        pl.data.list_searches(limit=limit))) == expected_list_length
 
     assert route.called
+
 
 @respx.mock
 @pytest.mark.anyio
@@ -802,6 +807,7 @@ async def test_delete_search(retcode, expectation, session):
 
     assert route.called
 
+
 @respx.mock
 @pytest.mark.parametrize("retcode, expectation",
                          [(204, does_not_raise()),
@@ -864,12 +870,12 @@ async def test_run_search_basic(item_descriptions,
 @pytest.mark.parametrize("search_id, valid", [(VALID_SEARCH_ID, True),
                                               ('invalid', False)])
 @pytest.mark.parametrize("limit, expected_count", [(None, 3), (2, 2)])
-def test_run_search_basic(item_descriptions,
-                                session,
-                                search_id,
-                                valid,
-                                limit,
-                                expected_count):
+def test_run_search_basic_sync(item_descriptions,
+                               session,
+                               search_id,
+                               valid,
+                               limit,
+                               expected_count):
     """Ensure run_search is successful and handles search_id and limit"""
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
     item1, item2, item3 = item_descriptions
@@ -1070,6 +1076,7 @@ async def test_list_item_assets_success(session):
 
     # check the response is returned unaltered
     assert assets == page_response
+
 
 @respx.mock
 def test_list_item_assets_success_sync(session):
@@ -1288,6 +1295,7 @@ def test_activate_asset_success_sync(status, expectation, session):
 
     assert route.called == expectation
 
+
 @respx.mock
 @pytest.mark.anyio
 async def test_activate_asset_invalid_asset(session):
@@ -1328,6 +1336,7 @@ async def test_wait_asset_success(session):
     asset = await cl.wait_asset(basic_udm2_asset, delay=0)
 
     assert asset == basic_udm2_asset_active
+
 
 @respx.mock
 def test_wait_asset_success_sync(session):
@@ -1464,10 +1473,10 @@ async def test_download_asset(exists,
                          [(False, False), (True, False), (True, True),
                           (False, True)])
 async def test_download_asset_sync(exists,
-                              overwrite,
-                              tmpdir,
-                              open_test_img,
-                              session):
+                                   overwrite,
+                                   tmpdir,
+                                   open_test_img,
+                                   session):
     # NOTE: this is a slightly edited version of test_download_asset_img from
     # tests/integration/test_orders_api
     dl_url = f'{TEST_URL}/1?token=IAmAToken'
@@ -1515,8 +1524,8 @@ async def test_download_asset_sync(exists,
         Path(tmpdir, 'img.tif').write_text('i exist')
 
     path = pl.data.download_asset(basic_udm2_asset,
-                                   directory=tmpdir,
-                                   overwrite=overwrite)
+                                  directory=tmpdir,
+                                  overwrite=overwrite)
     assert path.name == 'img.tif'
     assert path.is_file()
 
@@ -1524,6 +1533,7 @@ async def test_download_asset_sync(exists,
         assert path.read_text() == 'i exist'
     else:
         assert len(path.read_bytes()) == 527
+
 
 @respx.mock
 @pytest.mark.anyio
@@ -1557,6 +1567,7 @@ async def test_validate_checksum(hashes_match, md5_entry, expectation, tmpdir):
 
     with expectation:
         DataClient.validate_checksum(basic_udm2_asset, testfile)
+
 
 @respx.mock
 @pytest.mark.parametrize(
