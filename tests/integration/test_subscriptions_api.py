@@ -6,11 +6,11 @@ from itertools import zip_longest
 import json
 
 from httpx import Response
-from planet.client import Planet
 import pytest
 import respx
 from respx.patterns import M
 
+from planet import Planet
 from planet.clients.subscriptions import SubscriptionsClient
 from planet.exceptions import APIError, PagingError, ServerError
 from planet.http import Session
@@ -218,11 +218,11 @@ async def test_list_subscriptions_success(
             sub async for sub in client.list_subscriptions(status=status)
         ]) == count
 
+
 @pytest.mark.parametrize("status, count", [({"running"}, 100), ({"failed"}, 0),
                                            (None, 100)])
-@pytest.mark.anyio
 @api_mock
-async def test_list_subscriptions_success_sync(
+def test_list_subscriptions_success_sync(
     status,
     count,
 ):
@@ -287,6 +287,17 @@ async def test_create_subscription_success():
         })
         assert sub['name'] == 'test'
 
+@create_mock
+def test_create_subscription_success_sync():
+    """Subscription is created, description has the expected items."""
+
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    sub = pl.subscriptions.create_subscription({
+        'name': 'test', 'delivery': 'yes, please', 'source': 'test'
+    })
+    assert sub['name'] == 'test'
+
 
 @pytest.mark.anyio
 @create_mock
@@ -298,6 +309,16 @@ async def test_create_subscription_with_hosting_success():
             'name': 'test', 'source': 'test', 'hosting': 'yes, please'
         })
         assert sub['name'] == 'test'
+
+@create_mock
+def test_create_subscription_with_hosting_success_sync():
+    """Subscription is created, description has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    sub = pl.subscriptions.create_subscription({
+        'name': 'test', 'source': 'test', 'hosting': 'yes, please'
+    })
+    assert sub['name'] == 'test'
 
 
 @pytest.mark.anyio
@@ -317,6 +338,13 @@ async def test_cancel_subscription_success():
     async with Session() as session:
         client = SubscriptionsClient(session, base_url=TEST_URL)
         _ = await client.cancel_subscription("test")
+
+@cancel_mock
+def test_cancel_subscription_success_sync():
+    """Subscription is canceled, description has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    _ = pl.subscriptions.cancel_subscription("test")
 
 
 @pytest.mark.anyio
@@ -341,6 +369,17 @@ async def test_update_subscription_success():
             })
         assert sub["delivery"] == "no, thanks"
 
+@update_mock
+def test_update_subscription_success_sync():
+    """Subscription is updated, description has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    sub = pl.subscriptions.update_subscription(
+            "test", {
+                "name": "test", "delivery": "no, thanks", "source": "test"
+            })
+    assert sub["delivery"] == "no, thanks"
+
 
 @pytest.mark.anyio
 @patch_mock
@@ -350,6 +389,14 @@ async def test_patch_subscription_success():
         client = SubscriptionsClient(session, base_url=TEST_URL)
         sub = await client.patch_subscription("test", {"name": "test patch"})
         assert sub["name"] == "test patch"
+
+@patch_mock
+def test_patch_subscription_success_sync():
+    """Subscription is patched, description has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    sub = pl.subscriptions.patch_subscription("test", {"name": "test patch"})
+    assert sub["name"] == "test patch"
 
 
 @pytest.mark.anyio
@@ -370,6 +417,14 @@ async def test_get_subscription_success(monkeypatch):
         client = SubscriptionsClient(session, base_url=TEST_URL)
         sub = await client.get_subscription("test")
         assert sub['delivery'] == "yes, please"
+
+@get_mock
+def test_get_subscription_success_sync(monkeypatch):
+    """Subscription description fetched, has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    sub = pl.subscriptions.get_subscription("test")
+    assert sub['delivery'] == "yes, please"
 
 
 @pytest.mark.anyio
@@ -392,6 +447,16 @@ async def test_get_results_success():
         assert len(results) == 100
 
 
+@res_api_mock
+def test_get_results_success_sync():
+    """Subscription description fetched, has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    results = list(pl.subscriptions.get_results("42"))
+    assert len(results) == 100
+
+
+
 @pytest.mark.anyio
 @res_api_mock
 async def test_get_results_csv():
@@ -402,6 +467,15 @@ async def test_get_results_csv():
         rows = list(csv.reader(results))
         assert rows == [['id', 'status'], ['1234-abcd', 'SUCCESS']]
 
+
+@res_api_mock
+def test_get_results_csv_sync():
+    """Subscription CSV fetched, has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    results = list(pl.subscriptions.get_results("42", format="csv"))
+    rows = list(csv.reader(results))
+    assert rows == [['id', 'status'], ['1234-abcd', 'SUCCESS']]
 
 paging_cycle_api_mock = respx.mock()
 
