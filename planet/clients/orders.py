@@ -585,21 +585,20 @@ class OrdersAPI:
 
         ```python
 
-        from planet import Planet
-        from planet.order_request import build_request, product
+        from planet import Planet, order_request
 
         def main():
-             client = Planet()
+             pl = Planet()
              image_ids = ["20200925_161029_69_2223"]
-             request = build_request(
+             request = order_request.build_request(
                  'test_order',
-                 [product(image_ids, 'analytic_udm2', 'psscene')]
+                 [order_request.product(image_ids, 'analytic_udm2', 'psscene')]
              )
-             order = client.create_order(request)
+             order = pl.orders.create_order(request)
         ```
 
         Parameters:
-            request: order request definition
+            request: order request definition (recommended to use the order_request module to build a request)
 
         Returns:
             JSON description of the created order
@@ -775,7 +774,7 @@ class OrdersAPI:
             from planet.reporting import StateBar
 
             with StateBar() as bar:
-                await wait(order_id, callback=bar.update_state)
+                wait(order_id, callback=bar.update_state)
             ```
 
         Parameters:
