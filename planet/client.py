@@ -1,8 +1,7 @@
 from typing import Optional
-from planet.auth import AuthType
 from planet.clients.data import DataAPI
 from planet.clients.orders import OrdersAPI
-from planet.clients.subscriptions import SubscriptionsAPI, SubscriptionsClient
+from planet.clients.subscriptions import SubscriptionsAPI
 from planet.http import Session
 
 SYNC_CLIENT_AGENT = "python-sdk-sync"
@@ -31,7 +30,16 @@ class Planet:
     ```
 
     Parameters:
-        auth: Optional authentication config. defaults to detecting from environment (PL_API_KEY).
+        session: Optional Session. If not provided, a new session is created.
+          The session can be used to control the authentication method. Example:
+
+          ```python
+          from planet import Auth, Session, Planet
+
+          auth = Auth.from_key('examplekey')
+          session = Session(auth=auth)
+          pl = Planet(session=session)
+          ````
     """
 
     def __init__(self, session: Optional[Session] = None) -> None:
