@@ -438,7 +438,6 @@ class OrdersClient:
             raise exceptions.ClientError(
                 f'{state} must be one of {ORDER_STATE_SEQUENCE}')
 
-
         # loop without end if max_attempts is zero
         # otherwise, loop until num_attempts reaches max_attempts
         num_attempts = 0
@@ -623,7 +622,6 @@ class OrdersAPI:
         """
         return self._client.call_sync(self._client.get_order(order_id))
 
-
     def cancel_order(self, order_id: str) -> Dict[str, Any]:
         """Cancel a queued order.
 
@@ -639,9 +637,8 @@ class OrdersAPI:
         """
         return self._client.call_sync(self._client.cancel_order(order_id))
 
-
     def cancel_orders(self,
-                            order_ids: Optional[List[str]] = None) -> Dict[str, Any]:
+                      order_ids: Optional[List[str]] = None) -> Dict[str, Any]:
         """Cancel queued orders in bulk.
 
         Parameters:
@@ -658,7 +655,6 @@ class OrdersAPI:
         """
         return self._client.call_sync(self._client.cancel_orders(order_ids))
 
-
     def aggregated_order_stats(self) -> Dict[str, Any]:
         """Get aggregated counts of active orders.
 
@@ -671,11 +667,11 @@ class OrdersAPI:
         return self._client.call_sync(self._client.aggregated_order_stats())
 
     def download_asset(self,
-                             location: str,
-                             filename: Optional[str] = None,
-                             directory: Path = Path('.'),
-                             overwrite: bool = False,
-                             progress_bar: bool = True) -> Path:
+                       location: str,
+                       filename: Optional[str] = None,
+                       directory: Path = Path('.'),
+                       overwrite: bool = False,
+                       progress_bar: bool = True) -> Path:
         """Download ordered asset.
 
         Parameters:
@@ -692,17 +688,18 @@ class OrdersAPI:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        return self._client.call_sync(self._client.download_asset(location,
-                                                                  filename,
-                                                                  directory,
-                                                                  overwrite,
-                                                                  progress_bar))
+        return self._client.call_sync(
+            self._client.download_asset(location,
+                                        filename,
+                                        directory,
+                                        overwrite,
+                                        progress_bar))
 
     def download_order(self,
-                             order_id: str,
-                             directory: Path = Path('.'),
-                             overwrite: bool = False,
-                             progress_bar: bool = False) -> List[Path]:
+                       order_id: str,
+                       directory: Path = Path('.'),
+                       overwrite: bool = False,
+                       progress_bar: bool = False) -> List[Path]:
         """Download all assets in an order.
 
         Parameters:
@@ -720,9 +717,11 @@ class OrdersAPI:
             planet.exceptions.ClientError: If the order is not in a final
                 state.
         """
-        return self._client.call_sync(self._client.download_order(order_id, directory,
-                                                                  overwrite, progress_bar))
-
+        return self._client.call_sync(
+            self._client.download_order(order_id,
+                                        directory,
+                                        overwrite,
+                                        progress_bar))
 
     def validate_checksum(self, directory: Path, checksum: str):
         """Validate checksums of downloaded files against order manifest.
@@ -741,13 +740,16 @@ class OrdersAPI:
         """
         return self._client.validate_checksum(directory, checksum)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3434b60 (fix formatting)
     def wait(self,
-                   order_id: str,
-                   state: Optional[str] = None,
-                   delay: int = 5,
-                   max_attempts: int = 200,
-                   callback: Optional[Callable[[str], None]] = None) -> str:
+             order_id: str,
+             state: Optional[str] = None,
+             delay: int = 5,
+             max_attempts: int = 200,
+             callback: Optional[Callable[[str], None]] = None) -> str:
         """Wait until order reaches desired state.
 
         Returns the state of the order on the last poll.
@@ -793,11 +795,12 @@ class OrdersAPI:
                 if the maximum number of attempts is reached before the
                 specified state or a final state is reached.
         """
-        return self._client.call_sync(self._client.wait(order_id, state, delay, max_attempts, callback))
+        return self._client.call_sync(
+            self._client.wait(order_id, state, delay, max_attempts, callback))
 
     def list_orders(self,
-                          state: Optional[str] = None,
-                          limit: int = 100) -> Iterator[dict]:
+                    state: Optional[str] = None,
+                    limit: int = 100) -> Iterator[dict]:
         """Iterate over the list of stored orders.
 
         Order descriptions are sorted by creation date with the last created
@@ -820,9 +823,7 @@ class OrdersAPI:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If state is not valid.
         """
-        results = self._client.list_orders(
-            state, limit
-        )
+        results = self._client.list_orders(state, limit)
 
         try:
             while True:
