@@ -18,9 +18,15 @@ import sys
 
 import click
 
+from planet_auth_utils import embedded_plauth_cmd_group
+from planet_auth_utils import initialize_auth_client_context
+from planet_auth_utils import opt_auth_profile
+from planet_auth_utils import opt_auth_client_config_file
+from planet_auth_utils import opt_token_file
+
 import planet
 
-from . import auth, collect, data, orders, subscriptions
+from . import auth, cmds, collect, data, orders, subscriptions
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +42,11 @@ LOGGER = logging.getLogger(__name__)
               default="warning",
               help=("Optional: set verbosity level to warning, info, or debug.\
                   Defaults to warning."))
-def main(ctx, verbosity, quiet):
+@opt_auth_profile
+# @opt_token_file  # TODO - support this?  Check compatibility with other commands or legacy file?
+# @opt_auth_client_config_file # TODO - support this?  Limit it to make interface simpler?
+@cmds.translate_exceptions
+def main(ctx, verbosity, quiet, auth_profile):
     """Planet SDK for Python CLI"""
     _configure_logging(verbosity)
 
@@ -44,7 +54,11 @@ def main(ctx, verbosity, quiet):
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
     ctx.obj['QUIET'] = quiet
-
+    ctx.obj['AUTH'] = initialize_auth_client_context(
+        auth_profile_opt=auth_profile,
+        token_file_opt=None,  # TODO - support arg? token_file_opt=token_file
+        auth_client_config_file_opt=None,  # TODO - support arg? auth_client_config_file_opt=auth_client_config_file
+    )
 
 def _configure_logging(verbosity):
     """configure logging via verbosity level, corresponding
@@ -73,6 +87,8 @@ def _configure_logging(verbosity):
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
+# main.add_command(cmd=embedded_plauth_cmd_group, name="auth")  # type: ignore
+main.add_command(cmd=embedded_plauth_cmd_group, name="plauth")  # type: ignore
 main.add_command(auth.auth)  # type: ignore
 main.add_command(data.data)  # type: ignore
 main.add_command(orders.orders)  # type: ignore
