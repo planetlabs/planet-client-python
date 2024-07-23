@@ -10,3 +10,15 @@ var DOCUMENTATION_OPTIONS = {
     SOURCELINK_SUFFIX: '.txt',
     NAVIGATION_WITH_KEYS: false
 };
+
+//Hack to redirect to v2 docs with as little changes as possible
+window.onload = function() {
+  r = document.getElementById('redirect')
+  if (!r) {
+    r = document.createElement('div')
+    r.setAttribute('id', 'redirect')
+    r.innerHTML = 'This is the documentation for version 1 of the Planet Python Client, which is deprecated. <br /> Please visit the <a href="https://planet-sdk-for-python-v2.readthedocs.io/en/stable/get-started/upgrading/">SDK v2 documentation</a> for instructions on how to upgrade.'
+    document.body.prepend(r);
+  }
+}
+
