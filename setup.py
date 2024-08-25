@@ -30,9 +30,9 @@ install_requires = [
     'jsonschema',
     'tqdm>=4.56',
     'typing-extensions',
-    'planet-auth>=1.5.2',
+    'planet-auth>=2.0.0',
     'planet-auth-util>=1.5.1',
-    'planet-auth-config>=0.3.2',  # FIXME - This currently has internal endpoints, too.
+    'planet-auth-config>=2.0.0',  # FIXME - This currently has staging endpoints, too.
 ]
 
 test_requires = ['pytest', 'anyio', 'pytest-cov', 'respx>=0.20']

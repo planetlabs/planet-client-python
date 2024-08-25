@@ -17,7 +17,7 @@ from functools import wraps
 
 import click
 
-from planet_auth import AuthException as PLAuth_AuthException
+import planet_auth
 
 from planet import exceptions
 
@@ -57,8 +57,9 @@ def translate_exceptions(func):
     def wrapper(*args, **kwargs):
         try:
             func(*args, **kwargs)
-        except PLAuth_AuthException:
+        except planet_auth.AuthException as pla_ex:
             raise click.ClickException(
+                f'{pla_ex}\n'
                 'Auth information does not exist or is corrupted. Initialize '
                 'with `planet auth init`.')  # TODO: where do we want to steer users now?  `planet plauth`?
         except exceptions.PlanetError as ex:
