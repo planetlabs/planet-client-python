@@ -31,7 +31,7 @@ install_requires = [
     'tqdm>=4.56',
     'typing-extensions',
     'planet-auth>=2.0.0',
-    'planet-auth-util>=1.5.1',
+    'planet-auth-util>=2.0.0',
     'planet-auth-config>=2.0.0',  # FIXME - This currently has staging endpoints, too.
 ]
 
