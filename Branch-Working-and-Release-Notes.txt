@@ -1,0 +1,11 @@
+- TODO: Deprecated the legacy secret file.  This will require a user migration. (todo : provide instructions for bootstrapping the new file)
+  Maybe I can jigger from_file to still do the old thing, and just steer new logins
+- TODO: deprecate the legacy auth command
+- TODO: migrate planet.Auth to planet_auth.Auth as much as possible
+- TODO: Don't forget env var behaviors
+- TODO: good handing for PL_CLIENT_ID and PL_CLIENT_SECRET
+
+# TODO: The old code would have a in-memory authenticator here.  Verify behavior.
+# TODO: we do not have a good way to initialize M2M OAuth tokens from the env (I think? Maybe we do.)  This really belongs to plauth
+# TODO: we need to allocate a client ID for the `planet` CLI.  We are presently leaning on plauth's client ID. (maybe this is OK)
+# TODO: finalize message in translate_exceptions steering users to how to initialize auth.

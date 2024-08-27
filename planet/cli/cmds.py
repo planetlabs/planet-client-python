@@ -61,8 +61,8 @@ def translate_exceptions(func):
             raise click.ClickException(
                 f'{pla_ex}\n'
                 'Auth information does not exist or is corrupted. Initialize '
-                'with `planet auth init`.')  # TODO: where do we want to steer users now?  `planet plauth`?
-        except exceptions.PlanetError as ex:
+                'with `planet auth`.') # TODO/FIXME: finalize where we want to steer users now.  `planet plauth`?
+        except (exceptions.PlanetError, FileNotFoundError) as ex:
             raise click.ClickException(ex)
 
     return wrapper

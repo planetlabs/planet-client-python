@@ -92,6 +92,7 @@ def _configure_logging(verbosity):
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
+# TODO - deprecate old auth command
 # main.add_command(cmd=planet_auth_utils.embedded_plauth_cmd_group, name="auth")  # type: ignore
 main.add_command(cmd=planet_auth_utils.embedded_plauth_cmd_group, name="plauth")  # type: ignore
 main.add_command(auth.auth)  # type: ignore  # TODO: deprecate entirely and use plauth
