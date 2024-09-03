@@ -29,16 +29,9 @@ from .constants import SECRET_FILE_PATH
 AuthType = httpx.Auth
 
 
-# TODO: planet_auth.Auth potentially entirely supersedes this class.
-#       But, keeping this here for now for interface stability.
-# TODO: Add from_oauth_user_browser / no browser / service account?
-#       Between confidential and non-confidential clients, user clients
-#       and m2m clients, and clients with and without browsers and rich
-#       user interaction, there are a wide variety of ways a customer's
-#       client may need to obtain OAuth tokens.  With time limited
-#       access tokens and the need to manage refresh activity, the auth
-#       service interaction model is also necessarily different than
-#       what this Auth class models.
+# planet_auth and planet_auth_utils code more or less entirely
+# entirely supersedes this class.  But, keeping this here for
+# now for interface stability to bridge with the rest of the SDK.
 class Auth(metaclass=abc.ABCMeta):
     """Handle authentication information for use with Planet APIs."""
 
@@ -134,11 +127,11 @@ class Auth(metaclass=abc.ABCMeta):
 
 
 class _PLAuthLibAuth(Auth, AuthType):
-    # The Planet Auth Library uses a "has a" authenticator pattern for its Auth context.
-    # This library employs a "is a" authenticator design pattern for user's of
-    # its Auth context obtained from the constructors above.
-    # This class smooths over that design difference as we move to using
-    # the Planet Auth Library.
+    # The Planet Auth Library uses a "has a" authenticator pattern for its
+    # planet_auth.Auth context class.  This SDK library employs a "is a"
+    # authenticator design pattern for user's of its Auth context obtained
+    # from the constructors above. This class smooths over that design
+    # difference as we move to using the Planet Auth Library.
     def __init__(self, plauth: planet_auth.Auth):
         self._plauth = plauth
 

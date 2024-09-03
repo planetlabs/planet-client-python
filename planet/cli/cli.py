@@ -38,10 +38,11 @@ LOGGER = logging.getLogger(__name__)
               help=("Optional: set verbosity level to warning, info, or debug.\
                   Defaults to warning."))
 @planet_auth_utils.opt_auth_profile
+@planet_auth_utils.opt_auth_client_id
+@planet_auth_utils.opt_auth_client_secret
 # @planet_auth_utils.opt_token_file  # TODO - support this?  Check compatibility with other commands or legacy file?
-# @planet_auth_utils.opt_auth_client_config_file # TODO - support this?  Limit it to make interface simpler?
 @cmds.translate_exceptions
-def main(ctx, verbosity, quiet, auth_profile):
+def main(ctx, verbosity, quiet, auth_profile, auth_client_id, auth_client_secret):
     """Planet SDK for Python CLI"""
     _configure_logging(verbosity)
 
@@ -50,15 +51,16 @@ def main(ctx, verbosity, quiet, auth_profile):
     ctx.ensure_object(dict)
     ctx.obj['QUIET'] = quiet
 
-    _configure_cli_auth_ctx(ctx, auth_profile)
+    _configure_cli_auth_ctx(ctx, auth_profile, auth_client_id, auth_client_secret)
 
 
-def _configure_cli_auth_ctx(ctx, auth_profile):
+def _configure_cli_auth_ctx(ctx, auth_profile, auth_client_id, auth_client_secret):
     # planet-auth library Auth type
-    ctx.obj['AUTH'] = planet_auth_utils.initialize_auth_client_context(
+    ctx.obj['AUTH'] = planet_auth_utils.ProfileManager.initialize_auth_client_context(
         auth_profile_opt=auth_profile,
-        token_file_opt=None,  # TODO - support arg? token_file_opt=token_file
-        auth_client_config_file_opt=None,  # TODO - support arg? auth_client_config_file_opt=auth_client_config_file
+        token_file_opt=None,  # TODO - support arg? token_file_opt=token_file,
+        auth_client_id_opt=auth_client_id,
+        auth_client_secret_opt=auth_client_secret,
     )
 
     # planet SDK Auth type
