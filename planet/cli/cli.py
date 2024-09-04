@@ -21,7 +21,7 @@ import click
 import planet_auth_utils
 import planet
 
-from . import auth, cmds, collect, data, orders, subscriptions
+from . import cmds, collect, data, orders, subscriptions
 
 LOGGER = logging.getLogger(__name__)
 
@@ -58,7 +58,6 @@ def _configure_cli_auth_ctx(ctx, auth_profile, auth_client_id, auth_client_secre
     # planet-auth library Auth type
     ctx.obj['AUTH'] = planet_auth_utils.ProfileManager.initialize_auth_client_context(
         auth_profile_opt=auth_profile,
-        token_file_opt=None,  # TODO - support arg? token_file_opt=token_file,
         auth_client_id_opt=auth_client_id,
         auth_client_secret_opt=auth_client_secret,
         auth_api_key_opt=auth_api_key,
@@ -95,10 +94,7 @@ def _configure_logging(verbosity):
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
-# TODO - deprecate old auth command
-# main.add_command(cmd=planet_auth_utils.embedded_plauth_cmd_group, name="auth")  # type: ignore
-main.add_command(cmd=planet_auth_utils.embedded_plauth_cmd_group, name="plauth")  # type: ignore
-main.add_command(auth.auth)  # type: ignore  # TODO: deprecate entirely and use plauth
+main.add_command(cmd=planet_auth_utils.embedded_plauth_cmd_group, name="auth")  # type: ignore
 main.add_command(data.data)  # type: ignore
 main.add_command(orders.orders)  # type: ignore
 main.add_command(subscriptions.subscriptions)  # type: ignore
