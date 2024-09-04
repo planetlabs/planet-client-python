@@ -40,9 +40,9 @@ LOGGER = logging.getLogger(__name__)
 @planet_auth_utils.opt_auth_profile
 @planet_auth_utils.opt_auth_client_id
 @planet_auth_utils.opt_auth_client_secret
-# @planet_auth_utils.opt_token_file  # TODO - support this?  Check compatibility with other commands or legacy file?
+@planet_auth_utils.opt_auth_api_key
 @cmds.translate_exceptions
-def main(ctx, verbosity, quiet, auth_profile, auth_client_id, auth_client_secret):
+def main(ctx, verbosity, quiet, auth_profile, auth_client_id, auth_client_secret, auth_api_key):
     """Planet SDK for Python CLI"""
     _configure_logging(verbosity)
 
@@ -51,16 +51,17 @@ def main(ctx, verbosity, quiet, auth_profile, auth_client_id, auth_client_secret
     ctx.ensure_object(dict)
     ctx.obj['QUIET'] = quiet
 
-    _configure_cli_auth_ctx(ctx, auth_profile, auth_client_id, auth_client_secret)
+    _configure_cli_auth_ctx(ctx, auth_profile, auth_client_id, auth_client_secret, auth_api_key)
 
 
-def _configure_cli_auth_ctx(ctx, auth_profile, auth_client_id, auth_client_secret):
+def _configure_cli_auth_ctx(ctx, auth_profile, auth_client_id, auth_client_secret, auth_api_key):
     # planet-auth library Auth type
     ctx.obj['AUTH'] = planet_auth_utils.ProfileManager.initialize_auth_client_context(
         auth_profile_opt=auth_profile,
         token_file_opt=None,  # TODO - support arg? token_file_opt=token_file,
         auth_client_id_opt=auth_client_id,
         auth_client_secret_opt=auth_client_secret,
+        auth_api_key_opt=auth_api_key,
     )
 
     # planet SDK Auth type
