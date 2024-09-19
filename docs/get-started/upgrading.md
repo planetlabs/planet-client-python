@@ -62,7 +62,7 @@ async def do_search():
         date_filter = filters.date_range_filter('acquired', gte=datetime.fromisoformat("2022-11-18"), lte=datetime.fromisoformat("2022-11-21"))
         cloud_filter = filters.range_filter('cloud_cover', lte=0.1)
         download_filter = filters.permission_filter()
-    return [item async for item in client.search(["PSScene"], filters.and_filter([date_filter, cloud_filter, download_filter]))]
+        return [item async for item in client.search(["PSScene"], filters.and_filter([date_filter, cloud_filter, download_filter]))]
  
 items = asyncio.run(do_search())
 ```
@@ -94,4 +94,4 @@ async with Session() as session:
 
 The Orders API capabilities in V1 were quite primitive, but those that did exist have been retained in much the same form; `ClientV1().create_order` becomes `OrdersClient(session).create_order`. (As with the `DataClient`, you must also use `async` and `Session` with `OrdersClient`.)
 
-Additionally, there is now also an order builder in `planet.order_request`, similar to the preexisting search filter builder. For more details on this, refer to the [Creating an Order](../../python/sdk-guide/#creating-an-order).
+Additionally, there is now also an order builder in `planet.order_request`, similar to the preexisting search filter builder. For more details on this, refer to the [Creating an Order](../../python/sdk-guide/#create-an-order).
