@@ -1,0 +1,842 @@
+{
+  "bundles": {
+    "analytic": {
+      "name": "Analytic Radiance (TOAR)",
+      "description": "Calibrated to top of atmosphere radiance",
+      "bands": "all",
+      "rectification": "orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "Landsat8L1G": [
+          "analytic_b1",
+          "analytic_b2",
+          "analytic_b3",
+          "analytic_b4",
+          "analytic_b5",
+          "analytic_b6",
+          "analytic_b7",
+          "analytic_b8",
+          "analytic_b9",
+          "analytic_b10",
+          "analytic_b11",
+          "analytic_bqa",
+          "metadata_txt"
+        ],
+        "PSOrthoTile": [
+          "analytic",
+          "udm",
+          "analytic_xml"
+        ],
+        "REOrthoTile": [
+          "analytic",
+          "analytic_xml",
+          "udm"
+        ],
+        "Sentinel1": [
+          "ortho_analytic_vv",
+          "ortho_analytic_vh"
+        ],
+        "Sentinel2L1C": [
+          "analytic_b1",
+          "analytic_b2",
+          "analytic_b3",
+          "analytic_b4",
+          "analytic_b5",
+          "analytic_b6",
+          "analytic_b7",
+          "analytic_b8",
+          "analytic_b8a",
+          "analytic_b9",
+          "analytic_b10",
+          "analytic_b11",
+          "analytic_b12",
+          "metadata_aux"
+        ],
+        "SkySatScene": [
+          "ortho_analytic",
+          "ortho_analytic_udm"
+        ],
+        "SkySatCollect": [
+          "ortho_analytic",
+          "ortho_analytic_udm"
+        ]
+      }
+    },
+    "radiance_hdf5": {
+      "name": "Analytic Radiance (TOAR)",
+      "description": "Calibrated to top of atmosphere radiance.",
+      "bands": "all",
+      "rectification": "orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "HDF5",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "TanagerScene": [
+          "ortho_radiance_hdf5"
+        ]
+      }
+    },
+    "analytic_udm2": {
+      "name": "Analytic Radiance (TOAR)",
+      "description": "Calibrated to top of atmosphere radiance",
+      "bands": "all",
+      "rectification": "orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm, udm2",
+      "assets": {
+        "PSOrthoTile": [
+          "analytic",
+          "udm",
+          "udm2",
+          "analytic_xml"
+        ],
+        "PSScene": [
+          "ortho_analytic_4b",
+          "ortho_analytic_4b_xml",
+          "ortho_udm2"
+        ],
+        "SkySatScene": [
+          "ortho_analytic",
+          "ortho_analytic_udm",
+          "ortho_analytic_udm2"
+        ],
+        "SkySatCollect": [
+          "ortho_analytic",
+          "ortho_analytic_udm",
+          "ortho_analytic_udm2"
+        ],
+        "PelicanScene": [
+          "ortho_analytic",
+          "ortho_analytic_udm2"
+        ]
+      }
+    },
+    "analytic_3b_udm2": {
+      "name": "Analytic Radiance (TOAR) 3b",
+      "description": "Calibrated to top of atmosphere radiance, 3 band",
+      "bands": "3-band",
+      "rectification": "orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm2",
+      "assets": {
+        "PSScene": [
+          "ortho_analytic_3b",
+          "ortho_analytic_3b_xml",
+          "ortho_udm2"
+        ]
+      }
+    },
+    "analytic_5b": {
+      "name": "Analytic Radiance (TOAR) 5b",
+      "description": "Calibrated to top of atmosphere radiance, 5 band",
+      "bands": "all",
+      "rectification": "orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "PSOrthoTile": [
+          "analytic_5b",
+          "analytic_5b_xml",
+          "udm"
+        ]
+      }
+    },
+    "analytic_5b_udm2": {
+      "name": "Analytic Radiance (TOAR) 5b",
+      "description": "Calibrated to top of atmosphere radiance, 5 band",
+      "bands": "all",
+      "rectification": "orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm, udm2",
+      "assets": {
+        "PSOrthoTile": [
+          "analytic_5b",
+          "analytic_5b_xml",
+          "udm",
+          "udm2"
+        ]
+      }
+    },
+    "analytic_8b_udm2": {
+      "name": "Analytic Radiance (TOAR) 8b",
+      "description": "Calibrated to top of atmosphere radiance, 8 band",
+      "bands": "8-band",
+      "rectification": "orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm2",
+      "assets": {
+        "PSScene": [
+          "ortho_analytic_8b",
+          "ortho_analytic_8b_xml",
+          "ortho_udm2"
+        ]
+      }
+    },
+    "visual": {
+      "name": "Visual",
+      "description": "RGB only -- color corrected and optimized for visual analysis",
+      "bands": "3-band",
+      "rectification": "orthorectified",
+      "radiometry": "visual",
+      "fileType": "GeoTIFF",
+      "assets": {
+        "Landsat8L1G": [
+          "visual"
+        ],
+        "PSOrthoTile": [
+          "visual",
+          "visual_xml"
+        ],
+        "PSScene": [
+          "ortho_visual"
+        ],
+        "REOrthoTile": [
+          "visual",
+          "visual_xml"
+        ],
+        "Sentinel2L1C": [
+          "visual"
+        ],
+        "SkySatCollect": [
+          "ortho_visual"
+        ],
+        "SkySatScene": [
+          "ortho_visual"
+        ],
+        "TanagerScene": [
+          "ortho_visual"
+        ],
+        "PelicanScene": [
+          "ortho_visual"
+        ]
+      }
+    },
+    "uncalibrated_dn": {
+      "name": "Uncalibrated DN",
+      "description": "Uncalibrated digital numbers, suitable for custom radiometric processing",
+      "bands": "all",
+      "rectification": "orthorectified",
+      "radiometry": "digital numbers",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "PSOrthoTile": [
+          "analytic_dn",
+          "udm",
+          "analytic_dn_xml"
+        ],
+        "SkySatCollect": [
+          "ortho_analytic_dn",
+          "ortho_analytic_udm"
+        ],
+        "SkySatScene": [
+          "ortho_analytic_dn",
+          "ortho_analytic_udm"
+        ]
+      }
+    },
+    "uncalibrated_dn_udm2": {
+      "name": "Uncalibrated DN",
+      "description": "Uncalibrated digital numbers, suitable for custom radiometric processing",
+      "bands": "all",
+      "rectification": "orthorectified",
+      "radiometry": "digital numbers",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm, udm2",
+      "assets": {
+        "PSOrthoTile": [
+          "analytic_dn",
+          "analytic_dn_xml",
+          "udm",
+          "udm2"
+        ],
+        "SkySatCollect": [
+          "ortho_analytic_dn",
+          "ortho_analytic_udm",
+          "ortho_analytic_udm2"
+        ],
+        "SkySatScene": [
+          "ortho_analytic_dn",
+          "ortho_analytic_udm",
+          "ortho_analytic_udm2"
+        ]
+      }
+    },
+    "basic_analytic": {
+      "name": "Basic Analytic Radiance (TOAR)",
+      "description": "Calibrated to top of atmosphere radiance - includes RPC text file for georeferencing",
+      "bands": "all",
+      "rectification": "non-orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "TIFF and RPCs",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "REScene": [
+          "basic_analytic_b1",
+          "basic_analytic_b2",
+          "basic_analytic_b3",
+          "basic_analytic_b4",
+          "basic_analytic_b5",
+          "basic_analytic_xml",
+          "basic_analytic_rpc",
+          "basic_udm",
+          "basic_analytic_sci",
+          "browse"
+        ],
+        "SkySatScene": [
+          "basic_analytic",
+          "basic_analytic_rpc",
+          "basic_analytic_udm"
+        ]
+      }
+    },
+    "basic_radiance_hdf5": {
+      "name": "Basic Analytic Radiance (TOAR)",
+      "description": "Calibrated to top of atmosphere radiance. Includes geolocation array.",
+      "bands": "all",
+      "rectification": "non-orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "HDF5",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "TanagerScene": [
+          "basic_radiance_hdf5"
+        ]
+      }
+    },
+    "basic_analytic_udm2": {
+      "name": "Basic Analytic Radiance (TOAR)",
+      "description": "Calibrated to top of atmosphere radiance - includes RPC text file for georeferencing",
+      "bands": "all",
+      "rectification": "non-orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "TIFF and RPCs",
+      "auxiliaryFiles": "udm, udm2",
+      "assets": {
+        "PSScene": [
+          "basic_analytic_4b",
+          "basic_udm2",
+          "basic_analytic_4b_rpc",
+          "basic_analytic_4b_xml"
+        ],
+        "SkySatScene": [
+          "basic_analytic",
+          "basic_analytic_rpc",
+          "basic_analytic_udm",
+          "basic_analytic_udm2"
+        ],
+        "PelicanScene": [
+          "basic_analytic",
+          "basic_analytic_rpc",
+          "basic_analytic_udm2"
+        ]
+      }
+    },
+    "basic_analytic_8b_udm2": {
+      "name": "Basic Analytic Radiance (TOAR) 8b",
+      "description": "Calibrated to top of atmosphere radiance - includes RPC text file for georeferencing",
+      "bands": "8-band",
+      "rectification": "non-orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "TIFF and RPCs",
+      "auxiliaryFiles": "udm2",
+      "assets": {
+        "PSScene": [
+          "basic_analytic_8b",
+          "basic_udm2",
+          "basic_analytic_4b_rpc",
+          "basic_analytic_8b_xml"
+        ]
+      }
+    },
+    "basic_uncalibrated_dn": {
+      "name": "Basic Uncalibrated DN",
+      "description": "Uncalibrated digital numbers - includes RPC text file for georeferencing",
+      "bands": "all",
+      "rectification": "non-orthorectified",
+      "radiometry": "digital numbers",
+      "fileType": "TIFF and RPCs",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "SkySatScene": [
+          "basic_analytic_dn",
+          "basic_analytic_dn_rpc",
+          "basic_analytic_udm"
+        ]
+      }
+    },
+    "basic_uncalibrated_dn_udm2": {
+      "name": "Basic Uncalibrated DN",
+      "description": "Uncalibrated digital numbers - includes RPC text file for georeferencing",
+      "bands": "all",
+      "rectification": "non-orthorectified",
+      "radiometry": "digital numbers",
+      "fileType": "TIFF and RPCs",
+      "auxiliaryFiles": "udm, udm2",
+      "assets": {
+        "SkySatScene": [
+          "basic_analytic_dn",
+          "basic_analytic_dn_rpc",
+          "basic_analytic_udm",
+          "basic_analytic_udm2"
+        ]
+      }
+    },
+    "analytic_sr": {
+      "name": "Surface Reflectance",
+      "description": "Corrected for surface reflectance – recommended for most analytic applications",
+      "bands": "all",
+      "rectification": "orthorectified",
+      "radiometry": "surface reflectance",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "PSOrthoTile": [
+          "analytic_sr",
+          "udm",
+          "analytic_xml"
+        ],
+        "REOrthoTile": [
+          "analytic_sr",
+          "udm",
+          "analytic_xml"
+        ],
+        "MOD09GQ": [
+          "analytic_num_observations",
+          "analytic_orbit_pnt",
+          "analytic_granule_pnt",
+          "analytic_sur_refl_b01",
+          "analytic_sur_refl_b02",
+          "analytic_qc_250m",
+          "analytic_obscov",
+          "analytic_iobs_res"
+        ],
+        "MYD09GQ": [
+          "analytic_num_observations",
+          "analytic_orbit_pnt",
+          "analytic_granule_pnt",
+          "analytic_sur_refl_b01",
+          "analytic_sur_refl_b02",
+          "analytic_qc_250m",
+          "analytic_obscov",
+          "analytic_iobs_res"
+        ],
+        "MOD09GA": [
+          "analytic_num_observations_500m",
+          "analytic_num_observations_1km",
+          "analytic_state_1km",
+          "analytic_sensor_zenith",
+          "analytic_sensor_azimuth",
+          "analytic_range",
+          "analytic_solar_zenith",
+          "analytic_solar_azimuth",
+          "analytic_gflags",
+          "analytic_orbit_pnt",
+          "analytic_granule_pnt",
+          "analytic_sur_refl_b01",
+          "analytic_sur_refl_b02",
+          "analytic_sur_refl_b03",
+          "analytic_sur_refl_b04",
+          "analytic_sur_refl_b05",
+          "analytic_sur_refl_b06",
+          "analytic_sur_refl_b07",
+          "analytic_qc_500m",
+          "analytic_obscov_500m",
+          "analytic_iobs_res",
+          "analytic_q_scan"
+        ],
+        "MYD09GA": [
+          "analytic_num_observations_500m",
+          "analytic_num_observations_1km",
+          "analytic_state_1km",
+          "analytic_sensor_zenith",
+          "analytic_sensor_azimuth",
+          "analytic_range",
+          "analytic_solar_zenith",
+          "analytic_solar_azimuth",
+          "analytic_gflags",
+          "analytic_orbit_pnt",
+          "analytic_granule_pnt",
+          "analytic_sur_refl_b01",
+          "analytic_sur_refl_b02",
+          "analytic_sur_refl_b03",
+          "analytic_sur_refl_b04",
+          "analytic_sur_refl_b05",
+          "analytic_sur_refl_b06",
+          "analytic_sur_refl_b07",
+          "analytic_qc_500m",
+          "analytic_obscov_500m",
+          "analytic_iobs_res",
+          "analytic_q_scan"
+        ],
+        "SkySatCollect": [
+          "ortho_analytic_sr",
+          "ortho_analytic_udm"
+        ],
+        "SkySatScene": [
+          "ortho_analytic_sr",
+          "ortho_analytic_udm"
+        ]
+      }
+    },
+    "sr_hdf5": {
+      "name": "Surface Reflectance",
+      "description": "Corrected for surface reflectance.",
+      "bands": "all",
+      "rectification": "orthorectified",
+      "radiometry": "surface reflectance",
+      "fileType": "HDF5",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "TanagerScene": [
+          "ortho_sr_hdf5"
+        ]
+      }
+    },
+    "analytic_sr_udm2": {
+      "name": "Surface Reflectance 4b",
+      "description": "Corrected for surface reflectance – recommended for most analytic applications, 4 band",
+      "bands": "all",
+      "rectification": "orthorectified",
+      "radiometry": "surface reflectance",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm, udm2",
+      "assets": {
+        "PSScene": [
+          "ortho_analytic_4b_sr",
+          "ortho_analytic_4b_xml",
+          "ortho_udm2"
+        ],
+        "PSOrthoTile": [
+          "analytic_sr",
+          "udm",
+          "udm2",
+          "analytic_xml"
+        ],
+        "SkySatCollect": [
+          "ortho_analytic_sr",
+          "ortho_analytic_udm",
+          "ortho_analytic_udm2"
+        ],
+        "SkySatScene": [
+          "ortho_analytic_sr",
+          "ortho_analytic_udm",
+          "ortho_analytic_udm2"
+        ],
+        "PelicanScene": [
+          "ortho_analytic_sr",
+          "ortho_analytic_udm2"
+        ]
+      }
+    },
+    "analytic_8b_sr_udm2": {
+      "name": "Surface Reflectance 8b",
+      "description": "Corrected for surface reflectance – recommended for most analytic applications, 8 band",
+      "bands": "8-band",
+      "rectification": "orthorectified",
+      "radiometry": "surface reflectance",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm2",
+      "assets": {
+        "PSScene": [
+          "ortho_analytic_8b_sr",
+          "ortho_analytic_8b_xml",
+          "ortho_udm2"
+        ]
+      }
+    },
+    "basic_analytic_nitf": {
+      "name": "Basic Analytic Radiance (TOAR) – NITF",
+      "description": "Calibrated to top of atmosphere radiance - includes RPC text file for georeferencing",
+      "bands": "all",
+      "rectification": "non-orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "NITF",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "REScene": [
+          "basic_analytic_b1_nitf",
+          "basic_analytic_b2_nitf",
+          "basic_analytic_b3_nitf",
+          "basic_analytic_b4_nitf",
+          "basic_analytic_b5_nitf",
+          "basic_analytic_xml_nitf",
+          "basic_analytic_rpc",
+          "basic_udm",
+          "basic_analytic_sci",
+          "browse"
+        ]
+      }
+    },
+    "basic_sr_hdf5": {
+      "name": "Surface Reflectance",
+      "description": "Corrected for surface reflectance – recommended for most analytic applications. Includes geolocation array.",
+      "bands": "all",
+      "rectification": "non-orthorectified",
+      "radiometry": "surface reflectance",
+      "fileType": "HDF5",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "TanagerScene": [
+          "basic_sr_hdf5"
+        ]
+      }
+    },
+    "basic_panchromatic": {
+      "name": "Basic Panchromatic",
+      "description": "Unrectified panchromatic band - includes RPC text file for georeferencing",
+      "bands": "panchromatic",
+      "rectification": "non-orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "GeoTIFF",
+      "assets": {
+        "SkySatScene": [
+          "basic_panchromatic",
+          "basic_panchromatic_rpc",
+          "basic_panchromatic_udm2"
+        ],
+         "PelicanScene": [
+          "basic_panchromatic",
+          "basic_panchromatic_rpc",
+          "basic_panchromatic_udm2"
+        ]
+      }
+    },
+    "basic_panchromatic_dn": {
+      "name": "Basic Panchromatic DN",
+      "description": "Unrectified, panchromatic band, uncalibrated digital numbers - includes RPC text file for georeferencing",
+      "bands": "panchromatic",
+      "rectification": "non-orthorectified",
+      "radiometry": "digital numbers",
+      "fileType": "TIFF and RPCs",
+      "assets": {
+        "SkySatScene": [
+          "basic_panchromatic_dn",
+          "basic_panchromatic_dn_rpc",
+          "basic_panchromatic_udm2"
+        ]
+      }
+    },
+    "panchromatic": {
+      "name": "Panchromatic",
+      "description": "Panchromatic band, calibrated to top of atmosphere radiance",
+      "bands": "panchromatic",
+      "rectification": "orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "SkySatCollect": [
+          "ortho_panchromatic",
+          "ortho_panchromatic_udm"
+        ],
+        "SkySatScene": [
+          "ortho_panchromatic",
+          "ortho_panchromatic_udm"
+        ]
+      }
+    },
+    "panchromatic_udm2": {
+      "name": "Panchromatic",
+      "description": "Panchromatic band, calibrated to top of atmosphere radiance",
+      "bands": "panchromatic",
+      "rectification": "orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm2",
+      "assets": {
+        "SkySatCollect": [
+          "ortho_panchromatic",
+          "ortho_panchromatic_udm2"
+        ],
+        "SkySatScene": [
+          "ortho_panchromatic",
+          "ortho_panchromatic_udm2"
+        ],
+        "PelicanScene": [
+          "ortho_panchromatic",
+          "ortho_pansharpened_udm2"
+        ]
+      }
+    },
+    "panchromatic_dn": {
+      "name": "Panchromatic DN",
+      "description": "Uncalibrated panchromatic band - suitable for custom radiometric processing",
+      "bands": "panchromatic",
+      "rectification": "orthorectified",
+      "radiometry": "digital numbers",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "SkySatCollect": [
+          "ortho_panchromatic_dn",
+          "ortho_panchromatic_udm"
+        ],
+        "SkySatScene": [
+          "ortho_panchromatic_dn",
+          "ortho_panchromatic_udm"
+        ]
+      }
+    },
+    "panchromatic_dn_udm2": {
+      "name": "Panchromatic DN",
+      "description": "Uncalibrated panchromatic band - suitable for custom radiometric processing",
+      "bands": "panchromatic",
+      "rectification": "orthorectified",
+      "radiometry": "digital numbers",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm, udm2",
+      "assets": {
+        "SkySatCollect": [
+          "ortho_panchromatic_dn",
+          "ortho_panchromatic_udm",
+          "ortho_panchromatic_udm2"
+        ],
+        "SkySatScene": [
+          "ortho_panchromatic_dn",
+          "ortho_panchromatic_udm",
+          "ortho_panchromatic_udm2"
+        ]
+      }
+    },
+    "pansharpened": {
+      "name": "Ortho-pansharpened",
+      "description": "Pansharpened, color corrected, 4-band multispectral data",
+      "bands": "all",
+      "rectification": "orthorectified",
+      "radiometry": "digital numbers",
+      "fileType": "GeoTIFF",
+      "enhancements": "pansharpen",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "SkySatCollect": [
+          "ortho_pansharpened",
+          "ortho_pansharpened_udm"
+        ],
+        "SkySatScene": [
+          "ortho_pansharpened",
+          "ortho_pansharpened_udm"
+        ]
+      }
+    },
+    "pansharpened_udm2": {
+      "name": "Ortho-pansharpened",
+      "description": "Pansharpened, color corrected, 4-band multispectral data",
+      "bands": "all",
+      "rectification": "orthorectified",
+      "radiometry": "digital numbers",
+      "fileType": "GeoTIFF",
+      "enhancements": "pansharpen",
+      "auxiliaryFiles": "udm, udm2",
+      "assets": {
+        "SkySatCollect": [
+          "ortho_pansharpened",
+          "ortho_pansharpened_udm",
+          "ortho_pansharpened_udm2"
+        ],
+        "SkySatScene": [
+          "ortho_pansharpened",
+          "ortho_pansharpened_udm",
+          "ortho_pansharpened_udm2"
+        ],
+        "PelicanScene": [
+          "ortho_pansharpened",
+          "ortho_pansharpened_udm2"
+        ]
+      }
+    },
+    "basic_l1a_dn": {
+      "name": "Basic L1A",
+      "description": "Unrectified, uncalibrated panchromatic band only, no super resolution applied - includes RPC text file for georeferencing",
+      "bands": "panchromatic",
+      "rectification": "non-orthorectified",
+      "radiometry": "digital numbers",
+      "fileType": "TIFF and RPCs",
+      "assets": {
+        "SkySatScene": [
+          "basic_l1a_panchromatic_dn",
+          "basic_l1a_panchromatic_dn_rpc"
+        ],
+        "SkySatCollect": [
+          "basic_l1a_all_frames"
+        ],
+        "PelicanScene": [
+          "basic_l1a_panchromatic",
+          "basic_l1a_panchromatic_rpc"
+        ]
+      }
+    },
+    "methane_quicklook": {
+      "name": "Methane QuickLook",
+      "description": "Methane QuickLook will have all plumes in kg/hr within an image that can be identified by a human operator.",
+      "bands": "N/A",
+      "rectification": "orthorectified",
+      "radiometry": "N/A",
+      "fileType": "TIFF and JSON",
+      "assets": {
+        "TanagerMethane": [
+          "ortho_ql_ch4",
+          "ortho_visual",
+          "ortho_beta_udm",
+          "recent_monthly_basemap",
+          "ql_ch4_json"
+        ]
+      }
+    },
+    "quality_controlled_methane": {
+      "name": "Quality Controlled Methane",
+      "description": "Quality Controlled Methane product where all plumes in kg/hr have had additional reviews to wind speed, background and additional environmental contexts.",
+      "bands": "N/A",
+      "rectification": "orthorectified",
+      "radiometry": "N/A",
+      "fileType": "TIFF and JSON",
+      "assets": {
+        "TanagerMethane": [
+          "ortho_qc_ch4",
+          "qc_ch4_json"
+        ]
+      }
+    },
+  "methane": {
+    "name": "Methane",
+    "description": "Methane bundle includes both the Methane QuickLook and Quality Controlled products.",
+    "bands": "N/A",
+    "rectification": "orthorectified",
+    "radiometry": "N/A",
+    "fileType": "TIFF and JSON",
+    "assets": {
+      "TanagerMethane": [
+        "ortho_ql_ch4",
+        "ortho_visual",
+        "ortho_beta_udm",
+        "recent_monthly_basemap",
+        "ql_ch4_json",
+        "ortho_qc_ch4",
+        "qc_ch4_json"
+      ]
+    }
+  },
+  "integrated_methane_enhancement": {
+    "name": "Integrated Methane Enhancement",
+    "description": "Integrated Methane Enhancement (IME) in kg where all plumes have additional reviews to wind speed, background and additional environmental contexts.",
+    "bands": "N/A",
+    "rectification": "orthorectified",
+    "radiometry": "N/A",
+    "fileType": "TIFF and JSON",
+    "assets": {
+      "TanagerMethane": [
+        "ortho_ql_ime_ch4",
+        "ql_ime_ch4_json"
+      ]
+    }
+  }
+},
+  "version": "2024-08-12"
+}
