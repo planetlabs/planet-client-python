@@ -72,6 +72,9 @@ class StreamingResponse(Response):
         async for c in self._http_response.aiter_bytes():
             yield c
 
+    def aiter_lines(self):
+        return self._http_response.aiter_lines()
+
     async def aclose(self):
         await self._http_response.aclose()
 
