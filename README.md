@@ -16,36 +16,43 @@ Version 2.0 includes support for the core workflows of the following APIs:
 
 After the initial 2.0 release there will be additional work to support the
 remaining Planet APIs: [basemaps](https://developers.planet.com/docs/basemaps/),
-[tasking](https://developers.planet.com/docs/tasking/)) and
+[tasking](https://developers.planet.com/docs/tasking/) and
 [analytics](https://developers.planet.com/docs/analytics/).
 
 ## Versions and Stability
 
-The SDK follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and therefore only major releases should break compatibility. Minor versions may include new functionality and patch versions address bugs or trivial changes (like documentation).
+The default branch (main) of this repo is for the [Planet SDK for
+Python](https://github.com/planetlabs/planet-client-python/projects/2),
+a complete rewrite and upgrade from the original [Planet Python
+Client](https://developers.planet.com/docs/pythonclient/). If you
+are looking for the source code to that library see the
+[v1](https://github.com/planetlabs/planet-client-python/tree/v1) branch.
 
-If depending upon official packages from PyPI, a developer should feel comfortable specifying `planet == 2.*` unless depending on a specific feature introduced at a minor version, in which case `planet == 2.x.*` (where x is the minor version of the new feature) should suffice.
-
-The default branch is always `main` and should be considered in-development but with tests and other build steps succeeding.
+The Planet SDK for Python is in 'pre-release' stages, working towards a solid
+beta release in December. Upcoming milestones are tracked in the [Planet SDK
+for Python Milestones](https://github.com/planetlabs/planet-client-python/milestones).
 
 ## Installation and Quick Start
 
-The main installation path and first steps are found in the
-[Quick Start Guide](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/get-started/quick-start-guide/)
-of the documentation.
-
-### Installing from source
-
-This option enables you to get all the latest changes, but things might also be a bit less stable.
-To install you must [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
-the [planet-client-python](https://github.com/planetlabs/planet-client-python) repository
-to your local computer. After you have the repo local just navigate to the root
-directory, where this readme lives.
-
-Then you can install locally with pip:
+The Planet SDK for Python is [hosted on PyPI](https://pypi.org/project/planet/) and can simply be installed via:
 
 ```console
-$ pip install .
+pip install planet
 ```
+
+To install from source, first clone this repository, then navigate to the root directory (where `setup.py` lives) and run:
+
+```console
+pip install .
+```
+
+Note that the above commands will install the Planet SDK into the global system Python unless a virtual environment is enabled.  For more information on configuring a virtual environment from system Python, see the official Python [venv](https://docs.python.org/3/library/venv.html) documentation.  For users who are running multiple versions of Python via [pyenv](https://github.com/pyenv/pyenv), see the [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv) extension documentation.
+
+Detailed installation instructions for the Planet SDK can be found in the [Quick Start Guide](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/get-started/quick-start-guide/) of the documentation.
+
+## Contributing and Development
+
+To contribute or develop with this library, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Documentation
 
@@ -58,8 +65,3 @@ read from source in the [docs](/docs) directory.
 
 Planet's APIs require an account for use. To get started you need to
 [Get a Planet Account](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/get-started/get-your-planet-account/).
-
-## Development
-
-To contribute or develop with this library, see
-[CONTRIBUTING.md](CONTRIBUTING.md).

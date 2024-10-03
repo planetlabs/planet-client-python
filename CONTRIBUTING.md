@@ -9,13 +9,7 @@ document explains how to contribute successfully.
 
 #### Development Branch
 
-Implementation of new features will be tracked in the `main` branch, while bug
-fixes and doc changes for the latest release will be tracked in the maintenance
-branch, called `maint-RELEASE_VERSION`. All work will be performed in a
-new development branch starting with the appropriate base branch and merged
-back into that branch.
-
-For new features:
+The default branch is always `main` and should be always considered in-development.  Feature enhancements, bug fixes, and other maintenance should be performed in a development branch, starting with the appropriate base branch and merged back into that branch:
 
 ```console
 git checkout main
@@ -23,21 +17,9 @@ git pull
 git checkout -b new-branch-name
 ```
 
-For example, for bug fixes and doc changes to release version 2.0:
-
-```console
-git checkout maint-2.0
-git pull
-git checkout -b new-branch-name
-```
-
 #### Branch Naming
 
-Please use the following naming convention for development branches:
-
-`{up to 3-word summary of topic, separated by a dash)-{ticket number}`
-
-For example: `release-contributing-691` for [ticket 691](https://github.com/planetlabs/planet-client-python/issues/691).
+Branch names should describe the work performed within the branch, and include a ticket number if applicable.  For example, a branch that corrects typos in documentation and is not ticketed could be named `fix-documentation-typos`, and a branch that adds a new feature and is ticketed could be named `new-feature-123` (where 'new-feature' is the name of the feature and '-123' is the ticket number).
 
 ### Pull Requests
 
