@@ -171,8 +171,7 @@ You can also filter by status:
 planet subscriptions results SUBSCRIPTION_ID --status processing
 ```
 
-The available statuses are `created`, `queued`, `processing`, `failed`, and `success`. Note it’s quite useful
-to use `jq` to help filter out results as well.
+See the Subscriptions API documentation for the [official list of available statuses](https://developers.planet.com/docs/subscriptions/#subscription-status).
 
 #### Results as comma-separated values (CSV)
 
