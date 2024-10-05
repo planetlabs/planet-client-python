@@ -43,7 +43,8 @@ doc_requires = [
     'mkdocs==1.3',
     'mkdocs-click==0.7.0',
     'mkdocs-material==8.2.11',
-    'mkdocstrings==0.18.1'
+    'mkdocstrings==0.18.1',
+    'mkdocs_autorefs==1.0.1',
 ]
 
 dev_requires = [
