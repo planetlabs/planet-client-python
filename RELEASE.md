@@ -16,10 +16,16 @@ The SDK follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and t
    * Update `CHANGES.txt`, adhering to [keep a changelog](https://keepachangelog.com/)
 2. Create a PR for the release branch and merge into `main`
 3. Create a new GitHub release:
-   * Set tag to release version
-   * Set target to `main`
-   * Set title to tag release version
-   * Copy description from the new entry in the changelog
+   * From the GitHub UI:
+     * Navigate to the releases UI
+     * Set tag to release version
+     * Set target to `main`
+     * Set title to tag release version
+     * Copy description from the new entry in the changelog
+   * Alternatively, create a release from the GitHub CLI:
+     * Make sure the pre-requisite [gh](https://cli.github.com/manual/gh) CLI is installed, and optionally review the docs for CLI command [gh release create](https://cli.github.com/manual/gh_release_create)
+     * By default, `gh release create` will automatically tag releases from the latest state of the default branch
+     * Run CLI command `gh release create {VERSION} --notes "{RELEASE NOTES}"` where `VERSION` is the release version and `RELEASE NOTES` is the description copied from the new entry in the changelog
 4. Verify the successful run of the Github Action `Autopublish to TestPyPI` and validate the test release on [test.pypi.org](https://test.pypi.org/project/planet/)
 5. Run the Github Action `Publish on PyPI`
 6. Verify the successful run of the Github Action `Publish on PyPI` and validate the release on [pypi.org](https://pypi.org/project/planet/)
