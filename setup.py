@@ -28,9 +28,11 @@ install_requires = [
     'geojson',
     'httpx>=0.23.0',
     'jsonschema',
-    'pyjwt>=2.1',
     'tqdm>=4.56',
     'typing-extensions',
+    'planet-auth>=2.0.0',
+    'planet-auth-utils>=2.0.0',
+    'planet-auth-config>=2.0.0',  # FIXME - This currently has staging endpoints, too.
 ]
 
 test_requires = ['pytest', 'anyio', 'pytest-cov', 'respx>=0.20']
@@ -43,6 +45,10 @@ doc_requires = [
     'mkdocs-material==8.2.11',
     'mkdocstrings==0.18.1',
     'mkdocs_autorefs==1.0.1',
+]
+
+dev_requires = [
+    'nox'
 ]
 
 setup(
@@ -81,7 +87,7 @@ setup(
         'test': test_requires,
         'lint': lint_requires,
         'docs': doc_requires,
-        'dev': test_requires + lint_requires + doc_requires
+        'dev': test_requires + lint_requires + doc_requires + dev_requires
     },
     entry_points={
         'console_scripts': [
