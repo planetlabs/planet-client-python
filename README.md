@@ -21,16 +21,11 @@ remaining Planet APIs: [basemaps](https://developers.planet.com/docs/basemaps/),
 
 ## Versions and Stability
 
-The default branch (main) of this repo is for the [Planet SDK for
-Python](https://github.com/planetlabs/planet-client-python/projects/2),
-a complete rewrite and upgrade from the original [Planet Python
-Client](https://developers.planet.com/docs/pythonclient/). If you
-are looking for the source code to that library see the
-[v1](https://github.com/planetlabs/planet-client-python/tree/v1) branch.
+The SDK follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and therefore only major releases should break compatibility. Minor versions may include new functionality and patch versions address bugs or trivial changes (like documentation).
 
-The Planet SDK for Python is in 'pre-release' stages, working towards a solid
-beta release in December. Upcoming milestones are tracked in the [Planet SDK
-for Python Milestones](https://github.com/planetlabs/planet-client-python/milestones).
+If depending upon official packages from PyPI, a developer should feel comfortable specifying `planet == 2.*` unless depending on a specific feature introduced at a minor version, in which case `planet == 2.x.*` (where x is the minor version of the new feature) should suffice.
+
+The default branch is always `main` and should be considered in-development but with tests and other build steps succeeding.
 
 ## Installation and Quick Start
 
