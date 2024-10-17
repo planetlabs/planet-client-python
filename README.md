@@ -16,7 +16,7 @@ Version 2.0 includes support for the core workflows of the following APIs:
 
 After the initial 2.0 release there will be additional work to support the
 remaining Planet APIs: [basemaps](https://developers.planet.com/docs/basemaps/),
-[tasking](https://developers.planet.com/docs/tasking/)) and
+[tasking](https://developers.planet.com/docs/tasking/) and
 [analytics](https://developers.planet.com/docs/analytics/).
 
 ## Versions and Stability
@@ -29,23 +29,25 @@ The default branch is always `main` and should be considered in-development but 
 
 ## Installation and Quick Start
 
-The main installation path and first steps are found in the
-[Quick Start Guide](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/get-started/quick-start-guide/)
-of the documentation.
-
-### Installing from source
-
-This option enables you to get all the latest changes, but things might also be a bit less stable.
-To install you must [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
-the [planet-client-python](https://github.com/planetlabs/planet-client-python) repository
-to your local computer. After you have the repo local just navigate to the root
-directory, where this readme lives.
-
-Then you can install locally with pip:
+The Planet SDK for Python is [hosted on PyPI](https://pypi.org/project/planet/) and can simply be installed via:
 
 ```console
-$ pip install .
+pip install planet
 ```
+
+To install from source, first clone this repository, then navigate to the root directory (where `setup.py` lives) and run:
+
+```console
+pip install .
+```
+
+Note that the above commands will install the Planet SDK into the global system Python unless a virtual environment is enabled.  For more information on configuring a virtual environment from system Python, see the official Python [venv](https://docs.python.org/3/library/venv.html) documentation.  For users who are running multiple versions of Python via [pyenv](https://github.com/pyenv/pyenv), see the [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv) extension documentation.
+
+Detailed installation instructions for the Planet SDK can be found in the [Quick Start Guide](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/get-started/quick-start-guide/) of the documentation.
+
+## Contributing and Development
+
+To contribute or develop with this library, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Documentation
 
@@ -58,8 +60,3 @@ read from source in the [docs](/docs) directory.
 
 Planet's APIs require an account for use. To get started you need to
 [Get a Planet Account](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/get-started/get-your-planet-account/).
-
-## Development
-
-To contribute or develop with this library, see
-[CONTRIBUTING.md](CONTRIBUTING.md).

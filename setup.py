@@ -63,9 +63,9 @@ setup(
         'Topic :: Utilities'
     ],
     keywords='planet api sdk client',
-    author='Jennifer Reiber Kyle',
-    maintainer='Planet Dev Rel Team',
-    maintainer_email='developers@planet.com',
+    author='Planet',
+    maintainer='Planet',
+    maintainer_email='python-sdk-contributors@planet.com',
     url='https://github.com/planetlabs/planet-client-python',
     license='Apache 2.0',
     packages=find_packages(exclude=['examples', 'tests']),
