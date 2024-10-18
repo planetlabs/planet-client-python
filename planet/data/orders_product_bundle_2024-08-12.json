@@ -64,6 +64,20 @@
         ]
       }
     },
+    "radiance_hdf5": {
+      "name": "Analytic Radiance (TOAR)",
+      "description": "Calibrated to top of atmosphere radiance.",
+      "bands": "all",
+      "rectification": "orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "HDF5",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "TanagerScene": [
+          "ortho_radiance_hdf5"
+        ]
+      }
+    },
     "analytic_udm2": {
       "name": "Analytic Radiance (TOAR)",
       "description": "Calibrated to top of atmosphere radiance",
@@ -92,6 +106,10 @@
         "SkySatCollect": [
           "ortho_analytic",
           "ortho_analytic_udm",
+          "ortho_analytic_udm2"
+        ],
+        "PelicanScene": [
+          "ortho_analytic",
           "ortho_analytic_udm2"
         ]
       }
@@ -191,6 +209,12 @@
         ],
         "SkySatScene": [
           "ortho_visual"
+        ],
+        "TanagerScene": [
+          "ortho_visual"
+        ],
+        "PelicanScene": [
+          "ortho_visual"
         ]
       }
     },
@@ -273,6 +297,20 @@
         ]
       }
     },
+    "basic_radiance_hdf5": {
+      "name": "Basic Analytic Radiance (TOAR)",
+      "description": "Calibrated to top of atmosphere radiance. Includes geolocation array.",
+      "bands": "all",
+      "rectification": "non-orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "HDF5",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "TanagerScene": [
+          "basic_radiance_hdf5"
+        ]
+      }
+    },
     "basic_analytic_udm2": {
       "name": "Basic Analytic Radiance (TOAR)",
       "description": "Calibrated to top of atmosphere radiance - includes RPC text file for georeferencing",
@@ -292,6 +330,11 @@
           "basic_analytic",
           "basic_analytic_rpc",
           "basic_analytic_udm",
+          "basic_analytic_udm2"
+        ],
+        "PelicanScene": [
+          "basic_analytic",
+          "basic_analytic_rpc",
           "basic_analytic_udm2"
         ]
       }
@@ -443,6 +486,20 @@
         ]
       }
     },
+    "sr_hdf5": {
+      "name": "Surface Reflectance",
+      "description": "Corrected for surface reflectance.",
+      "bands": "all",
+      "rectification": "orthorectified",
+      "radiometry": "surface reflectance",
+      "fileType": "HDF5",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "TanagerScene": [
+          "ortho_sr_hdf5"
+        ]
+      }
+    },
     "analytic_sr_udm2": {
       "name": "Surface Reflectance 4b",
       "description": "Corrected for surface reflectance – recommended for most analytic applications, 4 band",
@@ -471,6 +528,10 @@
         "SkySatScene": [
           "ortho_analytic_sr",
           "ortho_analytic_udm",
+          "ortho_analytic_udm2"
+        ],
+        "PelicanScene": [
+          "ortho_analytic_sr",
           "ortho_analytic_udm2"
         ]
       }
@@ -514,6 +575,20 @@
         ]
       }
     },
+    "basic_sr_hdf5": {
+      "name": "Surface Reflectance",
+      "description": "Corrected for surface reflectance – recommended for most analytic applications. Includes geolocation array.",
+      "bands": "all",
+      "rectification": "non-orthorectified",
+      "radiometry": "surface reflectance",
+      "fileType": "HDF5",
+      "auxiliaryFiles": "udm",
+      "assets": {
+        "TanagerScene": [
+          "basic_sr_hdf5"
+        ]
+      }
+    },
     "basic_panchromatic": {
       "name": "Basic Panchromatic",
       "description": "Unrectified panchromatic band - includes RPC text file for georeferencing",
@@ -523,6 +598,11 @@
       "fileType": "GeoTIFF",
       "assets": {
         "SkySatScene": [
+          "basic_panchromatic",
+          "basic_panchromatic_rpc",
+          "basic_panchromatic_udm2"
+        ],
+         "PelicanScene": [
           "basic_panchromatic",
           "basic_panchromatic_rpc",
           "basic_panchromatic_udm2"
@@ -560,6 +640,29 @@
         "SkySatScene": [
           "ortho_panchromatic",
           "ortho_panchromatic_udm"
+        ]
+      }
+    },
+    "panchromatic_udm2": {
+      "name": "Panchromatic",
+      "description": "Panchromatic band, calibrated to top of atmosphere radiance",
+      "bands": "panchromatic",
+      "rectification": "orthorectified",
+      "radiometry": "at-sensor",
+      "fileType": "GeoTIFF",
+      "auxiliaryFiles": "udm2",
+      "assets": {
+        "SkySatCollect": [
+          "ortho_panchromatic",
+          "ortho_panchromatic_udm2"
+        ],
+        "SkySatScene": [
+          "ortho_panchromatic",
+          "ortho_panchromatic_udm2"
+        ],
+        "PelicanScene": [
+          "ortho_panchromatic",
+          "ortho_pansharpened_udm2"
         ]
       }
     },
@@ -642,6 +745,10 @@
           "ortho_pansharpened",
           "ortho_pansharpened_udm",
           "ortho_pansharpened_udm2"
+        ],
+        "PelicanScene": [
+          "ortho_pansharpened",
+          "ortho_pansharpened_udm2"
         ]
       }
     },
@@ -659,9 +766,77 @@
         ],
         "SkySatCollect": [
           "basic_l1a_all_frames"
+        ],
+        "PelicanScene": [
+          "basic_l1a_panchromatic",
+          "basic_l1a_panchromatic_rpc"
         ]
       }
+    },
+    "methane_quicklook": {
+      "name": "Methane QuickLook",
+      "description": "Methane QuickLook will have all plumes in kg/hr within an image that can be identified by a human operator.",
+      "bands": "N/A",
+      "rectification": "orthorectified",
+      "radiometry": "N/A",
+      "fileType": "TIFF and JSON",
+      "assets": {
+        "TanagerMethane": [
+          "ortho_ql_ch4",
+          "ortho_visual",
+          "ortho_beta_udm",
+          "recent_monthly_basemap",
+          "ql_ch4_json"
+        ]
+      }
+    },
+    "quality_controlled_methane": {
+      "name": "Quality Controlled Methane",
+      "description": "Quality Controlled Methane product where all plumes in kg/hr have had additional reviews to wind speed, background and additional environmental contexts.",
+      "bands": "N/A",
+      "rectification": "orthorectified",
+      "radiometry": "N/A",
+      "fileType": "TIFF and JSON",
+      "assets": {
+        "TanagerMethane": [
+          "ortho_qc_ch4",
+          "qc_ch4_json"
+        ]
+      }
+    },
+  "methane": {
+    "name": "Methane",
+    "description": "Methane bundle includes both the Methane QuickLook and Quality Controlled products.",
+    "bands": "N/A",
+    "rectification": "orthorectified",
+    "radiometry": "N/A",
+    "fileType": "TIFF and JSON",
+    "assets": {
+      "TanagerMethane": [
+        "ortho_ql_ch4",
+        "ortho_visual",
+        "ortho_beta_udm",
+        "recent_monthly_basemap",
+        "ql_ch4_json",
+        "ortho_qc_ch4",
+        "qc_ch4_json"
+      ]
     }
   },
-  "version": "2023-02-24"
+  "integrated_methane_enhancement": {
+    "name": "Integrated Methane Enhancement",
+    "description": "Integrated Methane Enhancement (IME) in kg where all plumes have additional reviews to wind speed, background and additional environmental contexts.",
+    "bands": "N/A",
+    "rectification": "orthorectified",
+    "radiometry": "N/A",
+    "fileType": "TIFF and JSON",
+    "assets": {
+      "TanagerMethane": [
+        "ortho_ql_ime_ch4",
+        "ql_ime_ch4_json"
+      ]
+    }
+  }
+},
+  "version": "2024-08-12"
 }
