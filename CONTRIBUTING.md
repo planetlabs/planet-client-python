@@ -174,10 +174,10 @@ run the tests on a certain file, use:
 By default, Nox runs tests on all supported Python versions along with other
 CI checks. However, Nox can run a test on a single Python version.
 
-To run tests on python 3.7:
+To run tests on python 3.13:
 
 ```console
-    $ nox -s test-3.7
+    $ nox -s test-3.13
 ```
 
 Configuration can be passed onto pytest through Nox.
@@ -185,13 +185,13 @@ Configuration can be passed onto pytest through Nox.
 To only run tests in a specific file:
 
 ```console
-    $ nox -s test3.7 -- tests/unit/test_http.py
+    $ nox -s test3.13 -- tests/unit/test_http.py
 ```
 
 Or to only run tests filtered by keyword:
 
 ```console
-   $ nox -s test3.7 -- -k test__Limiter
+   $ nox -s test3.13 -- -k test__Limiter
 ```
 
 ## Code coverage
