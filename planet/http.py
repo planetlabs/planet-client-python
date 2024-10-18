@@ -396,8 +396,11 @@ class Session(BaseSession):
 
     @asynccontextmanager
     async def stream(
-            self, method: str,
-            url: str) -> AsyncGenerator[models.StreamingResponse, None]:
+        self,
+        method: str,
+        url: str,
+        params: Optional[dict] = None
+    ) -> AsyncGenerator[models.StreamingResponse, None]:
         """Submit a request and get the response as a stream context manager.
 
         Parameters:
@@ -407,7 +410,9 @@ class Session(BaseSession):
         Returns:
             Context manager providing the streaming response.
         """
-        request = self._client.build_request(method=method, url=url)
+        request = self._client.build_request(method=method,
+                                             url=url,
+                                             params=params)
         http_response = await self._retry(self._send, request, stream=True)
         response = models.StreamingResponse(http_response)
         try:
