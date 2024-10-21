@@ -19,6 +19,8 @@ from .auth import Auth
 from .clients import DataClient, OrdersClient, SubscriptionsClient  # NOQA
 from .io import collect
 
+from .client import Planet
+
 __all__ = [
     'Auth',
     'collect',
@@ -27,6 +29,7 @@ __all__ = [
     'OrdersClient',
     'order_request',
     'reporting',
+    'Planet',
     'Session',
     'SubscriptionsClient',
     'subscription_request'
