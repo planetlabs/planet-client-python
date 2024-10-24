@@ -216,7 +216,8 @@ async def get_subscription_cmd(ctx, subscription_id, pretty):
               'csv_flag',
               is_flag=True,
               default=False,
-              help="Get subscription results as comma-separated fields.")
+              help="Get subscription results as comma-separated fields. When "
+              "this flag is included, --limit is ignored")
 @limit
 # TODO: the following 3 options.
 # –created: timestamp instant or range.
@@ -254,8 +255,7 @@ async def list_subscription_results_cmd(ctx,
     async with subscriptions_client(ctx) as client:
         if csv_flag:
             async for result in client.get_results_csv(subscription_id,
-                                                       status=status,
-                                                       limit=limit):
+                                                       status=status):
                 click.echo(result)
         else:
             async for result in client.get_results(subscription_id,

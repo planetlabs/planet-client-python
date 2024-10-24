@@ -74,7 +74,7 @@ class SubscriptionsClient:
                 set, filter out subscriptions with status not in this
                 set.
             limit (int): limit the number of subscriptions in the
-                results.
+                results. When set to 0, no maximum is applied.
             TODO: user_id
 
         Yields:
@@ -270,7 +270,7 @@ class SubscriptionsClient:
             status (Set[str]): pass result with status in this set,
                 filter out results with status not in this set.
             limit (int): limit the number of subscriptions in the
-                results.
+                results. When set to 0, no maximum is applied.
             TODO: created, updated, completed, user_id
 
         Yields:
@@ -310,8 +310,7 @@ class SubscriptionsClient:
                                           "queued",
                                           "processing",
                                           "failed",
-                                          "success"]]] = None,
-        limit: int = 100,
+                                          "success"]]] = None
     ) -> AsyncIterator[str]:
         """Iterate over rows of results CSV for a Subscription.
 
