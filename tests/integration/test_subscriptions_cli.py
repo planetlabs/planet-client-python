@@ -53,6 +53,8 @@ def invoke():
 
 @pytest.mark.parametrize('options,expected_count',
                          [(['--status=running'], 100), ([], 100),
+                          (['--source-type=catalog'], 100),
+                          (['--source-type=soil_water_content'], 0),
                           (['--limit=1', '--status=running'], 1),
                           (['--limit=2', '--pretty', '--status=running'], 2),
                           (['--limit=1', '--status=preparing'], 0)])

@@ -66,7 +66,20 @@ api_mock.route(M(url=TEST_URL),
                M(params__contains={'status': 'preparing'})).mock(
                    side_effect=[Response(200, json={'subscriptions': []})])
 
-# 4. No status requested. Response is the same as for 1.
+# 4. source_type: catalog requested. Response is the same as for 1.
+api_mock.route(
+    M(url=TEST_URL),
+    M(params__contains={'source_type': 'catalog'})).mock(side_effect=[
+        Response(200, json=page)
+        for page in result_pages(status={'running'}, size=40)
+    ])
+
+# 5. source_type: soil_water_content requested. Response has a single empty page.
+api_mock.route(M(url=TEST_URL),
+               M(params__contains={'source_type': 'soil_water_content'})).mock(
+                   side_effect=[Response(200, json={'subscriptions': []})])
+
+# 6. No status or source_type requested. Response is the same as for 1.
 api_mock.route(M(url=TEST_URL)).mock(
     side_effect=[Response(200, json=page) for page in result_pages(size=40)])
 
@@ -179,6 +192,24 @@ async def test_list_subscriptions_success(
         client = SubscriptionsClient(session, base_url=TEST_URL)
         assert len([
             sub async for sub in client.list_subscriptions(status=status)
+        ]) == count
+
+
+@pytest.mark.parametrize("source_type, count",
+                         [("catalog", 100), ("soil_water_content", 0),
+                          (None, 100)])
+@pytest.mark.anyio
+@api_mock
+async def test_list_subscriptions_source_type_success(
+    source_type,
+    count,
+):
+    """Account subscriptions iterator yields expected descriptions."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        assert len([
+            sub
+            async for sub in client.list_subscriptions(source_type=source_type)
         ]) == count
 
 
