@@ -1,7 +1,7 @@
 """Planet Subscriptions API Python client."""
 
 import logging
-from typing import AsyncIterator, Optional, Sequence
+from typing import AsyncIterator, Optional, Sequence, Dict, Union
 
 from typing_extensions import Literal
 
@@ -61,6 +61,7 @@ class SubscriptionsClient:
 
     async def list_subscriptions(self,
                                  status: Optional[Sequence[str]] = None,
+                                 source_type: Optional[str] = None,
                                  limit: int = 100) -> AsyncIterator[dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
@@ -73,6 +74,7 @@ class SubscriptionsClient:
             status (Set[str]): pass subscriptions with status in this
                 set, filter out subscriptions with status not in this
                 set.
+            source_type (str): Product source type filter, to return only subscriptions with the matching source type
             limit (int): limit the number of subscriptions in the
                 results. When set to 0, no maximum is applied.
             TODO: user_id
@@ -89,7 +91,11 @@ class SubscriptionsClient:
             """Navigates pages of messages about subscriptions."""
             ITEMS_KEY = 'subscriptions'
 
-        params = {'status': [val for val in status or {}]}
+        params: Dict[str, Union[str, Sequence[str]]] = {
+            'status': [val for val in status or {}]
+        }
+        if source_type is not None:
+            params['source_type'] = source_type  # type: ignore
 
         try:
             response = await self._session.request(method='GET',

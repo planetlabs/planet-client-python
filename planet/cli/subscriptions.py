@@ -78,14 +78,21 @@ def subscriptions(ctx, base_url):
     multiple=True,
     default=None,
     help="Select subscriptions in one or more states. Default is all.")
+@click.option(
+    '--source-type',
+    default=None,
+    help="Filter subscriptions by source type. See documentation for all "
+    "available types. Default is all.")
 @limit
 @click.pass_context
 @translate_exceptions
 @coro
-async def list_subscriptions_cmd(ctx, status, limit, pretty):
+async def list_subscriptions_cmd(ctx, status, source_type, limit, pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
     async with subscriptions_client(ctx) as client:
-        async for sub in client.list_subscriptions(status=status, limit=limit):
+        async for sub in client.list_subscriptions(status=status,
+                                                   source_type=source_type,
+                                                   limit=limit):
             echo_json(sub, pretty)
 
 
