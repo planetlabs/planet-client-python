@@ -689,8 +689,8 @@ class DataAPI:
         Example:
 
         ```python
-        client = Planet()
-        for item in client.search(['PSScene'], limit=5):
+        pl = Planet()
+        for item in pl.data.search(['PSScene'], limit=5):
             print(item)
         ```
 
