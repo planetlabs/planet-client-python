@@ -60,7 +60,7 @@ The Planet client has members `data`, `orders`, and `subscriptions`, which allow
 
 ### Search
 
-To search for items in the Planet catalog, use the `search` method on the `Planet` client. The return value is an iterator that yields search
+To search for items in the Planet catalog, use the `data.search()` method on the `Planet` client. The return value is an iterator that yields search
 results:
 
 ```python
