@@ -4,6 +4,9 @@
 
 Releasing is a two-step process: (1) releasing on GitHub and test.pypi and (2) releasing to PyPI. Releasing on GitHub will automatically trigger a release on test.pypi via a GitHub Action. Following manual confirmation of a successful and satisfactory release on test.pypi, release on PyPI is triggered manually with the Github Action `Autopublish to TestPyPI`. There is also an option to publish to test.pypi and PyPI from your local machine.
 
+NOTE: the version is detected from git using the tag name. There is no need to modify a version file.
+
+If the repository is not on tag, the version will be computed using the default versioning scheme of [setuptools_scm](https://setuptools-scm.readthedocs.io/en/latest/usage/#default-versioning-scheme).
 
 ## Versions and Stability
 
@@ -12,7 +15,6 @@ The SDK follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and t
 ## Release Workflow
 
 1. Create a release branch off of `main` that bumps the SDK version number and updates the changelog:
-   * Bump SDK version number in `planet/__version__.py`
    * Update `CHANGES.txt`, adhering to [keep a changelog](https://keepachangelog.com/)
 2. Create a PR for the release branch and merge into `main`
 3. Create a new GitHub release:
