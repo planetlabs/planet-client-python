@@ -161,7 +161,7 @@ and asset types.
 
 Use the `order_request` module to build an order request, and then use the `orders.create_order()` method to place the order.
 
-Orders take time to process. You can use the `orders.wait()` method to wait for the order to be ready, and then use the `orders.download()` method to download the assets.
+Orders take time to process. You can use the `orders.wait()` method to wait for the order to be ready, and then use the `orders.download_order()` method to download the assets.
 
 Warning: running the following code will result in quota usage based on your plan.
 
@@ -187,7 +187,7 @@ def main():
     # note: this may take several minutes.
     pl.orders.wait(order['id'])
 
-    pl.orders.download(order['id'], overwrite=True)
+    pl.orders.download_order(order['id'], overwrite=True)
 ```
 
 ### Creating a subscription
