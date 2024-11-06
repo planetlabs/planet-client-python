@@ -479,7 +479,7 @@ def test_get_results_csv_sync():
     """Subscription CSV fetched, has the expected items."""
     pl = Planet()
     pl.subscriptions._client._base_url = TEST_URL
-    results = list(pl.subscriptions.get_results("42", format="csv"))
+    results = list(pl.subscriptions.get_results_csv("42"))
     rows = list(csv.reader(results))
     assert rows == [['id', 'status'], ['1234-abcd', 'SUCCESS']]
 

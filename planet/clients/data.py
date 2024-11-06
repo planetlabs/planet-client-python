@@ -1026,7 +1026,8 @@ class DataAPI:
                                         overwrite,
                                         progress_bar))
 
-    def validate_checksum(self, asset: Dict[str, Any], filename: Path):
+    @staticmethod
+    def validate_checksum(asset: Dict[str, Any], filename: Path):
         """Validate checksum of downloaded file
 
         Compares checksum calculated from the file against the value provided
@@ -1042,4 +1043,4 @@ class DataAPI:
             planet.exceptions.ClientError: If the file does not exist or if
                 checksums do not match.
         """
-        return self._client.validate_checksum(asset, filename)
+        return DataClient.validate_checksum(asset, filename)
