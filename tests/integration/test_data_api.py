@@ -24,10 +24,11 @@ import httpx
 import pytest
 import respx
 
-from planet import exceptions, DataClient, data_filter, Planet
+from planet import exceptions, DataClient, data_filter
 from planet.clients.data import (LIST_SORT_DEFAULT,
                                  LIST_SEARCH_TYPE_DEFAULT,
-                                 SEARCH_SORT_DEFAULT)
+                                 SEARCH_SORT_DEFAULT, DataAPI)
+from planet.http import Session
 
 TEST_URL = 'http://www.mocknotrealurl.com/api/path'
 TEST_SEARCHES_URL = f'{TEST_URL}/searches'
@@ -70,6 +71,11 @@ def search_response(item_descriptions):
     return response
 
 
+@pytest.fixture(scope="module")
+def data_api():
+    return DataAPI(Session(), TEST_URL)
+
+
 @respx.mock
 @pytest.mark.anyio
 async def test_search_basic(item_descriptions, search_response, session):
@@ -105,7 +111,7 @@ async def test_search_basic(item_descriptions, search_response, session):
 
 
 @respx.mock
-def test_search_basic_sync(item_descriptions, search_response, session):
+def test_search_basic_sync(item_descriptions, search_response, data_api):
 
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
@@ -123,10 +129,7 @@ def test_search_basic_sync(item_descriptions, search_response, session):
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
-    cl = Planet(session)
-    cl.data._client._base_url = TEST_URL
-
-    items_list = list(cl.data.search(['PSScene']))
+    items_list = list(data_api.search(['PSScene']))
 
     # check that request is correct
     expected_request = {
@@ -226,7 +229,7 @@ async def test_search_geometry(geom_fixture,
                                           ('geom_reference')])
 def test_search_geometry_sync(geom_fixture,
                               item_descriptions,
-                              session,
+                              data_api,
                               request):
 
     quick_search_url = f'{TEST_URL}/quick-search'
@@ -245,12 +248,9 @@ def test_search_geometry_sync(geom_fixture,
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
-    pl = Planet(session)
-    pl.data._client._base_url = TEST_URL
-
     geom = request.getfixturevalue(geom_fixture)
     items_list = list(
-        pl.data.search(['PSScene'], name='quick_search', geometry=geom))
+        data_api.search(['PSScene'], name='quick_search', geometry=geom))
     # check that request is correct
     expected_request = {
         "item_types": ["PSScene"],
@@ -424,7 +424,7 @@ async def test_create_search_basic(search_filter, session):
 
 
 @respx.mock
-def test_create_search_basic_sync(search_filter, session):
+def test_create_search_basic_sync(search_filter, data_api):
 
     page_response = {
         "__daily_email_enabled": False,
@@ -441,9 +441,7 @@ def test_create_search_basic_sync(search_filter, session):
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
-    pl = Planet(session)
-    pl.data._client._base_url = TEST_URL
-    search = pl.data.create_search(item_types=['PSScene'],
+    search = data_api.create_search(item_types=['PSScene'],
                                    search_filter=search_filter,
                                    name='test')
 
@@ -549,13 +547,11 @@ async def test_get_search_success(search_id, search_result, session):
 
 
 @respx.mock
-def test_get_search_success_sync(search_id, search_result, session):
+def test_get_search_success_sync(search_id, search_result, data_api):
     get_url = f'{TEST_SEARCHES_URL}/{search_id}'
     mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
     respx.get(get_url).return_value = mock_resp
-    pl = Planet(session)
-    pl.data._client._base_url = TEST_URL
-    search = pl.data.get_search(search_id)
+    search = data_api.get_search(search_id)
     assert search_result == search
 
 
@@ -617,7 +613,7 @@ async def test_update_search_basic(search_filter, session):
 
 
 @respx.mock
-def test_update_search_basic_sync(search_filter, session):
+def test_update_search_basic_sync(search_filter, data_api):
 
     page_response = {
         "__daily_email_enabled": False,
@@ -635,10 +631,7 @@ def test_update_search_basic_sync(search_filter, session):
     respx.put(
         f'{TEST_SEARCHES_URL}/{VALID_SEARCH_ID}').return_value = mock_resp
 
-    pl = Planet(session)
-    pl.data._client._base_url = TEST_URL
-
-    search = pl.data.update_search(VALID_SEARCH_ID,
+    search = data_api.update_search(VALID_SEARCH_ID,
                                    item_types=['PSScene'],
                                    search_filter=search_filter,
                                    name='test')
@@ -721,16 +714,13 @@ async def test_list_searches_success(limit,
 def test_list_searches_success_sync(limit,
                                     expected_list_length,
                                     search_result,
-                                    session):
+                                    data_api):
     page1_response = {"_links": {}, "searches": [search_result] * 4}
     route = respx.get(TEST_SEARCHES_URL)
     route.return_value = httpx.Response(200, json=page1_response)
 
-    pl = Planet(session)
-    pl.data._client._base_url = TEST_URL
-
     assert len(list(
-        pl.data.list_searches(limit=limit))) == expected_list_length
+        data_api.list_searches(limit=limit))) == expected_list_length
 
     assert route.called
 
@@ -812,15 +802,13 @@ async def test_delete_search(retcode, expectation, session):
 @pytest.mark.parametrize("retcode, expectation",
                          [(204, does_not_raise()),
                           (404, pytest.raises(exceptions.APIError))])
-def test_delete_search_sync(retcode, expectation, session):
+def test_delete_search_sync(retcode, expectation, data_api):
     mock_resp = httpx.Response(retcode)
     route = respx.delete(f'{TEST_SEARCHES_URL}/{VALID_SEARCH_ID}')
     route.return_value = mock_resp
-    pl = Planet(session)
-    pl.data._client._base_url = TEST_URL
 
     with expectation:
-        pl.data.delete_search(VALID_SEARCH_ID)
+        data_api.delete_search(VALID_SEARCH_ID)
 
     assert route.called
 
@@ -871,7 +859,7 @@ async def test_run_search_basic(item_descriptions,
                                               ('invalid', False)])
 @pytest.mark.parametrize("limit, expected_count", [(None, 3), (2, 2)])
 def test_run_search_basic_sync(item_descriptions,
-                               session,
+                               data_api,
                                search_id,
                                valid,
                                limit,
@@ -892,11 +880,8 @@ def test_run_search_basic_sync(item_descriptions,
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
-    pl = Planet(session)
-    pl.data._client._base_url = TEST_URL
-
     if valid:
-        items_list = list(pl.data.run_search(search_id, limit=limit))
+        items_list = list(data_api.run_search(search_id, limit=limit))
 
         assert route.called
 
@@ -904,7 +889,7 @@ def test_run_search_basic_sync(item_descriptions,
         assert items_list == item_descriptions[:expected_count]
     else:
         with pytest.raises(exceptions.ClientError):
-            list(pl.data.run_search(search_id))
+            list(data_api.run_search(search_id))
 
 
 @respx.mock
@@ -992,7 +977,7 @@ async def test_get_stats_success(search_filter, session):
 
 
 @respx.mock
-def test_get_stats_success_sync(search_filter, session):
+def test_get_stats_success_sync(search_filter, data_api):
 
     page_response = {
         "buckets": [
@@ -1010,9 +995,7 @@ def test_get_stats_success_sync(search_filter, session):
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.post(TEST_STATS_URL).return_value = mock_resp
 
-    pl = Planet(session)
-    pl.data._client._base_url = TEST_URL
-    stats = pl.data.get_stats(['PSScene'], search_filter, 'day')
+    stats = data_api.get_stats(['PSScene'], search_filter, 'day')
 
     # check that request is correct
     expected_request = {
@@ -1079,7 +1062,7 @@ async def test_list_item_assets_success(session):
 
 
 @respx.mock
-def test_list_item_assets_success_sync(session):
+def test_list_item_assets_success_sync(data_api):
     item_type_id = 'PSScene'
     item_id = '20221003_002705_38_2461'
     assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
@@ -1114,9 +1097,7 @@ def test_list_item_assets_success_sync(session):
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.get(assets_url).return_value = mock_resp
 
-    pl = Planet(session)
-    pl.data._client._base_url = TEST_URL
-    assets = pl.data.list_item_assets(item_type_id, item_id)
+    assets = data_api.list_item_assets(item_type_id, item_id)
 
     # check the response is returned unaltered
     assert assets == page_response
@@ -1192,7 +1173,7 @@ async def test_get_asset(asset_type_id, expectation, session):
 @pytest.mark.parametrize("asset_type_id, expectation",
                          [('basic_udm2', does_not_raise()),
                           ('invalid', pytest.raises(exceptions.ClientError))])
-def test_get_asset_sync(asset_type_id, expectation, session):
+def test_get_asset_sync(asset_type_id, expectation, data_api):
     item_type_id = 'PSScene'
     item_id = '20221003_002705_38_2461'
     assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
@@ -1230,11 +1211,8 @@ def test_get_asset_sync(asset_type_id, expectation, session):
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.get(assets_url).return_value = mock_resp
 
-    pl = Planet(session)
-    pl.data._client._base_url = TEST_URL
-
     with expectation:
-        asset = pl.data.get_asset(item_type_id, item_id, asset_type_id)
+        asset = data_api.get_asset(item_type_id, item_id, asset_type_id)
         assert asset == basic_udm2_asset
 
 
@@ -1270,7 +1248,7 @@ async def test_activate_asset_success(status, expectation, session):
 @respx.mock
 @pytest.mark.parametrize("status, expectation", [('inactive', True),
                                                  ('active', False)])
-def test_activate_asset_success_sync(status, expectation, session):
+def test_activate_asset_success_sync(status, expectation, data_api):
     activate_url = f'{TEST_URL}/activate'
 
     mock_resp = httpx.Response(HTTPStatus.OK)
@@ -1289,9 +1267,7 @@ def test_activate_asset_success_sync(status, expectation, session):
         "type": "basic_udm2"
     }
 
-    pl = Planet(session)
-    pl.data._client._base_url = TEST_URL
-    pl.data.activate_asset(basic_udm2_asset)
+    data_api.activate_asset(basic_udm2_asset)
 
     assert route.called == expectation
 
@@ -1339,7 +1315,7 @@ async def test_wait_asset_success(session):
 
 
 @respx.mock
-def test_wait_asset_success_sync(session):
+def test_wait_asset_success_sync(data_api):
     asset_url = f'{TEST_URL}/asset'
 
     basic_udm2_asset = {
@@ -1364,9 +1340,7 @@ def test_wait_asset_success_sync(session):
         httpx.Response(HTTPStatus.OK, json=basic_udm2_asset_active)
     ]
 
-    pl = Planet(session)
-    pl.data._client._base_url = TEST_URL
-    asset = pl.data.wait_asset(basic_udm2_asset, delay=0)
+    asset = data_api.wait_asset(basic_udm2_asset, delay=0)
 
     assert asset == basic_udm2_asset_active
 
@@ -1476,7 +1450,7 @@ async def test_download_asset_sync(exists,
                                    overwrite,
                                    tmpdir,
                                    open_test_img,
-                                   session):
+                                   data_api):
     # NOTE: this is a slightly edited version of test_download_asset_img from
     # tests/integration/test_orders_api
     dl_url = f'{TEST_URL}/1?token=IAmAToken'
@@ -1517,13 +1491,10 @@ async def test_download_asset_sync(exists,
         "type": "basic_udm2"
     }
 
-    pl = Planet(session)
-    pl.data._client._base_url = TEST_URL
-
     if exists:
         Path(tmpdir, 'img.tif').write_text('i exist')
 
-    path = pl.data.download_asset(basic_udm2_asset,
+    path = data_api.download_asset(basic_udm2_asset,
                                   directory=tmpdir,
                                   overwrite=overwrite)
     assert path.name == 'img.tif'
@@ -1598,7 +1569,5 @@ def test_validate_checksum_sync(hashes_match, md5_entry, expectation, tmpdir):
         asset_hash = hash_md5 if hashes_match else 'invalid'
         basic_udm2_asset["md5_digest"] = asset_hash
 
-    pl = Planet()
-
     with expectation:
-        pl.data.validate_checksum(basic_udm2_asset, testfile)
+        DataAPI.validate_checksum(basic_udm2_asset, testfile)

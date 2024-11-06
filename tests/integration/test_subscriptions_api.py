@@ -72,7 +72,7 @@ api_mock.route(
     M(url=TEST_URL),
     M(params__contains={'source_type': 'catalog'})).mock(side_effect=[
         Response(200, json=page)
-        for page in result_pages(status={'running'}, size=40)
+        for page in sub_pages(status={'running'}, size=40)
     ])
 
 # 5. source_type: soil_water_content requested. Response has a single empty page.
@@ -440,7 +440,7 @@ def test_get_results_csv_sync():
     """Subscription CSV fetched, has the expected items."""
     pl = Planet()
     pl.subscriptions._client._base_url = TEST_URL
-    results = list(pl.subscriptions.get_results("42", format="csv"))
+    results = list(pl.subscriptions.get_results_csv("42"))
     rows = list(csv.reader(results))
     assert rows == [['id', 'status'], ['1234-abcd', 'SUCCESS']]
 
