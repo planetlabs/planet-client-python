@@ -498,44 +498,6 @@ class SubscriptionsAPI:
         return self._client.call_sync(
             self._client.get_subscription(subscription_id))
 
-    @overload
-    def get_results(self,
-                    subscription_id: str,
-                    status: Optional[Sequence[Literal["created",
-                                                      "queued",
-                                                      "processing",
-                                                      "failed",
-                                                      "success"]]] = ...,
-                    limit: int = ...,
-                    *,
-                    format: Literal["csv"]) -> Iterator[str]:
-        ...
-
-    @overload
-    def get_results(self,
-                    subscription_id: str,
-                    status: Optional[Sequence[Literal["created",
-                                                      "queued",
-                                                      "processing",
-                                                      "failed",
-                                                      "success"]]],
-                    limit: int,
-                    format: Literal["csv"]) -> Iterator[str]:
-        ...
-
-    @overload
-    def get_results(
-            self,
-            subscription_id: str,
-            status: Optional[Sequence[Literal["created",
-                                              "queued",
-                                              "processing",
-                                              "failed",
-                                              "success"]]] = ...,
-            limit: int = ...,
-            format: Literal["json"] = "json") -> Iterator[Dict[str, Any]]:
-        ...
-
     def get_results(
         self,
         subscription_id: str,
@@ -545,7 +507,6 @@ class SubscriptionsAPI:
                                           "failed",
                                           "success"]]] = None,
         limit: int = 100,
-        format: Union[Literal["csv"], Literal["json"]] = "json"
     ) -> Iterator[Union[Dict[str, Any], str]]:
         """Iterate over results of a Subscription.
 
@@ -559,9 +520,7 @@ class SubscriptionsAPI:
             status (Set[str]): pass result with status in this set,
                 filter out results with status not in this set.
             limit (int): limit the number of subscriptions in the
-                results.
-            format: results in either json (results in an iterator of dicts) or
-                csv (results in an iterator of csv rows).
+                results. When set to 0, no maximum is applied.
             TODO: created, updated, completed, user_id
 
         Yields:
@@ -571,18 +530,44 @@ class SubscriptionsAPI:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        # choose underlying function based on format arg, defaulting to json/dict.
-        # declare type ahead of time to make it clear to mypy that the functions
-        # can return either dicts or strings.
-        fn: Callable[[str, Optional[Sequence[Any]], int],
-                     AsyncIterator[Union[str, Dict[str, Any]]]]
-        if format == "csv":
-            fn = self._client.get_results_csv
-        else:
-            fn = self._client.get_results
+        results = self._client.get_results(subscription_id, status, limit)
 
-        results = fn(subscription_id, status, limit)
+        try:
+            while True:
+                yield self._client.call_sync(results.__anext__())
+        except StopAsyncIteration:
+            pass
 
+    def get_results_csv(
+        self,
+        subscription_id: str,
+        status: Optional[Sequence[Literal["created",
+                                          "queued",
+                                          "processing",
+                                          "failed",
+                                          "success"]]] = None
+    ) -> AsyncIterator[str]:
+        """Iterate over rows of results CSV for a Subscription.
+
+        Parameters:
+            subscription_id (str): id of a subscription.
+            status (Set[str]): pass result with status in this set,
+                filter out results with status not in this set.
+            TODO: created, updated, completed, user_id
+
+        Yields:
+            str: a row from a CSV file.
+
+        Raises:
+            APIError: on an API server error.
+            ClientError: on a client error.
+        """
+        results = self._client.get_results_csv(subscription_id, status)
+        # Note: retries are not implemented yet. This project has
+        # retry logic for HTTP requests, but does not handle errors
+        # during streaming. We may want to consider a retry decorator
+        # for this entire method a la stamina:
+        # https://github.com/hynek/stamina.
         try:
             while True:
                 yield self._client.call_sync(results.__anext__())
