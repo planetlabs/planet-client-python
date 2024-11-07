@@ -27,7 +27,8 @@ import respx
 from planet import exceptions, DataClient, data_filter
 from planet.clients.data import (LIST_SORT_DEFAULT,
                                  LIST_SEARCH_TYPE_DEFAULT,
-                                 SEARCH_SORT_DEFAULT, DataAPI)
+                                 SEARCH_SORT_DEFAULT,
+                                 DataAPI)
 from planet.http import Session
 
 TEST_URL = 'http://www.mocknotrealurl.com/api/path'
@@ -442,8 +443,8 @@ def test_create_search_basic_sync(search_filter, data_api):
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
     search = data_api.create_search(item_types=['PSScene'],
-                                   search_filter=search_filter,
-                                   name='test')
+                                    search_filter=search_filter,
+                                    name='test')
 
     # check that request is correct
     expected_request = {
@@ -632,9 +633,9 @@ def test_update_search_basic_sync(search_filter, data_api):
         f'{TEST_SEARCHES_URL}/{VALID_SEARCH_ID}').return_value = mock_resp
 
     search = data_api.update_search(VALID_SEARCH_ID,
-                                   item_types=['PSScene'],
-                                   search_filter=search_filter,
-                                   name='test')
+                                    item_types=['PSScene'],
+                                    search_filter=search_filter,
+                                    name='test')
 
     # check that request is correct
     expected_request = {
@@ -1495,8 +1496,8 @@ async def test_download_asset_sync(exists,
         Path(tmpdir, 'img.tif').write_text('i exist')
 
     path = data_api.download_asset(basic_udm2_asset,
-                                  directory=tmpdir,
-                                  overwrite=overwrite)
+                                   directory=tmpdir,
+                                   overwrite=overwrite)
     assert path.name == 'img.tif'
     assert path.is_file()
 
