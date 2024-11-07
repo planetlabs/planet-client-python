@@ -11,7 +11,7 @@ Your feedback on this version of our client is appreciated. Please raise an issu
 
 ## Dependencies
 
-This package requires [Python 3.7 or greater](https://python.org/downloads/). A virtual environment is strongly recommended.
+This package requires [Python 3.8 or greater](https://python.org/downloads/). A virtual environment is strongly recommended.
 
 You will need your Planet API credentials. You can find your API key in [Planet Explorer](https://planet.com/explorer) under Account Settings.
 
@@ -109,7 +109,7 @@ for item in pl.data.search(['PSScene'], geometry=geom, limit=5):
 
 #### Filters
 
-The Data API allows a wide range of search parameters. Whether using the `.search()` method, or 
+The Data API allows a wide range of search parameters. Whether using the `.search()` method, or
 creating or updating a saved search, or requesting stats, a data search filter
 can be provided to the API as a JSON blob. This JSON blob can be built up manually or by using the
 `data_filter` module.
@@ -180,7 +180,7 @@ def main():
                item_type='psscene')
        ]
     )
-     
+
     order = pl.orders.create_order(request)
 
     # wait for the order to be ready
@@ -202,7 +202,7 @@ You will need your ACCESS_KEY_ID, SECRET_ACCESS_KEY, bucket and region name.
 To subscribe to scenes that match a filter, use the `subscription_request` module to build a request, and
 pass it to the `subscriptions.create_subscription()` method of the client.
 
-Warning: the following code will create a subscription, consuming quota based on your plan. 
+Warning: the following code will create a subscription, consuming quota based on your plan.
 
 ```python
 from planet.subscription_request import catalog_source, build_request, amazon_s3
