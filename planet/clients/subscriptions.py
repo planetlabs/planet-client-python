@@ -1,7 +1,7 @@
 """Planet Subscriptions API Python client."""
 
 import logging
-from typing import Any, AsyncIterator, Awaitable, Callable, Dict, Iterator, Optional, Sequence, TypeVar, Union, overload
+from typing import Any, AsyncIterator, Awaitable, Dict, Iterator, Optional, Sequence, TypeVar, Union
 
 from typing_extensions import Literal
 
@@ -435,6 +435,7 @@ class SubscriptionsAPI:
 
     def list_subscriptions(self,
                            status: Optional[Sequence[str]] = None,
+                           source_type: Optional[str] = None,
                            limit: int = 100) -> Iterator[Dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
@@ -459,7 +460,7 @@ class SubscriptionsAPI:
             ClientError: on a client error.
         """
 
-        results = self._client.list_subscriptions(status, limit)
+        results = self._client.list_subscriptions(status, source_type, limit)
 
         try:
             while True:
@@ -600,7 +601,7 @@ class SubscriptionsAPI:
                                           "processing",
                                           "failed",
                                           "success"]]] = None
-    ) -> AsyncIterator[str]:
+    ) -> Iterator[str]:
         """Iterate over rows of results CSV for a Subscription.
 
         Parameters:
