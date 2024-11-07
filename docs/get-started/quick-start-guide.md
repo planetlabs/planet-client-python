@@ -11,9 +11,9 @@ Take the following steps to install the SDK and connect with the Planet Server.
 
 [TOC]
 
-## Step 1: Install Python 3.8+ and a virtual environment
+## Step 1: Install Python 3.9+ and a virtual environment
 
-This is a Python package, so you’ll need to install Python (version 3.8 or greater), and set up and install a virtual environment.
+This is a Python package, so you’ll need to install Python (version 3.9 or greater), and set up and install a virtual environment.
 
 Yes. Even if you’re not writing code—and only using the "no code" CLI part of the Planet SDK for Python—you’re using Python to communicate with the Planet Labs PBC servers. If you need help with Python install and setting up a virtual environment, read [Virtual Environments and the Planet SDK for Python](venv-tutorial.md).
 
@@ -126,3 +126,12 @@ Now that you have the quick setup for the Planet SDK for Python, you have a few 
 * Continue to explore the [No-Code CLI Guide](../cli/cli-guide.md).
 * Start coding with the [Python SDK User Guide](../python/sdk-guide.md).
 * Check out some of the [examples in our GitHub repo](https://github.com/planetlabs/planet-client-python/tree/main/examples).
+
+## How to Get Help
+
+As The Planet SDK (V2) is in active development, features & functionality will continue to be added.
+
+If there's something you're missing or are stuck, the development team would love to hear from you.
+
+  - To report a bug or suggest a feature, [raise an issue on GitHub](https://github.com/planetlabs/planet-client-python/issues/new)
+  - To get in touch with the development team, email [developers@planet.com](mailto:developers@planet.com)
