@@ -14,6 +14,10 @@ title: Python SDK API Reference
     rendering:
       show_root_full_path: false
 
+## ::: planet.OrdersAPI
+    rendering:
+      show_root_full_path: false
+
 ## ::: planet.order_request
     rendering:
       show_root_full_path: false
@@ -22,11 +26,19 @@ title: Python SDK API Reference
     rendering:
       show_root_full_path: false
 
+## ::: planet.DataAPI
+    rendering:
+      show_root_full_path: false
+
 ## ::: planet.data_filter
     rendering:
       show_root_full_path: false
 
 ## ::: planet.SubscriptionsClient
+    rendering:
+      show_root_full_path: false
+
+## ::: planet.SubscriptionsAPI
     rendering:
       show_root_full_path: false
 

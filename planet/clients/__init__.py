@@ -12,11 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .data import DataClient
-from .orders import OrdersClient
-from .subscriptions import SubscriptionsClient
+from .data import DataAPI, DataClient
+from .orders import OrdersAPI, OrdersClient
+from .subscriptions import SubscriptionsAPI, SubscriptionsClient
 
-__all__ = ['DataClient', 'OrdersClient', 'SubscriptionsClient']
+__all__ = [
+    'DataAPI',
+    'DataClient',
+    'OrdersAPI',
+    'OrdersClient',
+    'SubscriptionsAPI',
+    'SubscriptionsClient'
+]
 
 # Organize client classes by their module name to allow lookup.
 _client_directory = {
