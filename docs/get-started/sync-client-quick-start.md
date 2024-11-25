@@ -11,7 +11,7 @@ Your feedback on this version of our client is appreciated. Please raise an issu
 
 ## Dependencies
 
-This package requires [Python 3.8 or greater](https://python.org/downloads/). A virtual environment is strongly recommended.
+This package requires [Python 3.9 or greater](https://python.org/downloads/). A virtual environment is strongly recommended.
 
 You will need your Planet API credentials. You can find your API key in [Planet Explorer](https://planet.com/explorer) under Account Settings.
 
@@ -194,7 +194,7 @@ def main():
 
 #### Prerequisites
 
-Subscriptions will require a delivery destination. The following example uses Amazon S3.
+Subscriptions can be delivered to a destination. The following example uses Amazon S3.
 You will need your ACCESS_KEY_ID, SECRET_ACCESS_KEY, bucket and region name.
 
 #### Scene subscription
