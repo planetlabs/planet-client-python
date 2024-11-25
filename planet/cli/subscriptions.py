@@ -78,14 +78,21 @@ def subscriptions(ctx, base_url):
     multiple=True,
     default=None,
     help="Select subscriptions in one or more states. Default is all.")
+@click.option(
+    '--source-type',
+    default=None,
+    help="Filter subscriptions by source type. See documentation for all "
+    "available types. Default is all.")
 @limit
 @click.pass_context
 @translate_exceptions
 @coro
-async def list_subscriptions_cmd(ctx, status, limit, pretty):
+async def list_subscriptions_cmd(ctx, status, source_type, limit, pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
     async with subscriptions_client(ctx) as client:
-        async for sub in client.list_subscriptions(status=status, limit=limit):
+        async for sub in client.list_subscriptions(status=status,
+                                                   source_type=source_type,
+                                                   limit=limit):
             echo_json(sub, pretty)
 
 
@@ -216,7 +223,8 @@ async def get_subscription_cmd(ctx, subscription_id, pretty):
               'csv_flag',
               is_flag=True,
               default=False,
-              help="Get subscription results as comma-separated fields.")
+              help="Get subscription results as comma-separated fields. When "
+              "this flag is included, --limit is ignored")
 @limit
 # TODO: the following 3 options.
 # –created: timestamp instant or range.
@@ -254,8 +262,7 @@ async def list_subscription_results_cmd(ctx,
     async with subscriptions_client(ctx) as client:
         if csv_flag:
             async for result in client.get_results_csv(subscription_id,
-                                                       status=status,
-                                                       limit=limit):
+                                                       status=status):
                 click.echo(result)
         else:
             async for result in client.get_results(subscription_id,

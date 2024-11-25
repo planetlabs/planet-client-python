@@ -25,7 +25,7 @@ theme:
     - search.suggest
     - search.highlight
     - toc.follow
-    - toc.integrate 
+    - toc.integrate
   palette:
     - scheme: default
       primary: #007f99
@@ -34,7 +34,7 @@ theme:
         name: Switch to dark mode
     - scheme: slate
       primary: #004352
-      toggle: 
+      toggle:
         icon: octicons/sun-24
         name: Switch to light mode
 
@@ -46,7 +46,7 @@ extra:
 
 extra_css:
   - stylesheets/extra.css
-    
+
 plugins:
   - search
   - mkdocstrings:
@@ -69,7 +69,6 @@ nav:
     - get-started/quick-start-guide.md
     - get-started/get-your-planet-account.md
     - get-started/venv-tutorial.md
-    - get-started/v2_earlyaccess.md
     - get-started/upgrading.md
   - "No Code CLI":
     - cli/cli-guide.md

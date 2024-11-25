@@ -134,7 +134,7 @@ parameter higher, or you can set it to 0 and there will be no limit.
 You can get nicer formatting with `--pretty` or pipe it into `jq`, just like the other Planet
 CLI’s.
 
-The `list` command also supports filtering by the status of the subscription:
+The `list` command supports filtering by the status of the subscription:
 
 ```sh
 planet subscriptions list --status running
@@ -142,6 +142,15 @@ planet subscriptions list --status running
 
 gives you just the currently active subscriptions. The other available statuses are:
 `cancelled`, `preparing`, `pending`, `completed`, `suspended`, and `failed`.
+
+The `list` command also supports filtering by the source type of the subscription:
+
+```sh
+planet subscriptions list --source-type catalog
+```
+
+only gives you subscriptions with the `catalog` source type. For the full list of available source types, 
+see [Subscription Source Types](https://developers.planet.com/docs/subscriptions/source/#subscription-source-types).
 
 ### Get Subscription
 
@@ -171,8 +180,7 @@ You can also filter by status:
 planet subscriptions results SUBSCRIPTION_ID --status processing
 ```
 
-The available statuses are `created`, `queued`, `processing`, `failed`, and `success`. Note it’s quite useful
-to use `jq` to help filter out results as well.
+See the Subscriptions API documentation for the [official list of available statuses](https://developers.planet.com/docs/subscriptions/#subscription-status).
 
 #### Results as comma-separated values (CSV)
 

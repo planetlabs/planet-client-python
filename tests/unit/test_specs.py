@@ -47,7 +47,16 @@ ALL_PRODUCT_BUNDLES = [
     'panchromatic_dn_udm2',
     'pansharpened',
     'pansharpened_udm2',
-    'basic_l1a_dn'
+    'basic_l1a_dn',
+    'radiance_hdf5',
+    'basic_radiance_hdf5',
+    'sr_hdf5',
+    'basic_sr_hdf5',
+    'panchromatic_udm2',
+    'methane_quicklook',
+    'quality_controlled_methane',
+    'integrated_methane_enhancement',
+    'methane',
 ]
 # must be a valid item type for TEST_PRODUCT_BUNDLE
 TEST_ITEM_TYPE = 'PSScene'
@@ -64,7 +73,10 @@ ALL_ITEM_TYPES = [
     'SkySatCollect',
     'Sentinel2L1C',
     'MYD09GQ',
-    'SkySatScene'
+    'SkySatScene',
+    'TanagerScene',
+    'TanagerMethane',
+    'PelicanScene',
 ]
 TEST_ASSET_TYPE = "basic_udm2"
 

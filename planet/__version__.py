@@ -1,1 +1,3 @@
-__version__ = '2.11.0dev'
+from importlib.metadata import version
+
+__version__ = version("planet")
