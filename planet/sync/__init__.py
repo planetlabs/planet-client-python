@@ -15,8 +15,9 @@
 from .data import DataAPI
 from .orders import OrdersAPI
 from .subscriptions import SubscriptionsAPI
+from .client import Planet
 
-__all__ = ['DataAPI', 'OrdersAPI', 'SubscriptionsAPI']
+__all__ = ['DataAPI', 'OrdersAPI', 'Planet', 'SubscriptionsAPI']
 
 # Organize client classes by their module name to allow lookup.
 _client_directory = {
