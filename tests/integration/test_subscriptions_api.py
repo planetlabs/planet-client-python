@@ -10,7 +10,7 @@ import pytest
 import respx
 from respx.patterns import M
 
-from planet import Planet
+from planet.sync import Planet
 from planet.clients.subscriptions import SubscriptionsClient
 from planet.exceptions import APIError, PagingError, ServerError
 from planet.http import Session

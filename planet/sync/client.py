@@ -1,7 +1,7 @@
 from typing import Optional
-from planet.clients.data import DataAPI
-from planet.clients.orders import OrdersAPI
-from planet.clients.subscriptions import SubscriptionsAPI
+from .data import DataAPI
+from .orders import OrdersAPI
+from .subscriptions import SubscriptionsAPI
 from planet.http import Session
 
 SYNC_CLIENT_AGENT = "python-sdk-sync"
@@ -34,7 +34,8 @@ class Planet:
           The session can be used to control the authentication method. Example:
 
           ```python
-          from planet import Auth, Session, Planet
+          from planet import Auth, Session
+          from planet.sync import Planet
 
           auth = Auth.from_key('examplekey')
           session = Session(auth=auth)
