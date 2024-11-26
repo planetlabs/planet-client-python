@@ -1,4 +1,4 @@
-# Copyright 2020 Planet Labs, Inc.
+# Copyright 2021 Planet Labs, Inc.
 # Copyright 2022 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,22 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .http import Session
-from . import data_filter, order_request, reporting, subscription_request
-from .__version__ import __version__  # NOQA
-from .auth import Auth
-from .clients import DataClient, OrdersClient, SubscriptionsClient  # NOQA
-from .io import collect
+from .data import DataAPI
+from .orders import OrdersAPI
+from .subscriptions import SubscriptionsAPI
 
-__all__ = [
-    'Auth',
-    'collect',
-    'DataClient',
-    'data_filter',
-    'OrdersClient',
-    'order_request',
-    'reporting',
-    'Session',
-    'SubscriptionsClient',
-    'subscription_request'
-]
+__all__ = ['DataAPI', 'OrdersAPI', 'SubscriptionsAPI']
+
+# Organize client classes by their module name to allow lookup.
+_client_directory = {
+    'data': DataAPI, 'orders': OrdersAPI, 'subscriptions': SubscriptionsAPI
+}
