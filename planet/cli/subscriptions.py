@@ -65,6 +65,34 @@ def subscriptions(ctx, base_url):
 @subscriptions.command(name="list")  # type: ignore
 @pretty
 @click.option(
+    '--created',
+    help="""Filter subscriptions by creation time or interval. See documentation
+    for examples.""")
+@click.option(
+    '--end-time',
+    help="""Filter subscriptions by end time or interval. See documentation
+    for examples.""")
+@click.option(
+    '--hosting',
+    type=click.BOOL,
+    help="""Filter subscriptions by presence of hosting block (e.g. SentinelHub
+    hosting).""")
+@click.option(
+    '--name-contains',
+    help=
+    "only return subscriptions with a name that contains the provided string.")
+@click.option('--name', help="filter by name")
+@click.option(
+    '--source-type',
+    multiple=True,
+    help=
+    """Filter subscriptions by one or more source types. See documentation for
+    all available types. Default is all.""")
+@click.option(
+    '--start-time',
+    help="""Filter subscriptions by start time or interval. See documentation
+    for examples.""")
+@click.option(
     '--status',
     type=click.Choice([
         "running",
@@ -76,23 +104,52 @@ def subscriptions(ctx, base_url):
         "failed"
     ]),
     multiple=True,
-    default=None,
     help="Select subscriptions in one or more states. Default is all.")
-@click.option(
-    '--source-type',
-    default=None,
-    help="Filter subscriptions by source type. See documentation for all "
-    "available types. Default is all.")
+@click.option('--sort-by',
+              help="""fields to sort subscriptions by. Multiple fields can be
+    specified, separated by commas. The sort direction can be specified by
+    appending ' ASC' or ' DESC' to the field name. The default sort
+    direction is ascending. When multiple fields are specified, the sort
+    order is applied in the order the fields are listed.
+
+    Supported fields: [name, created, updated, start_time, end_time].
+
+    Example: 'name ASC,created DESC'""")
+@click.option('--updated',
+              help="""Filter subscriptions by update time or interval. See
+    documentation
+    for examples.""")
 @limit
 @click.pass_context
 @translate_exceptions
 @coro
-async def list_subscriptions_cmd(ctx, status, source_type, limit, pretty):
+async def list_subscriptions_cmd(ctx,
+                                 created,
+                                 end_time,
+                                 hosting,
+                                 name_contains,
+                                 name,
+                                 source_type,
+                                 start_time,
+                                 status,
+                                 sort_by,
+                                 updated,
+                                 limit,
+                                 pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
     async with subscriptions_client(ctx) as client:
-        async for sub in client.list_subscriptions(status=status,
-                                                   source_type=source_type,
-                                                   limit=limit):
+        async for sub in client.list_subscriptions(
+                created=created,
+                end_time=end_time,
+                hosting=hosting,
+                name__contains=name_contains,
+                name=name,
+                source_type=source_type,
+                start_time=start_time,
+                status=status,
+                sort_by=sort_by,
+                updated=updated,
+                limit=limit):
             echo_json(sub, pretty)
 
 
