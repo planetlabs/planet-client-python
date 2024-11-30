@@ -55,15 +55,15 @@ def main(ctx, verbosity, quiet, auth_profile, auth_client_id, auth_client_secret
 
 
 def _configure_cli_auth_ctx(ctx, auth_profile, auth_client_id, auth_client_secret, auth_api_key):
-    # planet-auth library Auth type
-    ctx.obj['AUTH'] = planet_auth_utils.ProfileManager.initialize_auth_client_context(
+    # planet-auth library Auth context type
+    ctx.obj['AUTH'] = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
         auth_profile_opt=auth_profile,
         auth_client_id_opt=auth_client_id,
         auth_client_secret_opt=auth_client_secret,
         auth_api_key_opt=auth_api_key,
     )
 
-    # planet SDK Auth type
+    # planet SDK Auth context type
     ctx.obj['PLSDK_AUTH'] = planet.Auth.from_plauth(pl_authlib_context=ctx.obj['AUTH'])
 
 

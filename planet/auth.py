@@ -22,17 +22,16 @@ import warnings
 import httpx
 
 import planet_auth
-import planet_auth_config
 import planet_auth_utils
 
 from .constants import SECRET_FILE_PATH
-
+from .auth_builtins import _ProductionEnv
 
 AuthType = httpx.Auth
 
 
 # planet_auth and planet_auth_utils code more or less entirely
-# entirely supersedes this class.  But, keeping this here for
+# supersedes this class.  But, keeping this here for
 # now for interface stability to bridge with the rest of the SDK.
 class Auth(metaclass=abc.ABCMeta):
     """Handle authentication information for use with Planet APIs."""
@@ -47,10 +46,9 @@ class Auth(metaclass=abc.ABCMeta):
         warnings.warn("Planet API keys will be deprecated at some point."
                       " Initialize an OAuth client, or create an OAuth service account."
                       " Proceeding for now.", PendingDeprecationWarning)
-        pl_authlib_context = planet_auth_utils.ProfileManager.initialize_auth_client_context(
-            auth_profile_opt=planet_auth_utils.Profiles.BUILTIN_PROFILE_NAME_LEGACY,
+        pl_authlib_context = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
             auth_api_key_opt=key,
-            save_token_file=False
+            save_token_file=False,
         )
         return _PLAuthLibAuth(plauth=pl_authlib_context)
 
@@ -67,12 +65,14 @@ class Auth(metaclass=abc.ABCMeta):
             filename: Alternate path for the planet secret file.
 
         """
-        # There is no direct replacement for "from_file()", which held an API key.
-        # API keys will be deprecated, and user login will be different from service account
-        # login under OAuth.
+        # There is no direct replacement for "from_file()", which expected the
+        # file to only hold an API key (planet_auth_utils now can use it for
+        # other things, too).  API keys will be deprecated for most use cases,
+        # and user login will be different from service account login under
+        # OAuth.
         warnings.warn("Auth.from_file() will be deprecated.", PendingDeprecationWarning)
         plauth_config = {
-            **planet_auth_config.Production.LEGACY_AUTH_AUTHORITY,
+            **_ProductionEnv.LEGACY_AUTH_AUTHORITY,
             "client_type": planet_auth.PlanetLegacyAuthClientConfig.meta().get("client_type"),
         }
         pl_authlib_context = planet_auth.Auth.initialize_from_config_dict(client_config=plauth_config,
@@ -88,10 +88,8 @@ class Auth(metaclass=abc.ABCMeta):
         Parameters:
             variable_name: Alternate environment variable.
         """
-        # There are just too many env vars and ways they interact and combine to continue to
-        # support this method with the planet auth lib in the future.  Especially as we want
-        # to move away from API keys and towards OAuth methods.
-        warnings.warn("Auth.from_env() will be deprecated.", PendingDeprecationWarning)
+        # TODO: we should consider how we want to expose initialization
+        #       from the ENV for OAuth M2M
         variable_name = variable_name or planet_auth.EnvironmentVariables.AUTH_API_KEY
         api_key = os.getenv(variable_name, None)
         return Auth.from_key(api_key)
@@ -111,15 +109,26 @@ class Auth(metaclass=abc.ABCMeta):
             base_url: The base URL to use. Defaults to production
                 authentication API base url.
         """
-        warnings.warn("Auth.from_login() and password based user login will be deprecated.", PendingDeprecationWarning)
-        if base_url:
-            warnings.warn("base_url is not longer a supported parameter to Auth.from_login()", DeprecationWarning)
+        # TODO: Need to provide instructions on what an application should do.
+        #       It would not be hard to add username/password support to the
+        #       PlanetAuthFactory, but we should encourage an OAuth login.
+        #       At a code level, we should provide "from_oauth_m2m" (Done) and something
+        #       to use a user profile, that must be initialized interactively.
+        warnings.warn("Auth.from_login() has been deprecated.", DeprecationWarning)
+        raise DeprecationWarning("Auth.from_login() has been deprecated.")
 
-        pl_authlib_context = planet_auth_utils.ProfileManager.initialize_auth_client_context(
-            auth_profile_opt=planet_auth_utils.Profiles.BUILTIN_PROFILE_NAME_LEGACY
+    @staticmethod
+    def from_oauth_m2m(client_id: str, client_secret: str) -> AuthType:
+        """Create authentication from OAuth service account client ID and secret.
+
+        Parameters:
+            client_id: Planet service account client ID.
+            client_secret: Planet service account client secret.
+        """
+        pl_authlib_context = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
+            auth_client_id_opt=client_id,
+            auth_client_secret_opt=client_secret,
         )
-        # Note: login() will save the resulting token
-        pl_authlib_context.login(username=email, password=password, allow_tty_prompt=False)
         return _PLAuthLibAuth(plauth=pl_authlib_context)
 
     @staticmethod
@@ -127,7 +136,7 @@ class Auth(metaclass=abc.ABCMeta):
         """
         Create authentication from the provided Planet Auth Library Authentication Context.
         Generally, applications will want to use one of the Auth Library helpers to
-        construct this context, such as the `initialize_auth_client_context()` method.
+        construct this context (See the factory class).
         """
         return _PLAuthLibAuth(plauth=pl_authlib_context)
 
