@@ -121,9 +121,9 @@ class Auth(metaclass=abc.ABCMeta):
         #       and something to use a user profile, which must be initialized
         #       interactively.  from_oauth_user(profile_name) seems reasonable,
         #       leaving the question of how to create and initialize non-built-in
-        #       profiles. (The plauth CLI and planet_auth library has code to
+        #       profiles. The plauth CLI and planet_auth library has code to
         #       do this, but I don't know if we should send users of the SDK
-        #       to another SDK for the simple use cases.)
+        #       to another SDK for the simple use cases.
         warnings.warn("Auth.from_login() has been deprecated.", DeprecationWarning)
         raise DeprecationWarning("Auth.from_login() has been deprecated.")
 
