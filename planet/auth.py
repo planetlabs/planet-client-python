@@ -69,7 +69,10 @@ class Auth(metaclass=abc.ABCMeta):
         # file to only hold an API key (planet_auth_utils now can use it for
         # other things, too).  API keys will be deprecated for most use cases,
         # and user login will be different from service account login under
-        # OAuth.
+        # OAuth.  A user interactive OAuth client configuration that has been
+        # initialized with a refresh token should function similarly, but is
+        # different enough I do not think it should be shoehorned into this
+        # method.
         warnings.warn("Auth.from_file() will be deprecated.", PendingDeprecationWarning)
         plauth_config = {
             **_ProductionEnv.LEGACY_AUTH_AUTHORITY,
@@ -111,9 +114,16 @@ class Auth(metaclass=abc.ABCMeta):
         """
         # TODO: Need to provide instructions on what an application should do.
         #       It would not be hard to add username/password support to the
-        #       PlanetAuthFactory, but we should encourage an OAuth login.
-        #       At a code level, we should provide "from_oauth_m2m" (Done) and something
-        #       to use a user profile, that must be initialized interactively.
+        #       PlanetAuthFactory and return Auth context initialized with
+        #       the legacy protocol and API key, but we should encourage an
+        #       OAuth login.
+        #       At a code level, we should provide "from_oauth_m2m()" (Done)
+        #       and something to use a user profile, which must be initialized
+        #       interactively.  from_oauth_user(profile_name) seems reasonable,
+        #       leaving the question of how to create and initialize non-built-in
+        #       profiles. (The plauth CLI and planet_auth library has code to
+        #       do this, but I don't know if we should send users of the SDK
+        #       to another SDK for the simple use cases.)
         warnings.warn("Auth.from_login() has been deprecated.", DeprecationWarning)
         raise DeprecationWarning("Auth.from_login() has been deprecated.")
 
