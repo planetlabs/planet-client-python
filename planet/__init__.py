@@ -18,6 +18,7 @@ from .__version__ import __version__  # NOQA
 from .auth import Auth
 from .clients import DataClient, OrdersClient, SubscriptionsClient  # NOQA
 from .io import collect
+from .sync import Planet
 
 __all__ = [
     'Auth',
@@ -26,6 +27,7 @@ __all__ = [
     'data_filter',
     'OrdersClient',
     'order_request',
+    'Planet',
     'reporting',
     'Session',
     'SubscriptionsClient',
