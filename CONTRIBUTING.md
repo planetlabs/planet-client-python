@@ -141,7 +141,7 @@ These commands can be performed on the entire repository, when run from the repo
 and
 
 ```console
-    $ yapf --diff -r .
+    $ yapf --in-place -r .
 ```
 The configuration for YAPF is given in `setup.cfg` and `.yapfignore`.
 See the YAPF link above for advanced usage.
@@ -149,7 +149,7 @@ See the YAPF link above for advanced usage.
 ##### Alternative to YAPF
 
 YAPF is not required to follow the style and formatting guidelines. You can
-perform all formatting on your own using the linting output as a guild. Painful,
+perform all formatting on your own using the linting output as a guide. Painful,
 maybe, but possible!
 
 ## Testing
