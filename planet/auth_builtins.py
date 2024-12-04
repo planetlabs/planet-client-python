@@ -16,7 +16,7 @@ from typing import Dict, List, Optional
 from planet_auth_utils.builtins_provider import BuiltinConfigurationProviderInterface
 
 # Needs to be set at runtime (not necessarily at import time) for dependency injection to planet_auth_util
-os.environ["PL_BUILTIN_AUTH_CONFIG_PROVIDER"] = "planet.auth_builtins._BuiltinConfigurationProvider"
+os.environ["PL_AUTH_BUILTIN_CONFIG_PROVIDER"] = "planet.auth_builtins._BuiltinConfigurationProvider"
 
 class _ProductionEnv:
     PRIMARY_PUBLIC_OAUTH_AUTHORITY_AUTH0 = {
