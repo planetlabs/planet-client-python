@@ -99,3 +99,7 @@ main.add_command(data.data)  # type: ignore
 main.add_command(orders.orders)  # type: ignore
 main.add_command(subscriptions.subscriptions)  # type: ignore
 main.add_command(collect.collect)  # type: ignore
+
+
+if __name__ == "__main__":
+    main()  # pylint: disable=E1120
