@@ -1,7 +1,7 @@
 """Planet Subscriptions API Python client."""
 
 import logging
-from typing import AsyncIterator, Optional, Sequence
+from typing import AsyncIterator, Optional, Sequence, Dict, Union
 
 from typing_extensions import Literal
 
@@ -129,7 +129,7 @@ class SubscriptionsClient:
             """Navigates pages of messages about subscriptions."""
             ITEMS_KEY = 'subscriptions'
 
-        params = {}
+        params: Dict[str, Union[str, Sequence[str], bool]] = {}
         if created is not None:
             params['created'] = created
         if end_time is not None:
