@@ -7,10 +7,12 @@ import pytest
 from planet.clients.subscriptions import SubscriptionsClient
 from planet.exceptions import APIError, PagingError, ServerError
 from planet.http import Session
-from planet.test import mock_subscriptions_api
+from planet.test import TEST_URL, MockSubscriptionsAPI
+
+mock_subscriptions_api = MockSubscriptionsAPI()
 
 @pytest.mark.anyio
-@failing_api_mock
+@mock_subscriptions_api.failure
 async def test_list_subscriptions_failure():
     """ServerError is raised if there is an internal server error (500)."""
     with pytest.raises(ServerError):
@@ -22,7 +24,7 @@ async def test_list_subscriptions_failure():
 @pytest.mark.parametrize("status, count", [({"running"}, 100), ({"failed"}, 0),
                                            (None, 100)])
 @pytest.mark.anyio
-@mock_subscriptions_api
+@mock_subscriptions_api.success
 async def test_list_subscriptions_success(
     status,
     count,
@@ -39,7 +41,7 @@ async def test_list_subscriptions_success(
                          [("catalog", 100), ("soil_water_content", 0),
                           (None, 100)])
 @pytest.mark.anyio
-@mock_subscriptions_api
+@mock_subscriptions_api.success
 async def test_list_subscriptions_source_type_success(
     source_type,
     count,
@@ -54,7 +56,7 @@ async def test_list_subscriptions_source_type_success(
 
 
 @pytest.mark.anyio
-@failing_api_mock
+@mock_subscriptions_api.failure
 async def test_create_subscription_failure():
     """APIError is raised if there is a server error."""
     with pytest.raises(ServerError):
@@ -64,7 +66,7 @@ async def test_create_subscription_failure():
 
 
 @pytest.mark.anyio
-@create_mock
+@mock_subscriptions_api.success
 async def test_create_subscription_success():
     """Subscription is created, description has the expected items."""
     async with Session() as session:
@@ -76,7 +78,7 @@ async def test_create_subscription_success():
 
 
 @pytest.mark.anyio
-@create_mock
+@mock_subscriptions_api.success
 async def test_create_subscription_with_hosting_success():
     """Subscription is created, description has the expected items."""
     async with Session() as session:
@@ -88,7 +90,7 @@ async def test_create_subscription_with_hosting_success():
 
 
 @pytest.mark.anyio
-@failing_api_mock
+@mock_subscriptions_api.failure
 async def test_cancel_subscription_failure():
     """APIError is raised if there is a server error."""
     with pytest.raises(ServerError):
@@ -98,7 +100,7 @@ async def test_cancel_subscription_failure():
 
 
 @pytest.mark.anyio
-@cancel_mock
+@mock_subscriptions_api.success
 async def test_cancel_subscription_success():
     """Subscription is canceled, description has the expected items."""
     async with Session() as session:
@@ -107,7 +109,7 @@ async def test_cancel_subscription_success():
 
 
 @pytest.mark.anyio
-@failing_api_mock
+@mock_subscriptions_api.failure
 async def test_update_subscription_failure():
     """APIError is raised if there is a server error."""
     with pytest.raises(ServerError):
@@ -117,7 +119,7 @@ async def test_update_subscription_failure():
 
 
 @pytest.mark.anyio
-@update_mock
+@mock_subscriptions_api.success
 async def test_update_subscription_success():
     """Subscription is updated, description has the expected items."""
     async with Session() as session:
@@ -130,7 +132,7 @@ async def test_update_subscription_success():
 
 
 @pytest.mark.anyio
-@patch_mock
+@mock_subscriptions_api.success
 async def test_patch_subscription_success():
     """Subscription is patched, description has the expected items."""
     async with Session() as session:
@@ -140,7 +142,7 @@ async def test_patch_subscription_success():
 
 
 @pytest.mark.anyio
-@failing_api_mock
+@mock_subscriptions_api.failure
 async def test_get_subscription_failure():
     """APIError is raised if there is a server error."""
     with pytest.raises(ServerError):
@@ -150,7 +152,7 @@ async def test_get_subscription_failure():
 
 
 @pytest.mark.anyio
-@get_mock
+@mock_subscriptions_api.success
 async def test_get_subscription_success(monkeypatch):
     """Subscription description fetched, has the expected items."""
     async with Session() as session:
@@ -160,7 +162,7 @@ async def test_get_subscription_success(monkeypatch):
 
 
 @pytest.mark.anyio
-@failing_api_mock
+@mock_subscriptions_api.failure
 async def test_get_results_failure():
     """APIError is raised if there is a server error."""
     with pytest.raises(APIError):
@@ -170,7 +172,7 @@ async def test_get_results_failure():
 
 
 @pytest.mark.anyio
-@res_api_mock
+@mock_subscriptions_api.success
 async def test_get_results_success():
     """Subscription description fetched, has the expected items."""
     async with Session() as session:
@@ -180,7 +182,7 @@ async def test_get_results_success():
 
 
 @pytest.mark.anyio
-@res_api_mock
+@mock_subscriptions_api.success
 async def test_get_results_csv():
     """Subscription CSV fetched, has the expected items."""
     async with Session() as session:
@@ -190,31 +192,8 @@ async def test_get_results_csv():
         assert rows == [['id', 'status'], ['1234-abcd', 'SUCCESS']]
 
 
-paging_cycle_api_mock = respx.mock()
-
-# Identical next links is a hangup we want to avoid.
-paging_cycle_api_mock.route(M(url__startswith=TEST_URL)).mock(side_effect=[
-    Response(200,
-             json={
-                 'subscriptions': [{
-                     'id': '1'
-                 }], '_links': {
-                     "next": TEST_URL
-                 }
-             }),
-    Response(200,
-             json={
-                 'subscriptions': [{
-                     'id': '2'
-                 }], '_links': {
-                     "next": TEST_URL
-                 }
-             })
-])
-
-
 @pytest.mark.anyio
-@paging_cycle_api_mock
+@mock_subscriptions_api.paging_cycle
 async def test_list_subscriptions_cycle_break():
     """PagingError is raised if there is a paging cycle."""
     with pytest.raises(PagingError):

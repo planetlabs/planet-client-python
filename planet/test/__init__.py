@@ -12,6 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .subscriptions import mock_subscriptions_api
+from .subscriptions import TEST_URL, MockSubscriptionsAPI
 
-__all__ = ['mock_subscriptions_api']
+__all__ = ['TEST_URL', MockSubscriptionsAPI]
