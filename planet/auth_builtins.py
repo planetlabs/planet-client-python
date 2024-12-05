@@ -142,7 +142,7 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
         return self._builtin_profile_aliases
 
     def builtin_default_profile_by_client_type(self) -> Dict[str, str]:
-        pass
+        return self._builtin_profile_default_by_client_type
 
     def builtin_default_profile(self) -> str:
         return self.BUILTIN_PROFILE_NAME_DEFAULT
