@@ -84,9 +84,8 @@ def subscriptions(ctx, base_url):
 @click.option('--name', help="filter by name")
 @click.option(
     '--source-type',
-    multiple=True,
-    help="""Filter subscriptions by one or more source types. See documentation
-    for all available types. Default is all.""")
+    help="""Filter subscriptions by source type. See documentation for all
+    available types. Default is all.""")
 @click.option(
     '--start-time',
     help="""Filter subscriptions by start time or interval. See documentation

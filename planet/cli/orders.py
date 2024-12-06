@@ -54,16 +54,14 @@ def orders(ctx, base_url):
 @translate_exceptions
 @coro
 @click.option('--state',
-              help='Filter by one or more states.',
-              multiple=True,
+              help='Filter by state.',
               type=click.Choice(planet.clients.orders.ORDER_STATE_SEQUENCE,
                                 case_sensitive=False))
 @click.option(
     '--source-type',
-    default=["all"],
-    multiple=True,
-    help="""Filter by one or more source types. See documentation for all
-    available types. Default is all.""")
+    default="all",
+    help="""Filter by source type. See documentation for all available types.
+    Default is all.""")
 @click.option('--name', help="filter by name")
 @click.option(
     '--name-contains',

@@ -76,8 +76,8 @@ length of the array.
 #### Filtering
 
 The `list` command supports filtering on a variety of fields:
-* `--state`: Filter by one or more states. Options include `queued`, `failed`, `success`, `partial` and `cancelled`.
-* `--source-type`: Filter by one or more source types. Options include `scenes`, `basemaps`, or `all`. The default is `all`.
+* `--state`: Filter by order state. Options include `queued`, `failed`, `success`, `partial` and `cancelled`.
+* `--source-type`: Filter by source type. Options include `scenes`, `basemaps`, or `all`. The default is `all`.
 * `--name`: Filter by name.
 * `--name-contains`: Only return orders with a name that contains the provided string.
 * `--created-on`: Filter on the order creation time or an interval of creation times.

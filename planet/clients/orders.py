@@ -463,8 +463,8 @@ class OrdersClient:
         return current_state
 
     async def list_orders(self,
-                          state: Optional[Sequence[str]] = None,
-                          source_type: Optional[Sequence[str]] = None,
+                          state: Optional[str] = None,
+                          source_type: Optional[str] = None,
                           name: Optional[str] = None,
                           name__contains: Optional[str] = None,
                           created_on: Optional[str] = None,
@@ -483,8 +483,8 @@ class OrdersClient:
             single result description or return a list of descriptions.
 
         Parameters:
-            state (Set[str]): include orders with a state in this set.
-            source_type (Set[str]): include orders with a source type in this set.
+            state (str): filter by state.
+            source_type (str): filter by source type.
             name (str): filter by name.
             name__contains (str): only include orders with names containing this string.
             created_on (str): filter by creation date-time or interval.
@@ -525,7 +525,7 @@ class OrdersClient:
         url = self._orders_url()
         params: Dict[str, Union[str, Sequence[str], bool]] = {}
         if source_type is not None:
-            params["source_type"] = [val for val in source_type]
+            params["source_type"] = source_type
         else:
             params["source_type"] = "all"
         if name is not None:
@@ -541,12 +541,11 @@ class OrdersClient:
         if sort_by is not None:
             params["sort_by"] = sort_by
         if state:
-            for s in state:
-                if s not in ORDER_STATE_SEQUENCE:
-                    raise exceptions.ClientError(
-                        f'Order state ({s}) is not a valid state. '
-                        f'Valid states are {ORDER_STATE_SEQUENCE}')
-            params['state'] = [val for val in state]
+            if state not in ORDER_STATE_SEQUENCE:
+                raise exceptions.ClientError(
+                    f'Order state ({state}) is not a valid state. '
+                    f'Valid states are {ORDER_STATE_SEQUENCE}')
+            params['state'] = state
 
         response = await self._session.request(method='GET',
                                                url=url,
