@@ -51,13 +51,24 @@ def invoke():
     return _invoke
 
 
-@pytest.mark.parametrize('options,expected_count',
-                         [(['--status=running'], 100), ([], 100),
-                          (['--source-type=catalog'], 100),
-                          (['--source-type=soil_water_content'], 0),
-                          (['--limit=1', '--status=running'], 1),
-                          (['--limit=2', '--pretty', '--status=running'], 2),
-                          (['--limit=1', '--status=preparing'], 0)])
+@pytest.mark.parametrize(
+    'options,expected_count',
+    [(['--status=running'], 100), ([], 100), (['--source-type=catalog'], 100),
+     (['--source-type=soil_water_content'], 0),
+     (['--limit=1', '--status=running'], 1),
+     (['--limit=2', '--pretty', '--status=running'], 2),
+     (['--limit=1', '--status=preparing'], 0),
+     ([
+         '--name=test xyz',
+         '--name-contains=xyz',
+         '--created=2018-02-12T00:00:00Z/..',
+         '--updated=../2018-03-18T12:31:12Z',
+         '--start-time=2018-01-01T00:00:00Z',
+         '--end-time=2022-01-01T00:00:00Z/2024-01-01T00:00:00Z',
+         '--hosting=true',
+         '--sort-by=name DESC'
+     ],
+      2)])
 @api_mock
 # Remember, parameters come before fixtures in the function definition.
 def test_subscriptions_list_options(invoke, options, expected_count):

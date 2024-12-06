@@ -54,22 +54,72 @@ def orders(ctx, base_url):
 @translate_exceptions
 @coro
 @click.option('--state',
-              help='Filter orders to given state.',
+              help='Filter by state.',
               type=click.Choice(planet.clients.orders.ORDER_STATE_SEQUENCE,
                                 case_sensitive=False))
+@click.option(
+    '--source-type',
+    default="all",
+    help="""Filter by source type. See documentation for all available types.
+    Default is all.""")
+@click.option('--name', help="filter by name")
+@click.option(
+    '--name-contains',
+    help="only return orders with a name that contains the provided string.")
+@click.option(
+    '--created-on',
+    help="Filter by creation time or interval. See documentation for examples."
+)
+@click.option(
+    '--last-modified',
+    help="Filter by creation time or interval. See documentation for examples."
+)
+@click.option(
+    '--hosting',
+    type=click.BOOL,
+    help="Filter by presence of hosting block (e.g. SentinelHub hosting).")
+@click.option(
+    '--sort-by',
+    help="""fields to sort orders by. Multiple fields can be specified,
+    separated by commas. The sort direction can be specified by appending
+    ' ASC' or ' DESC' to the field name. The default sort direction is
+    ascending. When multiple fields are specified, the sort order is applied
+    in the order the fields are listed.
+
+    Supported fields: [name, created_on, state, last_modified].
+
+    Example: 'name ASC,created_on DESC'""")
 @limit
 @pretty
-async def list(ctx, state, limit, pretty):
+async def list(ctx,
+               state,
+               source_type,
+               name,
+               name_contains,
+               created_on,
+               last_modified,
+               hosting,
+               sort_by,
+               limit,
+               pretty):
     """List orders
 
     This command prints a sequence of the returned order descriptions,
     optionally pretty-printed.
 
-    Order descriptions are sorted by creation date with the last created order
+    By default, order descriptions are sorted by creation date with the last created order
     returned first.
     """
     async with orders_client(ctx) as cl:
-        async for o in cl.list_orders(state=state, limit=limit):
+        async for o in cl.list_orders(state=state,
+                                      source_type=source_type,
+                                      name=name,
+                                      name__contains=name_contains,
+                                      created_on=created_on,
+                                      last_modified=last_modified,
+                                      hosting=hosting,
+                                      sort_by=sort_by,
+                                      limit=limit):
             echo_json(o, pretty)
 
 

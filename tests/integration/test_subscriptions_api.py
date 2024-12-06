@@ -28,7 +28,7 @@ failing_api_mock.route(M(url__startswith=TEST_URL)).mock(
     }))
 
 
-def result_pages(status=None, size=40):
+def subscription_pages(status=None, size=40):
     """Helper for creating fake subscriptions listing pages."""
     all_subs = [{'id': str(i), 'status': 'running'} for i in range(1, 101)]
     select_subs = (sub for sub in all_subs
@@ -54,7 +54,7 @@ api_mock = respx.mock(assert_all_called=False)
 api_mock.route(M(url=TEST_URL),
                M(params__contains={'status': 'running'})).mock(side_effect=[
                    Response(200, json=page)
-                   for page in result_pages(status={'running'}, size=40)
+                   for page in subscription_pages(status={'running'}, size=40)
                ])
 
 # 2. Request for status: failed. Response has a single empty page.
@@ -71,7 +71,7 @@ api_mock.route(
     M(url=TEST_URL),
     M(params__contains={'source_type': 'catalog'})).mock(side_effect=[
         Response(200, json=page)
-        for page in result_pages(status={'running'}, size=40)
+        for page in subscription_pages(status={'running'}, size=40)
     ])
 
 # 5. source_type: soil_water_content requested. Response has a single empty page.
@@ -79,9 +79,32 @@ api_mock.route(M(url=TEST_URL),
                M(params__contains={'source_type': 'soil_water_content'})).mock(
                    side_effect=[Response(200, json={'subscriptions': []})])
 
-# 6. No status or source_type requested. Response is the same as for 1.
-api_mock.route(M(url=TEST_URL)).mock(
-    side_effect=[Response(200, json=page) for page in result_pages(size=40)])
+# 6. All other parameters are used. Response has 2 subscriptions.
+# The response is unrealistic here, but we are just testing the query parameter handling.
+api_mock.route(
+    M(url=TEST_URL),
+    M(
+        params__contains={
+            'name': 'test xyz',
+            'name__contains': 'xyz',
+            'created': '2018-02-12T00:00:00Z/..',
+            'updated': '../2018-03-18T12:31:12Z',
+            'start_time': '2018-01-01T00:00:00Z',
+            'end_time': '2022-01-01T00:00:00Z/2024-01-01T00:00:00Z',
+            'hosting': 'true',
+            'sort_by': 'name DESC',
+        })).mock(side_effect=[
+            Response(200, json={'subscriptions': [{
+                'id': 1
+            }, {
+                'id': 2
+            }]})
+        ])
+
+# 7. No status or source_type requested. Response is the same as for 1.
+api_mock.route(M(url=TEST_URL)).mock(side_effect=[
+    Response(200, json=page) for page in subscription_pages(size=40)
+])
 
 
 # The "creation", "update", and "cancel" mock APIs return submitted
@@ -211,6 +234,22 @@ async def test_list_subscriptions_source_type_success(
             sub
             async for sub in client.list_subscriptions(source_type=source_type)
         ]) == count
+
+
+@pytest.mark.anyio
+@api_mock
+async def test_list_subscriptions_filtering_and_sorting():
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        assert len([
+            sub async for sub in client.list_subscriptions(
+                name='test xyz', name__contains='xyz',
+                created='2018-02-12T00:00:00Z/..',
+                updated='../2018-03-18T12:31:12Z',
+                start_time='2018-01-01T00:00:00Z',
+                end_time='2022-01-01T00:00:00Z/2024-01-01T00:00:00Z',
+                hosting=True, sort_by='name DESC')
+        ]) == 2
 
 
 @pytest.mark.anyio

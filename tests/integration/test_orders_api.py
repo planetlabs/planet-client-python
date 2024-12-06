@@ -121,8 +121,8 @@ async def test_list_orders_basic(order_descriptions, session):
 
 @respx.mock
 @pytest.mark.anyio
-async def test_list_orders_state_success(order_descriptions, session):
-    list_url = TEST_ORDERS_URL + '?source_type=all&state=failed'
+async def test_list_orders_filtering_and_sorting(order_descriptions, session):
+    list_url = TEST_ORDERS_URL + '?source_type=all&state=failed&name=my_order_xyz&name__contains=xyz&created_on=2018-02-12T00:00:00Z/..&last_modified=../2018-03-18T12:31:12Z&hosting=true&sort_by=name DESC'
 
     order1, order2, _ = order_descriptions
 
@@ -136,10 +136,15 @@ async def test_list_orders_state_success(order_descriptions, session):
 
     cl = OrdersClient(session, base_url=TEST_URL)
 
-    # if the value of state doesn't get sent as a url parameter,
+    # if the value of each arg doesn't get sent as a url parameter,
     # the mock will fail and this test will fail
-    assert [order1,
-            order2] == [o async for o in cl.list_orders(state='failed')]
+    assert [order1, order2] == [
+        o async for o in cl.list_orders(
+            state='failed', name='my_order_xyz', name__contains='xyz',
+            created_on='2018-02-12T00:00:00Z/..',
+            last_modified='../2018-03-18T12:31:12Z', hosting=True,
+            sort_by='name DESC')
+    ]
 
 
 @pytest.mark.anyio
