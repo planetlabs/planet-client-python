@@ -30,16 +30,13 @@ class Planet:
     ```
 
     Parameters:
-        session: Optional Session. If not provided, a new session is created.
-          The session can be used to control the authentication method. Example:
+        session: Optional Session. The Session can be provided allowing for customization, and
+            will default to standard behavior when not provided. Example:
 
           ```python
-          from planet import Auth, Session
           from planet.sync import Planet
 
-          auth = Auth.from_key('examplekey')
-          session = Session(auth=auth)
-          pl = Planet(session=session)
+          pl = Planet()
           ````
     """
 

@@ -12,14 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .data import DataAPI
-from .orders import OrdersAPI
-from .subscriptions import SubscriptionsAPI
 from .client import Planet
 
-__all__ = ['DataAPI', 'OrdersAPI', 'Planet', 'SubscriptionsAPI']
-
-# Organize client classes by their module name to allow lookup.
-_client_directory = {
-    'data': DataAPI, 'orders': OrdersAPI, 'subscriptions': SubscriptionsAPI
-}
+__all__ = ['Planet']
