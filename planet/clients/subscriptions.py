@@ -60,10 +60,18 @@ class SubscriptionsClient:
             self._base_url = self._base_url[:-1]
 
     async def list_subscriptions(self,
-                                 status: Optional[Sequence[str]] = None,
+                                 created: Optional[str] = None,
+                                 end_time: Optional[str] = None,
+                                 hosting: Optional[bool] = None,
+                                 name__contains: Optional[str] = None,
+                                 name: Optional[str] = None,
                                  source_type: Optional[str] = None,
+                                 start_time: Optional[str] = None,
+                                 status: Optional[Sequence[str]] = None,
+                                 sort_by: Optional[str] = None,
+                                 updated: Optional[str] = None,
                                  limit: int = 100) -> AsyncIterator[dict]:
-        """Iterate over list of account subscriptions with optional filtering.
+        """Iterate over list of account subscriptions with optional filtering and sorting.
 
         Note:
             The name of this method is based on the API's method name.
@@ -71,13 +79,42 @@ class SubscriptionsClient:
             not return a list.
 
         Args:
-            status (Set[str]): pass subscriptions with status in this
-                set, filter out subscriptions with status not in this
-                set.
-            source_type (str): Product source type filter, to return only subscriptions with the matching source type
+            created (str): filter by created time or interval.
+            end_time (str): filter by end time or interval.
+            hosting (bool): only return subscriptions that contain a
+                hosting block (e.g. SentinelHub hosting).
+            name__contains (str): only return subscriptions with a
+                name that contains the given string.
+            name (str): filter by name.
+            source_type (str): filter by source type.
+            start_time (str): filter by start time or interval.
+            status (Set[str]): include subscriptions with a status in this set.
+            sort_by (str): fields to sort subscriptions by. Multiple
+                fields can be specified, separated by commas. The sort
+                direction can be specified by appending ' ASC' or '
+                DESC' to the field name. The default sort direction is
+                ascending. When multiple fields are specified, the sort
+                order is applied in the order the fields are listed.
+
+                Supported fields: name, created, updated, start_time, end_time
+
+                Examples:
+                 * "name"
+                 * "name DESC"
+                 * "name,end_time DESC,start_time"
+            updated (str): filter by updated time or interval.
             limit (int): limit the number of subscriptions in the
                 results. When set to 0, no maximum is applied.
             TODO: user_id
+
+        Datetime args (created, end_time, start_time, updated) can either be a
+        date-time or an interval, open or closed. Date and time expressions adhere
+        to RFC 3339. Open intervals are expressed using double-dots.
+
+        Examples:
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A closed interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Open intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
 
         Yields:
             dict: a description of a subscription.
@@ -91,11 +128,27 @@ class SubscriptionsClient:
             """Navigates pages of messages about subscriptions."""
             ITEMS_KEY = 'subscriptions'
 
-        params: Dict[str, Union[str, Sequence[str]]] = {
-            'status': [val for val in status or {}]
-        }
+        params: Dict[str, Union[str, Sequence[str], bool]] = {}
+        if created is not None:
+            params['created'] = created
+        if end_time is not None:
+            params['end_time'] = end_time
+        if hosting is not None:
+            params['hosting'] = hosting
+        if name__contains is not None:
+            params['name__contains'] = name__contains
+        if name is not None:
+            params['name'] = name
         if source_type is not None:
-            params['source_type'] = source_type  # type: ignore
+            params['source_type'] = source_type
+        if start_time is not None:
+            params['start_time'] = start_time
+        if status is not None:
+            params['status'] = [val for val in status]
+        if sort_by is not None:
+            params['sort_by'] = sort_by
+        if updated is not None:
+            params['updated'] = updated
 
         try:
             response = await self._session.request(method='GET',

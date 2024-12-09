@@ -15,9 +15,10 @@ then check out our [CLI Concepts](cli-intro.md) guide.
 
 ## Core Workflows
 
-### See Recent Orders
+### List Orders
 
-You can use the `list` command to show your recent orders:
+You can use the `list` command to see details of existing orders. By default they will be sorted
+by most recently created.
 
 ```sh
 planet orders list
@@ -26,24 +27,10 @@ planet orders list
 If you’ve not placed any orders with Explorer, the CLI or the API directly, then the results
 of this call will be blank, so you may want to try out some of the create order commands below.
 
-Sometimes that list gets too long, so you can put a limit on how many are returned:
+Sometimes that list gets too long, so you can put a limit on how many are returned using the
+`--limit` parameter.
 
-```sh
-planet orders list --limit 5
-```
-
-You can also filter orders by their `state`, which can be useful to just see orders in 
-progress:
-
-```sh
-planet orders list --state running
-```
-
-The other options are queued, failed, success, partial and cancelled.
-
-Note you can also get a nice list online as well, at https://www.planet.com/account/#/orders
-
-### Recent Orders with Formatting
+#### Formatting
 
 You can also print the list of orders more nicely:
 
@@ -71,10 +58,13 @@ planet orders list | jq -rs '.[] | "\(.id) \(.created_on) \(.state) \(.name)"'
 
 You can customize which fields you want to show by changing the values.
 
-### Number of recent orders
+A list of your orders can also be viewed in a UI at https://www.planet.com/account/#/orders
 
-You can use jq to process the output for more insight, like 
-get a count of how many recent orders you’ve done. 
+#### Number of existing orders
+
+You can use `jq` to process the output for more insight, like get a count of how many existing
+orders you have. Orders are automatically deleted 90 days after completion, so this number
+roughly is equivalent to the number of orders created in the last 90 days.
 
 ```sh
 planet orders list | jq -s length
@@ -82,6 +72,65 @@ planet orders list | jq -s length
 
 This uses `-s` to collect the output into a single array, and `length` then tells the
 length of the array.
+
+#### Filtering
+
+The `list` command supports filtering on a variety of fields:
+* `--state`: Filter by order state. Options include `queued`, `failed`, `success`, `partial` and `cancelled`.
+* `--source-type`: Filter by source type. Options include `scenes`, `basemaps`, or `all`. The default is `all`.
+* `--name`: Filter by name.
+* `--name-contains`: Only return orders with a name that contains the provided string.
+* `--created-on`: Filter on the order creation time or an interval of creation times.
+* `--last-modified`: Filter on the order's last modified time or an interval of last modified times.
+* `--hosting`: Filter on orders containing a hosting location (e.g. SentinelHub). Accepted values are `true` or `false`.
+
+Datetime args (`--created-on` and `--last-modified`) can either be a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.
+* A date-time: `2018-02-12T23:20:50Z`
+* A closed interval: `2018-02-12T00:00:00Z/2018-03-18T12:31:12Z`
+* Open intervals: `2018-02-12T00:00:00Z/..` or `../2018-03-18T12:31:12Z`
+
+To list orders in progress:
+```sh
+planet orders list --state running
+```
+
+To list orders with the `scenes` source type:
+```sh
+planet orders list --source-type scenes
+```
+
+To list orders that were created in 2024:
+```sh
+planet orders list --created-on 2024-01-01T00:00:00Z/2025-01-01T00:00:00Z
+```
+
+To list orders with a hosting location:
+```sh
+planet orders list --hosting true
+```
+
+To list orders with the name `my location xyz`:
+```sh
+planet orders list --name "my location xyz"
+```
+
+To list orders with a name containing `xyz`:
+```sh
+planet orders list --name-contains xyz
+```
+
+#### Sorting
+
+The `list` command also supports sorting the orders on one or more fields: `name`, `created_on`, `state`, and `last_modified`. The sort direction can be specified by appending ` ASC` or ` DESC` to the field name (default is ascending).
+
+When multiple fields are specified, the sort order is applied in the order the fields are listed.
+
+Sorting examples:
+* `--sort-by name`: sorts orders by name alphabetically.
+* `--sort-by "created_on DESC"`: sorts orders by most recently created.
+* `--sort-by "last_modified DESC"`: sorts subscriptions by most recently modified.
+* `--sort-by "state ASC"`: sorts orders by state alphabetically.
+* `--sort-by "name,last_modified DESC"`: sorts subscriptions by name first, and most recently modified second.
 
 ### Info on an Order
 

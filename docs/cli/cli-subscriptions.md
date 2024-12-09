@@ -117,8 +117,7 @@ To create a new subscription with the CLI, use the `create` command and the json
 planet subscriptions create my-subscription.json
 ```
 
-!!!note "Note"
-    The above command assumes that you’ve saved the subscriptions JSON as `my-subscription.json` and that you’ve replaced the delivery information with your own bucket and credentials.
+**Note:** The above command assumes that you’ve saved the subscriptions JSON as `my-subscription.json` and that you’ve replaced the delivery information with your own bucket and credentials.
 
 ### List Subscriptions
 
@@ -134,23 +133,62 @@ parameter higher, or you can set it to 0 and there will be no limit.
 You can get nicer formatting with `--pretty` or pipe it into `jq`, just like the other Planet
 CLI’s.
 
-The `list` command supports filtering by the status of the subscription:
+#### Filtering
 
+The `list` command supports filtering on a variety of fields:
+* `--created`: Filter on the subscription creation time or an interval of creation times.
+* `--end-time`: Filter on the subscription end time or an interval of end times.
+* `--hosting`: Filter on subscriptions containing a hosting location (e.g. SentinelHub). Accepted values are `true` or `false`.
+* `--name-contains`: Filter on subscriptions with a name that contains the provided string.
+* `--name`: Filter on subscriptions with a specific name
+* `--source-type`: Filter by the source type of the subscription. For the full list of available source types, see [Subscription Source Types](https://developers.planet.com/docs/subscriptions/source/#subscription-source-types). Multiple source type args are allowed.
+* `--start-time`: Filter on the subscription start time or an interval of start times.
+* `--status`: Filter on the status of the subscription. Status options include `running`, `cancelled`, `preparing`, `pending`, `completed`, `suspended`, and `failed`. Multiple status args are allowed.
+* `--updated`: Filter on the subscription update time or an interval of updated times.
+
+Datetime args (`--created`, `end-time`, `--start-time`, and `--updated`) can either be a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.
+* A date-time: `2018-02-12T23:20:50Z`
+* A closed interval: `2018-02-12T00:00:00Z/2018-03-18T12:31:12Z`
+* Open intervals: `2018-02-12T00:00:00Z/..` or `../2018-03-18T12:31:12Z`
+
+To list currently active subscriptions:
 ```sh
 planet subscriptions list --status running
 ```
 
-gives you just the currently active subscriptions. The other available statuses are:
-`cancelled`, `preparing`, `pending`, `completed`, `suspended`, and `failed`.
-
-The `list` command also supports filtering by the source type of the subscription:
-
+To list subscriptions with the `catalog` source type:
 ```sh
 planet subscriptions list --source-type catalog
 ```
 
-only gives you subscriptions with the `catalog` source type. For the full list of available source types, 
-see [Subscription Source Types](https://developers.planet.com/docs/subscriptions/source/#subscription-source-types).
+To list subscriptions that were created in 2024:
+```sh
+planet subscriptions list --created 2024-01-01T00:00:00Z/2025-01-01T00:00:00Z
+```
+
+To list subscriptions with an end time after Jan 1, 2025:
+```sh
+planet subscriptions list --end-time 2025-01-01T00:00:00Z/..
+```
+
+To list subscriptions with a hosting location:
+```sh
+planet subscriptions list --hosting true
+```
+
+#### Sorting
+
+The `list` command also supports sorting the subscriptions on one or more fields: `name`, `created`, `updated`, `start_time`, and `end_time`. The sort direction can be specified by appending ` ASC` or ` DESC` to the field name (default is ascending).
+
+When multiple fields are specified, the sort order is applied in the order the fields are listed.
+
+Sorting examples:
+* `--sort-by name`: sorts subscriptions by name alphabetically.
+* `--sort-by "created DESC"`: sorts subscriptions by most recently created.
+* `--sort-by "updated DESC"`: sorts subscriptions by most recently updated.
+* `--sort-by "start_time ASC"`: sorts subscriptions by start time (earliest to latest)
+* `--sort-by "end_time DESC"`: sorts subscriptions by end time (latest to earliest)
+* `--sort-by "name,start_time DESC"`: sorts subscriptions by name ascending first, and start time descending second.
 
 ### Get Subscription
 
