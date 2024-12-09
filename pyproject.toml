@@ -34,7 +34,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 test = [
-    "pytest",
+    "pytest==8.3.3",
     "anyio",
     "pytest-cov",
     "respx>=0.20",
