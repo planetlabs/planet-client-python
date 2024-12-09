@@ -59,18 +59,19 @@ class SubscriptionsClient:
         if self._base_url.endswith('/'):
             self._base_url = self._base_url[:-1]
 
-    async def list_subscriptions(self,
-                                 created: Optional[str] = None,
-                                 end_time: Optional[str] = None,
-                                 hosting: Optional[bool] = None,
-                                 name__contains: Optional[str] = None,
-                                 name: Optional[str] = None,
-                                 source_type: Optional[str] = None,
-                                 start_time: Optional[str] = None,
-                                 status: Optional[Sequence[str]] = None,
-                                 sort_by: Optional[str] = None,
-                                 updated: Optional[str] = None,
-                                 limit: int = 100) -> AsyncIterator[dict]:
+    async def list_subscriptions(
+            self,
+            status: Optional[Sequence[str]] = None,
+            limit: int = 100,
+            created: Optional[str] = None,
+            end_time: Optional[str] = None,
+            hosting: Optional[bool] = None,
+            name__contains: Optional[str] = None,
+            name: Optional[str] = None,
+            source_type: Optional[str] = None,
+            start_time: Optional[str] = None,
+            sort_by: Optional[str] = None,
+            updated: Optional[str] = None) -> AsyncIterator[dict]:
         """Iterate over list of account subscriptions with optional filtering and sorting.
 
         Note:
