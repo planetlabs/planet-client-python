@@ -3,6 +3,7 @@
   --end-time, --updated, --hosting, --name, --name-contains, and --sort-by.
 - Add parameters to the orders list command: --source-type, --name,
   --name-contains, --created-on, --last-modified, --hosting, and --sort-by.
+- Remove the unused limit parameter of SubscriptionsClient.get_results_csv
 
 2.11.0 (2024-10-21)
 
