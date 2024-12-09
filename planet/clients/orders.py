@@ -462,16 +462,17 @@ class OrdersClient:
 
         return current_state
 
-    async def list_orders(self,
-                          state: Optional[str] = None,
-                          source_type: Optional[str] = None,
-                          name: Optional[str] = None,
-                          name__contains: Optional[str] = None,
-                          created_on: Optional[str] = None,
-                          last_modified: Optional[str] = None,
-                          hosting: Optional[bool] = None,
-                          sort_by: Optional[str] = None,
-                          limit: int = 100) -> AsyncIterator[dict]:
+    async def list_orders(
+            self,
+            state: Optional[str] = None,
+            limit: int = 100,
+            source_type: Optional[str] = None,
+            name: Optional[str] = None,
+            name__contains: Optional[str] = None,
+            created_on: Optional[str] = None,
+            last_modified: Optional[str] = None,
+            hosting: Optional[bool] = None,
+            sort_by: Optional[str] = None) -> AsyncIterator[dict]:
         """Iterate over the list of stored orders.
 
         By default, order descriptions are sorted by creation date with the last created
