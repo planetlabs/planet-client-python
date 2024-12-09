@@ -62,7 +62,7 @@ A list of your orders can also be viewed in a UI at https://www.planet.com/accou
 
 #### Number of existing orders
 
-You can use jq to process the output for more insight, like get a count of how many existing
+You can use `jq` to process the output for more insight, like get a count of how many existing
 orders you have. Orders are automatically deleted 90 days after completion, so this number
 roughly is equivalent to the number of orders created in the last 90 days.
 
