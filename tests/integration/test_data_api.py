@@ -28,7 +28,7 @@ from planet import exceptions, DataClient, data_filter
 from planet.clients.data import (LIST_SORT_DEFAULT,
                                  LIST_SEARCH_TYPE_DEFAULT,
                                  SEARCH_SORT_DEFAULT)
-from planet.sync import DataAPI
+from planet.sync.data import DataAPI
 from planet.http import Session
 
 TEST_URL = 'http://www.mocknotrealurl.com/api/path'
