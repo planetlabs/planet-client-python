@@ -27,8 +27,9 @@ import httpx
 import pytest
 import respx
 
-from planet import Planet, OrdersClient, exceptions, reporting
+from planet import OrdersClient, exceptions, reporting
 from planet.clients.orders import OrderStates
+from planet.sync import Planet
 
 TEST_URL = 'http://www.MockNotRealURL.com/api/path'
 TEST_BULK_CANCEL_URL = f'{TEST_URL}/bulk/orders/v2/cancel'
