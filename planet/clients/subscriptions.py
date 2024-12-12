@@ -395,7 +395,6 @@ class SubscriptionsClient:
         # during streaming. We may want to consider a retry decorator
         # for this entire method a la stamina:
         # https://github.com/hynek/stamina.
-        async with self._session._client.stream('GET', url,
-                                                params=params) as response:
+        async with self._session.stream('GET', url, params=params) as response:
             async for line in response.aiter_lines():
                 yield line
