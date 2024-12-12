@@ -254,10 +254,17 @@ class OrdersAPI:
 
     def list_orders(self,
                     state: Optional[str] = None,
-                    limit: int = 100) -> Iterator[dict]:
+                    limit: int = 100,
+                    source_type: Optional[str] = None,
+                    name: Optional[str] = None,
+                    name__contains: Optional[str] = None,
+                    created_on: Optional[str] = None,
+                    last_modified: Optional[str] = None,
+                    hosting: Optional[bool] = None,
+                    sort_by: Optional[str] = None) -> Iterator[dict]:
         """Iterate over the list of stored orders.
 
-        Order descriptions are sorted by creation date with the last created
+        By default, order descriptions are sorted by creation date with the last created
         order returned first.
 
         Note:
@@ -266,9 +273,32 @@ class OrdersAPI:
             single result description or return a list of descriptions.
 
         Parameters:
-            state: Filter orders to given state.
-            limit: Maximum number of results to return. When set to 0, no
+            state (str): filter by state.
+            source_type (str): filter by source type.
+            name (str): filter by name.
+            name__contains (str): only include orders with names containing this string.
+            created_on (str): filter by creation date-time or interval.
+            last_modified (str): filter by last modified date-time or interval.
+            hosting (bool): only return orders that contain a hosting block
+                (e.g. SentinelHub hosting).
+            sort_by (str): fields to sort orders by. Multiple fields can be specified,
+                separated by commas. The sort direction can be specified by appending
+                ' ASC' or ' DESC' to the field name. The default sort direction is
+                ascending. When multiple fields are specified, the sort order is applied
+                in the order the fields are listed.
+
+                Supported fields: name, created_on, state, last_modified
+
+                Examples:
+                 * "name"
+                 * "name DESC"
+                 * "name,state DESC,last_modified"
+            limit (int): maximum number of results to return. When set to 0, no
                 maximum is applied.
+
+        Datetime args (created_on and last_modified) can either be a date-time or an
+        interval, open or closed. Date and time expressions adhere to RFC 3339. Open
+        intervals are expressed using double-dots.
 
         Yields:
             Description of an order.
@@ -277,7 +307,15 @@ class OrdersAPI:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If state is not valid.
         """
-        results = self._client.list_orders(state, limit)
+        results = self._client.list_orders(state,
+                                           limit,
+                                           source_type,
+                                           name,
+                                           name__contains,
+                                           created_on,
+                                           last_modified,
+                                           hosting,
+                                           sort_by)
 
         try:
             while True:
