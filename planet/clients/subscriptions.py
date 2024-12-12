@@ -82,7 +82,7 @@ class SubscriptionsClient:
 
         Note:
             The name of this method is based on the API's method name.
-            This method provides iteration over subcriptions, it does
+            This method provides iteration over subscriptions, it does
             not return a list.
 
         Args:

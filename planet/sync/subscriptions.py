@@ -36,22 +36,60 @@ class SubscriptionsAPI:
 
     def list_subscriptions(self,
                            status: Optional[Sequence[str]] = None,
+                           limit: int = 100,
+                           created: Optional[str] = None,
+                           end_time: Optional[str] = None,
+                           hosting: Optional[bool] = None,
+                           name__contains: Optional[str] = None,
+                           name: Optional[str] = None,
                            source_type: Optional[str] = None,
-                           limit: int = 100) -> Iterator[Dict]:
+                           start_time: Optional[str] = None,
+                           sort_by: Optional[str] = None,
+                           updated: Optional[str] = None) -> Iterator[dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
         Note:
             The name of this method is based on the API's method name.
-            This method provides iteration over subcriptions, it does
+            This method provides iteration over subscriptions, it does
             not return a list.
 
         Args:
-            status (Set[str]): pass subscriptions with status in this
-                set, filter out subscriptions with status not in this
-                set.
+            created (str): filter by created time or interval.
+            end_time (str): filter by end time or interval.
+            hosting (bool): only return subscriptions that contain a
+                hosting block (e.g. SentinelHub hosting).
+            name__contains (str): only return subscriptions with a
+                name that contains the given string.
+            name (str): filter by name.
+            source_type (str): filter by source type.
+            start_time (str): filter by start time or interval.
+            status (Set[str]): include subscriptions with a status in this set.
+            sort_by (str): fields to sort subscriptions by. Multiple
+                fields can be specified, separated by commas. The sort
+                direction can be specified by appending ' ASC' or '
+                DESC' to the field name. The default sort direction is
+                ascending. When multiple fields are specified, the sort
+                order is applied in the order the fields are listed.
+
+                Supported fields: name, created, updated, start_time, end_time
+
+                Examples:
+                 * "name"
+                 * "name DESC"
+                 * "name,end_time DESC,start_time"
+            updated (str): filter by updated time or interval.
             limit (int): limit the number of subscriptions in the
-                results.
+                results. When set to 0, no maximum is applied.
             TODO: user_id
+
+        Datetime args (created, end_time, start_time, updated) can either be a
+        date-time or an interval, open or closed. Date and time expressions adhere
+        to RFC 3339. Open intervals are expressed using double-dots.
+
+        Examples:
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A closed interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Open intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
 
         Yields:
             dict: a description of a subscription.
@@ -61,7 +99,17 @@ class SubscriptionsAPI:
             ClientError: on a client error.
         """
 
-        results = self._client.list_subscriptions(status, source_type, limit)
+        results = self._client.list_subscriptions(status,
+                                                  limit,
+                                                  created,
+                                                  end_time,
+                                                  hosting,
+                                                  name__contains,
+                                                  name,
+                                                  source_type,
+                                                  start_time,
+                                                  sort_by,
+                                                  updated)
 
         try:
             while True:
