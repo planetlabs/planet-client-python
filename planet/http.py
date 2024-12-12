@@ -20,8 +20,9 @@ from contextlib import asynccontextmanager
 from http import HTTPStatus
 import logging
 import random
+import threading
 import time
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator, Awaitable, Optional, TypeVar
 
 import httpx
 from typing_extensions import Literal
@@ -29,6 +30,8 @@ from typing_extensions import Literal
 from .auth import Auth, AuthType
 from . import exceptions, models
 from .__version__ import __version__
+
+T = TypeVar("T")
 
 # NOTE: configuration of the session was performed using the data API quick
 # search endpoint. These values can be re-tested, tested with a new endpoint or
@@ -271,6 +274,20 @@ class Session(BaseSession):
 
         self._limiter = _Limiter(rate_limit=RATE_LIMIT, max_workers=MAX_ACTIVE)
         self.outcomes: Counter[str] = Counter()
+
+        # create a dedicated event loop for this httpx session.
+        def _start_background_loop(loop):
+            asyncio.set_event_loop(loop)
+            loop.run_forever()
+
+        self._loop = asyncio.new_event_loop()
+        self._loop_thread = threading.Thread(target=_start_background_loop,
+                                             args=(self._loop, ),
+                                             daemon=True)
+        self._loop_thread.start()
+
+    def call_sync(self, f: Awaitable[T]) -> T:
+        return asyncio.run_coroutine_threadsafe(f, self._loop).result()
 
     @classmethod
     async def _raise_for_status(cls, response):

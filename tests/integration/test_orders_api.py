@@ -29,6 +29,7 @@ import respx
 
 from planet import OrdersClient, exceptions, reporting
 from planet.clients.orders import OrderStates
+from planet.sync import Planet
 
 TEST_URL = 'http://www.MockNotRealURL.com/api/path'
 TEST_BULK_CANCEL_URL = f'{TEST_URL}/bulk/orders/v2/cancel'
@@ -120,6 +121,30 @@ async def test_list_orders_basic(order_descriptions, session):
 
 
 @respx.mock
+def test_list_orders_basic_sync(order_descriptions, session):
+    next_page_url = TEST_ORDERS_URL + 'blob/?page_marker=IAmATest'
+
+    order1, order2, order3 = order_descriptions
+
+    page1_response = {
+        "_links": {
+            "_self": "string", "next": next_page_url
+        },
+        "orders": [order1, order2]
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.get(TEST_ORDERS_URL).return_value = mock_resp
+
+    page2_response = {"_links": {"_self": next_page_url}, "orders": [order3]}
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+    assert order_descriptions == list(pl.orders.list_orders())
+
+
+@respx.mock
 @pytest.mark.anyio
 async def test_list_orders_filtering_and_sorting(order_descriptions, session):
     list_url = TEST_ORDERS_URL + '?source_type=all&state=failed&name=my_order_xyz&name__contains=xyz&created_on=2018-02-12T00:00:00Z/..&last_modified=../2018-03-18T12:31:12Z&hosting=true&sort_by=name DESC'
@@ -147,12 +172,42 @@ async def test_list_orders_filtering_and_sorting(order_descriptions, session):
     ]
 
 
+@respx.mock
+def test_list_orders_state_success_sync(order_descriptions, session):
+    list_url = TEST_ORDERS_URL + '?source_type=all&state=failed'
+
+    order1, order2, _ = order_descriptions
+
+    page1_response = {
+        "_links": {
+            "_self": "string"
+        }, "orders": [order1, order2]
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.get(list_url).return_value = mock_resp
+
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+
+    # if the value of state doesn't get sent as a url parameter,
+    # the mock will fail and this test will fail
+    assert [order1, order2] == list(pl.orders.list_orders(state='failed'))
+
+
 @pytest.mark.anyio
 async def test_list_orders_state_invalid(session):
     cl = OrdersClient(session, base_url=TEST_URL)
 
     with pytest.raises(exceptions.ClientError):
         [o async for o in cl.list_orders(state='invalidstate')]
+
+
+def test_list_orders_state_invalid_sync(session):
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+
+    with pytest.raises(exceptions.ClientError):
+        list(pl.orders.list_orders(state='invalidstate'))
 
 
 @respx.mock
@@ -201,6 +256,23 @@ async def test_create_order_basic(oid,
 
     cl = OrdersClient(session, base_url=TEST_URL)
     order = await cl.create_order(order_request)
+
+    assert order == order_description
+
+    assert json.loads(route.calls.last.request.content) == order_request
+
+
+@respx.mock
+def test_create_order_basic_sync(oid,
+                                 order_description,
+                                 order_request,
+                                 session):
+    route = respx.post(TEST_ORDERS_URL)
+    route.return_value = httpx.Response(HTTPStatus.OK, json=order_description)
+
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+    order = pl.orders.create_order(order_request)
 
     assert order == order_description
 
@@ -266,6 +338,18 @@ async def test_get_order(oid, order_description, session):
     assert order_description == order
 
 
+@respx.mock
+def test_get_order_sync(oid, order_description, session):
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.get(get_url).return_value = mock_resp
+
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+    order = pl.orders.get_order(oid)
+    assert order_description == order
+
+
 @pytest.mark.anyio
 async def test_get_order_invalid_id(session):
     cl = OrdersClient(session, base_url=TEST_URL)
@@ -299,6 +383,20 @@ async def test_cancel_order(oid, order_description, session):
 
     cl = OrdersClient(session, base_url=TEST_URL)
     json_resp = await cl.cancel_order(oid)
+    assert json_resp == example_resp
+
+
+@respx.mock
+def test_cancel_order_sync(oid, order_description, session):
+    cancel_url = f'{TEST_ORDERS_URL}/{oid}'
+    order_description['state'] = 'cancelled'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    example_resp = mock_resp.json()
+    respx.put(cancel_url).return_value = mock_resp
+
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+    json_resp = pl.orders.cancel_order(oid)
     assert json_resp == example_resp
 
 
@@ -372,6 +470,39 @@ async def test_cancel_orders_by_ids(session, oid):
     assert actual_body == expected_body
 
 
+@respx.mock
+def test_cancel_orders_by_ids_sync(session, oid):
+    oid2 = '5ece1dc0-ea81-11eb-837c-acde48001122'
+    test_ids = [oid, oid2]
+    example_result = {
+        "result": {
+            "succeeded": {
+                "count": 1
+            },
+            "failed": {
+                "count":
+                1,
+                "failures": [{
+                    "order_id": oid2,
+                    "message": "Order not in a cancellable state",
+                }]
+            }
+        }
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=example_result)
+    respx.post(TEST_BULK_CANCEL_URL).return_value = mock_resp
+
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+    res = pl.orders.cancel_orders(test_ids)
+
+    assert res == example_result
+
+    expected_body = {"order_ids": test_ids}
+    actual_body = json.loads(respx.calls.last.request.content)
+    assert actual_body == expected_body
+
+
 @pytest.mark.anyio
 async def test_cancel_orders_by_ids_invalid_id(session, oid):
     cl = OrdersClient(session, base_url=TEST_URL)
@@ -404,6 +535,30 @@ async def test_cancel_orders_all(session):
 
 
 @respx.mock
+def test_cancel_orders_all_sync(session):
+    example_result = {
+        "result": {
+            "succeeded": {
+                "count": 2
+            }, "failed": {
+                "count": 0, "failures": []
+            }
+        }
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=example_result)
+    respx.post(TEST_BULK_CANCEL_URL).return_value = mock_resp
+
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+    res = pl.orders.cancel_orders()
+
+    assert res == example_result
+
+    actual_body = json.loads(respx.calls.last.request.content)
+    assert actual_body == {}
+
+
+@respx.mock
 @pytest.mark.anyio
 async def test_wait_default(oid, order_description, session):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
@@ -422,6 +577,28 @@ async def test_wait_default(oid, order_description, session):
 
     cl = OrdersClient(session, base_url=TEST_URL)
     state = await cl.wait(oid, delay=0)
+    assert state == 'success'
+
+
+@respx.mock
+def test_wait_default_sync(oid, order_description, session):
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+
+    order_description2 = copy.deepcopy(order_description)
+    order_description2['state'] = 'running'
+    order_description3 = copy.deepcopy(order_description)
+    order_description3['state'] = 'success'
+
+    route = respx.get(get_url)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.OK, json=order_description),
+        httpx.Response(HTTPStatus.OK, json=order_description2),
+        httpx.Response(HTTPStatus.OK, json=order_description3)
+    ]
+
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+    state = pl.orders.wait(oid, delay=0)
     assert state == 'success'
 
 
@@ -447,6 +624,34 @@ async def test_wait_callback(oid, order_description, session):
 
     cl = OrdersClient(session, base_url=TEST_URL)
     await cl.wait(oid, delay=0, callback=mock_callback)
+
+    # check state was sent to callback as expected
+    expected = [call(s) for s in ['queued', 'running', 'success']]
+    mock_callback.assert_has_calls(expected)
+
+
+@respx.mock
+def test_wait_callback_sync(oid, order_description, session):
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+
+    order_description2 = copy.deepcopy(order_description)
+    order_description2['state'] = 'running'
+    order_description3 = copy.deepcopy(order_description)
+    order_description3['state'] = 'success'
+
+    route = respx.get(get_url)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.OK, json=order_description),
+        httpx.Response(HTTPStatus.OK, json=order_description2),
+        httpx.Response(HTTPStatus.OK, json=order_description3)
+    ]
+
+    mock_bar = create_autospec(reporting.StateBar)
+    mock_callback = mock_bar.update_state
+
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+    pl.orders.wait(oid, delay=0, callback=mock_callback)
 
     # check state was sent to callback as expected
     expected = [call(s) for s in ['queued', 'running', 'success']]
@@ -541,6 +746,26 @@ async def test_aggegated_order_stats(session):
 
 
 @respx.mock
+def test_aggegated_order_stats_sync(session):
+    example_stats = {
+        "organization": {
+            "queued_orders": 0, "running_orders": 6
+        },
+        "user": {
+            "queued_orders": 0, "running_orders": 0
+        }
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=example_stats)
+    respx.get(TEST_STATS_URL).return_value = mock_resp
+
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+    res = pl.orders.aggregated_order_stats()
+
+    assert res == example_stats
+
+
+@respx.mock
 @pytest.mark.anyio
 async def test_download_asset_md(tmpdir, session):
     dl_url = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
@@ -563,6 +788,36 @@ async def test_download_asset_md(tmpdir, session):
 
     cl = OrdersClient(session, base_url=TEST_URL)
     filename = await cl.download_asset(dl_url, directory=str(tmpdir))
+
+    with open(filename) as f:
+        assert json.load(f) == {'key': 'value'}
+
+    assert Path(filename).name == 'metadata.json'
+
+
+@respx.mock
+def test_download_asset_md_sync(tmpdir, session):
+    dl_url = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
+
+    md_json = {'key': 'value'}
+    md_headers = {
+        'Content-Type': 'application/json',
+        'Content-Disposition': 'attachment; filename="metadata.json"'
+    }
+
+    mock_redirect = httpx.Response(HTTPStatus.FOUND,
+                                   headers={
+                                       'Location': TEST_DOWNLOAD_ACTUAL_URL,
+                                       'Content-Length': '0'
+                                   })
+    mock_resp = httpx.Response(HTTPStatus.OK, json=md_json, headers=md_headers)
+
+    respx.get(dl_url).return_value = mock_redirect
+    respx.get(TEST_DOWNLOAD_ACTUAL_URL).return_value = mock_resp
+
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+    filename = pl.orders.download_asset(dl_url, directory=str(tmpdir))
 
     with open(filename) as f:
         assert json.load(f) == {'key': 'value'}
@@ -646,6 +901,50 @@ async def test_validate_checksum_checksum(tmpdir,
 
     with expectation:
         OrdersClient.validate_checksum(Path(tmpdir), checksum)
+
+
+@respx.mock
+@pytest.mark.parametrize("checksum", [("MD5"), ("SHA256")])
+@pytest.mark.parametrize(
+    "asset1_bytes, expectation",
+    [(b"1", does_not_raise()), (b"1", does_not_raise()),
+     (b"does not match", pytest.raises(exceptions.ClientError))])
+def test_validate_checksum_checksum_sync(tmpdir,
+                                         asset1_bytes,
+                                         expectation,
+                                         checksum):
+
+    itemtype1_dir = Path(tmpdir, 'itemtype1')
+    itemtype1_dir.mkdir()
+
+    asset1 = itemtype1_dir / 'asset1.tif'
+    asset1.write_bytes(b"1")
+
+    asset2 = itemtype1_dir / 'asset2.json'
+    asset2.write_bytes(b'{"foo": "bar"}')
+    asset2_bytes = asset2.read_bytes()
+
+    manifest_data = {
+        "name": "",
+        "files": [
+            {
+                "path": "itemtype1/asset1.tif",
+                "digests": {
+                    "md5": hashlib.md5(asset1_bytes).hexdigest(),
+                    "sha256": hashlib.sha256(asset1_bytes).hexdigest()}
+            }, {
+                "path": "itemtype1/asset2.json",
+                "digests": {
+                    "md5": hashlib.md5(asset2_bytes).hexdigest(),
+                    "sha256": hashlib.sha256(asset2_bytes).hexdigest()}
+            }]
+    }  # yapf: disable
+    Path(tmpdir, 'manifest.json').write_text(json.dumps(manifest_data))
+
+    pl = Planet()
+
+    with expectation:
+        pl.orders.validate_checksum(Path(tmpdir), checksum)
 
 
 @respx.mock
@@ -754,6 +1053,69 @@ async def test_download_order_success(results,
 
 
 @respx.mock
+@pytest.mark.parametrize(
+    "results, paths",
+    [(None, []),
+     ([], []),
+     ([{"location": f'{TEST_DOWNLOAD_URL}/1',
+        "name": "oid/itemtype1/asset.json"},
+       {"location": f'{TEST_DOWNLOAD_URL}/2',
+        "name": "oid/itemtype2/asset.json"},
+       ],
+      [Path('oid', 'itemtype1', 'asset.json'),
+       Path('oid', 'itemtype2', 'asset.json'),
+       ])
+     ])  # yapf: disable
+def test_download_order_success_sync(results,
+                                     paths,
+                                     tmpdir,
+                                     order_description,
+                                     oid,
+                                     session):
+
+    # Mock an HTTP response for download
+    order_description['state'] = 'success'
+    order_description['_links']['results'] = results
+
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.get(get_url).return_value = mock_resp
+
+    mock_resp1 = httpx.Response(HTTPStatus.OK,
+                                json={'key': 'value'},
+                                headers={
+                                    'Content-Type':
+                                    'application/json',
+                                    'Content-Disposition':
+                                    'attachment; filename="asset.json"'
+                                })
+    respx.get(f'{TEST_DOWNLOAD_URL}/1').return_value = mock_resp1
+
+    mock_resp2 = httpx.Response(HTTPStatus.OK,
+                                json={'key2': 'value2'},
+                                headers={
+                                    'Content-Type':
+                                    'application/json',
+                                    'Content-Disposition':
+                                    'attachment; filename="asset.json"'
+                                })
+    respx.get(f'{TEST_DOWNLOAD_URL}/2').return_value = mock_resp2
+
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+    filenames = pl.orders.download_order(oid, directory=str(tmpdir))
+
+    assert filenames == [Path(tmpdir, p) for p in paths]
+
+    if filenames:
+        with open(filenames[0]) as f:
+            assert json.load(f) == {'key': 'value'}
+
+        with open(filenames[1]) as f:
+            assert json.load(f) == {'key2': 'value2'}
+
+
+@respx.mock
 @pytest.mark.anyio
 async def test_download_order_state(tmpdir, order_description, oid, session):
     dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
@@ -770,6 +1132,25 @@ async def test_download_order_state(tmpdir, order_description, oid, session):
     cl = OrdersClient(session, base_url=TEST_URL)
     with pytest.raises(exceptions.ClientError):
         await cl.download_order(oid, directory=str(tmpdir))
+
+
+@respx.mock
+def test_download_order_state_sync(tmpdir, order_description, oid, session):
+    dl_url1 = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
+    order_description['_links']['results'] = [
+        {
+            'location': dl_url1
+        },
+    ]
+
+    get_url = f'{TEST_ORDERS_URL}/{oid}'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
+    respx.get(get_url).return_value = mock_resp
+
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+    with pytest.raises(exceptions.ClientError):
+        pl.orders.download_order(oid, directory=str(tmpdir))
 
 
 @respx.mock

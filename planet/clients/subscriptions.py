@@ -1,7 +1,7 @@
 """Planet Subscriptions API Python client."""
 
 import logging
-from typing import AsyncIterator, Optional, Sequence, Dict, Union
+from typing import AsyncIterator, Awaitable, Dict, Optional, Sequence, TypeVar, Union
 
 from typing_extensions import Literal
 
@@ -13,6 +13,8 @@ from ..constants import PLANET_BASE_URL
 BASE_URL = f'{PLANET_BASE_URL}/subscriptions/v1/'
 
 LOGGER = logging.getLogger()
+
+T = TypeVar("T")
 
 
 class SubscriptionsClient:
@@ -59,6 +61,10 @@ class SubscriptionsClient:
         if self._base_url.endswith('/'):
             self._base_url = self._base_url[:-1]
 
+    def call_sync(self, f: Awaitable[T]) -> T:
+        """block on an async function call, using the call_sync method of the session"""
+        return self._session.call_sync(f)
+
     async def list_subscriptions(
             self,
             status: Optional[Sequence[str]] = None,
@@ -72,11 +78,11 @@ class SubscriptionsClient:
             start_time: Optional[str] = None,
             sort_by: Optional[str] = None,
             updated: Optional[str] = None) -> AsyncIterator[dict]:
-        """Iterate over list of account subscriptions with optional filtering and sorting.
+        """Iterate over list of account subscriptions with optional filtering.
 
         Note:
             The name of this method is based on the API's method name.
-            This method provides iteration over subcriptions, it does
+            This method provides iteration over subscriptions, it does
             not return a list.
 
         Args:
