@@ -99,9 +99,9 @@ class OrdersClient:
         if self._base_url.endswith('/'):
             self._base_url = self._base_url[:-1]
 
-    def call_sync(self, f: Awaitable[T]) -> T:
+    def _call_sync(self, f: Awaitable[T]) -> T:
         """block on an async function call, using the call_sync method of the session"""
-        return self._session.call_sync(f)
+        return self._session._call_sync(f)
 
     @staticmethod
     def _check_order_id(oid):

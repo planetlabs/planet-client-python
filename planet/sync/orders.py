@@ -63,7 +63,7 @@ class OrdersAPI:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        return self._client.call_sync(self._client.create_order(request))
+        return self._client._call_sync(self._client.create_order(request))
 
     def get_order(self, order_id: str) -> Dict:
         """Get order details by Order ID.
@@ -78,7 +78,7 @@ class OrdersAPI:
             planet.exceptions.ClientError: If order_id is not a valid UUID.
             planet.exceptions.APIError: On API error.
         """
-        return self._client.call_sync(self._client.get_order(order_id))
+        return self._client._call_sync(self._client.get_order(order_id))
 
     def cancel_order(self, order_id: str) -> Dict[str, Any]:
         """Cancel a queued order.
@@ -93,7 +93,7 @@ class OrdersAPI:
             planet.exceptions.ClientError: If order_id is not a valid UUID.
             planet.exceptions.APIError: On API error.
         """
-        return self._client.call_sync(self._client.cancel_order(order_id))
+        return self._client._call_sync(self._client.cancel_order(order_id))
 
     def cancel_orders(self,
                       order_ids: Optional[List[str]] = None) -> Dict[str, Any]:
@@ -111,7 +111,7 @@ class OrdersAPI:
                 valid UUID.
             planet.exceptions.APIError: On API error.
         """
-        return self._client.call_sync(self._client.cancel_orders(order_ids))
+        return self._client._call_sync(self._client.cancel_orders(order_ids))
 
     def aggregated_order_stats(self) -> Dict[str, Any]:
         """Get aggregated counts of active orders.
@@ -122,7 +122,7 @@ class OrdersAPI:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        return self._client.call_sync(self._client.aggregated_order_stats())
+        return self._client._call_sync(self._client.aggregated_order_stats())
 
     def download_asset(self,
                        location: str,
@@ -146,7 +146,7 @@ class OrdersAPI:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.download_asset(location,
                                         filename,
                                         directory,
@@ -175,7 +175,7 @@ class OrdersAPI:
             planet.exceptions.ClientError: If the order is not in a final
                 state.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.download_order(order_id,
                                         directory,
                                         overwrite,
@@ -249,7 +249,7 @@ class OrdersAPI:
                 if the maximum number of attempts is reached before the
                 specified state or a final state is reached.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.wait(order_id, state, delay, max_attempts, callback))
 
     def list_orders(self,
@@ -319,6 +319,6 @@ class OrdersAPI:
 
         try:
             while True:
-                yield self._client.call_sync(results.__anext__())
+                yield self._client._call_sync(results.__anext__())
         except StopAsyncIteration:
             pass
