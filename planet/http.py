@@ -286,7 +286,7 @@ class Session(BaseSession):
                                              daemon=True)
         self._loop_thread.start()
 
-    def call_sync(self, f: Awaitable[T]) -> T:
+    def _call_sync(self, f: Awaitable[T]) -> T:
         return asyncio.run_coroutine_threadsafe(f, self._loop).result()
 
     @classmethod

@@ -82,7 +82,7 @@ class DataAPI:
 
         try:
             while True:
-                yield self._client.call_sync(results.__anext__())
+                yield self._client._call_sync(results.__anext__())
         except StopAsyncIteration:
             pass
 
@@ -125,7 +125,7 @@ class DataAPI:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.create_search(item_types,
                                        search_filter,
                                        name,
@@ -152,7 +152,7 @@ class DataAPI:
         Returns:
             Description of the saved search.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.update_search(search_id,
                                        item_types,
                                        search_filter,
@@ -184,7 +184,7 @@ class DataAPI:
 
         try:
             while True:
-                yield self._client.call_sync(results.__anext__())
+                yield self._client._call_sync(results.__anext__())
         except StopAsyncIteration:
             pass
 
@@ -197,7 +197,7 @@ class DataAPI:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        return self._client.call_sync(self._client.delete_search(search_id))
+        return self._client._call_sync(self._client.delete_search(search_id))
 
     def get_search(self, search_id: str) -> Dict:
         """Get a saved search by id.
@@ -211,7 +211,7 @@ class DataAPI:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        return self._client.call_sync(self._client.get_search(search_id))
+        return self._client._call_sync(self._client.get_search(search_id))
 
     def run_search(self,
                    search_id: str,
@@ -243,7 +243,7 @@ class DataAPI:
 
         try:
             while True:
-                yield self._client.call_sync(results.__anext__())
+                yield self._client._call_sync(results.__anext__())
         except StopAsyncIteration:
             pass
 
@@ -266,7 +266,7 @@ class DataAPI:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If interval is not valid.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.get_stats(item_types, search_filter, interval))
 
     def list_item_assets(self, item_type_id: str,
@@ -288,7 +288,7 @@ class DataAPI:
         Raises:
             planet.exceptions.APIError: On API error.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.list_item_assets(item_type_id, item_id))
 
     def get_asset(self, item_type_id: str, item_id: str,
@@ -308,7 +308,7 @@ class DataAPI:
             planet.exceptions.ClientError: If asset type identifier is not
             valid.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.get_asset(item_type_id, item_id, asset_type_id))
 
     def activate_asset(self, asset: Dict[str, Any]):
@@ -322,7 +322,7 @@ class DataAPI:
             planet.exceptions.ClientError: If asset description is not
             valid.
         """
-        return self._client.call_sync(self._client.activate_asset(asset))
+        return self._client._call_sync(self._client.activate_asset(asset))
 
     def wait_asset(
             self,
@@ -352,7 +352,7 @@ class DataAPI:
                 not available or if the maximum number of attempts is reached
                 before the asset is active.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.wait_asset(asset, delay, max_attempts, callback))
 
     def download_asset(self,
@@ -385,7 +385,7 @@ class DataAPI:
             planet.exceptions.ClientError: If asset is not active or asset
             description is not valid.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.download_asset(asset,
                                         filename,
                                         directory,

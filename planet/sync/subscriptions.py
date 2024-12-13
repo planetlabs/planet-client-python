@@ -113,7 +113,7 @@ class SubscriptionsAPI:
 
         try:
             while True:
-                yield self._client.call_sync(results.__anext__())
+                yield self._client._call_sync(results.__anext__())
         except StopAsyncIteration:
             pass
 
@@ -130,7 +130,7 @@ class SubscriptionsAPI:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.create_subscription(request))
 
     def cancel_subscription(self, subscription_id: str) -> None:
@@ -146,7 +146,7 @@ class SubscriptionsAPI:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.cancel_subscription(subscription_id))
 
     def update_subscription(self, subscription_id: str, request: dict) -> dict:
@@ -164,7 +164,7 @@ class SubscriptionsAPI:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.update_subscription(subscription_id, request))
 
     def patch_subscription(self, subscription_id: str,
@@ -183,7 +183,7 @@ class SubscriptionsAPI:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.patch_subscription(subscription_id, request))
 
     def get_subscription(self, subscription_id: str) -> Dict[str, Any]:
@@ -199,7 +199,7 @@ class SubscriptionsAPI:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        return self._client.call_sync(
+        return self._client._call_sync(
             self._client.get_subscription(subscription_id))
 
     def get_results(
@@ -238,7 +238,7 @@ class SubscriptionsAPI:
 
         try:
             while True:
-                yield self._client.call_sync(results.__anext__())
+                yield self._client._call_sync(results.__anext__())
         except StopAsyncIteration:
             pass
 
@@ -274,6 +274,6 @@ class SubscriptionsAPI:
         # https://github.com/hynek/stamina.
         try:
             while True:
-                yield self._client.call_sync(results.__anext__())
+                yield self._client._call_sync(results.__anext__())
         except StopAsyncIteration:
             pass
