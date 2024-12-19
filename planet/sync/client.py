@@ -3,6 +3,7 @@ from .data import DataAPI
 from .orders import OrdersAPI
 from .subscriptions import SubscriptionsAPI
 from planet.http import Session
+from planet.__version__ import __version__
 
 SYNC_CLIENT_AGENT = "python-sdk-sync"
 
@@ -42,8 +43,12 @@ class Planet:
 
     def __init__(self, session: Optional[Session] = None) -> None:
         self._session = session or Session()
-        self._session._client.headers.update(
-            {"X-Planet-App": SYNC_CLIENT_AGENT})
+        self._session._client.headers.update({
+            "X-Planet-App":
+            SYNC_CLIENT_AGENT,
+            "User-Agent":
+            "planet-client-python/" + __version__
+        })
 
         self.data = DataAPI(self._session)
         self.orders = OrdersAPI(self._session)
