@@ -5,7 +5,7 @@ title: Python SDK Quick Start
 The Planet SDK for Python makes it easy to access Planet’s massive repository of satellite imagery and add Planet
 data to your data ops workflow.
 
-**Note:** This is the new, non-asyncio client. If you want to take advantage of asyncio, check the [asyncio client guide](../python/sdk-guide.md).
+**Note:** This is the new, non-asyncio client. If you want to take advantage of asyncio, see the [async client guide](../python/sdk-guide.md). For the no-code CLI client, see the [CLI guide](../cli/cli-guide.md).
 
 Your feedback on this version of our client is appreciated. Please raise an issue on [GitHub](https://github.com/planetlabs/planet-client-python/issues) if you encounter any problems.
 
