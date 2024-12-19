@@ -47,7 +47,7 @@ class Planet:
             "X-Planet-App":
             SYNC_CLIENT_X_PLANET_APP,
             "User-Agent":
-            "planet-client-python/sync/" + __version__
+            f"planet-client-python/{__version__}/sync"
         })
 
         self.data = DataAPI(self._session)
