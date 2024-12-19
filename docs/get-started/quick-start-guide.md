@@ -1,132 +1,240 @@
 ---
-title: Quick Start Guide
+title: Python SDK Quick Start
 ---
 
+The Planet SDK for Python makes it easy to access Planet’s massive repository of satellite imagery and add Planet
+data to your data ops workflow.
 
-If you’re a Python developer, this Planet SDK for Python makes it easy to access Planet’s massive repository of satellite imagery and add Planet data to your data ops workflow.
+**Note:** This is the new, non-asyncio client. If you want to take advantage of asyncio, check the [asyncio client guide](../python/sdk-guide.md).
 
-If you’re not a Python developer, you can use the Command Line Interface (CLI) to get Planet data, and to process and analyze that data.
+Your feedback on this version of our client is appreciated. Please raise an issue on [GitHub](https://github.com/planetlabs/planet-client-python/issues) if you encounter any problems.
 
-Take the following steps to install the SDK and connect with the Planet Server.
+## Dependencies
 
-[TOC]
+This package requires [Python 3.9 or greater](https://python.org/downloads/). A virtual environment is strongly recommended.
 
-## Step 1: Install Python 3.9+ and a virtual environment
+You will need your Planet API credentials. You can find your API key in [Planet Explorer](https://planet.com/explorer) under Account Settings.
 
-This is a Python package, so you’ll need to install Python (version 3.9 or greater), and set up and install a virtual environment.
+## Installation
 
-Yes. Even if you’re not writing code—and only using the "no code" CLI part of the Planet SDK for Python—you’re using Python to communicate with the Planet Labs PBC servers. If you need help with Python install and setting up a virtual environment, read [Virtual Environments and the Planet SDK for Python](venv-tutorial.md).
+Install from PyPI using pip:
 
-## Step 2: Install the Planet SDK for Python
-
-Install the Planet SDK for Python using [pip](https://pip.pypa.io):
-
-```console
-$ pip install planet
+```bash
+pip install planet
 ```
 
-## Step 3: Check the Planet SDK for Python version
+## Usage
 
-```console
-$ planet --version
+### Authentication
+
+Use the `PL_API_KEY` environment variable to authenticate with the Planet API.
+
+```bash
+export PL_API_KEY=your_api_key
 ```
 
-You should be on some version 2 of the Planet SDK for Python.
+These examples will assume you are using the `PL_API_KEY` environment variable. If you are, you can skip to the next section.
 
-## Step 4: Sign on to your account
+#### Authenticate using the Session class
 
-Planet SDK for Python, like the Planet APIs, requires an account for use.
+Alternately, you can also authenticate using the `Session` class:
 
-### Have your Planet account username and password ready
+```python
+from planet import Auth, Session, Auth
+from planet.auth import APIKeyAuth
 
-To confirm your Planet account, or to get one if you don’t already have one, see [Get your Planet Account](get-your-planet-account.md).
-
-### Authenticate with the Planet server
-
-Just as you log in when you browse to https://account.planet.com, you’ll want to sign on to your account so you have access to your account and orders.
-
-At a terminal console, type the following Planet command:
-
-```console
-$ planet auth init
+pl = Planet(session=Session(auth=APIKeyAuth(key='your_api_key')))
 ```
 
-You’ll be prompted for the email and password you use to access [your account](https://account.planet.com). When you type in your password, you won’t see any indication that the characters are being accepted. But when you hit enter, you’ll know that you’ve succeeded because you’ll see on the command line:
 
-```console
-Initialized
+### The Planet client
+
+The `Planet` class is the main entry point for the Planet SDK. It provides access to the various APIs available on the Planet platform.
+
+```python
+from planet import Planet
+pl = Planet()  # automatically detects PL_API_KEY
 ```
 
-### Get your API key
+The Planet client has members `data`, `orders`, and `subscriptions`, which allow you to interact with the Data API, Orders API, and Subscriptions API.
 
-Now that you’ve logged in, you can easily retrieve your API key that is being used for requests with the following command:
+### Search
 
-```console
-planet auth value
+To search for items in the Planet catalog, use the `data.search()` method on the `Planet` client. The return value is an iterator that yields search
+results:
+
+```python
+from planet import Planet
+
+pl = Planet()
+for item in pl.data.search(['PSScene'], limit=5):
+    print(item)
 ```
 
-Many `planet` calls you make require an API key. This is a very convenient way to quickly grab your API key.
+#### Geometry
 
-#### Your API Key as an Environment Variable
+Use the `geometry` parameter to filter search results by geometry:
 
-You can also set the value of your API Key as an environment variable in your terminal at the command line:
-
-```console
-export PL_API_KEY=<your api key>
+```python
+geom = {
+  "coordinates": [
+    [
+      [
+        -125.41267816101056,
+        46.38901501783491
+      ],
+      [
+        -125.41267816101056,
+        41.101114161051015
+      ],
+      [
+        -115.51426167332103,
+        41.101114161051015
+      ],
+      [
+        -115.51426167332103,
+        46.38901501783491
+      ],
+      [
+        -125.41267816101056,
+        46.38901501783491
+      ]
+    ]
+  ],
+  "type": "Polygon"
+}
+for item in pl.data.search(['PSScene'], geometry=geom, limit=5):
+    print(item)
 ```
 
-And you can see that the value was stored successfully as an environment variable with the following command:
+#### Filters
 
-```console
-echo $PL_API_KEY
+The Data API allows a wide range of search parameters. Whether using the `.search()` method, or
+creating or updating a saved search, or requesting stats, a data search filter
+can be provided to the API as a JSON blob. This JSON blob can be built up manually or by using the
+`data_filter` module.
+
+An example of creating the request JSON with `data_filter`:
+
+```python
+from datetime import datetime
+from planet import data_filter
+
+def main():
+    pl = Planet()
+
+    sfilter = data_filter.and_filter([
+        data_filter.permission_filter(),
+        data_filter.date_range_filter('acquired', gt=datetime(2022, 6, 1, 1))
+    ])
+
+    for item in pl.data.search(['PSScene'], filter=sfilter, limit=10):
+        print(item["id"])
 ```
 
-!!!note "The API Key environment variable is ignored by the CLI but used by the Python library"
-    If you do create a `PL_API_KEY` environment variable, the CLI will be unaffected but the Planet library will use this as the source for authorization instead of the value stored in `planet auth init`.
+This returns scenes acquired after the provided date that you have permission to download using
+your plan.
 
-## Step 5: Search for Planet Imagery
+If you prefer to build the JSON blob manually, the above filter would look like this:
 
-You’ve installed the environment, the SDK, and connected with the Planet server. You’re now ready to get your first bunch of data.
-
-In this step, you search for the most recent PSScene images available to download and filter the list based on those images you actually have permissions to download.
-
-### planet data filter
-
-One of the commands you’ll use most frequently is `planet data filter`. This “convenience method” creates the JSON you need to run other commands. Run it with no arguments to see how it works by default:
-
-```console
-planet data filter --permission --std-quality
+```python
+sfilter = {
+    'type': 'AndFilter',
+    'config': [
+        {'type': 'PermissionFilter', 'config': ['assets:download']},
+        {
+            'type': 'DateRangeFilter',
+            'field_name': 'acquired',
+            'config': {'gt': '2022-06-01T01:00:00Z'}
+        }
+    ]
+}
 ```
 
-Look at the console output to see some default filters. `PermissionFilter` filters the output to only contain imagery that you have permission to download. You’ll also see `quality_category`, which means the output lists only images in the [`standard quality` category](https://developers.planet.com/docs/data/planetscope/#image-quality-standard-vs-test-imagery). Without these options, an empty filter is generated which would be used to disable filtering and simply return all results.
+This means that if you already have Data API filters saved as a query, you can copy them directly into the SDK.
 
-!!!note "The --help switch is your friend"
-    You can do a lot with this `filter` command. We recommend running `planet data filter --help` often to get a reference of how the commands work.
+### Placing an Order
 
-### planet data search
+Once you have a list of scenes you want to download, you can place an order for assets using the Orders API client. Please review
+[Items and Assets](https://developers.planet.com/docs/apis/data/items-assets/) in the Developer Center for a refresher on item types
+and asset types.
 
-Run the filter command and save it to a file named `filter.json`:
+Use the `order_request` module to build an order request, and then use the `orders.create_order()` method to place the order.
 
-```console
-planet data filter --permission --std-quality > filter.json
+Orders take time to process. You can use the `orders.wait()` method to wait for the order to be ready, and then use the `orders.download_order()` method to download the assets.
+
+Warning: running the following code will result in quota usage based on your plan.
+
+```python
+from planet import Planet, order_request
+
+def main():
+    pl = Planet()
+    image_ids = ["20200925_161029_69_2223"]
+    request = order_request.build_request(
+        name='test_order',
+        products=[
+           order_request.product(
+               item_ids=image_ids,
+               product_bundle='analytic_udm2',
+               item_type='psscene')
+       ]
+    )
+
+    order = pl.orders.create_order(request)
+
+    # wait for the order to be ready
+    # note: this may take several minutes.
+    pl.orders.wait(order['id'])
+
+    pl.orders.download_order(order['id'], overwrite=True)
 ```
 
-Then use that file with the search command and save the results to another file named `recent-psscene.json`.
+### Creating a subscription
 
-```console
-planet data search PSScene --filter filter.json > recent-psscene.json
+#### Prerequisites
+
+Subscriptions can be delivered to a destination. The following example uses Amazon S3.
+You will need your ACCESS_KEY_ID, SECRET_ACCESS_KEY, bucket and region name.
+
+#### Scene subscription
+
+To subscribe to scenes that match a filter, use the `subscription_request` module to build a request, and
+pass it to the `subscriptions.create_subscription()` method of the client.
+
+Warning: the following code will create a subscription, consuming quota based on your plan.
+
+```python
+from planet.subscription_request import catalog_source, build_request, amazon_s3
+
+source = catalog_source(
+    ["PSScene"],
+    ["ortho_analytic_4b"],
+    geometry={
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [37.791595458984375, 14.84923123791421],
+                [37.90214538574219, 14.84923123791421],
+                [37.90214538574219, 14.945448293647944],
+                [37.791595458984375, 14.945448293647944],
+                [37.791595458984375, 14.84923123791421],
+            ]
+        ],
+    },
+    start_time=datetime.now(),
+    publishing_stages=["standard"],
+    time_range_type="acquired",
+)
+
+request = build_request("Standard PSScene Ortho Analytic", source=source, delivery={})
+
+# define a delivery method. In this example, we're using AWS S3.
+delivery = amazon_s3(ACCESS_KEY_ID, SECRET_ACCESS_KEY, "test", "us-east-1")
+
+# finally, create the subscription
+subscription = pl.subscriptions.create_subscription(request)
 ```
-
-Open `recent-psscene.json` to see the 100 most recent PSScene images you have permissions to actually download.
-
-## Next steps
-
-Now that you have the quick setup for the Planet SDK for Python, you have a few options:
-
-* Continue to explore the [No-Code CLI Guide](../cli/cli-guide.md).
-* Start coding with the [Python SDK User Guide](../python/sdk-guide.md).
-* Check out some of the [examples in our GitHub repo](https://github.com/planetlabs/planet-client-python/tree/main/examples).
-
 ## How to Get Help
 
 As The Planet SDK (V2) is in active development, features & functionality will continue to be added.
@@ -135,3 +243,4 @@ If there's something you're missing or are stuck, the development team would lov
 
   - To report a bug or suggest a feature, [raise an issue on GitHub](https://github.com/planetlabs/planet-client-python/issues/new)
   - To get in touch with the development team, email [developers@planet.com](mailto:developers@planet.com)
+ - To get in touch with the development team, email [developers@planet.com](mailto:developers@planet.com)
