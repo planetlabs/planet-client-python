@@ -373,10 +373,27 @@ def clip_tool(aoi: dict) -> dict:
     return _tool('clip', {'aoi': geom})
 
 
-def composite_tool() -> dict:
-    """Create the API spec representation of a composite tool.
+def composite_tool(group_by: Optional[str] = None) -> dict:
     """
-    return _tool('composite', {})
+    Create the API spec representation of a composite tool.
+
+    Parameters:
+        group_by: (Optional) Defines how items are grouped to create one or more composites.
+                  Supported values are:
+                  - "order": All input items are used to create a single composite output.
+                  - "strip_id": Input items are grouped by their strip_id to create multiple composites.
+
+    Returns:
+        dict: A dictionary representing the composite tool configuration.
+    """
+    if group_by and group_by not in ["order", "strip_id"]:
+        raise ValueError(f"Invalid group_by value: {group_by}. Must be 'order' or 'strip_id'.")
+    
+    parameters = {}
+    if group_by:
+        parameters['group_by'] = group_by
+
+    return _tool('composite', parameters)
 
 
 def coregister_tool(anchor_item: str) -> dict:
