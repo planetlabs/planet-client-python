@@ -1,3 +1,19 @@
+2.13.0 (2024-12-18)
+- Add Planet class (`from planet import Planet`)
+  - Planet is a client that uses sync methods. Users do not have 
+    to interact with asyncio to use the sync client.
+  - the Planet class is implemented by calling out to the async methods.
+    This should be transparent to users. Depending on uptake and feedback,
+    the underlying implementation may change in the future (but we will commit
+    to semantic versioning when it comes to breaking changes in the API).
+
+2.12.0 (2024-12-09)
+- Add parameters to the subscriptions list command: --source-type, --created, --start-time,
+  --end-time, --updated, --hosting, --name, --name-contains, and --sort-by.
+- Add parameters to the orders list command: --source-type, --name,
+  --name-contains, --created-on, --last-modified, --hosting, and --sort-by.
+- Remove the unused limit parameter of SubscriptionsClient.get_results_csv
+
 2.11.0 (2024-10-21)
 
 Added:

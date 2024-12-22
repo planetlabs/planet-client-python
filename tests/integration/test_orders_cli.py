@@ -84,8 +84,8 @@ def test_cli_orders_list_empty(invoke):
 
 
 @respx.mock
-def test_cli_orders_list_state(invoke, order_descriptions):
-    list_url = TEST_ORDERS_URL + '?source_type=all&state=failed'
+def test_cli_orders_list_filtering_and_sorting(invoke, order_descriptions):
+    list_url = TEST_ORDERS_URL + '?source_type=all&state=failed&name=my_order_xyz&name__contains=xyz&created_on=2018-02-12T00:00:00Z/..&last_modified=../2018-03-18T12:31:12Z&hosting=true&sort_by=name DESC'
 
     order1, order2, _ = order_descriptions
 
@@ -97,9 +97,25 @@ def test_cli_orders_list_state(invoke, order_descriptions):
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(list_url).return_value = mock_resp
 
-    # if the value of state doesn't get sent as a url parameter,
+    # if the value of each arg doesn't get sent as a url parameter,
     # the mock will fail and this test will fail
-    result = invoke(['list', '--state', 'failed'])
+    result = invoke([
+        'list',
+        '--state',
+        'failed',
+        '--name',
+        'my_order_xyz',
+        '--name-contains',
+        'xyz',
+        '--created-on',
+        '2018-02-12T00:00:00Z/..',
+        '--last-modified',
+        '../2018-03-18T12:31:12Z',
+        '--hosting',
+        'true',
+        '--sort-by',
+        'name DESC'
+    ])
     assert result.exit_code == 0
     sequence = '\n'.join([json.dumps(o) for o in [order1, order2]])
     assert result.output == sequence + '\n'

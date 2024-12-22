@@ -9,7 +9,7 @@ description = "Planet SDK for Python"
 dependencies = [
     "click>=8.0",
     "geojson",
-    "httpx>=0.23.0",
+    "httpx<0.28.0",
     "jsonschema",
     "pyjwt>=2.1",
     "tqdm>=4.56",
@@ -34,7 +34,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 test = [
-    "pytest",
+    "pytest==8.3.3",
     "anyio",
     "pytest-cov",
     "respx>=0.20",

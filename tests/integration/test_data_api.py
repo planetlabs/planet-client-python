@@ -28,6 +28,8 @@ from planet import exceptions, DataClient, data_filter
 from planet.clients.data import (LIST_SORT_DEFAULT,
                                  LIST_SEARCH_TYPE_DEFAULT,
                                  SEARCH_SORT_DEFAULT)
+from planet.sync.data import DataAPI
+from planet.http import Session
 
 TEST_URL = 'http://www.mocknotrealurl.com/api/path'
 TEST_SEARCHES_URL = f'{TEST_URL}/searches'
@@ -70,6 +72,11 @@ def search_response(item_descriptions):
     return response
 
 
+@pytest.fixture(scope="module")
+def data_api():
+    return DataAPI(Session(), TEST_URL)
+
+
 @respx.mock
 @pytest.mark.anyio
 async def test_search_basic(item_descriptions, search_response, session):
@@ -92,6 +99,38 @@ async def test_search_basic(item_descriptions, search_response, session):
 
     cl = DataClient(session, base_url=TEST_URL)
     items_list = [i async for i in cl.search(['PSScene'])]
+
+    # check that request is correct
+    expected_request = {
+        "item_types": ["PSScene"], "filter": data_filter.empty_filter()
+    }
+    actual_body = json.loads(respx.calls[0].request.content)
+    assert actual_body == expected_request
+
+    # check that all of the items were returned unchanged
+    assert items_list == item_descriptions
+
+
+@respx.mock
+def test_search_basic_sync(item_descriptions, search_response, data_api):
+
+    quick_search_url = f'{TEST_URL}/quick-search'
+    next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
+
+    item1, item2, item3 = item_descriptions
+    page1_response = {
+        "_links": {
+            "_next": next_page_url
+        }, "features": [item1, item2]
+    }
+    mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.post(quick_search_url).return_value = mock_resp1
+
+    page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    items_list = list(data_api.search(['PSScene']))
 
     # check that request is correct
     expected_request = {
@@ -168,9 +207,51 @@ async def test_search_geometry(geom_fixture,
     cl = DataClient(session, base_url=TEST_URL)
     geom = request.getfixturevalue(geom_fixture)
     items_list = [
-        i async for i in cl.search(
-            ['PSScene'], name='quick_search', geometry=geom)
+        i async for i in cl.search(['PSScene'], name='quick_search',
+                                   geometry=geom)
     ]
+    # check that request is correct
+    expected_request = {
+        "item_types": ["PSScene"],
+        "geometry": geom,
+        "filter": data_filter.empty_filter(),
+        "name": "quick_search"
+    }
+    actual_body = json.loads(respx.calls[0].request.content)
+
+    assert actual_body == expected_request
+
+    # check that all of the items were returned unchanged
+    assert items_list == item_descriptions
+
+
+@respx.mock
+@pytest.mark.parametrize("geom_fixture", [('geom_geojson'),
+                                          ('geom_reference')])
+def test_search_geometry_sync(geom_fixture,
+                              item_descriptions,
+                              data_api,
+                              request):
+
+    quick_search_url = f'{TEST_URL}/quick-search'
+    next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
+
+    item1, item2, item3 = item_descriptions
+    page1_response = {
+        "_links": {
+            "_next": next_page_url
+        }, "features": [item1, item2]
+    }
+    mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.post(quick_search_url).return_value = mock_resp1
+
+    page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    geom = request.getfixturevalue(geom_fixture)
+    items_list = list(
+        data_api.search(['PSScene'], name='quick_search', geometry=geom))
     # check that request is correct
     expected_request = {
         "item_types": ["PSScene"],
@@ -274,8 +355,8 @@ async def test_search_sort(item_descriptions,
 
     # run through the iterator to actually initiate the call
     [
-        i async for i in cl.search(
-            ['PSScene'], search_filter=search_filter, sort=sort)
+        i async for i in cl.search(['PSScene'], search_filter=search_filter,
+                                   sort=sort)
     ]
 
 
@@ -297,8 +378,8 @@ async def test_search_limit(item_descriptions,
 
     cl = DataClient(session, base_url=TEST_URL)
     items_list = [
-        i async for i in cl.search(
-            ['PSScene'], search_filter=search_filter, limit=2)
+        i async for i in cl.search(['PSScene'], search_filter=search_filter,
+                                   limit=2)
     ]
 
     # check only the first two results were returned
@@ -326,6 +407,42 @@ async def test_create_search_basic(search_filter, session):
 
     cl = DataClient(session, base_url=TEST_URL)
     search = await cl.create_search(item_types=['PSScene'],
+                                    search_filter=search_filter,
+                                    name='test')
+
+    # check that request is correct
+    expected_request = {
+        "item_types": ["PSScene"],
+        "filter": search_filter,
+        "name": "test",
+        "__daily_email_enabled": False
+    }
+    actual_body = json.loads(respx.calls[0].request.content)
+    assert actual_body == expected_request
+
+    # check the response is returned unaltered
+    assert search == page_response
+
+
+@respx.mock
+def test_create_search_basic_sync(search_filter, data_api):
+
+    page_response = {
+        "__daily_email_enabled": False,
+        "_links": {
+            "_self": "string", "thumbnail": "string"
+        },
+        "created": "2019-08-24T14:15:22Z",
+        "filter": search_filter,
+        "id": "string",
+        "last_executed": "2019-08-24T14:15:22Z",
+        "name": "test",
+        "updated": "2019-08-24T14:15:22Z"
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.post(TEST_SEARCHES_URL).return_value = mock_resp
+
+    search = data_api.create_search(item_types=['PSScene'],
                                     search_filter=search_filter,
                                     name='test')
 
@@ -431,6 +548,15 @@ async def test_get_search_success(search_id, search_result, session):
 
 
 @respx.mock
+def test_get_search_success_sync(search_id, search_result, data_api):
+    get_url = f'{TEST_SEARCHES_URL}/{search_id}'
+    mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
+    respx.get(get_url).return_value = mock_resp
+    search = data_api.get_search(search_id)
+    assert search_result == search
+
+
+@respx.mock
 @pytest.mark.anyio
 async def test_get_search_id_doesnt_exist(search_id, session):
     get_url = f'{TEST_SEARCHES_URL}/{search_id}'
@@ -469,6 +595,44 @@ async def test_update_search_basic(search_filter, session):
 
     cl = DataClient(session, base_url=TEST_URL)
     search = await cl.update_search(VALID_SEARCH_ID,
+                                    item_types=['PSScene'],
+                                    search_filter=search_filter,
+                                    name='test')
+
+    # check that request is correct
+    expected_request = {
+        "item_types": ["PSScene"],
+        "filter": search_filter,
+        "name": "test",
+        "__daily_email_enabled": False
+    }
+    actual_body = json.loads(respx.calls[0].request.content)
+    assert actual_body == expected_request
+
+    # check the response is returned unaltered
+    assert search == page_response
+
+
+@respx.mock
+def test_update_search_basic_sync(search_filter, data_api):
+
+    page_response = {
+        "__daily_email_enabled": False,
+        "_links": {
+            "_self": "string", "thumbnail": "string"
+        },
+        "created": "2019-08-24T14:15:22Z",
+        "filter": search_filter,
+        "id": VALID_SEARCH_ID,
+        "last_executed": "2019-08-24T14:15:22Z",
+        "name": "test",
+        "updated": "2019-08-24T14:15:22Z"
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.put(
+        f'{TEST_SEARCHES_URL}/{VALID_SEARCH_ID}').return_value = mock_resp
+
+    search = data_api.update_search(VALID_SEARCH_ID,
                                     item_types=['PSScene'],
                                     search_filter=search_filter,
                                     name='test')
@@ -547,6 +711,22 @@ async def test_list_searches_success(limit,
 
 
 @respx.mock
+@pytest.mark.parametrize("limit, expected_list_length", [(None, 4), (3, 3)])
+def test_list_searches_success_sync(limit,
+                                    expected_list_length,
+                                    search_result,
+                                    data_api):
+    page1_response = {"_links": {}, "searches": [search_result] * 4}
+    route = respx.get(TEST_SEARCHES_URL)
+    route.return_value = httpx.Response(200, json=page1_response)
+
+    assert len(list(
+        data_api.list_searches(limit=limit))) == expected_list_length
+
+    assert route.called
+
+
+@respx.mock
 @pytest.mark.anyio
 @pytest.mark.parametrize("sort, rel_url",
                          [(LIST_SORT_DEFAULT, ''),
@@ -620,6 +800,21 @@ async def test_delete_search(retcode, expectation, session):
 
 
 @respx.mock
+@pytest.mark.parametrize("retcode, expectation",
+                         [(204, does_not_raise()),
+                          (404, pytest.raises(exceptions.APIError))])
+def test_delete_search_sync(retcode, expectation, data_api):
+    mock_resp = httpx.Response(retcode)
+    route = respx.delete(f'{TEST_SEARCHES_URL}/{VALID_SEARCH_ID}')
+    route.return_value = mock_resp
+
+    with expectation:
+        data_api.delete_search(VALID_SEARCH_ID)
+
+    assert route.called
+
+
+@respx.mock
 @pytest.mark.anyio
 @pytest.mark.parametrize("search_id, valid", [(VALID_SEARCH_ID, True),
                                               ('invalid', False)])
@@ -658,6 +853,44 @@ async def test_run_search_basic(item_descriptions,
     else:
         with pytest.raises(exceptions.ClientError):
             [i async for i in cl.run_search(search_id)]
+
+
+@respx.mock
+@pytest.mark.parametrize("search_id, valid", [(VALID_SEARCH_ID, True),
+                                              ('invalid', False)])
+@pytest.mark.parametrize("limit, expected_count", [(None, 3), (2, 2)])
+def test_run_search_basic_sync(item_descriptions,
+                               data_api,
+                               search_id,
+                               valid,
+                               limit,
+                               expected_count):
+    """Ensure run_search is successful and handles search_id and limit"""
+    next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
+    item1, item2, item3 = item_descriptions
+    page1_response = {
+        "_links": {
+            "_next": next_page_url
+        }, "features": [item1, item2]
+    }
+
+    route = respx.get(f'{TEST_SEARCHES_URL}/{search_id}/results')
+    route.return_value = httpx.Response(204, json=page1_response)
+
+    page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
+    mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
+    respx.get(next_page_url).return_value = mock_resp2
+
+    if valid:
+        items_list = list(data_api.run_search(search_id, limit=limit))
+
+        assert route.called
+
+        # check that all of the items were returned unchanged
+        assert items_list == item_descriptions[:expected_count]
+    else:
+        with pytest.raises(exceptions.ClientError):
+            list(data_api.run_search(search_id))
 
 
 @respx.mock
@@ -745,6 +978,38 @@ async def test_get_stats_success(search_filter, session):
 
 
 @respx.mock
+def test_get_stats_success_sync(search_filter, data_api):
+
+    page_response = {
+        "buckets": [
+            {
+                "count": 433638, "start_time": "2022-01-01T00:00:00.000000Z"
+            },
+            {
+                "count": 431924, "start_time": "2022-01-02T00:00:00.000000Z"
+            },
+            {
+                "count": 417138, "start_time": "2022-01-03T00:00:00.000000Z"
+            },
+        ],
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.post(TEST_STATS_URL).return_value = mock_resp
+
+    stats = data_api.get_stats(['PSScene'], search_filter, 'day')
+
+    # check that request is correct
+    expected_request = {
+        "item_types": ["PSScene"], "filter": search_filter, "interval": "day"
+    }
+    actual_body = json.loads(respx.calls[0].request.content)
+    assert actual_body == expected_request
+
+    # check the response is returned unaltered
+    assert stats == page_response
+
+
+@respx.mock
 @pytest.mark.anyio
 async def test_get_stats_invalid_interval(search_filter, session):
     cl = DataClient(session, base_url=TEST_URL)
@@ -792,6 +1057,48 @@ async def test_list_item_assets_success(session):
 
     cl = DataClient(session, base_url=TEST_URL)
     assets = await cl.list_item_assets(item_type_id, item_id)
+
+    # check the response is returned unaltered
+    assert assets == page_response
+
+
+@respx.mock
+def test_list_item_assets_success_sync(data_api):
+    item_type_id = 'PSScene'
+    item_id = '20221003_002705_38_2461'
+    assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
+
+    page_response = {
+        "basic_analytic_4b": {
+            "_links": {
+                "_self":
+                "SELFURL",
+                "activate":
+                "ACTIVATEURL",
+                "type":
+                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": "inactive",
+            "type": "basic_analytic_4b"
+        },
+        "basic_udm2": {
+            "_links": {
+                "_self": "SELFURL",
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": "inactive",
+            "type": "basic_udm2"
+        }
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.get(assets_url).return_value = mock_resp
+
+    assets = data_api.list_item_assets(item_type_id, item_id)
 
     # check the response is returned unaltered
     assert assets == page_response
@@ -864,6 +1171,53 @@ async def test_get_asset(asset_type_id, expectation, session):
 
 
 @respx.mock
+@pytest.mark.parametrize("asset_type_id, expectation",
+                         [('basic_udm2', does_not_raise()),
+                          ('invalid', pytest.raises(exceptions.ClientError))])
+def test_get_asset_sync(asset_type_id, expectation, data_api):
+    item_type_id = 'PSScene'
+    item_id = '20221003_002705_38_2461'
+    assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
+
+    basic_udm2_asset = {
+        "_links": {
+            "_self": "SELFURL",
+            "activate": "ACTIVATEURL",
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "md5_digest": None,
+        "status": "inactive",
+        "type": "basic_udm2"
+    }
+
+    page_response = {
+        "basic_analytic_4b": {
+            "_links": {
+                "_self":
+                "SELFURL",
+                "activate":
+                "ACTIVATEURL",
+                "type":
+                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+            },
+            "_permissions": ["download"],
+            "md5_digest": None,
+            "status": "inactive",
+            "type": "basic_analytic_4b"
+        },
+        "basic_udm2": basic_udm2_asset
+    }
+
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
+    respx.get(assets_url).return_value = mock_resp
+
+    with expectation:
+        asset = data_api.get_asset(item_type_id, item_id, asset_type_id)
+        assert asset == basic_udm2_asset
+
+
+@respx.mock
 @pytest.mark.anyio
 @pytest.mark.parametrize("status, expectation", [('inactive', True),
                                                  ('active', False)])
@@ -888,6 +1242,33 @@ async def test_activate_asset_success(status, expectation, session):
 
     cl = DataClient(session, base_url=TEST_URL)
     await cl.activate_asset(basic_udm2_asset)
+
+    assert route.called == expectation
+
+
+@respx.mock
+@pytest.mark.parametrize("status, expectation", [('inactive', True),
+                                                 ('active', False)])
+def test_activate_asset_success_sync(status, expectation, data_api):
+    activate_url = f'{TEST_URL}/activate'
+
+    mock_resp = httpx.Response(HTTPStatus.OK)
+    route = respx.get(activate_url)
+    route.return_value = mock_resp
+
+    basic_udm2_asset = {
+        "_links": {
+            "_self": "SELFURL",
+            "activate": activate_url,
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "md5_digest": None,
+        "status": status,
+        "type": "basic_udm2"
+    }
+
+    data_api.activate_asset(basic_udm2_asset)
 
     assert route.called == expectation
 
@@ -930,6 +1311,37 @@ async def test_wait_asset_success(session):
 
     cl = DataClient(session, base_url=TEST_URL)
     asset = await cl.wait_asset(basic_udm2_asset, delay=0)
+
+    assert asset == basic_udm2_asset_active
+
+
+@respx.mock
+def test_wait_asset_success_sync(data_api):
+    asset_url = f'{TEST_URL}/asset'
+
+    basic_udm2_asset = {
+        "_links": {
+            "_self": asset_url,
+            "activate": "ACTIVATEURL",
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "md5_digest": None,
+        "status": 'activating',
+        "type": "basic_udm2"
+    }
+
+    basic_udm2_asset_active = copy.deepcopy(basic_udm2_asset)
+    basic_udm2_asset_active['status'] = 'active'
+
+    route = respx.get(asset_url)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset),
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset),
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset_active)
+    ]
+
+    asset = data_api.wait_asset(basic_udm2_asset, delay=0)
 
     assert asset == basic_udm2_asset_active
 
@@ -1032,6 +1444,71 @@ async def test_download_asset(exists,
 
 @respx.mock
 @pytest.mark.anyio
+@pytest.mark.parametrize("exists, overwrite",
+                         [(False, False), (True, False), (True, True),
+                          (False, True)])
+async def test_download_asset_sync(exists,
+                                   overwrite,
+                                   tmpdir,
+                                   open_test_img,
+                                   data_api):
+    # NOTE: this is a slightly edited version of test_download_asset_img from
+    # tests/integration/test_orders_api
+    dl_url = f'{TEST_URL}/1?token=IAmAToken'
+
+    img_headers = {
+        'Content-Type': 'image/tiff',
+        'Content-Length': '527',
+        'Content-Disposition': 'attachment; filename="img.tif"'
+    }
+
+    async def _stream_img():
+        data = open_test_img.read()
+        v = memoryview(data)
+
+        chunksize = 100
+        for i in range(math.ceil(len(v) / (chunksize))):
+            yield v[i * chunksize:min((i + 1) * chunksize, len(v))]
+
+    # populate request parameter to avoid respx cloning, which throws
+    # an error caused by respx and not this code
+    # https://github.com/lundberg/respx/issues/130
+    mock_resp = httpx.Response(HTTPStatus.OK,
+                               stream=_stream_img(),
+                               headers=img_headers,
+                               request='donotcloneme')
+    respx.get(dl_url).return_value = mock_resp
+
+    basic_udm2_asset = {
+        "_links": {
+            "_self": "SELFURL",
+            "activate": "ACTIVATEURL",
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "md5_digest": None,
+        "status": 'active',
+        "location": dl_url,
+        "type": "basic_udm2"
+    }
+
+    if exists:
+        Path(tmpdir, 'img.tif').write_text('i exist')
+
+    path = data_api.download_asset(basic_udm2_asset,
+                                   directory=tmpdir,
+                                   overwrite=overwrite)
+    assert path.name == 'img.tif'
+    assert path.is_file()
+
+    if exists and not overwrite:
+        assert path.read_text() == 'i exist'
+    else:
+        assert len(path.read_bytes()) == 527
+
+
+@respx.mock
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "hashes_match, md5_entry, expectation",
     [(True, True, does_not_raise()),
@@ -1062,3 +1539,36 @@ async def test_validate_checksum(hashes_match, md5_entry, expectation, tmpdir):
 
     with expectation:
         DataClient.validate_checksum(basic_udm2_asset, testfile)
+
+
+@respx.mock
+@pytest.mark.parametrize(
+    "hashes_match, md5_entry, expectation",
+    [(True, True, does_not_raise()),
+     (False, True, pytest.raises(exceptions.ClientError)),
+     (True, False, pytest.raises(exceptions.ClientError))])
+def test_validate_checksum_sync(hashes_match, md5_entry, expectation, tmpdir):
+    test_bytes = b'foo bar'
+    testfile = Path(tmpdir / 'test.txt')
+    testfile.write_bytes(test_bytes)
+
+    hash_md5 = hashlib.md5(test_bytes).hexdigest()
+
+    basic_udm2_asset = {
+        "_links": {
+            "_self": "SELFURL",
+            "activate": "ACTIVATEURL",
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "status": 'active',
+        "location": "DOWNLOADURL",
+        "type": "basic_udm2"
+    }
+
+    if md5_entry:
+        asset_hash = hash_md5 if hashes_match else 'invalid'
+        basic_udm2_asset["md5_digest"] = asset_hash
+
+    with expectation:
+        DataAPI.validate_checksum(basic_udm2_asset, testfile)

@@ -10,6 +10,7 @@ import pytest
 import respx
 from respx.patterns import M
 
+from planet.sync import Planet
 from planet.clients.subscriptions import SubscriptionsClient
 from planet.exceptions import APIError, PagingError, ServerError
 from planet.http import Session
@@ -28,7 +29,7 @@ failing_api_mock.route(M(url__startswith=TEST_URL)).mock(
     }))
 
 
-def result_pages(status=None, size=40):
+def subscription_pages(status=None, size=40):
     """Helper for creating fake subscriptions listing pages."""
     all_subs = [{'id': str(i), 'status': 'running'} for i in range(1, 101)]
     select_subs = (sub for sub in all_subs
@@ -54,7 +55,7 @@ api_mock = respx.mock(assert_all_called=False)
 api_mock.route(M(url=TEST_URL),
                M(params__contains={'status': 'running'})).mock(side_effect=[
                    Response(200, json=page)
-                   for page in result_pages(status={'running'}, size=40)
+                   for page in subscription_pages(status={'running'}, size=40)
                ])
 
 # 2. Request for status: failed. Response has a single empty page.
@@ -71,7 +72,7 @@ api_mock.route(
     M(url=TEST_URL),
     M(params__contains={'source_type': 'catalog'})).mock(side_effect=[
         Response(200, json=page)
-        for page in result_pages(status={'running'}, size=40)
+        for page in subscription_pages(status={'running'}, size=40)
     ])
 
 # 5. source_type: soil_water_content requested. Response has a single empty page.
@@ -79,9 +80,32 @@ api_mock.route(M(url=TEST_URL),
                M(params__contains={'source_type': 'soil_water_content'})).mock(
                    side_effect=[Response(200, json={'subscriptions': []})])
 
-# 6. No status or source_type requested. Response is the same as for 1.
-api_mock.route(M(url=TEST_URL)).mock(
-    side_effect=[Response(200, json=page) for page in result_pages(size=40)])
+# 6. All other parameters are used. Response has 2 subscriptions.
+# The response is unrealistic here, but we are just testing the query parameter handling.
+api_mock.route(
+    M(url=TEST_URL),
+    M(
+        params__contains={
+            'name': 'test xyz',
+            'name__contains': 'xyz',
+            'created': '2018-02-12T00:00:00Z/..',
+            'updated': '../2018-03-18T12:31:12Z',
+            'start_time': '2018-01-01T00:00:00Z',
+            'end_time': '2022-01-01T00:00:00Z/2024-01-01T00:00:00Z',
+            'hosting': 'true',
+            'sort_by': 'name DESC',
+        })).mock(side_effect=[
+            Response(200, json={'subscriptions': [{
+                'id': 1
+            }, {
+                'id': 2
+            }]})
+        ])
+
+# 7. No status or source_type requested. Response is the same as for 1.
+api_mock.route(M(url=TEST_URL)).mock(side_effect=[
+    Response(200, json=page) for page in subscription_pages(size=40)
+])
 
 
 # The "creation", "update", and "cancel" mock APIs return submitted
@@ -195,6 +219,20 @@ async def test_list_subscriptions_success(
         ]) == count
 
 
+@pytest.mark.parametrize("status, count", [({"running"}, 100), ({"failed"}, 0),
+                                           (None, 100)])
+@api_mock
+def test_list_subscriptions_success_sync(
+    status,
+    count,
+):
+    """Account subscriptions iterator yields expected descriptions."""
+    client = Planet()
+    client.subscriptions._client._base_url = TEST_URL
+    assert len(list(
+        client.subscriptions.list_subscriptions(status=status))) == count
+
+
 @pytest.mark.parametrize("source_type, count",
                          [("catalog", 100), ("soil_water_content", 0),
                           (None, 100)])
@@ -211,6 +249,22 @@ async def test_list_subscriptions_source_type_success(
             sub
             async for sub in client.list_subscriptions(source_type=source_type)
         ]) == count
+
+
+@pytest.mark.anyio
+@api_mock
+async def test_list_subscriptions_filtering_and_sorting():
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        assert len([
+            sub async for sub in client.list_subscriptions(
+                name='test xyz', name__contains='xyz',
+                created='2018-02-12T00:00:00Z/..',
+                updated='../2018-03-18T12:31:12Z',
+                start_time='2018-01-01T00:00:00Z',
+                end_time='2022-01-01T00:00:00Z/2024-01-01T00:00:00Z',
+                hosting=True, sort_by='name DESC')
+        ]) == 2
 
 
 @pytest.mark.anyio
@@ -235,6 +289,18 @@ async def test_create_subscription_success():
         assert sub['name'] == 'test'
 
 
+@create_mock
+def test_create_subscription_success_sync():
+    """Subscription is created, description has the expected items."""
+
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    sub = pl.subscriptions.create_subscription({
+        'name': 'test', 'delivery': 'yes, please', 'source': 'test'
+    })
+    assert sub['name'] == 'test'
+
+
 @pytest.mark.anyio
 @create_mock
 async def test_create_subscription_with_hosting_success():
@@ -245,6 +311,17 @@ async def test_create_subscription_with_hosting_success():
             'name': 'test', 'source': 'test', 'hosting': 'yes, please'
         })
         assert sub['name'] == 'test'
+
+
+@create_mock
+def test_create_subscription_with_hosting_success_sync():
+    """Subscription is created, description has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    sub = pl.subscriptions.create_subscription({
+        'name': 'test', 'source': 'test', 'hosting': 'yes, please'
+    })
+    assert sub['name'] == 'test'
 
 
 @pytest.mark.anyio
@@ -264,6 +341,14 @@ async def test_cancel_subscription_success():
     async with Session() as session:
         client = SubscriptionsClient(session, base_url=TEST_URL)
         _ = await client.cancel_subscription("test")
+
+
+@cancel_mock
+def test_cancel_subscription_success_sync():
+    """Subscription is canceled, description has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    _ = pl.subscriptions.cancel_subscription("test")
 
 
 @pytest.mark.anyio
@@ -289,6 +374,18 @@ async def test_update_subscription_success():
         assert sub["delivery"] == "no, thanks"
 
 
+@update_mock
+def test_update_subscription_success_sync():
+    """Subscription is updated, description has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    sub = pl.subscriptions.update_subscription(
+        "test", {
+            "name": "test", "delivery": "no, thanks", "source": "test"
+        })
+    assert sub["delivery"] == "no, thanks"
+
+
 @pytest.mark.anyio
 @patch_mock
 async def test_patch_subscription_success():
@@ -297,6 +394,15 @@ async def test_patch_subscription_success():
         client = SubscriptionsClient(session, base_url=TEST_URL)
         sub = await client.patch_subscription("test", {"name": "test patch"})
         assert sub["name"] == "test patch"
+
+
+@patch_mock
+def test_patch_subscription_success_sync():
+    """Subscription is patched, description has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    sub = pl.subscriptions.patch_subscription("test", {"name": "test patch"})
+    assert sub["name"] == "test patch"
 
 
 @pytest.mark.anyio
@@ -319,6 +425,15 @@ async def test_get_subscription_success(monkeypatch):
         assert sub['delivery'] == "yes, please"
 
 
+@get_mock
+def test_get_subscription_success_sync(monkeypatch):
+    """Subscription description fetched, has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    sub = pl.subscriptions.get_subscription("test")
+    assert sub['delivery'] == "yes, please"
+
+
 @pytest.mark.anyio
 @failing_api_mock
 async def test_get_results_failure():
@@ -339,6 +454,15 @@ async def test_get_results_success():
         assert len(results) == 100
 
 
+@res_api_mock
+def test_get_results_success_sync():
+    """Subscription description fetched, has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    results = list(pl.subscriptions.get_results("42"))
+    assert len(results) == 100
+
+
 @pytest.mark.anyio
 @res_api_mock
 async def test_get_results_csv():
@@ -348,6 +472,16 @@ async def test_get_results_csv():
         results = [res async for res in client.get_results_csv("42")]
         rows = list(csv.reader(results))
         assert rows == [['id', 'status'], ['1234-abcd', 'SUCCESS']]
+
+
+@res_api_mock
+def test_get_results_csv_sync():
+    """Subscription CSV fetched, has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    results = list(pl.subscriptions.get_results_csv("42"))
+    rows = list(csv.reader(results))
+    assert rows == [['id', 'status'], ['1234-abcd', 'SUCCESS']]
 
 
 paging_cycle_api_mock = respx.mock()

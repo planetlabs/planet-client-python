@@ -20,8 +20,9 @@ from contextlib import asynccontextmanager
 from http import HTTPStatus
 import logging
 import random
+import threading
 import time
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator, Awaitable, Optional, TypeVar
 
 import httpx
 from typing_extensions import Literal
@@ -29,6 +30,8 @@ from typing_extensions import Literal
 from .auth import Auth, AuthType
 from . import exceptions, models
 from .__version__ import __version__
+
+T = TypeVar("T")
 
 # NOTE: configuration of the session was performed using the data API quick
 # search endpoint. These values can be re-tested, tested with a new endpoint or
@@ -272,6 +275,20 @@ class Session(BaseSession):
         self._limiter = _Limiter(rate_limit=RATE_LIMIT, max_workers=MAX_ACTIVE)
         self.outcomes: Counter[str] = Counter()
 
+        # create a dedicated event loop for this httpx session.
+        def _start_background_loop(loop):
+            asyncio.set_event_loop(loop)
+            loop.run_forever()
+
+        self._loop = asyncio.new_event_loop()
+        self._loop_thread = threading.Thread(target=_start_background_loop,
+                                             args=(self._loop, ),
+                                             daemon=True)
+        self._loop_thread.start()
+
+    def _call_sync(self, f: Awaitable[T]) -> T:
+        return asyncio.run_coroutine_threadsafe(f, self._loop).result()
+
     @classmethod
     async def _raise_for_status(cls, response):
         if response.is_error:
@@ -396,8 +413,11 @@ class Session(BaseSession):
 
     @asynccontextmanager
     async def stream(
-            self, method: str,
-            url: str) -> AsyncGenerator[models.StreamingResponse, None]:
+        self,
+        method: str,
+        url: str,
+        params: Optional[dict] = None
+    ) -> AsyncGenerator[models.StreamingResponse, None]:
         """Submit a request and get the response as a stream context manager.
 
         Parameters:
@@ -407,7 +427,9 @@ class Session(BaseSession):
         Returns:
             Context manager providing the streaming response.
         """
-        request = self._client.build_request(method=method, url=url)
+        request = self._client.build_request(method=method,
+                                             url=url,
+                                             params=params)
         http_response = await self._retry(self._send, request, stream=True)
         response = models.StreamingResponse(http_response)
         try:

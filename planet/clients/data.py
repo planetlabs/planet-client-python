@@ -17,7 +17,7 @@ import hashlib
 import logging
 from pathlib import Path
 import time
-from typing import Any, AsyncIterator, Callable, Dict, List, Optional
+from typing import Any, AsyncIterator, Awaitable, Callable, Dict, List, Optional, TypeVar
 import uuid
 
 from ..data_filter import empty_filter
@@ -51,6 +51,8 @@ WAIT_DELAY = 5
 WAIT_MAX_ATTEMPTS = 200
 
 LOGGER = logging.getLogger(__name__)
+
+T = TypeVar("T")
 
 
 class Items(Paged):
@@ -95,6 +97,10 @@ class DataClient:
         self._base_url = base_url or BASE_URL
         if self._base_url.endswith('/'):
             self._base_url = self._base_url[:-1]
+
+    def _call_sync(self, f: Awaitable[T]) -> T:
+        """block on an async function call, using the call_sync method of the session"""
+        return self._session._call_sync(f)
 
     @staticmethod
     def _check_search_id(sid):

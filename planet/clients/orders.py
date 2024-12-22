@@ -16,7 +16,7 @@
 import asyncio
 import logging
 import time
-from typing import AsyncIterator, Callable, List, Optional
+from typing import AsyncIterator, Awaitable, Callable, Dict, List, Optional, Sequence, TypeVar, Union
 import uuid
 import json
 import hashlib
@@ -38,6 +38,8 @@ ORDER_STATE_SEQUENCE = \
     ('queued', 'running', 'failed', 'success', 'partial', 'cancelled')
 
 LOGGER = logging.getLogger(__name__)
+
+T = TypeVar("T")
 
 
 class Orders(Paged):
@@ -96,6 +98,10 @@ class OrdersClient:
         self._base_url = base_url or BASE_URL
         if self._base_url.endswith('/'):
             self._base_url = self._base_url[:-1]
+
+    def _call_sync(self, f: Awaitable[T]) -> T:
+        """block on an async function call, using the call_sync method of the session"""
+        return self._session._call_sync(f)
 
     @staticmethod
     def _check_order_id(oid):
@@ -435,6 +441,7 @@ class OrdersClient:
         # loop without end if max_attempts is zero
         # otherwise, loop until num_attempts reaches max_attempts
         num_attempts = 0
+        current_state = "UNKNOWN"
         while not max_attempts or num_attempts < max_attempts:
             t = time.time()
 
@@ -462,12 +469,20 @@ class OrdersClient:
 
         return current_state
 
-    async def list_orders(self,
-                          state: Optional[str] = None,
-                          limit: int = 100) -> AsyncIterator[dict]:
+    async def list_orders(
+            self,
+            state: Optional[str] = None,
+            limit: int = 100,
+            source_type: Optional[str] = None,
+            name: Optional[str] = None,
+            name__contains: Optional[str] = None,
+            created_on: Optional[str] = None,
+            last_modified: Optional[str] = None,
+            hosting: Optional[bool] = None,
+            sort_by: Optional[str] = None) -> AsyncIterator[dict]:
         """Iterate over the list of stored orders.
 
-        Order descriptions are sorted by creation date with the last created
+        By default, order descriptions are sorted by creation date with the last created
         order returned first.
 
         Note:
@@ -476,9 +491,37 @@ class OrdersClient:
             single result description or return a list of descriptions.
 
         Parameters:
-            state: Filter orders to given state.
-            limit: Maximum number of results to return. When set to 0, no
+            state (str): filter by state.
+            source_type (str): filter by source type.
+            name (str): filter by name.
+            name__contains (str): only include orders with names containing this string.
+            created_on (str): filter by creation date-time or interval.
+            last_modified (str): filter by last modified date-time or interval.
+            hosting (bool): only return orders that contain a hosting block
+                (e.g. SentinelHub hosting).
+            sort_by (str): fields to sort orders by. Multiple fields can be specified,
+                separated by commas. The sort direction can be specified by appending
+                ' ASC' or ' DESC' to the field name. The default sort direction is
+                ascending. When multiple fields are specified, the sort order is applied
+                in the order the fields are listed.
+
+                Supported fields: name, created_on, state, last_modified
+
+                Examples:
+                 * "name"
+                 * "name DESC"
+                 * "name,state DESC,last_modified"
+            limit (int): maximum number of results to return. When set to 0, no
                 maximum is applied.
+
+        Datetime args (created_on and last_modified) can either be a date-time or an
+        interval, open or closed. Date and time expressions adhere to RFC 3339. Open
+        intervals are expressed using double-dots.
+
+        Examples:
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A closed interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Open intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
 
         Yields:
             Description of an order.
@@ -488,8 +531,23 @@ class OrdersClient:
             planet.exceptions.ClientError: If state is not valid.
         """
         url = self._orders_url()
-        params = {"source_type": "all"}
-
+        params: Dict[str, Union[str, Sequence[str], bool]] = {}
+        if source_type is not None:
+            params["source_type"] = source_type
+        else:
+            params["source_type"] = "all"
+        if name is not None:
+            params["name"] = name
+        if name__contains is not None:
+            params["name__contains"] = name__contains
+        if created_on is not None:
+            params["created_on"] = created_on
+        if last_modified is not None:
+            params["last_modified"] = last_modified
+        if hosting is not None:
+            params["hosting"] = hosting
+        if sort_by is not None:
+            params["sort_by"] = sort_by
         if state:
             if state not in ORDER_STATE_SEQUENCE:
                 raise exceptions.ClientError(
