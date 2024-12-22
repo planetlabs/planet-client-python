@@ -102,7 +102,7 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
     ##
     ## Default that should be used when no other selection has been made
     ##
-    DEFAULT_PROFILE = BUILTIN_PROFILE_NAME_PLANET_USER
+    # DEFAULT_PROFILE = BUILTIN_PROFILE_NAME_PLANET_USER
 
     _builtin_profile_auth_client_configs = {
         ## OAuth Client Configs
@@ -117,7 +117,7 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
     }
 
     _builtin_profile_aliases = {
-        BUILTIN_PROFILE_NAME_DEFAULT              : DEFAULT_PROFILE,
+        # BUILTIN_PROFILE_NAME_DEFAULT              : DEFAULT_PROFILE,
         # BUILTIN_PROFILE_NAME_PROD                 : BUILTIN_PROFILE_NAME_PLANET_USER,
         # BUILTIN_PROFILE_NAME_PROD_M2M             : BUILTIN_PROFILE_NAME_PLANET_M2M,
         # BUILTIN_PROFILE_NAME_PROD_AUTH0           : BUILTIN_PROFILE_NAME_PLANET_USER,
@@ -145,7 +145,8 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
         return self._builtin_profile_default_by_client_type
 
     def builtin_default_profile(self) -> str:
-        return self.BUILTIN_PROFILE_NAME_DEFAULT
+        # return self.BUILTIN_PROFILE_NAME_DEFAULT
+        return self.BUILTIN_PROFILE_NAME_PLANET_USER
 
     def builtin_trust_environment_names(self) -> List[str]:
         return list(_BuiltinConfigurationProvider._builtin_trust_realms.keys())
