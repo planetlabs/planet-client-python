@@ -18,24 +18,8 @@ from pathlib import Path
 
 import pytest
 
-from planet.auth import _SecretFile
-
 _here = Path(os.path.abspath(os.path.dirname(__file__)))
 _test_data_path = _here / 'data'
-
-
-@pytest.fixture(autouse=True, scope='module')
-def test_secretfile_read():
-    """Returns valid auth results as if reading a secret file"""
-
-    def mockreturn(self):
-        return {'key': 'testkey'}
-
-    # monkeypatch fixture is not available above a function scope
-    # usage: https://docs.pytest.org/en/6.2.x/reference.html#pytest.MonkeyPatch
-    with pytest.MonkeyPatch.context() as mp:
-        mp.setattr(_SecretFile, 'read', mockreturn)
-        yield
 
 
 @pytest.fixture

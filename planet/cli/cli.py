@@ -18,9 +18,10 @@ import sys
 
 import click
 
+import planet_auth_utils
 import planet
 
-from . import auth, collect, data, orders, subscriptions
+from . import cmds, collect, data, orders, subscriptions
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +37,12 @@ LOGGER = logging.getLogger(__name__)
               default="warning",
               help=("Optional: set verbosity level to warning, info, or debug.\
                   Defaults to warning."))
-def main(ctx, verbosity, quiet):
+@planet_auth_utils.opt_auth_profile
+@planet_auth_utils.opt_auth_client_id
+@planet_auth_utils.opt_auth_client_secret
+@planet_auth_utils.opt_auth_api_key
+@cmds.translate_exceptions
+def main(ctx, verbosity, quiet, auth_profile, auth_client_id, auth_client_secret, auth_api_key):
     """Planet SDK for Python CLI"""
     _configure_logging(verbosity)
 
@@ -44,6 +50,21 @@ def main(ctx, verbosity, quiet):
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
     ctx.obj['QUIET'] = quiet
+
+    _configure_cli_auth_ctx(ctx, auth_profile, auth_client_id, auth_client_secret, auth_api_key)
+
+
+def _configure_cli_auth_ctx(ctx, auth_profile, auth_client_id, auth_client_secret, auth_api_key):
+    # planet-auth library Auth context type
+    ctx.obj['AUTH'] = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
+        auth_profile_opt=auth_profile,
+        auth_client_id_opt=auth_client_id,
+        auth_client_secret_opt=auth_client_secret,
+        auth_api_key_opt=auth_api_key,
+    )
+
+    # planet SDK Auth context type
+    ctx.obj['PLSDK_AUTH'] = planet.Auth.from_plauth(pl_authlib_context=ctx.obj['AUTH'])
 
 
 def _configure_logging(verbosity):
@@ -73,8 +94,12 @@ def _configure_logging(verbosity):
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
-main.add_command(auth.auth)  # type: ignore
+main.add_command(cmd=planet_auth_utils.embedded_plauth_cmd_group, name="auth")  # type: ignore
 main.add_command(data.data)  # type: ignore
 main.add_command(orders.orders)  # type: ignore
 main.add_command(subscriptions.subscriptions)  # type: ignore
 main.add_command(collect.collect)  # type: ignore
+
+
+if __name__ == "__main__":
+    main()  # pylint: disable=E1120

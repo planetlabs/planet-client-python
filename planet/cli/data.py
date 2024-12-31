@@ -44,7 +44,7 @@ valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(
 
 @asynccontextmanager
 async def data_client(ctx):
-    async with CliSession() as sess:
+    async with CliSession(ctx) as sess:
         cl = DataClient(sess, base_url=ctx.obj['BASE_URL'])
         yield cl
 
