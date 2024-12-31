@@ -238,13 +238,7 @@ class Session(BaseSession):
             auth: Planet server authentication.
         """
         if auth is None:
-            # Try getting credentials from environment before checking
-            # in the secret file, this is the conventional order (AWS
-            # CLI, for example.)
-            try:
-                auth = Auth.from_env()
-            except exceptions.PlanetError:
-                auth = Auth.from_file()
+            auth = Auth.from_defaults()
 
         LOGGER.info(f'Session read timeout set to {READ_TIMEOUT}.')
         timeout = httpx.Timeout(10.0, read=READ_TIMEOUT)

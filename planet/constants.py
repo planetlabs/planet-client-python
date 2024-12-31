@@ -22,4 +22,4 @@ DATA_DIR = Path(os.path.dirname(__file__)) / 'data'
 
 PLANET_BASE_URL = 'https://api.planet.com'
 
-SECRET_FILE_PATH = Path(os.path.expanduser('~')) / '.planet.json'  # TODO: deprecate in favor of planet_auth library
+SECRET_FILE_PATH = Path(os.path.expanduser('~')) / '.planet.json'

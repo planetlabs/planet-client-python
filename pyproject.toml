@@ -38,6 +38,7 @@ test = [
     "anyio",
     "pytest-cov",
     "respx>=0.20",
+    "coverage[toml]"
 ]
 lint = [
     "flake8",

@@ -96,8 +96,8 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
     ##
     ## Misc auth profiles
     ##
-    BUILTIN_PROFILE_NAME_NONE    = "none"
-    BUILTIN_PROFILE_NAME_DEFAULT = "default"
+    # BUILTIN_PROFILE_NAME_NONE    = "none"
+    # BUILTIN_PROFILE_NAME_DEFAULT = "default"
 
     ##
     ## Default that should be used when no other selection has been made
@@ -113,7 +113,7 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
         BUILTIN_PROFILE_NAME_LEGACY            : _LEGACY_AUTH_CLIENT_CONFIG__PROD,
 
         # Misc
-        BUILTIN_PROFILE_NAME_NONE              : _NOOP_AUTH_CLIENT_CONFIG,
+        # BUILTIN_PROFILE_NAME_NONE              : _NOOP_AUTH_CLIENT_CONFIG,
     }
 
     _builtin_profile_aliases = {
