@@ -876,7 +876,7 @@ def test_search_get(invoke, search_id, search_result):
 @respx.mock
 def test_search_get_id_not_found(invoke, search_id):
     get_url = f'{TEST_SEARCHES_URL}/{search_id}'
-    error_json = {"message":"Error message"}
+    error_json = {"message": "Error message"}
     mock_resp = httpx.Response(404, json=error_json)
     respx.get(get_url).return_value = mock_resp
 
