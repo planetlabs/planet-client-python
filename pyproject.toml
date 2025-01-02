@@ -37,7 +37,7 @@ test = [
     "pytest==8.3.3",
     "anyio",
     "pytest-cov",
-    "respx>=0.20",
+    "respx>=0.22.0",
 ]
 lint = [
     "flake8",

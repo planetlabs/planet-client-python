@@ -194,7 +194,7 @@ def test_cli_orders_get_id_not_found(invoke, oid):
 
     result = invoke(['get', oid])
     assert result.exit_code == 1
-    assert 'Error: {"message": "Error message"}\n' == result.output
+    assert 'Error: {"message":"Error message"}\n' == result.output
 
 
 # TODO: add tests for "cancel --pretty" (gh-491).
@@ -219,7 +219,7 @@ def test_cli_orders_cancel_id_not_found(invoke, oid):
 
     result = invoke(['cancel', oid])
     assert result.exit_code == 1
-    assert 'Error: {"message": "Error message"}\n' == result.output
+    assert 'Error: {"message":"Error message"}\n' == result.output
 
 
 # TODO: add tests for "wait --state" (gh-492) and "wait --pretty" (gh-491).
