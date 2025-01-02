@@ -307,8 +307,8 @@ def mock_download_response(oid, order_description):
                                     })
         respx.get(dl_url2).return_value = mock_resp2
 
-        m1_bytes = b'{"key": "value"}'
-        m2_bytes = b'{"key2": "value2"}'
+        m1_bytes = b'{"key":"value"}'
+        m2_bytes = b'{"key2":"value2"}'
         manifest_data = {
             "name": "",
             "files": [
