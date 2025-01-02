@@ -387,7 +387,9 @@ def composite_tool(group_by: Optional[str] = None) -> dict:
         dict: A dictionary representing the composite tool configuration.
     """
     if group_by and group_by not in ["order", "strip_id"]:
-        raise ValueError(f"Invalid group_by value: {group_by}. Must be 'order' or 'strip_id'.")
+        raise ValueError(
+            f"Invalid group_by value: {group_by}. Must be 'order' or 'strip_id'."
+        )
 
     parameters = {}
     if group_by:
