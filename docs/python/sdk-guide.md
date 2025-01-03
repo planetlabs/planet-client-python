@@ -9,6 +9,14 @@ This guide is for Planet SDK for Python users who want to use Python code to sea
 
 ## Usage
 
+## Install the Planet Python SDK
+
+Use a package manager (such as `pip`) to install the Planet Python SDK: 
+
+```sh
+pip install planet
+```
+
 ### The Planet client
 
 The `Planet` class is the main entry point for the Planet SDK. It provides access to the various APIs available on the Planet platform.
