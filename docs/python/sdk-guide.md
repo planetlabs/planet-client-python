@@ -9,7 +9,7 @@ This guide is for Planet SDK for Python users who want to use Python code to sea
 
 ## Usage
 
-## Install the Planet Python SDK
+### Install the Planet Python SDK
 
 Use a package manager (such as `pip`) to install the Planet Python SDK: 
 
