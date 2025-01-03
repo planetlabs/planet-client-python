@@ -194,7 +194,7 @@ def test_cli_orders_get_id_not_found(invoke, oid):
 
     result = invoke(['get', oid])
     assert result.exit_code == 1
-    assert 'Error: {"message": "Error message"}\n' == result.output
+    assert 'Error: {"message":"Error message"}\n' == result.output
 
 
 # TODO: add tests for "cancel --pretty" (gh-491).
@@ -219,7 +219,7 @@ def test_cli_orders_cancel_id_not_found(invoke, oid):
 
     result = invoke(['cancel', oid])
     assert result.exit_code == 1
-    assert 'Error: {"message": "Error message"}\n' == result.output
+    assert 'Error: {"message":"Error message"}\n' == result.output
 
 
 # TODO: add tests for "wait --state" (gh-492) and "wait --pretty" (gh-491).
@@ -307,8 +307,8 @@ def mock_download_response(oid, order_description):
                                     })
         respx.get(dl_url2).return_value = mock_resp2
 
-        m1_bytes = b'{"key": "value"}'
-        m2_bytes = b'{"key2": "value2"}'
+        m1_bytes = b'{"key":"value"}'
+        m2_bytes = b'{"key2":"value2"}'
         manifest_data = {
             "name": "",
             "files": [
