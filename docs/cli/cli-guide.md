@@ -51,7 +51,7 @@ Planet SDK for Python, like the Planet APIs, requires an account for use.
 
 ### Have your Planet account username and password ready
 
-To confirm your Planet account, or to get one if you don’t already have one, see [Get your Planet Account](get-your-planet-account.md).
+To confirm your Planet account, or to get one if you don’t already have one, see [Get your Planet Account](../get-started/get-your-planet-account.md).
 
 ### Authenticate with the Planet server
 
