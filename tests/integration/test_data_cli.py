@@ -882,7 +882,7 @@ def test_search_get_id_not_found(invoke, search_id):
 
     result = invoke(['search-get', search_id])
     assert result.exception
-    assert 'Error: {"message": "Error message"}\n' == result.output
+    assert 'Error: {"message":"Error message"}\n' == result.output
 
 
 @respx.mock
