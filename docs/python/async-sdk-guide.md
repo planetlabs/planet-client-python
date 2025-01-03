@@ -1,5 +1,5 @@
 ---
-title: Async SDK Guide
+title: Async SDK User Guide
 ---
 
 This guide is for the Planet Async SDK for Python users who want to use asynchronous Python code to search, order, customize, and deliver Planet imagery and data. If you’re new to Python, you may want to choose the no-code option of using the [command-line interface (CLI)](../../cli/cli-guide), or the non-async [Planet Python SDK](./sdk-guide.md). If you're ready to get started using Planet data in your asyncio-based applications, read ahead.
