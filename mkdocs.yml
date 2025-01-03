@@ -80,6 +80,7 @@ nav:
     - cli/cli-reference.md
   - "Python":
     - python/sdk-guide.md
+    - python/async-sdk-guide.md
     - python/sdk-reference.md
   - "Resources":
     - resources/index.md
