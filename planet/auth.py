@@ -57,14 +57,25 @@ class Auth(metaclass=abc.ABCMeta):
         return _PLAuthLibAuth(plauth=planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context())
 
     @classmethod
-    def from_oauth_user_session(cls):
+    def from_oauth_user_session(cls):  # TODO: take client ID?  Rename to be CLI session specific?
         """
         Create authentication for a user whose initialized login information
         will be saved to `~/.planet.json` and `~/.planet/` user login.
         A user should perform a login to initialize this session out-of-band
         using the command `planet auth login`.
 
-        To initialize this session programmatically...  TODO
+        To initialize this session programmatically, you must complete an
+        OAuth2 user login flow.  This involves initiating a request to the
+        authorization server, the user completing authentication using a
+        web browser out of process, and finalizing the authentication and
+        authorization in process and saving the session information that will
+        be used to make API requests.
+
+        Most properly, this process uses IDs that are specific to the
+        application.  The exact process that should be used to complete
+        login is specific to the particulars of the application.
+
+        # TODO: double check app IDs registered to the CLI
         """
         pl_authlib_context = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
             auth_profile_opt=_BuiltinConfigurationProvider.BUILTIN_PROFILE_NAME_PLANET_USER

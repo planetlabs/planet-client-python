@@ -38,6 +38,8 @@ class _ProductionEnv:
         PRIMARY_PUBLIC_OAUTH_AUTHORITY_SENTINELHUB,
     ]
 
+_SDK_CLIENT_ID_PROD = "49lHVBYlXCdfIYqE1B9zeXt0iFHSXees"
+
 _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD = {
     # The well known OIDC client that is the Planet Python CLI.
     # Developers should register their own clients so that users may
@@ -45,7 +47,7 @@ _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD = {
     # also allows for application specific URLs or auth flow selection.
     **_ProductionEnv.PRIMARY_PUBLIC_OAUTH_AUTHORITY_AUTH0,
     "client_type": "oidc_device_code",
-    "client_id": "49lHVBYlXCdfIYqE1B9zeXt0iFHSXees",
+    "client_id": _SDK_CLIENT_ID_PROD,
     "scopes": ["planet", "offline_access", "openid", "profile", "email"],
 }
 
@@ -80,32 +82,24 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
     ## OAuth production environment profiles
     ##
     # Real
+    #   Using the client ID as a profile name is tricky...
+    #   We normalize directory paths to lower case. The auth implementation uses
+    #   mixed case ID strings.  The odds of case normalized IDs colliding is low,
+    #   but there is a bit of an off smell.
+    # BUILTIN_PROFILE_NAME_SDKCLI_CLIENT_ID     = _SDK_CLIENT_ID_PROD
     BUILTIN_PROFILE_NAME_PLANET_USER          = "planet-user"
     BUILTIN_PROFILE_NAME_PLANET_M2M           = "planet-m2m"
     # Aliases
-    # BUILTIN_PROFILE_NAME_PROD                 = "prod"
-    # BUILTIN_PROFILE_NAME_PROD_M2M             = "prod-m2m"
-    # BUILTIN_PROFILE_NAME_PROD_AUTH0           = "prod-auth0"
-    # BUILTIN_PROFILE_NAME_PROD_SENTINEL_HUB    = "prod-sentinel-hub"
+    # BUILTIN_PROFILE_ALIAS_PLANET_USER          = "planet-user"
 
     ##
     ## Profiles that use Planet's old (pre-OAuth) based auth protocol
     ##
-    BUILTIN_PROFILE_NAME_LEGACY         = "legacy"
-
-    ##
-    ## Misc auth profiles
-    ##
-    # BUILTIN_PROFILE_NAME_NONE    = "none"
-    # BUILTIN_PROFILE_NAME_DEFAULT = "default"
-
-    ##
-    ## Default that should be used when no other selection has been made
-    ##
-    # DEFAULT_PROFILE = BUILTIN_PROFILE_NAME_PLANET_USER
+    BUILTIN_PROFILE_NAME_LEGACY               = "legacy"
 
     _builtin_profile_auth_client_configs = {
         ## OAuth Client Configs
+        # BUILTIN_PROFILE_NAME_SDKCLI_CLIENT_ID     : _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD,
         BUILTIN_PROFILE_NAME_PLANET_USER          : _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD,
         BUILTIN_PROFILE_NAME_PLANET_M2M           : _OIDC_AUTH_CLIENT_CONFIG__M2M_PROD,
 
@@ -117,11 +111,7 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
     }
 
     _builtin_profile_aliases = {
-        # BUILTIN_PROFILE_NAME_DEFAULT              : DEFAULT_PROFILE,
-        # BUILTIN_PROFILE_NAME_PROD                 : BUILTIN_PROFILE_NAME_PLANET_USER,
-        # BUILTIN_PROFILE_NAME_PROD_M2M             : BUILTIN_PROFILE_NAME_PLANET_M2M,
-        # BUILTIN_PROFILE_NAME_PROD_AUTH0           : BUILTIN_PROFILE_NAME_PLANET_USER,
-        # BUILTIN_PROFILE_NAME_PROD_SENTINEL_HUB    : BUILTIN_PROFILE_NAME_PLANET_M2M,
+        # BUILTIN_PROFILE_ALIAS_PLANET_USER : BUILTIN_PROFILE_NAME_SDKCLI_CLIENT_ID,
     }
     _builtin_profile_default_by_client_type = {
         "oidc_device_code"               : BUILTIN_PROFILE_NAME_PLANET_USER,
