@@ -303,7 +303,7 @@ def planetary_variable_source(
         var_id: A Planetary Variable ID. See documenation for all
             available IDs.
         geometry: The area of interest of the subscription that will be
-            used to determine matches. May be a geojson-like dict or a 
+            used to determine matches. May be a geojson-like dict or a
             Features API geometry reference (string)
         start_time: The start time of the subscription. This time can be
             in the past or future.
