@@ -17,7 +17,7 @@ import hashlib
 import logging
 from pathlib import Path
 import time
-from typing import Any, AsyncIterator, Awaitable, Callable, Dict, List, Optional, TypeVar
+from typing import Any, AsyncIterator, Awaitable, Callable, Dict, List, Optional, TypeVar, Union
 import uuid
 
 from ..data_filter import empty_filter
@@ -117,13 +117,15 @@ class DataClient:
     def _item_url(self, item_type, item_id):
         return f'{self._base_url}/item-types/{item_type}/items/{item_id}'
 
-    async def search(self,
-                     item_types: List[str],
-                     search_filter: Optional[dict] = None,
-                     name: Optional[str] = None,
-                     sort: Optional[str] = None,
-                     limit: int = 100,
-                     geometry: Optional[dict] = None) -> AsyncIterator[dict]:
+    async def search(
+            self,
+            item_types: List[str],
+            search_filter: Optional[dict] = None,
+            name: Optional[str] = None,
+            sort: Optional[str] = None,
+            limit: int = 100,
+            geometry: Optional[Union[dict,
+                                     str]] = None) -> AsyncIterator[dict]:
         """Iterate over results from a quick search.
 
         Quick searches are saved for a short period of time (~month). The
@@ -185,7 +187,7 @@ class DataClient:
         search_filter: dict,
         name: str,
         enable_email: bool = False,
-        geometry: Optional[dict] = None,
+        geometry: Optional[Union[dict, str]] = None,
     ) -> dict:
         """Create a new saved structured item search.
 
@@ -236,13 +238,14 @@ class DataClient:
                                                json=request)
         return response.json()
 
-    async def update_search(self,
-                            search_id: str,
-                            item_types: List[str],
-                            search_filter: dict,
-                            name: str,
-                            enable_email: bool = False,
-                            geometry: Optional[dict] = None) -> dict:
+    async def update_search(
+            self,
+            search_id: str,
+            item_types: List[str],
+            search_filter: dict,
+            name: str,
+            enable_email: bool = False,
+            geometry: Optional[Union[dict, str]] = None) -> dict:
         """Update an existing saved search.
 
         Parameters:

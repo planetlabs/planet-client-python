@@ -13,7 +13,7 @@
 # the License.
 """Functionality for interacting with the data api"""
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterator, List, Optional
+from typing import Any, Callable, Dict, Iterator, List, Optional, Union
 
 from ..http import Session
 
@@ -47,7 +47,7 @@ class DataAPI:
         name: Optional[str] = None,
         sort: Optional[str] = None,
         limit: int = 100,
-        geometry: Optional[Dict] = None,
+        geometry: Optional[Union[Dict, str]] = None,
     ) -> Iterator[Dict]:
         """
         Search for items
@@ -92,7 +92,7 @@ class DataAPI:
         search_filter: Dict,
         name: str,
         enable_email: bool = False,
-        geometry: Optional[Dict] = None,
+        geometry: Optional[Union[Dict, str]] = None,
     ) -> Dict:
         """Create a new saved structured item search.
 
@@ -132,13 +132,14 @@ class DataAPI:
                                        enable_email,
                                        geometry))
 
-    def update_search(self,
-                      search_id: str,
-                      item_types: List[str],
-                      search_filter: Dict[str, Any],
-                      name: str,
-                      enable_email: bool = False,
-                      geometry: Optional[dict] = None) -> Dict[str, Any]:
+    def update_search(
+            self,
+            search_id: str,
+            item_types: List[str],
+            search_filter: Dict[str, Any],
+            name: str,
+            enable_email: bool = False,
+            geometry: Optional[Union[dict, str]] = None) -> Dict[str, Any]:
         """Update an existing saved search.
 
         Parameters:
