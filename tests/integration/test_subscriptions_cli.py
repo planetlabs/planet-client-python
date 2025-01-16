@@ -33,7 +33,7 @@ from test_subscriptions_api import (api_mock,
 
 # CliRunner doesn't agree with empty options, so a list of option
 # combinations which omit the empty options is best. For example,
-# parametrizing 'limit' as '' and then executing
+# parameterizing 'limit' as '' and then executing
 #
 # CliRunner().invoke(cli.main, args=['subscriptions', 'list', limit]
 #
