@@ -24,24 +24,6 @@ TEST_PRODUCT_BUNDLE = 'visual'
 
 # must be a valid item type for TEST_PRODUCT_BUNDLE
 TEST_ITEM_TYPE = 'PSScene'
-ALL_ITEM_TYPES = [
-    'PSOrthoTile',
-    'Sentinel1',
-    'REOrthoTile',
-    'PSScene',
-    'Landsat8L1G',
-    'REScene',
-    'MOD09GA',
-    'MYD09GA',
-    'MOD09GQ',
-    'SkySatCollect',
-    'Sentinel2L1C',
-    'MYD09GQ',
-    'SkySatScene',
-    'TanagerScene',
-    'TanagerMethane',
-    'PelicanScene',
-]
 TEST_ASSET_TYPE = "basic_udm2"
 
 
