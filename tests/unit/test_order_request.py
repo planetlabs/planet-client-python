@@ -292,9 +292,9 @@ def test_composite_tool_no_group_by():
     assert composite_tool == expected
 
 
-def test_composite_tool_group_by_strip():
-    composite_tool = order_request.composite_tool(group_by='strip')
-    expected = {'composite': {'group_by': 'strip'}}
+def test_composite_tool_group_by_strip_id():
+    composite_tool = order_request.composite_tool(group_by='strip_id')
+    expected = {'composite': {'group_by': 'strip_id'}}
     assert composite_tool == expected
 
 
