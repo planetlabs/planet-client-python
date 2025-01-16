@@ -240,6 +240,25 @@ def test_google_earth_engine():
     assert gee_config == expected
 
 
+def test_oracle_cloud_storage():
+    ocs_config = order_request.oracle_cloud_storage('ocs_access_key_id',
+                                                    'ocs_secret_access_key',
+                                                    'bucket',
+                                                    'region',
+                                                    'namespace')
+
+    expected = {
+        'oracle_cloud_storage': {
+            'customer_access_key_id': 'ocs_access_key_id',
+            'customer_secret_key': 'ocs_secret_access_key',
+            'bucket': 'bucket',
+            'region': 'region',
+            'namespace': 'namespace'
+        }
+    }
+    assert ocs_config == expected
+
+
 def test__tool():
     test_tool = order_request._tool('bandmath', 'jsonstring')
     assert test_tool == {'bandmath': 'jsonstring'}
@@ -265,6 +284,29 @@ def test_clip_tool_invalid(point_geom_geojson):
     """
     with pytest.raises(exceptions.ClientError):
         order_request.clip_tool(point_geom_geojson)
+
+
+def test_composite_tool_no_group_by():
+    composite_tool = order_request.composite_tool()
+    expected = {'composite': {}}
+    assert composite_tool == expected
+
+
+def test_composite_tool_group_by_strip_id():
+    composite_tool = order_request.composite_tool(group_by='strip_id')
+    expected = {'composite': {'group_by': 'strip_id'}}
+    assert composite_tool == expected
+
+
+def test_composite_tool_group_by_order():
+    composite_tool = order_request.composite_tool(group_by='order')
+    expected = {'composite': {'group_by': 'order'}}
+    assert composite_tool == expected
+
+
+def test_composite_tool_group_by_invalid():
+    with pytest.raises(exceptions.ClientError):
+        order_request.composite_tool(group_by='invalid')
 
 
 def test_reproject_tool():

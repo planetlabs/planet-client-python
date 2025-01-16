@@ -320,6 +320,38 @@ def google_earth_engine(project: str, collection: str) -> dict:
     return {'google_earth_engine': cloud_details}
 
 
+def oracle_cloud_storage(customer_access_key_id: str,
+                         customer_secret_key: str,
+                         bucket: str,
+                         region: str,
+                         namespace: str,
+                         path_prefix: Optional[str] = None) -> dict:
+    """Oracle Cloud Storage configuration.
+
+    Parameters:
+        customer_access_key_id: Customer Access Key credentials.
+        customer_secret_key: Customer Secret Key credentials.
+        bucket: The name of the bucket that will receive the order output.
+        region: The region where the bucket lives in Oracle.
+        namespace: Object Storage namespace name.
+        path_prefix: Custom string to prepend to the files delivered to the
+            bucket. A slash (/) character will be treated as a "folder".
+            Any other characters will be added as a prefix to the files.
+    """
+    cloud_details = {
+        'customer_access_key_id': customer_access_key_id,
+        'customer_secret_key': customer_secret_key,
+        'bucket': bucket,
+        'region': region,
+        'namespace': namespace
+    }
+
+    if path_prefix:
+        cloud_details['path_prefix'] = path_prefix
+
+    return {'oracle_cloud_storage': cloud_details}
+
+
 def _tool(name: str, parameters: dict) -> dict:
     """Create the API spec representation of a tool.
 
@@ -380,11 +412,14 @@ def composite_tool(group_by: Optional[str] = None) -> dict:
     Parameters:
         group_by: (Optional) Defines how items are grouped to create one or more composites.
                   Supported values are:
-                  - "order": All input items are used to create a single composite output.
+                  - "order": All input items are used to create a single composite output. This is the default behavior.
                   - "strip_id": Input items are grouped by their strip_id to create multiple composites.
 
     Returns:
         dict: A dictionary representing the composite tool configuration.
+
+    Raises:
+        planet.exceptions.ClientError: If group_by is not one of "order" or "strip_id".
     """
     if group_by and group_by not in ["order", "strip_id"]:
         raise ClientError(

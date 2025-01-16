@@ -31,7 +31,7 @@ SUPPORTED_TOOLS = [
 SUPPORTED_ORDER_TYPES = ['full', 'partial']
 SUPPORTED_ARCHIVE_TYPES = ['zip']
 SUPPORTED_FILE_FORMATS = ['COG', 'PL_NITF']
-HARMONIZE_TOOL_TARGET_SENSORS = ('Sentinel-2', 'PS2')
+HARMONIZE_TOOL_TARGET_SENSORS = ['Sentinel-2']
 BAND_MATH_PIXEL_TYPE = ('Auto', '8U', '16U', '16S', '32R')
 BAND_MATH_PIXEL_TYPE_DEFAULT = 'Auto'
 PRODUCT_BUNDLES_SPEC_JSON = None
@@ -125,9 +125,9 @@ def _validate_field(value, supported, field_name):
 def validate_supported_bundles(item_type, bundle, all_product_bundles):
     supported_bundles = []
     for product_bundle in all_product_bundles:
-        availible_item_types = set(PRODUCT_BUNDLES_SPEC_JSON['bundles']
+        available_item_types = set(PRODUCT_BUNDLES_SPEC_JSON['bundles']
                                    [product_bundle]['assets'].keys())
-        if item_type.lower() in [x.lower() for x in availible_item_types]:
+        if item_type.lower() in [x.lower() for x in available_item_types]:
             supported_bundles.append(product_bundle)
 
     return _validate_field(bundle, supported_bundles, 'bundle')
@@ -162,9 +162,9 @@ def get_product_bundles(item_type=None):
     if item_type:
         supported_bundles = []
         for product_bundle in all_product_bundles:
-            availible_item_types = set(PRODUCT_BUNDLES_SPEC_JSON['bundles']
+            available_item_types = set(PRODUCT_BUNDLES_SPEC_JSON['bundles']
                                        [product_bundle]['assets'].keys())
-            if item_type.lower() in [x.lower() for x in availible_item_types]:
+            if item_type.lower() in [x.lower() for x in available_item_types]:
                 supported_bundles.append(product_bundle)
         return supported_bundles
 
