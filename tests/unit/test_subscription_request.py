@@ -307,6 +307,21 @@ def test_azure_blob_storage_path_prefix_success():
     }
 
 
+def test_google_earth_engine_success():
+    res = subscription_request.google_earth_engine(project='project',
+                                                   collection='collection',
+                                                   credentials='cred')
+
+    assert res == {
+        "type": "google_earth_engine",
+        "parameters": {
+            "project": "project",
+            "collection": "collection",
+            "credentials": "cred"
+        }
+    }
+
+
 def test_google_cloud_storage_success():
     res = subscription_request.google_cloud_storage(credentials='cred',
                                                     bucket='bucket')

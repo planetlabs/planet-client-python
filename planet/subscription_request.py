@@ -435,6 +435,23 @@ def azure_blob_storage(account: str,
     return _delivery('azure_blob_storage', parameters)
 
 
+def google_earth_engine(project: str, collection: str,
+                        credentials: str) -> dict:
+    """Delivery to Google Earth Engine.
+
+    Parameters:
+        project: GEE project name.
+        collection: GEE Image Collection name.
+        credentials: GEE service account credentials.
+    """
+    parameters = {
+        'project': project,
+        'collection': collection,
+        'credentials': credentials
+    }
+    return _delivery('google_earth_engine', parameters)
+
+
 def google_cloud_storage(credentials: str,
                          bucket: str,
                          path_prefix: Optional[str] = None) -> dict:
