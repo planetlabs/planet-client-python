@@ -1,18 +1,6 @@
 # data
 This directory contains static external resources used by the codebase.
 
-## Orders Spec
-
-### Files
-
-* `orders_product_bundle_2024-08-12.json`
-
-### Description
-
-This file was downloaded from the Planet
-[Product Bundles Reference](https://developers.planet.com/docs/orders/product-bundles-reference/)
-page and is stored without any adjustments.
-
 ## GeoJSON Schemas
 
 ### Files

@@ -21,43 +21,7 @@ from planet import specs
 LOGGER = logging.getLogger(__name__)
 
 TEST_PRODUCT_BUNDLE = 'visual'
-ALL_PRODUCT_BUNDLES = [
-    'analytic',
-    'analytic_udm2',
-    'analytic_3b_udm2',
-    'analytic_5b',
-    'analytic_5b_udm2',
-    'analytic_8b_udm2',
-    'visual',
-    'uncalibrated_dn',
-    'uncalibrated_dn_udm2',
-    'basic_analytic',
-    'basic_analytic_udm2',
-    'basic_analytic_8b_udm2',
-    'basic_uncalibrated_dn',
-    'basic_uncalibrated_dn_udm2',
-    'analytic_sr',
-    'analytic_sr_udm2',
-    'analytic_8b_sr_udm2',
-    'basic_analytic_nitf',
-    'basic_panchromatic',
-    'basic_panchromatic_dn',
-    'panchromatic',
-    'panchromatic_dn',
-    'panchromatic_dn_udm2',
-    'pansharpened',
-    'pansharpened_udm2',
-    'basic_l1a_dn',
-    'radiance_hdf5',
-    'basic_radiance_hdf5',
-    'sr_hdf5',
-    'basic_sr_hdf5',
-    'panchromatic_udm2',
-    'methane_quicklook',
-    'quality_controlled_methane',
-    'integrated_methane_enhancement',
-    'methane',
-]
+
 # must be a valid item type for TEST_PRODUCT_BUNDLE
 TEST_ITEM_TYPE = 'PSScene'
 ALL_ITEM_TYPES = [
@@ -107,7 +71,7 @@ def test_validate_bundle_notsupported_item_type():
 
 
 def test_validate_item_type_supported():
-    assert 'PSOrthoTile' == specs.validate_item_type('psorthotile')
+    assert 'PSScene' == specs.validate_item_type('PSScene')
 
 
 def test_validate_item_type_notsupported_itemtype():
@@ -153,9 +117,9 @@ def test_get_product_bundles_with_item_type():
 
 
 def test_get_product_bundles_without_item_type():
+    """assert an expected product bundle is in the list of all product bundles"""
     bundles = specs.get_product_bundles()
-    for bundle in bundles:
-        assert bundle in ALL_PRODUCT_BUNDLES
+    assert TEST_PRODUCT_BUNDLE in bundles
 
 
 def test_get_item_types_with_bundle():
@@ -165,21 +129,23 @@ def test_get_item_types_with_bundle():
 
 def test_get_item_types_without_bundle():
     item_types = specs.get_item_types()
-    for item in item_types:
-        assert item in ALL_ITEM_TYPES
+    assert TEST_ITEM_TYPE in item_types
 
 
 def test_validate_supported_bundles_success():
     validated_bundle = specs.validate_supported_bundles(
-        TEST_ITEM_TYPE, TEST_PRODUCT_BUNDLE, ALL_PRODUCT_BUNDLES)
-    assert validated_bundle in ALL_PRODUCT_BUNDLES
+        TEST_ITEM_TYPE,
+        TEST_PRODUCT_BUNDLE,
+        specs.PRODUCT_BUNDLES_SPEC_JSON['bundles'].keys())
+    assert validated_bundle == TEST_PRODUCT_BUNDLE
 
 
 def test_validate_supported_bundles_fail():
     with pytest.raises(specs.SpecificationException):
-        specs.validate_supported_bundles(TEST_ITEM_TYPE,
-                                         'analytic',
-                                         ALL_PRODUCT_BUNDLES)
+        specs.validate_supported_bundles(
+            TEST_ITEM_TYPE,
+            'analytic',
+            specs.PRODUCT_BUNDLES_SPEC_JSON["bundles"].keys())
 
 
 def test_get_supported_assets_success():
