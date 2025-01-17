@@ -1,7 +1,7 @@
 """Planet Features API Python client."""
 
 import logging
-from typing import AsyncIterator, Optional, Iterator
+from typing import Any, AsyncIterator, Optional
 
 from planet.exceptions import APIError, ClientError
 from planet.http import Session
@@ -105,7 +105,7 @@ class FeaturesClient:
             def _next_link(self, page):
                 next_link = False
 
-                #TODO: Build this into Paged.__next_link directly, other (unimplemented) APIs have a similar page structure
+                # TODO: Build this into Paged.__next_link directly, other (unimplemented) APIs have a similar page structure
                 for link in page[self.LINKS_KEY]:
                     if "rel" in link and link["rel"] == self.NEXT_KEY:
                         next_link = link["href"]
@@ -114,7 +114,7 @@ class FeaturesClient:
                     LOGGER.debug('end of the pages')
                 return next_link
 
-        params = {}
+        params: list[str, Any] = {}
         if bbox:
             params["bbox"] = bbox
         if datetime:
@@ -161,7 +161,7 @@ class FeaturesClient:
             property_id: Optional[str] = None) -> AsyncIterator[str]:
 
         url = f'{self._base_url}/collections/{collection_id}/items'
-        params = {}
+        params: dict[str, Any] = {}
         if bbox:
             params["bbox"] = bbox
         if datetime:
