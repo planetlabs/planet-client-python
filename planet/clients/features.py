@@ -14,19 +14,10 @@ LOGGER = logging.getLogger()
 
 
 class FeaturesClient:
-    """A Planet Features Service API 1.0.0 client.
+    """Asyncronous Features API client
 
-    The methods of this class forward request parameters to the
-    operations described in the Planet Features Service API 0.0.0
-    (https://api.planet.com/features/v0/ogc/my/api) using HTTP 1.1.
-
-    The methods generally return or yield Python dicts with the same
-    structure as the JSON messages used by the service API. Many of the
-    exceptions raised by this class are categorized by HTTP client
-    (4xx) or server (5xx) errors. This client's level of abstraction is
-    low.
-
-    High-level asynchronous access to Planet's features API:
+    For more information about the Features API, see the documentation at
+    https://developers.planet.com/docs/apis/features/
 
     Example:
         ```python
@@ -48,8 +39,8 @@ class FeaturesClient:
         """
         Parameters:
             session: Open session connected to server.
-            base_url: The base URL to use. Defaults to production features
-                API base url.
+            base_url: The base URL to use. Defaults to the Features
+                API base url at api.planet.com.
         """
         self._session = session
 
@@ -58,6 +49,17 @@ class FeaturesClient:
             self._base_url = self._base_url[:-1]
 
     async def list_collections(self) -> AsyncIterator[dict]:
+        """
+        list the feature collections you have access to.
+        
+        Example:
+
+        ```
+        results = await client.list_collections()
+        async for collection in results:
+            print(collection)
+        ```
+        """
 
         class _CollectionsPager(Paged):
             """Navigates pages of messages about collections."""
@@ -78,24 +80,27 @@ class FeaturesClient:
 
         url = f'{self._base_url}/collections'
 
-        try:
-            response = await self._session.request(method='GET', url=url)
-            async for col in _CollectionsPager(response,
-                                               self._session.request):
-                yield col
-        # Forward APIError. We don't strictly need this clause, but it
-        # makes our intent clear.
-        except APIError:
-            raise
-        except ClientError:  # pragma: no cover
-            raise
+        response = await self._session.request(method='GET', url=url)
+        async for col in _CollectionsPager(response,
+                                            self._session.request):
+            yield col
 
     async def list_features(
             self,
             collection_id,
             limit: int = 10,
-            bbox: Optional[list[float]] = None,
-            datetime: Optional[str] = None) -> AsyncIterator[dict]:
+        ) -> AsyncIterator[dict]:
+        """
+        list features in `collection_id`.
+
+        example:
+
+        ```
+        results = await client.list_features(collection_id)
+        async for feature in results:
+            print(feature)
+        ```
+        """
 
         class _FeaturesPager(Paged):
             """Navigates pages of messages about features."""
@@ -114,70 +119,123 @@ class FeaturesClient:
                     LOGGER.debug('end of the pages')
                 return next_link
 
-        params: list[str, Any] = {}
-        if bbox:
-            params["bbox"] = bbox
-        if datetime:
-            params["datetime"] = datetime
+        params: dict[str, Any] = {}
         url = f'{self._base_url}/collections/{collection_id}/items'
 
-        try:
-            resp = await self._session.request(method='GET',
-                                               url=url,
-                                               params=params)
-            async for feat in _FeaturesPager(resp,
-                                             self._session.request,
-                                             limit=limit):
-                yield feat
-        # Forward APIError. We don't strictly need this clause, but it
-        # makes our intent clear.
-        except APIError:
-            raise
-        except ClientError:  # pragma: no cover
-            raise
+        resp = await self._session.request(method='GET',
+                                            url=url,
+                                            params=params)
+        async for feat in _FeaturesPager(resp,
+                                            self._session.request,
+                                            limit=limit):
+            yield feat
 
-    async def create_collection(self, request: dict) -> dict:
+    async def create_collection(self, title: str, description: Optional[str] = None) -> str:
+        """
+        create a new collection with the given title and description, returning the collection id.
+
+        Example:
+
+        ```
+        collection_id = await features_client.create_collection(
+          title="My Collection",
+          description="a test collection"
+        )
+        ```
+        """
         url = f'{self._base_url}/collections'
-        try:
-            resp = await self._session.request(method='POST',
+        body = {"title": title}
+
+        if description:
+            body["description"] = description
+
+        resp = await self._session.request(method='POST',
                                                url=url,
-                                               json=request)
-        # Forward APIError. We don't strictly need this clause, but it
-        # makes our intent clear.
-        except APIError:
-            raise
-        except ClientError:  # pragma: no cover
-            raise
-        else:
-            col = resp.json()
-            return col
+                                               json=body)
+
+        return resp.json()["id"]
 
     async def add_features(
             self,
             collection_id,
-            request: dict,
-            bbox: Optional[list[float]] = None,
-            datetime: Optional[str] = None,
+            feature: dict,
             property_id: Optional[str] = None) -> AsyncIterator[str]:
+        """
+        add a Feature or FeatureCollection to the collection given by `collection_id`.
+
+        collection_id: the collection to add the feature to
+        feature: a dict containing a geojson Feature or FeatureCollection.
+        property_id (optional): the name of a property in the `properties` block of 
+          the supplied feature(s). The value will become the feature's id.
+
+        When the feature is added to the collection, it will be given an ID.
+        The ID can be overriden by providing an `id` in the feature's properties.
+        Title and description can also be set this way using the `title` and 
+        `description` properties.
+
+        Example:
+
+        ```
+        feature = {
+          "type": "Feature",
+          "geometry": {
+            "coordinates": [
+              [
+                [
+                  7.05322265625,
+                  46.81509864599243
+                ],
+                [
+                  7.580566406250001,
+                  46.81509864599243
+                ],
+                [
+                  7.580566406250001,
+                  47.17477833929903
+                ],
+                [
+                  7.05322265625,
+                  47.17477833929903
+                ],
+                [
+                  7.05322265625,
+                  46.81509864599243
+                ]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+            "id": "feature-1",
+            "title": "Feature 1",
+            "description": "Test feature"
+          }
+        }
+        new_features = await features_client.add_features(
+          collection_id="my-collection",
+          feature=feature,
+        )
+        ```
+
+        note: if a geojson Geometry is supplied, it will be converted
+        to a Feature. However, we recommend doing this conversion yourself
+        so that you can set a title and description property.
+
+        The return value is always an iterator, even if you only upload one
+        feature.
+        """
 
         url = f'{self._base_url}/collections/{collection_id}/items'
         params: dict[str, Any] = {}
-        if bbox:
-            params["bbox"] = bbox
-        if datetime:
-            params["datetime"] = datetime
         if property_id:
             params["property_id"] = property_id
-        try:
-            resp = await self._session.request(method='POST',
-                                               url=url,
-                                               json=request,
-                                               params=params)
-            for fid in resp.json():
-                yield fid
-        # Forward APIError. We don't strictly need this clause, but it
-        # makes our intent clear.
-        except APIError:
-            raise
-        except ClientError:  # pragma: no cover
-            raise
+
+        if feature.get("type") in ["point", "multipoint", "polygon", "multipolygon", "linestring", "multilinestring"]:
+            feature = {"type": "Feature", "geometry": feature}
+
+        resp = await self._session.request(method='POST',
+                                            url=url,
+                                            json=feature,
+                                            params=params)
+        for fid in resp.json():
+            yield fid
