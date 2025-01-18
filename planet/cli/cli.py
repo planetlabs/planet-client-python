@@ -75,8 +75,7 @@ def _configure_cli_auth_ctx(ctx,
             auth_profile_opt=auth_profile,
             auth_client_id_opt=auth_client_id,
             auth_client_secret_opt=auth_client_secret,
-            auth_api_key_opt=auth_api_key,
-        )
+            auth_api_key_opt=auth_api_key)
 
     # planet SDK Auth context type
     ctx.obj['PLSDK_AUTH'] = planet.Auth.from_plauth(
