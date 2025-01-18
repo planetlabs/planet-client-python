@@ -165,7 +165,7 @@ def build_request(name: str,
 def catalog_source(
     item_types: List[str],
     asset_types: List[str],
-    geometry: dict,
+    geometry: Union[dict, str],
     start_time: datetime,
     filter: Optional[Mapping] = None,
     end_time: Optional[datetime] = None,
@@ -188,7 +188,8 @@ def catalog_source(
             deliver if all specified asset types are published for that
             item.
         geometry: The area of interest of the subscription that will be
-            used to determine matches.
+            used to determine matches. Can be either a geojson-like dict
+            or a Features API feature reference (string)
         start_time: The start time of the subscription. This time can be
             in the past or future.
         filter: The filter criteria based on item-level metadata.
@@ -280,7 +281,7 @@ def catalog_source(
 def planetary_variable_source(
     var_type: str,
     var_id: str,
-    geometry: dict,
+    geometry: Union[dict, str],
     start_time: datetime,
     end_time: Optional[datetime] = None,
 ) -> dict:
@@ -302,7 +303,8 @@ def planetary_variable_source(
         var_id: A Planetary Variable ID. See documenation for all
             available IDs.
         geometry: The area of interest of the subscription that will be
-            used to determine matches.
+            used to determine matches. May be a geojson-like dict or a
+            Features API geometry reference (string)
         start_time: The start time of the subscription. This time can be
             in the past or future.
         end_time: The end time of the subscription. This time can be in
@@ -433,6 +435,23 @@ def azure_blob_storage(account: str,
         parameters['path_prefix'] = path_prefix
 
     return _delivery('azure_blob_storage', parameters)
+
+
+def google_earth_engine(project: str, collection: str,
+                        credentials: str) -> dict:
+    """Delivery to Google Earth Engine.
+
+    Parameters:
+        project: GEE project name.
+        collection: GEE Image Collection name.
+        credentials: GEE service account credentials.
+    """
+    parameters = {
+        'project': project,
+        'collection': collection,
+        'credentials': credentials
+    }
+    return _delivery('google_earth_engine', parameters)
 
 
 def google_cloud_storage(credentials: str,

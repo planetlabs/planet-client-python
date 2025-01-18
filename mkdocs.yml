@@ -67,7 +67,6 @@ plugins:
 nav:
   - "Get Started":
     - get-started/quick-start-guide.md
-    - get-started/sync-client-quick-start.md
     - get-started/get-your-planet-account.md
     - get-started/venv-tutorial.md
     - get-started/upgrading.md
@@ -81,6 +80,7 @@ nav:
     - cli/cli-reference.md
   - "Python":
     - python/sdk-guide.md
+    - python/async-sdk-guide.md
     - python/sdk-reference.md
   - "Resources":
     - resources/index.md
