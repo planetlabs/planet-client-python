@@ -21,7 +21,7 @@ import click
 import planet_auth_utils
 import planet
 
-from . import cmds, collect, data, orders, subscriptions
+from . import auth, cmds, collect, data, orders, subscriptions
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,10 +37,10 @@ LOGGER = logging.getLogger(__name__)
               default="warning",
               help=("Optional: set verbosity level to warning, info, or debug.\
                   Defaults to warning."))
-@planet_auth_utils.opt_auth_profile
-@planet_auth_utils.opt_auth_client_id
-@planet_auth_utils.opt_auth_client_secret
-@planet_auth_utils.opt_auth_api_key
+@planet_auth_utils.opt_profile
+@planet_auth_utils.opt_client_id
+@planet_auth_utils.opt_client_secret
+@planet_auth_utils.opt_api_key
 @cmds.translate_exceptions
 def main(ctx, verbosity, quiet, auth_profile, auth_client_id, auth_client_secret, auth_api_key):
     """Planet SDK for Python CLI"""
@@ -93,8 +93,15 @@ def _configure_logging(verbosity):
         level=log_level,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
+# Hide the embedded util from help.  It has many options and use cases that
+# may not be directly the most relevant or user-friendly for the specific
+# case of working against Planet Platform Services.
+# The interface we want to support for the SDK CLI is a specialized
+# subset defined by auth.py.
+planet_auth_utils.cmd_plauth_embedded.hidden=True
+main.add_command(cmd=planet_auth_utils.cmd_plauth_embedded, name="plauth")  # type: ignore
 
-main.add_command(cmd=planet_auth_utils.embedded_plauth_cmd_group, name="auth")  # type: ignore
+main.add_command(auth.auth)  # type: ignore
 main.add_command(data.data)  # type: ignore
 main.add_command(orders.orders)  # type: ignore
 main.add_command(subscriptions.subscriptions)  # type: ignore
