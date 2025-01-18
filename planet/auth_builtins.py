@@ -16,7 +16,8 @@ from typing import Dict, List, Optional
 from planet_auth_utils.builtins_provider import BuiltinConfigurationProviderInterface
 
 # Needs to be set at runtime (not necessarily at import time) for dependency injection to planet_auth_util
-os.environ["PL_AUTH_BUILTIN_CONFIG_PROVIDER"] = "planet.auth_builtins._BuiltinConfigurationProvider"
+os.environ[
+    "PL_AUTH_BUILTIN_CONFIG_PROVIDER"] = "planet.auth_builtins._BuiltinConfigurationProvider"
 
 
 class _ProductionEnv:
@@ -31,7 +32,8 @@ class _ProductionEnv:
         "audiences": ["https://api.planet.com/"]
     }
     LEGACY_AUTH_AUTHORITY = {
-        "_comment": "Planet legacy JWT auth server used by Planet Public API endpoints",
+        "_comment":
+        "Planet legacy JWT auth server used by Planet Public API endpoints",
         "legacy_auth_endpoint": "https://api.planet.com/v0/auth/login"
     }
     PUBLIC_OAUTH_AUTHORITIES = [
@@ -41,7 +43,6 @@ class _ProductionEnv:
 
 
 _SDK_CLIENT_ID_PROD = "49lHVBYlXCdfIYqE1B9zeXt0iFHSXees"
-
 
 _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD = {
     # The well known OIDC client that is the Planet Python CLI.
@@ -53,7 +54,6 @@ _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD = {
     "client_id": _SDK_CLIENT_ID_PROD,
     "scopes": ["planet", "offline_access", "openid", "profile", "email"],
 }
-
 
 _OIDC_AUTH_CLIENT_CONFIG__M2M_PROD = {
     **_ProductionEnv.OAUTH_AUTHORITY_M2M,

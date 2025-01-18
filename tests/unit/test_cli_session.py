@@ -62,7 +62,8 @@ async def test_CliSession_headers(test_valid_secretfile):
 @pytest.mark.anyio
 async def test_CliSession_auth_valid(test_valid_secretfile):
     # The default auth
-    async with session.CliSession(plsdk_auth=auth.Auth.from_key("clisessiontest")) as sess:
+    async with session.CliSession(
+            plsdk_auth=auth.Auth.from_key("clisessiontest")) as sess:
         route = respx.get(TEST_URL)
         route.return_value = httpx.Response(HTTPStatus.OK)
 

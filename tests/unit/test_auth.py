@@ -40,7 +40,8 @@ def test_Auth_from_key():
     test_auth_env1 = auth.Auth.from_key('testkey_from_key')
     # We know that planet_auth instantiates an in memory "static API key" auth client.
     # test_api_key = test_auth_env1._plauth.request_authenticator().credential().legacy_api_key()
-    test_api_key = test_auth_env1._plauth.request_authenticator().credential().api_key()
+    test_api_key = test_auth_env1._plauth.request_authenticator().credential(
+    ).api_key()
     assert test_api_key == 'testkey_from_key'
 
 
@@ -55,7 +56,8 @@ def test_Auth_from_file(secret_path):
 
     test_auth = auth.Auth.from_file()
     # We know that planet_auth instantiates a "Legacy" auth client.
-    test_api_key = test_auth._plauth.request_authenticator().credential().legacy_api_key()
+    test_api_key = test_auth._plauth.request_authenticator().credential(
+    ).legacy_api_key()
     # test_api_key = test_auth._plauth.request_authenticator().credential().api_key()
     assert test_api_key == 'testvar_from_file'
 
@@ -63,7 +65,8 @@ def test_Auth_from_file(secret_path):
 def test_Auth_from_file_doesnotexist(secret_path):
     test_auth = auth.Auth.from_file(secret_path)
     with pytest.raises(FileNotFoundError):
-        _ = test_auth._plauth.request_authenticator().credential().legacy_api_key()
+        _ = test_auth._plauth.request_authenticator().credential(
+        ).legacy_api_key()
 
 
 def test_Auth_from_file_wrongformat(secret_path):
@@ -71,7 +74,8 @@ def test_Auth_from_file_wrongformat(secret_path):
         fp.write('{"notkey": "testvar_wrong_format"}')
     test_auth = auth.Auth.from_file(secret_path)
     with pytest.raises(planet_auth.InvalidDataException):
-        _ = test_auth._plauth.request_authenticator().credential().legacy_api_key()
+        _ = test_auth._plauth.request_authenticator().credential(
+        ).legacy_api_key()
 
 
 def test_Auth_from_file_alternate(tmp_path):
@@ -80,7 +84,8 @@ def test_Auth_from_file_alternate(tmp_path):
         fp.write('{"key": "testvar_alt_path"}')
 
     test_auth = auth.Auth.from_file(secret_path)
-    test_api_key = test_auth._plauth.request_authenticator().credential().legacy_api_key()
+    test_api_key = test_auth._plauth.request_authenticator().credential(
+    ).legacy_api_key()
     assert test_api_key == 'testvar_alt_path'
 
 
@@ -88,7 +93,8 @@ def test_Auth_from_env(monkeypatch):
     monkeypatch.setenv('PL_API_KEY', 'testkey_env')
     test_auth_env = auth.Auth.from_env()
     # TODO: that I short cicuit between legacy and API key auth impls makes this weird.
-    test_api_key = test_auth_env._plauth.request_authenticator().credential().api_key()
+    test_api_key = test_auth_env._plauth.request_authenticator().credential(
+    ).api_key()
     assert test_api_key == 'testkey_env'
 
 
@@ -104,7 +110,8 @@ def test_Auth_from_env_alternate_success(monkeypatch):
     monkeypatch.delenv('PL_API_KEY', raising=False)
 
     test_auth_env = auth.Auth.from_env(alternate)
-    test_api_key = test_auth_env._plauth.request_authenticator().credential().api_key()
+    test_api_key = test_auth_env._plauth.request_authenticator().credential(
+    ).api_key()
 
     assert test_api_key == 'testkey'
 

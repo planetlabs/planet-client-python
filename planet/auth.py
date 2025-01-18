@@ -54,10 +54,12 @@ class Auth(metaclass=abc.ABCMeta):
             PL_AUTH_API_KEY: Specify a legacy Planet API key
 
         """
-        return _PLAuthLibAuth(plauth=planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context())
+        return _PLAuthLibAuth(plauth=planet_auth_utils.PlanetAuthFactory.
+                              initialize_auth_client_context())
 
     @classmethod
-    def from_oauth_user_session(cls):  # TODO: take client ID?  Rename to be CLI session specific?
+    def from_oauth_user_session(
+            cls):  # TODO: take client ID?  Rename to be CLI session specific?
         """
         Create authentication for a user whose initialized login information
         will be saved to `~/.planet.json` and `~/.planet/` user login.
@@ -78,8 +80,8 @@ class Auth(metaclass=abc.ABCMeta):
         # TODO: double check app IDs registered to the CLI
         """
         pl_authlib_context = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
-            auth_profile_opt=_BuiltinConfigurationProvider.BUILTIN_PROFILE_NAME_PLANET_USER
-        )
+            auth_profile_opt=_BuiltinConfigurationProvider.
+            BUILTIN_PROFILE_NAME_PLANET_USER)
         return _PLAuthLibAuth(plauth=pl_authlib_context)
 
     @staticmethod
@@ -117,9 +119,11 @@ class Auth(metaclass=abc.ABCMeta):
         Parameters:
             key: Planet API key
         """
-        warnings.warn("Planet API keys will be deprecated for most use cases."
-                      " Initialize an OAuth client, or create an OAuth service account."
-                      " Proceeding for now.", PendingDeprecationWarning)
+        warnings.warn(
+            "Planet API keys will be deprecated for most use cases."
+            " Initialize an OAuth client, or create an OAuth service account."
+            " Proceeding for now.",
+            PendingDeprecationWarning)
         if not key:
             raise APIKeyAuthException('API key cannot be empty.')
 
@@ -154,15 +158,16 @@ class Auth(metaclass=abc.ABCMeta):
             filename: Alternate path for the planet secret file.
 
         """
-        warnings.warn("Auth.from_file() will be deprecated.", PendingDeprecationWarning)
+        warnings.warn("Auth.from_file() will be deprecated.",
+                      PendingDeprecationWarning)
         plauth_config = {
             **_ProductionEnv.LEGACY_AUTH_AUTHORITY,
-            "client_type": planet_auth.PlanetLegacyAuthClientConfig.meta().get("client_type"),
+            "client_type":
+            planet_auth.PlanetLegacyAuthClientConfig.meta().get("client_type"),
         }
         pl_authlib_context = planet_auth.Auth.initialize_from_config_dict(
             client_config=plauth_config,
-            token_file=filename or SECRET_FILE_PATH
-        )
+            token_file=filename or SECRET_FILE_PATH)
         # planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
         #    auth_profile_opt=_BuiltinConfigurationProvider.BUILTIN_PROFILE_NAME_LEGACY,
         #    token_file_opt=filename or SECRET_FILE_PATH
@@ -188,8 +193,7 @@ class Auth(metaclass=abc.ABCMeta):
         warnings.warn(
             "from_env() will be deprecated. Use from_defaults() in most"
             " cases, which will consider environment variables.",
-            PendingDeprecationWarning
-        )
+            PendingDeprecationWarning)
         variable_name = variable_name or planet_auth_utils.EnvironmentVariables.AUTH_API_KEY
         api_key = os.getenv(variable_name, None)
         return Auth.from_key(api_key)
@@ -209,8 +213,12 @@ class Auth(metaclass=abc.ABCMeta):
             base_url: The base URL to use. Defaults to production
                 authentication API base url.
         """
-        warnings.warn("Auth.from_login() has been deprecated.  Use Auth.from_user_session().", DeprecationWarning)
-        raise DeprecationWarning("Auth.from_login() has been deprecated.  Use Auth.from_user_session().")
+        warnings.warn(
+            "Auth.from_login() has been deprecated.  Use Auth.from_user_session().",
+            DeprecationWarning)
+        raise DeprecationWarning(
+            "Auth.from_login() has been deprecated.  Use Auth.from_user_session()."
+        )
 
     @classmethod
     def from_dict(cls, data: dict) -> AuthType:
@@ -219,7 +227,9 @@ class Auth(metaclass=abc.ABCMeta):
     def to_dict(self) -> dict:
         raise DeprecationWarning("Auth.to_dict() has been deprecated.")
 
-    def store(self, filename: typing.Optional[typing.Union[str, pathlib.Path]] = None):
+    def store(self,
+              filename: typing.Optional[typing.Union[str,
+                                                     pathlib.Path]] = None):
         warnings.warn("Auth.store() has been deprecated.", DeprecationWarning)
         raise DeprecationWarning("Auth.store() has been deprecated.")
 
