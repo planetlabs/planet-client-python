@@ -93,12 +93,13 @@ def _configure_logging(verbosity):
         level=log_level,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
+
 # Hide the embedded util from help.  It has many options and use cases that
 # may not be directly the most relevant or user-friendly for the specific
 # case of working against Planet Platform Services.
 # The interface we want to support for the SDK CLI is a specialized
 # subset defined by auth.py.
-planet_auth_utils.cmd_plauth_embedded.hidden=True
+planet_auth_utils.cmd_plauth_embedded.hidden = True
 main.add_command(cmd=planet_auth_utils.cmd_plauth_embedded, name="plauth")  # type: ignore
 
 main.add_command(auth.auth)  # type: ignore

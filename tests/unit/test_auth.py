@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
 import logging
 
 import pytest
@@ -66,13 +65,13 @@ def test_Auth_from_file_doesnotexist(secret_path):
     with pytest.raises(FileNotFoundError):
         _ = test_auth._plauth.request_authenticator().credential().legacy_api_key()
 
+
 def test_Auth_from_file_wrongformat(secret_path):
     with open(secret_path, 'w') as fp:
         fp.write('{"notkey": "testvar_wrong_format"}')
     test_auth = auth.Auth.from_file(secret_path)
     with pytest.raises(planet_auth.InvalidDataException):
         _ = test_auth._plauth.request_authenticator().credential().legacy_api_key()
-
 
 
 def test_Auth_from_file_alternate(tmp_path):
@@ -120,8 +119,6 @@ def test_Auth_from_env_alternate_doesnotexist(monkeypatch):
 
 
 def test_Auth_from_login(monkeypatch):
-    auth_data = 'authdata'
-
     # auth.AuthClient has been completely removed
     # in the conversion to planet_auth
     # def login(*args, **kwargs):
@@ -129,7 +126,7 @@ def test_Auth_from_login(monkeypatch):
     #
     # monkeypatch.setattr(auth.AuthClient, 'login', login)
     with pytest.raises(DeprecationWarning):
-        test_auth = auth.Auth.from_login('email', 'pw')
+        _ = auth.Auth.from_login('email', 'pw')
 
 
 def test_auth_value_deprecated():

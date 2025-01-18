@@ -18,13 +18,14 @@ from planet_auth_utils.builtins_provider import BuiltinConfigurationProviderInte
 # Needs to be set at runtime (not necessarily at import time) for dependency injection to planet_auth_util
 os.environ["PL_AUTH_BUILTIN_CONFIG_PROVIDER"] = "planet.auth_builtins._BuiltinConfigurationProvider"
 
+
 class _ProductionEnv:
-    PRIMARY_PUBLIC_OAUTH_AUTHORITY_AUTH0 = {
+    OAUTH_AUTHORITY_USER = {
         "_comment": "OIDC/OAuth server used by Planet Public API endpoints",
         "auth_server": "https://login.planet.com/",
         "audiences": ["https://api.planet.com/"]
     }
-    PRIMARY_PUBLIC_OAUTH_AUTHORITY_SENTINELHUB = {
+    OAUTH_AUTHORITY_M2M = {
         "_comment": "OIDC/OAuth server used by Planet Public API endpoints",
         "auth_server": "https://services.sentinel-hub.com/auth/realms/main",
         "audiences": ["https://api.planet.com/"]
@@ -33,26 +34,29 @@ class _ProductionEnv:
         "_comment": "Planet legacy JWT auth server used by Planet Public API endpoints",
         "legacy_auth_endpoint": "https://api.planet.com/v0/auth/login"
     }
-    PRIMARY_PUBLIC_OAUTH_AUTHORITIES = [
-        PRIMARY_PUBLIC_OAUTH_AUTHORITY_AUTH0,
-        PRIMARY_PUBLIC_OAUTH_AUTHORITY_SENTINELHUB,
+    PUBLIC_OAUTH_AUTHORITIES = [
+        OAUTH_AUTHORITY_USER,
+        OAUTH_AUTHORITY_M2M,
     ]
 
+
 _SDK_CLIENT_ID_PROD = "49lHVBYlXCdfIYqE1B9zeXt0iFHSXees"
+
 
 _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD = {
     # The well known OIDC client that is the Planet Python CLI.
     # Developers should register their own clients so that users may
     # manage grants for different applications.  Registering applications
     # also allows for application specific URLs or auth flow selection.
-    **_ProductionEnv.PRIMARY_PUBLIC_OAUTH_AUTHORITY_AUTH0,
+    **_ProductionEnv.OAUTH_AUTHORITY_USER,
     "client_type": "oidc_device_code",
     "client_id": _SDK_CLIENT_ID_PROD,
     "scopes": ["planet", "offline_access", "openid", "profile", "email"],
 }
 
+
 _OIDC_AUTH_CLIENT_CONFIG__M2M_PROD = {
-    **_ProductionEnv.PRIMARY_PUBLIC_OAUTH_AUTHORITY_SENTINELHUB,
+    **_ProductionEnv.OAUTH_AUTHORITY_M2M,
     "client_type": "oidc_client_credentials_secret",
     "scopes": [],
     # "client_id": "__MUST_BE_USER_SUPPLIED__",
@@ -77,53 +81,42 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
     library that pertain to the Planet Lab's cloud service.
     """
 
-    # fmt: off
-    ##
-    ## OAuth production environment profiles
-    ##
     # Real
-    #   Using the client ID as a profile name is tricky...
+    #   Using the client ID as a profile name might be nice, but is tricky...
     #   We normalize directory paths to lower case. The auth implementation uses
     #   mixed case ID strings.  The odds of case normalized IDs colliding is low,
     #   but there is a bit of an off smell.
-    # BUILTIN_PROFILE_NAME_SDKCLI_CLIENT_ID     = _SDK_CLIENT_ID_PROD
-    BUILTIN_PROFILE_NAME_PLANET_USER          = "planet-user"
-    BUILTIN_PROFILE_NAME_PLANET_M2M           = "planet-m2m"
-    # Aliases
-    # BUILTIN_PROFILE_ALIAS_PLANET_USER          = "planet-user"
+    # BUILTIN_PROFILE_NAME_SDKCLI_CLIENT_ID = _SDK_CLIENT_ID_PROD
+    BUILTIN_PROFILE_NAME_PLANET_USER = "planet-user"
+    BUILTIN_PROFILE_NAME_PLANET_M2M = "planet-m2m"
+    BUILTIN_PROFILE_NAME_LEGACY = "legacy"
 
-    ##
-    ## Profiles that use Planet's old (pre-OAuth) based auth protocol
-    ##
-    BUILTIN_PROFILE_NAME_LEGACY               = "legacy"
+    # Aliases
+    # BUILTIN_PROFILE_ALIAS_PLANET_USER = "planet-user"
 
     _builtin_profile_auth_client_configs = {
-        ## OAuth Client Configs
-        # BUILTIN_PROFILE_NAME_SDKCLI_CLIENT_ID     : _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD,
-        BUILTIN_PROFILE_NAME_PLANET_USER          : _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD,
-        BUILTIN_PROFILE_NAME_PLANET_M2M           : _OIDC_AUTH_CLIENT_CONFIG__M2M_PROD,
-
-        # Planet Legacy Protocols
-        BUILTIN_PROFILE_NAME_LEGACY            : _LEGACY_AUTH_CLIENT_CONFIG__PROD,
-
-        # Misc
-        # BUILTIN_PROFILE_NAME_NONE              : _NOOP_AUTH_CLIENT_CONFIG,
+        # BUILTIN_PROFILE_NAME_SDKCLI_CLIENT_ID: _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD,
+        BUILTIN_PROFILE_NAME_PLANET_USER: _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD,
+        BUILTIN_PROFILE_NAME_PLANET_M2M: _OIDC_AUTH_CLIENT_CONFIG__M2M_PROD,
+        BUILTIN_PROFILE_NAME_LEGACY: _LEGACY_AUTH_CLIENT_CONFIG__PROD,
+        # BUILTIN_PROFILE_NAME_NONE: _NOOP_AUTH_CLIENT_CONFIG,
     }
 
     _builtin_profile_aliases = {
-        # BUILTIN_PROFILE_ALIAS_PLANET_USER : BUILTIN_PROFILE_NAME_SDKCLI_CLIENT_ID,
+        # BUILTIN_PROFILE_ALIAS_PLANET_USER: BUILTIN_PROFILE_NAME_SDKCLI_CLIENT_ID,
     }
+
     _builtin_profile_default_by_client_type = {
-        "oidc_device_code"               : BUILTIN_PROFILE_NAME_PLANET_USER,
-        "oidc_auth_code"                 : BUILTIN_PROFILE_NAME_PLANET_USER,
-        "oidc_client_credentials_secret" : BUILTIN_PROFILE_NAME_PLANET_M2M,
-        "planet_legacy"                  : BUILTIN_PROFILE_NAME_LEGACY,
+        "oidc_device_code": BUILTIN_PROFILE_NAME_PLANET_USER,
+        "oidc_auth_code": BUILTIN_PROFILE_NAME_PLANET_USER,
+        "oidc_client_credentials_secret": BUILTIN_PROFILE_NAME_PLANET_M2M,
+        "planet_legacy": BUILTIN_PROFILE_NAME_LEGACY,
     }
+
     _builtin_trust_realms: Dict[str, Optional[List[dict]]] = {
-        "PRODUCTION": _ProductionEnv.PRIMARY_PUBLIC_OAUTH_AUTHORITIES,
+        "PRODUCTION": _ProductionEnv.PUBLIC_OAUTH_AUTHORITIES,
         "CUSTOM": None,
     }
-    # fmt: on
 
     def builtin_client_authclient_config_dicts(self) -> Dict[str, dict]:
         return self._builtin_profile_auth_client_configs

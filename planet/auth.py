@@ -131,7 +131,8 @@ class Auth(metaclass=abc.ABCMeta):
 
     @staticmethod
     def from_file(
-        filename: typing.Optional[typing.Union[str, pathlib.Path]] = None) -> AuthType:
+        filename: typing.Optional[typing.Union[str, pathlib.Path]] = None
+    ) -> AuthType:
         """Create authentication from secret file.
 
         The default secret file is named `.planet.json` and is stored in the user
@@ -153,17 +154,19 @@ class Auth(metaclass=abc.ABCMeta):
             filename: Alternate path for the planet secret file.
 
         """
-        warnings.warn("Auth.from_file() will be deprecated.",  PendingDeprecationWarning)
+        warnings.warn("Auth.from_file() will be deprecated.", PendingDeprecationWarning)
         plauth_config = {
             **_ProductionEnv.LEGACY_AUTH_AUTHORITY,
             "client_type": planet_auth.PlanetLegacyAuthClientConfig.meta().get("client_type"),
         }
-        pl_authlib_context = planet_auth.Auth.initialize_from_config_dict(client_config=plauth_config,
-                                                                token_file=filename or SECRET_FILE_PATH)
-        #planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
+        pl_authlib_context = planet_auth.Auth.initialize_from_config_dict(
+            client_config=plauth_config,
+            token_file=filename or SECRET_FILE_PATH
+        )
+        # planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
         #    auth_profile_opt=_BuiltinConfigurationProvider.BUILTIN_PROFILE_NAME_LEGACY,
         #    token_file_opt=filename or SECRET_FILE_PATH
-        #)
+        # )
         return _PLAuthLibAuth(plauth=pl_authlib_context)
 
     @staticmethod
@@ -223,6 +226,7 @@ class Auth(metaclass=abc.ABCMeta):
     @property
     def value(self):
         raise DeprecationWarning("Auth.value has been deprecated.")
+
 
 class APIKeyAuthException(PlanetError):
     """exceptions thrown by APIKeyAuth"""

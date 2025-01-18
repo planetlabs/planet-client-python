@@ -19,7 +19,6 @@ import click
 import planet_auth
 import planet_auth_utils
 
-import planet
 from .cmds import translate_exceptions
 from ..auth_builtins import _BuiltinConfigurationProvider
 
@@ -45,15 +44,13 @@ def auth(ctx):
     # just storing the API key, and nominally stores legacy API keys in a
     # different location(s).  This planet SDK historically only stored an
     # API key in this file.
-    if (ctx.invoked_subcommand == "init"
-        or ctx.invoked_subcommand == "value"
-        or ctx.invoked_subcommand == "store"
-    ):
+    if (ctx.invoked_subcommand == "init" or ctx.invoked_subcommand == "value" or ctx.invoked_subcommand == "store"):
         # click.echo("Overriding Auth Profile with legacy auth profile.")
         ctx.obj["AUTH"] = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
             auth_profile_opt=_BuiltinConfigurationProvider.BUILTIN_PROFILE_NAME_LEGACY,
             token_file_opt=planet_auth_utils.PlanetAuthUserConfig.default_user_config_file()
         )
+
 
 @auth.command(name="store", deprecated=True)  # type: ignore
 @translate_exceptions
@@ -63,7 +60,7 @@ def store(key):
     if click.confirm('This overrides the stored value. Continue?'):
         # See above.  A bit of hackery around the token_file to maintain old interface.
         token_file = planet_auth.FileBackedJsonObject(file_path=planet_auth_utils.PlanetAuthUserConfig.default_user_config_file())
-        try :
+        try:
             token_file.load()
             conf_data = token_file.data()
         except FileNotFoundError:
@@ -83,12 +80,10 @@ auth.add_command(name="profile-list", cmd=planet_auth_utils.cmd_profile_list)
 auth.add_command(name="profile-show", cmd=planet_auth_utils.cmd_profile_show)
 auth.add_command(name="profile-set", cmd=planet_auth_utils.cmd_profile_set)
 
-planet_auth_utils.cmd_pllegacy_login.name="init"
+planet_auth_utils.cmd_pllegacy_login.name = "init"
 planet_auth_utils.cmd_pllegacy_login.deprecated = True
 auth.add_command(name="init", cmd=planet_auth_utils.cmd_pllegacy_login)
 
 planet_auth_utils.cmd_pllegacy_print_api_key.name = "value"
 planet_auth_utils.cmd_pllegacy_print_api_key.deprecated = True
 auth.add_command(name="value", cmd=planet_auth_utils.cmd_pllegacy_print_api_key)
-
-# TODO: what do we want to expose to Planet SDK and CLI users around auth profiles?
