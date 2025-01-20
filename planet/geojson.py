@@ -19,6 +19,8 @@ import typing
 
 import geojson as gj
 from jsonschema import Draft7Validator
+
+from .models import Feature
 from .constants import DATA_DIR
 from .exceptions import GeoJSONError, FeatureError
 
@@ -41,6 +43,8 @@ def as_geom_or_ref(data) -> dict:
             or FeatureCollection or if more than one Feature is in a
             FeatureCollection.
     """
+    if isinstance(data, Feature):
+        return as_ref(data.ref)
     if isinstance(data, str):
         return as_ref(data)
     geom_type = data['type']
@@ -60,7 +64,7 @@ def validate_ref(uri) -> bool:
         raise FeatureError("Expected scheme pl:features")
     path = parts[1:]
     if len(path) < 2:
-        raise FeatureError("Expceted dataset/collection path")
+        raise FeatureError("Expected dataset/collection path")
     return True
 
 

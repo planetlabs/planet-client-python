@@ -15,6 +15,8 @@
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterator, List, Optional, Union
 
+from planet.models import Feature
+
 from ..http import Session
 
 from planet.clients import DataClient
@@ -47,7 +49,7 @@ class DataAPI:
         name: Optional[str] = None,
         sort: Optional[str] = None,
         limit: int = 100,
-        geometry: Optional[Union[Dict, str]] = None,
+        geometry: Optional[Union[Dict, str, Feature]] = None,
     ) -> Iterator[Dict]:
         """
         Search for items

@@ -1,4 +1,6 @@
 from typing import Optional
+
+from .features import FeaturesAPI
 from .data import DataAPI
 from .orders import OrdersAPI
 from .subscriptions import SubscriptionsAPI
@@ -53,3 +55,4 @@ class Planet:
         self.data = DataAPI(self._session)
         self.orders = OrdersAPI(self._session)
         self.subscriptions = SubscriptionsAPI(self._session)
+        self.features = FeaturesAPI(self._session)
