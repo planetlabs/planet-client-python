@@ -16,8 +16,11 @@ import logging
 
 import pytest
 
+import planet.auth
 from planet import auth
 import planet_auth
+
+import planet.auth_builtins
 
 LOGGER = logging.getLogger(__name__)
 
@@ -138,18 +141,27 @@ def test_Auth_from_login(monkeypatch):
 
 def test_Auth_from_user_defaults():
     # The primary implementation is implemented and unit tested by the planet auth libraries.
-    under_test = auth.Auth.from_user_defaults()
+    # This tests that it doesn't explode with an exception.
+    # CI/CD currently is run by configuring auth via PL_API_KEY env var.
+    # What this will actually do in an user env depends on a lot of variables.
+    _ = auth.Auth.from_user_defaults()
 
 
 def test_Auth_from_oauth_m2m():
-    # TODO: assert that the specified M2M client is used,
-    #  regardless of other user defaults.
     under_test = auth.Auth.from_oauth_m2m("mock_client_id", "mock_client_secret")
+    assert isinstance(under_test, planet.auth._PLAuthLibAuth)
+    assert isinstance(under_test._plauth.auth_client(), planet_auth.ClientCredentialsClientSecretAuthClient)
+    assert under_test._plauth.auth_client()._ccauth_client_config.client_id() == "mock_client_id"
+    assert under_test._plauth.auth_client()._ccauth_client_config.client_secret() == "mock_client_secret"
+    assert under_test._plauth.auth_client()._ccauth_client_config.auth_server() == planet.auth_builtins._ProductionEnv.OAUTH_AUTHORITY_M2M["auth_server"]
 
 
 def test_Auth_from_oauth_user_session():
-    # TODO: assert that the user interactive session is used.
     under_test = auth.Auth.from_oauth_user_session()
+    assert isinstance(under_test, planet.auth._PLAuthLibAuth)
+    assert isinstance(under_test._plauth.auth_client(), planet_auth.DeviceCodeAuthClient)
+    assert under_test._plauth.auth_client()._devicecode_client_config.client_id() == planet.auth_builtins._SDK_CLIENT_ID_PROD
+    assert under_test._plauth.auth_client()._devicecode_client_config.auth_server() == planet.auth_builtins._ProductionEnv.OAUTH_AUTHORITY_USER["auth_server"]
 
 
 def test_auth_value_deprecated():

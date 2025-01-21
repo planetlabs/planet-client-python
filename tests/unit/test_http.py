@@ -20,12 +20,10 @@ import math
 from unittest.mock import patch
 
 import httpx
-import planet_auth_utils
 import respx
 
 import pytest
 
-import planet
 from planet import exceptions, http
 
 TEST_URL = 'mock://fantastic.com'

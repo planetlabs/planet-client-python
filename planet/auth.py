@@ -103,11 +103,11 @@ class Auth(metaclass=abc.ABCMeta):
         """
         Beta.  Feature not yet supported for public use.
         """
-        # raise NotImplementedError("Feature not implemented yet")
+        raise NotImplementedError("Feature not implemented yet")
 
         plauth_config_dict = _OIDC_AUTH_CLIENT_CONFIG__SKEL
         plauth_config_dict["client_id"] = client_id
-        ## plauth_config_dict["client_secret"] = client_id # Only needed if we support certain types of clients
+        # plauth_config_dict["client_secret"] = client_id # Only needed if we support certain types of clients
         plauth_config_dict["scopes"] = requested_scopes
         #  TBD: How flexible will we be in terms of supported flows OAuth flows?
         plauth_config_dict["client_type"] = "oidc_device_code"
@@ -122,7 +122,6 @@ class Auth(metaclass=abc.ABCMeta):
             # profile_name="my_app_name"
         )
         return Auth.from_plauth(pl_authlib_context)
-
 
     @staticmethod
     def from_oauth_m2m(client_id: str, client_secret: str) -> AuthType:
