@@ -90,6 +90,7 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
     BUILTIN_PROFILE_NAME_PLANET_USER = "planet-user"
     BUILTIN_PROFILE_NAME_PLANET_M2M = "planet-m2m"
     BUILTIN_PROFILE_NAME_LEGACY = "legacy"
+    BUILTIN_PROFILE_NAME_NONE = "none"
 
     # Aliases
     # BUILTIN_PROFILE_ALIAS_PLANET_USER = "planet-user"
@@ -99,7 +100,7 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
         BUILTIN_PROFILE_NAME_PLANET_USER: _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD,
         BUILTIN_PROFILE_NAME_PLANET_M2M: _OIDC_AUTH_CLIENT_CONFIG__M2M_PROD,
         BUILTIN_PROFILE_NAME_LEGACY: _LEGACY_AUTH_CLIENT_CONFIG__PROD,
-        # BUILTIN_PROFILE_NAME_NONE: _NOOP_AUTH_CLIENT_CONFIG,
+        BUILTIN_PROFILE_NAME_NONE: _NOOP_AUTH_CLIENT_CONFIG,
     }
 
     _builtin_profile_aliases = {
@@ -111,6 +112,7 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
         "oidc_auth_code": BUILTIN_PROFILE_NAME_PLANET_USER,
         "oidc_client_credentials_secret": BUILTIN_PROFILE_NAME_PLANET_M2M,
         "planet_legacy": BUILTIN_PROFILE_NAME_LEGACY,
+        "none": BUILTIN_PROFILE_NAME_NONE,
     }
 
     _builtin_trust_realms: Dict[str, Optional[List[dict]]] = {
