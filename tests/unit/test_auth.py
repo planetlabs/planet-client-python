@@ -136,6 +136,22 @@ def test_Auth_from_login(monkeypatch):
         _ = auth.Auth.from_login('email', 'pw')
 
 
+def test_Auth_from_user_defaults():
+    # The primary implementation is implemented and unit tested by the planet auth libraries.
+    under_test = auth.Auth.from_user_defaults()
+
+
+def test_Auth_from_oauth_m2m():
+    # TODO: assert that the specified M2M client is used,
+    #  regardless of other user defaults.
+    under_test = auth.Auth.from_oauth_m2m("mock_client_id", "mock_client_secret")
+
+
+def test_Auth_from_oauth_user_session():
+    # TODO: assert that the user interactive session is used.
+    under_test = auth.Auth.from_oauth_user_session()
+
+
 def test_auth_value_deprecated():
     with pytest.raises(DeprecationWarning):
         test_auth = auth.Auth.from_key("test_deprecated_key")
