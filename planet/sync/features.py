@@ -26,7 +26,7 @@ class FeaturesAPI:
         """
         Parameters:
             session: Open session connected to server.
-            base_url: The base URL to use. Defaults to production data API
+            base_url: The base URL to use. Defaults to production Features API
                 base url.
         """
         self._client = FeaturesClient(session, base_url)
