@@ -99,7 +99,9 @@ class Auth(metaclass=abc.ABCMeta):
     #  it is a generally available feature.
     #
     @staticmethod
-    def from_oauth_client_config(client_id: str, requested_scopes: List[str], token_file_path: str):
+    def from_oauth_client_config(client_id: str,
+                                 requested_scopes: List[str],
+                                 token_file_path: str):
         """
         Beta.  Feature not yet supported for public use.
         """
@@ -118,8 +120,7 @@ class Auth(metaclass=abc.ABCMeta):
             # refresh tokens.  Paths on disk should conform to
             # ~/.planet/<profile>/token.json[.sops] to play well with the CLI
             # managing the same sessions.
-            token_file=token_file_path,
-            # profile_name="my_app_name"
+            token_file=token_file_path,  # profile_name="my_app_name"
         )
         return Auth.from_plauth(pl_authlib_context)
 
