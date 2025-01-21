@@ -44,6 +44,13 @@ class _ProductionEnv:
 
 _SDK_CLIENT_ID_PROD = "49lHVBYlXCdfIYqE1B9zeXt0iFHSXees"
 
+_OIDC_AUTH_CLIENT_CONFIG__SKEL = {
+    **_ProductionEnv.OAUTH_AUTHORITY_USER,
+    # "client_type": "oidc_device_code",
+    # "client_id": _SDK_CLIENT_ID_PROD,
+    "scopes": ["planet", "offline_access", "openid", "profile", "email"],
+}
+
 _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD = {
     # The well known OIDC client that is the Planet Python CLI.
     # Developers should register their own clients so that users may
