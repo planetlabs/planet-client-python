@@ -34,13 +34,13 @@ Yes. Even if you’re not writing code—and only using the "no code" CLI part o
 Install the Planet SDK for Python using [pip](https://pip.pypa.io):
 
 ```console
-$ pip install planet
+pip install planet
 ```
 
 ## Step 3: Check the Planet SDK for Python version
 
 ```console
-$ planet --version
+planet --version
 ```
 
 You should be on some version 2 of the Planet SDK for Python.
@@ -60,12 +60,12 @@ Just as you log in when you browse to https://planet.com/account, you’ll want 
 At a terminal console, type the following Planet command:
 
 ```console
-$ planet auth login
+planet auth login
 ```
 
 A browser window should be opened, and you will be directed to login to your account.  This
 command will wait for the browser login to complete, and should exit shortly afterwards.
-When this process succeeds you should see the following message on the console:
+When this process succeeds, you will see the following message on the console:
 
 ```console
 Login succeeded.
@@ -74,7 +74,7 @@ Login succeeded.
 If you are in an environment where the `planet` command line utility cannot open a browser (such 
 as a remote shell on a cloud service provider), use the following command and follow the instructions:
 ```console
-$ planet auth login --no-open-browser
+planet auth login --no-open-browser
 ```
 
 ### Get your Access Token

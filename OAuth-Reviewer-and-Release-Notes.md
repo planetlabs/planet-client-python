@@ -1,6 +1,6 @@
 # Overview
 * Auth functions are now implemented by the `planet_auth` and
-  `planet_auth_utils` libraries
+  `planet_auth_utils` libraries.
 * The use of API keys and Planet's legacy username/password based
   authentication protocol is being phased out in favor of OAuth2 based
   mechanisms.  These legacy mechanisms remain in place for the time being,
@@ -41,9 +41,10 @@
     `plauth` command line utility for expert use cases.
 
 # Library API changes
-*
+* TODO - Document
 
 # On-disk interface changes
+* TODO - Document
 
 # Misc Notes
 * The interfaces for the `planet_auth` and `planet_auth_utils` libraries are
@@ -52,3 +53,10 @@
 # Release Sequencing & Requirements
 * Planet APIs need to accept SH M2M tokens.
 * Users/Admins need a good way to register/manage M2M clients.
+
+
+# Branch TODO
+- I think this bumps to version 3
+- update API docs
+- Update example docs
+- Update new dev center docs

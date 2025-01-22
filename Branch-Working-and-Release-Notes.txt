@@ -1,8 +1,0 @@
-- Replaced most user auth code with the planet auth library. This brings with it OAuth for user interactive and M2M flows.
-- Deprecated the old auth command.  New auth command is implemented with the separate auth library
-  - TODO: link to lib
-  - planet auth init -> planet auth oauth login  (or, planet --auth-profile legacy auth legacy login)
-  - planet auth value -> planet plauth oauth print-access-token (or planet --auth-profile legacy auth legacy print-api-key)
-- The legacy secret file has largely been deprecated.  This will require a user migration.
-# TODO: hide command line options not needed for the SDK (Maybe bring back a simpler built-in auth command)
-# TODO: we need to allocate a client ID for the `planet` CLI.  We are presently leaning on plauth's client ID. (maybe this is OK)
