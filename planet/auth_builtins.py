@@ -102,7 +102,7 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
     # Aliases
     # BUILTIN_PROFILE_ALIAS_PLANET_USER = "planet-user"
 
-    _builtin_profile_auth_client_configs = {
+    _builtin_profile_auth_client_configs: Dict[str, dict] = {
         # BUILTIN_PROFILE_NAME_SDKCLI_CLIENT_ID: _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD,
         BUILTIN_PROFILE_NAME_PLANET_USER: _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD,
         BUILTIN_PROFILE_NAME_PLANET_M2M: _OIDC_AUTH_CLIENT_CONFIG__M2M_PROD,
@@ -110,7 +110,7 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
         BUILTIN_PROFILE_NAME_NONE: _NOOP_AUTH_CLIENT_CONFIG,
     }
 
-    _builtin_profile_aliases = {
+    _builtin_profile_aliases: dict[str, str] = {
         # BUILTIN_PROFILE_ALIAS_PLANET_USER: BUILTIN_PROFILE_NAME_SDKCLI_CLIENT_ID,
     }
 

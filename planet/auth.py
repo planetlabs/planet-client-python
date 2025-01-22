@@ -155,7 +155,7 @@ class Auth(metaclass=abc.ABCMeta):
         return _PLAuthLibAuth(plauth=pl_authlib_context)
 
     @staticmethod
-    def from_key(key: str) -> AuthType:
+    def from_key(key: typing.Optional[str]) -> AuthType:
         """Obtain authentication from api key.
 
         Parameters:
