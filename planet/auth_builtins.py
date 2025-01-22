@@ -12,12 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+from enum import StrEnum
 from typing import Dict, List, Optional
 from planet_auth_utils.builtins_provider import BuiltinConfigurationProviderInterface
 
 # Needs to be set at runtime (not necessarily at import time) for dependency injection to planet_auth_util
 os.environ[
     "PL_AUTH_BUILTIN_CONFIG_PROVIDER"] = "planet.auth_builtins._BuiltinConfigurationProvider"
+
+
+class PlanetOAuthScopes(StrEnum):
+    """
+    Planet OAuth2 Scopes
+    """
+    PLANET = "planet"
+    OFFLINE_ACCESS = "offline_access"
+    OPENID = "openid"
+    PROFILE = "profile"
+    EMAIL = "email"
 
 
 class _ProductionEnv:
@@ -46,9 +58,15 @@ _SDK_CLIENT_ID_PROD = "49lHVBYlXCdfIYqE1B9zeXt0iFHSXees"
 
 _OIDC_AUTH_CLIENT_CONFIG__SKEL = {
     **_ProductionEnv.OAUTH_AUTHORITY_USER,
-    # "client_type": "oidc_device_code",
-    # "client_id": _SDK_CLIENT_ID_PROD,
-    "scopes": ["planet", "offline_access", "openid", "profile", "email"],
+    "scopes": [
+        PlanetOAuthScopes.PLANET,
+        PlanetOAuthScopes.OFFLINE_ACCESS,
+        # PlanetOAuthScopes.OPENID,
+        # PlanetOAuthScopes.PROFILE,
+        # PlanetOAuthScopes.EMAIL
+    ],
+    # "client_type": "oidc_device_code",  # Must be provided when hydrating the SKEL
+    # "client_id": _SDK_CLIENT_ID_PROD,   # Must be provided when hydrating the SKEL
 }
 
 _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD = {
@@ -56,15 +74,17 @@ _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD = {
     # Developers should register their own clients so that users may
     # manage grants for different applications.  Registering applications
     # also allows for application specific URLs or auth flow selection.
-    **_ProductionEnv.OAUTH_AUTHORITY_USER,
+    **_OIDC_AUTH_CLIENT_CONFIG__SKEL,
     "client_type": "oidc_device_code",
     "client_id": _SDK_CLIENT_ID_PROD,
-    "scopes": ["planet", "offline_access", "openid", "profile", "email"],
+    # FIXME: scopes currently from SKEL.
+    #  It would be better to have per-client defaults and limits enforced by the auth server
 }
 
 _OIDC_AUTH_CLIENT_CONFIG__M2M_PROD = {
     **_ProductionEnv.OAUTH_AUTHORITY_M2M,
     "client_type": "oidc_client_credentials_secret",
+    # FIXME: we do not have scope or behavior parity between our M2M and our user OAuth authorities.
     "scopes": [],
     # "client_id": "__MUST_BE_USER_SUPPLIED__",
     # "client_secret": "__MUST_BE_USER_SUPPLIED__",

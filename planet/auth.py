@@ -39,7 +39,7 @@ class Auth(metaclass=abc.ABCMeta):
     """Handle authentication information for use with Planet APIs."""
 
     @staticmethod
-    def from_user_defaults():
+    def from_user_defaults() -> AuthType:
         """
         Create authentication from user defaults. Defaults take into
         account environment variables (highest priority), user configuration
@@ -91,37 +91,60 @@ class Auth(metaclass=abc.ABCMeta):
             BUILTIN_PROFILE_NAME_PLANET_USER)
         return _PLAuthLibAuth(plauth=pl_authlib_context)
 
-    # TODO: I think we need something this for developers of user interactive
+    # TODO:
+    #  I think we need something like this for developers of user interactive
     #  applications (e.g. QGIS), but as of January 2025 we do not have a way
     #  for developers to register user interactive client on the platform,
     #  or a way for users of such applications to revoke such authorizations.
     #  Even without this, we may white glove client IDs for partners before
     #  it is a generally available feature.
-    #
+    # TODO:
+    #  This works to initialize the library auth client, but DOES NOT
+    #  establish a user session.  If on disk storage can be used, that
+    #  can be done out of band via the CLI.  If in memory operations
+    #  are desired, that will not work.
+    #  In either case, what needs to happen is that
+    #  planet.auth._PLAuthLibAuth._plauth.login() needs to be invoked.
+    #  If disk storage is used, that only needs to happen once and the results
+    #  will be picked up from disk by this Auth init method. If not,
+    #  that needs to happen for every process invocation, since tokens
+    #  will not be saved, and refresh cannot be performed.
+    #  User experience is greatly served by being able to save to disk.
     @staticmethod
-    def from_oauth_client_config(client_id: str,
-                                 requested_scopes: List[str],
-                                 token_file_path: str):
+    def beta_from_oauth_client_config(
+            client_id: str,
+            requested_scopes: List[str],
+            save_token_file: bool = True) -> AuthType:
         """
         Beta.  Feature not yet supported for public use.
         """
-        raise NotImplementedError("Feature not implemented yet")
-
         plauth_config_dict = _OIDC_AUTH_CLIENT_CONFIG__SKEL
         plauth_config_dict["client_id"] = client_id
-        # plauth_config_dict["client_secret"] = client_id # Only needed if we support certain types of clients
         plauth_config_dict["scopes"] = requested_scopes
         #  TBD: How flexible will we be in terms of supported flows OAuth flows?
         plauth_config_dict["client_type"] = "oidc_device_code"
 
-        pl_authlib_context = planet_auth.Auth.initialize_from_config_dict(
+        # Other client types have other needs.
+        # Confidential clients need client secrets.
+        # Auth code clients need callback URLs.
+        # plauth_config_dict["client_secret"] = client_id # Only needed if we support certain types of clients
+
+        # TODO
+        #    This will not write the constructed config to the user's
+        #    ~/.planet/ dir the way a conf constructed by a cli command like
+        #    `planet auth login --client-id XXX --client-secret YYY` will.
+        #    The intent of doing it through the planet_auth_utils factory is so we
+        #    play well with tooling like the CLI.  This maybe does not quite achieve
+        #    the desired result.  We are saving tokens in the right place, but not
+        #    giving the CLI all it needs to co-manage said tokens with whatever app
+        #    is being build on the library.  Those are perhaps separate decisions,
+        #    anyway.
+        pl_authlib_context = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context_with_config(
             client_config=plauth_config_dict,
-            # Set token_file to 'None' to operate in memory.  Set to a path on disk to save
-            # refresh tokens.  Paths on disk should conform to
-            # ~/.planet/<profile>/token.json[.sops] to play well with the CLI
-            # managing the same sessions.
-            token_file=token_file_path,  # profile_name="my_app_name"
-        )
+            # TODO - Probably need a user friendly profile name
+            #  We should also probably agree with what's registered in the Auth server.
+            profile_name=client_id.lower(),
+            save_token_file=save_token_file)
         return Auth.from_plauth(pl_authlib_context)
 
     @staticmethod
@@ -141,7 +164,7 @@ class Auth(metaclass=abc.ABCMeta):
         return _PLAuthLibAuth(plauth=pl_authlib_context)
 
     @staticmethod
-    def from_plauth(pl_authlib_context: planet_auth.Auth):
+    def from_plauth(pl_authlib_context: planet_auth.Auth) -> AuthType:
         """
         Create authentication from the provided Planet Auth Library
         Authentication Context.  Generally, applications will want to use one
