@@ -66,7 +66,7 @@ def build_request(name: str,
         notifications: Specify custom notifications handling.
         order_type: Accept a partial order, indicated by 'partial'.
         tools: Tools to apply to the products. Order defines
-            the toolchain order of operatations.
+            the toolchain order of operations.
         stac: Include STAC metadata.
         hosting: A hosting destination (e.g. Sentinel Hub).
         collection_id: A Sentinel Hub collection ID.
@@ -105,7 +105,8 @@ def build_request(name: str,
 def product(item_ids: List[str],
             product_bundle: str,
             item_type: str,
-            fallback_bundle: Optional[str] = None) -> dict:
+            fallback_bundle: Optional[str] = None,
+            skip_client_validation: Optional[bool] = False) -> dict:
     """Product description for an order detail.
 
     Parameters:
@@ -116,28 +117,35 @@ def product(item_ids: List[str],
         fallback_bundle: In case product_bundle not having
             all asset types available, which would result in failed
             delivery, try a fallback bundle
+        skip_client_validation: If set to true, item type and product bundle
+            will not be validated client side.
 
     Raises:
         planet.specs.SpecificationException: If bundle or fallback bundle
             are not valid bundles or if item_type is not valid for the given
             bundle or fallback bundle.
     """
+    if skip_client_validation:
+        return {
+            'item_ids': item_ids,
+            'item_type': item_type,
+            'product_bundle': ','.join([product_bundle, fallback_bundle]) if fallback_bundle else product_bundle
+        }
+
     item_type = specs.validate_item_type(item_type)
     validated_product_bundle = specs.validate_bundle(item_type, product_bundle)
 
     if fallback_bundle is not None:
-        item_type = specs.validate_item_type(item_type)
         validated_fallback_bundle = specs.validate_bundle(
             item_type, fallback_bundle)
         validated_product_bundle = ','.join(
             [validated_product_bundle, validated_fallback_bundle])
 
-    product_dict = {
+    return {
         'item_ids': item_ids,
         'item_type': item_type,
         'product_bundle': validated_product_bundle
     }
-    return product_dict
 
 
 def notifications(email: Optional[bool] = None,

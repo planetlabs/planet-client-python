@@ -174,6 +174,7 @@ def catalog_source(
                                                  "standard",
                                                  "finalized"]]] = None,
     time_range_type: Optional[Literal["acquired", "published"]] = None,
+    skip_client_validation: Optional[bool] = False,
 ) -> dict:
     """Construct a Catalog subscription source.
 
@@ -199,6 +200,8 @@ def catalog_source(
         publishing_stages: A sequence of one or more of the values
             "preview", "standard", or "finalized".
         time_range_type: "acquired" (new in 2.1.0) or "published".
+        skip_client_validation: If set to true, item and asset types
+            will not be validated client side.
 
     Returns:
         dict: a representation of a subscription source.
@@ -237,13 +240,14 @@ def catalog_source(
         raise ClientError(
             "Subscription can only be successfully created if one item type",
             "is specified.")
-    try:
-        asset_types = [
-            specs.validate_asset_type(item, asset) for asset in asset_types
-            for item in item_types
-        ]
-    except specs.SpecificationException as exception:
-        raise ClientError(exception)
+    if not skip_client_validation:
+        try:
+            asset_types = [
+                specs.validate_asset_type(item, asset) for asset in asset_types
+                for item in item_types
+            ]
+        except specs.SpecificationException as exception:
+            raise ClientError(exception)
 
     parameters = {
         "item_types": item_types,
@@ -690,7 +694,7 @@ def reproject_tool(projection: str,
 def toar_tool(scale_factor: int = 10000) -> dict:
     """Specify a subscriptions API reproject tool.
 
-    The toar tool supports the analytic asset type for PSScene, PSOrthoTile,
+    The toar tool supports the analytic asset type for PSScene,
     and REOrthoTile item types. In addition to the analytic asset, the
     corresponding XML metadata asset type is required.
 

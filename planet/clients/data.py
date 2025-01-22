@@ -123,7 +123,8 @@ class DataClient:
                      name: Optional[str] = None,
                      sort: Optional[str] = None,
                      limit: int = 100,
-                     geometry: Optional[dict] = None) -> AsyncIterator[dict]:
+                     geometry: Optional[dict] = None,
+                     skip_client_validation: Optional[bool] = False ) -> AsyncIterator[dict]:
         """Iterate over results from a quick search.
 
         Quick searches are saved for a short period of time (~month). The
@@ -146,6 +147,7 @@ class DataClient:
                 maximum is applied.
             geometry: GeoJSON, a feature reference or a list of feature
                 references
+            skip_client_validation: Skip client-side validation of item_types
 
         Yields:
             Description of an item.
@@ -157,7 +159,8 @@ class DataClient:
 
         search_filter = search_filter or empty_filter()
 
-        item_types = [validate_data_item_type(item) for item in item_types]
+        if not skip_client_validation:
+            item_types = [validate_data_item_type(item) for item in item_types]
         request_json = {'filter': search_filter, 'item_types': item_types}
 
         if geometry:
@@ -186,6 +189,7 @@ class DataClient:
         name: str,
         enable_email: bool = False,
         geometry: Optional[dict] = None,
+        skip_client_validation: Optional[bool] = False,
     ) -> dict:
         """Create a new saved structured item search.
 
@@ -211,6 +215,7 @@ class DataClient:
             name: The name of the saved search.
             enable_email: Send a daily email when new results are added.
             geometry: A feature reference or a GeoJSON
+            skip_client_validation: Skip client-side validation of item_types
 
         Returns:
             Description of the saved search.
@@ -220,7 +225,8 @@ class DataClient:
         """
         url = self._searches_url()
 
-        item_types = [validate_data_item_type(item) for item in item_types]
+        if not skip_client_validation:
+            item_types = [validate_data_item_type(item) for item in item_types]
 
         request = {
             'name': name,
@@ -242,7 +248,8 @@ class DataClient:
                             search_filter: dict,
                             name: str,
                             enable_email: bool = False,
-                            geometry: Optional[dict] = None) -> dict:
+                            geometry: Optional[dict] = None,
+                            skip_client_validation: Optional[bool] = False) -> dict:
         """Update an existing saved search.
 
         Parameters:
@@ -252,13 +259,15 @@ class DataClient:
             name: The name of the saved search.
             enable_email: Send a daily email when new results are added.
             geometry: A feature reference or a GeoJSON
+            skip_client_validation: Skip client-side validation of item_types
 
         Returns:
             Description of the saved search.
         """
         url = f'{self._searches_url()}/{search_id}'
 
-        item_types = [validate_data_item_type(item) for item in item_types]
+        if not skip_client_validation:
+            item_types = [validate_data_item_type(item) for item in item_types]
 
         request = {
             'name': name,
@@ -397,13 +406,15 @@ class DataClient:
     async def get_stats(self,
                         item_types: List[str],
                         search_filter: dict,
-                        interval: str) -> dict:
+                        interval: str,
+                        skip_client_validation: Optional[bool] = False) -> dict:
         """Get item search statistics.
 
         Parameters:
             item_types: The item types to include in the search.
             search_filter: Structured search criteria.
             interval: The size of the histogram date buckets.
+            skip_client_validation: Skip client-side validation of item_types
 
         Returns:
             A full JSON description of the returned statistics result
@@ -420,7 +431,8 @@ class DataClient:
 
         url = f'{self._base_url}{STATS_PATH}'
 
-        item_types = [validate_data_item_type(item) for item in item_types]
+        if not skip_client_validation:
+            item_types = [validate_data_item_type(item) for item in item_types]
         request = {
             'interval': interval,
             'filter': search_filter,
@@ -458,7 +470,8 @@ class DataClient:
     async def get_asset(self,
                         item_type_id: str,
                         item_id: str,
-                        asset_type_id: str) -> dict:
+                        asset_type_id: str,
+                        skip_client_validation: Optional[bool] = False) -> dict:
         """Get an item asset description.
 
         Parameters:
@@ -474,7 +487,8 @@ class DataClient:
             planet.exceptions.ClientError: If asset type identifier is not
             valid.
         """
-        item_type_id = validate_data_item_type(item_type_id)
+        if not skip_client_validation:
+            item_type_id = validate_data_item_type(item_type_id)
         assets = await self.list_item_assets(item_type_id, item_id)
 
         try:

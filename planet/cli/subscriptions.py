@@ -15,30 +15,35 @@ from ..subscription_request import sentinel_hub
 from ..specs import get_item_types, validate_item_type, SpecificationException
 from .validators import check_geom
 
-ALL_ITEM_TYPES = get_item_types()
-valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(ALL_ITEM_TYPES)
+"""
+This string is used to provide a list of valid item types to the help text.
+If the bundle spec, which is where the item types are pulled from, cannot
+be reached, an empty string will be used. This is done to not interrupt cli
+workflows (listing commands, viewing help dialog) for orders bundle spec 
+unavailability, though it should be extremely rare.
+"""
+try:
+    ALL_ITEM_TYPES = get_item_types()
+    valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(ALL_ITEM_TYPES)
+except:
+    valid_item_string = ""
 
 
 def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
     """Validates each item types provided by comparing them to all supported
     item types."""
+    # Get the value of skip-client-validation from the context
+    skip_client_validation = ctx.params.get('skip_client_validation')
+
+    if skip_client_validation:
+        return item_types
+
     try:
         for item_type in item_types:
             validate_item_type(item_type)
         return item_types
     except SpecificationException as e:
         raise click.BadParameter(str(e))
-
-
-def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
-    """Validates the item type provided by comparing it to all supported
-    item types."""
-    try:
-        validate_item_type(item_type)
-    except SpecificationException as e:
-        raise click.BadParameter(str(e))
-
-    return item_type
 
 
 @asynccontextmanager
@@ -437,6 +442,11 @@ def request(name,
 @click.option('--time-range-type',
               type=click.Choice(["acquired", "published"]),
               help="Subscribe by acquisition time or time of publication.")
+@click.option('--skip-client-validation',
+              default=False,
+              is_flag=True,
+              help="Skip client-side validation of item types. "
+              "If omitted, it will be set to false and client side validation will occur.",)
 @pretty
 def request_catalog(item_types,
                     asset_types,
@@ -447,7 +457,8 @@ def request_catalog(item_types,
                     filter,
                     publishing_stages,
                     time_range_type,
-                    pretty):
+                    pretty,
+                    skip_client_validation):
     """Generate a subscriptions request catalog source description."""
 
     res = subscription_request.catalog_source(
@@ -459,7 +470,8 @@ def request_catalog(item_types,
         rrule=rrule,
         filter=filter,
         publishing_stages=publishing_stages,
-        time_range_type=time_range_type)
+        time_range_type=time_range_type,
+        skip_client_validation=skip_client_validation)
     echo_json(res, pretty)
 
 
