@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from enum import StrEnum
 from typing import Dict, List, Optional
 from planet_auth_utils.builtins_provider import BuiltinConfigurationProviderInterface
 
@@ -21,7 +20,9 @@ os.environ[
     "PL_AUTH_BUILTIN_CONFIG_PROVIDER"] = "planet.auth_builtins._BuiltinConfigurationProvider"
 
 
-class PlanetOAuthScopes(StrEnum):
+# No StrEnum in our lowest supported Python version
+# class PlanetOAuthScopes(enum.StrEnum):
+class PlanetOAuthScopes:
     """
     Planet OAuth2 Scopes
     """
