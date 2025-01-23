@@ -59,13 +59,13 @@ except:
 valid_items_and_bundles_string = valid_item_string + "\n" + valid_bundles_string
 
 
-def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
+def check_item_type(ctx, param, item_type):
     """Validates the item type provided by comparing it to all supported
     item types."""
-    # Get the value of skip-client-validation from the context
-    skip_client_validation = ctx.params.get('skip_client_validation')
-
-    if skip_client_validation:
+    # Get the value of skip-validation from the context
+    skip_validation = ctx.params.get('skip_validation')
+    print(ctx.params)
+    if "all" in skip_validation or "item_type" in skip_validation:
         return item_type
     
     try:
@@ -81,10 +81,16 @@ def check_bundle(ctx, param, bundle) -> Optional[List[dict]]:
     # Get the value of skip-client-validation from the context
     skip_client_validation = ctx.params.get('skip_client_validation')
 
+    # Get the value of item_type from the context
+    item_type = ctx.params.get('item_type')
+    if not item_type:
+        raise click.BadParameter("Item type is required to validate a bundle.")
+
+     # Validate the item type and bundle
     if skip_client_validation:
         return bundle
     
-    validate_bundle(bundle)
+    validate_bundle(item_type, bundle)
 
     return bundle
 
@@ -376,11 +382,10 @@ async def create(ctx, request, pretty, **kwargs):
               type=types.JSON(),
               help="""Clip feature Polygon or Multipolygon GeoJSON. Can be a
               json string, filename, or '-' for stdin.""")
-@click.option(
-    '--tools',
-    type=types.JSON(),
-    help="""Toolchain JSON. Can be a json string, filename, or '-' for
-    stdin.""")
+@click.option('--tools',
+              type=types.JSON(),
+              help="""Toolchain JSON. Can be a json string, filename, or '-' for
+              stdin.""")
 @click.option('--email',
               default=False,
               is_flag=True,
@@ -420,12 +425,14 @@ async def create(ctx, request, pretty, **kwargs):
 @click.option('--collection_id',
               help='Collection ID for Sentinel Hub hosting. '
               'If omitted, a new collection will be created.')
-@click.option('--skip-client-validation',
-              default=False,
-              is_flag=True,
-              help="Skip client-side validation of item type and bundle combinations. "
-              "If omitted, it will be set to false and client side validation will occur.",)
+@click.option('--skip-validation',
+              required=False,
+              type=types.CommaSeparatedString(),
+              help='One or more comma-separated components to skip client side validation on. '
+              'If an unrecognized component is provided, it will be ignored. To skip all client '
+              'validation, use "all". Actionable components are: item_type, bundle, clip, delivery, all.')
 @pretty
+@click.pass_context
 async def request(ctx,
                   item_type,
                   bundle,
@@ -442,7 +449,7 @@ async def request(ctx,
                   hosting,
                   collection_id,
                   pretty,
-                  skip_client_validation):
+                  skip_validation):
     """Generate an order request.
 
     This command provides support for building an order description used
@@ -452,7 +459,7 @@ async def request(ctx,
     IDs is one or more comma-separated item IDs.
     """
     try:
-        product = planet.order_request.product(ids, bundle, item_type, skip_client_validation)
+        product = planet.order_request.product(ids, bundle, item_type, skip_validation)
     except planet.specs.SpecificationException as e:
         raise click.BadParameter(e)
 

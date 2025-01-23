@@ -32,7 +32,7 @@ STATS_PATH = '/stats/orders/v2'
 ORDERS_PATH = '/orders/v2'
 BULK_PATH = '/bulk/orders/v2'
 
-# Order states https://developers.planet.com/docs/orders/ordering/#order-states
+# Order states https://developers.planet.com/apis/orders/states/
 # this is in order of state progression except for final states
 ORDER_STATE_SEQUENCE = \
     ('queued', 'running', 'failed', 'success', 'partial', 'cancelled')

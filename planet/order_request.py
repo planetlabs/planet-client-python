@@ -106,7 +106,7 @@ def product(item_ids: List[str],
             product_bundle: str,
             item_type: str,
             fallback_bundle: Optional[str] = None,
-            skip_client_validation: Optional[bool] = False) -> dict:
+            skip_validation: Optional[str] = []) -> dict:
     """Product description for an order detail.
 
     Parameters:
@@ -117,34 +117,39 @@ def product(item_ids: List[str],
         fallback_bundle: In case product_bundle not having
             all asset types available, which would result in failed
             delivery, try a fallback bundle
-        skip_client_validation: If set to true, item type and product bundle
-            will not be validated client side.
+        skip_validation: List of components to skip client side validation on.
+            If an unrecognized component is provided, it will be ignored. To
+            skip all client validation, use "all". Actionable components are: 
+            item_type, bundle, clip, delivery, all.
 
     Raises:
         planet.specs.SpecificationException: If bundle or fallback bundle
             are not valid bundles or if item_type is not valid for the given
             bundle or fallback bundle.
     """
-    if skip_client_validation:
+    if 'all' in skip_validation:
         return {
             'item_ids': item_ids,
             'item_type': item_type,
             'product_bundle': ','.join([product_bundle, fallback_bundle]) if fallback_bundle else product_bundle
         }
 
-    item_type = specs.validate_item_type(item_type)
-    validated_product_bundle = specs.validate_bundle(item_type, product_bundle)
+    if 'item_type' in skip_validation:
+        item_type = specs.validate_item_type(item_type)
+    if 'bundle' in skip_validation:
+        product_bundle = specs.validate_bundle(item_type, product_bundle)
 
     if fallback_bundle is not None:
-        validated_fallback_bundle = specs.validate_bundle(
-            item_type, fallback_bundle)
-        validated_product_bundle = ','.join(
-            [validated_product_bundle, validated_fallback_bundle])
+        if 'bundle' in skip_validation:
+            fallback_bundle = specs.validate_bundle(
+                item_type, fallback_bundle)
+            product_bundle = ','.join(
+                [product_bundle, fallback_bundle])
 
     return {
         'item_ids': item_ids,
         'item_type': item_type,
-        'product_bundle': validated_product_bundle
+        'product_bundle': product_bundle
     }
 
 

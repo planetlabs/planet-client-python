@@ -40,6 +40,9 @@ PRODUCT_BUNDLES = None
 
 LOGGER = logging.getLogger(__name__)
 
+class FetchBundlesSpecError(Exception):
+    """Custom exception for errors fetching the product bundles spec."""
+    pass
 
 class _LazyBundlesLoader:
     """Lazy load the product bundles spec from the API."""
@@ -53,15 +56,17 @@ class _LazyBundlesLoader:
                 try:
                     response = httpx.get(bundles_spec_url)
                     response.raise_for_status()
+                    break
                 except:
                     if attempt == retries:
-                        raise RuntimeError(f"Unable to fetch product bundles spec from API to perform client side validation on item and asset types.\nPlease retry!\nIn persistent cases - disable client side validation by using the skip_client_validation parameter in the SDK --skip-client-validation flag in the CLI.")
+                        raise FetchBundlesSpecError(f"Unable to fetch product bundles spec from API to perform client side validation on item and asset types.\nPlease retry!\nIn persistent cases - disable client side validation by using the skip_client_validation parameter in the SDK or --skip-client-validation flag in the CLI.")
+            bundles = response.json()['bundles']
             cache = {
-                'bundles': response.json()['bundles'],
-                'bundle_names': response.json()['bundles'].keys(),
+                'bundles': bundles,
+                'bundle_names': bundles.keys(),
                 'item_types': set(
                     itertools.chain.from_iterable(
-                        response.json()['bundles'][bundle]['assets'].keys() for bundle in response.json()['bundles'].keys()
+                        bundles[bundle]['assets'].keys() for bundle in bundles.keys()
                     )
                 )
             }
