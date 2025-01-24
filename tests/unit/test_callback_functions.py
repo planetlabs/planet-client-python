@@ -15,6 +15,7 @@ import logging
 import pytest
 import click
 from planet.cli import data
+from planet.cli import orders
 from planet.cli import subscriptions
 
 LOGGER = logging.getLogger(__name__)
@@ -70,20 +71,36 @@ def test_item_types_fail_subscriptions():
         subscriptions.check_item_types(ctx, 'item_types', "bad_item_type")
 
 
-def test_item_type_success_subscriptions():
-    ctx = MockContext()
-    item_type = "PSScene"
-    result = subscriptions.check_item_type(ctx, 'item_type', item_type)
-    assert result == item_type
-
-
-def test_item_type_fail_subscriptions():
-    ctx = MockContext()
-    with pytest.raises(click.BadParameter):
-        subscriptions.check_item_type(ctx, 'item_type', "bad_item_type")
-
-
 def test_item_type_too_many_item_types_subscriptions():
     ctx = MockContext()
     with pytest.raises(click.BadParameter):
         subscriptions.check_item_types(ctx, 'item_type', "PSScene,SkySatScene")
+
+
+def test_item_type_success_orders():
+    ctx = MockContext()
+    item_type = "PSScene"
+    result = orders.check_item_type(ctx, 'item_type', item_type)
+    assert result == item_type
+
+
+def test_item_type_fail_orders():
+    ctx = MockContext()
+    with pytest.raises(click.BadParameter):
+        orders.check_item_type(ctx, 'item_type', "bad_item_type")
+
+
+def test_bundle_success_orders():
+    ctx = MockContext()
+    item_type = "PSScene"
+    bundle = "analytic_udm2"
+    result = orders.check_bundle(ctx, 'bundle', item_type, bundle)
+    assert result == bundle
+
+
+def test_bundle_fail_orders():
+    ctx = MockContext()
+    with pytest.rasies(click.BadParameter):
+        orders.check_bundle(ctx, 'bundle', "PSScene", "bad_bundle")
+    with pytest.raises(click.BadParameter):
+        orders.check_bundle(ctx, 'bundle', "bad_item_type", "analytic_udm2")

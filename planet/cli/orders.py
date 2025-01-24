@@ -34,7 +34,6 @@ from ..specs import (
     validate_data_item_type
 )
 
-from planet.specs import validate_bundle, validate_data_item_type
 
 LOGGER = logging.getLogger(__name__)
 
@@ -78,7 +77,6 @@ async def orders_client(ctx):
 
 
 @click.group()  # type: ignore
-@click.pass_context
 @click.option('-u',
               '--base-url',
               default=None,
@@ -347,7 +345,8 @@ async def create(ctx, request, pretty, **kwargs):
               callback=check_item_type)
 @click.option('--bundle',
               required=True,
-              help='Asset type for the item.',
+              help='Bundle type for the item.',
+              type=str,
               callback=check_bundle)
 @click.option('--name',
               required=True,

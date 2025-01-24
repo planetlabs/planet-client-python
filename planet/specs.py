@@ -17,8 +17,6 @@ import httpx
 import logging
 import itertools
 
-from collections import namedtuple
-
 SUPPORTED_TOOLS = [
     'bandmath',
     'clip',
@@ -43,6 +41,7 @@ LOGGER = logging.getLogger(__name__)
 class FetchBundlesSpecError(Exception):
     """Custom exception for errors fetching the product bundles spec."""
     pass
+
 
 class _LazyBundlesLoader:
     """Lazy load the product bundles spec from the API."""

@@ -690,7 +690,7 @@ def reproject_tool(projection: str,
 def toar_tool(scale_factor: int = 10000) -> dict:
     """Specify a subscriptions API reproject tool.
 
-    The toar tool supports the analytic asset type for PSScene,
+    The toar tool supports the analytic asset type for PSScene
     and REOrthoTile item types. In addition to the analytic asset, the
     corresponding XML metadata asset type is required.
 

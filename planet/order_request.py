@@ -123,19 +123,20 @@ def product(item_ids: List[str],
             bundle or fallback bundle.
     """
     item_type = specs.validate_item_type(item_type)
-    product_bundle = specs.validate_bundle(item_type, product_bundle)
+    validated_product_bundle = specs.validate_bundle(item_type, product_bundle)
 
     if fallback_bundle is not None:
-        fallback_bundle = specs.validate_bundle(
+        validated_fallback_bundle = specs.validate_bundle(
             item_type, fallback_bundle)
-        product_bundle = ','.join(
-            [product_bundle, fallback_bundle])
+        validated_product_bundle = ','.join(
+            [validated_product_bundle, validated_fallback_bundle])
 
-    return {
+    product_dict = {
         'item_ids': item_ids,
         'item_type': item_type,
-        'product_bundle': product_bundle
+        'product_bundle': validated_product_bundle
     }
+    return product_dict
 
 
 def notifications(email: Optional[bool] = None,
