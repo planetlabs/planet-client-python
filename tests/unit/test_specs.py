@@ -118,7 +118,7 @@ def test_validate_supported_bundles_success():
     validated_bundle = specs.validate_supported_bundles(
         TEST_ITEM_TYPE,
         TEST_PRODUCT_BUNDLE,
-        specs.PRODUCT_BUNDLES['bundles'].keys())
+    )
     assert validated_bundle == TEST_PRODUCT_BUNDLE
 
 
@@ -127,7 +127,7 @@ def test_validate_supported_bundles_fail():
         specs.validate_supported_bundles(
             TEST_ITEM_TYPE,
             'analytic',
-            specs.PRODUCT_BUNDLES["bundles"].keys())
+        )
 
 
 def test_get_supported_assets_success():

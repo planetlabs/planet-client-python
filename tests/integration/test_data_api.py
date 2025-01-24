@@ -81,6 +81,7 @@ def data_api():
 @pytest.mark.anyio
 async def test_search_basic(item_descriptions, search_response, session):
 
+    bundles_url = "https://api.planet.com/compute/ops/bundles/spec"
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
 
@@ -97,6 +98,10 @@ async def test_search_basic(item_descriptions, search_response, session):
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
+    bundles_resp = {"bundles": {"analytic_udm2": {"assets": {"PSScene": []}}}}
+    mock_resp3 = httpx.Response(HTTPStatus.OK, json=bundles_resp)
+    respx.get(bundles_url).return_value = mock_resp3
+
     cl = DataClient(session, base_url=TEST_URL)
     items_list = [i async for i in cl.search(['PSScene'])]
 
@@ -104,7 +109,8 @@ async def test_search_basic(item_descriptions, search_response, session):
     expected_request = {
         "item_types": ["PSScene"], "filter": data_filter.empty_filter()
     }
-    actual_body = json.loads(respx.calls[0].request.content)
+
+    actual_body = json.loads(respx.calls[1].request.content)
     assert actual_body == expected_request
 
     # check that all of the items were returned unchanged
@@ -1178,7 +1184,7 @@ def test_get_asset_sync(asset_type_id, expectation, data_api):
     item_type_id = 'PSScene'
     item_id = '20221003_002705_38_2461'
     assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
-
+    bundles_url = "https://api.planet.com/compute/ops/bundles/spec"
     basic_udm2_asset = {
         "_links": {
             "_self": "SELFURL",
@@ -1211,7 +1217,6 @@ def test_get_asset_sync(asset_type_id, expectation, data_api):
 
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.get(assets_url).return_value = mock_resp
-
     with expectation:
         asset = data_api.get_asset(item_type_id, item_id, asset_type_id)
         assert asset == basic_udm2_asset

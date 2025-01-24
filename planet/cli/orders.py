@@ -77,6 +77,7 @@ async def orders_client(ctx):
 
 
 @click.group()  # type: ignore
+@click.pass_context
 @click.option('-u',
               '--base-url',
               default=None,
@@ -400,7 +401,6 @@ async def create(ctx, request, pretty, **kwargs):
               help='Collection ID for Sentinel Hub hosting. '
               'If omitted, a new collection will be created.')
 @pretty
-@click.pass_context
 async def request(ctx,
                   item_type,
                   bundle,

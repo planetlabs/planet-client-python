@@ -439,9 +439,9 @@ def test_cli_orders_create_basic_success(invoke, order_description):
         "name":
         "test",
         "products": [{
-            "item_ids": ['4500474_2133707_2021-05-20_2419'],
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic"
+            "item_ids": ["20220325_131639_20_2402"],
+            "item_type": "PSScene",
+            "product_bundle": "visual",
         }],
     }
 
@@ -456,17 +456,17 @@ def test_cli_orders_create_basic_success(invoke, order_description):
 
 @pytest.mark.parametrize(
     "id_string, expected_ids",
-    [('4500474_2133707_2021-05-20_2419', ['4500474_2133707_2021-05-20_2419']),
-     ('4500474_2133707_2021-05-20_2419,4500474_2133707_2021-05-20_2420',
-      ['4500474_2133707_2021-05-20_2419', '4500474_2133707_2021-05-20_2420'])])
+    [('20220325_131639_20_2402', ['20220325_131639_20_2402']),
+     ('20220325_131639_20_2402,20230324_121730_43_2423',
+      ['20220325_131639_20_2402', '20230324_121730_43_2423'])])
 def test_cli_orders_request_basic_success(expected_ids,
                                           id_string,
                                           invoke,
                                           stac_json):
     result = invoke([
         'request',
-        '--item-type=PSOrthoTile',
-        '--bundle=analytic',
+        '--item-type=PSScene',
+        '--bundle=visual',
         '--name=test',
         id_string,
     ])
@@ -477,8 +477,8 @@ def test_cli_orders_request_basic_success(expected_ids,
         "test",
         "products": [{
             "item_ids": expected_ids,
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic"
+            "item_type": "PSScene",
+            "product_bundle": "visual"
         }],
         "metadata":
         stac_json
@@ -490,9 +490,9 @@ def test_cli_orders_request_item_type_invalid(invoke):
     result = invoke([
         'request',
         '--item-type=invalid'
-        '--bundle=analytic',
+        '--bundle=visual',
         '--name=test',
-        '4500474_2133707_2021-05-20_2419',
+        '20220325_131639_20_2402',
     ])
     assert result.exit_code == 2
 
@@ -503,7 +503,7 @@ def test_cli_orders_request_product_bundle_invalid(invoke):
         '--item-type=PSScene'
         '--bundle=invalid',
         '--name=test',
-        '4500474_2133707_2021-05-20_2419',
+        '20220325_131639_20_2402',
     ])
     assert result.exit_code == 2
 
@@ -514,7 +514,7 @@ def test_cli_orders_request_product_bundle_incompatible(invoke):
         '--item-type=PSScene',
         '--bundle=analytic',
         '--name=test',
-        '4500474_2133707_2021-05-20_2419',
+        '20220325_131639_20_2402',
     ])
     assert result.exit_code == 2
 
@@ -522,8 +522,8 @@ def test_cli_orders_request_product_bundle_incompatible(invoke):
 def test_cli_orders_request_id_empty(invoke):
     result = invoke([
         'request',
-        '--item-type=PSOrthoTile',
-        '--bundle=analytic',
+        '--item-type=PSScene',
+        '--bundle=visual',
         '--name=test',
         ''
     ])
@@ -544,10 +544,10 @@ def test_cli_orders_request_clip_polygon(geom_fixture,
 
     result = invoke([
         'request',
-        '--item-type=PSOrthoTile',
-        '--bundle=analytic',
+        '--item-type=PSScene',
+        '--bundle=visual',
         '--name=test',
-        '4500474_2133707_2021-05-20_2419',
+        '20220325_131639_20_2402',
         f'--clip={json.dumps(geom)}',
     ])
     assert result.exit_code == 0
@@ -556,9 +556,9 @@ def test_cli_orders_request_clip_polygon(geom_fixture,
         "name":
         "test",
         "products": [{
-            "item_ids": ["4500474_2133707_2021-05-20_2419"],
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic",
+            "item_ids": ["20220325_131639_20_2402"],
+            "item_type": "PSScene",
+            "product_bundle": "visual",
         }],
         "tools": [{
             'clip': {
@@ -578,10 +578,10 @@ def test_cli_orders_request_clip_ref(geom_fixture, request, invoke, stac_json):
 
     result = invoke([
         'request',
-        '--item-type=PSOrthoTile',
-        '--bundle=analytic',
+        '--item-type=PSScene',
+        '--bundle=visual',
         '--name=test',
-        '4500474_2133707_2021-05-20_2419',
+        '20220325_131639_20_2402',
         f'--clip={json.dumps(geom)}',
     ])
     assert result.exit_code == 0
@@ -590,9 +590,9 @@ def test_cli_orders_request_clip_ref(geom_fixture, request, invoke, stac_json):
         "name":
         "test",
         "products": [{
-            "item_ids": ["4500474_2133707_2021-05-20_2419"],
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic",
+            "item_ids": ["20220325_131639_20_2402"],
+            "item_type": "PSScene",
+            "product_bundle": "visual",
         }],
         "tools": [{
             'clip': {
@@ -612,10 +612,10 @@ def test_cli_orders_request_clip_multipolygon(multipolygon_geom_geojson,
 
     result = invoke([
         'request',
-        '--item-type=PSOrthoTile',
-        '--bundle=analytic',
+        '--item-type=PSScene',
+        '--bundle=visual',
         '--name=test',
-        '4500474_2133707_2021-05-20_2419',
+        '20220325_131639_20_2402',
         f'--clip={json.dumps(multipolygon_geom_geojson)}',
     ])
     assert result.exit_code == 0
@@ -624,9 +624,9 @@ def test_cli_orders_request_clip_multipolygon(multipolygon_geom_geojson,
         "name":
         "test",
         "products": [{
-            "item_ids": ["4500474_2133707_2021-05-20_2419"],
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic",
+            "item_ids": ["20220325_131639_20_2402"],
+            "item_type": "PSScene",
+            "product_bundle": "visual",
         }],
         "tools": [{
             'clip': {
@@ -642,10 +642,10 @@ def test_cli_orders_request_clip_multipolygon(multipolygon_geom_geojson,
 def test_cli_orders_request_clip_invalid_geometry(invoke, point_geom_geojson):
     result = invoke([
         'request',
-        '--item-type=PSOrthoTile',
-        '--bundle=analytic',
+        '--item-type=PSScene',
+        '--bundle=visual',
         '--name=test',
-        '4500474_2133707_2021-05-20_2419',
+        '20220325_131639_20_2402',
         f'--clip={json.dumps(point_geom_geojson)}'
     ])
     assert result.exit_code == 2
@@ -656,10 +656,10 @@ def test_cli_orders_request_both_clip_and_tools(invoke, geom_geojson):
     # option values are valid json
     result = invoke([
         'request',
-        '--item-type=PSOrthoTile',
-        '--bundle=analytic',
+        '--item-type=PSScene',
+        '--bundle=visual',
         '--name=test',
-        '4500474_2133707_2021-05-20_2419',
+        '20220325_131639_20_2402',
         f'--clip={json.dumps(geom_geojson)}',
         f'--tools={json.dumps(geom_geojson)}'
     ])
@@ -681,10 +681,10 @@ def test_cli_orders_request_cloudconfig(invoke, stac_json):
 
     result = invoke([
         'request',
-        '--item-type=PSOrthoTile',
-        '--bundle=analytic',
+        '--item-type=PSScene',
+        '--bundle=visual',
         '--name=test',
-        '4500474_2133707_2021-05-20_2419',
+        '20220325_131639_20_2402',
         f'--cloudconfig={json.dumps(config_json)}',
     ])
     assert result.exit_code == 0
@@ -693,9 +693,9 @@ def test_cli_orders_request_cloudconfig(invoke, stac_json):
         "name":
         "test",
         "products": [{
-            "item_ids": ["4500474_2133707_2021-05-20_2419"],
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic",
+            "item_ids": ["20220325_131639_20_2402"],
+            "item_type": "PSScene",
+            "product_bundle": "visual",
         }],
         "delivery":
         config_json,
@@ -708,10 +708,10 @@ def test_cli_orders_request_cloudconfig(invoke, stac_json):
 def test_cli_orders_request_email(invoke, stac_json):
     result = invoke([
         'request',
-        '--item-type=PSOrthoTile',
-        '--bundle=analytic',
+        '--item-type=PSScene',
+        '--bundle=visual',
         '--name=test',
-        '4500474_2133707_2021-05-20_2419',
+        '20220325_131639_20_2402',
         '--email'
     ])
     assert result.exit_code == 0
@@ -720,9 +720,9 @@ def test_cli_orders_request_email(invoke, stac_json):
         "name":
         "test",
         "products": [{
-            "item_ids": ["4500474_2133707_2021-05-20_2419"],
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic",
+            "item_ids": ["20220325_131639_20_2402"],
+            "item_type": "PSScene",
+            "product_bundle": "visual",
         }],
         "notifications": {
             "email": True,
@@ -739,10 +739,10 @@ def test_cli_orders_request_tools(invoke, geom_geojson, stac_json):
 
     result = invoke([
         'request',
-        '--item-type=PSOrthoTile',
-        '--bundle=analytic',
+        '--item-type=PSScene',
+        '--bundle=visual',
         '--name=test',
-        '4500474_2133707_2021-05-20_2419',
+        '20220325_131639_20_2402',
         f'--tools={json.dumps(tools_json)}'
     ])
 
@@ -750,9 +750,9 @@ def test_cli_orders_request_tools(invoke, geom_geojson, stac_json):
         "name":
         "test",
         "products": [{
-            "item_ids": ["4500474_2133707_2021-05-20_2419"],
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic",
+            "item_ids": ["20220325_131639_20_2402"],
+            "item_type": "PSScene",
+            "product_bundle": "visual",
         }],
         "tools":
         tools_json,
@@ -767,10 +767,10 @@ def test_cli_orders_request_no_stac(invoke):
 
     result = invoke([
         'request',
-        '--item-type=PSOrthoTile',
-        '--bundle=analytic',
+        '--item-type=PSScene',
+        '--bundle=visual',
         '--name=test',
-        '4500474_2133707_2021-05-20_2419',
+        '20220325_131639_20_2402',
         '--no-stac'
     ])
 
@@ -778,9 +778,9 @@ def test_cli_orders_request_no_stac(invoke):
         "name":
         "test",
         "products": [{
-            "item_ids": ["4500474_2133707_2021-05-20_2419"],
-            "item_type": "PSOrthoTile",
-            "product_bundle": "analytic",
+            "item_ids": ["20220325_131639_20_2402"],
+            "item_type": "PSScene",
+            "product_bundle": "visual",
         }]
     }
     assert order_request == json.loads(result.output)

@@ -25,6 +25,7 @@ class MockContext:
 
     def __init__(self):
         self.obj = {}
+        self.params = {}
 
 
 def test_item_types_success_data():
@@ -92,15 +93,17 @@ def test_item_type_fail_orders():
 
 def test_bundle_success_orders():
     ctx = MockContext()
-    item_type = "PSScene"
+    ctx.params = {"item_type": "PSScene"}
     bundle = "analytic_udm2"
-    result = orders.check_bundle(ctx, 'bundle', item_type, bundle)
+    result = orders.check_bundle(ctx, 'bundle', bundle)
     assert result == bundle
 
 
 def test_bundle_fail_orders():
     ctx = MockContext()
-    with pytest.rasies(click.BadParameter):
-        orders.check_bundle(ctx, 'bundle', "PSScene", "bad_bundle")
+    ctx.params = {"item_type": "PSScene"}
     with pytest.raises(click.BadParameter):
-        orders.check_bundle(ctx, 'bundle', "bad_item_type", "analytic_udm2")
+        orders.check_bundle(ctx, 'bundle', "bad_bundle")
+    ctx.params = {"item_type": "bad_item_type"}
+    with pytest.raises(click.BadParameter):
+        orders.check_bundle(ctx, 'bundle', "analytic_udm2")
