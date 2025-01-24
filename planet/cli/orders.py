@@ -28,69 +28,44 @@ from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
 from ..specs import (
-    get_bundle_names,
-    get_data_item_types,
+    FetchBundlesSpecError,
     SpecificationException,
     validate_bundle,
     validate_data_item_type
 )
 
-from planet.specs import get_bundle_names, get_data_item_types, validate_bundle, validate_data_item_type
+from planet.specs import validate_bundle, validate_data_item_type
 
 LOGGER = logging.getLogger(__name__)
-
-
-"""
-This string is used to provide a list of valid item types and product bundles
-to the help text. If the bundle spec, which is where this information is pulled
-from, cannot be reached, an empty string will be used. This is done to not interrupt
- cli workflows (listing commands, viewing help dialog) for orders bundle spec 
-unavailability, though it should be extremely rare.
-"""
-try:
-    valid_item_string = "Valid entries for ITEM_TYPE: " + "|".join(get_data_item_types())
-except:
-    valid_item_string = ""
-try:
-    valid_bundles_string = "Valid entries for BUNDLE: " + "|".join(get_bundle_names())
-except:
-    valid_bundles_string = ""
-
-valid_items_and_bundles_string = valid_item_string + "\n" + valid_bundles_string
 
 
 def check_item_type(ctx, param, item_type):
     """Validates the item type provided by comparing it to all supported
     item types."""
-    # Get the value of skip-validation from the context
-    skip_validation = ctx.params.get('skip_validation')
-    print(ctx.params)
-    if "all" in skip_validation or "item_type" in skip_validation:
-        return item_type
-    
     try:
         validate_data_item_type(item_type)
         return item_type
     except SpecificationException as e:
         raise click.BadParameter(str(e))
+    except FetchBundlesSpecError as e:
+        raise click.ClickException(str(e))
 
 
 def check_bundle(ctx, param, bundle) -> Optional[List[dict]]:
     """Validates the bundle provided by comparing it to all supported
     bundles."""
-    # Get the value of skip-client-validation from the context
-    skip_client_validation = ctx.params.get('skip_client_validation')
 
     # Get the value of item_type from the context
     item_type = ctx.params.get('item_type')
     if not item_type:
         raise click.BadParameter("Item type is required to validate a bundle.")
-
-     # Validate the item type and bundle
-    if skip_client_validation:
-        return bundle
     
-    validate_bundle(item_type, bundle)
+    try:
+        validate_bundle(item_type, bundle)
+    except SpecificationException as e:
+        raise click.BadParameter(str(e))
+    except FetchBundlesSpecError as e:
+        raise click.ClickException(str(e))
 
     return bundle
 
@@ -360,7 +335,7 @@ async def create(ctx, request, pretty, **kwargs):
     echo_json(order, pretty)
 
 
-@orders.command(epilog=valid_items_and_bundles_string)  # type: ignore
+@orders.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -425,12 +400,6 @@ async def create(ctx, request, pretty, **kwargs):
 @click.option('--collection_id',
               help='Collection ID for Sentinel Hub hosting. '
               'If omitted, a new collection will be created.')
-@click.option('--skip-validation',
-              required=False,
-              type=types.CommaSeparatedString(),
-              help='One or more comma-separated components to skip client side validation on. '
-              'If an unrecognized component is provided, it will be ignored. To skip all client '
-              'validation, use "all". Actionable components are: item_type, bundle, clip, delivery, all.')
 @pretty
 @click.pass_context
 async def request(ctx,
@@ -448,8 +417,7 @@ async def request(ctx,
                   stac,
                   hosting,
                   collection_id,
-                  pretty,
-                  skip_validation):
+                  pretty):
     """Generate an order request.
 
     This command provides support for building an order description used
@@ -459,7 +427,7 @@ async def request(ctx,
     IDs is one or more comma-separated item IDs.
     """
     try:
-        product = planet.order_request.product(ids, bundle, item_type, skip_validation)
+        product = planet.order_request.product(ids, bundle, item_type)
     except planet.specs.SpecificationException as e:
         raise click.BadParameter(e)
 

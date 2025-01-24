@@ -27,9 +27,9 @@ from planet.clients.data import (SEARCH_SORT,
                                  SEARCH_SORT_DEFAULT,
                                  STATS_INTERVAL)
 
-from planet.specs import (get_data_item_types,
-                          validate_data_item_type,
-                          SpecificationException)
+from planet.specs import (FetchBundlesSpecError,
+                          SpecificationException,
+                          validate_data_item_type)
 
 from . import types
 from .cmds import coro, translate_exceptions
@@ -37,18 +37,6 @@ from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
 from .validators import check_geom
-
-"""
-This string is used to provide a list of valid item types to the help text.
-If the bundle spec, which is where the item types are pulled from, cannot
-be reached, an empty string will be used. This is done to not interrupt cli
-workflows (listing commands, viewing help dialog) for orders bundle spec 
-unavailability, though it should be extremely rare.
-"""
-try:
-    valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(get_data_item_types())
-except:
-    valid_item_string = ""
 
 
 @asynccontextmanager
@@ -82,33 +70,25 @@ def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
 def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
     """Validates each item types provided by comparing them to all supported
     item types."""
-    # Get the value of skip-client-validation from the context
-    skip_client_validation = ctx.params.get('skip_client_validation')
-
-    if skip_client_validation:
-        return item_types
-
     try:
         for item_type in item_types:
             validate_data_item_type(item_type)
         return item_types
     except SpecificationException as e:
         raise click.BadParameter(str(e))
+    except FetchBundlesSpecError as e:
+        raise click.ClickException(str(e))
 
 
 def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
     """Validates the item type provided by comparing it to all supported
     item types."""
-    # Get the value of skip-client-validation from the context
-    skip_client_validation = ctx.params.get('skip_client_validation')
-
-    if skip_client_validation:
-        return item_type
-    
     try:
         validate_data_item_type(item_type)
     except SpecificationException as e:
         raise click.BadParameter(str(e))
+    except FetchBundlesSpecError as e:
+        raise click.ClickException(str(e))
 
     return item_type
 
@@ -295,7 +275,7 @@ def filter(ctx,
     echo_json(filt, pretty)
 
 
-@data.command(epilog=valid_item_string)  # type: ignore
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -314,13 +294,8 @@ def filter(ctx,
               default=SEARCH_SORT_DEFAULT,
               show_default=True,
               help='Field and direction to order results by.')
-@click.option('--skip-client-validation',
-              default=False,
-              is_flag=True,
-              help="Skip client-side validation of item types. "
-              "If omitted, it will be set to false and client side validation will occur.")
 @pretty
-async def search(ctx, item_types, geom, filter, limit, name, sort, pretty, skip_client_validation):
+async def search(ctx, item_types, geom, filter, limit, name, sort, pretty):
     """Execute a structured item search.
 
     This function outputs a series of GeoJSON descriptions, one for each of the
@@ -342,12 +317,11 @@ async def search(ctx, item_types, geom, filter, limit, name, sort, pretty, skip_
                                     search_filter=filter,
                                     name=name,
                                     sort=sort,
-                                    limit=limit,
-                                    skip_client_validation=skip_client_validation):
+                                    limit=limit):
             echo_json(item, pretty)
 
 
-@data.command(epilog=valid_item_string)  # type: ignore
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -368,11 +342,6 @@ async def search(ctx, item_types, geom, filter, limit, name, sort, pretty, skip_
 @click.option('--daily-email',
               is_flag=True,
               help='Send a daily email when new results are added.')
-@click.option('--skip-client-validation',
-              default=False,
-              is_flag=True,
-              help="Skip client-side validation of item types. "
-              "If omitted, it will be set to false and client side validation will occur.")
 @pretty
 async def search_create(ctx,
                         item_types,
@@ -380,8 +349,7 @@ async def search_create(ctx,
                         filter,
                         name,
                         daily_email,
-                        pretty,
-                        skip_client_validation):
+                        pretty):
     """Create a new saved structured item search.
 
     This function outputs a full JSON description of the created search,
@@ -394,8 +362,7 @@ async def search_create(ctx,
                                        geometry=geom,
                                        search_filter=filter,
                                        name=name,
-                                       enable_email=daily_email,
-                                       skip_client_validation=skip_client_validation)
+                                       enable_email=daily_email)
         echo_json(items, pretty)
 
 
@@ -451,7 +418,7 @@ async def search_run(ctx, search_id, sort, limit, pretty):
             echo_json(item, pretty)
 
 
-@data.command(epilog=valid_item_string)  # type: ignore
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -468,12 +435,7 @@ async def search_run(ctx, search_id, sort, limit, pretty):
               type=click.Choice(STATS_INTERVAL),
               required=True,
               help='The size of the histogram date buckets.')
-@click.option('--skip-client-validation',
-              default=False,
-              is_flag=True,
-              help="Skip client-side validation of item types. "
-              "If omitted, it will be set to false and client side validation will occur.")
-async def stats(ctx, item_types, filter, interval, skip_client_validation):
+async def stats(ctx, item_types, filter, interval):
     """Get a bucketed histogram of items matching the filter.
 
     This function returns a bucketed histogram of results based on the
@@ -483,8 +445,7 @@ async def stats(ctx, item_types, filter, interval, skip_client_validation):
     async with data_client(ctx) as cl:
         items = await cl.get_stats(item_types=item_types,
                                    search_filter=filter,
-                                   interval=interval,
-                                   skip_client_validation=skip_client_validation)
+                                   interval=interval)
         echo_json(items)
 
 
@@ -517,7 +478,7 @@ async def search_delete(ctx, search_id):
         await cl.delete_search(search_id)
 
 
-@data.command(epilog=valid_item_string)  # type: ignore
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -542,11 +503,6 @@ async def search_delete(ctx, search_id):
 @click.option('--daily-email',
               is_flag=True,
               help='Send a daily email when new results are added.')
-@click.option('--skip-client-validation',
-              default=False,
-              is_flag=True,
-              help="Skip client-side validation of item types. "
-              "If omitted, it will be set to false and client side validation will occur.")
 @pretty
 async def search_update(ctx,
                         search_id,
@@ -555,8 +511,7 @@ async def search_update(ctx,
                         geom,
                         name,
                         daily_email,
-                        pretty,
-                        skip_client_validation):
+                        pretty):
     """Update a saved search with the given search request.
 
     This function outputs a full JSON description of the updated search,
@@ -568,12 +523,11 @@ async def search_update(ctx,
                                        search_filter=filter,
                                        name=name,
                                        geometry=geom,
-                                       enable_email=daily_email,
-                                       skip_client_validation=skip_client_validation)
+                                       enable_email=daily_email)
         echo_json(items, pretty)
 
 
-@data.command(epilog=valid_item_string)  # type: ignore
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -599,11 +553,6 @@ async def search_update(ctx,
               is_flag=True,
               default=None,
               help=('Verify that checksums match.'))
-@click.option('--skip-client-validation',
-              default=False,
-              is_flag=True,
-              help="Skip client-side validation of item types. "
-              "If omitted, it will be set to false and client side validation will occur.")
 async def asset_download(ctx,
                          item_type,
                          item_id,
@@ -611,8 +560,7 @@ async def asset_download(ctx,
                          directory,
                          filename,
                          overwrite,
-                         checksum,
-                         skip_client_validation):
+                         checksum):
     """Download an activated asset.
 
     This function will fail if the asset state is not activated. Consider
@@ -631,7 +579,7 @@ async def asset_download(ctx,
     """
     quiet = ctx.obj['QUIET']
     async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_type, item_id, asset_type, skip_client_validation)
+        asset = await cl.get_asset(item_type, item_id, asset_type)
         path = await cl.download_asset(asset=asset,
                                        filename=filename,
                                        directory=Path(directory),
@@ -641,26 +589,21 @@ async def asset_download(ctx,
             cl.validate_checksum(asset, path)
 
 
-@data.command(epilog=valid_item_string)  # type: ignore
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
 @click.argument("item_type", type=str, callback=check_item_type)
 @click.argument("item_id")
 @click.argument("asset_type")
-@click.option('--skip-client-validation',
-              default=False,
-              is_flag=True,
-              help="Skip client-side validation of item types. "
-              "If omitted, it will be set to false and client side validation will occur.")
-async def asset_activate(ctx, item_type, item_id, asset_type, skip_client_validation):
+async def asset_activate(ctx, item_type, item_id, asset_type):
     """Activate an asset."""
     async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_type, item_id, asset_type, skip_client_validation)
+        asset = await cl.get_asset(item_type, item_id, asset_type)
         await cl.activate_asset(asset)
 
 
-@data.command(epilog=valid_item_string)  # type: ignore
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -676,12 +619,7 @@ async def asset_activate(ctx, item_type, item_id, asset_type, skip_client_valida
               default=200,
               show_default=True,
               help='Maximum number of polls. Set to zero for no limit.')
-@click.option('--skip-client-validation',
-              default=False,
-              is_flag=True,
-              help="Skip client-side validation of item types. "
-              "If omitted, it will be set to false and client side validation will occur.")
-async def asset_wait(ctx, item_type, item_id, asset_type, delay, max_attempts, skip_client_validation):
+async def asset_wait(ctx, item_type, item_id, asset_type, delay, max_attempts):
     """Wait for an asset to be activated.
 
     Returns when the asset status has reached "activated" and the asset is
@@ -689,7 +627,7 @@ async def asset_wait(ctx, item_type, item_id, asset_type, delay, max_attempts, s
     """
     quiet = ctx.obj['QUIET']
     async with data_client(ctx) as cl:
-        asset = await cl.get_asset(item_type, item_id, asset_type, skip_client_validation)
+        asset = await cl.get_asset(item_type, item_id, asset_type)
         with AssetStatusBar(item_type, item_id, asset_type,
                             disable=quiet) as bar:
             status = await cl.wait_asset(asset,

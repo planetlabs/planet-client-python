@@ -105,8 +105,7 @@ def build_request(name: str,
 def product(item_ids: List[str],
             product_bundle: str,
             item_type: str,
-            fallback_bundle: Optional[str] = None,
-            skip_validation: Optional[str] = []) -> dict:
+            fallback_bundle: Optional[str] = None) -> dict:
     """Product description for an order detail.
 
     Parameters:
@@ -117,34 +116,20 @@ def product(item_ids: List[str],
         fallback_bundle: In case product_bundle not having
             all asset types available, which would result in failed
             delivery, try a fallback bundle
-        skip_validation: List of components to skip client side validation on.
-            If an unrecognized component is provided, it will be ignored. To
-            skip all client validation, use "all". Actionable components are: 
-            item_type, bundle, clip, delivery, all.
 
     Raises:
         planet.specs.SpecificationException: If bundle or fallback bundle
             are not valid bundles or if item_type is not valid for the given
             bundle or fallback bundle.
     """
-    if 'all' in skip_validation:
-        return {
-            'item_ids': item_ids,
-            'item_type': item_type,
-            'product_bundle': ','.join([product_bundle, fallback_bundle]) if fallback_bundle else product_bundle
-        }
-
-    if 'item_type' in skip_validation:
-        item_type = specs.validate_item_type(item_type)
-    if 'bundle' in skip_validation:
-        product_bundle = specs.validate_bundle(item_type, product_bundle)
+    item_type = specs.validate_item_type(item_type)
+    product_bundle = specs.validate_bundle(item_type, product_bundle)
 
     if fallback_bundle is not None:
-        if 'bundle' in skip_validation:
-            fallback_bundle = specs.validate_bundle(
-                item_type, fallback_bundle)
-            product_bundle = ','.join(
-                [product_bundle, fallback_bundle])
+        fallback_bundle = specs.validate_bundle(
+            item_type, fallback_bundle)
+        product_bundle = ','.join(
+            [product_bundle, fallback_bundle])
 
     return {
         'item_ids': item_ids,

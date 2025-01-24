@@ -59,7 +59,7 @@ class _LazyBundlesLoader:
                     break
                 except:
                     if attempt == retries:
-                        raise FetchBundlesSpecError(f"Unable to fetch product bundles spec from API to perform client side validation on item and asset types.\nPlease retry!\nIn persistent cases - disable client side validation by using the skip_client_validation parameter in the SDK or --skip-client-validation flag in the CLI.")
+                        raise FetchBundlesSpecError(f"Unable to fetch product bundles spec from API to perform client side validation on item types and product bundles. Please retry!") from None
             bundles = response.json()['bundles']
             cache = {
                 'bundles': bundles,
@@ -143,6 +143,8 @@ def _validate_field(value, supported, field_name):
         value = get_match(value, supported, field_name)
     except (NoMatchException):
         raise SpecificationException(value, supported, field_name)
+    except FetchBundlesSpecError as e:
+        raise e
     return value
 
 
