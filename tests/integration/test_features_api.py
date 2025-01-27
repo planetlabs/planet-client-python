@@ -14,6 +14,7 @@
 #
 from http import HTTPStatus
 import json
+from typing import Any
 import httpx
 import pytest
 import respx
@@ -30,12 +31,31 @@ TEST_GEOM = {"type": "Polygon", "coordinates": [[[]]]}
 
 TEST_FEAT = {"type": "Feature", "geometry": TEST_GEOM}
 
+TEST_COLLECTION_1 = {
+    "id": "collection1",
+    "title": "Collection 1",
+    "description": "test collection 1"
+}
+
+TEST_COLLECTION_2 = {
+    "id": "collection2",
+    "title": "Collection 2",
+    "description": "test collection 2"
+}
+
+TEST_COLLECTION_LIST = [TEST_COLLECTION_1, TEST_COLLECTION_2]
+
 
 class ExampleGeoInterface:
 
     @property
     def __geo_interface__(self) -> dict:
         return TEST_GEOM
+
+
+def mock_response(url: str, json: Any, method: str = 'get'):
+    mock_resp = httpx.Response(HTTPStatus.OK, json=json)
+    respx.request(method, url).return_value = mock_resp
 
 
 def to_collection_model(collection: dict) -> dict:
@@ -136,21 +156,9 @@ def list_features_response(collection_id: str, num_features: int) -> dict:
 async def test_list_collections(session: Session):
 
     collections_url = f'{TEST_URL}/collections'
-
-    test_collections = [{
-        "id": "collection1",
-        "title": "Collection 1",
-        "description": "test collection 1"
-    },
-                        {
-                            "id": "collection2",
-                            "title": "Collection 2",
-                            "description": "test collection 2"
-                        }]
-
-    mock_resp = httpx.Response(
-        HTTPStatus.OK, json=list_collections_response(test_collections))
-    respx.get(collections_url).return_value = mock_resp
+    mock_response(
+        collections_url,
+        list_collections_response([TEST_COLLECTION_1, TEST_COLLECTION_2]))
 
     def assertf(resp):
         assert resp[0]["id"] == "collection1"
@@ -166,16 +174,10 @@ async def test_list_collections(session: Session):
 @respx.mock
 async def test_get_collection(session: Session):
 
-    test_collection = {
-        "id": "collection1",
-        "title": "Collection 1",
-        "description": "test collection 1"
-    }
-    collection_url = f'{TEST_URL}/collections/{test_collection["id"]}'
+    id = TEST_COLLECTION_1["id"]
+    collection_url = f'{TEST_URL}/collections/{id}'
 
-    mock_resp = httpx.Response(HTTPStatus.OK,
-                               json=to_collection_model(test_collection))
-    respx.get(collection_url).return_value = mock_resp
+    mock_response(collection_url, to_collection_model(TEST_COLLECTION_1))
 
     def assertf(resp):
         assert resp["id"] == "collection1"
@@ -184,44 +186,35 @@ async def test_get_collection(session: Session):
     cl_async = FeaturesClient(session, base_url=TEST_URL)
     cl_sync = FeaturesAPI(session, base_url=TEST_URL)
 
-    assertf(await cl_async.get_collection(test_collection["id"]))
-    assertf(cl_sync.get_collection(test_collection["id"]))
+    assertf(await cl_async.get_collection(id))
+    assertf(cl_sync.get_collection(id))
 
 
 @respx.mock
 async def test_create_collection(session: Session):
-    collection_id = "test1"
-    collection_title = "test"
-    collection_desc = "test collection"
 
     collection_url = f'{TEST_URL}/collections'
-    mock_resp = httpx.Response(HTTPStatus.OK,
-                               json=to_collection_model({
-                                   "id":
-                                   collection_id,
-                                   "title":
-                                   collection_title,
-                                   "description":
-                                   collection_desc
-                               }))
-    respx.post(collection_url).return_value = mock_resp
+
+    mock_response(collection_url, to_collection_model(TEST_COLLECTION_1))
 
     def assertf(resp):
         # the return value is simply the id.
-        assert resp == collection_id
+        assert resp == "collection1"
 
     cl_async = FeaturesClient(session, base_url=TEST_URL)
     cl_sync = FeaturesAPI(session, base_url=TEST_URL)
 
-    assertf(await cl_async.create_collection(title=collection_title,
-                                             description=collection_desc))
-    assertf(
-        cl_sync.create_collection(title=collection_title,
-                                  description=collection_desc))
+    params = {
+        "title": TEST_COLLECTION_1["title"],
+        "description": TEST_COLLECTION_1["description"]
+    }
+
+    assertf(await cl_async.create_collection(**params))
+    assertf(cl_sync.create_collection(**params))
 
     req_body = json.loads(respx.calls[0].request.content)
-    assert req_body["title"] == collection_title
-    assert req_body["description"] == collection_desc
+    assert req_body["title"] == "Collection 1"
+    assert req_body["description"] == "test collection 1"
 
 
 @respx.mock
@@ -229,9 +222,8 @@ async def test_list_features(session: Session):
     collection_id = "test"
     items_url = f'{TEST_URL}/collections/{collection_id}/items'
 
-    mock_resp = httpx.Response(HTTPStatus.OK,
-                               json=list_features_response(collection_id, 3))
-    respx.get(items_url).return_value = mock_resp
+    mock_response(items_url,
+                  list_features_response(collection_id, num_features=3))
 
     def assertf(resp):
         assert resp[0]["id"] == "0"
@@ -263,8 +255,7 @@ async def test_add_features(feature, expected_body, session):
 
     # mock a feature ref return
     feat_resp = ["pl:features/my/test/test1"]
-    mock_resp = httpx.Response(HTTPStatus.OK, json=feat_resp)
-    respx.post(items_url).return_value = mock_resp
+    mock_response(items_url, feat_resp)
 
     def assertf(resp):
         # check that mocked response is returned in full
