@@ -118,7 +118,7 @@ planet_auth_utils.cmd_plauth_embedded.hidden = True
 main.add_command(cmd=planet_auth_utils.cmd_plauth_embedded,
                  name="plauth")  # type: ignore
 
-main.add_command(auth.auth)  # type: ignore
+main.add_command(auth.cmd_auth)  # type: ignore
 main.add_command(data.data)  # type: ignore
 main.add_command(orders.orders)  # type: ignore
 main.add_command(subscriptions.subscriptions)  # type: ignore
