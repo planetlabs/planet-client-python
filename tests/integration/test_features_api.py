@@ -195,7 +195,9 @@ async def test_create_collection(session: Session):
 
     collection_url = f'{TEST_URL}/collections'
 
-    mock_response(collection_url, to_collection_model(TEST_COLLECTION_1))
+    mock_response(collection_url,
+                  to_collection_model(TEST_COLLECTION_1),
+                  method="post")
 
     def assertf(resp):
         # the return value is simply the id.
@@ -255,7 +257,7 @@ async def test_add_features(feature, expected_body, session):
 
     # mock a feature ref return
     feat_resp = ["pl:features/my/test/test1"]
-    mock_response(items_url, feat_resp)
+    mock_response(items_url, feat_resp, method="post")
 
     def assertf(resp):
         # check that mocked response is returned in full
