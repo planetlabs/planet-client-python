@@ -27,13 +27,10 @@ from ..order_request import sentinel_hub
 from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
-from ..specs import (
-    FetchBundlesSpecError,
-    SpecificationException,
-    validate_bundle,
-    validate_data_item_type
-)
-
+from ..specs import (FetchBundlesSpecError,
+                     SpecificationException,
+                     validate_bundle,
+                     validate_data_item_type)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -58,7 +55,7 @@ def check_bundle(ctx, param, bundle) -> Optional[List[dict]]:
     item_type = ctx.params.get('item_type')
     if not item_type:
         raise click.BadParameter("Item type is required to validate a bundle.")
-    
+
     try:
         validate_bundle(item_type, bundle)
     except SpecificationException as e:
@@ -67,6 +64,7 @@ def check_bundle(ctx, param, bundle) -> Optional[List[dict]]:
         raise click.ClickException(str(e))
 
     return bundle
+
 
 @asynccontextmanager
 async def orders_client(ctx):
@@ -357,9 +355,10 @@ async def create(ctx, request, pretty, **kwargs):
               type=types.JSON(),
               help="""Clip feature Polygon or Multipolygon GeoJSON. Can be a
               json string, filename, or '-' for stdin.""")
-@click.option('--tools',
-              type=types.JSON(),
-              help="""Toolchain JSON. Can be a json string, filename, or '-' for
+@click.option(
+    '--tools',
+    type=types.JSON(),
+    help="""Toolchain JSON. Can be a json string, filename, or '-' for
               stdin.""")
 @click.option('--email',
               default=False,

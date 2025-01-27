@@ -38,6 +38,7 @@ PRODUCT_BUNDLES = None
 
 LOGGER = logging.getLogger(__name__)
 
+
 class FetchBundlesSpecError(Exception):
     """Custom exception for errors fetching the product bundles spec."""
     pass
@@ -56,18 +57,22 @@ class _LazyBundlesLoader:
                     response = httpx.get(bundles_spec_url)
                     response.raise_for_status()
                     break
-                except:
+                except:  # noqa: E722
                     if attempt == retries:
-                        raise FetchBundlesSpecError(f"Unable to fetch product bundles spec from API to perform client side validation on item types and product bundles. Please retry!") from None
+                        raise FetchBundlesSpecError(
+                            "Unable to fetch product bundles spec from API to perform client side validation on item types and product bundles. Please retry!"
+                        ) from None
             bundles = response.json()['bundles']
             cache = {
-                'bundles': bundles,
-                'bundle_names': bundles.keys(),
-                'item_types': set(
+                'bundles':
+                bundles,
+                'bundle_names':
+                bundles.keys(),
+                'item_types':
+                set(
                     itertools.chain.from_iterable(
-                        bundles[bundle]['assets'].keys() for bundle in bundles.keys()
-                    )
-                )
+                        bundles[bundle]['assets'].keys()
+                        for bundle in bundles.keys()))
             }
             setattr(self, "cache", cache)
         return cache[key]
@@ -97,11 +102,15 @@ class SpecificationException(Exception):
 
 def validate_bundle(item_type, bundle):
     validate_supported_bundles(item_type, bundle)
-    return _validate_field(bundle, PRODUCT_BUNDLES["bundle_names"], 'product_bundle')
+    return _validate_field(bundle,
+                           PRODUCT_BUNDLES["bundle_names"],
+                           'product_bundle')
 
 
 def validate_item_type(item_type):
-    return _validate_field(item_type, PRODUCT_BUNDLES["item_types"], 'item_type')
+    return _validate_field(item_type,
+                           PRODUCT_BUNDLES["item_types"],
+                           'item_type')
 
 
 def validate_data_item_type(item_type):
@@ -118,6 +127,7 @@ def get_data_item_types():
 def get_bundle_names():
     """Get all product bundle names."""
     return PRODUCT_BUNDLES["bundle_names"]
+
 
 def validate_order_type(order_type):
     return _validate_field(order_type, SUPPORTED_ORDER_TYPES, 'order_type')
@@ -152,7 +162,8 @@ def validate_supported_bundles(item_type, bundle):
     # get all the supported bundles for the given item type
     supported_bundles = []
     for product_bundle in PRODUCT_BUNDLES["bundle_names"]:
-        available_item_types = set(PRODUCT_BUNDLES["bundles"][product_bundle]['assets'].keys())
+        available_item_types = set(
+            PRODUCT_BUNDLES["bundles"][product_bundle]['assets'].keys())
         if item_type.lower() in [x.lower() for x in available_item_types]:
             supported_bundles.append(product_bundle)
     # validate the provided bundle is in the list of supported bundles
@@ -187,7 +198,8 @@ def get_product_bundles(item_type=None):
     if item_type:
         supported_bundles = []
         for product_bundle in PRODUCT_BUNDLES["bundle_names"]:
-            available_item_types = set(PRODUCT_BUNDLES["bundles"][product_bundle]['assets'].keys())
+            available_item_types = set(
+                PRODUCT_BUNDLES["bundles"][product_bundle]['assets'].keys())
             if item_type.lower() in [x.lower() for x in available_item_types]:
                 supported_bundles.append(product_bundle)
         return supported_bundles

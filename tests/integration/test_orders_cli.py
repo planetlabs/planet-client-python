@@ -521,11 +521,7 @@ def test_cli_orders_request_product_bundle_incompatible(invoke):
 
 def test_cli_orders_request_id_empty(invoke):
     result = invoke([
-        'request',
-        '--item-type=PSScene',
-        '--bundle=visual',
-        '--name=test',
-        ''
+        'request', '--item-type=PSScene', '--bundle=visual', '--name=test', ''
     ])
     assert result.exit_code == 2
     assert 'Entry cannot be an empty string.' in result.output

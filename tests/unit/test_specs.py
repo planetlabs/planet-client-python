@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-
+import respx
+from http import HTTPStatus
+import httpx
 import pytest
 
 from planet import specs
@@ -21,10 +23,23 @@ from planet import specs
 LOGGER = logging.getLogger(__name__)
 
 TEST_PRODUCT_BUNDLE = 'visual'
-
-# must be a valid item type for TEST_PRODUCT_BUNDLE
 TEST_ITEM_TYPE = 'PSScene'
 TEST_ASSET_TYPE = "basic_udm2"
+SPEC_URL = "https://api.planet.com/compute/ops/bundles/spec"
+
+
+@pytest.fixture
+def mock_bundles():
+    resp = {
+        "bundles": {
+            TEST_PRODUCT_BUNDLE: {
+                "assets": {
+                    TEST_ITEM_TYPE: [TEST_ASSET_TYPE]
+                }
+            }
+        }
+    }
+    return httpx.Response(HTTPStatus.OK, json=resp)
 
 
 def test_get_type_match():
@@ -38,31 +53,43 @@ def test_get_type_match():
         specs.get_match('a', ['b'], field_name)
 
 
-def test_validate_bundle_supported():
+@respx.mock
+def test_validate_bundle_supported(mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
     assert 'visual' == specs.validate_bundle(TEST_ITEM_TYPE, 'VISUAL')
 
 
-def test_validate_bundle_notsupported():
+@respx.mock
+def test_validate_bundle_notsupported(mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
     with pytest.raises(specs.SpecificationException):
         specs.validate_bundle(TEST_ITEM_TYPE, 'notsupported')
 
 
-def test_validate_bundle_notsupported_item_type():
+@respx.mock
+def test_validate_bundle_notsupported_item_type(mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
     with pytest.raises(specs.SpecificationException):
         specs.validate_item_type('wha')
 
 
-def test_validate_item_type_supported():
+@respx.mock
+def test_validate_item_type_supported(mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
     assert 'PSScene' == specs.validate_item_type('PSScene')
 
 
-def test_validate_item_type_notsupported_itemtype():
+@respx.mock
+def test_validate_item_type_notsupported_itemtype(mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
     with pytest.raises(specs.SpecificationException):
         specs.validate_item_type('notsupported')
 
 
-def test_validate_data_item_type():
+@respx.mock
+def test_validate_data_item_type(mock_bundles):
     """ensure skysatvideo is included"""
+    respx.get(SPEC_URL).return_value = mock_bundles
     specs.validate_data_item_type('skysatvideo')
 
 
@@ -75,11 +102,11 @@ def test_validate_order_type_notsupported():
         specs.validate_order_type('notsupported')
 
 
-def test_validate_arhive_type_supported():
+def test_validate_archive_type_supported():
     assert 'zip' == specs.validate_archive_type('ZIP')
 
 
-def test_validate_arhive_type_notsupported():
+def test_validate_archive_type_notsupported():
     with pytest.raises(specs.SpecificationException):
         specs.validate_archive_type('notsupported')
 
@@ -93,28 +120,38 @@ def test_validate_file_format_notsupported():
         specs.validate_archive_type('notsupported')
 
 
-def test_get_product_bundles_with_item_type():
+@respx.mock
+def test_get_product_bundles_with_item_type(mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
     bundles = specs.get_product_bundles(item_type=TEST_ITEM_TYPE)
     assert TEST_PRODUCT_BUNDLE in bundles
 
 
-def test_get_product_bundles_without_item_type():
+@respx.mock
+def test_get_product_bundles_without_item_type(mock_bundles):
     """assert an expected product bundle is in the list of all product bundles"""
+    respx.get(SPEC_URL).return_value = mock_bundles
     bundles = specs.get_product_bundles()
     assert TEST_PRODUCT_BUNDLE in bundles
 
 
-def test_get_item_types_with_bundle():
+@respx.mock
+def test_get_item_types_with_bundle(mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
     item_types = specs.get_item_types(product_bundle=TEST_PRODUCT_BUNDLE)
     assert TEST_ITEM_TYPE in item_types
 
 
-def test_get_item_types_without_bundle():
+@respx.mock
+def test_get_item_types_without_bundle(mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
     item_types = specs.get_item_types()
     assert TEST_ITEM_TYPE in item_types
 
 
-def test_validate_supported_bundles_success():
+@respx.mock
+def test_validate_supported_bundles_success(mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
     validated_bundle = specs.validate_supported_bundles(
         TEST_ITEM_TYPE,
         TEST_PRODUCT_BUNDLE,
@@ -122,7 +159,9 @@ def test_validate_supported_bundles_success():
     assert validated_bundle == TEST_PRODUCT_BUNDLE
 
 
-def test_validate_supported_bundles_fail():
+@respx.mock
+def test_validate_supported_bundles_fail(mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
     with pytest.raises(specs.SpecificationException):
         specs.validate_supported_bundles(
             TEST_ITEM_TYPE,
@@ -130,23 +169,31 @@ def test_validate_supported_bundles_fail():
         )
 
 
-def test_get_supported_assets_success():
+@respx.mock
+def test_get_supported_assets_success(mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
     supported_assets = specs.get_supported_assets(TEST_ITEM_TYPE)
     assert TEST_ASSET_TYPE in supported_assets
 
 
-def test_get_supported_assets_not_supported_item_type():
+@respx.mock
+def test_get_supported_assets_not_supported_item_type(mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
     with pytest.raises(specs.SpecificationException):
         specs.get_supported_assets('notsupported')
 
 
-def test_validate_asset_type_supported():
+@respx.mock
+def test_validate_asset_type_supported(mock_bundles):
     """Ensures that a validated asset type for a given item type matches the
     the given asset type."""
+    respx.get(SPEC_URL).return_value = mock_bundles
     assert TEST_ASSET_TYPE == specs.validate_asset_type(
         TEST_ITEM_TYPE, TEST_ASSET_TYPE)
 
 
-def test_validate_asset_type_notsupported():
+@respx.mock
+def test_validate_asset_type_notsupported(mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
     with pytest.raises(specs.SpecificationException):
         specs.validate_asset_type(TEST_ITEM_TYPE, 'notsupported')

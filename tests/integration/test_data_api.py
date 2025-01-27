@@ -31,6 +31,7 @@ from planet.clients.data import (LIST_SORT_DEFAULT,
 from planet.sync.data import DataAPI
 from planet.http import Session
 
+SPEC_URL = 'https://api.planet.com/compute/ops/bundles/spec'
 TEST_URL = 'http://www.mocknotrealurl.com/api/path'
 TEST_SEARCHES_URL = f'{TEST_URL}/searches'
 TEST_STATS_URL = f'{TEST_URL}/stats'
@@ -77,11 +78,19 @@ def data_api():
     return DataAPI(Session(), TEST_URL)
 
 
+@pytest.fixture
+def mock_bundles():
+    resp = {"bundles": {"analytic_udm2": {"assets": {"PSScene": []}}}}
+    return httpx.Response(HTTPStatus.OK, json=resp)
+
+
 @respx.mock
 @pytest.mark.anyio
-async def test_search_basic(item_descriptions, search_response, session):
+async def test_search_basic(item_descriptions,
+                            search_response,
+                            mock_bundles,
+                            session):
 
-    bundles_url = "https://api.planet.com/compute/ops/bundles/spec"
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
 
@@ -98,9 +107,7 @@ async def test_search_basic(item_descriptions, search_response, session):
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
-    bundles_resp = {"bundles": {"analytic_udm2": {"assets": {"PSScene": []}}}}
-    mock_resp3 = httpx.Response(HTTPStatus.OK, json=bundles_resp)
-    respx.get(bundles_url).return_value = mock_resp3
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
     items_list = [i async for i in cl.search(['PSScene'])]
@@ -118,7 +125,10 @@ async def test_search_basic(item_descriptions, search_response, session):
 
 
 @respx.mock
-def test_search_basic_sync(item_descriptions, search_response, data_api):
+def test_search_basic_sync(item_descriptions,
+                           search_response,
+                           mock_bundles,
+                           data_api):
 
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
@@ -135,6 +145,8 @@ def test_search_basic_sync(item_descriptions, search_response, data_api):
     page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
+
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     items_list = list(data_api.search(['PSScene']))
 
@@ -151,7 +163,10 @@ def test_search_basic_sync(item_descriptions, search_response, data_api):
 
 @respx.mock
 @pytest.mark.anyio
-async def test_search_name(item_descriptions, search_response, session):
+async def test_search_name(item_descriptions,
+                           search_response,
+                           mock_bundles,
+                           session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
@@ -168,6 +183,8 @@ async def test_search_name(item_descriptions, search_response, session):
     page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
+
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
     items_list = [i async for i in cl.search(['PSScene'], name='quick_search')]
@@ -191,6 +208,7 @@ async def test_search_name(item_descriptions, search_response, session):
                                           ('geom_reference')])
 async def test_search_geometry(geom_fixture,
                                item_descriptions,
+                               mock_bundles,
                                session,
                                request):
 
@@ -209,6 +227,8 @@ async def test_search_geometry(geom_fixture,
     page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
+
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
     geom = request.getfixturevalue(geom_fixture)
@@ -236,6 +256,7 @@ async def test_search_geometry(geom_fixture,
                                           ('geom_reference')])
 def test_search_geometry_sync(geom_fixture,
                               item_descriptions,
+                              mock_bundles,
                               data_api,
                               request):
 
@@ -254,6 +275,8 @@ def test_search_geometry_sync(geom_fixture,
     page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
+
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     geom = request.getfixturevalue(geom_fixture)
     items_list = list(
@@ -278,6 +301,7 @@ def test_search_geometry_sync(geom_fixture,
 async def test_search_filter(item_descriptions,
                              search_filter,
                              search_response,
+                             mock_bundles,
                              session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
@@ -295,6 +319,8 @@ async def test_search_filter(item_descriptions,
     page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
+
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
     items_list = [
@@ -316,6 +342,7 @@ async def test_search_filter(item_descriptions,
 async def test_search_filter_positional_args(item_descriptions,
                                              search_filter,
                                              search_response,
+                                             mock_bundles,
                                              session):
     """test the search method using positional args"""
 
@@ -325,6 +352,8 @@ async def test_search_filter_positional_args(item_descriptions,
     response = {"features": [item1, item2, item3]}
     mock_resp = httpx.Response(HTTPStatus.OK, json=response)
     respx.post(quick_search_url).return_value = mock_resp
+
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
 
@@ -345,6 +374,7 @@ async def test_search_filter_positional_args(item_descriptions,
 async def test_search_sort(item_descriptions,
                            search_filter,
                            search_response,
+                           mock_bundles,
                            session):
 
     sort = 'acquired asc'
@@ -354,6 +384,8 @@ async def test_search_sort(item_descriptions,
     page1_response = {"_links": {}, "features": [item1]}
     mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.post(quick_search_url).return_value = mock_resp1
+
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     # if the sort parameter is not used correctly, the client will not send
     # the request to the mocked endpoint and this test will fail
@@ -371,6 +403,7 @@ async def test_search_sort(item_descriptions,
 async def test_search_limit(item_descriptions,
                             search_filter,
                             search_response,
+                            mock_bundles,
                             session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
@@ -381,6 +414,8 @@ async def test_search_limit(item_descriptions,
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.post(quick_search_url).return_value = mock_resp
+
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
     items_list = [
@@ -394,7 +429,7 @@ async def test_search_limit(item_descriptions,
 
 @respx.mock
 @pytest.mark.anyio
-async def test_create_search_basic(search_filter, session):
+async def test_create_search_basic(search_filter, mock_bundles, session):
 
     page_response = {
         "__daily_email_enabled": False,
@@ -410,6 +445,8 @@ async def test_create_search_basic(search_filter, session):
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
+
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
     search = await cl.create_search(item_types=['PSScene'],
@@ -431,7 +468,7 @@ async def test_create_search_basic(search_filter, session):
 
 
 @respx.mock
-def test_create_search_basic_sync(search_filter, data_api):
+def test_create_search_basic_sync(search_filter, mock_bundles, data_api):
 
     page_response = {
         "__daily_email_enabled": False,
@@ -447,6 +484,8 @@ def test_create_search_basic_sync(search_filter, data_api):
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
+
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     search = data_api.create_search(item_types=['PSScene'],
                                     search_filter=search_filter,
@@ -468,7 +507,9 @@ def test_create_search_basic_sync(search_filter, data_api):
 
 @respx.mock
 @pytest.mark.anyio
-async def test_create_search_basic_positional_args(search_filter, session):
+async def test_create_search_basic_positional_args(search_filter,
+                                                   mock_bundles,
+                                                   session):
     """Test that positional arguments are accepted for create_search"""
 
     page_response = {
@@ -485,6 +526,8 @@ async def test_create_search_basic_positional_args(search_filter, session):
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
+
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
     search = await cl.create_search(['PSScene'], search_filter, name='test')
@@ -505,7 +548,7 @@ async def test_create_search_basic_positional_args(search_filter, session):
 
 @respx.mock
 @pytest.mark.anyio
-async def test_create_search_email(search_filter, session):
+async def test_create_search_email(search_filter, mock_bundles, session):
 
     page_response = {
         "__daily_email_enabled": True,
@@ -521,6 +564,8 @@ async def test_create_search_email(search_filter, session):
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
+
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
     search = await cl.create_search(['PSScene'],
@@ -1131,7 +1176,7 @@ async def test_list_item_assets_missing(session):
 @pytest.mark.parametrize("asset_type_id, expectation",
                          [('basic_udm2', does_not_raise()),
                           ('invalid', pytest.raises(exceptions.ClientError))])
-async def test_get_asset(asset_type_id, expectation, session):
+async def test_get_asset(asset_type_id, expectation, mock_bundles, session):
     item_type_id = 'PSScene'
     item_id = '20221003_002705_38_2461'
     assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
@@ -1168,6 +1213,7 @@ async def test_get_asset(asset_type_id, expectation, session):
 
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.get(assets_url).return_value = mock_resp
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
 
@@ -1180,11 +1226,10 @@ async def test_get_asset(asset_type_id, expectation, session):
 @pytest.mark.parametrize("asset_type_id, expectation",
                          [('basic_udm2', does_not_raise()),
                           ('invalid', pytest.raises(exceptions.ClientError))])
-def test_get_asset_sync(asset_type_id, expectation, data_api):
+def test_get_asset_sync(asset_type_id, expectation, mock_bundles, data_api):
     item_type_id = 'PSScene'
     item_id = '20221003_002705_38_2461'
     assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
-    bundles_url = "https://api.planet.com/compute/ops/bundles/spec"
     basic_udm2_asset = {
         "_links": {
             "_self": "SELFURL",
@@ -1217,6 +1262,7 @@ def test_get_asset_sync(asset_type_id, expectation, data_api):
 
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.get(assets_url).return_value = mock_resp
+    respx.get(SPEC_URL).return_value = mock_bundles
     with expectation:
         asset = data_api.get_asset(item_type_id, item_id, asset_type_id)
         assert asset == basic_udm2_asset
