@@ -580,6 +580,7 @@ def test_catalog_source_time_range_type_acquired(geom_geojson, mock_bundles):
     )
 
     assert source["parameters"]["time_range_type"] == "acquired"
+    assert 1 == 2
 
 
 def test_cloud_filter_tool_success():
