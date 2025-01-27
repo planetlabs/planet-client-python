@@ -28,7 +28,6 @@ from planet.cli import cli
 from planet.clients.data import (LIST_SEARCH_TYPE_DEFAULT,
                                  LIST_SORT_DEFAULT,
                                  SEARCH_SORT_DEFAULT)
-from planet.specs import get_item_types
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ TEST_URL = 'https://api.planet.com/data/v1'
 TEST_QUICKSEARCH_URL = f'{TEST_URL}/quick-search'
 TEST_SEARCHES_URL = f'{TEST_URL}/searches'
 TEST_STATS_URL = f'{TEST_URL}/stats'
-
+SPEC_URL = "https://api.planet.com/compute/ops/bundles/spec"
 VALID_SEARCH_ID = '286469f0b27c476e96c3c4e561f59664'
 
 
@@ -125,6 +124,20 @@ def item_descriptions(get_test_file_json):
     return items
 
 
+@pytest.fixture
+def mock_bundles():
+    resp = {
+        "bundles": {
+            "analytic_sr": {
+                "assets": {
+                    "SkySatScene": [], "PSScene": [], "SkySatCollect": []
+                }
+            }
+        }
+    }
+    return httpx.Response(HTTPStatus.OK, json=resp)
+
+
 def test_data_command_registered(invoke):
     """planet-data command prints help and usage message."""
     runner = CliRunner()
@@ -146,7 +159,6 @@ def test_data_search_command_registered(invoke):
     """planet-data search command prints help and usage message."""
     runner = CliRunner()
     result = invoke(["search", "--help"], runner=runner)
-    all_item_types = [a for a in get_item_types()]
     assert result.exit_code == 0
     assert "Usage" in result.output
     assert "limit" in result.output
@@ -154,8 +166,6 @@ def test_data_search_command_registered(invoke):
     assert "sort" in result.output
     assert "pretty" in result.output
     assert "help" in result.output
-    for a in all_item_types:
-        assert a in result.output.replace('\n', '').replace(' ', '')
     # Add other sub-commands here.
 
 
@@ -416,13 +426,17 @@ def test_data_filter_update(invoke, assert_and_filters_equal):
 
 @respx.mock
 @pytest.mark.parametrize("item_types, expect_success", [('PSScene', True)])
-def test_data_search_cmd_item_types(item_types, expect_success, invoke):
+def test_data_search_cmd_item_types(mock_bundles,
+                                    item_types,
+                                    expect_success,
+                                    invoke):
     """Test for planet data search_quick item types, valid and invalid."""
     mock_resp = httpx.Response(HTTPStatus.OK,
                                json={'features': [{
                                    "key": "value"
                                }]})
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     result = invoke(['search', item_types])
 
@@ -438,7 +452,10 @@ def test_data_search_cmd_item_types(item_types, expect_success, invoke):
                          [('geom_geojson'), ('feature_geojson'),
                           ('featurecollection_geojson'), ('geom_reference'),
                           ("str_geom_reference")])
-def test_data_search_cmd_top_level_geom(geom_fixture, request, invoke):
+def test_data_search_cmd_top_level_geom(geom_fixture,
+                                        mock_bundles,
+                                        request,
+                                        invoke):
     """Ensure that all GeoJSON forms of describing a geometry are handled
     and all result in the same, valid GeometryFilter being created"""
     mock_resp = httpx.Response(HTTPStatus.OK,
@@ -446,6 +463,7 @@ def test_data_search_cmd_top_level_geom(geom_fixture, request, invoke):
                                    "key": "value"
                                }]})
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
+    respx.get(SPEC_URL).return_value = mock_bundles
     geom = request.getfixturevalue(geom_fixture)
     if isinstance(geom, dict):
         geom = json.dumps(geom)
@@ -470,7 +488,7 @@ def test_data_search_cmd_filter_invalid_json(invoke, filter):
 
 
 @respx.mock
-def test_data_search_cmd_filter_success(invoke):
+def test_data_search_cmd_filter_success(mock_bundles, invoke):
     """Test for planet data search_quick. Test with multiple item_types.
     Test should succeed as filter contains valid JSON."""
     filter = {
@@ -486,6 +504,7 @@ def test_data_search_cmd_filter_success(invoke):
                                    "key": "value"
                                }]})
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     result = invoke(['search', 'PSScene', f'--filter={json.dumps(filter)}'])
 
@@ -500,7 +519,7 @@ def test_data_search_cmd_filter_success(invoke):
 
 
 @respx.mock
-def test_data_search_cmd_sort_success(invoke):
+def test_data_search_cmd_sort_success(mock_bundles, invoke):
     # this cannot be the default value or else the sort param will not be
     # added to the url
     sort = 'published asc'
@@ -509,6 +528,7 @@ def test_data_search_cmd_sort_success(invoke):
     feature = {"key": "value"}
     mock_resp = httpx.Response(HTTPStatus.OK, json={'features': [feature]})
     respx.post(search_url).return_value = mock_resp
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     result = invoke(['search', 'PSScene', f'--sort={sort}'])
     assert result.exit_code == 0
@@ -524,7 +544,8 @@ def test_data_search_cmd_sort_invalid(invoke):
 @respx.mock
 @pytest.mark.parametrize("limit,limited_list_length", [(None, 100), (0, 102),
                                                        (1, 1)])
-def test_data_search_cmd_limit(invoke,
+def test_data_search_cmd_limit(mock_bundles,
+                               invoke,
                                search_results,
                                limit,
                                limited_list_length):
@@ -554,6 +575,7 @@ def test_data_search_cmd_limit(invoke,
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
 
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     runner = CliRunner()
     result = invoke(["search", item_types, "--limit", limit], runner=runner)
@@ -590,7 +612,7 @@ def test_data_search_create_filter_invalid_json(invoke, item_types, filter):
 @respx.mock
 @pytest.mark.parametrize("item_types",
                          ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
-def test_data_search_create_filter_success(invoke, item_types):
+def test_data_search_create_filter_success(mock_bundles, invoke, item_types):
     """Test for planet data search_create. Test with multiple item_types.
     Test should succeed as filter contains valid JSON."""
     filter = {
@@ -608,6 +630,7 @@ def test_data_search_create_filter_success(invoke, item_types):
                                    "key": "value"
                                }]})
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     runner = CliRunner()
     result = invoke([
@@ -623,9 +646,10 @@ def test_data_search_create_filter_success(invoke, item_types):
 
 
 @respx.mock
-def test_data_search_create_daily_email(invoke, search_result):
+def test_data_search_create_daily_email(mock_bundles, invoke, search_result):
     mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     filter = {
         "type": "DateRangeFilter",
@@ -801,7 +825,11 @@ def test_data_stats_invalid_filter(invoke, filter):
                          ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 @pytest.mark.parametrize("interval, exit_code", [(None, 2), ('hou', 2),
                                                  ('hour', 0)])
-def test_data_stats_interval(invoke, item_types, interval, exit_code):
+def test_data_stats_interval(invoke,
+                             mock_bundles,
+                             item_types,
+                             interval,
+                             exit_code):
     """Test for planet data stats. Test with multiple item_types.
     Test should succeed with valid interval, and fail with invalid interval."""
     filter = {
@@ -817,6 +845,7 @@ def test_data_stats_interval(invoke, item_types, interval, exit_code):
                                    "key": "value"
                                }]})
     respx.post(TEST_STATS_URL).return_value = mock_resp
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     args = ["stats", item_types, f'--filter={json.dumps(filter)}']
     if interval:
@@ -830,7 +859,7 @@ def test_data_stats_interval(invoke, item_types, interval, exit_code):
 @pytest.mark.parametrize("item_types",
                          ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 @pytest.mark.parametrize("interval", ['hour', 'day', 'week', 'month', 'year'])
-def test_data_stats_success(invoke, item_types, interval):
+def test_data_stats_success(invoke, mock_bundles, item_types, interval):
     """Test for planet data stats. Test with multiple item_types.
 
     Test should succeed as filter contains valid JSON, item_types, and
@@ -849,6 +878,7 @@ def test_data_stats_success(invoke, item_types, interval):
                                    "key": "value"
                                }]})
     respx.post(TEST_STATS_URL).return_value = mock_resp
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     result = invoke([
         "stats",
