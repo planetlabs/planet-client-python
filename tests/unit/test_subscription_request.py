@@ -15,8 +15,6 @@ from datetime import datetime
 import itertools
 import logging
 import respx
-from http import HTTPStatus
-import httpx
 import pytest
 
 from planet import exceptions, subscription_request, specs
@@ -24,20 +22,6 @@ from planet import exceptions, subscription_request, specs
 LOGGER = logging.getLogger(__name__)
 
 SPEC_URL = "https://api.planet.com/compute/ops/bundles/spec"
-
-
-@pytest.fixture
-def mock_bundles():
-    resp = {
-        "bundles": {
-            "analytic_udm2": {
-                "assets": {
-                    "PSScene": ["ortho_analytic_4b"]
-                }
-            }
-        }
-    }
-    return httpx.Response(HTTPStatus.OK, json=resp)
 
 
 def test_build_request_success(geom_geojson):
@@ -580,7 +564,6 @@ def test_catalog_source_time_range_type_acquired(geom_geojson, mock_bundles):
     )
 
     assert source["parameters"]["time_range_type"] == "acquired"
-    assert 1 == 2
 
 
 def test_cloud_filter_tool_success():

@@ -78,12 +78,6 @@ def data_api():
     return DataAPI(Session(), TEST_URL)
 
 
-@pytest.fixture
-def mock_bundles():
-    resp = {"bundles": {"analytic_udm2": {"assets": {"PSScene": []}}}}
-    return httpx.Response(HTTPStatus.OK, json=resp)
-
-
 @respx.mock
 @pytest.mark.anyio
 async def test_search_basic(item_descriptions,

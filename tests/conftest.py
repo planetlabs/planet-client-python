@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from http import HTTPStatus
+import httpx
 import json
 import os
 from pathlib import Path
@@ -169,3 +171,33 @@ def multipolygon_geom_geojson():
 @pytest.fixture
 def anyio_backend():
     return 'asyncio'
+
+
+@pytest.fixture
+def mock_bundles():
+    # The following bundles are not real, only used for tests
+    resp = {
+        "bundles": {
+            "analytic_udm2": {
+                "assets": {
+                    "PSScene": ["ortho_analytic_4b"]
+                }
+            },
+            "analytic_sr": {
+                "assets": {
+                    "SkySatScene": [], "PSScene": [], "SkySatCollect": []
+                }
+            },
+            "analytic": {
+                "assets": {
+                    "SkySatScene": []
+                }
+            },
+            "visual": {
+                "assets": {
+                    "PSScene": ["basic_udm2"]
+                }
+            }
+        }
+    }
+    return httpx.Response(HTTPStatus.OK, json=resp)

@@ -14,8 +14,6 @@
 import logging
 import pytest
 import click
-from http import HTTPStatus
-import httpx
 import respx
 from planet.cli import data
 from planet.cli import orders
@@ -24,12 +22,6 @@ from planet.cli import subscriptions
 LOGGER = logging.getLogger(__name__)
 
 SPEC_URL = "https://api.planet.com/compute/ops/bundles/spec"
-
-
-@pytest.fixture
-def mock_bundles():
-    resp = {"bundles": {"analytic_udm2": {"assets": {"PSScene": []}}}}
-    return httpx.Response(HTTPStatus.OK, json=resp)
 
 
 class MockContext:

@@ -124,20 +124,6 @@ def item_descriptions(get_test_file_json):
     return items
 
 
-@pytest.fixture
-def mock_bundles():
-    resp = {
-        "bundles": {
-            "analytic_sr": {
-                "assets": {
-                    "SkySatScene": [], "PSScene": [], "SkySatCollect": []
-                }
-            }
-        }
-    }
-    return httpx.Response(HTTPStatus.OK, json=resp)
-
-
 def test_data_command_registered(invoke):
     """planet-data command prints help and usage message."""
     runner = CliRunner()

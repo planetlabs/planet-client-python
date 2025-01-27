@@ -194,9 +194,6 @@ def get_match(test_entry, spec_entries, field_name):
 
 def get_product_bundles(item_type=None):
     """Get product bundles supported by Orders API."""
-    print(PRODUCT_BUNDLES["bundle_names"])
-    print(PRODUCT_BUNDLES["bundles"])
-    print(PRODUCT_BUNDLES["item_types"])
     if item_type:
         supported_bundles = []
         for product_bundle in PRODUCT_BUNDLES["bundle_names"]:

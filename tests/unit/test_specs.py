@@ -14,8 +14,6 @@
 # limitations under the License.
 import logging
 import respx
-from http import HTTPStatus
-import httpx
 import pytest
 
 from planet import specs
@@ -26,20 +24,6 @@ TEST_PRODUCT_BUNDLE = 'visual'
 TEST_ITEM_TYPE = 'PSScene'
 TEST_ASSET_TYPE = "basic_udm2"
 SPEC_URL = "https://api.planet.com/compute/ops/bundles/spec"
-
-
-@pytest.fixture
-def mock_bundles():
-    resp = {
-        "bundles": {
-            TEST_PRODUCT_BUNDLE: {
-                "assets": {
-                    TEST_ITEM_TYPE: [TEST_ASSET_TYPE]
-                }
-            }
-        }
-    }
-    return httpx.Response(HTTPStatus.OK, json=resp)
 
 
 def test_get_type_match():

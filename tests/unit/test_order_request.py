@@ -14,11 +14,9 @@
 # limitations under the License.
 import logging
 
-import httpx
 import respx
 import pytest
 
-from http import HTTPStatus
 from planet import exceptions, order_request, specs
 
 LOGGER = logging.getLogger(__name__)
@@ -29,25 +27,6 @@ TEST_FALLBACK_BUNDLE = 'analytic'
 TEST_ITEM_TYPE = 'SkySatScene'
 TEST_ARCHIVE_FILENAME = '{{name}}_b_{order_id}}.zip'
 SPEC_URL = "https://api.planet.com/compute/ops/bundles/spec"
-
-
-@pytest.fixture
-def mock_bundles():
-    resp = {
-        "bundles": {
-            "analytic": {
-                "assets": {
-                    "SkySatScene": []
-                }
-            },
-            "analytic_sr": {
-                "assets": {
-                    "SkySatScene": []
-                }
-            }
-        }
-    }
-    return httpx.Response(HTTPStatus.OK, json=resp)
 
 
 @respx.mock
