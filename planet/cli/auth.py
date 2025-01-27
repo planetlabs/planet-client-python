@@ -16,7 +16,6 @@ import logging
 import click
 import planet_auth_utils
 
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -31,8 +30,7 @@ def cmd_auth(ctx):
 cmd_auth.add_command(name="login", cmd=planet_auth_utils.cmd_plauth_login)
 cmd_auth.add_command(name="print-access-token",
                      cmd=planet_auth_utils.cmd_oauth_print_access_token)
-cmd_auth.add_command(name="refresh",
-                     cmd=planet_auth_utils.cmd_oauth_refresh)
+cmd_auth.add_command(name="refresh", cmd=planet_auth_utils.cmd_oauth_refresh)
 
 
 # We are only plumbing a sub-set of the util lib's "profile" command,
@@ -45,7 +43,9 @@ def cmd_auth_profile(ctx):
     """
 
 
-cmd_auth_profile.add_command(name="list", cmd=planet_auth_utils.cmd_profile_list)
-cmd_auth_profile.add_command(name="show", cmd=planet_auth_utils.cmd_profile_show)
+cmd_auth_profile.add_command(name="list",
+                             cmd=planet_auth_utils.cmd_profile_list)
+cmd_auth_profile.add_command(name="show",
+                             cmd=planet_auth_utils.cmd_profile_show)
 cmd_auth_profile.add_command(name="set", cmd=planet_auth_utils.cmd_profile_set)
 cmd_auth.add_command(cmd_auth_profile)
