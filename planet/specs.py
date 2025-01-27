@@ -172,7 +172,7 @@ def validate_supported_bundles(item_type, bundle):
 
 def validate_asset_type(item_type, asset_type):
     """Validates an asset type for a given item type."""
-    item_type = validate_item_type(item_type)
+    # item type validation occurs inside get_supported_assets
     supported_assets = get_supported_assets(item_type)
     return _validate_field(asset_type, supported_assets, 'asset_type')
 
@@ -194,6 +194,7 @@ def get_match(test_entry, spec_entries, field_name):
 
 def get_product_bundles(item_type=None):
     """Get product bundles supported by Orders API."""
+    print(PRODUCT_BUNDLES)
     if item_type:
         supported_bundles = []
         for product_bundle in PRODUCT_BUNDLES["bundle_names"]:

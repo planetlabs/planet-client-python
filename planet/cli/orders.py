@@ -359,7 +359,7 @@ async def create(ctx, request, pretty, **kwargs):
     '--tools',
     type=types.JSON(),
     help="""Toolchain JSON. Can be a json string, filename, or '-' for
-              stdin.""")
+    stdin.""")
 @click.option('--email',
               default=False,
               is_flag=True,

@@ -574,9 +574,9 @@ def test_catalog_source_time_range_type_acquired(geom_geojson, mock_bundles):
     source = subscription_request.catalog_source(
         item_types=["PSScene"],
         asset_types=["ortho_analytic_4b"],
-        geometry=geom_geojson,
         start_time=datetime(2021, 3, 1),
         time_range_type="acquired",
+        geometry=geom_geojson,
     )
 
     assert source["parameters"]["time_range_type"] == "acquired"
