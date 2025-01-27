@@ -6,7 +6,7 @@ from typing import Dict, Optional, TypeVar, Union
 import base64
 
 from planet.exceptions import APIError, ClientError
-from ..constants import PLANET_BASE_URL
+# from ..constants import PLANET_BASE_URL
 
 # BASE_URL = f'{PLANET_BASE_URL}/account/v1/'
 BASE_URL = 'https://platform-admin-service.staging.planet-labs.com/public/'
@@ -45,9 +45,7 @@ class QuotaClient:
         ```
     """
 
-    def __init__(self,
-                 api_key: str,
-                 base_url: Optional[str] = None) -> None:
+    def __init__(self, api_key: str, base_url: Optional[str] = None) -> None:
         """
         Parameters:
             api_key: API key for authentication.
@@ -79,14 +77,15 @@ class QuotaClient:
                     raise APIError(await response.text())
                 return await response.json()
 
-    async def get_my_products(self,
-                               organization_id: Optional[int] = None,
-                               quota_style: Optional[str] = None,
-                               limit: Optional[int] = None,
-                               offset: Optional[int] = None,
-                               sort: Optional[str] = None,
-                               fields: Optional[str] = None,
-                               filters: Optional[Dict[str, str]] = None) -> dict:
+    async def get_my_products(
+            self,
+            organization_id: Optional[int] = None,
+            quota_style: Optional[str] = None,
+            limit: Optional[int] = None,
+            offset: Optional[int] = None,
+            sort: Optional[str] = None,
+            fields: Optional[str] = None,
+            filters: Optional[Dict[str, str]] = None) -> dict:
         """Get a list of available products.
 
         Args:
@@ -140,9 +139,7 @@ class QuotaClient:
         url = f'{self._base_url}/quota-reservations/estimate'
 
         try:
-            resp = await self._request(method='POST',
-                                               url=url,
-                                               json=request)
+            resp = await self._request(method='POST', url=url, json=request)
         except APIError:
             raise
         except ClientError:
@@ -167,9 +164,7 @@ class QuotaClient:
         url = f'{self._base_url}/quota-reservations/'
 
         try:
-            resp = await self._request(method='POST',
-                                               url=url,
-                                               json=request)
+            resp = await self._request(method='POST', url=url, json=request)
         except APIError:
             raise
         except ClientError:
@@ -177,12 +172,13 @@ class QuotaClient:
         else:
             return resp
 
-    async def get_reservations(self,
-                               limit: Optional[int] = None,
-                               offset: Optional[int] = None,
-                               sort: Optional[str] = None,
-                               fields: Optional[str] = None,
-                               filters: Optional[Dict[str, str]] = None) -> dict:
+    async def get_reservations(
+            self,
+            limit: Optional[int] = None,
+            offset: Optional[int] = None,
+            sort: Optional[str] = None,
+            fields: Optional[str] = None,
+            filters: Optional[Dict[str, str]] = None) -> dict:
         """Get a list of Quota Reservations.
 
         Args:
@@ -249,9 +245,7 @@ class QuotaClient:
         url = f'{self._base_url}/quota-reservations/bulk-reserve'
 
         try:
-            resp = await self._request(method='POST',
-                                               url=url,
-                                               json=request)
+            resp = await self._request(method='POST', url=url, json=request)
         except APIError:
             raise
         except ClientError:
