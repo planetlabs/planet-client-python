@@ -29,6 +29,7 @@ from planet.cli import cli
 TEST_URL = 'http://MockNotRealURL/api/path'
 TEST_DOWNLOAD_URL = f'{TEST_URL}/download'
 TEST_ORDERS_URL = 'https://api.planet.com/compute/ops/orders/v2'
+SPEC_URL = "https://api.planet.com/compute/ops/bundles/spec"
 
 # NOTE: These tests use a lot of the same mocked responses as test_orders_api.
 
@@ -459,10 +460,12 @@ def test_cli_orders_create_basic_success(invoke, order_description):
     [('20220325_131639_20_2402', ['20220325_131639_20_2402']),
      ('20220325_131639_20_2402,20230324_121730_43_2423',
       ['20220325_131639_20_2402', '20230324_121730_43_2423'])])
-def test_cli_orders_request_basic_success(expected_ids,
+def test_cli_orders_request_basic_success(mock_bundles,
+                                          expected_ids,
                                           id_string,
                                           invoke,
                                           stac_json):
+    respx.get(SPEC_URL).return_value = mock_bundles
     result = invoke([
         'request',
         '--item-type=PSScene',
@@ -486,7 +489,8 @@ def test_cli_orders_request_basic_success(expected_ids,
     assert order_request == json.loads(result.output)
 
 
-def test_cli_orders_request_item_type_invalid(invoke):
+def test_cli_orders_request_item_type_invalid(mock_bundles, invoke):
+    respx.get(SPEC_URL).return_value = mock_bundles
     result = invoke([
         'request',
         '--item-type=invalid'
@@ -497,7 +501,8 @@ def test_cli_orders_request_item_type_invalid(invoke):
     assert result.exit_code == 2
 
 
-def test_cli_orders_request_product_bundle_invalid(invoke):
+def test_cli_orders_request_product_bundle_invalid(mock_bundles, invoke):
+    respx.get(SPEC_URL).return_value = mock_bundles
     result = invoke([
         'request',
         '--item-type=PSScene'
@@ -508,7 +513,8 @@ def test_cli_orders_request_product_bundle_invalid(invoke):
     assert result.exit_code == 2
 
 
-def test_cli_orders_request_product_bundle_incompatible(invoke):
+def test_cli_orders_request_product_bundle_incompatible(mock_bundles, invoke):
+    respx.get(SPEC_URL).return_value = mock_bundles
     result = invoke([
         'request',
         '--item-type=PSScene',
@@ -519,7 +525,8 @@ def test_cli_orders_request_product_bundle_incompatible(invoke):
     assert result.exit_code == 2
 
 
-def test_cli_orders_request_id_empty(invoke):
+def test_cli_orders_request_id_empty(mock_bundles, invoke):
+    respx.get(SPEC_URL).return_value = mock_bundles
     result = invoke([
         'request', '--item-type=PSScene', '--bundle=visual', '--name=test', ''
     ])
@@ -530,13 +537,15 @@ def test_cli_orders_request_id_empty(invoke):
 @pytest.mark.parametrize("geom_fixture",
                          [('geom_geojson'), ('feature_geojson'),
                           ('featurecollection_geojson')])
-def test_cli_orders_request_clip_polygon(geom_fixture,
+def test_cli_orders_request_clip_polygon(mock_bundles,
+                                         geom_fixture,
                                          request,
                                          invoke,
                                          geom_geojson,
                                          stac_json):
 
     geom = request.getfixturevalue(geom_fixture)
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     result = invoke([
         'request',
@@ -568,9 +577,14 @@ def test_cli_orders_request_clip_polygon(geom_fixture,
 
 
 @pytest.mark.parametrize("geom_fixture", [('geom_reference')])
-def test_cli_orders_request_clip_ref(geom_fixture, request, invoke, stac_json):
+def test_cli_orders_request_clip_ref(mock_bundles,
+                                     geom_fixture,
+                                     request,
+                                     invoke,
+                                     stac_json):
 
     geom = request.getfixturevalue(geom_fixture)
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     result = invoke([
         'request',
@@ -601,11 +615,12 @@ def test_cli_orders_request_clip_ref(geom_fixture, request, invoke, stac_json):
     assert order_request == json.loads(result.output)
 
 
-def test_cli_orders_request_clip_multipolygon(multipolygon_geom_geojson,
+def test_cli_orders_request_clip_multipolygon(mock_bundles,
+                                              multipolygon_geom_geojson,
                                               invoke,
                                               geom_geojson,
                                               stac_json):
-
+    respx.get(SPEC_URL).return_value = mock_bundles
     result = invoke([
         'request',
         '--item-type=PSScene',
@@ -635,7 +650,10 @@ def test_cli_orders_request_clip_multipolygon(multipolygon_geom_geojson,
     assert order_request == json.loads(result.output)
 
 
-def test_cli_orders_request_clip_invalid_geometry(invoke, point_geom_geojson):
+def test_cli_orders_request_clip_invalid_geometry(mock_bundles,
+                                                  invoke,
+                                                  point_geom_geojson):
+    respx.get(SPEC_URL).return_value = mock_bundles
     result = invoke([
         'request',
         '--item-type=PSScene',
@@ -647,7 +665,10 @@ def test_cli_orders_request_clip_invalid_geometry(invoke, point_geom_geojson):
     assert result.exit_code == 2
 
 
-def test_cli_orders_request_both_clip_and_tools(invoke, geom_geojson):
+def test_cli_orders_request_both_clip_and_tools(mock_bundles,
+                                                invoke,
+                                                geom_geojson):
+    respx.get(SPEC_URL).return_value = mock_bundles
     # interestingly, it is important that both clip and tools
     # option values are valid json
     result = invoke([
@@ -664,7 +685,8 @@ def test_cli_orders_request_both_clip_and_tools(invoke, geom_geojson):
     assert "Specify only one of '--clip' or '--tools'" in result.output
 
 
-def test_cli_orders_request_cloudconfig(invoke, stac_json):
+def test_cli_orders_request_cloudconfig(mock_bundles, invoke, stac_json):
+    respx.get(SPEC_URL).return_value = mock_bundles
     config_json = {
         'amazon_s3': {
             'aws_access_key_id': 'aws_access_key_id',
@@ -701,7 +723,8 @@ def test_cli_orders_request_cloudconfig(invoke, stac_json):
     assert order_request == json.loads(result.output)
 
 
-def test_cli_orders_request_email(invoke, stac_json):
+def test_cli_orders_request_email(mock_bundles, invoke, stac_json):
+    respx.get(SPEC_URL).return_value = mock_bundles
     result = invoke([
         'request',
         '--item-type=PSScene',
@@ -730,7 +753,12 @@ def test_cli_orders_request_email(invoke, stac_json):
 
 
 @respx.mock
-def test_cli_orders_request_tools(invoke, geom_geojson, stac_json):
+def test_cli_orders_request_tools(mock_bundles,
+                                  invoke,
+                                  geom_geojson,
+                                  stac_json):
+    respx.get(SPEC_URL).return_value = mock_bundles
+
     tools_json = [{'clip': {'aoi': geom_geojson}}, {'composite': {}}]
 
     result = invoke([
@@ -759,7 +787,8 @@ def test_cli_orders_request_tools(invoke, geom_geojson, stac_json):
 
 
 @respx.mock
-def test_cli_orders_request_no_stac(invoke):
+def test_cli_orders_request_no_stac(mock_bundles, invoke):
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     result = invoke([
         'request',
@@ -783,7 +812,10 @@ def test_cli_orders_request_no_stac(invoke):
 
 
 @respx.mock
-def test_cli_orders_request_hosting_sentinel_hub(invoke, stac_json):
+def test_cli_orders_request_hosting_sentinel_hub(mock_bundles,
+                                                 invoke,
+                                                 stac_json):
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     result = invoke([
         'request',
@@ -813,7 +845,8 @@ def test_cli_orders_request_hosting_sentinel_hub(invoke, stac_json):
 
 @respx.mock
 def test_cli_orders_request_hosting_sentinel_hub_collection_id(
-        invoke, stac_json):
+        mock_bundles, invoke, stac_json):
+    respx.get(SPEC_URL).return_value = mock_bundles
 
     result = invoke([
         'request',
@@ -842,3 +875,29 @@ def test_cli_orders_request_hosting_sentinel_hub_collection_id(
         }
     }
     assert order_request == json.loads(result.output)
+
+
+@respx.mock
+def test_show_item_types(invoke, mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
+
+    result = invoke(['show-item-types'])
+
+    expected_item_types = ["SkySatScene", "SkySatCollect", "PSScene"]
+    for item_type in expected_item_types:
+        assert item_type in result.output
+    assert result.exit_code == 0
+
+
+@respx.mock
+def test_show_bundle_names(invoke, mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
+
+    result = invoke(['show-bundles'])
+
+    expected_item_types = [
+        "analytic_udm2", "analytic_sr", "analytic", "visual"
+    ]
+    for item_type in expected_item_types:
+        assert item_type in result.output
+    assert result.exit_code == 0

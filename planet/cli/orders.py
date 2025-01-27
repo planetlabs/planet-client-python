@@ -28,6 +28,8 @@ from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
 from ..specs import (FetchBundlesSpecError,
+                     get_bundle_names,
+                     get_item_types,
                      SpecificationException,
                      validate_bundle,
                      validate_data_item_type)
@@ -462,3 +464,23 @@ async def request(ctx,
                                                  collection_id=collection_id)
 
     echo_json(request, pretty)
+
+
+@orders.command()  # type: ignore
+@click.pass_context
+@translate_exceptions
+def show_item_types(ctx):
+    """Show valid item types for ordering."""
+    click.echo("Valid item types:")
+    for it in get_item_types():
+        click.echo(f"- {it}")
+
+
+@orders.command()  # type: ignore
+@click.pass_context
+@translate_exceptions
+def show_bundles(ctx):
+    """Show valid bundle names for ordering."""
+    click.echo("Valid bundles:")
+    for it in get_bundle_names():
+        click.echo(f"- {it}")

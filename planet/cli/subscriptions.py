@@ -12,7 +12,7 @@ from .session import CliSession
 from planet.clients.subscriptions import SubscriptionsClient
 from .. import subscription_request
 from ..subscription_request import sentinel_hub
-from ..specs import FetchBundlesSpecError, SpecificationException, validate_item_type
+from ..specs import FetchBundlesSpecError, get_item_types, SpecificationException, validate_item_type
 from .validators import check_geom
 
 
@@ -493,3 +493,13 @@ def request_pv(var_type, var_id, geometry, start_time, end_time, pretty):
         end_time=end_time,
     )
     echo_json(res, pretty)
+
+
+@subscriptions.command()  # type: ignore
+@click.pass_context
+@translate_exceptions
+def show_item_types(ctx):
+    """Show valid item types for catalog subscriptions."""
+    click.echo("Valid item types:")
+    for it in get_item_types():
+        click.echo(f"- {it}")

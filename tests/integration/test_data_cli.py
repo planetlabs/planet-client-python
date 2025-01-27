@@ -1138,3 +1138,15 @@ def test_asset_wait(invoke,
 # TODO: basic test for "planet data search-run".
 # TODO: basic test for "planet data item-get".
 # TODO: basic test for "planet data stats".
+
+
+@respx.mock
+def test_show_item_types(invoke, mock_bundles):
+    respx.get(SPEC_URL).return_value = mock_bundles
+
+    result = invoke(['show-item-types'])
+
+    expected_item_types = ["SkySatScene", "SkySatCollect", "PSScene"]
+    for item_type in expected_item_types:
+        assert item_type in result.output
+    assert result.exit_code == 0

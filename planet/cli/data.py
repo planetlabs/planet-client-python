@@ -28,6 +28,7 @@ from planet.clients.data import (SEARCH_SORT,
                                  STATS_INTERVAL)
 
 from planet.specs import (FetchBundlesSpecError,
+                          get_item_types,
                           SpecificationException,
                           validate_data_item_type)
 
@@ -653,3 +654,13 @@ async def asset_wait(ctx, item_type, item_id, asset_type, delay, max_attempts):
 
 # TODO: search_run()".
 # TODO: item_get()".
+
+
+@data.command()  # type: ignore
+@click.pass_context
+@translate_exceptions
+def show_item_types(ctx):
+    """Show valid item types."""
+    click.echo("Valid item types:")
+    for it in get_item_types():
+        click.echo(f"- {it}")
