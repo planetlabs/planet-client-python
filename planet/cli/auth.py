@@ -27,11 +27,13 @@ def cmd_auth(ctx):
     Commands for working with Planet authentication.
     """
 
+
 cmd_auth.add_command(name="login", cmd=planet_auth_utils.cmd_plauth_login)
 cmd_auth.add_command(name="print-access-token",
                      cmd=planet_auth_utils.cmd_oauth_print_access_token)
 cmd_auth.add_command(name="refresh",
                      cmd=planet_auth_utils.cmd_oauth_refresh)
+
 
 # We are only plumbing a sub-set of the util lib's "profile" command,
 # which is why we shadow it.
@@ -41,6 +43,7 @@ def cmd_auth_profile(ctx):
     """
     Manage auth profiles.
     """
+
 
 cmd_auth_profile.add_command(name="list", cmd=planet_auth_utils.cmd_profile_list)
 cmd_auth_profile.add_command(name="show", cmd=planet_auth_utils.cmd_profile_show)
