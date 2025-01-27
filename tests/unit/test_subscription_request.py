@@ -30,7 +30,7 @@ SPEC_URL = "https://api.planet.com/compute/ops/bundles/spec"
 def mock_bundles():
     resp = {
         "bundles": {
-            "fake": {
+            "analytic_udm2": {
                 "assets": {
                     "PSScene": ["ortho_analytic_4b"]
                 }

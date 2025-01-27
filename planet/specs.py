@@ -174,7 +174,6 @@ def validate_asset_type(item_type, asset_type):
     """Validates an asset type for a given item type."""
     item_type = validate_item_type(item_type)
     supported_assets = get_supported_assets(item_type)
-
     return _validate_field(asset_type, supported_assets, 'asset_type')
 
 
