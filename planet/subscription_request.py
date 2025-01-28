@@ -54,6 +54,7 @@ def build_request(name: str,
                   tools: Optional[List[Mapping]] = None,
                   hosting: Optional[Union[Mapping, str]] = None,
                   collection_id: Optional[str] = None,
+                  create_configuration: Optional[bool] = False,
                   clip_to_source: Optional[bool] = False) -> dict:
     """Construct a Subscriptions API request.
 
@@ -68,6 +69,8 @@ def build_request(name: str,
         tools: Tools to apply to the products. The order of operation
             is determined by the service.
         hosting: A hosting destination e.g. Sentinel Hub.
+        collection_id: A Sentinel Hub collection ID.
+        create_configuration: Automatically create a layer configuration for your collection.
         clip_to_source: whether to clip to the source geometry or not
             (the default). If True a clip configuration will be added to
             the list of requested tools unless an existing clip tool
@@ -155,6 +158,9 @@ def build_request(name: str,
         }
         if collection_id:
             hosting_info["parameters"]["collection_id"] = collection_id
+        if create_configuration:
+            hosting_info["parameters"][
+                "create_configuration"] = create_configuration
         details['hosting'] = hosting_info
     elif isinstance(hosting, dict):
         details['hosting'] = hosting
@@ -769,18 +775,24 @@ def _hosting(type: str, parameters: dict) -> dict:
     return {"type": type, "parameters": parameters}
 
 
-def sentinel_hub(collection_id: Optional[str]) -> dict:
+def sentinel_hub(collection_id: Optional[str],
+                 create_configuration: Optional[bool] = False) -> dict:
     """Specify a Sentinel Hub hosting destination.
 
     Requires the user to have a Sentinel Hub account linked with their Planet
-    account.  Subscriptions API will create a new collection to deliver data to
-    if collection_id is omitted from the request.
+    account. Subscriptions API will create a new collection to deliver data to
+    if collection_id is omitted from the request. Will also create a new layer
+    configuration for the collection if create_configuration is True.
+    collection_id and create_configuration are mutually exclusive in the API.
 
     Parameters:
         collection_id: Sentinel Hub collection
+        create_configuration: Automatically create a layer configuration for your collection.
     """
 
-    parameters = {}
+    parameters: Dict[str, Union[str, bool]] = {}
     if collection_id:
         parameters['collection_id'] = collection_id
+    if create_configuration:
+        parameters['create_configuration'] = create_configuration
     return _hosting("sentinel_hub", parameters)

@@ -268,6 +268,12 @@ async def download(ctx, order_id, overwrite, directory, checksum):
               default=None,
               help='Collection ID for Sentinel Hub hosting. '
               'If omitted, a new collection will be created.')
+@click.option(
+    '--create-configuration',
+    is_flag=True,
+    default=False,
+    help='Automatically create a layer configuration for your collection. '
+    'If omitted, no configuration will be created.')
 @pretty
 async def create(ctx, request, pretty, **kwargs):
     """Create an order.
@@ -278,17 +284,21 @@ async def create(ctx, request, pretty, **kwargs):
     REQUEST is the full description of the order to be created. It must be JSON
     and can be specified a json string, filename, or '-' for stdin.
 
-    Other flag options are hosting and collection_id. The hosting flag
-    specifies the hosting type, and the collection_id flag specifies the
-    collection ID for Sentinel Hub. If the collection_id is omitted, a new
-    collection will be created.
+    Other flag options are hosting, collection_id, and create_configuration.
+    The hosting flag specifies the hosting type, the collection_id flag specifies the
+    collection ID for Sentinel Hub, and the create_configuration flag specifies
+    whether or not to create a layer configuration for your collection. If the
+    collection_id is omitted, a new collection will be created. If the
+    create_configuration flag is omitted, no configuration will be created. The
+    collection_id flag and create_configuration flag cannot be used together.
     """
 
     hosting = kwargs.get('hosting')
     collection_id = kwargs.get('collection_id')
+    create_configuration = bool(kwargs.get('create_configuration', False))
 
     if hosting == "sentinel_hub":
-        request["hosting"] = sentinel_hub(collection_id)
+        request["hosting"] = sentinel_hub(collection_id, create_configuration)
 
     async with orders_client(ctx) as cl:
         order = await cl.create_order(request)
@@ -360,9 +370,14 @@ async def create(ctx, request, pretty, **kwargs):
               type=click.Choice(['sentinel_hub']),
               help='Hosting for data delivery. '
               'Currently, only "sentinel_hub" is supported.')
-@click.option('--collection_id',
+@click.option('--collection-id',
               help='Collection ID for Sentinel Hub hosting. '
               'If omitted, a new collection will be created.')
+@click.option(
+    '--create-configuration',
+    is_flag=True,
+    help='Automatically create a layer configuration for your collection. '
+    'If omitted, no configuration will be created.')
 @pretty
 async def request(ctx,
                   item_type,
@@ -379,6 +394,7 @@ async def request(ctx,
                   stac,
                   hosting,
                   collection_id,
+                  create_configuration,
                   pretty):
     """Generate an order request.
 
@@ -416,13 +432,15 @@ async def request(ctx,
     else:
         stac_json = {}
 
-    request = planet.order_request.build_request(name,
-                                                 products=[product],
-                                                 delivery=delivery,
-                                                 notifications=notifications,
-                                                 tools=tools,
-                                                 stac=stac_json,
-                                                 hosting=hosting,
-                                                 collection_id=collection_id)
+    request = planet.order_request.build_request(
+        name,
+        products=[product],
+        delivery=delivery,
+        notifications=notifications,
+        tools=tools,
+        stac=stac_json,
+        hosting=hosting,
+        collection_id=collection_id,
+        create_configuration=create_configuration)
 
     echo_json(request, pretty)
