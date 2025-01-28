@@ -166,9 +166,9 @@ async def list_subscriptions_cmd(ctx,
               help='Collection ID for Sentinel Hub hosting. '
               'If omitted, a new collection will be created.')
 @click.option(
-    '--create_configuration',
+    '--create-configuration',
     is_flag=True,
-    help='Automatically create a layer configuration for your collection.'
+    help='Automatically create a layer configuration for your collection. '
     'If omitted, no configuration will be created.')
 @pretty
 @click.pass_context
@@ -376,10 +376,10 @@ async def list_subscription_results_cmd(ctx,
               help='Collection ID for Sentinel Hub hosting. '
               'If omitted, a new collection will be created.')
 @click.option(
-    '--create_configuration',
+    '--create-configuration',
     is_flag=True,
     default=False,
-    help='Automatically create a layer configuration for your collection.'
+    help='Automatically create a layer configuration for your collection. '
     'If omitted, no configuration will be created.')
 @pretty
 def request(name,
