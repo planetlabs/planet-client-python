@@ -790,7 +790,7 @@ def sentinel_hub(collection_id: Optional[str],
         create_configuration: Automatically create a layer configuration for your collection.
     """
 
-    parameters = {}
+    parameters: Dict[str, Union[str, bool]] = {}
     if collection_id:
         parameters['collection_id'] = collection_id
     if create_configuration:

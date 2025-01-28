@@ -603,7 +603,7 @@ def band_math_tool(b1: str,
 def sentinel_hub(collection_id: Optional[str] = None,
                  create_configuration: Optional[bool] = False) -> dict:
     """Specify a Sentinel Hub hosting destination."""
-    params = {}
+    params: Dict[str, Union[str, bool]] = {}
     if collection_id:
         params['collection_id'] = collection_id
     if create_configuration:
