@@ -878,10 +878,10 @@ def test_cli_orders_request_hosting_sentinel_hub_collection_id(
 
 
 @respx.mock
-def test_show_item_types(invoke, mock_bundles):
+def test_item_types(invoke, mock_bundles):
     respx.get(SPEC_URL).return_value = mock_bundles
 
-    result = invoke(['show-item-types'])
+    result = invoke(['item-types'])
 
     expected_item_types = ["SkySatScene", "SkySatCollect", "PSScene"]
     for item_type in expected_item_types:
@@ -890,10 +890,10 @@ def test_show_item_types(invoke, mock_bundles):
 
 
 @respx.mock
-def test_show_bundle_names(invoke, mock_bundles):
+def test_bundle_names(invoke, mock_bundles):
     respx.get(SPEC_URL).return_value = mock_bundles
 
-    result = invoke(['show-bundles'])
+    result = invoke(['bundles'])
 
     expected_item_types = [
         "analytic_udm2", "analytic_sr", "analytic", "visual"

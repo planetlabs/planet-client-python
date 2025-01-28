@@ -60,7 +60,7 @@ class _LazyBundlesLoader:
                 except:  # noqa: E722
                     if attempt == retries:
                         raise FetchBundlesSpecError(
-                            "Unable to fetch product bundles spec from API to perform client side validation on item types and product bundles. Please retry!"
+                            "Unable to fetch spec from API to generate valid item types and bundles. Please retry!"
                         ) from None
             bundles = response.json()['bundles']
             cache = {

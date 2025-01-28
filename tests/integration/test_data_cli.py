@@ -1141,10 +1141,10 @@ def test_asset_wait(invoke,
 
 
 @respx.mock
-def test_show_item_types(invoke, mock_bundles):
+def test_item_types(invoke, mock_bundles):
     respx.get(SPEC_URL).return_value = mock_bundles
 
-    result = invoke(['show-item-types'])
+    result = invoke(['item-types'])
 
     expected_item_types = ["SkySatScene", "SkySatCollect", "PSScene"]
     for item_type in expected_item_types:

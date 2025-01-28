@@ -469,7 +469,7 @@ async def request(ctx,
 @orders.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
-def show_item_types(ctx):
+def item_types(ctx):
     """Show valid item types for ordering."""
     click.echo("Valid item types:")
     for it in get_item_types():
@@ -479,7 +479,7 @@ def show_item_types(ctx):
 @orders.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
-def show_bundles(ctx):
+def bundles(ctx):
     """Show valid bundle names for ordering."""
     click.echo("Valid bundles:")
     for it in get_bundle_names():

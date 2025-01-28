@@ -498,7 +498,7 @@ def request_pv(var_type, var_id, geometry, start_time, end_time, pretty):
 @subscriptions.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
-def show_item_types(ctx):
+def item_types(ctx):
     """Show valid item types for catalog subscriptions."""
     click.echo("Valid item types:")
     for it in get_item_types():

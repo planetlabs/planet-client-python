@@ -659,7 +659,7 @@ async def asset_wait(ctx, item_type, item_id, asset_type, delay, max_attempts):
 @data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
-def show_item_types(ctx):
+def item_types(ctx):
     """Show valid item types."""
     click.echo("Valid item types:")
     for it in get_item_types():
