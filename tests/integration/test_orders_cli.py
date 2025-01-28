@@ -826,7 +826,7 @@ def test_cli_orders_request_hosting_sentinel_hub_collection_id(
         '--name=test',
         '20220325_131639_20_2402',
         '--hosting=sentinel_hub',
-        '--collection_id=1234'
+        '--collection-id=1234'
     ])
 
     order_request = {
@@ -859,7 +859,7 @@ def test_cli_orders_request_hosting_sentinel_hub_create_configuration(
         '--name=test',
         '20220325_131639_20_2402',
         '--hosting=sentinel_hub',
-        '--create_configuration'
+        '--create-configuration'
     ])
 
     order_request = {
@@ -892,8 +892,8 @@ def test_cli_orders_request_hosting_sentinel_hub_collection_configuration(
         '--name=test',
         '20220325_131639_20_2402',
         '--hosting=sentinel_hub',
-        '--collection_id=1234',
-        '--create_configuration'
+        '--collection-id=1234',
+        '--create-configuration'
     ])
 
     order_request = {

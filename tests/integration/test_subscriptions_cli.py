@@ -467,10 +467,10 @@ def test_catalog_source_time_range_type(invoke, geom_geojson, time_range_type):
          "--collection-id=7ff105c4-e0de-4910-96db-8345d86ab734",
          None,
          True),
-        ("--hosting=sentinel_hub", None, "--create_configuration", True),
+        ("--hosting=sentinel_hub", None, "--create-configuration", True),
         ("--hosting=sentinel_hub",
          "--collection-id=7ff105c4-e0de-4910-96db-8345d86ab734",
-         "--create_configuration",
+         "--create-configuration",
          True),
     ])
 def test_request_hosting(invoke,

@@ -370,7 +370,7 @@ async def create(ctx, request, pretty, **kwargs):
               type=click.Choice(['sentinel_hub']),
               help='Hosting for data delivery. '
               'Currently, only "sentinel_hub" is supported.')
-@click.option('--collection_id',
+@click.option('--collection-id',
               help='Collection ID for Sentinel Hub hosting. '
               'If omitted, a new collection will be created.')
 @click.option(
