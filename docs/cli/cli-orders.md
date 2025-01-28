@@ -239,8 +239,19 @@ planet orders request \
     --collection_id ba8f7274-aacc-425e-8a38-e21517bfbeff
 ```
 
+```
+planet orders request \
+    --item-type PSScene \
+    --bundle analytic_sr_udm2 \
+    --name 'My First Order' \
+    20220605_124027_64_242b \
+    --hosting sentinel_hub \
+    --create_configuration
+```
+
 - The --hosting option is optional and currently supports sentinel_hub as its only value.
 - The --collection_id is also optional. If you decide to use this, ensure that the order request and the collection have matching bands. If you're unsure, allow the system to create a new collection for you by omitting the --collection_id option. This will ensure the newly set-up collection is configured correctly, and you can subsequently add items to this collection as needed.
+- The --create_configuration option will create a new [layer configuration](https://apps.sentinel-hub.com/dashboard/#/configurations) in Sentinel Hub on your behalf. This option cannot be used with --collection_id.
 
 For more information on Sentinel Hub hosting, see the [Orders API documentation](https://developers.planet.com/apis/orders/delivery/#delivery-to-sentinel-hub-collection) and the [Linking Planet User to Sentinel Hub User
 ](https://support.planet.com/hc/en-us/articles/16550358397469-Linking-Planet-User-to-Sentinel-Hub-User) support post.
@@ -307,12 +318,18 @@ if you run that command again it will create a second order).
 
 #### Sentinel Hub Hosting
 
-For convenience, `planet orders create` accepts the same `--hosting` and `--collection_id` options that [`planet orders request`](#sentinel-hub-hosting) does.
+For convenience, `planet orders create` accepts the same `--hosting`, `--collection_id`, and `--create_configuration` options that [`planet orders request`](#sentinel-hub-hosting) does.
 
 ```sh
 planet orders create request-1.json \
     --hosting sentinel_hub \
     --collection_id ba8f7274-aacc-425e-8a38-e21517bfbeff
+```
+
+```sh
+planet orders create request-1.json \
+    --hosting sentinel_hub \
+    --create_configuration
 ```
 
 ### Create Request and Order in One Call

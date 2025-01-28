@@ -460,17 +460,24 @@ def test_catalog_source_time_range_type(invoke, geom_geojson, time_range_type):
 
 
 @pytest.mark.parametrize(
-    "hosting_option, collection_id_option, expected_success",
+    "hosting_option, collection_id_option, configuration_option, expected_success",
     [
-        ("--hosting=sentinel_hub", None, True),
+        ("--hosting=sentinel_hub", None, None, True),
         ("--hosting=sentinel_hub",
          "--collection-id=7ff105c4-e0de-4910-96db-8345d86ab734",
+         None,
+         True),
+        ("--hosting=sentinel_hub", None, "--create_configuration", True),
+        ("--hosting=sentinel_hub",
+         "--collection-id=7ff105c4-e0de-4910-96db-8345d86ab734",
+         "--create_configuration",
          True),
     ])
 def test_request_hosting(invoke,
                          geom_geojson,
                          hosting_option,
                          collection_id_option,
+                         configuration_option,
                          expected_success):
     """Test request command with various hosting and collection ID options."""
     source = json.dumps({
@@ -494,6 +501,8 @@ def test_request_hosting(invoke,
 
     if collection_id_option:
         cmd.append(collection_id_option)
+    if configuration_option:
+        cmd.append(configuration_option)
 
     result = invoke(cmd)
 

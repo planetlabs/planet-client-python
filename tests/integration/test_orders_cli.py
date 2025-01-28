@@ -846,3 +846,70 @@ def test_cli_orders_request_hosting_sentinel_hub_collection_id(
         }
     }
     assert order_request == json.loads(result.output)
+
+
+@respx.mock
+def test_cli_orders_request_hosting_sentinel_hub_create_configuration(
+        invoke, stac_json):
+
+    result = invoke([
+        'request',
+        '--item-type=PSScene',
+        '--bundle=visual',
+        '--name=test',
+        '20220325_131639_20_2402',
+        '--hosting=sentinel_hub',
+        '--create_configuration'
+    ])
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": ["20220325_131639_20_2402"],
+            "item_type": "PSScene",
+            "product_bundle": "visual",
+        }],
+        "metadata":
+        stac_json,
+        "hosting": {
+            "sentinel_hub": {
+                "create_configuration": True
+            }
+        }
+    }
+    assert order_request == json.loads(result.output)
+
+
+@respx.mock
+def test_cli_orders_request_hosting_sentinel_hub_collection_configuration(
+        invoke, stac_json):
+    # Note, this behavior will be rejected by the API, but it is valid in building a request
+    result = invoke([
+        'request',
+        '--item-type=PSScene',
+        '--bundle=visual',
+        '--name=test',
+        '20220325_131639_20_2402',
+        '--hosting=sentinel_hub',
+        '--collection_id=1234',
+        '--create_configuration'
+    ])
+
+    order_request = {
+        "name":
+        "test",
+        "products": [{
+            "item_ids": ["20220325_131639_20_2402"],
+            "item_type": "PSScene",
+            "product_bundle": "visual",
+        }],
+        "metadata":
+        stac_json,
+        "hosting": {
+            "sentinel_hub": {
+                "collection_id": "1234", "create_configuration": True
+            }
+        }
+    }
+    assert order_request == json.loads(result.output)
