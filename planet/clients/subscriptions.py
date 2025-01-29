@@ -65,20 +65,19 @@ class SubscriptionsClient:
         """block on an async function call, using the call_sync method of the session"""
         return self._session._call_sync(f)
 
-    async def list_subscriptions(
-            self,
-            status: Optional[Sequence[str]] = None,
-            limit: int = 100,
-            created: Optional[str] = None,
-            end_time: Optional[str] = None,
-            hosting: Optional[bool] = None,
-            name__contains: Optional[str] = None,
-            name: Optional[str] = None,
-            source_type: Optional[str] = None,
-            start_time: Optional[str] = None,
-            sort_by: Optional[str] = None,
-            updated: Optional[str] = None,
-            page_size: int = 500) -> AsyncIterator[dict]:
+    async def list_subscriptions(self,
+                                 status: Optional[Sequence[str]] = None,
+                                 limit: int = 100,
+                                 created: Optional[str] = None,
+                                 end_time: Optional[str] = None,
+                                 hosting: Optional[bool] = None,
+                                 name__contains: Optional[str] = None,
+                                 name: Optional[str] = None,
+                                 source_type: Optional[str] = None,
+                                 start_time: Optional[str] = None,
+                                 sort_by: Optional[str] = None,
+                                 updated: Optional[str] = None,
+                                 page_size: int = 500) -> AsyncIterator[dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
         Note:
