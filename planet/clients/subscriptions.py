@@ -137,7 +137,7 @@ class SubscriptionsClient:
             """Navigates pages of messages about subscriptions."""
             ITEMS_KEY = 'subscriptions'
 
-        params: Dict[str, Union[str, Sequence[str], bool]] = {}
+        params: Dict[str, Union[str, Sequence[str], bool, int]] = {}
         if created is not None:
             params['created'] = created
         if end_time is not None:
