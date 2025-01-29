@@ -69,6 +69,7 @@ class SubscriptionsClient:
             self,
             status: Optional[Sequence[str]] = None,
             limit: int = 100,
+            page_size: Optional[int] = None,
             created: Optional[str] = None,
             end_time: Optional[str] = None,
             hosting: Optional[bool] = None,
@@ -112,6 +113,7 @@ class SubscriptionsClient:
             updated (str): filter by updated time or interval.
             limit (int): limit the number of subscriptions in the
                 results. When set to 0, no maximum is applied.
+            page_size (int): number of subscriptions to return per page, default 20.
             TODO: user_id
 
         Datetime args (created, end_time, start_time, updated) can either be a
@@ -156,6 +158,8 @@ class SubscriptionsClient:
             params['sort_by'] = sort_by
         if updated is not None:
             params['updated'] = updated
+        if page_size is not None:
+            params['page_size'] = page_size
 
         try:
             response = await self._session.request(method='GET',
