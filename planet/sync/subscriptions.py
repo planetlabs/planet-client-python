@@ -46,7 +46,7 @@ class SubscriptionsAPI:
                            start_time: Optional[str] = None,
                            sort_by: Optional[str] = None,
                            updated: Optional[str] = None,
-                           page_size: Optional[int] = None) -> Iterator[dict]:
+                           page_size: int = 500) -> Iterator[dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
         Note:
@@ -81,7 +81,7 @@ class SubscriptionsAPI:
             updated (str): filter by updated time or interval.
             limit (int): limit the number of subscriptions in the
                 results. When set to 0, no maximum is applied.
-            page_size (int): number of subscriptions to return per page, default 20.
+            page_size (int): number of subscriptions to return per page.
             TODO: user_id
 
         Datetime args (created, end_time, start_time, updated) can either be a
