@@ -37,7 +37,6 @@ class SubscriptionsAPI:
     def list_subscriptions(self,
                            status: Optional[Sequence[str]] = None,
                            limit: int = 100,
-                           page_size: Optional[int] = None,
                            created: Optional[str] = None,
                            end_time: Optional[str] = None,
                            hosting: Optional[bool] = None,
@@ -46,7 +45,8 @@ class SubscriptionsAPI:
                            source_type: Optional[str] = None,
                            start_time: Optional[str] = None,
                            sort_by: Optional[str] = None,
-                           updated: Optional[str] = None) -> Iterator[dict]:
+                           updated: Optional[str] = None,
+                           page_size: Optional[int] = None) -> Iterator[dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
         Note:
@@ -103,7 +103,6 @@ class SubscriptionsAPI:
 
         results = self._client.list_subscriptions(status,
                                                   limit,
-                                                  page_size,
                                                   created,
                                                   end_time,
                                                   hosting,
@@ -112,7 +111,8 @@ class SubscriptionsAPI:
                                                   source_type,
                                                   start_time,
                                                   sort_by,
-                                                  updated)
+                                                  updated,
+                                                  page_size)
 
         try:
             while True:

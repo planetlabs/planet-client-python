@@ -69,7 +69,6 @@ class SubscriptionsClient:
             self,
             status: Optional[Sequence[str]] = None,
             limit: int = 100,
-            page_size: Optional[int] = None,
             created: Optional[str] = None,
             end_time: Optional[str] = None,
             hosting: Optional[bool] = None,
@@ -78,7 +77,8 @@ class SubscriptionsClient:
             source_type: Optional[str] = None,
             start_time: Optional[str] = None,
             sort_by: Optional[str] = None,
-            updated: Optional[str] = None) -> AsyncIterator[dict]:
+            updated: Optional[str] = None,
+            page_size: Optional[int] = None) -> AsyncIterator[dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
         Note:
