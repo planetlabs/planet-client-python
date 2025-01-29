@@ -32,7 +32,8 @@ def build_request(name: str,
                   tools: Optional[List[dict]] = None,
                   stac: Optional[dict] = None,
                   hosting: Optional[str] = None,
-                  collection_id: Optional[str] = None) -> dict:
+                  collection_id: Optional[str] = None,
+                  create_configuration: Optional[bool] = False) -> dict:
     """Prepare an order request.
 
     ```python
@@ -70,6 +71,7 @@ def build_request(name: str,
         stac: Include STAC metadata.
         hosting: A hosting destination (e.g. Sentinel Hub).
         collection_id: A Sentinel Hub collection ID.
+        create_configuration: Automatically create a layer configuration for your collection.
 
     Raises:
         planet.specs.SpecificationException: If order_type is not a valid
@@ -97,7 +99,7 @@ def build_request(name: str,
         details['metadata'] = stac
 
     if hosting == 'sentinel_hub':
-        details['hosting'] = sentinel_hub(collection_id)
+        details['hosting'] = sentinel_hub(collection_id, create_configuration)
 
     return details
 
@@ -597,9 +599,12 @@ def band_math_tool(b1: str,
     return _tool('bandmath', parameters)
 
 
-def sentinel_hub(collection_id: Optional[str] = None) -> dict:
+def sentinel_hub(collection_id: Optional[str] = None,
+                 create_configuration: Optional[bool] = False) -> dict:
     """Specify a Sentinel Hub hosting destination."""
-    params = {}
+    params: Dict[str, Union[str, bool]] = {}
     if collection_id:
         params['collection_id'] = collection_id
+    if create_configuration:
+        params['create_configuration'] = create_configuration
     return {'sentinel_hub': params}

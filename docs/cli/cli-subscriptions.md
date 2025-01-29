@@ -538,10 +538,11 @@ planet subscriptions request \
 
 #### Sentinel Hub Hosting
 
-When creating a new subscription, you can include hosting options directly using the --hosting and --collection-id flags.
+When creating a new subscription, you can include hosting options directly using the --hosting, --collection-id, and --create-configuration flags.
 
 - The --hosting option is optional and currently supports sentinel_hub as its only value.
-- The --collection_id is also optional. If you decide to use this, ensure that the subscription request and the collection have matching bands. If you're unsure, allow the system to create a new collection for you by omitting the --collection_id option. This will ensure the newly set-up collection is configured correctly, and you can subsequently add items to this collection as needed.
+- The --collection-id is also optional. If you decide to use this, ensure that the subscription request and the collection have matching bands. If you're unsure, allow the system to create a new collection for you by omitting the --collection-id option. This will ensure the newly set-up collection is configured correctly, and you can subsequently add items to this collection as needed.
+- The --create_configuration option will create a new [layer configuration](https://apps.sentinel-hub.com/dashboard/#/configurations) in Sentinel Hub on your behalf. This option cannot be used with --collection-id.
 - You may also input --hosting as a JSON file. The file should be formatted:
 
 ```sh

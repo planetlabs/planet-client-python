@@ -389,3 +389,21 @@ def test_sentinel_hub_collection_id():
     sh_config = order_request.sentinel_hub("1234")
     expected = {'sentinel_hub': {'collection_id': "1234"}}
     assert sh_config == expected
+
+
+def test_sentinel_hub_create_configuration():
+    sh_config = order_request.sentinel_hub(create_configuration=True)
+    expected = {'sentinel_hub': {'create_configuration': True}}
+    assert sh_config == expected
+
+
+def test_sentinel_hub_collection_configuration():
+    # Note, this behavior will be rejected by the API, but it is valid in building a request
+    sh_config = order_request.sentinel_hub(collection_id="1234",
+                                           create_configuration=True)
+    expected = {
+        'sentinel_hub': {
+            'collection_id': '1234', 'create_configuration': True
+        }
+    }
+    assert sh_config == expected
