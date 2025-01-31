@@ -74,7 +74,7 @@ def test_create_collection():
 
 
 @respx.mock
-def test_list_features():
+def test_list_items():
     collection_id = "test"
     items_url = f'{TEST_URL}/collections/{collection_id}/items'
 
@@ -93,7 +93,7 @@ def test_list_features():
     (TEST_FEAT, TEST_GEOM),
     (TEST_GEOM, TEST_GEOM),
 ])
-def test_add_features(feature, expected_body):
+def test_add_items(feature, expected_body):
     """test adding a feature with the CLI
     cases:
     * a geojson Feature

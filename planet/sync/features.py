@@ -83,7 +83,7 @@ class FeaturesAPI:
         collection = self._client.create_collection(title, description)
         return self._client._call_sync(collection)
 
-    def list_features(self, collection_id: str) -> Iterator[Feature]:
+    def list_items(self, collection_id: str) -> Iterator[Feature]:
         """
         List features in `collection_id`.
 
@@ -97,7 +97,7 @@ class FeaturesAPI:
 
         ```
         pl = Planet()
-        features = pl.features.list_features(collection_id)
+        features = pl.features.list_items(collection_id)
         for feature in features:
             print(feature.ref)
             print(feature["id"])
@@ -107,7 +107,7 @@ class FeaturesAPI:
             results = pl.data.search(["PSScene"], geometry=feature])
         ```
         """
-        results = self._client.list_features(collection_id)
+        results = self._client.list_items(collection_id)
 
         try:
             while True:
@@ -115,17 +115,17 @@ class FeaturesAPI:
         except StopAsyncIteration:
             pass
 
-    def get_feature(self, collection_id: str, feature_id: str) -> Feature:
+    def get_item(self, collection_id: str, feature_id: str) -> Feature:
         """
         Return metadata for a single feature in a collection
         """
         return self._client._call_sync(
-            self._client.get_feature(collection_id, feature_id))
+            self._client.get_item(collection_id, feature_id))
 
-    def add_features(self,
-                     collection_id: str,
-                     feature: Union[dict, GeoInterface],
-                     property_id: Optional[str] = None) -> list[str]:
+    def add_items(self,
+                  collection_id: str,
+                  feature: Union[dict, GeoInterface],
+                  property_id: Optional[str] = None) -> list[str]:
         """
         Add a Feature or FeatureCollection to the collection given by `collection_id`.
         Returns a list of feature references.
@@ -180,7 +180,7 @@ class FeaturesAPI:
             "description": "Test feature"
           }
         }
-        new_features = pl.features.add_features(
+        new_features = pl.features.add_items(
           collection_id="my-collection",
           feature=feature,
         )
@@ -193,8 +193,8 @@ class FeaturesAPI:
         The return value is always a list of references, even if you only upload one
         feature.
         """
-        uploaded_features = self._client.add_features(collection_id,
-                                                      feature,
-                                                      property_id)
+        uploaded_features = self._client.add_items(collection_id,
+                                                   feature,
+                                                   property_id)
 
         return self._client._call_sync(uploaded_features)

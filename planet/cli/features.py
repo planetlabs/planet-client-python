@@ -94,7 +94,7 @@ async def collections_list(ctx, pretty, compact):
 @click.argument("collection_id", required=True)
 @pretty
 async def collection_get(ctx, collection_id, pretty):
-    """List Features API collections
+    """Get a collection by ID
 
     Example:
 
@@ -119,7 +119,7 @@ async def items_list(ctx, collection_id, pretty):
     planet features items-list my-collection-123
     """
     async with features_client(ctx) as cl:
-        results = cl.list_features(collection_id)
+        results = cl.list_items(collection_id)
         echo_json([f async for f in results], pretty)
 
 
@@ -154,7 +154,7 @@ async def item_get(ctx, collection_id, feature_id, pretty):
         collection_id, feature_id = split_ref(collection_id)
 
     async with features_client(ctx) as cl:
-        feature = await cl.get_feature(collection_id, feature_id)
+        feature = await cl.get_item(collection_id, feature_id)
         echo_json(feature, pretty)
 
 
@@ -175,7 +175,7 @@ async def item_add(ctx, collection_id, filename, pretty):
     async with features_client(ctx) as cl:
         with open(filename) as data:
             try:
-                res = await cl.add_features(collection_id, json.load(data))
+                res = await cl.add_items(collection_id, json.load(data))
             except json.decoder.JSONDecodeError:
                 raise ClickException(
                     "Only JSON (.json, .geojson) files are supported in the CLI. Please use https://planet.com/features to upload other files."

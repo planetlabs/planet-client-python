@@ -114,7 +114,7 @@ class FeaturesClient:
         response = await self._session.request(method='GET', url=url)
         return response.json()
 
-    async def list_features(
+    async def list_items(
         self,
         collection_id: str,
         limit: int = 10,
@@ -131,7 +131,7 @@ class FeaturesClient:
         example:
 
         ```
-        results = await client.list_features(collection_id)
+        results = await client.list_items(collection_id)
         async for feature in results:
             print(feature.ref)
             print(feature["id"])
@@ -164,8 +164,7 @@ class FeaturesClient:
                                          limit=limit):
             yield Feature(**feat)
 
-    async def get_feature(self, collection_id: str,
-                          feature_id: str) -> Feature:
+    async def get_item(self, collection_id: str, feature_id: str) -> Feature:
         """
         Return metadata for a single feature in a collection
         """
@@ -198,10 +197,10 @@ class FeaturesClient:
 
         return resp.json()["id"]
 
-    async def add_features(self,
-                           collection_id: str,
-                           feature: Union[dict, GeoInterface],
-                           property_id: Optional[str] = None) -> list[str]:
+    async def add_items(self,
+                        collection_id: str,
+                        feature: Union[dict, GeoInterface],
+                        property_id: Optional[str] = None) -> list[str]:
         """
         Add a Feature or FeatureCollection to the collection given by `collection_id`.
         Returns a list of feature references.

@@ -220,7 +220,7 @@ async def test_create_collection(session: Session):
 
 
 @respx.mock
-async def test_list_features(session: Session):
+async def test_list_items(session: Session):
     collection_id = "test"
     items_url = f'{TEST_URL}/collections/{collection_id}/items'
 
@@ -234,8 +234,8 @@ async def test_list_features(session: Session):
     cl_async = FeaturesClient(session, base_url=TEST_URL)
     cl_sync = FeaturesAPI(session, base_url=TEST_URL)
 
-    assertf([feat async for feat in cl_async.list_features(collection_id)])
-    assertf(list(cl_sync.list_features(collection_id)))
+    assertf([feat async for feat in cl_async.list_items(collection_id)])
+    assertf(list(cl_sync.list_items(collection_id)))
 
 
 @respx.mock
@@ -245,7 +245,7 @@ async def test_list_features(session: Session):
                              (TEST_GEOM, TEST_GEOM),
                              (ExampleGeoInterface(), TEST_GEOM),
                          ])
-async def test_add_features(feature, expected_body, session):
+async def test_add_items(feature, expected_body, session):
     """test adding a feature with the SDK
     cases:
     * a geojson Feature
@@ -266,8 +266,8 @@ async def test_add_features(feature, expected_body, session):
     cl_async = FeaturesClient(session, base_url=TEST_URL)
     cl_sync = FeaturesAPI(session, base_url=TEST_URL)
 
-    assertf(await cl_async.add_features(collection_id, feature))
-    assertf(cl_sync.add_features(collection_id, feature))
+    assertf(await cl_async.add_items(collection_id, feature))
+    assertf(cl_sync.add_items(collection_id, feature))
 
     # check request body. In all test cases, the request body
     # should be a geojson Feature.
