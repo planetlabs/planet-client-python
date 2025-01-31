@@ -31,7 +31,6 @@ from planet.clients.data import (LIST_SORT_DEFAULT,
 from planet.sync.data import DataAPI
 from planet.http import Session
 
-SPEC_URL = 'https://api.planet.com/compute/ops/bundles/spec'
 TEST_URL = 'http://www.mocknotrealurl.com/api/path'
 TEST_SEARCHES_URL = f'{TEST_URL}/searches'
 TEST_STATS_URL = f'{TEST_URL}/stats'
@@ -101,8 +100,6 @@ async def test_search_basic(item_descriptions,
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
-    respx.get(SPEC_URL).return_value = mock_bundles
-
     cl = DataClient(session, base_url=TEST_URL)
     items_list = [i async for i in cl.search(['PSScene'])]
 
@@ -140,8 +137,6 @@ def test_search_basic_sync(item_descriptions,
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
-    respx.get(SPEC_URL).return_value = mock_bundles
-
     items_list = list(data_api.search(['PSScene']))
 
     # check that request is correct
@@ -177,8 +172,6 @@ async def test_search_name(item_descriptions,
     page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
-
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
     items_list = [i async for i in cl.search(['PSScene'], name='quick_search')]
@@ -221,8 +214,6 @@ async def test_search_geometry(geom_fixture,
     page2_response = {"_links": {"_self": next_page_url}, "features": [item3]}
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
-
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
     geom = request.getfixturevalue(geom_fixture)
@@ -270,8 +261,6 @@ def test_search_geometry_sync(geom_fixture,
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
-    respx.get(SPEC_URL).return_value = mock_bundles
-
     geom = request.getfixturevalue(geom_fixture)
     items_list = list(
         data_api.search(['PSScene'], name='quick_search', geometry=geom))
@@ -314,8 +303,6 @@ async def test_search_filter(item_descriptions,
     mock_resp2 = httpx.Response(HTTPStatus.OK, json=page2_response)
     respx.get(next_page_url).return_value = mock_resp2
 
-    respx.get(SPEC_URL).return_value = mock_bundles
-
     cl = DataClient(session, base_url=TEST_URL)
     items_list = [
         i async for i in cl.search(item_types=['PSScene'],
@@ -347,8 +334,6 @@ async def test_search_filter_positional_args(item_descriptions,
     mock_resp = httpx.Response(HTTPStatus.OK, json=response)
     respx.post(quick_search_url).return_value = mock_resp
 
-    respx.get(SPEC_URL).return_value = mock_bundles
-
     cl = DataClient(session, base_url=TEST_URL)
 
     # search using a positional arg for the filter.
@@ -379,8 +364,6 @@ async def test_search_sort(item_descriptions,
     mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.post(quick_search_url).return_value = mock_resp1
 
-    respx.get(SPEC_URL).return_value = mock_bundles
-
     # if the sort parameter is not used correctly, the client will not send
     # the request to the mocked endpoint and this test will fail
     cl = DataClient(session, base_url=TEST_URL)
@@ -408,8 +391,6 @@ async def test_search_limit(item_descriptions,
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.post(quick_search_url).return_value = mock_resp
-
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
     items_list = [
@@ -439,8 +420,6 @@ async def test_create_search_basic(search_filter, mock_bundles, session):
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
-
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
     search = await cl.create_search(item_types=['PSScene'],
@@ -478,8 +457,6 @@ def test_create_search_basic_sync(search_filter, mock_bundles, data_api):
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
-
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     search = data_api.create_search(item_types=['PSScene'],
                                     search_filter=search_filter,
@@ -521,8 +498,6 @@ async def test_create_search_basic_positional_args(search_filter,
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
 
-    respx.get(SPEC_URL).return_value = mock_bundles
-
     cl = DataClient(session, base_url=TEST_URL)
     search = await cl.create_search(['PSScene'], search_filter, name='test')
 
@@ -558,8 +533,6 @@ async def test_create_search_email(search_filter, mock_bundles, session):
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
-
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
     search = await cl.create_search(['PSScene'],
@@ -1207,7 +1180,6 @@ async def test_get_asset(asset_type_id, expectation, mock_bundles, session):
 
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.get(assets_url).return_value = mock_resp
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     cl = DataClient(session, base_url=TEST_URL)
 
@@ -1256,7 +1228,6 @@ def test_get_asset_sync(asset_type_id, expectation, mock_bundles, data_api):
 
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.get(assets_url).return_value = mock_resp
-    respx.get(SPEC_URL).return_value = mock_bundles
     with expectation:
         asset = data_api.get_asset(item_type_id, item_id, asset_type_id)
         assert asset == basic_udm2_asset

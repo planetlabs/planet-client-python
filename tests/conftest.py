@@ -17,6 +17,7 @@ import httpx
 import json
 import os
 from pathlib import Path
+import respx
 
 import pytest
 
@@ -174,7 +175,7 @@ def anyio_backend():
 
 
 @pytest.fixture
-def mock_bundles():
+def mock_bundles(autouse=True, scope="session"):
     # The following bundles are not real, only used for tests
     resp = {
         "bundles": {
@@ -200,4 +201,5 @@ def mock_bundles():
             }
         }
     }
-    return httpx.Response(HTTPStatus.OK, json=resp)
+    spec_url = "https://api.planet.com/compute/ops/bundles/spec"
+    respx.get(spec_url).return_value = httpx.Response(HTTPStatus.OK, json=resp)

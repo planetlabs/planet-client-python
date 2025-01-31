@@ -26,12 +26,10 @@ TEST_PRODUCT_BUNDLE = 'analytic_sr'
 TEST_FALLBACK_BUNDLE = 'analytic'
 TEST_ITEM_TYPE = 'SkySatScene'
 TEST_ARCHIVE_FILENAME = '{{name}}_b_{order_id}}.zip'
-SPEC_URL = "https://api.planet.com/compute/ops/bundles/spec"
 
 
 @respx.mock
 def test_build_request(mock_bundles):
-    respx.get(SPEC_URL).return_value = mock_bundles
     product = {
         "item_ids": [TEST_ID],
         "item_type": TEST_ITEM_TYPE,
@@ -90,7 +88,6 @@ def test_build_request(mock_bundles):
 
 @respx.mock
 def test_product(mock_bundles):
-    respx.get(SPEC_URL).return_value = mock_bundles
     product_config = order_request.product(
         [TEST_ID],
         TEST_PRODUCT_BUNDLE,

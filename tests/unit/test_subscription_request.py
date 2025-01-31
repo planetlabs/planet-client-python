@@ -21,8 +21,6 @@ from planet import exceptions, subscription_request, specs
 
 LOGGER = logging.getLogger(__name__)
 
-SPEC_URL = "https://api.planet.com/compute/ops/bundles/spec"
-
 
 def test_build_request_success(geom_geojson):
     source = {
@@ -234,7 +232,6 @@ def test_build_request_host_sentinel_hub_collection_configuration(
 
 @respx.mock
 def test_catalog_source_success(geom_geojson, mock_bundles):
-    respx.get(SPEC_URL).return_value = mock_bundles
     res = subscription_request.catalog_source(
         item_types=["PSScene"],
         asset_types=["ortho_analytic_4b"],
@@ -265,7 +262,6 @@ def test_catalog_source_featurecollection(featurecollection_geojson,
                                           mock_bundles):
     """geojson specified as featurecollection is simplified down to just
     the geometry"""
-    respx.get(SPEC_URL).return_value = mock_bundles
     res = subscription_request.catalog_source(
         item_types=["PSScene"],
         asset_types=["ortho_analytic_4b"],
@@ -288,7 +284,6 @@ def test_catalog_source_featurecollection(featurecollection_geojson,
 
 @respx.mock
 def test_catalog_source_invalid_start_time(geom_geojson, mock_bundles):
-    respx.get(SPEC_URL).return_value = mock_bundles
     with pytest.raises(exceptions.ClientError):
         subscription_request.catalog_source(
             item_types=["PSScene"],
@@ -594,7 +589,6 @@ def test_catalog_source_publishing_stages(publishing_stages,
                                           geom_geojson,
                                           mock_bundles):
     """Configure publishing stages for a catalog source."""
-    respx.get(SPEC_URL).return_value = mock_bundles
     source = subscription_request.catalog_source(
         item_types=["PSScene"],
         asset_types=["ortho_analytic_4b"],
@@ -611,7 +605,6 @@ def test_catalog_source_publishing_stages(publishing_stages,
 
 @respx.mock
 def test_catalog_source_time_range_type_acquired(geom_geojson, mock_bundles):
-    respx.get(SPEC_URL).return_value = mock_bundles
     """Configure 'acquired' time range type for a catalog source."""
     source = subscription_request.catalog_source(
         item_types=["PSScene"],

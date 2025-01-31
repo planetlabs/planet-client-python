@@ -35,7 +35,6 @@ TEST_URL = 'https://api.planet.com/data/v1'
 TEST_QUICKSEARCH_URL = f'{TEST_URL}/quick-search'
 TEST_SEARCHES_URL = f'{TEST_URL}/searches'
 TEST_STATS_URL = f'{TEST_URL}/stats'
-SPEC_URL = "https://api.planet.com/compute/ops/bundles/spec"
 VALID_SEARCH_ID = '286469f0b27c476e96c3c4e561f59664'
 
 
@@ -422,7 +421,6 @@ def test_data_search_cmd_item_types(mock_bundles,
                                    "key": "value"
                                }]})
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     result = invoke(['search', item_types])
 
@@ -449,7 +447,6 @@ def test_data_search_cmd_top_level_geom(geom_fixture,
                                    "key": "value"
                                }]})
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
-    respx.get(SPEC_URL).return_value = mock_bundles
     geom = request.getfixturevalue(geom_fixture)
     if isinstance(geom, dict):
         geom = json.dumps(geom)
@@ -490,7 +487,6 @@ def test_data_search_cmd_filter_success(mock_bundles, invoke):
                                    "key": "value"
                                }]})
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     result = invoke(['search', 'PSScene', f'--filter={json.dumps(filter)}'])
 
@@ -514,7 +510,6 @@ def test_data_search_cmd_sort_success(mock_bundles, invoke):
     feature = {"key": "value"}
     mock_resp = httpx.Response(HTTPStatus.OK, json={'features': [feature]})
     respx.post(search_url).return_value = mock_resp
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     result = invoke(['search', 'PSScene', f'--sort={sort}'])
     assert result.exit_code == 0
@@ -561,7 +556,6 @@ def test_data_search_cmd_limit(mock_bundles,
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
 
     respx.post(TEST_QUICKSEARCH_URL).return_value = mock_resp
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     runner = CliRunner()
     result = invoke(["search", item_types, "--limit", limit], runner=runner)
@@ -616,7 +610,6 @@ def test_data_search_create_filter_success(mock_bundles, invoke, item_types):
                                    "key": "value"
                                }]})
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     runner = CliRunner()
     result = invoke([
@@ -635,7 +628,6 @@ def test_data_search_create_filter_success(mock_bundles, invoke, item_types):
 def test_data_search_create_daily_email(mock_bundles, invoke, search_result):
     mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
     respx.post(TEST_SEARCHES_URL).return_value = mock_resp
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     filter = {
         "type": "DateRangeFilter",
@@ -831,7 +823,6 @@ def test_data_stats_interval(invoke,
                                    "key": "value"
                                }]})
     respx.post(TEST_STATS_URL).return_value = mock_resp
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     args = ["stats", item_types, f'--filter={json.dumps(filter)}']
     if interval:
@@ -864,7 +855,6 @@ def test_data_stats_success(invoke, mock_bundles, item_types, interval):
                                    "key": "value"
                                }]})
     respx.post(TEST_STATS_URL).return_value = mock_resp
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     result = invoke([
         "stats",
@@ -1142,7 +1132,6 @@ def test_asset_wait(invoke,
 
 @respx.mock
 def test_item_types(invoke, mock_bundles):
-    respx.get(SPEC_URL).return_value = mock_bundles
 
     result = invoke(['item-types'])
 

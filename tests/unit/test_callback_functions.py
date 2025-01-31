@@ -21,8 +21,6 @@ from planet.cli import subscriptions
 
 LOGGER = logging.getLogger(__name__)
 
-SPEC_URL = "https://api.planet.com/compute/ops/bundles/spec"
-
 
 class MockContext:
 
@@ -34,7 +32,6 @@ class MockContext:
 @respx.mock
 def test_item_types_success_data(mock_bundles):
     ctx = MockContext()
-    respx.get(SPEC_URL).return_value = mock_bundles
     result = data.check_item_types(ctx, 'item_types', ["PSScene"])
     assert result == ["PSScene"]
 
@@ -42,7 +39,6 @@ def test_item_types_success_data(mock_bundles):
 @respx.mock
 def test_item_types_fail_data(mock_bundles):
     ctx = MockContext()
-    respx.get(SPEC_URL).return_value = mock_bundles
     with pytest.raises(click.BadParameter):
         data.check_item_types(ctx, 'item_types', "bad_item_type")
 
@@ -50,7 +46,6 @@ def test_item_types_fail_data(mock_bundles):
 @respx.mock
 def test_item_type_success_data(mock_bundles):
     ctx = MockContext()
-    respx.get(SPEC_URL).return_value = mock_bundles
     item_type = "PSScene"
     result = data.check_item_type(ctx, 'item_type', item_type)
     assert result == item_type
@@ -59,7 +54,6 @@ def test_item_type_success_data(mock_bundles):
 @respx.mock
 def test_item_type_fail_data(mock_bundles):
     ctx = MockContext()
-    respx.get(SPEC_URL).return_value = mock_bundles
     with pytest.raises(click.BadParameter):
         data.check_item_type(ctx, 'item_type', "bad_item_type")
 
@@ -67,7 +61,6 @@ def test_item_type_fail_data(mock_bundles):
 @respx.mock
 def test_item_type_too_many_item_types_data(mock_bundles):
     ctx = MockContext()
-    respx.get(SPEC_URL).return_value = mock_bundles
     with pytest.raises(click.BadParameter):
         data.check_item_types(ctx, 'item_type', "PSScene,SkySatScene")
 
@@ -76,7 +69,6 @@ def test_item_type_too_many_item_types_data(mock_bundles):
 @respx.mock
 def test_item_types_success_subscriptions(mock_bundles):
     ctx = MockContext()
-    respx.get(SPEC_URL).return_value = mock_bundles
     result = subscriptions.check_item_types(ctx, 'item_types', ["PSScene"])
     assert result == ["PSScene"]
 
@@ -84,7 +76,6 @@ def test_item_types_success_subscriptions(mock_bundles):
 @respx.mock
 def test_item_types_fail_subscriptions(mock_bundles):
     ctx = MockContext()
-    respx.get(SPEC_URL).return_value = mock_bundles
     with pytest.raises(click.BadParameter):
         subscriptions.check_item_types(ctx, 'item_types', "bad_item_type")
 
@@ -92,7 +83,6 @@ def test_item_types_fail_subscriptions(mock_bundles):
 @respx.mock
 def test_item_type_too_many_item_types_subscriptions(mock_bundles):
     ctx = MockContext()
-    respx.get(SPEC_URL).return_value = mock_bundles
     with pytest.raises(click.BadParameter):
         subscriptions.check_item_types(ctx, 'item_type', "PSScene,SkySatScene")
 
@@ -100,7 +90,6 @@ def test_item_type_too_many_item_types_subscriptions(mock_bundles):
 @respx.mock
 def test_item_type_success_orders(mock_bundles):
     ctx = MockContext()
-    respx.get(SPEC_URL).return_value = mock_bundles
     item_type = "PSScene"
     result = orders.check_item_type(ctx, 'item_type', item_type)
     assert result == item_type
@@ -109,7 +98,6 @@ def test_item_type_success_orders(mock_bundles):
 @respx.mock
 def test_item_type_fail_orders(mock_bundles):
     ctx = MockContext()
-    respx.get(SPEC_URL).return_value = mock_bundles
     with pytest.raises(click.BadParameter):
         orders.check_item_type(ctx, 'item_type', "bad_item_type")
 
@@ -117,7 +105,6 @@ def test_item_type_fail_orders(mock_bundles):
 @respx.mock
 def test_bundle_success_orders(mock_bundles):
     ctx = MockContext()
-    respx.get(SPEC_URL).return_value = mock_bundles
     ctx.params = {"item_type": "PSScene"}
     bundle = "analytic_udm2"
     result = orders.check_bundle(ctx, 'bundle', bundle)
@@ -127,7 +114,6 @@ def test_bundle_success_orders(mock_bundles):
 @respx.mock
 def test_bundle_fail_orders(mock_bundles):
     ctx = MockContext()
-    respx.get(SPEC_URL).return_value = mock_bundles
     ctx.params = {"item_type": "PSScene"}
     with pytest.raises(click.BadParameter):
         orders.check_bundle(ctx, 'bundle', "bad_bundle")
