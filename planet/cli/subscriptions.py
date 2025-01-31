@@ -118,7 +118,7 @@ def subscriptions(ctx, base_url):
     documentation
     for examples.""")
 @limit
-@click.option('--page_size',
+@click.option('--page-size',
               type=click.INT,
               help='Number of subscriptions to return per page.')
 @click.pass_context

@@ -128,7 +128,7 @@ planet subscriptions list
 ```
 
 outputs the JSON for your first 100 subscriptions. If you'd like more you can set the `--limit`
-parameter higher, or you can set it to 0 and there will be no limit.  By default the `list` command will request Subscriptions API with a page size of 500 subscriptions, and can be set lower or higher with the `--page_size` parameter.
+parameter higher, or you can set it to 0 and there will be no limit.  By default the `list` command will request Subscriptions API with a page size of 500 subscriptions, and can be set lower or higher with the `--page-size` parameter.
 
 You can get nicer formatting with `--pretty` or pipe it into `jq`, just like the other Planet
 CLI’s.
