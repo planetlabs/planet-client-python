@@ -12,11 +12,8 @@ from .session import CliSession
 from planet.clients.subscriptions import SubscriptionsClient
 from .. import subscription_request
 from ..subscription_request import sentinel_hub
-from ..specs import get_item_types, validate_item_type, SpecificationException
+from ..specs import FetchBundlesSpecError, get_item_types, SpecificationException, validate_item_type
 from .validators import check_geom
-
-ALL_ITEM_TYPES = get_item_types()
-valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(ALL_ITEM_TYPES)
 
 
 def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
@@ -28,17 +25,8 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
         return item_types
     except SpecificationException as e:
         raise click.BadParameter(str(e))
-
-
-def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
-    """Validates the item type provided by comparing it to all supported
-    item types."""
-    try:
-        validate_item_type(item_type)
-    except SpecificationException as e:
-        raise click.BadParameter(str(e))
-
-    return item_type
+    except FetchBundlesSpecError as e:
+        raise click.ClickException(str(e))
 
 
 @asynccontextmanager
@@ -418,7 +406,7 @@ def request(name,
     echo_json(res, pretty)
 
 
-@subscriptions.command(epilog=valid_item_string)  # type: ignore
+@subscriptions.command()  # type: ignore
 @translate_exceptions
 @click.option('--item-types',
               required=True,
@@ -496,7 +484,7 @@ def request_catalog(item_types,
 @click.option(
     '--var-id',
     required=True,
-    help='A Planetary Variable ID. See documenation for all available IDs.')
+    help='A Planetary Variable ID. See documentation for all available IDs.')
 @click.option(
     '--geometry',
     required=True,
@@ -528,3 +516,13 @@ def request_pv(var_type, var_id, geometry, start_time, end_time, pretty):
         end_time=end_time,
     )
     echo_json(res, pretty)
+
+
+@subscriptions.command()  # type: ignore
+@click.pass_context
+@translate_exceptions
+def item_types(ctx):
+    """Show valid item types for catalog subscriptions."""
+    click.echo("Valid item types:")
+    for it in get_item_types():
+        click.echo(f"- {it}")

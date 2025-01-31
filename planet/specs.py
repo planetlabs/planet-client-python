@@ -13,12 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Functionality for validating against the Planet API specification."""
-import json
+import httpx
 import logging
 import itertools
-from .constants import DATA_DIR
 
-PRODUCT_BUNDLE_SPEC_NAME = 'orders_product_bundle_2024-08-12.json'
 SUPPORTED_TOOLS = [
     'bandmath',
     'clip',
@@ -36,8 +34,48 @@ SUPPORTED_FILE_FORMATS = ['COG', 'PL_NITF']
 HARMONIZE_TOOL_TARGET_SENSORS = ['Sentinel-2']
 BAND_MATH_PIXEL_TYPE = ('Auto', '8U', '16U', '16S', '32R')
 BAND_MATH_PIXEL_TYPE_DEFAULT = 'Auto'
+PRODUCT_BUNDLES = None
 
 LOGGER = logging.getLogger(__name__)
+
+
+class FetchBundlesSpecError(Exception):
+    """Custom exception for errors fetching the product bundles spec."""
+    pass
+
+
+class _LazyBundlesLoader:
+    """Lazy load the product bundles spec from the API."""
+
+    def __getitem__(self, key):
+        bundles_spec_url = "https://api.planet.com/compute/ops/bundles/spec"
+        retries = 2
+        cache = getattr(self, "cache", None)
+        if cache is None:
+            for attempt in range(1, retries + 1):
+                try:
+                    response = httpx.get(bundles_spec_url)
+                    response.raise_for_status()
+                    break
+                except:  # noqa: E722
+                    if attempt == retries:
+                        raise FetchBundlesSpecError(
+                            "Unable to fetch spec from API to generate valid item types and bundles. Please retry!"
+                        ) from None
+            bundles = response.json()['bundles']
+            item_types = set(
+                itertools.chain.from_iterable(bundles[bundle]['assets'].keys()
+                                              for bundle in bundles.keys()))
+            cache = {
+                'bundles': bundles,
+                'bundle_names': bundles.keys(),
+                'item_types': item_types
+            }
+            setattr(self, "cache", cache)
+        return cache[key]
+
+
+PRODUCT_BUNDLES = _LazyBundlesLoader()
 
 
 class NoMatchException(Exception):
@@ -60,14 +98,16 @@ class SpecificationException(Exception):
 
 
 def validate_bundle(item_type, bundle):
-    all_product_bundles = get_product_bundles()
-    validate_supported_bundles(item_type, bundle, all_product_bundles)
-    return _validate_field(bundle, all_product_bundles, 'product_bundle')
+    validate_supported_bundles(item_type, bundle)
+    return _validate_field(bundle,
+                           PRODUCT_BUNDLES["bundle_names"],
+                           'product_bundle')
 
 
 def validate_item_type(item_type):
-    supported_item_types = get_item_types()
-    return _validate_field(item_type, supported_item_types, 'item_type')
+    return _validate_field(item_type,
+                           PRODUCT_BUNDLES["item_types"],
+                           'item_type')
 
 
 def validate_data_item_type(item_type):
@@ -78,7 +118,12 @@ def validate_data_item_type(item_type):
 def get_data_item_types():
     """Item types supported by the data api."""
     # This is a quick-fix for gh-956, to be superseded by gh-960
-    return get_item_types() | {'SkySatVideo'}
+    return PRODUCT_BUNDLES["item_types"] | {'SkySatVideo'}
+
+
+def get_bundle_names():
+    """Get all product bundle names."""
+    return PRODUCT_BUNDLES["bundle_names"]
 
 
 def validate_order_type(order_type):
@@ -104,34 +149,29 @@ def _validate_field(value, supported, field_name):
         value = get_match(value, supported, field_name)
     except (NoMatchException):
         raise SpecificationException(value, supported, field_name)
+    except FetchBundlesSpecError as e:
+        raise e
     return value
 
 
-def validate_supported_bundles(item_type, bundle, all_product_bundles):
-    spec = _get_product_bundle_spec()
-
+def validate_supported_bundles(item_type, bundle):
+    """Validate the provided item type and bundle combination are supported"""
+    # get all the supported bundles for the given item type
     supported_bundles = []
-    for product_bundle in all_product_bundles:
+    for product_bundle in PRODUCT_BUNDLES["bundle_names"]:
         available_item_types = set(
-            spec['bundles'][product_bundle]['assets'].keys())
+            PRODUCT_BUNDLES["bundles"][product_bundle]['assets'].keys())
         if item_type.lower() in [x.lower() for x in available_item_types]:
             supported_bundles.append(product_bundle)
-
+    # validate the provided bundle is in the list of supported bundles
     return _validate_field(bundle, supported_bundles, 'bundle')
 
 
 def validate_asset_type(item_type, asset_type):
     """Validates an asset type for a given item type."""
-    item_type = validate_item_type(item_type)
+    # item type validation occurs inside get_supported_assets
     supported_assets = get_supported_assets(item_type)
-
     return _validate_field(asset_type, supported_assets, 'asset_type')
-
-
-def _get_product_bundle_spec():
-    with open(DATA_DIR / PRODUCT_BUNDLE_SPEC_NAME) as f:
-        data = json.load(f)
-    return data
 
 
 def get_match(test_entry, spec_entries, field_name):
@@ -151,45 +191,33 @@ def get_match(test_entry, spec_entries, field_name):
 
 def get_product_bundles(item_type=None):
     """Get product bundles supported by Orders API."""
-    spec = _get_product_bundle_spec()
-
     if item_type:
-        all_product_bundles = get_product_bundles()
-
         supported_bundles = []
-        for product_bundle in all_product_bundles:
-            availible_item_types = set(
-                spec['bundles'][product_bundle]['assets'].keys())
-            if item_type.lower() in [x.lower() for x in availible_item_types]:
+        for product_bundle in PRODUCT_BUNDLES["bundle_names"]:
+            available_item_types = set(
+                PRODUCT_BUNDLES["bundles"][product_bundle]['assets'].keys())
+            if item_type.lower() in [x.lower() for x in available_item_types]:
                 supported_bundles.append(product_bundle)
-    else:
-        supported_bundles = spec['bundles'].keys()
-    return supported_bundles
+        return supported_bundles
+
+    return PRODUCT_BUNDLES["bundle_names"]
 
 
 def get_item_types(product_bundle=None):
     """If given product bundle, get specific item types supported by Orders
     API. Otherwise, get all item types supported by Orders API."""
-    spec = _get_product_bundle_spec()
-
     if product_bundle:
-        item_types = set(spec['bundles'][product_bundle]['assets'].keys())
-    else:
-        item_types = set(
-            itertools.chain.from_iterable(
-                spec['bundles'][bundle]['assets'].keys()
-                for bundle in get_product_bundles()))
+        return set(PRODUCT_BUNDLES["bundles"][product_bundle]['assets'].keys())
 
-    return item_types
+    return PRODUCT_BUNDLES["item_types"]
 
 
 def get_supported_assets(item_type):
     """Get all assets supported by a given item type."""
     item_type = validate_item_type(item_type)
     supported_bundles = get_product_bundles(item_type)
-    spec = _get_product_bundle_spec()
     supported_assets = [
-        spec['bundles'][bundle]["assets"][item_type]
+        PRODUCT_BUNDLES["bundles"][bundle]["assets"][item_type]
         for bundle in supported_bundles
     ]
     supported_assets = list(set(list(itertools.chain(*supported_assets))))

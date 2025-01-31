@@ -15,6 +15,7 @@
 from contextlib import asynccontextmanager
 import logging
 from pathlib import Path
+from typing import List, Optional
 
 import click
 
@@ -26,8 +27,45 @@ from ..order_request import sentinel_hub
 from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
+from ..specs import (FetchBundlesSpecError,
+                     get_bundle_names,
+                     get_item_types,
+                     SpecificationException,
+                     validate_bundle,
+                     validate_data_item_type)
 
 LOGGER = logging.getLogger(__name__)
+
+
+def check_item_type(ctx, param, item_type):
+    """Validates the item type provided by comparing it to all supported
+    item types."""
+    try:
+        validate_data_item_type(item_type)
+        return item_type
+    except SpecificationException as e:
+        raise click.BadParameter(str(e))
+    except FetchBundlesSpecError as e:
+        raise click.ClickException(str(e))
+
+
+def check_bundle(ctx, param, bundle) -> Optional[List[dict]]:
+    """Validates the bundle provided by comparing it to all supported
+    bundles."""
+
+    # Get the value of item_type from the context
+    item_type = ctx.params.get('item_type')
+    if not item_type:
+        raise click.BadParameter("Item type is required to validate a bundle.")
+
+    try:
+        validate_bundle(item_type, bundle)
+    except SpecificationException as e:
+        raise click.BadParameter(str(e))
+    except FetchBundlesSpecError as e:
+        raise click.ClickException(str(e))
+
+    return bundle
 
 
 @asynccontextmanager
@@ -314,13 +352,13 @@ async def create(ctx, request, pretty, **kwargs):
 @click.option('--item-type',
               required=True,
               help='Item type for requested item ids.',
-              type=click.Choice(planet.specs.get_item_types(),
-                                case_sensitive=False))
+              type=str,
+              callback=check_item_type)
 @click.option('--bundle',
               required=True,
-              help='Asset type for the item.',
-              type=click.Choice(planet.specs.get_product_bundles(),
-                                case_sensitive=False))
+              help='Bundle type for the item.',
+              type=str,
+              callback=check_bundle)
 @click.option('--name',
               required=True,
               help='Order name. Does not need to be unique.',
@@ -444,3 +482,23 @@ async def request(ctx,
         create_configuration=create_configuration)
 
     echo_json(request, pretty)
+
+
+@orders.command()  # type: ignore
+@click.pass_context
+@translate_exceptions
+def item_types(ctx):
+    """Show valid item types for ordering."""
+    click.echo("Valid item types:")
+    for it in get_item_types():
+        click.echo(f"- {it}")
+
+
+@orders.command()  # type: ignore
+@click.pass_context
+@translate_exceptions
+def bundles(ctx):
+    """Show valid bundle names for ordering."""
+    click.echo("Valid bundles:")
+    for it in get_bundle_names():
+        click.echo(f"- {it}")

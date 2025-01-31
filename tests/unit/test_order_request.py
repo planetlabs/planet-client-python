@@ -14,6 +14,7 @@
 # limitations under the License.
 import logging
 
+import respx
 import pytest
 
 from planet import exceptions, order_request, specs
@@ -23,11 +24,12 @@ LOGGER = logging.getLogger(__name__)
 TEST_ID = 'doesntmatter'
 TEST_PRODUCT_BUNDLE = 'analytic_sr'
 TEST_FALLBACK_BUNDLE = 'analytic'
-TEST_ITEM_TYPE = 'PSOrthoTile'
+TEST_ITEM_TYPE = 'SkySatScene'
 TEST_ARCHIVE_FILENAME = '{{name}}_b_{order_id}}.zip'
 
 
-def test_build_request():
+@respx.mock
+def test_build_request(mock_bundles):
     product = {
         "item_ids": [TEST_ID],
         "item_type": TEST_ITEM_TYPE,
@@ -84,7 +86,8 @@ def test_build_request():
                                         stac=stac_json)
 
 
-def test_product():
+@respx.mock
+def test_product(mock_bundles):
     product_config = order_request.product(
         [TEST_ID],
         TEST_PRODUCT_BUNDLE,

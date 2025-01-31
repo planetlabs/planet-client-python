@@ -15,6 +15,7 @@ TODO: tests for 3 options of the planet-subscriptions-results command.
 """
 import itertools
 import json
+import respx
 
 from click.testing import CliRunner
 import pytest
@@ -364,7 +365,7 @@ def test_request_base_clip_to_source(geom_fixture, request, invoke):
     assert tool["parameters"]["aoi"] == geom
 
 
-def test_request_catalog_success(invoke, geom_geojson):
+def test_request_catalog_success(mock_bundles, invoke, geom_geojson):
     """Request-catalog command succeeds"""
     source = {
         "type": "catalog",
@@ -424,7 +425,8 @@ def test_request_pv_success(invoke, geom, request):
             itertools.combinations(["preview", "standard", "finalized"], i)
             for i in range(1, 4))) + [("preview", "preview"),
                                       ("preview", "finalized", "preview")])
-def test_catalog_source_publishing_stages(invoke,
+def test_catalog_source_publishing_stages(mock_bundles,
+                                          invoke,
                                           geom_geojson,
                                           publishing_stages):
     """Catalog source publishing stages are configured."""
@@ -443,7 +445,10 @@ def test_catalog_source_publishing_stages(invoke,
 
 
 @pytest.mark.parametrize("time_range_type", ["acquired", "published"])
-def test_catalog_source_time_range_type(invoke, geom_geojson, time_range_type):
+def test_catalog_source_time_range_type(mock_bundles,
+                                        invoke,
+                                        geom_geojson,
+                                        time_range_type):
     """Catalog source time range type is configured."""
     result = invoke([
         'request-catalog',
@@ -507,3 +512,14 @@ def test_request_hosting(invoke,
     result = invoke(cmd)
 
     assert result.exit_code == 0, "Expected command to succeed."
+
+
+@respx.mock
+def test_item_types(invoke, mock_bundles):
+
+    result = invoke(['item-types'])
+
+    expected_item_types = ["SkySatScene", "SkySatCollect", "PSScene"]
+    for item_type in expected_item_types:
+        assert item_type in result.output
+    assert result.exit_code == 0
