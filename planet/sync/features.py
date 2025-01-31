@@ -115,6 +115,13 @@ class FeaturesAPI:
         except StopAsyncIteration:
             pass
 
+    def get_feature(self, collection_id: str, feature_id: str) -> Feature:
+        """
+        Return metadata for a single feature in a collection
+        """
+        return self._client._call_sync(
+            self._client.get_feature(collection_id, feature_id))
+
     def add_features(self,
                      collection_id: str,
                      feature: Union[dict, GeoInterface],

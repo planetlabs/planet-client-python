@@ -29,6 +29,17 @@ GEOJSON_TYPES = ["Feature"]
 LOGGER = logging.getLogger(__name__)
 
 
+def split_ref(ref: str) -> typing.Tuple[str, str]:
+    """split a feature ref into a tuple of the form (collection_id, feature_id)"""
+    validate_ref(ref)
+
+    # after validating the ref, return the collection_id and
+    # feature_id parts at the end.
+    parts = ref.split("/", 4)
+    path = parts[-2:]
+    return path[0], path[1]
+
+
 def as_geom_or_ref(data) -> dict:
     """Extract the geometry from GeoJSON and validate.
 

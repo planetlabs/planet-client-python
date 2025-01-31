@@ -5,6 +5,7 @@ from click.exceptions import ClickException
 
 from planet.cli.io import echo_json
 from planet.clients.features import FeaturesClient
+from planet.geojson import split_ref
 
 from .cmds import coro, translate_exceptions
 from .options import pretty, compact
@@ -120,6 +121,41 @@ async def items_list(ctx, collection_id, pretty):
     async with features_client(ctx) as cl:
         results = cl.list_features(collection_id)
         echo_json([f async for f in results], pretty)
+
+
+@features.command()  # type: ignore
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument("collection_id")
+@click.argument("feature_id", required=False)
+@pretty
+async def item_get(ctx, collection_id, feature_id, pretty):
+    """Get a feature in a collection.
+
+    You may supply either a collection ID and a feature ID, or
+    a feature reference.
+
+    Example:
+
+    planet features item-get my-collection-123 item123
+    planet features item-get pl:features/my/my-collection-123/item123"
+    """
+
+    # ensure that either collection_id and feature_id were supplied, or that
+    # a feature ref was supplied as a single value.
+    if not ((collection_id and feature_id) or
+            ("pl:features" in collection_id)):
+        raise ClickException(
+            "Must supply either collection_id and feature_id, or a valid feature reference."
+        )
+
+    if collection_id.startswith("pl:features"):
+        collection_id, feature_id = split_ref(collection_id)
+
+    async with features_client(ctx) as cl:
+        feature = await cl.get_feature(collection_id, feature_id)
+        echo_json(feature, pretty)
 
 
 @features.command()  # type: ignore

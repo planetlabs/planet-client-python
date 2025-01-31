@@ -116,7 +116,7 @@ class FeaturesClient:
 
     async def list_features(
         self,
-        collection_id,
+        collection_id: str,
         limit: int = 10,
     ) -> AsyncIterator[Feature]:
         """
@@ -163,6 +163,15 @@ class FeaturesClient:
                                          self._session.request,
                                          limit=limit):
             yield Feature(**feat)
+
+    async def get_feature(self, collection_id: str,
+                          feature_id: str) -> Feature:
+        """
+        Return metadata for a single feature in a collection
+        """
+        url = f'{self._base_url}/collections/{collection_id}/items/{feature_id}'
+        response = await self._session.request(method='GET', url=url)
+        return Feature(**response.json())
 
     async def create_collection(self,
                                 title: str,
