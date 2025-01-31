@@ -118,6 +118,9 @@ def subscriptions(ctx, base_url):
     documentation
     for examples.""")
 @limit
+@click.option('--page-size',
+              type=click.INT,
+              help='Number of subscriptions to return per page.')
 @click.pass_context
 @translate_exceptions
 @coro
@@ -133,6 +136,7 @@ async def list_subscriptions_cmd(ctx,
                                  sort_by,
                                  updated,
                                  limit,
+                                 page_size,
                                  pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
     async with subscriptions_client(ctx) as client:
@@ -147,7 +151,8 @@ async def list_subscriptions_cmd(ctx,
                 status=status,
                 sort_by=sort_by,
                 updated=updated,
-                limit=limit):
+                limit=limit,
+                page_size=page_size):
             echo_json(sub, pretty)
 
 
