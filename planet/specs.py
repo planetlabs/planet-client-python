@@ -63,16 +63,13 @@ class _LazyBundlesLoader:
                             "Unable to fetch spec from API to generate valid item types and bundles. Please retry!"
                         ) from None
             bundles = response.json()['bundles']
+            item_types = set(
+                itertools.chain.from_iterable(bundles[bundle]['assets'].keys()
+                                              for bundle in bundles.keys()))
             cache = {
-                'bundles':
-                bundles,
-                'bundle_names':
-                bundles.keys(),
-                'item_types':
-                set(
-                    itertools.chain.from_iterable(
-                        bundles[bundle]['assets'].keys()
-                        for bundle in bundles.keys()))
+                'bundles': bundles,
+                'bundle_names': bundles.keys(),
+                'item_types': item_types
             }
             setattr(self, "cache", cache)
         return cache[key]
