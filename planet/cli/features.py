@@ -7,7 +7,7 @@ from planet.cli.io import echo_json
 from planet.clients.features import FeaturesClient
 
 from .cmds import coro, translate_exceptions
-from .options import pretty
+from .options import pretty, compact
 from .session import CliSession
 
 
@@ -63,7 +63,8 @@ async def collection_create(ctx, title, description, pretty):
 @translate_exceptions
 @coro
 @pretty
-async def collections_list(ctx, pretty):
+@compact
+async def collections_list(ctx, pretty, compact):
     """List Features API collections
 
     Example:
@@ -72,7 +73,17 @@ async def collections_list(ctx, pretty):
     """
     async with features_client(ctx) as cl:
         results = cl.list_collections()
-        echo_json([c async for c in results], pretty)
+
+        if compact:
+            compact_fields = ('id', 'title', 'description')
+            output = [{
+                k: v
+                for k, v in row.items() if k in compact_fields
+            } async for row in results]
+        else:
+            output = [c async for c in results]
+
+        echo_json(output, pretty)
 
 
 @features.command()  # type: ignore
