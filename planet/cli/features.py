@@ -63,12 +63,12 @@ async def collection_create(ctx, title, description, pretty):
 @translate_exceptions
 @coro
 @pretty
-async def collection_list(ctx, pretty):
+async def collections_list(ctx, pretty):
     """List Features API collections
 
     Example:
 
-    planet features collection-list
+    planet features collections-list
     """
     async with features_client(ctx) as cl:
         results = cl.list_collections()
@@ -86,7 +86,7 @@ async def collection_get(ctx, collection_id, pretty):
 
     Example:
 
-    planet features collection-list
+    planet features collection-get
     """
     async with features_client(ctx) as cl:
         result = await cl.get_collection(collection_id)
@@ -99,12 +99,12 @@ async def collection_get(ctx, collection_id, pretty):
 @coro
 @click.argument("collection_id", required=True)
 @pretty
-async def feature_list(ctx, collection_id, pretty):
+async def items_list(ctx, collection_id, pretty):
     """List features in a Features API collection
 
     Example:
 
-    planet features feature-list my-collection-123
+    planet features items-list my-collection-123
     """
     async with features_client(ctx) as cl:
         results = cl.list_features(collection_id)
@@ -118,12 +118,12 @@ async def feature_list(ctx, collection_id, pretty):
 @click.argument("collection_id", required=True)
 @click.argument("filename", required=True)
 @pretty
-async def feature_add(ctx, collection_id, filename, pretty):
-    """Add features from a geojson file to a Features API collection
+async def item_add(ctx, collection_id, filename, pretty):
+    """Add features from a geojson file to a collection
 
     Example:
 
-    planet features feature-add my-collection-123 ./my_geom.geojson
+    planet features item-add my-collection-123 ./my_geom.geojson
     """
     async with features_client(ctx) as cl:
         with open(filename) as data:
