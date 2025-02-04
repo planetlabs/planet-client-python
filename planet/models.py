@@ -305,3 +305,12 @@ class Feature(dict):
         if ref := self.get("properties", {}).get("pl:ref"):
             return ref
         raise AttributeError("Feature object does not contain a reference")
+
+
+GeojsonLike = Feature | dict | str
+"""
+GeojsonLike is a type union that represents:
+* a dict containing a valid GeoJSON Feature or Geometry
+* an instance of a Planet Feature (e.g. the return value from `pl.features.get_items(collection_id)`)
+* an instance of a class that implements __geo_interface__ (Shapely, GeoPandas geometries)
+"""

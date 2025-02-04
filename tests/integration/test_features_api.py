@@ -25,7 +25,7 @@ from planet.sync.features import FeaturesAPI
 pytestmark = pytest.mark.anyio  # noqa
 
 # Simulated host/path for testing purposes. Not a real subdomain.
-TEST_URL = 'http://test.planet.com/features/v1/ogc/my'
+TEST_URL = "http://test.planet.com/features/v1/ogc/my"
 
 TEST_GEOM = {"type": "Polygon", "coordinates": [[[]]]}
 
@@ -34,13 +34,13 @@ TEST_FEAT = {"type": "Feature", "geometry": TEST_GEOM}
 TEST_COLLECTION_1 = {
     "id": "collection1",
     "title": "Collection 1",
-    "description": "test collection 1"
+    "description": "test collection 1",
 }
 
 TEST_COLLECTION_2 = {
     "id": "collection2",
     "title": "Collection 2",
-    "description": "test collection 2"
+    "description": "test collection 2",
 }
 
 TEST_COLLECTION_LIST = [TEST_COLLECTION_1, TEST_COLLECTION_2]
@@ -53,7 +53,7 @@ class ExampleGeoInterface:
         return TEST_GEOM
 
 
-def mock_response(url: str, json: Any, method: str = 'get'):
+def mock_response(url: str, json: Any, method: str = "get"):
     mock_resp = httpx.Response(HTTPStatus.OK, json=json)
     respx.request(method, url).return_value = mock_resp
 
@@ -61,6 +61,11 @@ def mock_response(url: str, json: Any, method: str = 'get'):
 def to_collection_model(collection: dict) -> dict:
     """create a collection model as it would appear in a Features API response"""
     id = collection.get("id")
+
+    # define a couple of the longer values up front for formatting reasons
+    link = f"https://api.planet.com/features/v0/ogc/my/collections/{id}/items"
+    permissions = {"can_write": True, "shared": False, "is_owner": True}
+
     return {
         "id":
         id,
@@ -75,20 +80,20 @@ def to_collection_model(collection: dict) -> dict:
                 "bbox": [[0, 0, 1, 1]]
             }
         },
-        "links":
-        [{
-            "href": f"{TEST_URL}/collections/{id}",
-            "rel": "self",
-            "title": "This collection",
-            "type": "application/json"
-        },
-         {
-             "href":
-             f"https://api.planet.com/features/v0/ogc/my/collections/{id}/items",
-             "rel": "features",
-             "title": "Features",
-             "type": "application/json"
-         }],
+        "links": [
+            {
+                "href": f"{TEST_URL}/collections/{id}",
+                "rel": "self",
+                "title": "This collection",
+                "type": "application/json",
+            },
+            {
+                "href": link,
+                "rel": "features",
+                "title": "Features",
+                "type": "application/json",
+            },
+        ],
         "feature_count":
         1,
         "area":
@@ -97,9 +102,8 @@ def to_collection_model(collection: dict) -> dict:
         "NAME_0",
         "description_property":
         "description",
-        "permissions": {
-            "can_write": True, "shared": False, "is_owner": True
-        },
+        "permissions":
+        permissions,
     }
 
 
@@ -111,10 +115,10 @@ def list_collections_response(collections: list[dict]) -> dict:
         "links": [{
             "href": f"{TEST_URL}/collections",
             "rel": "self",
-            "title": "This page of results"
+            "title": "This page of results",
         }],
         "collections":
-        [to_collection_model(collection) for collection in collections]
+        [to_collection_model(collection) for collection in collections],
     }
 
 
@@ -124,15 +128,16 @@ def to_feature_model(id: str) -> dict:
         "id": id,
         "properties": {},
         "geometry": {
-            "coordinates":
-            [[[7.05322265625,
-               46.81509864599243], [7.580566406250001, 46.81509864599243],
-              [7.580566406250001,
-               47.17477833929903], [7.05322265625, 47.17477833929903],
-              [7.05322265625, 46.81509864599243]]],
+            "coordinates": [[
+                [7.05322265625, 46.81509864599243],
+                [7.580566406250001, 46.81509864599243],
+                [7.580566406250001, 47.17477833929903],
+                [7.05322265625, 47.17477833929903],
+                [7.05322265625, 46.81509864599243],
+            ]],
             "type":
-            "Polygon"
-        }
+            "Polygon",
+        },
     }
 
 
@@ -146,19 +151,20 @@ def list_features_response(collection_id: str, num_features: int) -> dict:
             "href":
             f"https://api.planet.com/features/v0/ogc/my/collections/{collection_id}/items",
             "rel": "self",
-            "title": "This page of results"
+            "title": "This page of results",
         }],
-        "features": [to_feature_model(str(i)) for i in range(num_features)]
+        "features": [to_feature_model(str(i)) for i in range(num_features)],
     }
 
 
 @respx.mock
 async def test_list_collections(session: Session):
 
-    collections_url = f'{TEST_URL}/collections'
+    collections_url = f"{TEST_URL}/collections"
     mock_response(
         collections_url,
-        list_collections_response([TEST_COLLECTION_1, TEST_COLLECTION_2]))
+        list_collections_response([TEST_COLLECTION_1, TEST_COLLECTION_2]),
+    )
 
     def assertf(resp):
         assert resp[0]["id"] == "collection1"
@@ -175,7 +181,7 @@ async def test_list_collections(session: Session):
 async def test_get_collection(session: Session):
 
     id = TEST_COLLECTION_1["id"]
-    collection_url = f'{TEST_URL}/collections/{id}'
+    collection_url = f"{TEST_URL}/collections/{id}"
 
     mock_response(collection_url, to_collection_model(TEST_COLLECTION_1))
 
@@ -193,7 +199,7 @@ async def test_get_collection(session: Session):
 @respx.mock
 async def test_create_collection(session: Session):
 
-    collection_url = f'{TEST_URL}/collections'
+    collection_url = f"{TEST_URL}/collections"
 
     mock_response(collection_url,
                   to_collection_model(TEST_COLLECTION_1),
@@ -208,7 +214,7 @@ async def test_create_collection(session: Session):
 
     params = {
         "title": TEST_COLLECTION_1["title"],
-        "description": TEST_COLLECTION_1["description"]
+        "description": TEST_COLLECTION_1["description"],
     }
 
     assertf(await cl_async.create_collection(**params))
@@ -222,7 +228,7 @@ async def test_create_collection(session: Session):
 @respx.mock
 async def test_list_items(session: Session):
     collection_id = "test"
-    items_url = f'{TEST_URL}/collections/{collection_id}/items'
+    items_url = f"{TEST_URL}/collections/{collection_id}/items"
 
     mock_response(items_url,
                   list_features_response(collection_id, num_features=3))
@@ -239,12 +245,14 @@ async def test_list_items(session: Session):
 
 
 @respx.mock
-@pytest.mark.parametrize("feature, expected_body",
-                         [
-                             (TEST_FEAT, TEST_GEOM),
-                             (TEST_GEOM, TEST_GEOM),
-                             (ExampleGeoInterface(), TEST_GEOM),
-                         ])
+@pytest.mark.parametrize(
+    "feature, expected_body",
+    [
+        (TEST_FEAT, TEST_GEOM),
+        (TEST_GEOM, TEST_GEOM),
+        (ExampleGeoInterface(), TEST_GEOM),
+    ],
+)
 async def test_add_items(feature, expected_body, session):
     """test adding a feature with the SDK
     cases:
@@ -253,7 +261,7 @@ async def test_add_items(feature, expected_body, session):
     * an object that implements __geo_interface__
     """
     collection_id = "test"
-    items_url = f'{TEST_URL}/collections/{collection_id}/items'
+    items_url = f"{TEST_URL}/collections/{collection_id}/items"
 
     # mock a feature ref return
     feat_resp = ["pl:features/my/test/test1"]

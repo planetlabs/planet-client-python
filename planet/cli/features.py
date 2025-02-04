@@ -7,8 +7,8 @@ from planet.cli.io import echo_json
 from planet.clients.features import FeaturesClient
 from planet.geojson import split_ref
 
-from .cmds import coro, translate_exceptions
-from .options import pretty, compact
+from .cmds import command
+from .options import compact
 from .session import CliSession
 
 
@@ -30,10 +30,7 @@ def features(ctx, base_url):
     ctx.obj['BASE_URL'] = base_url
 
 
-@features.command()  # type: ignore
-@click.pass_context
-@translate_exceptions
-@coro
+@command(features)
 @click.option("-t",
               "--title",
               required=True,
@@ -43,7 +40,6 @@ def features(ctx, base_url):
               "--desc",
               required=False,
               help="a description for the collection")
-@pretty
 async def collection_create(ctx, title, description, pretty):
     """Create a new Features API collection.
 
@@ -59,11 +55,7 @@ async def collection_create(ctx, title, description, pretty):
         echo_json(col, pretty)
 
 
-@features.command()  # type: ignore
-@click.pass_context
-@translate_exceptions
-@coro
-@pretty
+@command(features)
 @compact
 async def collections_list(ctx, pretty, compact):
     """List Features API collections
@@ -87,12 +79,8 @@ async def collections_list(ctx, pretty, compact):
         echo_json(output, pretty)
 
 
-@features.command()  # type: ignore
-@click.pass_context
-@translate_exceptions
-@coro
+@command(features)
 @click.argument("collection_id", required=True)
-@pretty
 async def collection_get(ctx, collection_id, pretty):
     """Get a collection by ID
 
@@ -105,12 +93,8 @@ async def collection_get(ctx, collection_id, pretty):
         echo_json(result, pretty)
 
 
-@features.command()  # type: ignore
-@click.pass_context
-@translate_exceptions
-@coro
+@command(features)
 @click.argument("collection_id", required=True)
-@pretty
 async def items_list(ctx, collection_id, pretty):
     """List features in a Features API collection
 
@@ -123,13 +107,9 @@ async def items_list(ctx, collection_id, pretty):
         echo_json([f async for f in results], pretty)
 
 
-@features.command()  # type: ignore
-@click.pass_context
-@translate_exceptions
-@coro
+@command(features)
 @click.argument("collection_id")
 @click.argument("feature_id", required=False)
-@pretty
 async def item_get(ctx, collection_id, feature_id, pretty):
     """Get a feature in a collection.
 
@@ -158,13 +138,9 @@ async def item_get(ctx, collection_id, feature_id, pretty):
         echo_json(feature, pretty)
 
 
-@features.command()  # type: ignore
-@click.pass_context
-@translate_exceptions
-@coro
+@command(features)
 @click.argument("collection_id", required=True)
 @click.argument("filename", required=True)
-@pretty
 async def item_add(ctx, collection_id, filename, pretty):
     """Add features from a geojson file to a collection
 
