@@ -6,18 +6,13 @@
 """Quota API CLI"""
 from contextlib import asynccontextmanager
 import logging
-from pathlib import Path
 import json
 
 import click
 
-import planet
 from planet import QuotaClient
-from . import types
-from .cmds import coro, translate_exceptions
-from ..order_request import sentinel_hub
+from .cmds import coro
 from .io import echo_json
-from .options import limit, pretty
 from .session import CliSession
 
 LOGGER = logging.getLogger(__name__)
@@ -49,10 +44,18 @@ def quota(ctx, base_url):
 @click.option('--quota-style', type=str, help='Quota style')
 @click.option('--limit', type=int, help='Limit the number of results')
 @click.option('--offset', type=int, help='Offset for pagination')
-@click.option('--fields', type=str, help='Comma separated list of fields to use')
+@click.option('--fields',
+              type=str,
+              help='Comma separated list of fields to use')
 @click.option('--filters', type=str, help='Filters to apply')
 @coro
-async def get_my_products(ctx, organization_id, quota_style, limit, offset, fields, filters):
+async def get_my_products(ctx,
+                          organization_id,
+                          quota_style,
+                          limit,
+                          offset,
+                          fields,
+                          filters):
     """Get my products"""
     async with quota_client(ctx) as client:
         products = await client.get_my_products(
@@ -61,8 +64,7 @@ async def get_my_products(ctx, organization_id, quota_style, limit, offset, fiel
             limit=limit,
             offset=offset,
             fields=fields,
-            filters=json.loads(filters) if filters else None
-        )
+            filters=json.loads(filters) if filters else None)
         echo_json(products)
 
 
@@ -107,7 +109,9 @@ async def create_reservation(ctx, aoi_refs, product_id, collection_id):
 @click.option('--limit', type=int, help='Limit the number of results')
 @click.option('--offset', type=int, help='Offset for pagination')
 @click.option('--sort', type=str, help='Sort specification')
-@click.option('--fields', type=str, help='Comma separated list of fields to use')
+@click.option('--fields',
+              type=str,
+              help='Comma separated list of fields to use')
 @click.option('--filters', type=str, help='Filters to apply')
 @coro
 async def get_reservations(ctx, limit, offset, sort, fields, filters):
@@ -118,8 +122,7 @@ async def get_reservations(ctx, limit, offset, sort, fields, filters):
             offset=offset,
             sort=sort,
             fields=fields,
-            filters=json.loads(filters) if filters else None
-        )
+            filters=json.loads(filters) if filters else None)
         echo_json(reservations)
 
 

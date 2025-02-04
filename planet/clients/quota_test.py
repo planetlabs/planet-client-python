@@ -1,8 +1,9 @@
 """Planet Quota Reservations API Python client."""
 
 import logging
+import aiohttp
 from typing import Dict, Optional, TypeVar, Union
-from ..http import Session
+import base64
 
 from planet.exceptions import APIError, ClientError
 # from ..constants import PLANET_BASE_URL
@@ -44,18 +45,37 @@ class QuotaClient:
         ```
     """
 
-    def __init__(self, session: Session, base_url: Optional[str] = None):
+    def __init__(self, api_key: str, base_url: Optional[str] = None) -> None:
         """
         Parameters:
-            session: Open session connected to server.
-            base_url: The base URL to use. Defaults to production orders API
-                base url.
+            api_key: API key for authentication.
+            base_url: The base URL to use. Defaults to production quota reservations
+                API base url.
         """
-        self._session = session
+        self._api_key = api_key
 
         self._base_url = base_url or BASE_URL
         if self._base_url.endswith('/'):
             self._base_url = self._base_url[:-1]
+
+    def _get_auth_header(self) -> Dict[str, str]:
+        """Generate basic auth header using the API key."""
+        auth_value = base64.b64encode(f"{self._api_key}:".encode()).decode()
+        return {'Authorization': f'Basic {auth_value}'}
+
+    async def _request(self, method: str, url: str, **kwargs) -> Dict:
+        """Make an HTTP request."""
+        headers = self._get_auth_header()
+        if 'headers' in kwargs:
+            kwargs['headers'].update(headers)
+        else:
+            kwargs['headers'] = headers
+
+        async with aiohttp.ClientSession() as session:
+            async with session.request(method, url, **kwargs) as response:
+                if response.status >= 400:
+                    raise APIError(await response.text())
+                return await response.json()
 
     async def get_my_products(
             self,
@@ -100,9 +120,7 @@ class QuotaClient:
 
         url = f'{self._base_url}/my/products'
 
-        repsonse = await self._session.request('GET', url, params=params)
-
-        return repsonse.json()
+        return await self._request('GET', url, params=params)
 
     async def estimate_reservation(self, request: dict) -> dict:
         """Estimate a Quota Reservation.
@@ -121,15 +139,13 @@ class QuotaClient:
         url = f'{self._base_url}/quota-reservations/estimate'
 
         try:
-            resp = await self._session.request(method='POST',
-                                               url=url,
-                                               json=request)
+            resp = await self._request(method='POST', url=url, json=request)
         except APIError:
             raise
         except ClientError:
             raise
         else:
-            return resp.json()
+            return resp
 
     async def create_reservation(self, request: dict) -> dict:
         """Create a Quota Reservation.
@@ -148,15 +164,13 @@ class QuotaClient:
         url = f'{self._base_url}/quota-reservations/'
 
         try:
-            resp = await self._session.request(method='POST',
-                                               url=url,
-                                               json=request)
+            resp = await self._request(method='POST', url=url, json=request)
         except APIError:
             raise
         except ClientError:
             raise
         else:
-            return resp.json()
+            return resp
 
     async def get_reservations(
             self,
@@ -195,9 +209,7 @@ class QuotaClient:
 
         url = f'{self._base_url}/quota-reservations/'
 
-        response = await self._session.request('GET', url, params=params)
-
-        return response.json()
+        return await self._request('GET', url, params=params)
 
     async def get_reservation(self, reservation_id: int) -> dict:
         """Get a description of a Quota Reservation.
@@ -214,9 +226,7 @@ class QuotaClient:
         """
         url = f'{self._base_url}/quota-reservations/{reservation_id}'
 
-        response = await self._session.request('GET', url)
-
-        return response.json()
+        return await self._request('GET', url)
 
     async def create_bulk_reservations(self, request: dict) -> dict:
         """Create Quota Reservations asynchronously.
@@ -235,15 +245,13 @@ class QuotaClient:
         url = f'{self._base_url}/quota-reservations/bulk-reserve'
 
         try:
-            resp = await self._session.request(method='POST',
-                                               url=url,
-                                               json=request)
+            resp = await self._request(method='POST', url=url, json=request)
         except APIError:
             raise
         except ClientError:
             raise
         else:
-            return resp.json()
+            return resp
 
     async def get_bulk_reservation_job(self, job_id: int) -> dict:
         """Get a description of a bulk quota reservation job.
@@ -260,6 +268,4 @@ class QuotaClient:
         """
         url = f'{self._base_url}/quota-reservations/jobs/{job_id}'
 
-        repsonse = await self._session.request('GET', url)
-
-        return repsonse.json()
+        return await self._request('GET', url)

@@ -15,12 +15,14 @@
 from .data import DataClient
 from .orders import OrdersClient
 from .subscriptions import SubscriptionsClient
+from .quota import QuotaClient
 
-__all__ = ['DataClient', 'OrdersClient', 'SubscriptionsClient']
+__all__ = ['DataClient', 'OrdersClient', 'SubscriptionsClient', 'QuotaClient']
 
 # Organize client classes by their module name to allow lookup.
 _client_directory = {
     'data': DataClient,
     'orders': OrdersClient,
-    'subscriptions': SubscriptionsClient
+    'subscriptions': SubscriptionsClient,
+    'quota': QuotaClient
 }

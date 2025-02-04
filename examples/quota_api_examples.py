@@ -1,6 +1,6 @@
 import os
 import asyncio
-from planet.clients.quota import QuotaClient
+from planet.clients.quota_test import QuotaClient
 
 
 async def get_my_products(client: QuotaClient):
