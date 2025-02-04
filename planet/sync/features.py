@@ -193,7 +193,8 @@ class FeaturesAPI:
         The return value is always a list of references, even if you only upload one
         feature.
         """
-        uploaded_features = self._client.add_items(collection_id, feature,
+        uploaded_features = self._client.add_items(collection_id,
+                                                   feature,
                                                    property_id)
 
         return self._client._call_sync(uploaded_features)

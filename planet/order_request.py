@@ -588,7 +588,8 @@ def band_math_tool(b1: str,
         planet.exceptions.ClientError: If pixel_type is not valid.
     """  # noqa
     try:
-        pixel_type = specs.get_match(pixel_type, specs.BAND_MATH_PIXEL_TYPE,
+        pixel_type = specs.get_match(pixel_type,
+                                     specs.BAND_MATH_PIXEL_TYPE,
                                      'pixel_type')
     except specs.SpecificationException as e:
         raise ClientError(e)

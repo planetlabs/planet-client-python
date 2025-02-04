@@ -18,8 +18,15 @@ import logging
 import itertools
 
 SUPPORTED_TOOLS = [
-    'bandmath', 'clip', 'composite', 'coregister', 'file_format', 'reproject',
-    'tile', 'toar', 'harmonize'
+    'bandmath',
+    'clip',
+    'composite',
+    'coregister',
+    'file_format',
+    'reproject',
+    'tile',
+    'toar',
+    'harmonize'
 ]
 SUPPORTED_ORDER_TYPES = ['full', 'partial']
 SUPPORTED_ARCHIVE_TYPES = ['zip']
@@ -92,12 +99,14 @@ class SpecificationException(Exception):
 
 def validate_bundle(item_type, bundle):
     validate_supported_bundles(item_type, bundle)
-    return _validate_field(bundle, PRODUCT_BUNDLES["bundle_names"],
+    return _validate_field(bundle,
+                           PRODUCT_BUNDLES["bundle_names"],
                            'product_bundle')
 
 
 def validate_item_type(item_type):
-    return _validate_field(item_type, PRODUCT_BUNDLES["item_types"],
+    return _validate_field(item_type,
+                           PRODUCT_BUNDLES["item_types"],
                            'item_type')
 
 
@@ -122,7 +131,8 @@ def validate_order_type(order_type):
 
 
 def validate_archive_type(archive_type):
-    return _validate_field(archive_type, SUPPORTED_ARCHIVE_TYPES,
+    return _validate_field(archive_type,
+                           SUPPORTED_ARCHIVE_TYPES,
                            'archive_type')
 
 

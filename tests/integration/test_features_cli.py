@@ -62,8 +62,11 @@ def test_create_collection():
         assert resp == "collection1"
 
     assertf(
-        invoke("collection-create", "--title", TEST_COLLECTION_1["title"],
-               "--description", TEST_COLLECTION_1["description"]))
+        invoke("collection-create",
+               "--title",
+               TEST_COLLECTION_1["title"],
+               "--description",
+               TEST_COLLECTION_1["description"]))
 
     req_body = json.loads(respx.calls[0].request.content)
     assert req_body["title"] == "Collection 1"

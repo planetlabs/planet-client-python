@@ -147,8 +147,11 @@ class OrdersAPI:
             planet.exceptions.APIError: On API error.
         """
         return self._client._call_sync(
-            self._client.download_asset(location, filename, directory,
-                                        overwrite, progress_bar))
+            self._client.download_asset(location,
+                                        filename,
+                                        directory,
+                                        overwrite,
+                                        progress_bar))
 
     def download_order(self,
                        order_id: str,
@@ -173,7 +176,9 @@ class OrdersAPI:
                 state.
         """
         return self._client._call_sync(
-            self._client.download_order(order_id, directory, overwrite,
+            self._client.download_order(order_id,
+                                        directory,
+                                        overwrite,
                                         progress_bar))
 
     def validate_checksum(self, directory: Path, checksum: str):
@@ -302,9 +307,15 @@ class OrdersAPI:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If state is not valid.
         """
-        results = self._client.list_orders(state, limit, source_type, name,
-                                           name__contains, created_on,
-                                           last_modified, hosting, sort_by)
+        results = self._client.list_orders(state,
+                                           limit,
+                                           source_type,
+                                           name,
+                                           name__contains,
+                                           created_on,
+                                           last_modified,
+                                           hosting,
+                                           sort_by)
 
         try:
             while True:

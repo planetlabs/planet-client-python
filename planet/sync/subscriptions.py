@@ -101,11 +101,18 @@ class SubscriptionsAPI:
             ClientError: on a client error.
         """
 
-        results = self._client.list_subscriptions(status, limit, created,
-                                                  end_time, hosting,
-                                                  name__contains, name,
-                                                  source_type, start_time,
-                                                  sort_by, updated, page_size)
+        results = self._client.list_subscriptions(status,
+                                                  limit,
+                                                  created,
+                                                  end_time,
+                                                  hosting,
+                                                  name__contains,
+                                                  name,
+                                                  source_type,
+                                                  start_time,
+                                                  sort_by,
+                                                  updated,
+                                                  page_size)
 
         try:
             while True:
@@ -201,8 +208,11 @@ class SubscriptionsAPI:
     def get_results(
         self,
         subscription_id: str,
-        status: Optional[Sequence[Literal["created", "queued", "processing",
-                                          "failed", "success"]]] = None,
+        status: Optional[Sequence[Literal["created",
+                                          "queued",
+                                          "processing",
+                                          "failed",
+                                          "success"]]] = None,
         limit: int = 100,
     ) -> Iterator[Union[Dict[str, Any], str]]:
         """Iterate over results of a Subscription.
@@ -238,8 +248,11 @@ class SubscriptionsAPI:
     def get_results_csv(
         self,
         subscription_id: str,
-        status: Optional[Sequence[Literal["created", "queued", "processing",
-                                          "failed", "success"]]] = None
+        status: Optional[Sequence[Literal["created",
+                                          "queued",
+                                          "processing",
+                                          "failed",
+                                          "success"]]] = None
     ) -> Iterator[str]:
         """Iterate over rows of results CSV for a Subscription.
 

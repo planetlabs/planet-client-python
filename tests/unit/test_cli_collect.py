@@ -23,11 +23,9 @@ LOGGER = logging.getLogger(__name__)
 
 def test_cli_collect_stdin_non_features():
     values = [{
-        'key11': 'value11',
-        'key12': 'value12'
+        'key11': 'value11', 'key12': 'value12'
     }, {
-        'key21': 'value21',
-        'key22': 'value22'
+        'key21': 'value21', 'key22': 'value22'
     }]
 
     runner = CliRunner()

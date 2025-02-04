@@ -25,7 +25,8 @@ from click.testing import CliRunner
 import pytest
 
 from planet.cli import cli
-from planet.clients.data import (LIST_SEARCH_TYPE_DEFAULT, LIST_SORT_DEFAULT,
+from planet.clients.data import (LIST_SEARCH_TYPE_DEFAULT,
+                                 LIST_SORT_DEFAULT,
                                  SEARCH_SORT_DEFAULT)
 
 LOGGER = logging.getLogger(__name__)
@@ -112,7 +113,8 @@ def mock_asset_get_response(item_type, item_id, asset_type, dl_url):
 @pytest.fixture
 def item_descriptions(get_test_file_json):
     item_ids = [
-        '20220125_075509_67_1061', '20220125_075511_17_1061',
+        '20220125_075509_67_1061',
+        '20220125_075511_17_1061',
         '20220125_075650_17_1061'
     ]
     items = [get_test_file_json(f'data_item_{id}.json') for id in item_ids]
@@ -189,8 +191,7 @@ def test_data_filter_permission(invoke, assert_and_filters_equal):
     expected_filt = {
         "type": "AndFilter",
         "config": [{
-            "type": "PermissionFilter",
-            "config": ["assets:download"]
+            "type": "PermissionFilter", "config": ["assets:download"]
         }]
     }
     assert_and_filters_equal(json.loads(result.output), expected_filt)
@@ -268,10 +269,13 @@ def test_data_filter_date_range_invalid(invoke):
 
 
 @respx.mock
-@pytest.mark.parametrize("geom_fixture", [('geom_geojson'),
-                                          ('feature_geojson'),
-                                          ('featurecollection_geojson')])
-def test_data_filter_geom(geom_fixture, request, invoke, geom_geojson,
+@pytest.mark.parametrize("geom_fixture",
+                         [('geom_geojson'), ('feature_geojson'),
+                          ('featurecollection_geojson')])
+def test_data_filter_geom(geom_fixture,
+                          request,
+                          invoke,
+                          geom_geojson,
                           assert_and_filters_equal):
     """Ensure that all GeoJSON forms of describing a geometry are handled
     and all result in the same, valid GeometryFilter being created"""
@@ -300,19 +304,14 @@ def test_data_filter_number_in_success(invoke, assert_and_filters_equal):
     assert result.exit_code == 0
 
     number_in_filter1 = {
-        "type": "NumberInFilter",
-        "field_name": "field",
-        "config": [1.0]
+        "type": "NumberInFilter", "field_name": "field", "config": [1.0]
     }
     number_in_filter2 = {
-        "type": "NumberInFilter",
-        "field_name": "field2",
-        "config": [2.0, 3.5]
+        "type": "NumberInFilter", "field_name": "field2", "config": [2.0, 3.5]
     }
 
     expected_filt = {
-        "type": "AndFilter",
-        "config": [number_in_filter1, number_in_filter2]
+        "type": "AndFilter", "config": [number_in_filter1, number_in_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
@@ -334,9 +333,7 @@ def test_data_filter_range(invoke, assert_and_filters_equal):
     assert result.exit_code == 0
 
     range_filter1 = {
-        "type": "RangeFilter",
-        "field_name": "field",
-        "config": {
+        "type": "RangeFilter", "field_name": "field", "config": {
             "gt": 70.0
         }
     }
@@ -349,8 +346,7 @@ def test_data_filter_range(invoke, assert_and_filters_equal):
     }
 
     expected_filt = {
-        "type": "AndFilter",
-        "config": [range_filter1, range_filter2]
+        "type": "AndFilter", "config": [range_filter1, range_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
@@ -364,9 +360,7 @@ def test_data_filter_string_in(invoke, assert_and_filters_equal):
     assert result.exit_code == 0
 
     string_in_filter1 = {
-        "type": "StringInFilter",
-        "field_name": "field",
-        "config": ["foo"]
+        "type": "StringInFilter", "field_name": "field", "config": ["foo"]
     }
     string_in_filter2 = {
         "type": "StringInFilter",
@@ -375,8 +369,7 @@ def test_data_filter_string_in(invoke, assert_and_filters_equal):
     }
 
     expected_filt = {
-        "type": "AndFilter",
-        "config": [string_in_filter1, string_in_filter2]
+        "type": "AndFilter", "config": [string_in_filter1, string_in_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
@@ -407,8 +400,7 @@ def test_data_filter_update(invoke, assert_and_filters_equal):
     }
 
     expected_filt = {
-        "type": "AndFilter",
-        "config": [update_filter1, update_filter2]
+        "type": "AndFilter", "config": [update_filter1, update_filter2]
     }
 
     assert_and_filters_equal(json.loads(result.output), expected_filt)
@@ -416,7 +408,9 @@ def test_data_filter_update(invoke, assert_and_filters_equal):
 
 @respx.mock
 @pytest.mark.parametrize("item_types, expect_success", [('PSScene', True)])
-def test_data_search_cmd_item_types(mock_bundles, item_types, expect_success,
+def test_data_search_cmd_item_types(mock_bundles,
+                                    item_types,
+                                    expect_success,
                                     invoke):
     """Test for planet data search_quick item types, valid and invalid."""
     mock_resp = httpx.Response(HTTPStatus.OK,
@@ -435,12 +429,13 @@ def test_data_search_cmd_item_types(mock_bundles, item_types, expect_success,
 
 
 @respx.mock
-@pytest.mark.parametrize("geom_fixture", [('geom_geojson'),
-                                          ('feature_geojson'),
-                                          ('featurecollection_geojson'),
-                                          ('geom_reference'),
-                                          ("str_geom_reference")])
-def test_data_search_cmd_top_level_geom(geom_fixture, mock_bundles, request,
+@pytest.mark.parametrize("geom_fixture",
+                         [('geom_geojson'), ('feature_geojson'),
+                          ('featurecollection_geojson'), ('geom_reference'),
+                          ("str_geom_reference")])
+def test_data_search_cmd_top_level_geom(geom_fixture,
+                                        mock_bundles,
+                                        request,
                                         invoke):
     """Ensure that all GeoJSON forms of describing a geometry are handled
     and all result in the same, valid GeometryFilter being created"""
@@ -480,8 +475,7 @@ def test_data_search_cmd_filter_success(mock_bundles, invoke):
         "type": "DateRangeFilter",
         "field_name": "acquired",
         "config": {
-            "gt": "2019-12-31T00:00:00Z",
-            "lte": "2020-01-31T00:00:00Z"
+            "gt": "2019-12-31T00:00:00Z", "lte": "2020-01-31T00:00:00Z"
         }
     }
 
@@ -528,7 +522,10 @@ def test_data_search_cmd_sort_invalid(invoke):
 @respx.mock
 @pytest.mark.parametrize("limit,limited_list_length", [(None, 100), (0, 102),
                                                        (1, 1)])
-def test_data_search_cmd_limit(mock_bundles, invoke, search_results, limit,
+def test_data_search_cmd_limit(mock_bundles,
+                               invoke,
+                               search_results,
+                               limit,
                                limited_list_length):
     """Test for planet data search_quick limit option.
 
@@ -546,9 +543,7 @@ def test_data_search_cmd_limit(mock_bundles, invoke, search_results, limit,
 
     page1_response = {
         "_links": {
-            "_self": "string1",
-            "assets": "string2",
-            "thumbnail": "string3"
+            "_self": "string1", "assets": "string2", "thumbnail": "string3"
         },
         "features": [
             all_results[f'result{num}']
@@ -582,7 +577,9 @@ def test_data_search_create_filter_invalid_json(invoke, item_types, filter):
 
     runner = CliRunner()
     result = invoke([
-        "search-create", item_types, f'--name={name}',
+        "search-create",
+        item_types,
+        f'--name={name}',
         f'--filter={json.dumps(filter)}'
     ],
                     runner=runner)
@@ -599,8 +596,7 @@ def test_data_search_create_filter_success(mock_bundles, invoke, item_types):
         "type": "DateRangeFilter",
         "field_name": "acquired",
         "config": {
-            "gt": "2019-12-31T00:00:00Z",
-            "lte": "2020-01-31T00:00:00Z"
+            "gt": "2019-12-31T00:00:00Z", "lte": "2020-01-31T00:00:00Z"
         }
     }
 
@@ -614,7 +610,9 @@ def test_data_search_create_filter_success(mock_bundles, invoke, item_types):
 
     runner = CliRunner()
     result = invoke([
-        "search-create", item_types, f'--filter={json.dumps(filter)}',
+        "search-create",
+        item_types,
+        f'--filter={json.dumps(filter)}',
         f'--name={name}'
     ],
                     runner=runner)
@@ -632,14 +630,16 @@ def test_data_search_create_daily_email(mock_bundles, invoke, search_result):
         "type": "DateRangeFilter",
         "field_name": "acquired",
         "config": {
-            "gt": "2019-12-31T00:00:00Z",
-            "lte": "2020-01-31T00:00:00Z"
+            "gt": "2019-12-31T00:00:00Z", "lte": "2020-01-31T00:00:00Z"
         }
     }
 
     result = invoke([
-        'search-create', 'SkySatScene', '--name=temp',
-        f'--filter={json.dumps(filter)}', '--daily-email'
+        'search-create',
+        'SkySatScene',
+        '--name=temp',
+        f'--filter={json.dumps(filter)}',
+        '--daily-email'
     ])
 
     search_request = {
@@ -648,8 +648,7 @@ def test_data_search_create_daily_email(mock_bundles, invoke, search_result):
             "type": "DateRangeFilter",
             "field_name": "acquired",
             "config": {
-                "gt": "2019-12-31T00:00:00Z",
-                "lte": "2020-01-31T00:00:00Z"
+                "gt": "2019-12-31T00:00:00Z", "lte": "2020-01-31T00:00:00Z"
             }
         },
         "item_types": ["SkySatScene"],
@@ -663,7 +662,9 @@ def test_data_search_create_daily_email(mock_bundles, invoke, search_result):
 
 @respx.mock
 @pytest.mark.parametrize("limit, expected_list_length", [(0, 4), (3, 3)])
-def test_data_search_list_basic(invoke, search_result, limit,
+def test_data_search_list_basic(invoke,
+                                search_result,
+                                limit,
                                 expected_list_length):
     """Ensure planet data search-list runs successfully and respects limit."""
     page1_response = {"_links": {}, "searches": [search_result] * 4}
@@ -696,8 +697,11 @@ def test_data_search_list_sort(invoke, search_result, sort, rel_url, valid):
                          [(LIST_SEARCH_TYPE_DEFAULT, '', True),
                           ('saved', '?search_type=saved', True),
                           ('notvalid', '', False)])
-def test_data_search_list_searchtype(invoke, search_result, search_type,
-                                     rel_url, valid):
+def test_data_search_list_searchtype(invoke,
+                                     search_result,
+                                     search_type,
+                                     rel_url,
+                                     valid):
     """Ensure planet data search-list handles search-type."""
     page1_response = {"_links": {}, "searches": [search_result] * 4}
     route = respx.get(f'{TEST_SEARCHES_URL}{rel_url}')
@@ -712,8 +716,12 @@ def test_data_search_list_searchtype(invoke, search_result, search_type,
 @pytest.mark.parametrize("search_id, valid", [(VALID_SEARCH_ID, True),
                                               ('invalid', False)])
 @pytest.mark.parametrize("limit, expected_count", [(0, 3), (2, 2)])
-def test_data_search_run_basic(invoke, item_descriptions, search_id, valid,
-                               limit, expected_count):
+def test_data_search_run_basic(invoke,
+                               item_descriptions,
+                               search_id,
+                               valid,
+                               limit,
+                               expected_count):
     """Ensure planet data search-run runs successfully and handles search id
     and limit."""
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
@@ -721,8 +729,7 @@ def test_data_search_run_basic(invoke, item_descriptions, search_id, valid,
     page1_response = {
         "_links": {
             "_next": next_page_url
-        },
-        "features": [item1, item2]
+        }, "features": [item1, item2]
     }
 
     route = respx.get(f'{TEST_SEARCHES_URL}/{search_id}/results')
@@ -753,8 +760,7 @@ def test_data_search_run_sort(invoke, item_descriptions, sort, rel_url, valid):
     page1_response = {
         "_links": {
             "_next": next_page_url
-        },
-        "features": [item1, item2]
+        }, "features": [item1, item2]
     }
 
     route = respx.get(
@@ -794,7 +800,10 @@ def test_data_stats_invalid_filter(invoke, filter):
                          ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 @pytest.mark.parametrize("interval, exit_code", [(None, 2), ('hou', 2),
                                                  ('hour', 0)])
-def test_data_stats_interval(invoke, mock_bundles, item_types, interval,
+def test_data_stats_interval(invoke,
+                             mock_bundles,
+                             item_types,
+                             interval,
                              exit_code):
     """Test for planet data stats. Test with multiple item_types.
     Test should succeed with valid interval, and fail with invalid interval."""
@@ -802,8 +811,7 @@ def test_data_stats_interval(invoke, mock_bundles, item_types, interval,
         "type": "DateRangeFilter",
         "field_name": "acquired",
         "config": {
-            "gt": "2019-12-31T00:00:00Z",
-            "lte": "2020-01-31T00:00:00Z"
+            "gt": "2019-12-31T00:00:00Z", "lte": "2020-01-31T00:00:00Z"
         }
     }
 
@@ -835,8 +843,7 @@ def test_data_stats_success(invoke, mock_bundles, item_types, interval):
         "type": "DateRangeFilter",
         "field_name": "acquired",
         "config": {
-            "gt": "2019-12-31T00:00:00Z",
-            "lte": "2020-01-31T00:00:00Z"
+            "gt": "2019-12-31T00:00:00Z", "lte": "2020-01-31T00:00:00Z"
         }
     }
 
@@ -847,7 +854,9 @@ def test_data_stats_success(invoke, mock_bundles, item_types, interval):
     respx.post(TEST_STATS_URL).return_value = mock_resp
 
     result = invoke([
-        "stats", item_types, f'--interval={interval}',
+        "stats",
+        item_types,
+        f'--interval={interval}',
         f'--filter={json.dumps(filter)}'
     ])
     assert result.exit_code == 0
@@ -905,7 +914,10 @@ def test_search_delete_nonexistant_search_id(invoke, search_id, search_result):
 @pytest.mark.parametrize("item_types",
                          ['PSScene', 'SkySatScene', 'PSScene, SkySatScene'])
 @respx.mock
-def test_search_update_success(invoke, search_id, search_result, item_types,
+def test_search_update_success(invoke,
+                               search_id,
+                               search_result,
+                               item_types,
                                search_filter):
     update_url = f'{TEST_SEARCHES_URL}/{search_id}'
     mock_resp = httpx.Response(HTTPStatus.OK, json=search_result)
@@ -914,8 +926,11 @@ def test_search_update_success(invoke, search_id, search_result, item_types,
     name = "search_name"
 
     result = invoke([
-        'search-update', search_id, item_types,
-        f'--filter={json.dumps(search_filter)}', f'--name={name}'
+        'search-update',
+        search_id,
+        item_types,
+        f'--filter={json.dumps(search_filter)}',
+        f'--name={name}'
     ])
 
     assert not result.exception
@@ -932,8 +947,11 @@ def test_search_update_fail(invoke, search_id, search_filter):
     item_types = "PSScene"
 
     result = invoke([
-        'search-update', search_id, item_types,
-        f'--filter={json.dumps(search_filter)}', f'--name={name}'
+        'search-update',
+        search_id,
+        item_types,
+        f'--filter={json.dumps(search_filter)}',
+        f'--name={name}'
     ])
 
     assert result.output.startswith("Error")
@@ -941,11 +959,18 @@ def test_search_update_fail(invoke, search_id, search_filter):
 
 
 @respx.mock
-@pytest.mark.parametrize("exists, overwrite", [(False, False), (True, False),
-                                               (True, True), (False, True)])
-def test_asset_download_default(invoke, open_test_img, exists, overwrite,
-                                mock_asset_get_response, item_type, item_id,
-                                asset_type, dl_url):
+@pytest.mark.parametrize("exists, overwrite",
+                         [(False, False), (True, False), (True, True),
+                          (False, True)])
+def test_asset_download_default(invoke,
+                                open_test_img,
+                                exists,
+                                overwrite,
+                                mock_asset_get_response,
+                                item_type,
+                                item_id,
+                                asset_type,
+                                dl_url):
 
     mock_asset_get_response()
 
@@ -976,8 +1001,13 @@ def test_asset_download_default(invoke, open_test_img, exists, overwrite,
             Path(folder, 'img.tif').write_bytes(b'01010')
 
         asset_download_command = [
-            'asset-download', item_type, item_id, asset_type,
-            f'--directory={Path(folder)}', '--filename', 'img.tif'
+            'asset-download',
+            item_type,
+            item_id,
+            asset_type,
+            f'--directory={Path(folder)}',
+            '--filename',
+            'img.tif'
         ]
         if overwrite:
             asset_download_command.append('--overwrite')
@@ -999,8 +1029,12 @@ def test_asset_download_default(invoke, open_test_img, exists, overwrite,
 
 
 @respx.mock
-def test_asset_activate(invoke, mock_asset_get_response, item_type, item_id,
-                        asset_type, dl_url):
+def test_asset_activate(invoke,
+                        mock_asset_get_response,
+                        item_type,
+                        item_id,
+                        asset_type,
+                        dl_url):
 
     mock_asset_get_response()
 
@@ -1016,8 +1050,12 @@ def test_asset_activate(invoke, mock_asset_get_response, item_type, item_id,
 
 
 @respx.mock
-def test_asset_wait(invoke, mock_asset_get_response, item_type, item_id,
-                    asset_type, dl_url):
+def test_asset_wait(invoke,
+                    mock_asset_get_response,
+                    item_type,
+                    item_id,
+                    asset_type,
+                    dl_url):
 
     mock_asset_get_response()
 

@@ -186,8 +186,7 @@ def test_build_request_host_sentinel_hub_create_configuration(geom_geojson):
     }
 
     hosting = {
-        "type": "sentinel-hub",
-        "parameters": {
+        "type": "sentinel-hub", "parameters": {
             "create_configuration": True
         }
     }
@@ -218,8 +217,7 @@ def test_build_request_host_sentinel_hub_collection_configuration(
     hosting = {
         "type": "sentinel-hub",
         "parameters": {
-            "collection_id": "1234",
-            "create_configuration": True
+            "collection_id": "1234", "create_configuration": True
         }
     }
 
@@ -260,7 +258,8 @@ def test_catalog_source_success(geom_geojson, mock_bundles):
 
 @respx.mock
 def test_catalog_source_featurecollection(featurecollection_geojson,
-                                          geom_geojson, mock_bundles):
+                                          geom_geojson,
+                                          mock_bundles):
     """geojson specified as featurecollection is simplified down to just
     the geometry"""
     res = subscription_request.catalog_source(
@@ -392,8 +391,7 @@ def test_google_cloud_storage_success():
     assert res == {
         "type": "google_cloud_storage",
         "parameters": {
-            "bucket": "bucket",
-            "credentials": "cred"
+            "bucket": "bucket", "credentials": "cred"
         }
     }
 
@@ -406,9 +404,7 @@ def test_google_cloud_storage_path_prefix_success():
     assert res == {
         "type": "google_cloud_storage",
         "parameters": {
-            "bucket": "bucket",
-            "credentials": "cred",
-            "path_prefix": "prefix"
+            "bucket": "bucket", "credentials": "cred", "path_prefix": "prefix"
         }
     }
 
@@ -517,8 +513,7 @@ def test_harmonize_tool_success():
     res = subscription_request.harmonize_tool('Sentinel-2')
 
     expected = {
-        "type": "harmonize",
-        "parameters": {
+        "type": "harmonize", "parameters": {
             "target_sensor": "Sentinel-2"
         }
     }
@@ -538,9 +533,7 @@ def test_reproject_tool_success():
     expected = {
         "type": "reproject",
         "parameters": {
-            "projection": "EPSG:4326",
-            "kernel": "near",
-            "resolution": 0.5
+            "projection": "EPSG:4326", "kernel": "near", "resolution": 0.5
         }
     }
     assert res == expected
@@ -592,7 +585,8 @@ def test_pv_source_success(geom_geojson, var_type, var_id):
             itertools.combinations(["preview", "standard", "finalized"], i)
             for i in range(1, 4))) + [("preview", "preview"),
                                       ("preview", "finalized", "preview")])
-def test_catalog_source_publishing_stages(publishing_stages, geom_geojson,
+def test_catalog_source_publishing_stages(publishing_stages,
+                                          geom_geojson,
                                           mock_bundles):
     """Configure publishing stages for a catalog source."""
     source = subscription_request.catalog_source(
@@ -634,8 +628,7 @@ def test_cloud_filter_tool_success():
                 "gte": 90
             },
             "cloud_percent": {
-                "lte": 10,
-                "gte": 5
+                "lte": 10, "gte": 5
             }
         }
     }

@@ -81,8 +81,13 @@ def subscriptions(ctx, base_url):
 @click.option(
     '--status',
     type=click.Choice([
-        "running", "cancelled", "preparing", "pending", "completed",
-        "suspended", "failed"
+        "running",
+        "cancelled",
+        "preparing",
+        "pending",
+        "completed",
+        "suspended",
+        "failed"
     ]),
     multiple=True,
     help="Select subscriptions in one or more states. Default is all.")
@@ -107,9 +112,19 @@ def subscriptions(ctx, base_url):
 @click.pass_context
 @translate_exceptions
 @coro
-async def list_subscriptions_cmd(ctx, created, end_time, hosting,
-                                 name_contains, name, source_type, start_time,
-                                 status, sort_by, updated, limit, page_size,
+async def list_subscriptions_cmd(ctx,
+                                 created,
+                                 end_time,
+                                 hosting,
+                                 name_contains,
+                                 name,
+                                 source_type,
+                                 start_time,
+                                 status,
+                                 sort_by,
+                                 updated,
+                                 limit,
+                                 page_size,
                                  pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
     async with subscriptions_client(ctx) as client:
@@ -275,8 +290,12 @@ async def get_subscription_cmd(ctx, subscription_id, pretty):
 @click.pass_context
 @translate_exceptions
 @coro
-async def list_subscription_results_cmd(ctx, subscription_id, pretty, status,
-                                        csv_flag, limit):
+async def list_subscription_results_cmd(ctx,
+                                        subscription_id,
+                                        pretty,
+                                        status,
+                                        csv_flag,
+                                        limit):
     """Print the results of a subscription to stdout.
 
     The output of this command is a sequence of JSON objects (the
@@ -356,8 +375,16 @@ async def list_subscription_results_cmd(ctx, subscription_id, pretty, status,
     help='Automatically create a layer configuration for your collection. '
     'If omitted, no configuration will be created.')
 @pretty
-def request(name, source, delivery, notifications, tools, hosting,
-            collection_id, create_configuration, clip_to_source, pretty):
+def request(name,
+            source,
+            delivery,
+            notifications,
+            tools,
+            hosting,
+            collection_id,
+            create_configuration,
+            clip_to_source,
+            pretty):
     """Generate a subscriptions request.
 
     Note: the next version of the Subscription API will remove the clip
@@ -422,8 +449,16 @@ def request(name, source, delivery, notifications, tools, hosting,
               type=click.Choice(["acquired", "published"]),
               help="Subscribe by acquisition time or time of publication.")
 @pretty
-def request_catalog(item_types, asset_types, geometry, start_time, end_time,
-                    rrule, filter, publishing_stages, time_range_type, pretty):
+def request_catalog(item_types,
+                    asset_types,
+                    geometry,
+                    start_time,
+                    end_time,
+                    rrule,
+                    filter,
+                    publishing_stages,
+                    time_range_type,
+                    pretty):
     """Generate a subscriptions request catalog source description."""
 
     res = subscription_request.catalog_source(

@@ -48,10 +48,8 @@ def test_build_request(mock_bundles):
         }
     }
     notifications = {
-        'email': 'email',
-        'webhook': {
-            'url': 'webhookurl',
-            'per_order': True
+        'email': 'email', 'webhook': {
+            'url': 'webhookurl', 'per_order': True
         }
     }
     order_type = 'partial'
@@ -126,10 +124,8 @@ def test_notifications():
     notifications_config = order_request.notifications(
         email=True, webhook_url='webhookurl', webhook_per_order=True)
     expected = {
-        'email': True,
-        'webhook': {
-            'url': 'webhookurl',
-            'per_order': True
+        'email': True, 'webhook': {
+            'url': 'webhookurl', 'per_order': True
         }
     }
     assert notifications_config == expected
@@ -195,7 +191,8 @@ def test_delivery_missing_archive_details():
 
 def test_amazon_s3():
     as3_config = order_request.amazon_s3('aws_access_key_id',
-                                         'aws_secret_access_key', 'bucket',
+                                         'aws_secret_access_key',
+                                         'bucket',
                                          'aws_region')
     expected = {
         'amazon_s3': {
@@ -209,7 +206,8 @@ def test_amazon_s3():
 
 
 def test_azure_blob_storage():
-    abs_config = order_request.azure_blob_storage('account', 'container',
+    abs_config = order_request.azure_blob_storage('account',
+                                                  'container',
                                                   'sas_token')
     expected = {
         'azure_blob_storage': {
@@ -248,7 +246,8 @@ def test_google_earth_engine():
 def test_oracle_cloud_storage():
     ocs_config = order_request.oracle_cloud_storage('ocs_access_key_id',
                                                     'ocs_secret_access_key',
-                                                    'bucket', 'region',
+                                                    'bucket',
+                                                    'region',
                                                     'namespace')
 
     expected = {
@@ -401,8 +400,7 @@ def test_sentinel_hub_collection_configuration():
                                            create_configuration=True)
     expected = {
         'sentinel_hub': {
-            'collection_id': '1234',
-            'create_configuration': True
+            'collection_id': '1234', 'create_configuration': True
         }
     }
     assert sh_config == expected

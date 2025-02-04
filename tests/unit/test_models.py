@@ -98,21 +98,28 @@ def test__get_filename_from_headers(headers, expected):
     assert models._get_filename_from_headers(headers) == expected
 
 
-@pytest.mark.parametrize('url,expected', [
-    ('https://planet.com/', None),
-    ('https://planet.com/path/to/', None),
-    ('https://planet.com/path/to/example.tif', 'example.tif'),
-    ('https://planet.com/path/to/example.tif?foo=f6f1&bar=baz', 'example.tif'),
-    ('https://planet.com/path/to/example.tif?foo=f6f1#quux', 'example.tif'),
-])
+@pytest.mark.parametrize(
+    'url,expected',
+    [
+        ('https://planet.com/', None),
+        ('https://planet.com/path/to/', None),
+        ('https://planet.com/path/to/example.tif', 'example.tif'),
+        ('https://planet.com/path/to/example.tif?foo=f6f1&bar=baz',
+         'example.tif'),
+        ('https://planet.com/path/to/example.tif?foo=f6f1#quux',
+         'example.tif'),
+    ])
 def test__get_filename_from_url(url, expected):
     assert models._get_filename_from_url(url) == expected
 
 
-@pytest.mark.parametrize('content_type,check', [
-    (None, lambda x: re.match(r'^planet-[a-z0-9]{8}$', x, re.I) is not None),
-    ('image/tiff', lambda x: x.endswith(('.tif', '.tiff'))),
-])
+@pytest.mark.parametrize(
+    'content_type,check',
+    [
+        (None,
+         lambda x: re.match(r'^planet-[a-z0-9]{8}$', x, re.I) is not None),
+        ('image/tiff', lambda x: x.endswith(('.tif', '.tiff'))),
+    ])
 def test__get_random_filename(content_type, check):
     assert check(models._get_random_filename(content_type))
 

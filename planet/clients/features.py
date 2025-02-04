@@ -241,7 +241,11 @@ class FeaturesClient:
 
         # convert a geojson geometry into geojson feature
         if feature.get("type", "").lower() in [
-                "point", "multipoint", "polygon", "multipolygon", "linestring",
+                "point",
+                "multipoint",
+                "polygon",
+                "multipolygon",
+                "linestring",
                 "multilinestring"
         ]:
             feature = {"type": "Feature", "geometry": feature}

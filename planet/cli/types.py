@@ -119,7 +119,8 @@ class Comparison(click.ParamType):
     def convert(self, value, param, ctx) -> str:
         if value not in self.valid:
             self.fail(f'COMP ({value}) must be one of {",".join(self.valid)}',
-                      param, ctx)
+                      param,
+                      ctx)
         return value
 
 

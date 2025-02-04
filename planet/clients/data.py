@@ -40,7 +40,9 @@ LIST_SEARCH_TYPE = ('any', 'saved', 'quick')
 LIST_SORT_DEFAULT = 'created desc'
 LIST_SEARCH_TYPE_DEFAULT = 'any'
 
-SEARCH_SORT = ('published desc', 'published asc', 'acquired desc',
+SEARCH_SORT = ('published desc',
+               'published asc',
+               'acquired desc',
                'acquired asc')
 SEARCH_SORT_DEFAULT = 'published desc'
 STATS_INTERVAL = ('hour', 'day', 'week', 'month', 'year')
@@ -394,7 +396,9 @@ class DataClient:
         async for i in Items(response, self._session.request, limit=limit):
             yield i
 
-    async def get_stats(self, item_types: List[str], search_filter: dict,
+    async def get_stats(self,
+                        item_types: List[str],
+                        search_filter: dict,
                         interval: str) -> dict:
         """Get item search statistics.
 
@@ -453,7 +457,9 @@ class DataClient:
         response = await self._session.request(method='GET', url=url)
         return response.json()
 
-    async def get_asset(self, item_type_id: str, item_id: str,
+    async def get_asset(self,
+                        item_type_id: str,
+                        item_id: str,
                         asset_type_id: str) -> dict:
         """Get an item asset description.
 

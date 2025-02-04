@@ -75,8 +75,12 @@ class DataAPI:
                 references
         """
 
-        results = self._client.search(item_types, search_filter, name, sort,
-                                      limit, geometry)
+        results = self._client.search(item_types,
+                                      search_filter,
+                                      name,
+                                      sort,
+                                      limit,
+                                      geometry)
 
         try:
             while True:
@@ -124,8 +128,11 @@ class DataAPI:
             planet.exceptions.APIError: On API error.
         """
         return self._client._call_sync(
-            self._client.create_search(item_types, search_filter, name,
-                                       enable_email, geometry))
+            self._client.create_search(item_types,
+                                       search_filter,
+                                       name,
+                                       enable_email,
+                                       geometry))
 
     def update_search(
             self,
@@ -149,8 +156,12 @@ class DataAPI:
             Description of the saved search.
         """
         return self._client._call_sync(
-            self._client.update_search(search_id, item_types, search_filter,
-                                       name, enable_email, geometry))
+            self._client.update_search(search_id,
+                                       item_types,
+                                       search_filter,
+                                       name,
+                                       enable_email,
+                                       geometry))
 
     def list_searches(self,
                       sort: str = LIST_SORT_DEFAULT,
@@ -239,7 +250,9 @@ class DataAPI:
         except StopAsyncIteration:
             pass
 
-    def get_stats(self, item_types: List[str], search_filter: Dict[str, Any],
+    def get_stats(self,
+                  item_types: List[str],
+                  search_filter: Dict[str, Any],
                   interval: str) -> Dict[str, Any]:
         """Get item search statistics.
 
@@ -376,7 +389,10 @@ class DataAPI:
             description is not valid.
         """
         return self._client._call_sync(
-            self._client.download_asset(asset, filename, directory, overwrite,
+            self._client.download_asset(asset,
+                                        filename,
+                                        directory,
+                                        overwrite,
                                         progress_bar))
 
     @staticmethod

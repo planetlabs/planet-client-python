@@ -38,14 +38,15 @@ def test_cli_CommaSeparatedString(input, expectation, expected):
         assert res == expected
 
 
-@pytest.mark.parametrize("input, expectation, expected", [
-    ('1.0', does_not_raise(), [1.0]),
-    ('1,2.5', does_not_raise(), [1.0, 2.5]),
-    ('1, 2.5', does_not_raise(), [1.0, 2.5]),
-    ('foo, bar', pytest.raises(BadParameter), None),
-    ('1,,', pytest.raises(BadParameter), None),
-    ([1.0, 2.0], does_not_raise(), [1.0, 2.0]),
-])
+@pytest.mark.parametrize("input, expectation, expected",
+                         [
+                             ('1.0', does_not_raise(), [1.0]),
+                             ('1,2.5', does_not_raise(), [1.0, 2.5]),
+                             ('1, 2.5', does_not_raise(), [1.0, 2.5]),
+                             ('foo, bar', pytest.raises(BadParameter), None),
+                             ('1,,', pytest.raises(BadParameter), None),
+                             ([1.0, 2.0], does_not_raise(), [1.0, 2.0]),
+                         ])
 def test_cli_CommaSeparatedFloat(input, expectation, expected):
     with expectation:
         res = types.CommaSeparatedFloat().convert(input, None, None)
@@ -89,17 +90,19 @@ def test_cli_JSON_inputs(json_input_test_params):
     assert json.loads(result.output) == test_json
 
 
-parametrize_json = pytest.mark.parametrize("input, expectation, expected", [
-    ('{"a":["b", "c"], "c":5}', does_not_raise(), {
-        'a': ['b', 'c'],
-        'c': 5
-    }),
-    ('["b", {"c":5}]', does_not_raise(), ['b', {
-        'c': 5
-    }]),
-    ('{"a":"b", foo:bar}', pytest.raises(BadParameter), None),
-    ('{}', pytest.raises(BadParameter), None),
-])
+parametrize_json = pytest.mark.parametrize(
+    "input, expectation, expected",
+    [
+        ('{"a":["b", "c"], "c":5}',
+         does_not_raise(), {
+             'a': ['b', 'c'], 'c': 5
+         }),
+        ('["b", {"c":5}]', does_not_raise(), ['b', {
+            'c': 5
+        }]),
+        ('{"a":"b", foo:bar}', pytest.raises(BadParameter), None),
+        ('{}', pytest.raises(BadParameter), None),
+    ])
 
 
 @parametrize_json
@@ -151,7 +154,8 @@ def test_cli_GTComparison(input, expectation):
 @pytest.mark.parametrize(
     "input, expectation, expected",
     [('2020-02-02', does_not_raise(), datetime(2020, 2, 2)),
-     ('2021-02-03T01:40:07.359Z', does_not_raise(),
+     ('2021-02-03T01:40:07.359Z',
+      does_not_raise(),
       datetime(2021, 2, 3, 1, 40, 7, 359000)),
      ('2022', pytest.raises(BadParameter), None),
      (datetime(2020, 2, 2), does_not_raise(), datetime(2020, 2, 2))])

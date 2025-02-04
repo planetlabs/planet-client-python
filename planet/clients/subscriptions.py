@@ -320,9 +320,12 @@ class SubscriptionsClient:
 
     async def get_results(self,
                           subscription_id: str,
-                          status: Optional[Sequence[
-                              Literal["created", "queued", "processing",
-                                      "failed", "success"]]] = None,
+                          status: Optional[Sequence[Literal[
+                              "created",
+                              "queued",
+                              "processing",
+                              "failed",
+                              "success"]]] = None,
                           limit: int = 100) -> AsyncIterator[dict]:
         """Iterate over results of a Subscription.
 
@@ -372,8 +375,11 @@ class SubscriptionsClient:
     async def get_results_csv(
         self,
         subscription_id: str,
-        status: Optional[Sequence[Literal["created", "queued", "processing",
-                                          "failed", "success"]]] = None
+        status: Optional[Sequence[Literal["created",
+                                          "queued",
+                                          "processing",
+                                          "failed",
+                                          "success"]]] = None
     ) -> AsyncIterator[str]:
         """Iterate over rows of results CSV for a Subscription.
 

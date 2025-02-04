@@ -60,9 +60,7 @@ def test__range_filter_success():
         'type': 'testfilter',
         'field_name': 'testfield',
         'config': {
-            'gt': 'aa',
-            'lt': 'ba',
-            'lte': 'ca'
+            'gt': 'aa', 'lt': 'ba', 'lte': 'ca'
         }
     }
     assert expected == res
@@ -79,9 +77,7 @@ def test__range_filter_nocallback():
         'type': 'testfilter',
         'field_name': 'testfield',
         'config': {
-            'gt': 'a',
-            'lt': 'b',
-            'lte': 'c'
+            'gt': 'a', 'lt': 'b', 'lte': 'c'
         }
     }
     assert expected == res
@@ -108,10 +104,10 @@ def test__range_filter_no_conditionals():
      (datetime(2022, 5, 1, 1, 0, 1), '2022-05-01T01:00:01Z'),
      (datetime(2022, 6, 1, 1, 1), '2022-06-01T01:01:00Z'),
      (datetime(2022, 6, 1, 1), '2022-06-01T01:00:00Z'),
-     (datetime(2022, 6, 1, 1, tzinfo=timezone(
-         timedelta(hours=1))), '2022-06-01T01:00:00+01:00'),
-     (datetime(2022, 6, 1, 1, tzinfo=timezone(
-         timedelta(0))), '2022-06-01T01:00:00+00:00')])
+     (datetime(2022, 6, 1, 1, tzinfo=timezone(timedelta(hours=1))),
+      '2022-06-01T01:00:00+01:00'),
+     (datetime(2022, 6, 1, 1, tzinfo=timezone(timedelta(0))),
+      '2022-06-01T01:00:00+00:00')])
 def test__datetime_to_rfc3339_basic(dtime, expected):
     assert data_filter._datetime_to_rfc3339(dtime) == expected
 
@@ -124,8 +120,7 @@ def test_date_range_filter_success():
         'type': 'DateRangeFilter',
         'field_name': 'testfield',
         'config': {
-            'gt': '2022-06-01T01:00:00Z',
-            'lt': '2022-07-01T01:00:00Z'
+            'gt': '2022-06-01T01:00:00Z', 'lt': '2022-07-01T01:00:00Z'
         }
     }
     assert res == expected
@@ -142,8 +137,7 @@ def test_range_filter_success():
         'type': 'RangeFilter',
         'field_name': 'testfield',
         'config': {
-            'gt': 0.1,
-            'lt': 0.9
+            'gt': 0.1, 'lt': 0.9
         }
     }
     assert res == expected
@@ -171,9 +165,9 @@ def test_update_filter_noconditionals():
         data_filter.update_filter('acquired')
 
 
-@pytest.mark.parametrize("geom_fixture", [('geom_geojson'),
-                                          ('feature_geojson'),
-                                          ('featurecollection_geojson')])
+@pytest.mark.parametrize("geom_fixture",
+                         [('geom_geojson'), ('feature_geojson'),
+                          ('featurecollection_geojson')])
 def test_geometry_filter(geom_fixture, request, geom_geojson):
     geom = request.getfixturevalue(geom_fixture)
     res = data_filter.geometry_filter(geom)
@@ -188,9 +182,7 @@ def test_geometry_filter(geom_fixture, request, geom_geojson):
 def test_number_in_filter():
     res = data_filter.number_in_filter('testfield', [3, 3])
     expected = {
-        'type': 'NumberInFilter',
-        'field_name': 'testfield',
-        'config': [3, 3]
+        'type': 'NumberInFilter', 'field_name': 'testfield', 'config': [3, 3]
     }
     assert res == expected
 
