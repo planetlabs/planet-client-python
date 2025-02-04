@@ -118,14 +118,13 @@ class DataClient:
         return f'{self._base_url}/item-types/{item_type}/items/{item_id}'
 
     async def search(
-        self,
-        item_types: List[str],
-        search_filter: Optional[dict] = None,
-        name: Optional[str] = None,
-        sort: Optional[str] = None,
-        limit: int = 100,
-        geometry: Optional[GeojsonLike] = None
-    ) -> AsyncIterator[dict]:
+            self,
+            item_types: List[str],
+            search_filter: Optional[dict] = None,
+            name: Optional[str] = None,
+            sort: Optional[str] = None,
+            limit: int = 100,
+            geometry: Optional[GeojsonLike] = None) -> AsyncIterator[dict]:
         """Iterate over results from a quick search.
 
         Quick searches are saved for a short period of time (~month). The
