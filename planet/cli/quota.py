@@ -1,11 +1,3 @@
-# Copyright 2022 Planet Labs PBC.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,9 +7,11 @@
 from contextlib import asynccontextmanager
 import logging
 from pathlib import Path
+import json
 
 import click
 
+import planet
 from planet import QuotaClient
 from . import types
 from .cmds import coro, translate_exceptions
@@ -46,16 +40,29 @@ async def quota_client(ctx):
 def quota(ctx, base_url):
     """Commands for interacting with the Quota API"""
     ctx.ensure_object(dict)
-    ctx.obj['BASE_URL'] = base_url or BASE_URL
+    ctx.obj['BASE_URL'] = base_url
 
 
 @quota.command()
 @click.pass_context
+@click.option('--organization-id', type=int, help='Organization ID')
+@click.option('--quota-style', type=str, help='Quota style')
+@click.option('--limit', type=int, help='Limit the number of results')
+@click.option('--offset', type=int, help='Offset for pagination')
+@click.option('--fields', type=str, help='Comma separated list of fields to use')
+@click.option('--filters', type=str, help='Filters to apply')
 @coro
-async def get_my_products(ctx):
+async def get_my_products(ctx, organization_id, quota_style, limit, offset, fields, filters):
     """Get my products"""
     async with quota_client(ctx) as client:
-        products = await client.get_my_products(organization_id=1)
+        products = await client.get_my_products(
+            organization_id=organization_id,
+            quota_style=quota_style,
+            limit=limit,
+            offset=offset,
+            fields=fields,
+            filters=json.loads(filters) if filters else None
+        )
         echo_json(products)
 
 
@@ -63,13 +70,15 @@ async def get_my_products(ctx):
 @click.pass_context
 @click.argument('aoi_refs', nargs=-1)
 @click.argument('product_id', type=int)
+@click.argument('collection_id', type=str)
 @coro
-async def estimate_reservation(ctx, aoi_refs, product_id):
+async def estimate_reservation(ctx, aoi_refs, product_id, collection_id):
     """Estimate a reservation"""
     async with quota_client(ctx) as client:
         estimate_payload = {
             "aoi_refs": list(aoi_refs),
-            "product_id": product_id
+            "product_id": product_id,
+            "collection_id": collection_id
         }
         estimate = await client.estimate_reservation(estimate_payload)
         echo_json(estimate)
@@ -79,13 +88,15 @@ async def estimate_reservation(ctx, aoi_refs, product_id):
 @click.pass_context
 @click.argument('aoi_refs', nargs=-1)
 @click.argument('product_id', type=int)
+@click.argument('collection_id', type=str)
 @coro
-async def create_reservation(ctx, aoi_refs, product_id):
+async def create_reservation(ctx, aoi_refs, product_id, collection_id):
     """Create a reservation"""
     async with quota_client(ctx) as client:
         create_payload = {
             "aoi_refs": list(aoi_refs),
-            "product_id": product_id
+            "product_id": product_id,
+            "collection_id": collection_id
         }
         created_reservation = await client.create_reservation(create_payload)
         echo_json(created_reservation)
@@ -93,12 +104,22 @@ async def create_reservation(ctx, aoi_refs, product_id):
 
 @quota.command()
 @click.pass_context
-@click.option('--limit', default=10, help='Limit the number of results.')
+@click.option('--limit', type=int, help='Limit the number of results')
+@click.option('--offset', type=int, help='Offset for pagination')
+@click.option('--sort', type=str, help='Sort specification')
+@click.option('--fields', type=str, help='Comma separated list of fields to use')
+@click.option('--filters', type=str, help='Filters to apply')
 @coro
-async def get_reservations(ctx, limit):
+async def get_reservations(ctx, limit, offset, sort, fields, filters):
     """Get reservations"""
     async with quota_client(ctx) as client:
-        reservations = await client.get_reservations(limit=limit)
+        reservations = await client.get_reservations(
+            limit=limit,
+            offset=offset,
+            sort=sort,
+            fields=fields,
+            filters=json.loads(filters) if filters else None
+        )
         echo_json(reservations)
 
 
@@ -106,13 +127,15 @@ async def get_reservations(ctx, limit):
 @click.pass_context
 @click.argument('aoi_refs', nargs=-1)
 @click.argument('product_id', type=int)
+@click.argument('collection_id', type=str)
 @coro
-async def create_bulk_reservations(ctx, aoi_refs, product_id):
+async def create_bulk_reservations(ctx, aoi_refs, product_id, collection_id):
     """Create bulk reservations"""
     async with quota_client(ctx) as client:
         create_payload = {
             "aoi_refs": list(aoi_refs),
-            "product_id": product_id
+            "product_id": product_id,
+            "collection_id": collection_id
         }
         job_details = await client.create_bulk_reservations(create_payload)
         echo_json(job_details)
@@ -127,3 +150,7 @@ async def get_bulk_reservation_job(ctx, job_id):
     async with quota_client(ctx) as client:
         job = await client.get_bulk_reservation_job(job_id)
         echo_json(job)
+
+
+if __name__ == "__main__":
+    quota()
