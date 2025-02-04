@@ -19,7 +19,7 @@ from pathlib import Path
 import random
 import re
 import string
-from typing import AsyncGenerator, Callable, List, Optional, Protocol, runtime_checkable
+from typing import AsyncGenerator, Callable, List, Optional, Protocol, Union, runtime_checkable
 from urllib.parse import urlparse
 
 import httpx
@@ -307,7 +307,7 @@ class Feature(dict):
         raise AttributeError("Feature object does not contain a reference")
 
 
-GeojsonLike = Feature | dict | str
+GeojsonLike = Union[Feature, dict, str]
 """
 GeojsonLike is a type union that represents:
 * a dict containing a valid GeoJSON Feature or Geometry
