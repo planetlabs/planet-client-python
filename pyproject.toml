@@ -34,7 +34,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 test = ["pytest==8.3.3", "anyio", "pytest-cov", "respx>=0.22.0"]
-lint = ["flake8", "mypy", "yapf"]
+lint = ["flake8", "mypy", "yapf==0.43.0"]
 docs = [
   "mkdocs==1.3",
   "mkdocs-click==0.7.0",
@@ -51,4 +51,3 @@ planet = "planet.cli.cli:main"
 Repository = "https://github.com/planetlabs/planet-client-python"
 
 [tool.setuptools_scm]
-
