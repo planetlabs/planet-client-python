@@ -218,8 +218,8 @@ async def test_search_geometry(geom_fixture,
     cl = DataClient(session, base_url=TEST_URL)
     geom = request.getfixturevalue(geom_fixture)
     items_list = [
-        i async for i in cl.search(
-            ['PSScene'], name='quick_search', geometry=geom)
+        i async for i in cl.search(['PSScene'], name='quick_search',
+                                   geometry=geom)
     ]
     # check that request is correct
     expected_request = {
@@ -370,8 +370,8 @@ async def test_search_sort(item_descriptions,
 
     # run through the iterator to actually initiate the call
     [
-        i async for i in cl.search(
-            ['PSScene'], search_filter=search_filter, sort=sort)
+        i async for i in cl.search(['PSScene'], search_filter=search_filter,
+                                   sort=sort)
     ]
 
 
@@ -394,8 +394,8 @@ async def test_search_limit(item_descriptions,
 
     cl = DataClient(session, base_url=TEST_URL)
     items_list = [
-        i async for i in cl.search(
-            ['PSScene'], search_filter=search_filter, limit=2)
+        i async for i in cl.search(['PSScene'], search_filter=search_filter,
+                                   limit=2)
     ]
 
     # check only the first two results were returned

@@ -258,14 +258,12 @@ async def test_list_subscriptions_filtering_and_sorting():
         client = SubscriptionsClient(session, base_url=TEST_URL)
         assert len([
             sub async for sub in client.list_subscriptions(
-                name='test xyz',
-                name__contains='xyz',
+                name='test xyz', name__contains='xyz',
                 created='2018-02-12T00:00:00Z/..',
                 updated='../2018-03-18T12:31:12Z',
                 start_time='2018-01-01T00:00:00Z',
                 end_time='2022-01-01T00:00:00Z/2024-01-01T00:00:00Z',
-                hosting=True,
-                sort_by='name DESC')
+                hosting=True, sort_by='name DESC')
         ]) == 2
 
 
