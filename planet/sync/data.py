@@ -15,7 +15,7 @@
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterator, List, Optional, Union
 
-from planet.models import Feature
+from planet.models import GeojsonLike
 
 from ..http import Session
 
@@ -49,7 +49,7 @@ class DataAPI:
         name: Optional[str] = None,
         sort: Optional[str] = None,
         limit: int = 100,
-        geometry: Optional[Union[Dict, str, Feature]] = None,
+        geometry: Optional[GeojsonLike] = None,
     ) -> Iterator[Dict]:
         """
         Search for items
