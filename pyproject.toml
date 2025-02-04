@@ -52,6 +52,3 @@ Repository = "https://github.com/planetlabs/planet-client-python"
 
 [tool.setuptools_scm]
 
-[tool.yapf]
-split_all_top_level_comma_separated_values = true
-

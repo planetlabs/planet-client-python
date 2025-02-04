@@ -186,7 +186,9 @@ def mock_bundles(autouse=True, scope="session"):
             },
             "analytic_sr": {
                 "assets": {
-                    "SkySatScene": [], "PSScene": [], "SkySatCollect": []
+                    "SkySatScene": [],
+                    "PSScene": [],
+                    "SkySatCollect": []
                 }
             },
             "analytic": {

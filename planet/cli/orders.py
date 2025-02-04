@@ -27,11 +27,8 @@ from ..order_request import sentinel_hub
 from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
-from ..specs import (FetchBundlesSpecError,
-                     get_bundle_names,
-                     get_item_types,
-                     SpecificationException,
-                     validate_bundle,
+from ..specs import (FetchBundlesSpecError, get_bundle_names, get_item_types,
+                     SpecificationException, validate_bundle,
                      validate_data_item_type)
 
 LOGGER = logging.getLogger(__name__)
@@ -129,17 +126,8 @@ def orders(ctx, base_url):
     Example: 'name ASC,created_on DESC'""")
 @limit
 @pretty
-async def list(ctx,
-               state,
-               source_type,
-               name,
-               name_contains,
-               created_on,
-               last_modified,
-               hosting,
-               sort_by,
-               limit,
-               pretty):
+async def list(ctx, state, source_type, name, name_contains, created_on,
+               last_modified, hosting, sort_by, limit, pretty):
     """List orders
 
     This command prints a sequence of the returned order descriptions,
@@ -417,23 +405,9 @@ async def create(ctx, request, pretty, **kwargs):
     help='Automatically create a layer configuration for your collection. '
     'If omitted, no configuration will be created.')
 @pretty
-async def request(ctx,
-                  item_type,
-                  bundle,
-                  name,
-                  ids,
-                  clip,
-                  tools,
-                  email,
-                  archive_type,
-                  archive_filename,
-                  single_archive,
-                  delivery,
-                  stac,
-                  hosting,
-                  collection_id,
-                  create_configuration,
-                  pretty):
+async def request(ctx, item_type, bundle, name, ids, clip, tools, email,
+                  archive_type, archive_filename, single_archive, delivery,
+                  stac, hosting, collection_id, create_configuration, pretty):
     """Generate an order request.
 
     This command provides support for building an order description used

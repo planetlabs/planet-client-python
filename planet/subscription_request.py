@@ -21,29 +21,14 @@ from typing_extensions import Literal
 from . import geojson, specs
 from .exceptions import ClientError
 
-NOTIFICATIONS_TOPICS = ('delivery.success',
-                        'delivery.match',
-                        'delivery.failed',
-                        'status.backfill.completed',
-                        'status.completed',
-                        'status.cancelled',
-                        'status.pending',
-                        'status.all',
-                        'status.suspended',
+NOTIFICATIONS_TOPICS = ('delivery.success', 'delivery.match',
+                        'delivery.failed', 'status.backfill.completed',
+                        'status.completed', 'status.cancelled',
+                        'status.pending', 'status.all', 'status.suspended',
                         'status.failed')
 
-REPROJECT_KERNEL = ('near',
-                    'bilinear',
-                    'cubic',
-                    'cubicspline',
-                    'lanczos',
-                    'average',
-                    'mode',
-                    'min',
-                    'max',
-                    'med',
-                    'q1',
-                    'q3')
+REPROJECT_KERNEL = ('near', 'bilinear', 'cubic', 'cubicspline', 'lanczos',
+                    'average', 'mode', 'min', 'max', 'med', 'q1', 'q3')
 REPROJECT_KERNEL_DEFAULT = 'near'
 
 
@@ -154,7 +139,8 @@ def build_request(name: str,
 
     if hosting == "sentinel_hub":
         hosting_info: Dict[str, Any] = {
-            "type": "sentinel_hub", "parameters": {}
+            "type": "sentinel_hub",
+            "parameters": {}
         }
         if collection_id:
             hosting_info["parameters"]["collection_id"] = collection_id
@@ -176,8 +162,7 @@ def catalog_source(
     filter: Optional[Mapping] = None,
     end_time: Optional[datetime] = None,
     rrule: Optional[str] = None,
-    publishing_stages: Optional[Sequence[Literal["preview",
-                                                 "standard",
+    publishing_stages: Optional[Sequence[Literal["preview", "standard",
                                                  "finalized"]]] = None,
     time_range_type: Optional[Literal["acquired", "published"]] = None,
 ) -> dict:
@@ -582,8 +567,7 @@ def band_math_tool(b1: str,
         planet.exceptions.ClientError: If pixel_type is not valid.
     """  # noqa
     try:
-        pixel_type = specs.get_match(pixel_type,
-                                     specs.BAND_MATH_PIXEL_TYPE,
+        pixel_type = specs.get_match(pixel_type, specs.BAND_MATH_PIXEL_TYPE,
                                      'pixel_type')
     except specs.SpecificationException as e:
         raise ClientError(e)

@@ -63,7 +63,8 @@ def create_download_mock(downloaded_content, order_description, oid):
         dl_url = TEST_DOWNLOAD_URL + '/1?token=IAmAToken'
         order_description['_links']['results'] = [
             {
-                'location': dl_url, 'name': 'file.json'
+                'location': dl_url,
+                'name': 'file.json'
             },
         ]
 
@@ -71,14 +72,13 @@ def create_download_mock(downloaded_content, order_description, oid):
         mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
         respx.get(get_url).return_value = mock_resp
 
-        mock_resp = httpx.Response(HTTPStatus.OK,
-                                   json=downloaded_content,
-                                   headers={
-                                       'Content-Type':
-                                       'application/json',
-                                       'Content-Disposition':
-                                       'attachment; filename="file.json"'
-                                   })
+        mock_resp = httpx.Response(
+            HTTPStatus.OK,
+            json=downloaded_content,
+            headers={
+                'Content-Type': 'application/json',
+                'Content-Disposition': 'attachment; filename="file.json"'
+            })
         respx.get(dl_url).return_value = mock_resp
 
     return f
@@ -105,7 +105,8 @@ async def test_list_orders_basic(order_descriptions, session):
 
     page1_response = {
         "_links": {
-            "_self": "string", "next": next_page_url
+            "_self": "string",
+            "next": next_page_url
         },
         "orders": [order1, order2]
     }
@@ -128,7 +129,8 @@ def test_list_orders_basic_sync(order_descriptions, session):
 
     page1_response = {
         "_links": {
-            "_self": "string", "next": next_page_url
+            "_self": "string",
+            "next": next_page_url
         },
         "orders": [order1, order2]
     }
@@ -154,7 +156,8 @@ async def test_list_orders_filtering_and_sorting(order_descriptions, session):
     page1_response = {
         "_links": {
             "_self": "string"
-        }, "orders": [order1, order2]
+        },
+        "orders": [order1, order2]
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(list_url).return_value = mock_resp
@@ -184,7 +187,8 @@ def test_list_orders_state_success_sync(order_descriptions, session):
     page1_response = {
         "_links": {
             "_self": "string"
-        }, "orders": [order1, order2]
+        },
+        "orders": [order1, order2]
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(list_url).return_value = mock_resp
@@ -217,9 +221,7 @@ def test_list_orders_state_invalid_sync(session):
 @pytest.mark.anyio
 @pytest.mark.parametrize("limit,limited_list_length", [(None, 100), (0, 102),
                                                        (1, 1)])
-async def test_list_orders_limit(order_descriptions,
-                                 session,
-                                 limit,
+async def test_list_orders_limit(order_descriptions, session, limit,
                                  limited_list_length):
     nono_page_url = None
 
@@ -232,7 +234,8 @@ async def test_list_orders_limit(order_descriptions,
 
     page1_response = {
         "_links": {
-            "_self": "string", "next": nono_page_url
+            "_self": "string",
+            "next": nono_page_url
         },
         "orders": [
             all_orders['order%s' % num]
@@ -250,9 +253,7 @@ async def test_list_orders_limit(order_descriptions,
 
 @respx.mock
 @pytest.mark.anyio
-async def test_create_order_basic(oid,
-                                  order_description,
-                                  order_request,
+async def test_create_order_basic(oid, order_description, order_request,
                                   session):
     route = respx.post(TEST_ORDERS_URL)
     route.return_value = httpx.Response(HTTPStatus.OK, json=order_description)
@@ -266,9 +267,7 @@ async def test_create_order_basic(oid,
 
 
 @respx.mock
-def test_create_order_basic_sync(oid,
-                                 order_description,
-                                 order_request,
+def test_create_order_basic_sync(oid, order_description, order_request,
                                  session):
     route = respx.post(TEST_ORDERS_URL)
     route.return_value = httpx.Response(HTTPStatus.OK, json=order_description)
@@ -288,8 +287,7 @@ async def test_create_order_bad_item_type(order_request, session):
     resp = {
         "field": {
             "Products": [{
-                "message":
-                "Bad item type 'invalid' for bundle type 'analytic'"
+                "message": "Bad item type 'invalid' for bundle type 'analytic'"
             }]
         },
         "general": [{
@@ -451,8 +449,7 @@ async def test_cancel_orders_by_ids(session, oid):
                 "count": 1
             },
             "failed": {
-                "count":
-                1,
+                "count": 1,
                 "failures": [{
                     "order_id": oid2,
                     "message": "Order not in a cancellable state",
@@ -483,8 +480,7 @@ def test_cancel_orders_by_ids_sync(session, oid):
                 "count": 1
             },
             "failed": {
-                "count":
-                1,
+                "count": 1,
                 "failures": [{
                     "order_id": oid2,
                     "message": "Order not in a cancellable state",
@@ -520,8 +516,10 @@ async def test_cancel_orders_all(session):
         "result": {
             "succeeded": {
                 "count": 2
-            }, "failed": {
-                "count": 0, "failures": []
+            },
+            "failed": {
+                "count": 0,
+                "failures": []
             }
         }
     }
@@ -543,8 +541,10 @@ def test_cancel_orders_all_sync(session):
         "result": {
             "succeeded": {
                 "count": 2
-            }, "failed": {
-                "count": 0, "failures": []
+            },
+            "failed": {
+                "count": 0,
+                "failures": []
             }
         }
     }
@@ -733,10 +733,12 @@ async def test_wait_invalid_state(oid, session):
 async def test_aggegated_order_stats(session):
     example_stats = {
         "organization": {
-            "queued_orders": 0, "running_orders": 6
+            "queued_orders": 0,
+            "running_orders": 6
         },
         "user": {
-            "queued_orders": 0, "running_orders": 0
+            "queued_orders": 0,
+            "running_orders": 0
         }
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=example_stats)
@@ -752,10 +754,12 @@ async def test_aggegated_order_stats(session):
 def test_aggegated_order_stats_sync(session):
     example_stats = {
         "organization": {
-            "queued_orders": 0, "running_orders": 6
+            "queued_orders": 0,
+            "running_orders": 6
         },
         "user": {
-            "queued_orders": 0, "running_orders": 0
+            "queued_orders": 0,
+            "running_orders": 0
         }
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=example_stats)
@@ -870,9 +874,7 @@ async def test_download_asset_img(tmpdir, open_test_img, session):
     "asset1_bytes, expectation",
     [(b"1", does_not_raise()), (b"1", does_not_raise()),
      (b"does not match", pytest.raises(exceptions.ClientError))])
-async def test_validate_checksum_checksum(tmpdir,
-                                          asset1_bytes,
-                                          expectation,
+async def test_validate_checksum_checksum(tmpdir, asset1_bytes, expectation,
                                           checksum):
 
     itemtype1_dir = Path(tmpdir, 'itemtype1')
@@ -912,9 +914,7 @@ async def test_validate_checksum_checksum(tmpdir,
     "asset1_bytes, expectation",
     [(b"1", does_not_raise()), (b"1", does_not_raise()),
      (b"does not match", pytest.raises(exceptions.ClientError))])
-def test_validate_checksum_checksum_sync(tmpdir,
-                                         asset1_bytes,
-                                         expectation,
+def test_validate_checksum_checksum_sync(tmpdir, asset1_bytes, expectation,
                                          checksum):
 
     itemtype1_dir = Path(tmpdir, 'itemtype1')
@@ -972,8 +972,7 @@ async def test_validate_checksum_manifest(
     Path(tmpdir, 'asset1.tif').write_bytes(b"1")
 
     manifest_data = {
-        "name":
-        "",
+        "name": "",
         "files": [{
             "path": "itemtype1/asset1.tif",
             "digests": {
@@ -1007,12 +1006,8 @@ async def test_validate_checksum_manifest(
        Path('oid', 'itemtype2', 'asset.json'),
        ])
      ])  # yapf: disable
-async def test_download_order_success(results,
-                                      paths,
-                                      tmpdir,
-                                      order_description,
-                                      oid,
-                                      session):
+async def test_download_order_success(results, paths, tmpdir,
+                                      order_description, oid, session):
 
     # Mock an HTTP response for download
     order_description['state'] = 'success'
@@ -1022,24 +1017,22 @@ async def test_download_order_success(results,
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.get(get_url).return_value = mock_resp
 
-    mock_resp1 = httpx.Response(HTTPStatus.OK,
-                                json={'key': 'value'},
-                                headers={
-                                    'Content-Type':
-                                    'application/json',
-                                    'Content-Disposition':
-                                    'attachment; filename="asset.json"'
-                                })
+    mock_resp1 = httpx.Response(
+        HTTPStatus.OK,
+        json={'key': 'value'},
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="asset.json"'
+        })
     respx.get(f'{TEST_DOWNLOAD_URL}/1').return_value = mock_resp1
 
-    mock_resp2 = httpx.Response(HTTPStatus.OK,
-                                json={'key2': 'value2'},
-                                headers={
-                                    'Content-Type':
-                                    'application/json',
-                                    'Content-Disposition':
-                                    'attachment; filename="asset.json"'
-                                })
+    mock_resp2 = httpx.Response(
+        HTTPStatus.OK,
+        json={'key2': 'value2'},
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="asset.json"'
+        })
     respx.get(f'{TEST_DOWNLOAD_URL}/2').return_value = mock_resp2
 
     cl = OrdersClient(session, base_url=TEST_URL)
@@ -1069,12 +1062,8 @@ async def test_download_order_success(results,
        Path('oid', 'itemtype2', 'asset.json'),
        ])
      ])  # yapf: disable
-def test_download_order_success_sync(results,
-                                     paths,
-                                     tmpdir,
-                                     order_description,
-                                     oid,
-                                     session):
+def test_download_order_success_sync(results, paths, tmpdir, order_description,
+                                     oid, session):
 
     # Mock an HTTP response for download
     order_description['state'] = 'success'
@@ -1084,24 +1073,22 @@ def test_download_order_success_sync(results,
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.get(get_url).return_value = mock_resp
 
-    mock_resp1 = httpx.Response(HTTPStatus.OK,
-                                json={'key': 'value'},
-                                headers={
-                                    'Content-Type':
-                                    'application/json',
-                                    'Content-Disposition':
-                                    'attachment; filename="asset.json"'
-                                })
+    mock_resp1 = httpx.Response(
+        HTTPStatus.OK,
+        json={'key': 'value'},
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="asset.json"'
+        })
     respx.get(f'{TEST_DOWNLOAD_URL}/1').return_value = mock_resp1
 
-    mock_resp2 = httpx.Response(HTTPStatus.OK,
-                                json={'key2': 'value2'},
-                                headers={
-                                    'Content-Type':
-                                    'application/json',
-                                    'Content-Disposition':
-                                    'attachment; filename="asset.json"'
-                                })
+    mock_resp2 = httpx.Response(
+        HTTPStatus.OK,
+        json={'key2': 'value2'},
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="asset.json"'
+        })
     respx.get(f'{TEST_DOWNLOAD_URL}/2').return_value = mock_resp2
 
     pl = Planet()
@@ -1159,11 +1146,7 @@ def test_download_order_state_sync(tmpdir, order_description, oid, session):
 @respx.mock
 @pytest.mark.anyio
 async def test_download_order_overwrite_true_preexisting_data(
-        tmpdir,
-        oid,
-        session,
-        create_download_mock,
-        original_content,
+        tmpdir, oid, session, create_download_mock, original_content,
         downloaded_content):
     """
     Test if download_order() overwrites pre-existing data with

@@ -36,8 +36,7 @@ def assert_geom_equal():
     return fcn
 
 
-def test_geom_from_geojson_success(geom_geojson,
-                                   feature_geojson,
+def test_geom_from_geojson_success(geom_geojson, feature_geojson,
                                    featurecollection_geojson,
                                    assert_geom_equal):
     ggeo = geojson.as_geom_or_ref(geom_geojson)

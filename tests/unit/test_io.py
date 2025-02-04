@@ -33,9 +33,11 @@ def make_aiter():
 @pytest.mark.anyio
 async def test_collect_non_features(make_aiter):
     values = [{
-        'key11': 'value11', 'key12': 'value12'
+        'key11': 'value11',
+        'key12': 'value12'
     }, {
-        'key21': 'value21', 'key22': 'value22'
+        'key21': 'value21',
+        'key22': 'value22'
     }]
 
     values_aiter = make_aiter(values)

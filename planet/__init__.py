@@ -21,16 +21,7 @@ from .io import collect
 from .sync import Planet
 
 __all__ = [
-    'Auth',
-    'collect',
-    'DataClient',
-    'data_filter',
-    'FeaturesClient',
-    'OrdersClient',
-    'order_request',
-    'Planet',
-    'reporting',
-    'Session',
-    'SubscriptionsClient',
-    'subscription_request'
+    'Auth', 'collect', 'DataClient', 'data_filter', 'FeaturesClient',
+    'OrdersClient', 'order_request', 'Planet', 'reporting', 'Session',
+    'SubscriptionsClient', 'subscription_request'
 ]

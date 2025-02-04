@@ -25,7 +25,8 @@ TEST_URL = 'http://www.mocknotrealurl.com/api/path'
 failing_api_mock = respx.mock()
 failing_api_mock.route(M(url__startswith=TEST_URL)).mock(
     return_value=Response(500, json={
-        "code": 0, "message": "string"
+        "code": 0,
+        "message": "string"
     }))
 
 
@@ -233,9 +234,9 @@ def test_list_subscriptions_success_sync(
         client.subscriptions.list_subscriptions(status=status))) == count
 
 
-@pytest.mark.parametrize("source_type, count",
-                         [("catalog", 100), ("soil_water_content", 0),
-                          (None, 100)])
+@pytest.mark.parametrize("source_type, count", [("catalog", 100),
+                                                ("soil_water_content", 0),
+                                                (None, 100)])
 @pytest.mark.anyio
 @api_mock
 async def test_list_subscriptions_source_type_success(
@@ -297,7 +298,9 @@ async def test_create_subscription_success():
     async with Session() as session:
         client = SubscriptionsClient(session, base_url=TEST_URL)
         sub = await client.create_subscription({
-            'name': 'test', 'delivery': 'yes, please', 'source': 'test'
+            'name': 'test',
+            'delivery': 'yes, please',
+            'source': 'test'
         })
         assert sub['name'] == 'test'
 
@@ -309,7 +312,9 @@ def test_create_subscription_success_sync():
     pl = Planet()
     pl.subscriptions._client._base_url = TEST_URL
     sub = pl.subscriptions.create_subscription({
-        'name': 'test', 'delivery': 'yes, please', 'source': 'test'
+        'name': 'test',
+        'delivery': 'yes, please',
+        'source': 'test'
     })
     assert sub['name'] == 'test'
 
@@ -321,7 +326,9 @@ async def test_create_subscription_with_hosting_success():
     async with Session() as session:
         client = SubscriptionsClient(session, base_url=TEST_URL)
         sub = await client.create_subscription({
-            'name': 'test', 'source': 'test', 'hosting': 'yes, please'
+            'name': 'test',
+            'source': 'test',
+            'hosting': 'yes, please'
         })
         assert sub['name'] == 'test'
 
@@ -332,7 +339,9 @@ def test_create_subscription_with_hosting_success_sync():
     pl = Planet()
     pl.subscriptions._client._base_url = TEST_URL
     sub = pl.subscriptions.create_subscription({
-        'name': 'test', 'source': 'test', 'hosting': 'yes, please'
+        'name': 'test',
+        'source': 'test',
+        'hosting': 'yes, please'
     })
     assert sub['name'] == 'test'
 
@@ -380,10 +389,11 @@ async def test_update_subscription_success():
     """Subscription is updated, description has the expected items."""
     async with Session() as session:
         client = SubscriptionsClient(session, base_url=TEST_URL)
-        sub = await client.update_subscription(
-            "test", {
-                "name": "test", "delivery": "no, thanks", "source": "test"
-            })
+        sub = await client.update_subscription("test", {
+            "name": "test",
+            "delivery": "no, thanks",
+            "source": "test"
+        })
         assert sub["delivery"] == "no, thanks"
 
 
@@ -392,10 +402,11 @@ def test_update_subscription_success_sync():
     """Subscription is updated, description has the expected items."""
     pl = Planet()
     pl.subscriptions._client._base_url = TEST_URL
-    sub = pl.subscriptions.update_subscription(
-        "test", {
-            "name": "test", "delivery": "no, thanks", "source": "test"
-        })
+    sub = pl.subscriptions.update_subscription("test", {
+        "name": "test",
+        "delivery": "no, thanks",
+        "source": "test"
+    })
     assert sub["delivery"] == "no, thanks"
 
 
@@ -505,7 +516,8 @@ paging_cycle_api_mock.route(M(url__startswith=TEST_URL)).mock(side_effect=[
              json={
                  'subscriptions': [{
                      'id': '1'
-                 }], '_links': {
+                 }],
+                 '_links': {
                      "next": TEST_URL
                  }
              }),
@@ -513,7 +525,8 @@ paging_cycle_api_mock.route(M(url__startswith=TEST_URL)).mock(side_effect=[
              json={
                  'subscriptions': [{
                      'id': '2'
-                 }], '_links': {
+                 }],
+                 '_links': {
                      "next": TEST_URL
                  }
              })

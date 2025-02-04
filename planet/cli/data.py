@@ -19,18 +19,13 @@ import click
 
 from planet.reporting import AssetStatusBar
 from planet import data_filter, DataClient, exceptions
-from planet.clients.data import (SEARCH_SORT,
-                                 LIST_SEARCH_TYPE,
-                                 LIST_SEARCH_TYPE_DEFAULT,
-                                 LIST_SORT_ORDER,
-                                 LIST_SORT_DEFAULT,
-                                 SEARCH_SORT_DEFAULT,
+from planet.clients.data import (SEARCH_SORT, LIST_SEARCH_TYPE,
+                                 LIST_SEARCH_TYPE_DEFAULT, LIST_SORT_ORDER,
+                                 LIST_SORT_DEFAULT, SEARCH_SORT_DEFAULT,
                                  STATS_INTERVAL)
 
-from planet.specs import (FetchBundlesSpecError,
-                          get_item_types,
-                          SpecificationException,
-                          validate_data_item_type)
+from planet.specs import (FetchBundlesSpecError, get_item_types,
+                          SpecificationException, validate_data_item_type)
 
 from . import types
 from .cmds import coro, translate_exceptions
@@ -163,7 +158,9 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     When multiple entries are specified, an implicit 'or' logic is applied.""")
 @click.option('--date-range',
               type=click.Tuple(
-                  [types.Field(), types.Comparison(), types.DateTime()]),
+                  [types.Field(),
+                   types.Comparison(),
+                   types.DateTime()]),
               callback=date_range_to_filter,
               multiple=True,
               help="""Filter by date range in field.
@@ -176,7 +173,8 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
               help="""Filter to items that overlap a given geometry. Can be a
               json string, filename, or '-' for stdin.""")
 @click.option('--number-in',
-              type=click.Tuple([types.Field(), types.CommaSeparatedFloat()]),
+              type=click.Tuple([types.Field(),
+                                types.CommaSeparatedFloat()]),
               multiple=True,
               callback=number_in_to_filter,
               help="""Filter field by numeric in.
@@ -190,7 +188,8 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
               help='Filter to assets with download permissions.')
 @click.option('--range',
               'nrange',
-              type=click.Tuple([types.Field(), types.Comparison(), float]),
+              type=click.Tuple([types.Field(),
+                                types.Comparison(), float]),
               callback=range_to_filter,
               multiple=True,
               help="""Filter by number range in field.
@@ -202,7 +201,8 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
               show_default=True,
               help='Filter to standard quality.')
 @click.option('--string-in',
-              type=click.Tuple([types.Field(), types.CommaSeparatedString()]),
+              type=click.Tuple([types.Field(),
+                                types.CommaSeparatedString()]),
               multiple=True,
               callback=string_in_to_filter,
               help="""Filter field by numeric in.
@@ -211,7 +211,9 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     When multiple entries are specified, an implicit 'or' logic is applied.""")
 @click.option(
     '--update',
-    type=click.Tuple([types.Field(), types.GTComparison(), types.DateTime()]),
+    type=click.Tuple([types.Field(),
+                      types.GTComparison(),
+                      types.DateTime()]),
     callback=update_to_filter,
     multiple=True,
     help="""Filter to items with changes to a specified field value made after
@@ -220,17 +222,8 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     COMP can be gt or gte.
     DATETIME can be an RFC3339 or ISO 8601 string.""")
 @pretty
-def filter(ctx,
-           asset,
-           date_range,
-           geom,
-           number_in,
-           nrange,
-           string_in,
-           update,
-           permission,
-           pretty,
-           std_quality):
+def filter(ctx, asset, date_range, geom, number_in, nrange, string_in, update,
+           permission, pretty, std_quality):
     """Create a structured item search filter.
 
     This command provides basic functionality for specifying a filter by
@@ -245,15 +238,8 @@ def filter(ctx,
     permission = data_filter.permission_filter() if permission else None
     std_quality = data_filter.std_quality_filter() if std_quality else None
 
-    filter_options = (asset,
-                      date_range,
-                      geom,
-                      number_in,
-                      nrange,
-                      string_in,
-                      update,
-                      permission,
-                      std_quality)
+    filter_options = (asset, date_range, geom, number_in, nrange, string_in,
+                      update, permission, std_quality)
 
     # options allowing multiples are broken up so one filter is created for
     # each time the option is specified
@@ -344,12 +330,7 @@ async def search(ctx, item_types, geom, filter, limit, name, sort, pretty):
               is_flag=True,
               help='Send a daily email when new results are added.')
 @pretty
-async def search_create(ctx,
-                        item_types,
-                        geom,
-                        filter,
-                        name,
-                        daily_email,
+async def search_create(ctx, item_types, geom, filter, name, daily_email,
                         pretty):
     """Create a new saved structured item search.
 
@@ -505,14 +486,8 @@ async def search_delete(ctx, search_id):
               is_flag=True,
               help='Send a daily email when new results are added.')
 @pretty
-async def search_update(ctx,
-                        search_id,
-                        item_types,
-                        filter,
-                        geom,
-                        name,
-                        daily_email,
-                        pretty):
+async def search_update(ctx, search_id, item_types, filter, geom, name,
+                        daily_email, pretty):
     """Update a saved search with the given search request.
 
     This function outputs a full JSON description of the updated search,
@@ -554,14 +529,8 @@ async def search_update(ctx,
               is_flag=True,
               default=None,
               help=('Verify that checksums match.'))
-async def asset_download(ctx,
-                         item_type,
-                         item_id,
-                         asset_type,
-                         directory,
-                         filename,
-                         overwrite,
-                         checksum):
+async def asset_download(ctx, item_type, item_id, asset_type, directory,
+                         filename, overwrite, checksum):
     """Download an activated asset.
 
     This function will fail if the asset state is not activated. Consider

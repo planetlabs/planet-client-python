@@ -46,10 +46,8 @@ class Planet:
     def __init__(self, session: Optional[Session] = None) -> None:
         self._session = session or Session()
         self._session._client.headers.update({
-            "X-Planet-App":
-            SYNC_CLIENT_X_PLANET_APP,
-            "User-Agent":
-            f"planet-client-python/{__version__}/sync"
+            "X-Planet-App": SYNC_CLIENT_X_PLANET_APP,
+            "User-Agent": f"planet-client-python/{__version__}/sync"
         })
 
         self.data = DataAPI(self._session)

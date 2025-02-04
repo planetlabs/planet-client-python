@@ -67,14 +67,10 @@ def to_collection_model(collection: dict) -> dict:
     permissions = {"can_write": True, "shared": False, "is_owner": True}
 
     return {
-        "id":
-        id,
-        "title":
-        collection.get("title"),
-        "description":
-        collection.get("description"),
-        "item_type":
-        "feature",
+        "id": id,
+        "title": collection.get("title"),
+        "description": collection.get("description"),
+        "item_type": "feature",
         "extent": {
             "spatial": {
                 "bbox": [[0, 0, 1, 1]]
@@ -94,31 +90,26 @@ def to_collection_model(collection: dict) -> dict:
                 "type": "application/json",
             },
         ],
-        "feature_count":
-        1,
-        "area":
-        1,
-        "title_property":
-        "NAME_0",
-        "description_property":
-        "description",
-        "permissions":
-        permissions,
+        "feature_count": 1,
+        "area": 1,
+        "title_property": "NAME_0",
+        "description_property": "description",
+        "permissions": permissions,
     }
 
 
 def list_collections_response(collections: list[dict]) -> dict:
     """simulate a list collections response"""
     return {
-        "numberMatched":
-        len(collections),
+        "numberMatched": len(collections),
         "links": [{
             "href": f"{TEST_URL}/collections",
             "rel": "self",
             "title": "This page of results",
         }],
-        "collections":
-        [to_collection_model(collection) for collection in collections],
+        "collections": [
+            to_collection_model(collection) for collection in collections
+        ],
     }
 
 
@@ -135,21 +126,17 @@ def to_feature_model(id: str) -> dict:
                 [7.05322265625, 47.17477833929903],
                 [7.05322265625, 46.81509864599243],
             ]],
-            "type":
-            "Polygon",
+            "type": "Polygon",
         },
     }
 
 
 def list_features_response(collection_id: str, num_features: int) -> dict:
     return {
-        "type":
-        "FeatureCollection",
-        "numberMatched":
-        num_features,
+        "type": "FeatureCollection",
+        "numberMatched": num_features,
         "links": [{
-            "href":
-            f"https://api.planet.com/features/v0/ogc/my/collections/{collection_id}/items",
+            "href": f"https://api.planet.com/features/v0/ogc/my/collections/{collection_id}/items",
             "rel": "self",
             "title": "This page of results",
         }],

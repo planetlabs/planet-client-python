@@ -25,8 +25,7 @@ import pytest
 import respx
 
 from planet import exceptions, DataClient, data_filter
-from planet.clients.data import (LIST_SORT_DEFAULT,
-                                 LIST_SEARCH_TYPE_DEFAULT,
+from planet.clients.data import (LIST_SORT_DEFAULT, LIST_SEARCH_TYPE_DEFAULT,
                                  SEARCH_SORT_DEFAULT)
 from planet.sync.data import DataAPI
 from planet.http import Session
@@ -49,8 +48,7 @@ def search_filter(get_test_file_json):
 @pytest.fixture
 def item_descriptions(get_test_file_json):
     item_ids = [
-        '20220125_075509_67_1061',
-        '20220125_075511_17_1061',
+        '20220125_075509_67_1061', '20220125_075511_17_1061',
         '20220125_075650_17_1061'
     ]
     items = [get_test_file_json(f'data_item_{id}.json') for id in item_ids]
@@ -79,9 +77,7 @@ def data_api():
 
 @respx.mock
 @pytest.mark.anyio
-async def test_search_basic(item_descriptions,
-                            search_response,
-                            mock_bundles,
+async def test_search_basic(item_descriptions, search_response, mock_bundles,
                             session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
@@ -91,7 +87,8 @@ async def test_search_basic(item_descriptions,
     page1_response = {
         "_links": {
             "_next": next_page_url
-        }, "features": [item1, item2]
+        },
+        "features": [item1, item2]
     }
     mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.post(quick_search_url).return_value = mock_resp1
@@ -105,7 +102,8 @@ async def test_search_basic(item_descriptions,
 
     # check that request is correct
     expected_request = {
-        "item_types": ["PSScene"], "filter": data_filter.empty_filter()
+        "item_types": ["PSScene"],
+        "filter": data_filter.empty_filter()
     }
 
     actual_body = json.loads(respx.calls[1].request.content)
@@ -116,9 +114,7 @@ async def test_search_basic(item_descriptions,
 
 
 @respx.mock
-def test_search_basic_sync(item_descriptions,
-                           search_response,
-                           mock_bundles,
+def test_search_basic_sync(item_descriptions, search_response, mock_bundles,
                            data_api):
 
     quick_search_url = f'{TEST_URL}/quick-search'
@@ -128,7 +124,8 @@ def test_search_basic_sync(item_descriptions,
     page1_response = {
         "_links": {
             "_next": next_page_url
-        }, "features": [item1, item2]
+        },
+        "features": [item1, item2]
     }
     mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.post(quick_search_url).return_value = mock_resp1
@@ -141,7 +138,8 @@ def test_search_basic_sync(item_descriptions,
 
     # check that request is correct
     expected_request = {
-        "item_types": ["PSScene"], "filter": data_filter.empty_filter()
+        "item_types": ["PSScene"],
+        "filter": data_filter.empty_filter()
     }
     actual_body = json.loads(respx.calls[0].request.content)
     assert actual_body == expected_request
@@ -152,9 +150,7 @@ def test_search_basic_sync(item_descriptions,
 
 @respx.mock
 @pytest.mark.anyio
-async def test_search_name(item_descriptions,
-                           search_response,
-                           mock_bundles,
+async def test_search_name(item_descriptions, search_response, mock_bundles,
                            session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
@@ -164,7 +160,8 @@ async def test_search_name(item_descriptions,
     page1_response = {
         "_links": {
             "_next": next_page_url
-        }, "features": [item1, item2]
+        },
+        "features": [item1, item2]
     }
     mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.post(quick_search_url).return_value = mock_resp1
@@ -193,11 +190,8 @@ async def test_search_name(item_descriptions,
 @pytest.mark.anyio
 @pytest.mark.parametrize("geom_fixture", [('geom_geojson'),
                                           ('geom_reference')])
-async def test_search_geometry(geom_fixture,
-                               item_descriptions,
-                               mock_bundles,
-                               session,
-                               request):
+async def test_search_geometry(geom_fixture, item_descriptions, mock_bundles,
+                               session, request):
 
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
@@ -206,7 +200,8 @@ async def test_search_geometry(geom_fixture,
     page1_response = {
         "_links": {
             "_next": next_page_url
-        }, "features": [item1, item2]
+        },
+        "features": [item1, item2]
     }
     mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.post(quick_search_url).return_value = mock_resp1
@@ -239,11 +234,8 @@ async def test_search_geometry(geom_fixture,
 @respx.mock
 @pytest.mark.parametrize("geom_fixture", [('geom_geojson'),
                                           ('geom_reference')])
-def test_search_geometry_sync(geom_fixture,
-                              item_descriptions,
-                              mock_bundles,
-                              data_api,
-                              request):
+def test_search_geometry_sync(geom_fixture, item_descriptions, mock_bundles,
+                              data_api, request):
 
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
@@ -252,7 +244,8 @@ def test_search_geometry_sync(geom_fixture,
     page1_response = {
         "_links": {
             "_next": next_page_url
-        }, "features": [item1, item2]
+        },
+        "features": [item1, item2]
     }
     mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.post(quick_search_url).return_value = mock_resp1
@@ -281,11 +274,8 @@ def test_search_geometry_sync(geom_fixture,
 
 @respx.mock
 @pytest.mark.anyio
-async def test_search_filter(item_descriptions,
-                             search_filter,
-                             search_response,
-                             mock_bundles,
-                             session):
+async def test_search_filter(item_descriptions, search_filter, search_response,
+                             mock_bundles, session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
@@ -294,7 +284,8 @@ async def test_search_filter(item_descriptions,
     page1_response = {
         "_links": {
             "_next": next_page_url
-        }, "features": [item1, item2]
+        },
+        "features": [item1, item2]
     }
     mock_resp1 = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.post(quick_search_url).return_value = mock_resp1
@@ -320,10 +311,8 @@ async def test_search_filter(item_descriptions,
 
 @respx.mock
 @pytest.mark.anyio
-async def test_search_filter_positional_args(item_descriptions,
-                                             search_filter,
-                                             search_response,
-                                             mock_bundles,
+async def test_search_filter_positional_args(item_descriptions, search_filter,
+                                             search_response, mock_bundles,
                                              session):
     """test the search method using positional args"""
 
@@ -350,11 +339,8 @@ async def test_search_filter_positional_args(item_descriptions,
 
 @respx.mock
 @pytest.mark.anyio
-async def test_search_sort(item_descriptions,
-                           search_filter,
-                           search_response,
-                           mock_bundles,
-                           session):
+async def test_search_sort(item_descriptions, search_filter, search_response,
+                           mock_bundles, session):
 
     sort = 'acquired asc'
     quick_search_url = f'{TEST_URL}/quick-search?_sort={sort}'
@@ -377,11 +363,8 @@ async def test_search_sort(item_descriptions,
 
 @respx.mock
 @pytest.mark.anyio
-async def test_search_limit(item_descriptions,
-                            search_filter,
-                            search_response,
-                            mock_bundles,
-                            session):
+async def test_search_limit(item_descriptions, search_filter, search_response,
+                            mock_bundles, session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
 
@@ -409,7 +392,8 @@ async def test_create_search_basic(search_filter, mock_bundles, session):
     page_response = {
         "__daily_email_enabled": False,
         "_links": {
-            "_self": "string", "thumbnail": "string"
+            "_self": "string",
+            "thumbnail": "string"
         },
         "created": "2019-08-24T14:15:22Z",
         "filter": search_filter,
@@ -446,7 +430,8 @@ def test_create_search_basic_sync(search_filter, mock_bundles, data_api):
     page_response = {
         "__daily_email_enabled": False,
         "_links": {
-            "_self": "string", "thumbnail": "string"
+            "_self": "string",
+            "thumbnail": "string"
         },
         "created": "2019-08-24T14:15:22Z",
         "filter": search_filter,
@@ -478,15 +463,15 @@ def test_create_search_basic_sync(search_filter, mock_bundles, data_api):
 
 @respx.mock
 @pytest.mark.anyio
-async def test_create_search_basic_positional_args(search_filter,
-                                                   mock_bundles,
+async def test_create_search_basic_positional_args(search_filter, mock_bundles,
                                                    session):
     """Test that positional arguments are accepted for create_search"""
 
     page_response = {
         "__daily_email_enabled": False,
         "_links": {
-            "_self": "string", "thumbnail": "string"
+            "_self": "string",
+            "thumbnail": "string"
         },
         "created": "2019-08-24T14:15:22Z",
         "filter": search_filter,
@@ -522,7 +507,8 @@ async def test_create_search_email(search_filter, mock_bundles, session):
     page_response = {
         "__daily_email_enabled": True,
         "_links": {
-            "_self": "string", "thumbnail": "string"
+            "_self": "string",
+            "thumbnail": "string"
         },
         "created": "2019-08-24T14:15:22Z",
         "filter": search_filter,
@@ -598,7 +584,8 @@ async def test_update_search_basic(search_filter, session):
     page_response = {
         "__daily_email_enabled": False,
         "_links": {
-            "_self": "string", "thumbnail": "string"
+            "_self": "string",
+            "thumbnail": "string"
         },
         "created": "2019-08-24T14:15:22Z",
         "filter": search_filter,
@@ -637,7 +624,8 @@ def test_update_search_basic_sync(search_filter, data_api):
     page_response = {
         "__daily_email_enabled": False,
         "_links": {
-            "_self": "string", "thumbnail": "string"
+            "_self": "string",
+            "thumbnail": "string"
         },
         "created": "2019-08-24T14:15:22Z",
         "filter": search_filter,
@@ -677,7 +665,8 @@ async def test_update_search_basic_positional_args(search_filter, session):
     page_response = {
         "__daily_email_enabled": False,
         "_links": {
-            "_self": "string", "thumbnail": "string"
+            "_self": "string",
+            "thumbnail": "string"
         },
         "created": "2019-08-24T14:15:22Z",
         "filter": search_filter,
@@ -712,10 +701,8 @@ async def test_update_search_basic_positional_args(search_filter, session):
 @respx.mock
 @pytest.mark.anyio
 @pytest.mark.parametrize("limit, expected_list_length", [(None, 4), (3, 3)])
-async def test_list_searches_success(limit,
-                                     expected_list_length,
-                                     search_result,
-                                     session):
+async def test_list_searches_success(limit, expected_list_length,
+                                     search_result, session):
     page1_response = {"_links": {}, "searches": [search_result] * 4}
     route = respx.get(TEST_SEARCHES_URL)
     route.return_value = httpx.Response(200, json=page1_response)
@@ -730,9 +717,7 @@ async def test_list_searches_success(limit,
 
 @respx.mock
 @pytest.mark.parametrize("limit, expected_list_length", [(None, 4), (3, 3)])
-def test_list_searches_success_sync(limit,
-                                    expected_list_length,
-                                    search_result,
+def test_list_searches_success_sync(limit, expected_list_length, search_result,
                                     data_api):
     page1_response = {"_links": {}, "searches": [search_result] * 4}
     route = respx.get(TEST_SEARCHES_URL)
@@ -765,9 +750,7 @@ async def test_list_searches_sort(sort, rel_url, search_result, session):
 @pytest.mark.parametrize("search_type, rel_url",
                          [(LIST_SEARCH_TYPE_DEFAULT, ''),
                           ('saved', '?search_type=saved')])
-async def test_list_searches_searchtype(search_type,
-                                        rel_url,
-                                        search_result,
+async def test_list_searches_searchtype(search_type, rel_url, search_result,
                                         session):
     page1_response = {"_links": {}, "searches": [search_result] * 4}
     route = respx.get(f'{TEST_SEARCHES_URL}{rel_url}')
@@ -785,9 +768,7 @@ async def test_list_searches_searchtype(search_type,
     "sort, search_type, expectation",
     [('DOESNOTEXIST', 'ANY', pytest.raises(exceptions.ClientError)),
      ('CREATED DESC', 'DOESNOTEXIST', pytest.raises(exceptions.ClientError))])
-async def test_list_searches_args_do_not_match(sort,
-                                               search_type,
-                                               expectation,
+async def test_list_searches_args_do_not_match(sort, search_type, expectation,
                                                session):
     route = respx.get(TEST_SEARCHES_URL)
     route.return_value = httpx.Response(200, json={})
@@ -837,19 +818,16 @@ def test_delete_search_sync(retcode, expectation, data_api):
 @pytest.mark.parametrize("search_id, valid", [(VALID_SEARCH_ID, True),
                                               ('invalid', False)])
 @pytest.mark.parametrize("limit, expected_count", [(None, 3), (2, 2)])
-async def test_run_search_basic(item_descriptions,
-                                session,
-                                search_id,
-                                valid,
-                                limit,
-                                expected_count):
+async def test_run_search_basic(item_descriptions, session, search_id, valid,
+                                limit, expected_count):
     """Ensure run_search is successful and handles search_id and limit"""
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
     item1, item2, item3 = item_descriptions
     page1_response = {
         "_links": {
             "_next": next_page_url
-        }, "features": [item1, item2]
+        },
+        "features": [item1, item2]
     }
 
     route = respx.get(f'{TEST_SEARCHES_URL}/{search_id}/results')
@@ -877,19 +855,16 @@ async def test_run_search_basic(item_descriptions,
 @pytest.mark.parametrize("search_id, valid", [(VALID_SEARCH_ID, True),
                                               ('invalid', False)])
 @pytest.mark.parametrize("limit, expected_count", [(None, 3), (2, 2)])
-def test_run_search_basic_sync(item_descriptions,
-                               data_api,
-                               search_id,
-                               valid,
-                               limit,
-                               expected_count):
+def test_run_search_basic_sync(item_descriptions, data_api, search_id, valid,
+                               limit, expected_count):
     """Ensure run_search is successful and handles search_id and limit"""
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
     item1, item2, item3 = item_descriptions
     page1_response = {
         "_links": {
             "_next": next_page_url
-        }, "features": [item1, item2]
+        },
+        "features": [item1, item2]
     }
 
     route = respx.get(f'{TEST_SEARCHES_URL}/{search_id}/results')
@@ -917,17 +892,15 @@ def test_run_search_basic_sync(item_descriptions,
                          [(SEARCH_SORT_DEFAULT, '', True),
                           ('acquired asc', '?_sort=acquired+asc', True),
                           ('invalid', '', False)])
-async def test_run_search_sort(item_descriptions,
-                               session,
-                               sort,
-                               rel_url,
+async def test_run_search_sort(item_descriptions, session, sort, rel_url,
                                valid):
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
     item1, item2, item3 = item_descriptions
     page1_response = {
         "_links": {
             "_next": next_page_url
-        }, "features": [item1, item2]
+        },
+        "features": [item1, item2]
     }
 
     route = respx.get(
@@ -968,13 +941,16 @@ async def test_get_stats_success(search_filter, session):
     page_response = {
         "buckets": [
             {
-                "count": 433638, "start_time": "2022-01-01T00:00:00.000000Z"
+                "count": 433638,
+                "start_time": "2022-01-01T00:00:00.000000Z"
             },
             {
-                "count": 431924, "start_time": "2022-01-02T00:00:00.000000Z"
+                "count": 431924,
+                "start_time": "2022-01-02T00:00:00.000000Z"
             },
             {
-                "count": 417138, "start_time": "2022-01-03T00:00:00.000000Z"
+                "count": 417138,
+                "start_time": "2022-01-03T00:00:00.000000Z"
             },
         ],
     }
@@ -986,7 +962,9 @@ async def test_get_stats_success(search_filter, session):
 
     # check that request is correct
     expected_request = {
-        "item_types": ["PSScene"], "filter": search_filter, "interval": "day"
+        "item_types": ["PSScene"],
+        "filter": search_filter,
+        "interval": "day"
     }
     actual_body = json.loads(respx.calls[0].request.content)
     assert actual_body == expected_request
@@ -1001,13 +979,16 @@ def test_get_stats_success_sync(search_filter, data_api):
     page_response = {
         "buckets": [
             {
-                "count": 433638, "start_time": "2022-01-01T00:00:00.000000Z"
+                "count": 433638,
+                "start_time": "2022-01-01T00:00:00.000000Z"
             },
             {
-                "count": 431924, "start_time": "2022-01-02T00:00:00.000000Z"
+                "count": 431924,
+                "start_time": "2022-01-02T00:00:00.000000Z"
             },
             {
-                "count": 417138, "start_time": "2022-01-03T00:00:00.000000Z"
+                "count": 417138,
+                "start_time": "2022-01-03T00:00:00.000000Z"
             },
         ],
     }
@@ -1018,7 +999,9 @@ def test_get_stats_success_sync(search_filter, data_api):
 
     # check that request is correct
     expected_request = {
-        "item_types": ["PSScene"], "filter": search_filter, "interval": "day"
+        "item_types": ["PSScene"],
+        "filter": search_filter,
+        "interval": "day"
     }
     actual_body = json.loads(respx.calls[0].request.content)
     assert actual_body == expected_request
@@ -1046,12 +1029,9 @@ async def test_list_item_assets_success(session):
     page_response = {
         "basic_analytic_4b": {
             "_links": {
-                "_self":
-                "SELFURL",
-                "activate":
-                "ACTIVATEURL",
-                "type":
-                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+                "_self": "SELFURL",
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
             },
             "_permissions": ["download"],
             "md5_digest": None,
@@ -1089,12 +1069,9 @@ def test_list_item_assets_success_sync(data_api):
     page_response = {
         "basic_analytic_4b": {
             "_links": {
-                "_self":
-                "SELFURL",
-                "activate":
-                "ACTIVATEURL",
-                "type":
-                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+                "_self": "SELFURL",
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
             },
             "_permissions": ["download"],
             "md5_digest": None,
@@ -1163,12 +1140,9 @@ async def test_get_asset(asset_type_id, expectation, mock_bundles, session):
     page_response = {
         "basic_analytic_4b": {
             "_links": {
-                "_self":
-                "SELFURL",
-                "activate":
-                "ACTIVATEURL",
-                "type":
-                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+                "_self": "SELFURL",
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
             },
             "_permissions": ["download"],
             "md5_digest": None,
@@ -1211,12 +1185,9 @@ def test_get_asset_sync(asset_type_id, expectation, mock_bundles, data_api):
     page_response = {
         "basic_analytic_4b": {
             "_links": {
-                "_self":
-                "SELFURL",
-                "activate":
-                "ACTIVATEURL",
-                "type":
-                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+                "_self": "SELFURL",
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
             },
             "_permissions": ["download"],
             "md5_digest": None,
@@ -1393,13 +1364,9 @@ async def test_wait_asset_max_attempts(session):
 
 @respx.mock
 @pytest.mark.anyio
-@pytest.mark.parametrize("exists, overwrite",
-                         [(False, False), (True, False), (True, True),
-                          (False, True)])
-async def test_download_asset(exists,
-                              overwrite,
-                              tmpdir,
-                              open_test_img,
+@pytest.mark.parametrize("exists, overwrite", [(False, False), (True, False),
+                                               (True, True), (False, True)])
+async def test_download_asset(exists, overwrite, tmpdir, open_test_img,
                               session):
     # NOTE: this is a slightly edited version of test_download_asset_img from
     # tests/integration/test_orders_api
@@ -1460,13 +1427,9 @@ async def test_download_asset(exists,
 
 @respx.mock
 @pytest.mark.anyio
-@pytest.mark.parametrize("exists, overwrite",
-                         [(False, False), (True, False), (True, True),
-                          (False, True)])
-async def test_download_asset_sync(exists,
-                                   overwrite,
-                                   tmpdir,
-                                   open_test_img,
+@pytest.mark.parametrize("exists, overwrite", [(False, False), (True, False),
+                                               (True, True), (False, True)])
+async def test_download_asset_sync(exists, overwrite, tmpdir, open_test_img,
                                    data_api):
     # NOTE: this is a slightly edited version of test_download_asset_img from
     # tests/integration/test_orders_api

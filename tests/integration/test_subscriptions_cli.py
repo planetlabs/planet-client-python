@@ -22,15 +22,9 @@ import pytest
 
 from planet.cli import cli
 
-from test_subscriptions_api import (api_mock,
-                                    cancel_mock,
-                                    create_mock,
-                                    failing_api_mock,
-                                    get_mock,
-                                    patch_mock,
-                                    res_api_mock,
-                                    update_mock,
-                                    TEST_URL)
+from test_subscriptions_api import (api_mock, cancel_mock, create_mock,
+                                    failing_api_mock, get_mock, patch_mock,
+                                    res_api_mock, update_mock, TEST_URL)
 
 # CliRunner doesn't agree with empty options, so a list of option
 # combinations which omit the empty options is best. For example,
@@ -60,16 +54,13 @@ def invoke():
      (['--limit=2', '--pretty', '--status=running'], 2),
      (['--limit=1', '--status=preparing'], 0),
      ([
-         '--name=test xyz',
-         '--name-contains=xyz',
+         '--name=test xyz', '--name-contains=xyz',
          '--created=2018-02-12T00:00:00Z/..',
          '--updated=../2018-03-18T12:31:12Z',
          '--start-time=2018-01-01T00:00:00Z',
          '--end-time=2022-01-01T00:00:00Z/2024-01-01T00:00:00Z',
-         '--hosting=true',
-         '--sort-by=name DESC'
-     ],
-      2)])
+         '--hosting=true', '--sort-by=name DESC'
+     ], 2)])
 @api_mock
 # Remember, parameters come before fixtures in the function definition.
 def test_subscriptions_list_options(invoke, options, expected_count):
@@ -110,7 +101,9 @@ def test_subscriptions_create_failure(invoke):
 # imitation of the Planet Subscriptions API.
 GOOD_SUB_REQUEST = {'name': 'lol', 'delivery': True, 'source': 'wut'}
 GOOD_SUB_REQUEST_WITH_HOSTING = {
-    'name': 'lol', 'source': 'wut', 'hosting': True
+    'name': 'lol',
+    'source': 'wut',
+    'hosting': True
 }
 
 
@@ -325,9 +318,7 @@ def test_request_base_success(invoke, geom_geojson):
     })
 
     result = invoke([
-        'request',
-        '--name=test',
-        f'--source={source}',
+        'request', '--name=test', f'--source={source}',
         f'--delivery={delivery}'
     ])
 
@@ -335,9 +326,8 @@ def test_request_base_success(invoke, geom_geojson):
     assert result.exit_code == 0  # success.
 
 
-@pytest.mark.parametrize("geom_fixture",
-                         [('geom_geojson'), ('geom_reference'),
-                          ("str_geom_reference")])
+@pytest.mark.parametrize("geom_fixture", [('geom_geojson'), ('geom_reference'),
+                                          ("str_geom_reference")])
 def test_request_base_clip_to_source(geom_fixture, request, invoke):
     """Clip to source using command line option."""
     geom = request.getfixturevalue(geom_fixture)
@@ -351,11 +341,8 @@ def test_request_base_clip_to_source(geom_fixture, request, invoke):
         },
     })
     result = invoke([
-        'request',
-        '--name=test',
-        f'--source={source}',
-        '--delivery={"type": "fake"}',
-        '--clip-to-source'
+        'request', '--name=test', f'--source={source}',
+        '--delivery={"type": "fake"}', '--clip-to-source'
     ])
 
     assert result.exit_code == 0  # success.
@@ -378,8 +365,7 @@ def test_request_catalog_success(mock_bundles, invoke, geom_geojson):
     }
 
     result = invoke([
-        'request-catalog',
-        '--item-types=PSScene',
+        'request-catalog', '--item-types=PSScene',
         '--asset-types=ortho_analytic_4b',
         f"--geometry={json.dumps(geom_geojson)}",
         '--start-time=2021-03-01T00:00:00'
@@ -425,9 +411,7 @@ def test_request_pv_success(invoke, geom, request):
             itertools.combinations(["preview", "standard", "finalized"], i)
             for i in range(1, 4))) + [("preview", "preview"),
                                       ("preview", "finalized", "preview")])
-def test_catalog_source_publishing_stages(mock_bundles,
-                                          invoke,
-                                          geom_geojson,
+def test_catalog_source_publishing_stages(mock_bundles, invoke, geom_geojson,
                                           publishing_stages):
     """Catalog source publishing stages are configured."""
     result = invoke([
@@ -445,9 +429,7 @@ def test_catalog_source_publishing_stages(mock_bundles,
 
 
 @pytest.mark.parametrize("time_range_type", ["acquired", "published"])
-def test_catalog_source_time_range_type(mock_bundles,
-                                        invoke,
-                                        geom_geojson,
+def test_catalog_source_time_range_type(mock_bundles, invoke, geom_geojson,
                                         time_range_type):
     """Catalog source time range type is configured."""
     result = invoke([
@@ -469,20 +451,14 @@ def test_catalog_source_time_range_type(mock_bundles,
     [
         ("--hosting=sentinel_hub", None, None, True),
         ("--hosting=sentinel_hub",
-         "--collection-id=7ff105c4-e0de-4910-96db-8345d86ab734",
-         None,
-         True),
+         "--collection-id=7ff105c4-e0de-4910-96db-8345d86ab734", None, True),
         ("--hosting=sentinel_hub", None, "--create-configuration", True),
         ("--hosting=sentinel_hub",
          "--collection-id=7ff105c4-e0de-4910-96db-8345d86ab734",
-         "--create-configuration",
-         True),
+         "--create-configuration", True),
     ])
-def test_request_hosting(invoke,
-                         geom_geojson,
-                         hosting_option,
-                         collection_id_option,
-                         configuration_option,
+def test_request_hosting(invoke, geom_geojson, hosting_option,
+                         collection_id_option, configuration_option,
                          expected_success):
     """Test request command with various hosting and collection ID options."""
     source = json.dumps({

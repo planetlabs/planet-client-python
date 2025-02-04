@@ -40,11 +40,8 @@ T = TypeVar("T")
 # For how this list was determined, see
 # https://github.com/planetlabs/planet-client-python/issues/580
 RETRY_EXCEPTIONS = [
-    httpx.ConnectError,
-    httpx.ReadError,
-    httpx.ReadTimeout,
-    httpx.RemoteProtocolError,
-    exceptions.BadGateway,
+    httpx.ConnectError, httpx.ReadError, httpx.ReadTimeout,
+    httpx.RemoteProtocolError, exceptions.BadGateway,
     exceptions.TooManyRequests
 ]
 MAX_RETRIES = 5
@@ -250,7 +247,8 @@ class Session(BaseSession):
         timeout = httpx.Timeout(10.0, read=READ_TIMEOUT)
 
         headers = {
-            'User-Agent': self._get_user_agent(), 'X-Planet-App': 'python-sdk'
+            'User-Agent': self._get_user_agent(),
+            'X-Planet-App': 'python-sdk'
         }
 
         self._client = httpx.AsyncClient(auth=auth,

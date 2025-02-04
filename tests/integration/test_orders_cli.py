@@ -55,7 +55,8 @@ def test_cli_orders_list_basic(invoke, order_descriptions):
     order1, order2, order3 = order_descriptions
     page1_response = {
         "_links": {
-            "_self": "string", "next": next_page_url
+            "_self": "string",
+            "next": next_page_url
         },
         "orders": [order1, order2]
     }
@@ -92,7 +93,8 @@ def test_cli_orders_list_filtering_and_sorting(invoke, order_descriptions):
     page1_response = {
         "_links": {
             "_self": "string"
-        }, "orders": [order1, order2]
+        },
+        "orders": [order1, order2]
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(list_url).return_value = mock_resp
@@ -100,21 +102,10 @@ def test_cli_orders_list_filtering_and_sorting(invoke, order_descriptions):
     # if the value of each arg doesn't get sent as a url parameter,
     # the mock will fail and this test will fail
     result = invoke([
-        'list',
-        '--state',
-        'failed',
-        '--name',
-        'my_order_xyz',
-        '--name-contains',
-        'xyz',
-        '--created-on',
-        '2018-02-12T00:00:00Z/..',
-        '--last-modified',
-        '../2018-03-18T12:31:12Z',
-        '--hosting',
-        'true',
-        '--sort-by',
-        'name DESC'
+        'list', '--state', 'failed', '--name', 'my_order_xyz',
+        '--name-contains', 'xyz', '--created-on', '2018-02-12T00:00:00Z/..',
+        '--last-modified', '../2018-03-18T12:31:12Z', '--hosting', 'true',
+        '--sort-by', 'name DESC'
     ])
     assert result.exit_code == 0
     sequence = '\n'.join([json.dumps(o) for o in [order1, order2]])
@@ -124,9 +115,7 @@ def test_cli_orders_list_filtering_and_sorting(invoke, order_descriptions):
 @respx.mock
 @pytest.mark.parametrize("limit,limited_list_length", [(None, 100), (0, 102),
                                                        (1, 1)])
-def test_cli_orders_list_limit(invoke,
-                               order_descriptions,
-                               limit,
+def test_cli_orders_list_limit(invoke, order_descriptions, limit,
                                limited_list_length):
     # Creating 102 (3x34) order descriptions
     long_order_descriptions = order_descriptions * 34
@@ -163,7 +152,8 @@ def test_cli_orders_list_pretty(invoke, monkeypatch, order_description):
     page1_response = {
         "_links": {
             "_self": "string"
-        }, "orders": [order_description]
+        },
+        "orders": [order_description]
     }
     mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
     respx.get(TEST_ORDERS_URL).return_value = mock_resp
@@ -287,24 +277,22 @@ def mock_download_response(oid, order_description):
         mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
         respx.get(get_url).return_value = mock_resp
 
-        mock_resp1 = httpx.Response(HTTPStatus.OK,
-                                    json={'key': 'value'},
-                                    headers={
-                                        'Content-Type':
-                                        'application/json',
-                                        'Content-Disposition':
-                                        'attachment; filename="m1.json"'
-                                    })
+        mock_resp1 = httpx.Response(
+            HTTPStatus.OK,
+            json={'key': 'value'},
+            headers={
+                'Content-Type': 'application/json',
+                'Content-Disposition': 'attachment; filename="m1.json"'
+            })
         respx.get(dl_url1).return_value = mock_resp1
 
-        mock_resp2 = httpx.Response(HTTPStatus.OK,
-                                    json={'key2': 'value2'},
-                                    headers={
-                                        'Content-Type':
-                                        'application/json',
-                                        'Content-Disposition':
-                                        'attachment; filename="m2.json"'
-                                    })
+        mock_resp2 = httpx.Response(
+            HTTPStatus.OK,
+            json={'key2': 'value2'},
+            headers={
+                'Content-Type': 'application/json',
+                'Content-Disposition': 'attachment; filename="m2.json"'
+            })
         respx.get(dl_url2).return_value = mock_resp2
 
         m1_bytes = b'{"key":"value"}'
@@ -324,14 +312,13 @@ def mock_download_response(oid, order_description):
                         "sha256": hashlib.sha256(m2_bytes).hexdigest()}
                 }]
         }  # yapf: disable
-        mock_resp3 = httpx.Response(HTTPStatus.OK,
-                                    json=manifest_data,
-                                    headers={
-                                        'Content-Type':
-                                        'application/json',
-                                        'Content-Disposition':
-                                        'attachment; filename="manifest.json"'
-                                    })
+        mock_resp3 = httpx.Response(
+            HTTPStatus.OK,
+            json=manifest_data,
+            headers={
+                'Content-Type': 'application/json',
+                'Content-Disposition': 'attachment; filename="manifest.json"'
+            })
         respx.get(dl_url3).return_value = mock_resp3
 
     return _func
@@ -388,9 +375,7 @@ def test_cli_orders_download_dest(invoke, mock_download_response, oid):
 
 
 @respx.mock
-def test_cli_orders_download_overwrite(invoke,
-                                       mock_download_response,
-                                       oid,
+def test_cli_orders_download_overwrite(invoke, mock_download_response, oid,
                                        write_to_tmp_json_file):
     mock_download_response()
 
@@ -436,8 +421,7 @@ def test_cli_orders_create_basic_success(invoke, order_description):
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
@@ -446,7 +430,8 @@ def test_cli_orders_create_basic_success(invoke, order_description):
     }
 
     result = CliRunner().invoke(
-        cli.main, ['orders', 'create', json.dumps(order_request)],
+        cli.main,
+        ['orders', 'create', json.dumps(order_request)],
         catch_exceptions=True)
 
     assert result.exit_code == 0
@@ -459,11 +444,8 @@ def test_cli_orders_create_basic_success(invoke, order_description):
     [('20220325_131639_20_2402', ['20220325_131639_20_2402']),
      ('20220325_131639_20_2402,20230324_121730_43_2423',
       ['20220325_131639_20_2402', '20230324_121730_43_2423'])])
-def test_cli_orders_request_basic_success(mock_bundles,
-                                          expected_ids,
-                                          id_string,
-                                          invoke,
-                                          stac_json):
+def test_cli_orders_request_basic_success(mock_bundles, expected_ids,
+                                          id_string, invoke, stac_json):
     result = invoke([
         'request',
         '--item-type=PSScene',
@@ -474,15 +456,13 @@ def test_cli_orders_request_basic_success(mock_bundles,
     assert not result.exception
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": expected_ids,
             "item_type": "PSScene",
             "product_bundle": "visual"
         }],
-        "metadata":
-        stac_json
+        "metadata": stac_json
     }
     assert order_request == json.loads(result.output)
 
@@ -528,15 +508,11 @@ def test_cli_orders_request_id_empty(mock_bundles, invoke):
     assert 'Entry cannot be an empty string.' in result.output
 
 
-@pytest.mark.parametrize("geom_fixture",
-                         [('geom_geojson'), ('feature_geojson'),
-                          ('featurecollection_geojson')])
-def test_cli_orders_request_clip_polygon(mock_bundles,
-                                         geom_fixture,
-                                         request,
-                                         invoke,
-                                         geom_geojson,
-                                         stac_json):
+@pytest.mark.parametrize("geom_fixture", [('geom_geojson'),
+                                          ('feature_geojson'),
+                                          ('featurecollection_geojson')])
+def test_cli_orders_request_clip_polygon(mock_bundles, geom_fixture, request,
+                                         invoke, geom_geojson, stac_json):
 
     geom = request.getfixturevalue(geom_fixture)
 
@@ -551,8 +527,7 @@ def test_cli_orders_request_clip_polygon(mock_bundles,
     assert result.exit_code == 0
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
@@ -563,18 +538,14 @@ def test_cli_orders_request_clip_polygon(mock_bundles,
                 'aoi': geom_geojson
             }
         }],
-        "metadata":
-        stac_json
+        "metadata": stac_json
     }
     assert order_request == json.loads(result.output)
 
 
 @pytest.mark.parametrize("geom_fixture", [('geom_reference')])
-def test_cli_orders_request_clip_ref(mock_bundles,
-                                     geom_fixture,
-                                     request,
-                                     invoke,
-                                     stac_json):
+def test_cli_orders_request_clip_ref(mock_bundles, geom_fixture, request,
+                                     invoke, stac_json):
 
     geom = request.getfixturevalue(geom_fixture)
 
@@ -589,8 +560,7 @@ def test_cli_orders_request_clip_ref(mock_bundles,
     assert result.exit_code == 0
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
@@ -601,17 +571,14 @@ def test_cli_orders_request_clip_ref(mock_bundles,
                 'aoi': geom
             }
         }],
-        "metadata":
-        stac_json
+        "metadata": stac_json
     }
     assert order_request == json.loads(result.output)
 
 
 def test_cli_orders_request_clip_multipolygon(mock_bundles,
                                               multipolygon_geom_geojson,
-                                              invoke,
-                                              geom_geojson,
-                                              stac_json):
+                                              invoke, geom_geojson, stac_json):
     result = invoke([
         'request',
         '--item-type=PSScene',
@@ -623,8 +590,7 @@ def test_cli_orders_request_clip_multipolygon(mock_bundles,
     assert result.exit_code == 0
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
@@ -635,38 +601,27 @@ def test_cli_orders_request_clip_multipolygon(mock_bundles,
                 'aoi': multipolygon_geom_geojson
             }
         }],
-        "metadata":
-        stac_json
+        "metadata": stac_json
     }
     assert order_request == json.loads(result.output)
 
 
-def test_cli_orders_request_clip_invalid_geometry(mock_bundles,
-                                                  invoke,
+def test_cli_orders_request_clip_invalid_geometry(mock_bundles, invoke,
                                                   point_geom_geojson):
     result = invoke([
-        'request',
-        '--item-type=PSScene',
-        '--bundle=visual',
-        '--name=test',
-        '20220325_131639_20_2402',
-        f'--clip={json.dumps(point_geom_geojson)}'
+        'request', '--item-type=PSScene', '--bundle=visual', '--name=test',
+        '20220325_131639_20_2402', f'--clip={json.dumps(point_geom_geojson)}'
     ])
     assert result.exit_code == 2
 
 
-def test_cli_orders_request_both_clip_and_tools(mock_bundles,
-                                                invoke,
+def test_cli_orders_request_both_clip_and_tools(mock_bundles, invoke,
                                                 geom_geojson):
     # interestingly, it is important that both clip and tools
     # option values are valid json
     result = invoke([
-        'request',
-        '--item-type=PSScene',
-        '--bundle=visual',
-        '--name=test',
-        '20220325_131639_20_2402',
-        f'--clip={json.dumps(geom_geojson)}',
+        'request', '--item-type=PSScene', '--bundle=visual', '--name=test',
+        '20220325_131639_20_2402', f'--clip={json.dumps(geom_geojson)}',
         f'--tools={json.dumps(geom_geojson)}'
     ])
 
@@ -696,35 +651,27 @@ def test_cli_orders_request_cloudconfig(mock_bundles, invoke, stac_json):
     assert result.exit_code == 0
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
             "product_bundle": "visual",
         }],
-        "delivery":
-        config_json,
-        "metadata":
-        stac_json
+        "delivery": config_json,
+        "metadata": stac_json
     }
     assert order_request == json.loads(result.output)
 
 
 def test_cli_orders_request_email(mock_bundles, invoke, stac_json):
     result = invoke([
-        'request',
-        '--item-type=PSScene',
-        '--bundle=visual',
-        '--name=test',
-        '20220325_131639_20_2402',
-        '--email'
+        'request', '--item-type=PSScene', '--bundle=visual', '--name=test',
+        '20220325_131639_20_2402', '--email'
     ])
     assert result.exit_code == 0
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
@@ -733,41 +680,31 @@ def test_cli_orders_request_email(mock_bundles, invoke, stac_json):
         "notifications": {
             "email": True,
         },
-        "metadata":
-        stac_json
+        "metadata": stac_json
     }
     assert order_request == json.loads(result.output)
 
 
 @respx.mock
-def test_cli_orders_request_tools(mock_bundles,
-                                  invoke,
-                                  geom_geojson,
+def test_cli_orders_request_tools(mock_bundles, invoke, geom_geojson,
                                   stac_json):
 
     tools_json = [{'clip': {'aoi': geom_geojson}}, {'composite': {}}]
 
     result = invoke([
-        'request',
-        '--item-type=PSScene',
-        '--bundle=visual',
-        '--name=test',
-        '20220325_131639_20_2402',
-        f'--tools={json.dumps(tools_json)}'
+        'request', '--item-type=PSScene', '--bundle=visual', '--name=test',
+        '20220325_131639_20_2402', f'--tools={json.dumps(tools_json)}'
     ])
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
             "product_bundle": "visual",
         }],
-        "tools":
-        tools_json,
-        "metadata":
-        stac_json
+        "tools": tools_json,
+        "metadata": stac_json
     }
     assert order_request == json.loads(result.output)
 
@@ -776,17 +713,12 @@ def test_cli_orders_request_tools(mock_bundles,
 def test_cli_orders_request_no_stac(mock_bundles, invoke):
 
     result = invoke([
-        'request',
-        '--item-type=PSScene',
-        '--bundle=visual',
-        '--name=test',
-        '20220325_131639_20_2402',
-        '--no-stac'
+        'request', '--item-type=PSScene', '--bundle=visual', '--name=test',
+        '20220325_131639_20_2402', '--no-stac'
     ])
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
@@ -797,8 +729,7 @@ def test_cli_orders_request_no_stac(mock_bundles, invoke):
 
 
 @respx.mock
-def test_cli_orders_request_hosting_sentinel_hub(mock_bundles,
-                                                 invoke,
+def test_cli_orders_request_hosting_sentinel_hub(mock_bundles, invoke,
                                                  stac_json):
 
     result = invoke([
@@ -811,15 +742,13 @@ def test_cli_orders_request_hosting_sentinel_hub(mock_bundles,
     ])
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
             "product_bundle": "visual",
         }],
-        "metadata":
-        stac_json,
+        "metadata": stac_json,
         "hosting": {
             "sentinel_hub": {}
         }
@@ -832,25 +761,19 @@ def test_cli_orders_request_hosting_sentinel_hub_collection_id(
         mock_bundles, invoke, stac_json):
 
     result = invoke([
-        'request',
-        '--item-type=PSScene',
-        '--bundle=visual',
-        '--name=test',
-        '20220325_131639_20_2402',
-        '--hosting=sentinel_hub',
+        'request', '--item-type=PSScene', '--bundle=visual', '--name=test',
+        '20220325_131639_20_2402', '--hosting=sentinel_hub',
         '--collection-id=1234'
     ])
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
             "product_bundle": "visual",
         }],
-        "metadata":
-        stac_json,
+        "metadata": stac_json,
         "hosting": {
             "sentinel_hub": {
                 "collection_id": "1234"
@@ -864,25 +787,19 @@ def test_cli_orders_request_hosting_sentinel_hub_create_configuration(
         invoke, stac_json):
 
     result = invoke([
-        'request',
-        '--item-type=PSScene',
-        '--bundle=visual',
-        '--name=test',
-        '20220325_131639_20_2402',
-        '--hosting=sentinel_hub',
+        'request', '--item-type=PSScene', '--bundle=visual', '--name=test',
+        '20220325_131639_20_2402', '--hosting=sentinel_hub',
         '--create-configuration'
     ])
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
             "product_bundle": "visual",
         }],
-        "metadata":
-        stac_json,
+        "metadata": stac_json,
         "hosting": {
             "sentinel_hub": {
                 "create_configuration": True
@@ -897,29 +814,23 @@ def test_cli_orders_request_hosting_sentinel_hub_collection_configuration(
         invoke, stac_json):
     # Note, this behavior will be rejected by the API, but it is valid in building a request
     result = invoke([
-        'request',
-        '--item-type=PSScene',
-        '--bundle=visual',
-        '--name=test',
-        '20220325_131639_20_2402',
-        '--hosting=sentinel_hub',
-        '--collection-id=1234',
-        '--create-configuration'
+        'request', '--item-type=PSScene', '--bundle=visual', '--name=test',
+        '20220325_131639_20_2402', '--hosting=sentinel_hub',
+        '--collection-id=1234', '--create-configuration'
     ])
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
             "product_bundle": "visual",
         }],
-        "metadata":
-        stac_json,
+        "metadata": stac_json,
         "hosting": {
             "sentinel_hub": {
-                "collection_id": "1234", "create_configuration": True
+                "collection_id": "1234",
+                "create_configuration": True
             }
         }
     }
