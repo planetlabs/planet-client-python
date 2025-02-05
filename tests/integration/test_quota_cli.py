@@ -38,55 +38,68 @@ def invoke():
 
 @respx.mock
 def test_get_my_products(invoke):
-    mock_response = {
-        "meta": {"count": 1},
-        "products": [{"id": "product_1"}]
-    }
-    respx.get(f"{TEST_URL}/my/products").mock(return_value=httpx.Response(HTTPStatus.OK, json=mock_response))
+    mock_response = {"meta": {"count": 1}, "products": [{"id": "product_1"}]}
+    respx.get(f"{TEST_URL}/my/products").mock(
+        return_value=httpx.Response(HTTPStatus.OK, json=mock_response))
 
-    result = invoke(['get-my-products', '--organization-id', '1', '--limit', '10'])
+    result = invoke(
+        ['get-my-products', '--organization-id', '1', '--limit', '10'])
 
     assert json.loads(result.output) == mock_response
+
 
 @respx.mock
 def test_estimate_reservation(invoke):
     mock_response = {"estimate": "some_estimate"}
-    respx.post(f"{TEST_URL}/quota-reservations/estimate").mock(return_value=httpx.Response(HTTPStatus.OK, json=mock_response))
+    respx.post(f"{TEST_URL}/quota-reservations/estimate").mock(
+        return_value=httpx.Response(HTTPStatus.OK, json=mock_response))
 
     result = invoke(['estimate-reservation', 'aoi_1', 'aoi_2', '1234', '5678'])
     assert json.loads(result.output) == mock_response
 
+
 @respx.mock
 def test_create_reservation(invoke):
     mock_response = {"reservation": "some_reservation"}
-    respx.post(f"{TEST_URL}/quota-reservations/").mock(return_value=httpx.Response(HTTPStatus.OK, json=mock_response))
+    respx.post(f"{TEST_URL}/quota-reservations/").mock(
+        return_value=httpx.Response(HTTPStatus.OK, json=mock_response))
 
     result = invoke(['create-reservation', 'aoi_1', 'aoi_2', '1234', '5678'])
     assert json.loads(result.output) == mock_response
 
+
 @respx.mock
 def test_get_reservations(invoke):
     mock_response = {
-        "meta": {"count": 1},
-        "reservations": [{"id": "reservation_1"}]
+        "meta": {
+            "count": 1
+        }, "reservations": [{
+            "id": "reservation_1"
+        }]
     }
-    respx.get(f"{TEST_URL}/quota-reservations/").mock(return_value=httpx.Response(HTTPStatus.OK, json=mock_response))
+    respx.get(f"{TEST_URL}/quota-reservations/").mock(
+        return_value=httpx.Response(HTTPStatus.OK, json=mock_response))
 
     result = invoke(['get-reservations', '--limit', '10'])
     assert json.loads(result.output) == mock_response
 
+
 @respx.mock
 def test_create_bulk_reservations(invoke):
     mock_response = {"job_details": "some_job_details"}
-    respx.post(f"{TEST_URL}/quota-reservations/bulk-reserve").mock(return_value=httpx.Response(HTTPStatus.OK, json=mock_response))
+    respx.post(f"{TEST_URL}/quota-reservations/bulk-reserve").mock(
+        return_value=httpx.Response(HTTPStatus.OK, json=mock_response))
 
-    result = invoke(['create-bulk-reservations', 'aoi_1', 'aoi_2', '1234', '5678'])
+    result = invoke(
+        ['create-bulk-reservations', 'aoi_1', 'aoi_2', '1234', '5678'])
     assert json.loads(result.output) == mock_response
+
 
 @respx.mock
 def test_get_bulk_reservation_job(invoke):
     mock_response = {"job": "some_job"}
-    respx.get(f"{TEST_URL}/quota-reservations/jobs/1234").mock(return_value=httpx.Response(HTTPStatus.OK, json=mock_response))
+    respx.get(f"{TEST_URL}/quota-reservations/jobs/1234").mock(
+        return_value=httpx.Response(HTTPStatus.OK, json=mock_response))
 
     result = invoke(['get-bulk-reservation-job', '1234'])
     assert json.loads(result.output) == mock_response

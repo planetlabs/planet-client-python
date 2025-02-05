@@ -28,10 +28,13 @@ async def quota_client(ctx):
 
 @click.group()
 @click.pass_context
-@click.option('-u', '--base-url', default=None, help='Assign custom base Quota API URL.')
+@click.option('-u',
+              '--base-url',
+              default=None,
+              help='Assign custom base Quota API URL.')
 def quota(ctx, base_url):
     if ctx.obj is None:  # Ensure ctx.obj is a dictionary
-        ctx.obj = {}  
+        ctx.obj = {}
     ctx.obj['BASE_URL'] = base_url
 
 
