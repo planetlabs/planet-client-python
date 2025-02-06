@@ -22,7 +22,7 @@ from planet import exceptions
 from planet.cli.options import pretty
 
 
-def command(group: click.Group, name: Optional[str]=None):
+def command(group: click.Group, name: Optional[str] = None):
     """a decorator that adds common utilities/options to a click command
 
     usage:

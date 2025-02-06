@@ -101,9 +101,10 @@ async def collection_get(ctx, collection_id, pretty):
 
 @features.group()
 def items():
-    """commands for interacting with Features API items (features 
+    """commands for interacting with Features API items (features
     within a collection)"""
     pass
+
 
 @command(items, name="list")
 @click.argument("collection_id", required=True)
@@ -170,5 +171,3 @@ async def item_add(ctx, collection_id, filename, pretty):
                 )
 
     echo_json(res, pretty)
-
-

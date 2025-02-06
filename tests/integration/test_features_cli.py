@@ -62,7 +62,8 @@ def test_create_collection():
         assert resp == "collection1"
 
     assertf(
-        invoke("collections", "create",
+        invoke("collections",
+               "create",
                "--title",
                TEST_COLLECTION_1["title"],
                "--description",
