@@ -14,6 +14,7 @@
 """Decorators for Click commands"""
 import asyncio
 from functools import wraps
+from typing import Optional
 
 import click
 
@@ -21,7 +22,7 @@ from planet import exceptions
 from planet.cli.options import pretty
 
 
-def command(group: click.Group):
+def command(group: click.Group, name: Optional[str]=None):
     """a decorator that adds common utilities/options to a click command
 
     usage:
@@ -78,7 +79,7 @@ def command(group: click.Group):
         # Doing this last (outside the wrapper) allows click to
         # pick up the options/arguments added to the command by e.g.
         # `@click.option()`
-        return group.command(wrapper)
+        return group.command(name=name)(wrapper)
 
     return decorator
 

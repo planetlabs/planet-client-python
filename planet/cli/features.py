@@ -30,7 +30,13 @@ def features(ctx, base_url):
     ctx.obj['BASE_URL'] = base_url
 
 
-@command(features)
+@features.group()  # type: ignore
+def collections():
+    """commands for interacting with Features API collections"""
+    pass
+
+
+@command(collections, name="create")
 @click.option("-t",
               "--title",
               required=True,
@@ -46,7 +52,7 @@ async def collection_create(ctx, title, description, pretty):
     Example:
 
     \b
-    planet features collection-create \\
+    planet features collections create \\
       --title "new collection" \\
       --desc "my new collection"
     """
@@ -55,14 +61,14 @@ async def collection_create(ctx, title, description, pretty):
         echo_json(col, pretty)
 
 
-@command(features)
+@command(collections, name="list")
 @compact
 async def collections_list(ctx, pretty, compact):
     """List Features API collections
 
     Example:
 
-    planet features collections-list
+    planet features collections list
     """
     async with features_client(ctx) as cl:
         results = cl.list_collections()
@@ -79,35 +85,41 @@ async def collections_list(ctx, pretty, compact):
         echo_json(output, pretty)
 
 
-@command(features)
+@command(collections, name="get")
 @click.argument("collection_id", required=True)
 async def collection_get(ctx, collection_id, pretty):
     """Get a collection by ID
 
     Example:
 
-    planet features collection-get
+    planet features collections get
     """
     async with features_client(ctx) as cl:
         result = await cl.get_collection(collection_id)
         echo_json(result, pretty)
 
 
-@command(features)
+@features.group()
+def items():
+    """commands for interacting with Features API items (features 
+    within a collection)"""
+    pass
+
+@command(items, name="list")
 @click.argument("collection_id", required=True)
 async def items_list(ctx, collection_id, pretty):
     """List features in a Features API collection
 
     Example:
 
-    planet features items-list my-collection-123
+    planet features items list my-collection-123
     """
     async with features_client(ctx) as cl:
         results = cl.list_items(collection_id)
         echo_json([f async for f in results], pretty)
 
 
-@command(features)
+@command(items, name="get")
 @click.argument("collection_id")
 @click.argument("feature_id", required=False)
 async def item_get(ctx, collection_id, feature_id, pretty):
@@ -118,8 +130,8 @@ async def item_get(ctx, collection_id, feature_id, pretty):
 
     Example:
 
-    planet features item-get my-collection-123 item123
-    planet features item-get pl:features/my/my-collection-123/item123"
+    planet features items get my-collection-123 item123
+    planet features items get "pl:features/my/my-collection-123/item123"
     """
 
     # ensure that either collection_id and feature_id were supplied, or that
@@ -138,7 +150,7 @@ async def item_get(ctx, collection_id, feature_id, pretty):
         echo_json(feature, pretty)
 
 
-@command(features)
+@command(items, name="add")
 @click.argument("collection_id", required=True)
 @click.argument("filename", required=True)
 async def item_add(ctx, collection_id, filename, pretty):
@@ -146,7 +158,7 @@ async def item_add(ctx, collection_id, filename, pretty):
 
     Example:
 
-    planet features item-add my-collection-123 ./my_geom.geojson
+    planet features items add my-collection-123 ./my_geom.geojson
     """
     async with features_client(ctx) as cl:
         with open(filename) as data:
@@ -158,3 +170,5 @@ async def item_add(ctx, collection_id, filename, pretty):
                 )
 
     echo_json(res, pretty)
+
+

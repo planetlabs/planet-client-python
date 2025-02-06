@@ -31,7 +31,7 @@ def test_collection_list():
         assert resp[0]["id"] == "collection1"
         assert resp[1]["id"] == "collection2"
 
-    assertf(invoke("collections-list"))
+    assertf(invoke("collections", "list"))
 
 
 @respx.mock
@@ -45,7 +45,7 @@ def test_get_collection():
         assert resp["id"] == "collection1"
         assert resp["title"] == "Collection 1"
 
-    assertf(invoke("collection-get", id))
+    assertf(invoke("collections", "get", id))
 
 
 @respx.mock
@@ -62,7 +62,7 @@ def test_create_collection():
         assert resp == "collection1"
 
     assertf(
-        invoke("collection-create",
+        invoke("collections", "create",
                "--title",
                TEST_COLLECTION_1["title"],
                "--description",
@@ -85,7 +85,7 @@ def test_list_items():
         assert resp[0]["id"] == "0"
         assert resp[1]["id"] == "1"
 
-    assertf(invoke("items-list", collection_id))
+    assertf(invoke("items", "list", collection_id))
 
 
 @respx.mock
@@ -114,7 +114,7 @@ def test_add_items(feature, expected_body):
         json.dump(feature, file)
         file.flush()
 
-        assertf(invoke('item-add', collection_id, file.name))
+        assertf(invoke("items", "add", collection_id, file.name))
 
         # check request body. In all test cases, the request body
         # should be a geojson Feature.
