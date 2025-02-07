@@ -8,7 +8,7 @@ from planet.clients.features import FeaturesClient
 from planet.geojson import split_ref
 
 from .cmds import command
-from .options import compact
+from .options import compact, limit
 from .session import CliSession
 
 
@@ -61,9 +61,8 @@ async def collection_create(ctx, title, description, pretty):
         echo_json(col, pretty)
 
 
-@command(collections, name="list")
-@compact
-async def collections_list(ctx, pretty, compact):
+@command(collections, name="list", extra_args=[limit, compact])
+async def collections_list(ctx, pretty, limit, compact):
     """List Features API collections
 
     Example:
@@ -71,7 +70,7 @@ async def collections_list(ctx, pretty, compact):
     planet features collections list
     """
     async with features_client(ctx) as cl:
-        results = cl.list_collections()
+        results = cl.list_collections(limit=limit)
 
         if compact:
             compact_fields = ('id', 'title', 'description')
@@ -106,9 +105,9 @@ def items():
     pass
 
 
-@command(items, name="list")
+@command(items, name="list", extra_args=[limit])
 @click.argument("collection_id", required=True)
-async def items_list(ctx, collection_id, pretty):
+async def items_list(ctx, collection_id, pretty, limit):
     """List features in a Features API collection
 
     Example:
@@ -116,7 +115,7 @@ async def items_list(ctx, collection_id, pretty):
     planet features items list my-collection-123
     """
     async with features_client(ctx) as cl:
-        results = cl.list_items(collection_id)
+        results = cl.list_items(collection_id, limit=limit)
         echo_json([f async for f in results], pretty)
 
 

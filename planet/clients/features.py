@@ -65,7 +65,7 @@ class FeaturesClient:
         """block on an async function call, using the call_sync method of the session"""
         return self._session._call_sync(f)
 
-    async def list_collections(self) -> AsyncIterator[dict]:
+    async def list_collections(self, limit: int = 0) -> AsyncIterator[dict]:
         """
         List the feature collections you have access to.
 
@@ -98,7 +98,9 @@ class FeaturesClient:
         url = f'{self._base_url}/collections'
 
         response = await self._session.request(method='GET', url=url)
-        async for col in _CollectionsPager(response, self._session.request):
+        async for col in _CollectionsPager(response,
+                                           self._session.request,
+                                           limit=limit):
             yield col
 
     async def get_collection(self, collection_id: str) -> dict:

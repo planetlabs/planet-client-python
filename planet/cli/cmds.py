@@ -14,7 +14,7 @@
 """Decorators for Click commands"""
 import asyncio
 from functools import wraps
-from typing import Optional
+from typing import Callable, Optional
 
 import click
 
@@ -22,7 +22,9 @@ from planet import exceptions
 from planet.cli.options import pretty
 
 
-def command(group: click.Group, name: Optional[str] = None):
+def command(group: click.Group,
+            name: Optional[str] = None,
+            extra_args: list[Callable] = []):
     """a decorator that adds common utilities/options to a click command
 
     usage:
@@ -54,12 +56,16 @@ def command(group: click.Group, name: Optional[str] = None):
     click_fns = [
         click.pass_context,
         pretty,
-    ]
+    ] + extra_args
 
     # since we want to use `command` as a function with an arg: `@command(group)`,
     # we need to create and return an "real" decorator that takes the function as its
     # arg.
     def decorator(f):
+
+        # run any click-specific registration decorators
+        for fn in click_fns:
+            f = fn(f)
 
         @wraps(f)
         def wrapper(*args, **kwargs):
@@ -70,10 +76,6 @@ def command(group: click.Group, name: Optional[str] = None):
                 cmd = d(f)
 
             return cmd(*args, **kwargs)
-
-        # run any click-specific registration decorators
-        for fn in click_fns:
-            f = fn(f)
 
         # register the whole thing as a Click command.
         # Doing this last (outside the wrapper) allows click to
