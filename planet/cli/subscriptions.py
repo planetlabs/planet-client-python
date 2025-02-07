@@ -12,11 +12,8 @@ from .session import CliSession
 from planet.clients.subscriptions import SubscriptionsClient
 from .. import subscription_request
 from ..subscription_request import sentinel_hub
-from ..specs import get_item_types, validate_item_type, SpecificationException
+from ..specs import FetchBundlesSpecError, get_item_types, SpecificationException, validate_item_type
 from .validators import check_geom
-
-ALL_ITEM_TYPES = get_item_types()
-valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(ALL_ITEM_TYPES)
 
 
 def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
@@ -28,17 +25,8 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
         return item_types
     except SpecificationException as e:
         raise click.BadParameter(str(e))
-
-
-def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
-    """Validates the item type provided by comparing it to all supported
-    item types."""
-    try:
-        validate_item_type(item_type)
-    except SpecificationException as e:
-        raise click.BadParameter(str(e))
-
-    return item_type
+    except FetchBundlesSpecError as e:
+        raise click.ClickException(str(e))
 
 
 @asynccontextmanager
@@ -118,6 +106,9 @@ def subscriptions(ctx, base_url):
     documentation
     for examples.""")
 @limit
+@click.option('--page-size',
+              type=click.INT,
+              help='Number of subscriptions to return per page.')
 @click.pass_context
 @translate_exceptions
 @coro
@@ -133,6 +124,7 @@ async def list_subscriptions_cmd(ctx,
                                  sort_by,
                                  updated,
                                  limit,
+                                 page_size,
                                  pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
     async with subscriptions_client(ctx) as client:
@@ -147,7 +139,8 @@ async def list_subscriptions_cmd(ctx,
                 status=status,
                 sort_by=sort_by,
                 updated=updated,
-                limit=limit):
+                limit=limit,
+                page_size=page_size):
             echo_json(sub, pretty)
 
 
@@ -165,6 +158,11 @@ async def list_subscriptions_cmd(ctx,
               default=None,
               help='Collection ID for Sentinel Hub hosting. '
               'If omitted, a new collection will be created.')
+@click.option(
+    '--create-configuration',
+    is_flag=True,
+    help='Automatically create a layer configuration for your collection. '
+    'If omitted, no configuration will be created.')
 @pretty
 @click.pass_context
 @translate_exceptions
@@ -178,17 +176,21 @@ async def create_subscription_cmd(ctx, request, pretty, **kwargs):
     REQUEST is the full description of the subscription to be created. It must
     be JSON and can be specified a json string, filename, or '-' for stdin.
 
-    Other flag options are hosting and collection_id. The hosting flag
-    specifies the hosting type, and the collection_id flag specifies the
-    collection ID for Sentinel Hub. If the collection_id is omitted, a new
-    collection will be created.
+    Other flag options are hosting, collection_id, and create_configuration.
+    The hosting flag specifies the hosting type, the collection_id flag specifies the
+    collection ID for Sentinel Hub, and the create_configuration flag specifies
+    whether or not to create a layer configuration for your collection. If the
+    collection_id is omitted, a new collection will be created. If the
+    create_configuration flag is omitted, no configuration will be created. The
+    collection_id flag and create_configuration flag cannot be used together.
     """
 
     hosting = kwargs.get("hosting", None)
     collection_id = kwargs.get("collection_id", None)
+    create_configuration = kwargs.get('create_configuration', False)
 
     if hosting == "sentinel_hub":
-        hosting_info = sentinel_hub(collection_id)
+        hosting_info = sentinel_hub(collection_id, create_configuration)
         request["hosting"] = hosting_info
 
     async with subscriptions_client(ctx) as client:
@@ -366,6 +368,12 @@ async def list_subscription_results_cmd(ctx,
               default=None,
               help='Collection ID for Sentinel Hub hosting. '
               'If omitted, a new collection will be created.')
+@click.option(
+    '--create-configuration',
+    is_flag=True,
+    default=False,
+    help='Automatically create a layer configuration for your collection. '
+    'If omitted, no configuration will be created.')
 @pretty
 def request(name,
             source,
@@ -374,6 +382,7 @@ def request(name,
             tools,
             hosting,
             collection_id,
+            create_configuration,
             clip_to_source,
             pretty):
     """Generate a subscriptions request.
@@ -384,18 +393,20 @@ def request(name,
     default behavior.
     """
 
-    res = subscription_request.build_request(name,
-                                             source,
-                                             delivery,
-                                             notifications=notifications,
-                                             tools=tools,
-                                             hosting=hosting,
-                                             collection_id=collection_id,
-                                             clip_to_source=clip_to_source)
+    res = subscription_request.build_request(
+        name,
+        source,
+        delivery,
+        notifications=notifications,
+        tools=tools,
+        hosting=hosting,
+        collection_id=collection_id,
+        create_configuration=create_configuration,
+        clip_to_source=clip_to_source)
     echo_json(res, pretty)
 
 
-@subscriptions.command(epilog=valid_item_string)  # type: ignore
+@subscriptions.command()  # type: ignore
 @translate_exceptions
 @click.option('--item-types',
               required=True,
@@ -473,7 +484,7 @@ def request_catalog(item_types,
 @click.option(
     '--var-id',
     required=True,
-    help='A Planetary Variable ID. See documenation for all available IDs.')
+    help='A Planetary Variable ID. See documentation for all available IDs.')
 @click.option(
     '--geometry',
     required=True,
@@ -505,3 +516,13 @@ def request_pv(var_type, var_id, geometry, start_time, end_time, pretty):
         end_time=end_time,
     )
     echo_json(res, pretty)
+
+
+@subscriptions.command()  # type: ignore
+@click.pass_context
+@translate_exceptions
+def item_types(ctx):
+    """Show valid item types for catalog subscriptions."""
+    click.echo("Valid item types:")
+    for it in get_item_types():
+        click.echo(f"- {it}")

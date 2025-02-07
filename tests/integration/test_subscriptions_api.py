@@ -267,6 +267,17 @@ async def test_list_subscriptions_filtering_and_sorting():
         ]) == 2
 
 
+@pytest.mark.parametrize("page_size, count", [(50, 100), (100, 100)])
+@pytest.mark.anyio
+@api_mock
+async def test_list_subscriptions_page_size_success(page_size, count):
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        assert len([
+            sub async for sub in client.list_subscriptions(page_size=page_size)
+        ]) == count
+
+
 @pytest.mark.anyio
 @failing_api_mock
 async def test_create_subscription_failure():

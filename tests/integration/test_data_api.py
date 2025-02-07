@@ -79,7 +79,10 @@ def data_api():
 
 @respx.mock
 @pytest.mark.anyio
-async def test_search_basic(item_descriptions, search_response, session):
+async def test_search_basic(item_descriptions,
+                            search_response,
+                            mock_bundles,
+                            session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
@@ -104,7 +107,8 @@ async def test_search_basic(item_descriptions, search_response, session):
     expected_request = {
         "item_types": ["PSScene"], "filter": data_filter.empty_filter()
     }
-    actual_body = json.loads(respx.calls[0].request.content)
+
+    actual_body = json.loads(respx.calls[1].request.content)
     assert actual_body == expected_request
 
     # check that all of the items were returned unchanged
@@ -112,7 +116,10 @@ async def test_search_basic(item_descriptions, search_response, session):
 
 
 @respx.mock
-def test_search_basic_sync(item_descriptions, search_response, data_api):
+def test_search_basic_sync(item_descriptions,
+                           search_response,
+                           mock_bundles,
+                           data_api):
 
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
@@ -145,7 +152,10 @@ def test_search_basic_sync(item_descriptions, search_response, data_api):
 
 @respx.mock
 @pytest.mark.anyio
-async def test_search_name(item_descriptions, search_response, session):
+async def test_search_name(item_descriptions,
+                           search_response,
+                           mock_bundles,
+                           session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
     next_page_url = f'{TEST_URL}/blob/?page_marker=IAmATest'
@@ -185,6 +195,7 @@ async def test_search_name(item_descriptions, search_response, session):
                                           ('geom_reference')])
 async def test_search_geometry(geom_fixture,
                                item_descriptions,
+                               mock_bundles,
                                session,
                                request):
 
@@ -230,6 +241,7 @@ async def test_search_geometry(geom_fixture,
                                           ('geom_reference')])
 def test_search_geometry_sync(geom_fixture,
                               item_descriptions,
+                              mock_bundles,
                               data_api,
                               request):
 
@@ -272,6 +284,7 @@ def test_search_geometry_sync(geom_fixture,
 async def test_search_filter(item_descriptions,
                              search_filter,
                              search_response,
+                             mock_bundles,
                              session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
@@ -310,6 +323,7 @@ async def test_search_filter(item_descriptions,
 async def test_search_filter_positional_args(item_descriptions,
                                              search_filter,
                                              search_response,
+                                             mock_bundles,
                                              session):
     """test the search method using positional args"""
 
@@ -339,6 +353,7 @@ async def test_search_filter_positional_args(item_descriptions,
 async def test_search_sort(item_descriptions,
                            search_filter,
                            search_response,
+                           mock_bundles,
                            session):
 
     sort = 'acquired asc'
@@ -365,6 +380,7 @@ async def test_search_sort(item_descriptions,
 async def test_search_limit(item_descriptions,
                             search_filter,
                             search_response,
+                            mock_bundles,
                             session):
 
     quick_search_url = f'{TEST_URL}/quick-search'
@@ -388,7 +404,7 @@ async def test_search_limit(item_descriptions,
 
 @respx.mock
 @pytest.mark.anyio
-async def test_create_search_basic(search_filter, session):
+async def test_create_search_basic(search_filter, mock_bundles, session):
 
     page_response = {
         "__daily_email_enabled": False,
@@ -425,7 +441,7 @@ async def test_create_search_basic(search_filter, session):
 
 
 @respx.mock
-def test_create_search_basic_sync(search_filter, data_api):
+def test_create_search_basic_sync(search_filter, mock_bundles, data_api):
 
     page_response = {
         "__daily_email_enabled": False,
@@ -462,7 +478,9 @@ def test_create_search_basic_sync(search_filter, data_api):
 
 @respx.mock
 @pytest.mark.anyio
-async def test_create_search_basic_positional_args(search_filter, session):
+async def test_create_search_basic_positional_args(search_filter,
+                                                   mock_bundles,
+                                                   session):
     """Test that positional arguments are accepted for create_search"""
 
     page_response = {
@@ -499,7 +517,7 @@ async def test_create_search_basic_positional_args(search_filter, session):
 
 @respx.mock
 @pytest.mark.anyio
-async def test_create_search_email(search_filter, session):
+async def test_create_search_email(search_filter, mock_bundles, session):
 
     page_response = {
         "__daily_email_enabled": True,
@@ -1125,7 +1143,7 @@ async def test_list_item_assets_missing(session):
 @pytest.mark.parametrize("asset_type_id, expectation",
                          [('basic_udm2', does_not_raise()),
                           ('invalid', pytest.raises(exceptions.ClientError))])
-async def test_get_asset(asset_type_id, expectation, session):
+async def test_get_asset(asset_type_id, expectation, mock_bundles, session):
     item_type_id = 'PSScene'
     item_id = '20221003_002705_38_2461'
     assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
@@ -1174,11 +1192,10 @@ async def test_get_asset(asset_type_id, expectation, session):
 @pytest.mark.parametrize("asset_type_id, expectation",
                          [('basic_udm2', does_not_raise()),
                           ('invalid', pytest.raises(exceptions.ClientError))])
-def test_get_asset_sync(asset_type_id, expectation, data_api):
+def test_get_asset_sync(asset_type_id, expectation, mock_bundles, data_api):
     item_type_id = 'PSScene'
     item_id = '20221003_002705_38_2461'
     assets_url = f'{TEST_URL}/item-types/{item_type_id}/items/{item_id}/assets'
-
     basic_udm2_asset = {
         "_links": {
             "_self": "SELFURL",
@@ -1211,7 +1228,6 @@ def test_get_asset_sync(asset_type_id, expectation, data_api):
 
     mock_resp = httpx.Response(HTTPStatus.OK, json=page_response)
     respx.get(assets_url).return_value = mock_resp
-
     with expectation:
         asset = data_api.get_asset(item_type_id, item_id, asset_type_id)
         assert asset == basic_udm2_asset

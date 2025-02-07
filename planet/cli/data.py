@@ -27,9 +27,10 @@ from planet.clients.data import (SEARCH_SORT,
                                  SEARCH_SORT_DEFAULT,
                                  STATS_INTERVAL)
 
-from planet.specs import (get_data_item_types,
-                          validate_data_item_type,
-                          SpecificationException)
+from planet.specs import (FetchBundlesSpecError,
+                          get_item_types,
+                          SpecificationException,
+                          validate_data_item_type)
 
 from . import types
 from .cmds import coro, translate_exceptions
@@ -37,9 +38,6 @@ from .io import echo_json
 from .options import limit, pretty
 from .session import CliSession
 from .validators import check_geom
-
-valid_item_string = "Valid entries for ITEM_TYPES: " + "|".join(
-    get_data_item_types())
 
 
 @asynccontextmanager
@@ -79,6 +77,8 @@ def check_item_types(ctx, param, item_types) -> Optional[List[dict]]:
         return item_types
     except SpecificationException as e:
         raise click.BadParameter(str(e))
+    except FetchBundlesSpecError as e:
+        raise click.ClickException(str(e))
 
 
 def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
@@ -88,12 +88,14 @@ def check_item_type(ctx, param, item_type) -> Optional[List[dict]]:
         validate_data_item_type(item_type)
     except SpecificationException as e:
         raise click.BadParameter(str(e))
+    except FetchBundlesSpecError as e:
+        raise click.ClickException(str(e))
 
     return item_type
 
 
 def check_search_id(ctx, param, search_id) -> str:
-    """Ensure search id is a valix hex string"""
+    """Ensure search id is a valid hex string"""
     try:
         _ = DataClient._check_search_id(search_id)
     except exceptions.ClientError as e:
@@ -274,7 +276,7 @@ def filter(ctx,
     echo_json(filt, pretty)
 
 
-@data.command(epilog=valid_item_string)  # type: ignore
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -320,7 +322,7 @@ async def search(ctx, item_types, geom, filter, limit, name, sort, pretty):
             echo_json(item, pretty)
 
 
-@data.command(epilog=valid_item_string)  # type: ignore
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -417,7 +419,7 @@ async def search_run(ctx, search_id, sort, limit, pretty):
             echo_json(item, pretty)
 
 
-@data.command(epilog=valid_item_string)  # type: ignore
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -477,7 +479,7 @@ async def search_delete(ctx, search_id):
         await cl.delete_search(search_id)
 
 
-@data.command(epilog=valid_item_string)  # type: ignore
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -526,7 +528,7 @@ async def search_update(ctx,
         echo_json(items, pretty)
 
 
-@data.command(epilog=valid_item_string)  # type: ignore
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -588,7 +590,7 @@ async def asset_download(ctx,
             cl.validate_checksum(asset, path)
 
 
-@data.command(epilog=valid_item_string)  # type: ignore
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -602,7 +604,7 @@ async def asset_activate(ctx, item_type, item_id, asset_type):
         await cl.activate_asset(asset)
 
 
-@data.command(epilog=valid_item_string)  # type: ignore
+@data.command()  # type: ignore
 @click.pass_context
 @translate_exceptions
 @coro
@@ -652,3 +654,13 @@ async def asset_wait(ctx, item_type, item_id, asset_type, delay, max_attempts):
 
 # TODO: search_run()".
 # TODO: item_get()".
+
+
+@data.command()  # type: ignore
+@click.pass_context
+@translate_exceptions
+def item_types(ctx):
+    """Show valid item types."""
+    click.echo("Valid item types:")
+    for it in get_item_types():
+        click.echo(f"- {it}")

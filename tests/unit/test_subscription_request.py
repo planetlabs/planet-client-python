@@ -14,7 +14,7 @@
 from datetime import datetime
 import itertools
 import logging
-
+import respx
 import pytest
 
 from planet import exceptions, subscription_request, specs
@@ -119,7 +119,7 @@ def test_build_request_clip_to_source_failure(geom_geojson):
         )
 
 
-def test_build_request_host_sentinel_hub_with_collection(geom_geojson):
+def test_build_request_host_sentinel_hub_no_collection(geom_geojson):
     source = {
         "type": "catalog",
         "parameters": {
@@ -143,7 +143,7 @@ def test_build_request_host_sentinel_hub_with_collection(geom_geojson):
     assert res == expected
 
 
-def test_build_request_host_sentinel_hub_no_collection(geom_geojson):
+def test_build_request_host_sentinel_hub_with_collection(geom_geojson):
     source = {
         "type": "catalog",
         "parameters": {
@@ -172,7 +172,66 @@ def test_build_request_host_sentinel_hub_no_collection(geom_geojson):
     assert res == expected
 
 
-def test_catalog_source_success(geom_geojson):
+def test_build_request_host_sentinel_hub_create_configuration(geom_geojson):
+    source = {
+        "type": "catalog",
+        "parameters": {
+            "geometry": geom_geojson,
+            "start_time": "2021-03-01T00:00:00Z",
+            "end_time": "2023-11-01T00:00:00Z",
+            "rrule": "FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
+            "item_types": ["PSScene"],
+            "asset_types": ["ortho_analytic_4b"]
+        }
+    }
+
+    hosting = {
+        "type": "sentinel-hub", "parameters": {
+            "create_configuration": True
+        }
+    }
+
+    res = subscription_request.build_request('test',
+                                             source=source,
+                                             hosting=hosting)
+
+    expected = {"name": "test", "source": source, "hosting": hosting}
+
+    assert res == expected
+
+
+def test_build_request_host_sentinel_hub_collection_configuration(
+        geom_geojson):
+    source = {
+        "type": "catalog",
+        "parameters": {
+            "geometry": geom_geojson,
+            "start_time": "2021-03-01T00:00:00Z",
+            "end_time": "2023-11-01T00:00:00Z",
+            "rrule": "FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10",
+            "item_types": ["PSScene"],
+            "asset_types": ["ortho_analytic_4b"]
+        }
+    }
+
+    hosting = {
+        "type": "sentinel-hub",
+        "parameters": {
+            "collection_id": "1234", "create_configuration": True
+        }
+    }
+
+    res = subscription_request.build_request('test',
+                                             source=source,
+                                             hosting=hosting)
+
+    expected = {"name": "test", "source": source, "hosting": hosting}
+
+    assert res == expected
+
+
+@respx.mock
+def test_catalog_source_success(geom_geojson, mock_bundles):
     res = subscription_request.catalog_source(
         item_types=["PSScene"],
         asset_types=["ortho_analytic_4b"],
@@ -197,8 +256,10 @@ def test_catalog_source_success(geom_geojson):
     assert res == expected
 
 
+@respx.mock
 def test_catalog_source_featurecollection(featurecollection_geojson,
-                                          geom_geojson):
+                                          geom_geojson,
+                                          mock_bundles):
     """geojson specified as featurecollection is simplified down to just
     the geometry"""
     res = subscription_request.catalog_source(
@@ -221,7 +282,8 @@ def test_catalog_source_featurecollection(featurecollection_geojson,
     assert res == expected
 
 
-def test_catalog_source_invalid_start_time(geom_geojson):
+@respx.mock
+def test_catalog_source_invalid_start_time(geom_geojson, mock_bundles):
     with pytest.raises(exceptions.ClientError):
         subscription_request.catalog_source(
             item_types=["PSScene"],
@@ -514,6 +576,7 @@ def test_pv_source_success(geom_geojson, var_type, var_id):
     assert params["start_time"].startswith("2021-03-01")
 
 
+@respx.mock
 @pytest.mark.parametrize(
     # Test all the combinations of the three options plus some with dupes.
     "publishing_stages",
@@ -522,7 +585,9 @@ def test_pv_source_success(geom_geojson, var_type, var_id):
             itertools.combinations(["preview", "standard", "finalized"], i)
             for i in range(1, 4))) + [("preview", "preview"),
                                       ("preview", "finalized", "preview")])
-def test_catalog_source_publishing_stages(publishing_stages, geom_geojson):
+def test_catalog_source_publishing_stages(publishing_stages,
+                                          geom_geojson,
+                                          mock_bundles):
     """Configure publishing stages for a catalog source."""
     source = subscription_request.catalog_source(
         item_types=["PSScene"],
@@ -538,14 +603,15 @@ def test_catalog_source_publishing_stages(publishing_stages, geom_geojson):
         set(publishing_stages))
 
 
-def test_catalog_source_time_range_type_acquired(geom_geojson):
+@respx.mock
+def test_catalog_source_time_range_type_acquired(geom_geojson, mock_bundles):
     """Configure 'acquired' time range type for a catalog source."""
     source = subscription_request.catalog_source(
         item_types=["PSScene"],
         asset_types=["ortho_analytic_4b"],
-        geometry=geom_geojson,
         start_time=datetime(2021, 3, 1),
         time_range_type="acquired",
+        geometry=geom_geojson,
     )
 
     assert source["parameters"]["time_range_type"] == "acquired"

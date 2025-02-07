@@ -737,7 +737,7 @@ with a utc offset using a file to specify the filter.
 
 ```
 $ planet data stats --utc-offset +1:00 \
-PSScene,PSOrthoTile day filter-desc.json
+PSScene,REOrthoTile day filter-desc.json
 
 <unedited API response json>
 ```

@@ -1,7 +1,7 @@
 """Planet Subscriptions API Python client."""
 
 import logging
-from typing import AsyncIterator, Awaitable, Dict, Optional, Sequence, TypeVar, Union
+from typing import Any, AsyncIterator, Awaitable, Dict, Optional, Sequence, TypeVar
 
 from typing_extensions import Literal
 
@@ -65,19 +65,19 @@ class SubscriptionsClient:
         """block on an async function call, using the call_sync method of the session"""
         return self._session._call_sync(f)
 
-    async def list_subscriptions(
-            self,
-            status: Optional[Sequence[str]] = None,
-            limit: int = 100,
-            created: Optional[str] = None,
-            end_time: Optional[str] = None,
-            hosting: Optional[bool] = None,
-            name__contains: Optional[str] = None,
-            name: Optional[str] = None,
-            source_type: Optional[str] = None,
-            start_time: Optional[str] = None,
-            sort_by: Optional[str] = None,
-            updated: Optional[str] = None) -> AsyncIterator[dict]:
+    async def list_subscriptions(self,
+                                 status: Optional[Sequence[str]] = None,
+                                 limit: int = 100,
+                                 created: Optional[str] = None,
+                                 end_time: Optional[str] = None,
+                                 hosting: Optional[bool] = None,
+                                 name__contains: Optional[str] = None,
+                                 name: Optional[str] = None,
+                                 source_type: Optional[str] = None,
+                                 start_time: Optional[str] = None,
+                                 sort_by: Optional[str] = None,
+                                 updated: Optional[str] = None,
+                                 page_size: int = 500) -> AsyncIterator[dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
         Note:
@@ -112,6 +112,7 @@ class SubscriptionsClient:
             updated (str): filter by updated time or interval.
             limit (int): limit the number of subscriptions in the
                 results. When set to 0, no maximum is applied.
+            page_size (int): number of subscriptions to return per page.
             TODO: user_id
 
         Datetime args (created, end_time, start_time, updated) can either be a
@@ -135,7 +136,7 @@ class SubscriptionsClient:
             """Navigates pages of messages about subscriptions."""
             ITEMS_KEY = 'subscriptions'
 
-        params: Dict[str, Union[str, Sequence[str], bool]] = {}
+        params: Dict[str, Any] = {}
         if created is not None:
             params['created'] = created
         if end_time is not None:
@@ -156,6 +157,8 @@ class SubscriptionsClient:
             params['sort_by'] = sort_by
         if updated is not None:
             params['updated'] = updated
+
+        params['page_size'] = page_size
 
         try:
             response = await self._session.request(method='GET',
