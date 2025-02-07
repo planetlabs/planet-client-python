@@ -145,41 +145,6 @@ class FeaturesAPI:
         Example:
 
         ```
-        feature = {
-          "type": "Feature",
-          "geometry": {
-            "coordinates": [
-              [
-                [
-                  7.05322265625,
-                  46.81509864599243
-                ],
-                [
-                  7.580566406250001,
-                  46.81509864599243
-                ],
-                [
-                  7.580566406250001,
-                  47.17477833929903
-                ],
-                [
-                  7.05322265625,
-                  47.17477833929903
-                ],
-                [
-                  7.05322265625,
-                  46.81509864599243
-                ]
-              ]
-            ],
-            "type": "Polygon"
-          },
-          "properties": {
-            "id": "feature-1",
-            "title": "Feature 1",
-            "description": "Test feature"
-          }
-        }
         new_features = pl.features.add_items(
           collection_id="my-collection",
           feature=feature,
