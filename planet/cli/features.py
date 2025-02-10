@@ -26,13 +26,13 @@ async def features_client(ctx):
               default=None,
               help='Assign custom base Features API URL.')
 def features(ctx, base_url):
-    """Commands for interacting with Features API"""
+    """Commands for interacting with the Features API"""
     ctx.obj['BASE_URL'] = base_url
 
 
 @features.group()  # type: ignore
 def collections():
-    """commands for interacting with Features API collections"""
+    """Commands for interacting with Features API collections"""
     pass
 
 
