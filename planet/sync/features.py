@@ -31,7 +31,7 @@ class FeaturesAPI:
         """
         self._client = FeaturesClient(session, base_url)
 
-    def list_collections(self) -> Iterator[dict]:
+    def list_collections(self, limit: int = 0) -> Iterator[dict]:
         """
         List the feature collections you have access to.
 
@@ -44,7 +44,7 @@ class FeaturesAPI:
             print(collection)
         ```
         """
-        collections = self._client.list_collections()
+        collections = self._client.list_collections(limit=limit)
 
         try:
             while True:
@@ -83,7 +83,7 @@ class FeaturesAPI:
         collection = self._client.create_collection(title, description)
         return self._client._call_sync(collection)
 
-    def list_items(self, collection_id: str) -> Iterator[Feature]:
+    def list_items(self, collection_id: str, limit: int = 0) -> Iterator[Feature]:
         """
         List features in `collection_id`.
 
@@ -107,7 +107,7 @@ class FeaturesAPI:
             results = pl.data.search(["PSScene"], geometry=feature])
         ```
         """
-        results = self._client.list_items(collection_id)
+        results = self._client.list_items(collection_id, limit=limit)
 
         try:
             while True:
