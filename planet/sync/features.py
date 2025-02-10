@@ -83,7 +83,9 @@ class FeaturesAPI:
         collection = self._client.create_collection(title, description)
         return self._client._call_sync(collection)
 
-    def list_items(self, collection_id: str, limit: int = 0) -> Iterator[Feature]:
+    def list_items(self,
+                   collection_id: str,
+                   limit: int = 0) -> Iterator[Feature]:
         """
         List features in `collection_id`.
 
