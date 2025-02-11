@@ -264,6 +264,48 @@ delivery = amazon_s3(ACCESS_KEY_ID, SECRET_ACCESS_KEY, "test", "us-east-1")
 subscription = pl.subscriptions.create_subscription(request)
 ```
 
+### Features API Collections and Features
+
+The Python SDK now supports Features API Collections and Features (note: in the SDK and API, Features are often referred to as items in a collection).
+
+Collections and Features/items that you create in in the SDK will be visible in Features API and Features Manager.
+
+#### Creating a collection
+
+You can use the Python SDK to create Features API collections. 
+
+```python
+new_collection = pl.features.create_collection(title="my collection", description="a new collection")
+```
+
+#### Listing collections
+
+```python
+collections = pl.features.list_collections()
+for collection in collections:
+  print(collection)
+```
+
+#### Listing features/items in a collection
+
+```python
+items = pl.features.list_items(collection_id)
+for item in items:
+  print(item)
+
+```
+
+#### Using items as geometries for other methods
+
+You can pass collection items/features directly to other SDK methods. Any method that requires a geometry will accept
+a Features API Feature.
+
+```python
+items = pl.features.list_items(collection_id)
+example_feature = next(items)
+results = pl.data.search(["PSScene"], geometry=example_feature)
+```
+
 ## API Exceptions
 
 When errors occur, the Planet SDK for Python exception hierarchy is as follows:
