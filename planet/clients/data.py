@@ -24,7 +24,7 @@ from ..data_filter import empty_filter
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
-from ..models import Paged, StreamingBody
+from ..models import GeojsonLike, Paged, StreamingBody
 from ..specs import validate_data_item_type
 from ..geojson import as_geom_or_ref
 
@@ -124,8 +124,7 @@ class DataClient:
             name: Optional[str] = None,
             sort: Optional[str] = None,
             limit: int = 100,
-            geometry: Optional[Union[dict,
-                                     str]] = None) -> AsyncIterator[dict]:
+            geometry: Optional[GeojsonLike] = None) -> AsyncIterator[dict]:
         """Iterate over results from a quick search.
 
         Quick searches are saved for a short period of time (~month). The

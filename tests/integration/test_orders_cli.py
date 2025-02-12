@@ -287,24 +287,22 @@ def mock_download_response(oid, order_description):
         mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
         respx.get(get_url).return_value = mock_resp
 
-        mock_resp1 = httpx.Response(HTTPStatus.OK,
-                                    json={'key': 'value'},
-                                    headers={
-                                        'Content-Type':
-                                        'application/json',
-                                        'Content-Disposition':
-                                        'attachment; filename="m1.json"'
-                                    })
+        mock_resp1 = httpx.Response(
+            HTTPStatus.OK,
+            json={'key': 'value'},
+            headers={
+                'Content-Type': 'application/json',
+                'Content-Disposition': 'attachment; filename="m1.json"'
+            })
         respx.get(dl_url1).return_value = mock_resp1
 
-        mock_resp2 = httpx.Response(HTTPStatus.OK,
-                                    json={'key2': 'value2'},
-                                    headers={
-                                        'Content-Type':
-                                        'application/json',
-                                        'Content-Disposition':
-                                        'attachment; filename="m2.json"'
-                                    })
+        mock_resp2 = httpx.Response(
+            HTTPStatus.OK,
+            json={'key2': 'value2'},
+            headers={
+                'Content-Type': 'application/json',
+                'Content-Disposition': 'attachment; filename="m2.json"'
+            })
         respx.get(dl_url2).return_value = mock_resp2
 
         m1_bytes = b'{"key":"value"}'
@@ -324,14 +322,13 @@ def mock_download_response(oid, order_description):
                         "sha256": hashlib.sha256(m2_bytes).hexdigest()}
                 }]
         }  # yapf: disable
-        mock_resp3 = httpx.Response(HTTPStatus.OK,
-                                    json=manifest_data,
-                                    headers={
-                                        'Content-Type':
-                                        'application/json',
-                                        'Content-Disposition':
-                                        'attachment; filename="manifest.json"'
-                                    })
+        mock_resp3 = httpx.Response(
+            HTTPStatus.OK,
+            json=manifest_data,
+            headers={
+                'Content-Type': 'application/json',
+                'Content-Disposition': 'attachment; filename="manifest.json"'
+            })
         respx.get(dl_url3).return_value = mock_resp3
 
     return _func
@@ -436,8 +433,7 @@ def test_cli_orders_create_basic_success(invoke, order_description):
     respx.post(TEST_ORDERS_URL).return_value = mock_resp
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
@@ -474,15 +470,13 @@ def test_cli_orders_request_basic_success(mock_bundles,
     assert not result.exception
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": expected_ids,
             "item_type": "PSScene",
             "product_bundle": "visual"
         }],
-        "metadata":
-        stac_json
+        "metadata": stac_json
     }
     assert order_request == json.loads(result.output)
 
@@ -551,8 +545,7 @@ def test_cli_orders_request_clip_polygon(mock_bundles,
     assert result.exit_code == 0
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
@@ -563,8 +556,7 @@ def test_cli_orders_request_clip_polygon(mock_bundles,
                 'aoi': geom_geojson
             }
         }],
-        "metadata":
-        stac_json
+        "metadata": stac_json
     }
     assert order_request == json.loads(result.output)
 
@@ -589,8 +581,7 @@ def test_cli_orders_request_clip_ref(mock_bundles,
     assert result.exit_code == 0
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
@@ -601,8 +592,7 @@ def test_cli_orders_request_clip_ref(mock_bundles,
                 'aoi': geom
             }
         }],
-        "metadata":
-        stac_json
+        "metadata": stac_json
     }
     assert order_request == json.loads(result.output)
 
@@ -623,8 +613,7 @@ def test_cli_orders_request_clip_multipolygon(mock_bundles,
     assert result.exit_code == 0
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
@@ -635,8 +624,7 @@ def test_cli_orders_request_clip_multipolygon(mock_bundles,
                 'aoi': multipolygon_geom_geojson
             }
         }],
-        "metadata":
-        stac_json
+        "metadata": stac_json
     }
     assert order_request == json.loads(result.output)
 
@@ -696,17 +684,14 @@ def test_cli_orders_request_cloudconfig(mock_bundles, invoke, stac_json):
     assert result.exit_code == 0
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
             "product_bundle": "visual",
         }],
-        "delivery":
-        config_json,
-        "metadata":
-        stac_json
+        "delivery": config_json,
+        "metadata": stac_json
     }
     assert order_request == json.loads(result.output)
 
@@ -723,8 +708,7 @@ def test_cli_orders_request_email(mock_bundles, invoke, stac_json):
     assert result.exit_code == 0
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
@@ -733,8 +717,7 @@ def test_cli_orders_request_email(mock_bundles, invoke, stac_json):
         "notifications": {
             "email": True,
         },
-        "metadata":
-        stac_json
+        "metadata": stac_json
     }
     assert order_request == json.loads(result.output)
 
@@ -757,17 +740,14 @@ def test_cli_orders_request_tools(mock_bundles,
     ])
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
             "product_bundle": "visual",
         }],
-        "tools":
-        tools_json,
-        "metadata":
-        stac_json
+        "tools": tools_json,
+        "metadata": stac_json
     }
     assert order_request == json.loads(result.output)
 
@@ -785,8 +765,7 @@ def test_cli_orders_request_no_stac(mock_bundles, invoke):
     ])
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
@@ -811,15 +790,13 @@ def test_cli_orders_request_hosting_sentinel_hub(mock_bundles,
     ])
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
             "product_bundle": "visual",
         }],
-        "metadata":
-        stac_json,
+        "metadata": stac_json,
         "hosting": {
             "sentinel_hub": {}
         }
@@ -842,15 +819,13 @@ def test_cli_orders_request_hosting_sentinel_hub_collection_id(
     ])
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
             "product_bundle": "visual",
         }],
-        "metadata":
-        stac_json,
+        "metadata": stac_json,
         "hosting": {
             "sentinel_hub": {
                 "collection_id": "1234"
@@ -874,15 +849,13 @@ def test_cli_orders_request_hosting_sentinel_hub_create_configuration(
     ])
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
             "product_bundle": "visual",
         }],
-        "metadata":
-        stac_json,
+        "metadata": stac_json,
         "hosting": {
             "sentinel_hub": {
                 "create_configuration": True
@@ -908,15 +881,13 @@ def test_cli_orders_request_hosting_sentinel_hub_collection_configuration(
     ])
 
     order_request = {
-        "name":
-        "test",
+        "name": "test",
         "products": [{
             "item_ids": ["20220325_131639_20_2402"],
             "item_type": "PSScene",
             "product_bundle": "visual",
         }],
-        "metadata":
-        stac_json,
+        "metadata": stac_json,
         "hosting": {
             "sentinel_hub": {
                 "collection_id": "1234", "create_configuration": True

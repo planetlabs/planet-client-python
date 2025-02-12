@@ -24,3 +24,5 @@ limit = click.option(
 
 pretty = click.option('--pretty', is_flag=True,
                       help='Format JSON output.')  # type: ignore
+
+compact = click.option('--compact', is_flag=True, help='Use compact output.')

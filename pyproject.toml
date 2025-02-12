@@ -4,56 +4,45 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "planet"
-authors = [ {name = "Planet", email = "python-sdk-contributors@planet.com"} ]
+authors = [{ name = "Planet", email = "python-sdk-contributors@planet.com" }]
 description = "Planet SDK for Python"
 dependencies = [
-    "click>=8.0",
-    "geojson",
-    "httpx>=0.28.0",
-    "jsonschema",
-    "pyjwt>=2.1",
-    "tqdm>=4.56",
-    "typing-extensions",
+  "click>=8.0",
+  "geojson",
+  "httpx>=0.28.0",
+  "jsonschema",
+  "pyjwt>=2.1",
+  "tqdm>=4.56",
+  "typing-extensions",
 ]
 readme = "README.md"
 requires-python = ">=3.9"
 keywords = ["planet", "api", "sdk", "client"]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Environment :: Console",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Topic :: Scientific/Engineering",
-    "Topic :: Software Development",
-    "Topic :: Utilities",
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Software Development",
+  "Topic :: Utilities",
 ]
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 dynamic = ["version"]
 
 [project.optional-dependencies]
-test = [
-    "pytest==8.3.3",
-    "anyio",
-    "pytest-cov",
-    "respx>=0.22.0",
-]
-lint = [
-    "flake8",
-    "mypy",
-    "yapf",
-]
+test = ["pytest==8.3.3", "anyio", "pytest-cov", "respx>=0.22.0"]
+lint = ["flake8", "mypy", "yapf==0.43.0"]
 docs = [
-    "mkdocs==1.3",
-    "mkdocs-click==0.7.0",
-    "mkdocs-material==8.2.11",
-    "mkdocstrings==0.18.1",
-    "mkdocs_autorefs==1.0.1",
+  "mkdocs==1.3",
+  "mkdocs-click==0.7.0",
+  "mkdocs-material==8.2.11",
+  "mkdocstrings==0.18.1",
+  "mkdocs_autorefs==1.0.1",
 ]
-dev = [
-    "planet[test, docs, lint]",
-]
+dev = ["planet[test, docs, lint]"]
 
 [project.scripts]
 planet = "planet.cli.cli:main"

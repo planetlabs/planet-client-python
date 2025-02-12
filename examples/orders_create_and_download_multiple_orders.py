@@ -33,8 +33,7 @@ def create_requests():
     # The Orders API will be asked to mask, or clip, results to
     # this area of interest.
     iowa_aoi = {
-        "type":
-        "Polygon",
+        "type": "Polygon",
         "coordinates": [[[-91.198465, 42.893071], [-91.121931, 42.893071],
                          [-91.121931, 42.946205], [-91.198465, 42.946205],
                          [-91.198465, 42.893071]]]
@@ -54,8 +53,7 @@ def create_requests():
         tools=[planet.order_request.clip_tool(aoi=iowa_aoi)])
 
     oregon_aoi = {
-        "type":
-        "Polygon",
+        "type": "Polygon",
         "coordinates": [[[-117.558734, 45.229745], [-117.452447, 45.229745],
                          [-117.452447, 45.301865], [-117.558734, 45.301865],
                          [-117.558734, 45.229745]]]

@@ -71,14 +71,13 @@ def create_download_mock(downloaded_content, order_description, oid):
         mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
         respx.get(get_url).return_value = mock_resp
 
-        mock_resp = httpx.Response(HTTPStatus.OK,
-                                   json=downloaded_content,
-                                   headers={
-                                       'Content-Type':
-                                       'application/json',
-                                       'Content-Disposition':
-                                       'attachment; filename="file.json"'
-                                   })
+        mock_resp = httpx.Response(
+            HTTPStatus.OK,
+            json=downloaded_content,
+            headers={
+                'Content-Type': 'application/json',
+                'Content-Disposition': 'attachment; filename="file.json"'
+            })
         respx.get(dl_url).return_value = mock_resp
 
     return f
@@ -285,8 +284,7 @@ async def test_create_order_bad_item_type(order_request, session):
     resp = {
         "field": {
             "Products": [{
-                "message":
-                "Bad item type 'invalid' for bundle type 'analytic'"
+                "message": "Bad item type 'invalid' for bundle type 'analytic'"
             }]
         },
         "general": [{
@@ -448,8 +446,7 @@ async def test_cancel_orders_by_ids(session, oid):
                 "count": 1
             },
             "failed": {
-                "count":
-                1,
+                "count": 1,
                 "failures": [{
                     "order_id": oid2,
                     "message": "Order not in a cancellable state",
@@ -480,8 +477,7 @@ def test_cancel_orders_by_ids_sync(session, oid):
                 "count": 1
             },
             "failed": {
-                "count":
-                1,
+                "count": 1,
                 "failures": [{
                     "order_id": oid2,
                     "message": "Order not in a cancellable state",
@@ -969,8 +965,7 @@ async def test_validate_checksum_manifest(
     Path(tmpdir, 'asset1.tif').write_bytes(b"1")
 
     manifest_data = {
-        "name":
-        "",
+        "name": "",
         "files": [{
             "path": "itemtype1/asset1.tif",
             "digests": {
@@ -1019,24 +1014,22 @@ async def test_download_order_success(results,
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.get(get_url).return_value = mock_resp
 
-    mock_resp1 = httpx.Response(HTTPStatus.OK,
-                                json={'key': 'value'},
-                                headers={
-                                    'Content-Type':
-                                    'application/json',
-                                    'Content-Disposition':
-                                    'attachment; filename="asset.json"'
-                                })
+    mock_resp1 = httpx.Response(
+        HTTPStatus.OK,
+        json={'key': 'value'},
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="asset.json"'
+        })
     respx.get(f'{TEST_DOWNLOAD_URL}/1').return_value = mock_resp1
 
-    mock_resp2 = httpx.Response(HTTPStatus.OK,
-                                json={'key2': 'value2'},
-                                headers={
-                                    'Content-Type':
-                                    'application/json',
-                                    'Content-Disposition':
-                                    'attachment; filename="asset.json"'
-                                })
+    mock_resp2 = httpx.Response(
+        HTTPStatus.OK,
+        json={'key2': 'value2'},
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="asset.json"'
+        })
     respx.get(f'{TEST_DOWNLOAD_URL}/2').return_value = mock_resp2
 
     cl = OrdersClient(session, base_url=TEST_URL)
@@ -1081,24 +1074,22 @@ def test_download_order_success_sync(results,
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.get(get_url).return_value = mock_resp
 
-    mock_resp1 = httpx.Response(HTTPStatus.OK,
-                                json={'key': 'value'},
-                                headers={
-                                    'Content-Type':
-                                    'application/json',
-                                    'Content-Disposition':
-                                    'attachment; filename="asset.json"'
-                                })
+    mock_resp1 = httpx.Response(
+        HTTPStatus.OK,
+        json={'key': 'value'},
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="asset.json"'
+        })
     respx.get(f'{TEST_DOWNLOAD_URL}/1').return_value = mock_resp1
 
-    mock_resp2 = httpx.Response(HTTPStatus.OK,
-                                json={'key2': 'value2'},
-                                headers={
-                                    'Content-Type':
-                                    'application/json',
-                                    'Content-Disposition':
-                                    'attachment; filename="asset.json"'
-                                })
+    mock_resp2 = httpx.Response(
+        HTTPStatus.OK,
+        json={'key2': 'value2'},
+        headers={
+            'Content-Type': 'application/json',
+            'Content-Disposition': 'attachment; filename="asset.json"'
+        })
     respx.get(f'{TEST_DOWNLOAD_URL}/2').return_value = mock_resp2
 
     pl = Planet()
