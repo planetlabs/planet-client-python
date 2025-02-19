@@ -1,5 +1,5 @@
 # Copyright 2020 Planet Labs, Inc.
-# Copyright 2022 Planet Labs PBC.
+# Copyright 2022, 2025 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -145,7 +145,7 @@ def test_Auth_from_user_defaults():
     # This tests that it doesn't explode with an exception.
     # CI/CD currently is run by configuring auth via PL_API_KEY env var.
     # What this will actually do in an user env depends on a lot of variables.
-    _ = auth.Auth.from_user_defaults()
+    _ = auth.Auth.from_user_default_session()
 
 
 def test_Auth_from_oauth_m2m():

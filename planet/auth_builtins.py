@@ -57,7 +57,7 @@ class _ProductionEnv:
 
 _SDK_CLIENT_ID_PROD = "49lHVBYlXCdfIYqE1B9zeXt0iFHSXees"
 
-_OIDC_AUTH_CLIENT_CONFIG__SKEL = {
+_OIDC_AUTH_CLIENT_CONFIG__USER_SKEL = {
     **_ProductionEnv.OAUTH_AUTHORITY_USER,
     "scopes": [
         PlanetOAuthScopes.PLANET,
@@ -75,14 +75,14 @@ _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD = {
     # Developers should register their own clients so that users may
     # manage grants for different applications.  Registering applications
     # also allows for application specific URLs or auth flow selection.
-    **_OIDC_AUTH_CLIENT_CONFIG__SKEL,
+    **_OIDC_AUTH_CLIENT_CONFIG__USER_SKEL,
     "client_type": "oidc_device_code",
     "client_id": _SDK_CLIENT_ID_PROD,
     # FIXME: scopes currently from SKEL.
     #  It would be better to have per-client defaults and limits enforced by the auth server
 }
 
-_OIDC_AUTH_CLIENT_CONFIG__M2M_PROD = {
+_OIDC_AUTH_CLIENT_CONFIG__M2M_SKEL = {
     **_ProductionEnv.OAUTH_AUTHORITY_M2M,
     "client_type": "oidc_client_credentials_secret",
     # FIXME: we do not have scope or behavior parity between our M2M and our user OAuth authorities.
@@ -126,7 +126,7 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
     _builtin_profile_auth_client_configs: Dict[str, dict] = {
         # BUILTIN_PROFILE_NAME_SDKCLI_CLIENT_ID: _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD,
         BUILTIN_PROFILE_NAME_PLANET_USER: _OIDC_AUTH_CLIENT_CONFIG__SDK_PROD,
-        BUILTIN_PROFILE_NAME_PLANET_M2M: _OIDC_AUTH_CLIENT_CONFIG__M2M_PROD,
+        BUILTIN_PROFILE_NAME_PLANET_M2M: _OIDC_AUTH_CLIENT_CONFIG__M2M_SKEL,
         BUILTIN_PROFILE_NAME_LEGACY: _LEGACY_AUTH_CLIENT_CONFIG__PROD,
         BUILTIN_PROFILE_NAME_NONE: _NOOP_AUTH_CLIENT_CONFIG,
     }

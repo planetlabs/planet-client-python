@@ -1,5 +1,5 @@
 # Copyright 2020 Planet Labs, Inc.
-# Copyright 2022 Planet Labs PBC.
+# Copyright 2022, 2025 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -238,7 +238,7 @@ class Session(BaseSession):
             auth: Planet server authentication.
         """
         if auth is None:
-            auth = Auth.from_user_defaults()
+            auth = Auth.from_user_default_session()
 
         LOGGER.info(f'Session read timeout set to {READ_TIMEOUT}.')
         timeout = httpx.Timeout(10.0, read=READ_TIMEOUT)

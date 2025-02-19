@@ -1,5 +1,5 @@
 # Copyright 2017 Planet Labs, Inc.
-# Copyright 2022 Planet Labs PBC.
+# Copyright 2022, 2025 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ def _configure_cli_auth_ctx(ctx,
             auth_api_key_opt=auth_api_key)
 
     # planet SDK Auth context type
-    ctx.obj['PLSDK_AUTH'] = planet.Auth.from_plauth(
+    ctx.obj['PLSDK_AUTH'] = planet.Auth._from_plauth(
         pl_authlib_context=ctx.obj['AUTH'])
 
 
