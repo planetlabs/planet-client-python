@@ -23,32 +23,26 @@ The `Planet` class is the main entry point for the Planet SDK. It provides acces
 
 ```python
 from planet import Planet
-pl = Planet()  # automatically detects PL_API_KEY
+pl = Planet()  # automatically detects authentication configured by `planet auth login`
 ```
 
 The Planet client has members `data`, `orders`, and `subscriptions`, which allow you to interact with the Data API, Orders API, and Subscriptions API.
 
 
 ### Authentication
-
-Use the `PL_API_KEY` environment variable to authenticate with the Planet API.
+To establish a user session that will be saved to the user's home directory
+and will be picked up by the SDK, execute the following command:
 
 ```bash
-export PL_API_KEY=your_api_key
+planet auth login
 ```
 
-These examples will assume you are using the `PL_API_KEY` environment variable. If you are, you can skip to the next section.
-
-#### Authenticate using the Session class
-
-Alternately, you can also authenticate using the `Session` class:
-
-```python
-from planet import Auth, Session, Auth
-from planet.auth import APIKeyAuth
-
-pl = Planet(session=Session(auth=APIKeyAuth(key='your_api_key')))
-```
+These examples will assume you have done this, and are using the SDK's default
+client authentication mechanisms.  If you are not, please see the
+[Client Authentication Guide](sdk-client-auth.md) for a complete discussion of
+all authentication options provided by the SDK.  This includes user
+authentication with a web browser, service account authentication for detached
+workloads, and support for legacy authentication mechanisms.
 
 ### Search
 
@@ -280,4 +274,3 @@ If there's something you're missing or are stuck, the development team would lov
 
   - To report a bug or suggest a feature, [raise an issue on GitHub](https://github.com/planetlabs/planet-client-python/issues/new)
   - To get in touch with the development team, email [developers@planet.com](mailto:developers@planet.com)
-
