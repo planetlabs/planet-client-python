@@ -8,8 +8,7 @@ logging.basicConfig(level=logging.CRITICAL)
 def example_main():
     # Create an auth context with the specified API key
     plsdk_auth = planet.Auth.from_key(
-        key="__PLANET_API_KEY_MUST_BE_END_USER_SUPPLIED__"
-    )
+        key="__PLANET_API_KEY_MUST_BE_END_USER_SUPPLIED__")
 
     # Explicit login is not required for API key use. The above sufficient.
     # plsdk_auth.user_login()

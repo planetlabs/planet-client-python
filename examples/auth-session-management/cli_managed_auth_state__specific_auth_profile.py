@@ -12,7 +12,8 @@ def example_main():
     # must have performed a login() elsewhere prior to this example.
     # If this has not been done, the API calls will fail.  This example
     # will not initialize a new session.
-    plsdk_auth = planet.Auth.from_profile(profile_name="my-cli-managed-profile")
+    plsdk_auth = planet.Auth.from_profile(
+        profile_name="my-cli-managed-profile")
 
     # Create a Planet SDK object that uses the loaded auth session.
     sess = planet.Session(plsdk_auth)
