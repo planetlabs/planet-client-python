@@ -73,7 +73,7 @@ def example_main():
     # Use the SDK to call Planet APIs.
     # Refreshing access tokens will be managed automatically by the SDK.
     for item in pl.data.list_searches():
-       print(json.dumps(item, indent=2, sort_keys=True))
+        print(json.dumps(item, indent=2, sort_keys=True))
 
 
 if __name__ == '__main__':

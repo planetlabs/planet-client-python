@@ -21,25 +21,22 @@ def initiate_user_session(plsdk_auth):
     #    shorter.  If the URL may be presented in a clickable means (such as a
     #    link, button, or QR code) the verification_uri_complete may offer a
     #    better user experience.
-    verification_uri_complete = login_initialization_info.get("verification_uri_complete")
+    verification_uri_complete = login_initialization_info.get(
+        "verification_uri_complete")
     verification_uri = login_initialization_info.get("verification_uri")
     user_code = login_initialization_info.get("user_code")
 
     print("Please activate your client.")
     if verification_uri_complete:
-        print(
-            f"Visit the activation site:\n"
-            f"\n\t{verification_uri_complete}\n"
-            f"\nand confirm the authorization code:\n"
-            f"\n\t{user_code}\n"
-        )
+        print(f"Visit the activation site:\n"
+              f"\n\t{verification_uri_complete}\n"
+              f"\nand confirm the authorization code:\n"
+              f"\n\t{user_code}\n")
     else:
-        print(
-            f"Visit the activation site:\n"
-            f"\n\t{verification_uri}\n"
-            f"\nand enter the authorization code:\n"
-            f"\n\t{user_code}\n"
-        )
+        print(f"Visit the activation site:\n"
+              f"\n\t{verification_uri}\n"
+              f"\nand enter the authorization code:\n"
+              f"\n\t{user_code}\n")
 
     # 3. Return control to the SDK.  This will block until the user
     #    completes login.
@@ -71,7 +68,7 @@ def example_main():
     # Use the SDK to call Planet APIs.
     # Refreshing access tokens will be managed automatically by the SDK.
     for item in pl.data.list_searches():
-       print(json.dumps(item, indent=2, sort_keys=True))
+        print(json.dumps(item, indent=2, sort_keys=True))
 
 
 if __name__ == '__main__':

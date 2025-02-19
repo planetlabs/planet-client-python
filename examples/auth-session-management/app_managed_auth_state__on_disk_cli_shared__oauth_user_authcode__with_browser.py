@@ -17,7 +17,7 @@ def example_main():
             planet.PlanetOAuthScopes.OFFLINE_ACCESS,
         ],
         callback_url="http://localhost:8080",
-        profile_name="my-name-for-example-user-interactive-app-with-local-browser",
+        profile_name="my-name-for-example-user-session-with-local-browser",
         save_state_to_disk=True,
     )
 
