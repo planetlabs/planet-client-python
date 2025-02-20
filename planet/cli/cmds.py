@@ -47,13 +47,8 @@ def command(group: click.Group,
     # the decorators to add to the function **when the function is run**
     # (as opposed to when the function is registered as a click command)
     decorators = [
-        translate_exceptions,
         coro,
-    ]
-
-    # click specific functionality e.g. any decorators that
-    # register an extra argument for the function
-    click_fns = [
+        translate_exceptions,
         click.pass_context,
         pretty,
     ] + extra_args
@@ -64,7 +59,7 @@ def command(group: click.Group,
     def decorator(f):
 
         # run any click-specific registration decorators
-        for fn in click_fns:
+        for fn in decorators:
             f = fn(f)
 
         @wraps(f)
