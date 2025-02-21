@@ -272,7 +272,7 @@ Collections and Features/items that you create in in the SDK will be visible in 
 
 #### Creating a collection
 
-You can use the Python SDK to create Features API collections. 
+You can use the Python SDK to create feature collections in the Features API. 
 
 ```python
 new_collection = pl.features.create_collection(title="my collection", description="a new collection")
@@ -299,6 +299,9 @@ for item in items:
 
 You can pass collection items/features directly to other SDK methods. Any method that requires a geometry will accept
 a Features API Feature.
+
+!!!note
+  When passing a Features API Feature to other methods, the [feature ref](https://developers.planet.com/docs/apis/features/feature-references/) will be used. This means any searches or subscriptions you create will be linked to your Feature.
 
 ```python
 items = pl.features.list_items(collection_id)

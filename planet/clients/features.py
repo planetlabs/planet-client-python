@@ -228,10 +228,6 @@ class FeaturesClient:
         )
         ```
 
-        note: if a geojson Geometry is supplied, it will be converted
-        to a Feature. However, we recommend doing this conversion yourself
-        so that you can set a title and description property.
-
         The return value is always an iterator, even if you only upload one
         feature.
         """
@@ -241,16 +237,6 @@ class FeaturesClient:
             # at the next step.
             feature = feature.__geo_interface__
 
-        # convert a geojson geometry into geojson feature
-        if feature.get("type", "").lower() in [
-                "point",
-                "multipoint",
-                "polygon",
-                "multipolygon",
-                "linestring",
-                "multilinestring"
-        ]:
-            feature = {"type": "Feature", "geometry": feature}
 
         url = f'{self._base_url}/collections/{collection_id}/items'
         params: dict[str, Any] = {}
