@@ -304,6 +304,8 @@ a Features API Feature.
   When passing a Features API Feature to other methods, the [feature ref](https://developers.planet.com/docs/apis/features/feature-references/) will be used. This means any searches or subscriptions you create will be linked to your Feature.
 
 ```python
+# collection_id: the ID of a collection in Features API
+
 items = pl.features.list_items(collection_id)
 example_feature = next(items)
 results = pl.data.search(["PSScene"], geometry=example_feature)
