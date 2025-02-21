@@ -207,6 +207,8 @@ class FeaturesClient:
         Add a Feature or FeatureCollection to the collection given by `collection_id`.
         Returns a list of feature references.
 
+        Features API only accepts Polygon and MultiPolygon.
+
         collection_id: the collection to add the feature to
         feature: a dict containing a geojson Feature or FeatureCollection, or an
           instance of a class that implements __geo_interface__ (e.g. a Shapely or
@@ -228,6 +230,10 @@ class FeaturesClient:
         )
         ```
 
+        note: if a geojson Geometry is supplied, it will be converted
+        to a Feature. However, we recommend doing this conversion yourself
+        so that you can set a title and description property.
+
         The return value is always an iterator, even if you only upload one
         feature.
         """
@@ -236,6 +242,12 @@ class FeaturesClient:
             # we're using the name `feature` liberally. We'll convert to a feature
             # at the next step.
             feature = feature.__geo_interface__
+
+        # convert a geojson geometry into geojson feature
+        if feature.get("type", "").lower() not in [
+            "feature", "featurecollection"
+        ]:
+            feature = {"type": "Feature", "geometry": feature}
 
         url = f'{self._base_url}/collections/{collection_id}/items'
         params: dict[str, Any] = {}

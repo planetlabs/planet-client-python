@@ -117,6 +117,8 @@ def test_add_items(feature, expected_body):
 
         assertf(invoke("items", "add", collection_id, file.name))
 
-        # check request body.
+        # check request body. In all test cases, the request body
+        # should be a geojson Feature.
         req_body = json.loads(respx.calls[0].request.content)
+        assert req_body["type"] == "Feature"
         assert req_body["geometry"] == expected_body
