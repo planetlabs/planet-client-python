@@ -244,9 +244,8 @@ class FeaturesClient:
             feature = feature.__geo_interface__
 
         # convert a geojson geometry into geojson feature
-        if feature.get("type", "").lower() not in [
-            "feature", "featurecollection"
-        ]:
+        if feature.get("type",
+                       "").lower() not in ["feature", "featurecollection"]:
             feature = {"type": "Feature", "geometry": feature}
 
         url = f'{self._base_url}/collections/{collection_id}/items'
