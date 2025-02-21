@@ -19,6 +19,7 @@ class Planet:
     `data`: for interacting with the Planet Data API.
     `orders`: Orders API.
     `subscriptions`: Subscriptions API.
+    `features`: Features API
 
     Quick start example:
     ```python
@@ -47,7 +48,7 @@ class Planet:
         self._session = session or Session()
         self._session._client.headers.update({
             "X-Planet-App": SYNC_CLIENT_X_PLANET_APP,
-            "User-Agent": f"planet-client-python/{__version__}/sync"
+            "User-Agent": f"planet-client-python/{__version__}/sync",
         })
 
         self.data = DataAPI(self._session)
