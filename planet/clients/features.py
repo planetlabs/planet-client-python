@@ -237,7 +237,6 @@ class FeaturesClient:
             # at the next step.
             feature = feature.__geo_interface__
 
-
         url = f'{self._base_url}/collections/{collection_id}/items'
         params: dict[str, Any] = {}
         if property_id:
