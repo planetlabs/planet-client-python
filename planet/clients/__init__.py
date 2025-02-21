@@ -13,14 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from .data import DataClient
+from .features import FeaturesClient
 from .orders import OrdersClient
 from .subscriptions import SubscriptionsClient
 
-__all__ = ['DataClient', 'OrdersClient', 'SubscriptionsClient']
+__all__ = [
+    'DataClient', 'FeaturesClient', 'OrdersClient', 'SubscriptionsClient'
+]
 
 # Organize client classes by their module name to allow lookup.
 _client_directory = {
     'data': DataClient,
+    'features': FeaturesClient,
     'orders': OrdersClient,
     'subscriptions': SubscriptionsClient
 }

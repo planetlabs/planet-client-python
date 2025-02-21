@@ -1046,12 +1046,9 @@ async def test_list_item_assets_success(session):
     page_response = {
         "basic_analytic_4b": {
             "_links": {
-                "_self":
-                "SELFURL",
-                "activate":
-                "ACTIVATEURL",
-                "type":
-                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+                "_self": "SELFURL",
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
             },
             "_permissions": ["download"],
             "md5_digest": None,
@@ -1089,12 +1086,9 @@ def test_list_item_assets_success_sync(data_api):
     page_response = {
         "basic_analytic_4b": {
             "_links": {
-                "_self":
-                "SELFURL",
-                "activate":
-                "ACTIVATEURL",
-                "type":
-                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+                "_self": "SELFURL",
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
             },
             "_permissions": ["download"],
             "md5_digest": None,
@@ -1163,12 +1157,9 @@ async def test_get_asset(asset_type_id, expectation, mock_bundles, session):
     page_response = {
         "basic_analytic_4b": {
             "_links": {
-                "_self":
-                "SELFURL",
-                "activate":
-                "ACTIVATEURL",
-                "type":
-                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+                "_self": "SELFURL",
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
             },
             "_permissions": ["download"],
             "md5_digest": None,
@@ -1211,12 +1202,9 @@ def test_get_asset_sync(asset_type_id, expectation, mock_bundles, data_api):
     page_response = {
         "basic_analytic_4b": {
             "_links": {
-                "_self":
-                "SELFURL",
-                "activate":
-                "ACTIVATEURL",
-                "type":
-                "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+                "_self": "SELFURL",
+                "activate": "ACTIVATEURL",
+                "type": "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
             },
             "_permissions": ["download"],
             "md5_digest": None,

@@ -89,10 +89,8 @@ def mock_asset_get_response(item_type, item_id, asset_type, dl_url):
         page_response = {
             "basic_analytic_4b": {
                 "_links": {
-                    "_self":
-                    "SELFURL",
-                    "activate":
-                    "ACTIVATEURL",
+                    "_self": "SELFURL",
+                    "activate": "ACTIVATEURL",
                     "type": ('https://api.planet.com/data/v1/asset-types/'
                              'basic_analytic_4b')
                 },
@@ -205,8 +203,7 @@ def test_data_filter_std_quality(invoke, assert_and_filters_equal):
     assert result.exit_code == 0
 
     expected_filt = {
-        "type":
-        "AndFilter",
+        "type": "AndFilter",
         "config": [{
             "type": "StringInFilter",
             "field_name": "quality_category",
