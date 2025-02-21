@@ -266,7 +266,7 @@ subscription = pl.subscriptions.create_subscription(request)
 
 ### Features API Collections and Features
 
-The Python SDK now supports Features API Collections and Features (note: in the SDK and API, Features are often referred to as items in a collection).
+The Python SDK now supports [Features API](https://developers.planet.com/docs/apis/features/) Collections and Features (note: in the SDK and API, Features are often referred to as items in a collection).
 
 Collections and Features/items that you create in in the SDK will be visible in Features API and Features Manager.
 
@@ -309,10 +309,10 @@ a Features API Feature.
 items = pl.features.list_items(collection_id)
 example_feature = next(items)
 results = pl.data.search(["PSScene"], geometry=example_feature)
+```
 
 !!!note
 Reserving quota for features is currently not supported in the SDK. However, you may create features within the SDK and then use [Features Manager](https://planet.com/features) to reserve quota.
-```
 
 ## API Exceptions
 
