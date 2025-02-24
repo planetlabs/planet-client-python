@@ -407,3 +407,38 @@ class SubscriptionsClient:
         async with self._session.stream('GET', url, params=params) as response:
             async for line in response.aiter_lines():
                 yield line
+
+    async def get_summary(
+        self,
+        subscription_id: Optional[str] = None,
+    ) -> dict:
+        """Summarize the status of all subscriptions or the status of results for a single subscription via GET.
+
+        Args
+            subscription_id (str): id of the subscription to summarize.
+                When omitted, a summary for all subscription statuses
+                will be returned.
+
+        Returns:
+            dict: subscriptions by status or results for the provided subscription by status.
+
+        Raises:
+            APIError: on an API server error.
+            ClientError: on a client error.
+        """
+        if subscription_id:
+            url = f'{self._base_url}/{subscription_id}/summary'
+        else:
+            url = f'{self._base_url}/summary'
+
+        try:
+            resp = await self._session.request(method='GET', url=url)
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
+        else:
+            summary = resp.json()
+            return summary

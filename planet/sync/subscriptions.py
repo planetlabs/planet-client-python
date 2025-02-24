@@ -280,3 +280,22 @@ class SubscriptionsAPI:
                 yield self._client._call_sync(results.__anext__())
         except StopAsyncIteration:
             pass
+
+    def get_summary(self,
+                    subscription_id: Optional[str] = None) -> Dict[str, Any]:
+        """Summarize the status of all subscriptions or the status of results for a single subscription via GET.
+
+        Args
+            subscription_id (str): id of the subscription to summarize.
+                When omitted, a summary for all subscription statuses
+                will be returned.
+
+        Returns:
+            dict: subscriptions by status or results for the provided subscription by status.
+
+        Raises:
+            APIError: on an API server error.
+            ClientError: on a client error.
+        """
+        return self._client._call_sync(
+            self._client.get_summary(subscription_id))

@@ -556,3 +556,18 @@ planet subscriptions request \
 
 For more information on Sentinel Hub hosting, see the [Subscriptions API documentation](https://developers.planet.com/docs/subscriptions/delivery/#delivery-to-sentinel-hub-collection) and the [Linking Planet User to Sentinel Hub User
 ](https://support.planet.com/hc/en-us/articles/16550358397469-Linking-Planet-User-to-Sentinel-Hub-User) support post.
+
+
+#### Summaries
+
+You can get two types of summaries using the cli.
+
+The first is a summary of all subscriptions created by the user, totaled by status.
+```sh
+planet subscriptions summarize
+```
+
+The second is a summary of _results_ for a specified subscription, totaled by status.
+```sh
+planet subscriptions summarize --subscription-id=cb817760-1f07-4ee7-bba6-bcac5346343f
+```

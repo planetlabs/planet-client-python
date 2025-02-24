@@ -526,3 +526,21 @@ def item_types(ctx):
     click.echo("Valid item types:")
     for it in get_item_types():
         click.echo(f"- {it}")
+
+
+@subscriptions.command()  # type: ignore
+@click.option(
+    '--subscription-id',
+    default=None,
+    help="""Optionally supply a subscription id to summarize result counts
+    by status. If omitted, the summary will be generated for all
+    subscriptions the requester has created by status.""")
+@pretty
+@click.pass_context
+@translate_exceptions
+@coro
+async def summarize(ctx, subscription_id, pretty):
+    """Summarize the status of all subscriptions or the status of results for a single subscription"""
+    async with subscriptions_client(ctx) as client:
+        summary = await client.get_summary(subscription_id)
+        echo_json(summary, pretty)
