@@ -527,42 +527,41 @@ def test_item_types(invoke, mock_bundles):
     assert result.exit_code == 0
 
 
-@sub_summary_mock
 @summary_mock
-@pytest.mark.parametrize("subscription_id, expected_result",
-                         [(None,
-                           {
-                               "subscriptions": {
-                                   "preparing": 0,
-                                   "pending": 0,
-                                   "running": 0,
-                                   "completed": 0,
-                                   "cancelled": 0,
-                                   "suspended": 0,
-                                   "failed": 0
-                               }
-                           }),
-                          ("test",
-                           {
-                               "results": {
-                                   "created": 0,
-                                   "queued": 0,
-                                   "processing": 0,
-                                   "failed": 0,
-                                   "cancelled": 0,
-                                   "success": 0
-                               },
-                               "subscription": {
-                                   "status": "pending"
-                               }
-                           })])
-def test_summarize(invoke, subscription_id, expected_result):
-    """Test summarize command."""
-    commands = ['summarize']
-    if subscription_id:
-        commands.append(f"--subscription-id={subscription_id}")
-    result = invoke(commands)
+def test_summarize_subs(invoke):
+    result = invoke(['summarize'])
 
     assert result.exit_code == 0  # success.
     summary = json.loads(result.output)
-    assert summary == expected_result
+    assert summary == {
+        "subscriptions": {
+            "preparing": 0,
+            "pending": 0,
+            "running": 0,
+            "completed": 0,
+            "cancelled": 0,
+            "suspended": 0,
+            "failed": 0
+        }
+    }
+
+
+@sub_summary_mock
+def test_summarize_results(invoke):
+    result = invoke(['summarize', '--subscription-id=test'])
+
+    assert result.exit_code == 0  # success.
+    summary = json.loads(result.output)
+    assert summary == {
+        "results": {
+            "created": 0,
+            "queued": 0,
+            "processing": 0,
+            "failed": 0,
+            "cancelled": 0,
+            "success": 0
+        },
+        "subscription": {
+            "status": "pending"
+        }
+    }
