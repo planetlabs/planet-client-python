@@ -458,6 +458,59 @@ async def download_and_validate():
         cl.validate_checksum(asset, path)
 ```
 
+### Features API Collections and Features
+
+The Python SDK now supports Features API Collections and Features (note: in the SDK and API, Features are often referred to as items in a collection).
+
+Collections and Features/items that you create in in the SDK will be visible in Features API and Features Manager.
+
+#### Creating a collection
+
+You can use the Python SDK to create Features API collections. 
+
+```python
+async with Session() as sess:
+  client = FeaturesClient(sess)
+  new_collection = await client.create_collection(title="my collection", description="a new collection")
+```
+
+#### Listing collections
+
+```python
+async with Session() as sess:
+  client = FeaturesClient(sess)
+  collections = client.list_collections()
+  async for collection in collections:
+    print(collection)
+```
+
+#### Listing features/items in a collection
+
+```python
+async with Session() as sess:
+  client = FeaturesClient(sess)
+  items = client.list_items(collection_id)
+  async for item in items:
+    print(items)
+```
+
+#### Using items as geometries for other methods
+
+You can pass collection items/features directly to other SDK methods. Any method that requires a geometry will accept
+a Features API Feature.
+
+```python
+async with Session() as sess:
+  client = FeaturesClient(sess)
+  items = client.list_items(collection_id)
+  example_feature = await anext(items)
+
+  data_client = DataClient(sess)
+  results = data_client.search(["PSScene"], geometry=example_feature, limit=1)
+  async for result in results:
+    print(result)
+```
+
 ## API Exceptions
 
 When errors occur, the Planet SDK for Python exception hierarchy is as follows:

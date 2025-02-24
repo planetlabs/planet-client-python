@@ -187,7 +187,7 @@ class AuthClient:
         return jwt.decode(token, options={'verify_signature': False})
 
 
-class APIKeyAuthException(Exception):
+class APIKeyAuthException(AuthException):
     """exceptions thrown by APIKeyAuth"""
     pass
 
