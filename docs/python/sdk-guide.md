@@ -301,7 +301,7 @@ You can pass collection items/features directly to other SDK methods. Any method
 a Features API Feature.
 
 !!!note
-  When passing a Features API Feature to other methods, the [feature ref](https://developers.planet.com/docs/apis/features/feature-references/) will be used. This means any searches or subscriptions you create will be linked to your feature.
+    When passing a Features API Feature to other methods, the [feature ref](https://developers.planet.com/docs/apis/features/feature-references/) will be used. This means any searches or subscriptions you create will be linked to your feature.
 
 ```python
 # collection_id: the ID of a collection in Features API
@@ -312,7 +312,7 @@ results = pl.data.search(["PSScene"], geometry=example_feature)
 ```
 
 !!!note
-Reserving quota for features is currently not supported in the SDK. However, you may create features within the SDK and then use [Features Manager](https://planet.com/features) to reserve quota.
+    Reserving quota for features is currently not supported in the SDK. However, you may create features within the SDK and then use [Features Manager](https://planet.com/features) to reserve quota.
 
 ## API Exceptions
 
