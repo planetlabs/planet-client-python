@@ -146,6 +146,40 @@ get_mock.route(
                                                  'source': 'test'
                                              }))
 
+summary_mock = respx.mock()
+summary_mock.route(
+    M(url=f'{TEST_URL}/summary'),
+    method='GET').mock(return_value=Response(200,
+                                             json={
+                                                 "subscriptions": {
+                                                     "preparing": 0,
+                                                     "pending": 0,
+                                                     "running": 0,
+                                                     "completed": 0,
+                                                     "cancelled": 0,
+                                                     "suspended": 0,
+                                                     "failed": 0
+                                                 }
+                                             }))
+
+sub_summary_mock = respx.mock()
+sub_summary_mock.route(
+    M(url=f'{TEST_URL}/test/summary'),
+    method='GET').mock(return_value=Response(200,
+                                             json={
+                                                 "results": {
+                                                     "created": 0,
+                                                     "queued": 0,
+                                                     "processing": 0,
+                                                     "failed": 0,
+                                                     "cancelled": 0,
+                                                     "success": 0
+                                                 },
+                                                 "subscription": {
+                                                     "status": "pending"
+                                                 }
+                                             }))
+
 
 def result_pages(status=None, size=40):
     """Helper for creating fake result listing pages."""
@@ -526,3 +560,85 @@ async def test_list_subscriptions_cycle_break():
         async with Session() as session:
             client = SubscriptionsClient(session, base_url=TEST_URL)
             _ = [sub async for sub in client.list_subscriptions()]
+
+
+@pytest.mark.anyio
+@summary_mock
+async def test_get_summary():
+    """Summary fetched, has expected totals, async."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        summary = await client.get_summary()
+        assert summary == {
+            "subscriptions": {
+                "preparing": 0,
+                "pending": 0,
+                "running": 0,
+                "completed": 0,
+                "cancelled": 0,
+                "suspended": 0,
+                "failed": 0
+            }
+        }
+
+
+@summary_mock
+def test_get_summary_sync():
+    """Summary fetched, has expected totals, sync."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    summary = pl.subscriptions.get_summary()
+    assert summary == {
+        "subscriptions": {
+            "preparing": 0,
+            "pending": 0,
+            "running": 0,
+            "completed": 0,
+            "cancelled": 0,
+            "suspended": 0,
+            "failed": 0
+        }
+    }
+
+
+@pytest.mark.anyio
+@sub_summary_mock
+async def test_get_sub_summary():
+    """Subscription summary fetched, has expected totals, async."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        summary = await client.get_subscription_summary("test")
+        assert summary == {
+            "results": {
+                "created": 0,
+                "queued": 0,
+                "processing": 0,
+                "failed": 0,
+                "cancelled": 0,
+                "success": 0
+            },
+            "subscription": {
+                "status": "pending"
+            }
+        }
+
+
+@sub_summary_mock
+def test_get_sub_summary_sync():
+    """Subscription summary fetched, has expected totals, sync."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    summary = pl.subscriptions.get_subscription_summary("test")
+    assert summary == {
+        "results": {
+            "created": 0,
+            "queued": 0,
+            "processing": 0,
+            "failed": 0,
+            "cancelled": 0,
+            "success": 0
+        },
+        "subscription": {
+            "status": "pending"
+        }
+    }
