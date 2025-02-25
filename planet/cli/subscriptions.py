@@ -532,7 +532,7 @@ def item_types(ctx):
 @click.option(
     '--subscription-id',
     default=None,
-    help="""Optionally supply a subscription id to summarize result counts
+    help="""Optionally supply a subscription ID to summarize result counts
     by status. If omitted, the summary will be generated for all
     subscriptions the requester has created by status.""")
 @pretty
@@ -542,5 +542,8 @@ def item_types(ctx):
 async def summarize(ctx, subscription_id, pretty):
     """Summarize the status of all subscriptions or the status of results for a single subscription"""
     async with subscriptions_client(ctx) as client:
-        summary = await client.get_summary(subscription_id)
+        if subscription_id:
+            summary = await client.get_subscription_summary(subscription_id)
+        else:
+            summary = await client.get_summary()
         echo_json(summary, pretty)

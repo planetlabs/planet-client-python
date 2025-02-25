@@ -560,7 +560,7 @@ For more information on Sentinel Hub hosting, see the [Subscriptions API documen
 
 #### Summaries
 
-You can get two types of summaries using the cli.
+You can get two types of summaries using the CLI.
 
 The first is a summary of all subscriptions created by the user, totaled by status.
 ```sh

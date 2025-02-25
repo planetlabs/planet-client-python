@@ -607,7 +607,7 @@ async def test_get_sub_summary():
     """Subscription summary fetched, has expected totals, async."""
     async with Session() as session:
         client = SubscriptionsClient(session, base_url=TEST_URL)
-        summary = await client.get_summary(subscription_id="test")
+        summary = await client.get_subscription_summary("test")
         assert summary == {
             "results": {
                 "created": 0,
@@ -628,7 +628,7 @@ def test_get_sub_summary_sync():
     """Subscription summary fetched, has expected totals, sync."""
     pl = Planet()
     pl.subscriptions._client._base_url = TEST_URL
-    summary = pl.subscriptions.get_summary(subscription_id="test")
+    summary = pl.subscriptions.get_subscription_summary("test")
     assert summary == {
         "results": {
             "created": 0,
