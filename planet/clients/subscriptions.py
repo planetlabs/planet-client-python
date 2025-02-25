@@ -438,7 +438,7 @@ class SubscriptionsClient:
     ) -> dict:
         """Summarize the status of results for a single subscription via GET.
 
-        Args
+        Parameters:
             subscription_id (str): ID of the subscription to summarize.
 
         Returns:
