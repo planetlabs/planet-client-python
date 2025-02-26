@@ -563,6 +563,16 @@ async def test_list_subscriptions_cycle_break():
 
 
 @pytest.mark.anyio
+@failing_api_mock
+async def test_get_summary_failure():
+    """ServerError is raised if there is an internal server error (500)."""
+    with pytest.raises(ServerError):
+        async with Session() as session:
+            client = SubscriptionsClient(session, base_url=TEST_URL)
+            _ = await client.get_summary()
+
+
+@pytest.mark.anyio
 @summary_mock
 async def test_get_summary():
     """Summary fetched, has expected totals, async."""
@@ -599,6 +609,16 @@ def test_get_summary_sync():
             "failed": 0
         }
     }
+
+
+@pytest.mark.anyio
+@failing_api_mock
+async def test_get_sub_summary_failure():
+    """ServerError is raised if there is an internal server error (500)."""
+    with pytest.raises(ServerError):
+        async with Session() as session:
+            client = SubscriptionsClient(session, base_url=TEST_URL)
+            _ = await client.get_subscription_summary("test")
 
 
 @pytest.mark.anyio
