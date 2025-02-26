@@ -144,7 +144,8 @@ async def list_subscriptions_cmd(ctx,
         if page_size is not None:
             list_subscriptions_kwargs['page_size'] = page_size
 
-        async for sub in client.list_subscriptions(**list_subscriptions_kwargs):
+        async for sub in client.list_subscriptions(
+                **list_subscriptions_kwargs):
             echo_json(sub, pretty)
 
 
