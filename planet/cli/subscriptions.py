@@ -128,19 +128,24 @@ async def list_subscriptions_cmd(ctx,
                                  pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
     async with subscriptions_client(ctx) as client:
+        list_subscriptions_kwargs = {
+            'created': created,
+            'end_time': end_time,
+            'hosting': hosting,
+            'name__contains': name_contains,
+            'name': name,
+            'source_type': source_type,
+            'start_time': start_time,
+            'status': status,
+            'sort_by': sort_by,
+            'updated': updated,
+            'limit': limit,
+        }
+        if page_size is not None:
+            list_subscriptions_kwargs['page_size'] = page_size
+
         async for sub in client.list_subscriptions(
-                created=created,
-                end_time=end_time,
-                hosting=hosting,
-                name__contains=name_contains,
-                name=name,
-                source_type=source_type,
-                start_time=start_time,
-                status=status,
-                sort_by=sort_by,
-                updated=updated,
-                limit=limit,
-                page_size=page_size):
+                **list_subscriptions_kwargs):
             echo_json(sub, pretty)
 
 
