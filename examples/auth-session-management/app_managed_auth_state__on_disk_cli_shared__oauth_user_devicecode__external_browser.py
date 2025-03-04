@@ -55,11 +55,11 @@ def example_main():
             planet.PlanetOAuthScopes.OFFLINE_ACCESS,
         ],
         profile_name="my-name-example-user-auth-with-external-browser",
-        save_state_to_disk=True,
+        save_state_to_storage=True,
     )
 
-    # An application with no persistent storage must initialize a login every
-    # time.  This is not smooth user experience.
+    # In contrast to an in-memory only application that must initialize a login every
+    # time, an app with persistent storage can skip this when it is not needed.
     if not plsdk_auth.is_initialized():
         initiate_user_session(plsdk_auth)
 
