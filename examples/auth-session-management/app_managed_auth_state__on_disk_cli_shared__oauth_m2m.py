@@ -12,10 +12,10 @@ def example_main():
         client_id="__MUST_BE_END_USER_SUPPLIED__",
         client_secret="__MUST_BE_END_USER_SUPPLIED__",
         profile_name="my-name-for-example-m2m-auth-profile",
-        save_state_to_disk=True,
+        save_state_to_storage=True,
     )
 
-    # Explicit login is not required for M2M client use. The above sufficient.
+    # Explicit login is not required for M2M client use. The above is sufficient.
     # plsdk_auth.user_login()
 
     # Create a Planet SDK object that uses the loaded auth session.
