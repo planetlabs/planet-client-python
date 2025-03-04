@@ -18,9 +18,11 @@ def example_main():
         ],
         callback_url="http://localhost:8080",
         profile_name="my-name-for-example-user-session-with-local-browser",
-        save_state_to_disk=True,
+        save_state_to_storage=True,
     )
 
+    # In contrast to an in-memory only application that must initialize a login every
+    # time, an app with persistent storage can skip this when it is not needed.
     if not plsdk_auth.is_initialized():
         plsdk_auth.user_login(allow_open_browser=True)
 
