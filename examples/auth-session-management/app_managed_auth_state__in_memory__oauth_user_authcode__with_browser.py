@@ -17,7 +17,7 @@ def example_main():
             planet.PlanetOAuthScopes.OFFLINE_ACCESS,
         ],
         callback_url="http://localhost:8080",
-        save_state_to_disk=False,
+        save_state_to_storage=False,
     )
 
     # An application with no persistent storage must

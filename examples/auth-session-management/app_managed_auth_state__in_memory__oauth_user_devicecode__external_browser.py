@@ -54,7 +54,7 @@ def example_main():
             # Request a refresh token so repeated browser logins are not required
             planet.PlanetOAuthScopes.OFFLINE_ACCESS,
         ],
-        save_state_to_disk=False,
+        save_state_to_storage=False,
     )
 
     # An application with no persistent storage must initialize a login every
