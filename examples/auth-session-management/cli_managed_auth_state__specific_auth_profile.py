@@ -1,6 +1,7 @@
 import json
 import logging
 import planet
+import sys
 
 logging.basicConfig(level=logging.CRITICAL)
 
@@ -11,9 +12,15 @@ def example_main():
     # `planet auth login` before this program is run or the program
     # must have performed a login() elsewhere prior to this example.
     # If this has not been done, the API calls will fail.  This example
-    # will not initialize a new session.
+    # does not initialize a new session.
     plsdk_auth = planet.Auth.from_profile(
         profile_name="my-cli-managed-profile")
+
+    # If required, how to login depends on what is configured in the specific
+    # profile.  See other examples for login calls.
+    if not plsdk_auth.is_initialized():
+        print(f"Login required. Execute the following command:\n\n\tplanet auth login --auth-profile my-cli-managed-profile\n")
+        sys.exit(99)
 
     # Create a Planet SDK object that uses the loaded auth session.
     sess = planet.Session(plsdk_auth)
