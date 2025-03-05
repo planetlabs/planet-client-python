@@ -238,6 +238,7 @@ class Session(BaseSession):
 
         Parameters:
             auth: Planet server authentication.
+            read_timeout_secs: Maximum time to wait for data to be received.
         """
         if auth is None:
             # Try getting credentials from environment before checking
