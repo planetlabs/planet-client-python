@@ -26,6 +26,18 @@ class DemoStorageProvider(ObjectStorageProvider):
     def __init__(self):
         self._demo_storage_root = pathlib.Path.home() / ".planet-demo"
 
+    def load_obj(self, key: ObjectStorageProvider_KeyType) -> dict:
+        demo_obj_filepath = self._demo_obj_filepath(key)
+        return self._load_file(file_path=demo_obj_filepath)
+
+    def save_obj(self, key: ObjectStorageProvider_KeyType, data: dict) -> None:
+        demo_obj_filepath = self._demo_obj_filepath(key)
+        self._save_file(file_path=demo_obj_filepath, data=data)
+
+    def obj_exists(self, key: ObjectStorageProvider_KeyType) -> bool:
+        demo_obj_filepath = self._demo_obj_filepath(key)
+        return demo_obj_filepath.exists()
+
     def _demo_obj_filepath(self, obj_key):
         if obj_key.is_absolute():
             obj_path = self._demo_storage_root / obj_key.relative_to("/")
@@ -47,18 +59,6 @@ class DemoStorageProvider(ObjectStorageProvider):
             os.chmod(file_path, stat.S_IREAD | stat.S_IWRITE)
             _no_none_data = {key: value for key, value in data.items() if value is not None}
             file_w.write(json.dumps(_no_none_data, indent=2, sort_keys=True))
-
-    def load_obj(self, key: ObjectStorageProvider_KeyType) -> dict:
-        demo_obj_filepath = self._demo_obj_filepath(key)
-        return self._load_file(file_path=demo_obj_filepath)
-
-    def save_obj(self, key: ObjectStorageProvider_KeyType, data: dict) -> None:
-        demo_obj_filepath = self._demo_obj_filepath(key)
-        self._save_file(file_path=demo_obj_filepath, data=data)
-
-    def obj_exists(self, key: ObjectStorageProvider_KeyType) -> bool:
-        demo_obj_filepath = self._demo_obj_filepath(key)
-        return demo_obj_filepath.exists()
 
 
 def example_main():

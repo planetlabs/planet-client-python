@@ -136,12 +136,13 @@ in-memory mode, and will be forced create a new login session every time the
 application is run.  In some cases, this may result in throttling by the
 authorization service.
 
-The SDK provides a way to stave session state in the user's home directory in
-a way that is compatible with the CLI.  The SDK also provides a way for the
-application to provide its own secure storage.
-
-!!! TODO
-    We have yet to document how to use application provided storage.
+By default, the SDK provides the option to save session state in the user's
+home directory in a way that is compatible with the CLI.  The SDK also
+provides a way for the application to provide its own secure storage.
+Applications needing to use their own storage will do so by providing
+the `Auth` layer in the SDK with a custom implementation of the
+`planet_auth.ObjectStorageProvider` abstract base class.  See examples
+below for more details.
 
 ### Using `planet auth` CLI Managed Auth Session
 For simple programs and scripts, it is easiest for the program to defer
@@ -158,7 +159,8 @@ using the SDK.  Changes made by one will impact the behavior of the other.
 
 * The program must have read and write access to the user's home directory.
 * This method requires that the end-user has access to and understands
-  the `planet` CLI command needed to manage session authentication.
+  the [`planet`](../../cli/cli-reference) CLI command needed to manage session
+  authentication.
 * This approach should not be used on public terminals or in cases where the
   user's home directory cannot be kept confidential.
 
@@ -193,13 +195,14 @@ on SDK default behavior, but it may also be done explicitly.
 
 ### Manually Creating a Session Using Library Functions
 If an application cannot or should not use a login session initiated by the
-`planet auth` CLI command, it will be responsible for managing the process on
-its own, persisting session state as needed.
+[`planet auth`](../../cli/cli-reference/#auth) CLI command, it will be
+responsible for managing the process on its own, persisting session state as
+needed.
 
 The process differs slightly for applications accessing Planet services on behalf
 of a human user verses accessing Planet services using a service account.  Depending
 on the use case, applications may need to support one or the other or both (just
-as the `planet` CLI command supports both methods).
+as the [`planet`](../../cli/cli-reference) CLI command supports both methods).
 
 #### OAuth2 Session for Users
 User session initialization inherently involves using a web browser to
@@ -215,9 +218,9 @@ authentication and authorization.
 In environments where a local browser is available, the Planet SDK can manage
 the process of launching the browser locally, transferring control to the Planet
 authorization services for session initialization, and accepting a network
-callback from the browser to regain control once the authorization process is
-complete. At a network protocol level, this is establishing the user login
-session using the OAuth2 authorization code flow.
+callback from the local browser to regain control once the authorization
+process is complete. At a network protocol level, this is establishing the user
+login session using the OAuth2 authorization code flow.
 
 To use this method using the SDK, the following requirements must be met:
 
@@ -285,7 +288,7 @@ running data processing job).  If application lifespan is short and frequent,
 than the application should still take steps to persist the session state (for
 example: a command line utility run from a shell with a short lifespan).
 
-Like session state, service account initialization parameters are
+Like the session state itself, service account initialization parameters are
 sensitive, and it is the responsibility of the application to store them
 securely.
 
@@ -293,8 +296,8 @@ At a network protocol level, OAuth2 service account sessions are implemented
 using the OAuth2 authorization code flow.  This carries with it some additional
 security considerations, discussed in
 [RFC 6819 §4.4.4](https://datatracker.ietf.org/doc/html/rfc6819#section-4.4.4).
-Because of these consideration, service accounts should ideally only be used
-for workflows that are independent of a controlling user.
+Because of these consideration, service accounts should only be used for
+workflows that are independent of a controlling user.
 
 ##### Examples - Client Credentials Flow
 ```python linenums="1" title="Access APIs using a service account with in memory only state persistance"

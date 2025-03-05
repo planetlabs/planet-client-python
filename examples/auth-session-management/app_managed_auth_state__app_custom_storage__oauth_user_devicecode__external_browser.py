@@ -26,6 +26,18 @@ class DemoStorageProvider(ObjectStorageProvider):
     def __init__(self):
         self._demo_storage_root = pathlib.Path.home() / ".planet-demo"
 
+    def load_obj(self, key: ObjectStorageProvider_KeyType) -> dict:
+        demo_obj_filepath = self._demo_obj_filepath(key)
+        return self._load_file(file_path=demo_obj_filepath)
+
+    def save_obj(self, key: ObjectStorageProvider_KeyType, data: dict) -> None:
+        demo_obj_filepath = self._demo_obj_filepath(key)
+        self._save_file(file_path=demo_obj_filepath, data=data)
+
+    def obj_exists(self, key: ObjectStorageProvider_KeyType) -> bool:
+        demo_obj_filepath = self._demo_obj_filepath(key)
+        return demo_obj_filepath.exists()
+
     def _demo_obj_filepath(self, obj_key):
         if obj_key.is_absolute():
             obj_path = self._demo_storage_root / obj_key.relative_to("/")
@@ -48,21 +60,8 @@ class DemoStorageProvider(ObjectStorageProvider):
             _no_none_data = {key: value for key, value in data.items() if value is not None}
             file_w.write(json.dumps(_no_none_data, indent=2, sort_keys=True))
 
-    def load_obj(self, key: ObjectStorageProvider_KeyType) -> dict:
-        demo_obj_filepath = self._demo_obj_filepath(key)
-        return self._load_file(file_path=demo_obj_filepath)
 
-    def save_obj(self, key: ObjectStorageProvider_KeyType, data: dict) -> None:
-        demo_obj_filepath = self._demo_obj_filepath(key)
-        self._save_file(file_path=demo_obj_filepath, data=data)
-
-    def obj_exists(self, key: ObjectStorageProvider_KeyType) -> bool:
-        demo_obj_filepath = self._demo_obj_filepath(key)
-        return demo_obj_filepath.exists()
-
-
-
-def initiate_user_session(plsdk_auth):
+def initialize_user_session(plsdk_auth):
     # Example of initiating a user session where the app is 100%
     # responsible for the user experience.
 
@@ -119,7 +118,7 @@ def example_main():
     # In contrast to an in-memory only application that must initialize a login every
     # time, an app with persistent storage can skip this when it is not needed.
     if not plsdk_auth.is_initialized():
-        initiate_user_session(plsdk_auth)
+        initialize_user_session(plsdk_auth)
 
     # Create a Planet SDK object that uses the loaded auth session.
     sess = planet.Session(plsdk_auth)

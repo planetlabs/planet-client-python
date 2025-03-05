@@ -5,7 +5,7 @@ import planet
 logging.basicConfig(level=logging.CRITICAL)
 
 
-def initiate_user_session(plsdk_auth):
+def initialize_user_session(plsdk_auth):
     # Example of initiating a user session where the app is 100%
     # responsible for the user experience.
 
@@ -59,7 +59,7 @@ def example_main():
 
     # An application with no persistent storage must initialize a login every
     # time.  This is not smooth user experience.
-    initiate_user_session(plsdk_auth)
+    initialize_user_session(plsdk_auth)
 
     # Create a Planet SDK object that uses the loaded auth session.
     sess = planet.Session(plsdk_auth)
