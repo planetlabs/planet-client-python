@@ -1,5 +1,5 @@
 # Copyright 2020 Planet Labs, Inc.
-# Copyright 2022, 2024 Planet Labs PBC.
+# Copyright 2022, 2024, 2025 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,146 +25,293 @@ from typing import List
 import planet_auth
 import planet_auth_utils
 
+from planet_auth import ObjectStorageProvider
+
 from .constants import SECRET_FILE_PATH
-from .auth_builtins import _ProductionEnv, _BuiltinConfigurationProvider, _OIDC_AUTH_CLIENT_CONFIG__SKEL
+from .auth_builtins import _ProductionEnv, _OIDC_AUTH_CLIENT_CONFIG__USER_SKEL, _OIDC_AUTH_CLIENT_CONFIG__M2M_SKEL
 from .exceptions import PlanetError
 
-AuthType = httpx.Auth
+
+class AuthType(abc.ABC, httpx.Auth):
+    @abc.abstractmethod
+    def user_login(
+        self,
+        allow_open_browser: typing.Optional[bool] = False,
+        allow_tty_prompt: typing.Optional[bool] = False,
+    ):
+        """
+        Perform an interactive login.  User interaction will be via the TTY
+        and/or a local web browser, with the details dependent on the
+        client auth configuration.
+
+        :param allow_open_browser:
+        :param allow_tty_prompt:
+        """
+
+    @abc.abstractmethod
+    def device_user_login_initiate(self) -> dict:
+        """
+        Initiate a user login that uses the OAuth2 Device Code Flow for applications
+        that cannot operate a browser locally.  The returned dictionary should be used
+        to prompt the user to complete the process, and will conform to RFC 8628.
+        """
+
+    @abc.abstractmethod
+    def device_user_login_complete(self, login_initialization_info: dict):
+        """
+        Complete a user login that uses the OAuth2 Device Code Flow for applications
+        that was initiated by a call to `device_user_login_initiate()`.  The structure
+        that was returned from `device_user_login_initiate()` should be passed
+        to this function unaltered after it has been used to prompt the user.
+        """
+
+    @abc.abstractmethod
+    def is_initialized(self) -> bool:
+        """
+        Check whether the user session has been initialized.  For OAuth2
+        user based sessions, this means that a login has been performed
+        or saved login session data has been located.  For M2M and API Key
+        sessions, this should be true if keys or secrets have been
+        properly configured.
+        """
 
 
-# planet_auth and planet_auth_utils code more or less entirely
-# supersedes this class.  But, keeping this here for
-# now for interface stability and to bridge with the rest of the SDK.
 class Auth(metaclass=abc.ABCMeta):
-    """Handle authentication information for use with Planet APIs."""
+    """
+    Handle authentication information for use with Planet APIs.
+    Static constructor methods should be used to create an auth context
+    that can be used by Planet API client modules to authenticate
+    requests made to the Planet service.
+    """
 
     @staticmethod
-    def from_user_defaults() -> AuthType:
+    def _normalize_profile_name(profile_name):
+        if not profile_name:
+            raise ValueError("Profile name must be set")
+        if profile_name.find(os.sep) != -1:
+            raise ValueError(f"Profile names cannot contain '{os.sep}'")
+        return profile_name.lower()
+
+    @staticmethod
+    def from_user_default_session() -> AuthType:
         """
-        Create authentication from user defaults. Defaults take into
-        account environment variables (highest priority), user configuration
-        saved to `~/.planet.json` (next priority), and built-in defaults
-        (lowest priority).
+        Create authentication from user defaults.
+
+        This method should be used when an application wants to defer
+        auth profile management to the user and the `planet auth` CLI
+        command entirely.
 
         Users may use the `planet auth login` command to initialize
-        configuration files.
+        and manage sessions.
+
+        Defaults take into account environment variables (highest priority),
+        user configuration saved to `~/.planet.json` and `~/.planet/
+        (next priority), and built-in defaults (lowest priority).
+
+        This method does not support the use a custom storage provider.
+        The session must be initialized entirely in memory (e.g. through
+        environment variables), or from on disk CLI managed settings.
 
         Environment Variables:
-            PL_AUTH_PROFILE: Specify a custom planet_auth library auth
-                client profile (Advanced use cases)
             PL_AUTH_CLIENT_ID: Specify an OAuth2 M2M client ID
             PL_AUTH_CLIENT_SECRET: Specify an OAuth2 M2M client secret
             PL_AUTH_API_KEY: Specify a legacy Planet API key
+            PL_AUTH_PROFILE: Specify a custom planet_auth library auth
+                client profile (Advanced use cases)
         """
         return _PLAuthLibAuth(plauth=planet_auth_utils.PlanetAuthFactory.
                               initialize_auth_client_context())
 
-    # TODO: It feels like we should accept an auth profile so a user
-    #     can manage multiple identities.  But that's also far broader than
-    #     "OAuth user interactive" session, since the auth implementation
-    #     configured by a profile could be anything.
-    #     It also feels like we need a method that accepts client IDs
-    #     managed by the developer so they can initialize the library
-    #     to use the specified client ID of the larger application built
-    #     on top of the library (e.g. QGIS)
     @staticmethod
-    def from_oauth_user_session():
+    def from_profile(profile_name: str) -> AuthType:
         """
         Create authentication for a user whose initialized login information
         has been saved to `~/.planet.json` and `~/.planet/`.
+
         A user should perform a login to initialize this session out-of-band
         using the command `planet auth login`.
 
-        To initialize this session programmatically, you must complete an
-        OAuth2 user login flow.  This involves initiating a request to the
-        authorization server, the user completing authentication using a
-        web browser out of process, and finalizing the authentication and
-        authorization in process and saving the session information that will
-        be used to make API requests.
+        To initialize this session programmatically without the CLI,
+        you must complete an OAuth2 user login flow with one of the login
+        methods.
 
-        Most properly, this process uses IDs that are specific to the
-        application.  The exact process that should be used to complete
-        login is specific to the particulars of the application.
+        This method does not support the use a custom storage provider.
         """
         pl_authlib_context = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
-            auth_profile_opt=_BuiltinConfigurationProvider.
-            BUILTIN_PROFILE_NAME_PLANET_USER)
+            auth_profile_opt=profile_name)
         return _PLAuthLibAuth(plauth=pl_authlib_context)
 
-    # TODO:
-    #  I think we need something like this for developers of user interactive
-    #  applications (e.g. QGIS), but as of January 2025 we do not have a way
-    #  for developers to register user interactive client on the platform,
-    #  or a way for users of such applications to revoke such authorizations.
-    #  Even without this, we may white glove client IDs for partners before
-    #  it is a generally available feature.
-    # TODO:
-    #  This works to initialize the library auth client, but DOES NOT
-    #  establish a user session.  If on disk storage can be used, that
-    #  can be done out of band via the CLI.  If in memory operations
-    #  are desired, that will not work.
-    #  In either case, what needs to happen is that
-    #  planet.auth._PLAuthLibAuth._plauth.login() needs to be invoked.
-    #  If disk storage is used, that only needs to happen once and the results
-    #  will be picked up from disk by this Auth init method. If not,
-    #  that needs to happen for every process invocation, since tokens
-    #  will not be saved, and refresh cannot be performed.
-    #  User experience is greatly served by being able to save to disk.
+    # TODO: add support for confidential clients
     @staticmethod
-    def beta_from_oauth_client_config(
-            client_id: str,
-            requested_scopes: List[str],
-            save_token_file: bool = True) -> AuthType:
+    def from_oauth_user_auth_code(
+        client_id: str,
+        callback_url: str,
+        requested_scopes: typing.Optional[List[str]] = None,
+        save_state_to_storage: bool = True,
+        profile_name: typing.Optional[str] = None,
+        storage_provider: typing.Optional[ObjectStorageProvider] = None,
+    ) -> AuthType:
         """
-        Beta.  Feature not yet supported for public use.
+        Create authentication for the specified registered client
+        application.
+
+        Developers of applications must register clients with
+        Planet, and will be issued a Client ID as part of that process.
+        Developers should register a client for each distinct application so
+        that end-users may discretely manage applications permitted to access
+        Planet APIs on their behalf.
+
+        This method does not perform a user login to initialize a session.
+        If not initialized out of band using the CLI, sessions must be initialized
+        with the user_login() before API calls may be made.
+
+        Parameters:
+            client_id: Client ID
+            requested_scopes: List of requested OAuth2 scopes
+            callback_url: Client callback URL
+            profile_name: User friendly name to use when saving the configuration
+                to storage per the `save_state_to_storage` flag.  The profile name
+                will be normalized to a file system compatible identifier,
+                regardless of storage provider.
+            save_state_to_storage: Boolean controlling whether login sessions
+                should be saved to storage. When the default storage provider is
+                used, they will be stored in a way that is compatible with
+                the `planet` CLI.
+            storage_provider: A custom storage provider to save session state
+                for the application.
         """
-        plauth_config_dict = _OIDC_AUTH_CLIENT_CONFIG__SKEL
+        plauth_config_dict = _OIDC_AUTH_CLIENT_CONFIG__USER_SKEL
+        plauth_config_dict["client_type"] = "oidc_auth_code"
         plauth_config_dict["client_id"] = client_id
-        plauth_config_dict["scopes"] = requested_scopes
-        #  TBD: How flexible will we be in terms of supported flows OAuth flows?
-        plauth_config_dict["client_type"] = "oidc_device_code"
+        if requested_scopes:
+            plauth_config_dict["scopes"] = requested_scopes
+        plauth_config_dict["redirect_uri"] = callback_url
 
-        # Other client types have other needs.
-        # Confidential clients need client secrets.
-        # Auth code clients need callback URLs.
-        # plauth_config_dict["client_secret"] = client_id # Only needed if we support certain types of clients
+        if not profile_name:
+            profile_name = client_id
+        normalized_profile_name = Auth._normalize_profile_name(profile_name)
 
-        # TODO
-        #    This will not write the constructed config to the user's
-        #    ~/.planet/ dir the way a conf constructed by a cli command like
-        #    `planet auth login --client-id XXX --client-secret YYY` will.
-        #    The intent of doing it through the planet_auth_utils factory is so we
-        #    play well with tooling like the CLI.  This maybe does not quite achieve
-        #    the desired result.  We are saving tokens in the right place, but not
-        #    giving the CLI all it needs to co-manage said tokens with whatever app
-        #    is being build on the library.  Those are perhaps separate decisions,
-        #    anyway.
-        pl_authlib_context = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context_with_config(
+        pl_authlib_context = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context_from_custom_config(
             client_config=plauth_config_dict,
-            # TODO - Probably need a user friendly profile name
-            #  We should also probably agree with what's registered in the Auth server.
-            profile_name=client_id.lower(),
-            save_token_file=save_token_file)
-        return Auth.from_plauth(pl_authlib_context)
+            initial_token_data={},
+            save_token_file=save_state_to_storage,
+            profile_name=normalized_profile_name,
+            save_profile_config=save_state_to_storage,
+            storage_provider=storage_provider,
+        )
+
+        return Auth._from_plauth(pl_authlib_context)
+
+    # TODO: add support for confidential clients
+    @staticmethod
+    def from_oauth_user_device_code(
+        client_id: str,
+        requested_scopes: typing.Optional[List[str]] = None,
+        save_state_to_storage: bool = True,
+        profile_name: typing.Optional[str] = None,
+        storage_provider: typing.Optional[ObjectStorageProvider] = None
+    ) -> AuthType:
+        """
+        Create authentication for the specified registered client
+        application.
+
+        Developers of applications must register clients with
+        Planet, and will be issued a Client ID as part of that process.
+        Developers should register a client for each distinct application so
+        that end-users may discretely manage applications permitted to access
+        Planet APIs on their behalf.
+
+        This method does not perform a user login to initialize a session.
+
+        This method does not perform a user login to initialize a session.
+        If not initialized out of band using the CLI, sessions must be initialized
+        with the device login methods before API calls may be made.
+
+        Parameters:
+            client_id: Client ID
+            requested_scopes: List of requested OAuth2 scopes
+            profile_name: User friendly name to use when saving the configuration
+                to storage per the `save_state_to_storage` flag.  The profile name
+                will be normalized to file system compatible identifier, regardless
+                of the storage provider being used.
+            save_state_to_storage: Boolean controlling whether login sessions
+                should be saved to storage. When the default storage provider is
+                used, they will be stored in a way that is compatible with
+                the `planet` CLI.
+            storage_provider: A custom storage provider to save session state
+                for the application.
+        """
+        plauth_config_dict = _OIDC_AUTH_CLIENT_CONFIG__USER_SKEL
+        plauth_config_dict["client_type"] = "oidc_device_code"
+        plauth_config_dict["client_id"] = client_id
+        if requested_scopes:
+            plauth_config_dict["scopes"] = requested_scopes
+
+        if not profile_name:
+            profile_name = client_id
+        normalized_profile_name = Auth._normalize_profile_name(profile_name)
+
+        pl_authlib_context = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context_from_custom_config(
+            client_config=plauth_config_dict,
+            initial_token_data={},
+            save_token_file=save_state_to_storage,
+            profile_name=normalized_profile_name,
+            save_profile_config=save_state_to_storage,
+            storage_provider=storage_provider,
+        )
+
+        return Auth._from_plauth(pl_authlib_context)
 
     @staticmethod
-    def from_oauth_m2m(client_id: str, client_secret: str) -> AuthType:
-        """Create authentication from the specified OAuth2 service account
-         client ID and secret.
+    def from_oauth_m2m(
+        client_id: str,
+        client_secret: str,
+        requested_scopes: typing.Optional[List[str]] = None,
+        save_state_to_storage: bool = True,
+        profile_name: typing.Optional[str] = None,
+        storage_provider: planet_auth.ObjectStorageProvider = None,
+    ) -> AuthType:
+        """
+        Create authentication from the specified OAuth2 service account
+        client ID and secret.
 
         Parameters:
             client_id: Planet service account client ID.
             client_secret: Planet service account client secret.
+            requested_scopes: List of requested OAuth2 scopes
+            profile_name: User friendly name to use when saving the configuration
+                to storage per the `save_state_to_storage` flag.  The profile name
+                will be normalized to a file system compatible identifier regardless
+                of the storage provider being used.
+            save_state_to_storage: Boolean controlling whether login sessions
+                should be saved to storage. When the default storage provider is
+                used, they will be stored in a way that is compatible with
+                the `planet` CLI.
+            storage_provider: A custom storage provider to save session state
+                for the application.
         """
-        pl_authlib_context = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
-            auth_client_id_opt=client_id,
-            auth_client_secret_opt=client_secret,
-            # auth_profile_opt=_BuiltinConfigurationProvider.BUILTIN_PROFILE_NAME_PLANET_M2M,
+        plauth_config_dict = _OIDC_AUTH_CLIENT_CONFIG__M2M_SKEL
+        plauth_config_dict["client_id"] = client_id
+        plauth_config_dict["client_secret"] = client_secret
+        if requested_scopes:
+            plauth_config_dict["scopes"] = requested_scopes
+
+        if not profile_name:
+            profile_name = client_id
+        normalized_profile_name = Auth._normalize_profile_name(profile_name)
+
+        pl_authlib_context = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context_from_custom_config(
+            client_config=plauth_config_dict,
+            initial_token_data={},
+            save_token_file=save_state_to_storage,
+            profile_name=normalized_profile_name,
+            save_profile_config=save_state_to_storage,
+            storage_provider=storage_provider,
         )
-        return _PLAuthLibAuth(plauth=pl_authlib_context)
+        return Auth._from_plauth(pl_authlib_context)
 
     @staticmethod
-    def from_plauth(pl_authlib_context: planet_auth.Auth) -> AuthType:
+    def _from_plauth(pl_authlib_context: planet_auth.Auth) -> AuthType:
         """
         Create authentication from the provided Planet Auth Library
         Authentication Context.  Generally, applications will want to use one
@@ -172,8 +319,9 @@ class Auth(metaclass=abc.ABCMeta):
         factory class).
 
         This method is intended for advanced use cases where the developer
-        as their own client ID registered.  (A feature of the Planet Platform
-        not yet released to the public as of January 2025.)
+        has their own client ID registered, and is familiar with the
+        Planet Auth Library.  (Registering client IDs is a feature of the
+        Planet Platform not yet released to the public as of January 2025.)
         """
         return _PLAuthLibAuth(plauth=pl_authlib_context)
 
@@ -257,7 +405,8 @@ class Auth(metaclass=abc.ABCMeta):
         """
         warnings.warn(
             "from_env() will be deprecated. Use from_defaults() in most"
-            " cases, which will consider environment variables.",
+            " cases, which will consider both environment variables and user"
+            " configuration files.",
             PendingDeprecationWarning)
         variable_name = variable_name or planet_auth_utils.EnvironmentVariables.AUTH_API_KEY
         api_key = os.getenv(variable_name, None)
@@ -308,14 +457,33 @@ class APIKeyAuthException(PlanetError):
     pass
 
 
-class _PLAuthLibAuth(Auth, AuthType):
+class _PLAuthLibAuth(AuthType):
     # The Planet Auth Library uses a "has a" authenticator pattern for its
     # planet_auth.Auth context class.  This SDK library employs a "is a"
-    # authenticator design pattern for user's of its Auth context obtained
-    # from the constructors above. This class partially smooths over that
-    # design difference as we move to using the Planet Auth Library.
+    # authenticator design pattern for users of its Auth context obtained
+    # from the constructors above. This class smooths over that design
+    # difference as we move to using the Planet Auth Library.
     def __init__(self, plauth: planet_auth.Auth):
         self._plauth = plauth
 
     def auth_flow(self, r: httpx._models.Request):
         return self._plauth.request_authenticator().auth_flow(r)
+
+    def user_login(
+        self,
+        allow_open_browser: typing.Optional[bool] = False,
+        allow_tty_prompt: typing.Optional[bool] = False,
+    ):
+        self._plauth.login(
+            allow_open_browser=allow_open_browser,
+            allow_tty_prompt=allow_tty_prompt,
+        )
+
+    def device_user_login_initiate(self) -> dict:
+        return self._plauth.device_login_initiate()
+
+    def device_user_login_complete(self, login_initialization_info: dict):
+        return self._plauth.device_login_complete(login_initialization_info)
+
+    def is_initialized(self) -> bool:
+        return self._plauth.request_authenticator_is_ready()
