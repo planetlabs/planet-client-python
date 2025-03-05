@@ -45,8 +45,7 @@ class _ProductionEnv:
         "audiences": ["https://api.planet.com/"]
     }
     LEGACY_AUTH_AUTHORITY = {
-        "_comment":
-        "Planet legacy JWT auth server used by Planet Public API endpoints",
+        "_comment": "Planet legacy JWT auth server used by Planet Public API endpoints",
         "legacy_auth_endpoint": "https://api.planet.com/v0/auth/login"
     }
     PUBLIC_OAUTH_AUTHORITIES = [

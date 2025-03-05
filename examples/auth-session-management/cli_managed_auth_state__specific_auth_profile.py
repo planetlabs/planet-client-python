@@ -19,7 +19,9 @@ def example_main():
     # If required, how to login depends on what is configured in the specific
     # profile.  See other examples for login calls.
     if not plsdk_auth.is_initialized():
-        print("Login required. Execute the following command:\n\n\tplanet auth login --auth-profile my-cli-managed-profile\n")
+        print(
+            "Login required. Execute the following command:\n\n\tplanet auth login --auth-profile my-cli-managed-profile\n"
+        )
         sys.exit(99)
 
     # Create a Planet SDK object that uses the loaded auth session.

@@ -8,7 +8,6 @@ import planet
 
 from planet_auth import ObjectStorageProvider, ObjectStorageProvider_KeyType
 
-
 logging.basicConfig(level=logging.CRITICAL)
 
 
@@ -57,7 +56,10 @@ class DemoStorageProvider(ObjectStorageProvider):
         logging.debug(msg="Writing JSON data to file {}".format(file_path))
         with open(file_path, mode="w", encoding="UTF-8") as file_w:
             os.chmod(file_path, stat.S_IREAD | stat.S_IWRITE)
-            _no_none_data = {key: value for key, value in data.items() if value is not None}
+            _no_none_data = {
+                key: value
+                for key, value in data.items() if value is not None
+            }
             file_w.write(json.dumps(_no_none_data, indent=2, sort_keys=True))
 
 

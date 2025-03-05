@@ -33,6 +33,7 @@ from .exceptions import PlanetError
 
 
 class AuthType(abc.ABC, httpx.Auth):
+
     @abc.abstractmethod
     def user_login(
         self,
@@ -375,8 +376,8 @@ class Auth(metaclass=abc.ABCMeta):
                       PendingDeprecationWarning)
         plauth_config = {
             **_ProductionEnv.LEGACY_AUTH_AUTHORITY,
-            "client_type":
-            planet_auth.PlanetLegacyAuthClientConfig.meta().get("client_type"),
+            "client_type": planet_auth.PlanetLegacyAuthClientConfig.meta().get(
+                "client_type"),
         }
         pl_authlib_context = planet_auth.Auth.initialize_from_config_dict(
             client_config=plauth_config,
