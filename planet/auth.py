@@ -39,9 +39,7 @@ class Auth(abc.ABC, httpx.Auth):
     """
 
     @staticmethod
-    def _normalize_profile_name(profile_name):
-        if not profile_name:
-            raise ValueError("Profile name must be set")
+    def _normalize_profile_name(profile_name: str):
         if profile_name.find(os.sep) != -1:
             raise ValueError(f"Profile names cannot contain '{os.sep}'")
         return profile_name.lower()
@@ -384,9 +382,6 @@ class Auth(abc.ABC, httpx.Auth):
             base_url: The base URL to use. Defaults to production
                 authentication API base url.
         """
-        warnings.warn(
-            "Auth.from_login() has been deprecated.  Use Auth.from_user_session().",
-            DeprecationWarning)
         raise DeprecationWarning(
             "Auth.from_login() has been deprecated.  Use Auth.from_user_session()."
         )
@@ -401,7 +396,6 @@ class Auth(abc.ABC, httpx.Auth):
     def store(self,
               filename: typing.Optional[typing.Union[str,
                                                      pathlib.Path]] = None):
-        warnings.warn("Auth.store() has been deprecated.", DeprecationWarning)
         raise DeprecationWarning("Auth.store() has been deprecated.")
 
     @property
