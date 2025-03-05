@@ -270,7 +270,7 @@ class Auth(metaclass=abc.ABCMeta):
         requested_scopes: typing.Optional[List[str]] = None,
         save_state_to_storage: bool = True,
         profile_name: typing.Optional[str] = None,
-        storage_provider: planet_auth.ObjectStorageProvider = None,
+        storage_provider: typing.Optional[planet_auth.ObjectStorageProvider] = None,
     ) -> AuthType:
         """
         Create authentication from the specified OAuth2 service account
