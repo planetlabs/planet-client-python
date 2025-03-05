@@ -21,7 +21,7 @@ import click
 import planet_auth_utils
 import planet
 
-from . import auth, cmds, collect, data, orders, subscriptions
+from . import auth, cmds, collect, data, orders, subscriptions, features
 
 LOGGER = logging.getLogger(__name__)
 
@@ -123,6 +123,7 @@ main.add_command(data.data)  # type: ignore
 main.add_command(orders.orders)  # type: ignore
 main.add_command(subscriptions.subscriptions)  # type: ignore
 main.add_command(collect.collect)  # type: ignore
+main.add_command(features.features)
 
 if __name__ == "__main__":
     main()  # pylint: disable=E1120

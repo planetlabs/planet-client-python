@@ -29,6 +29,8 @@ from test_subscriptions_api import (api_mock,
                                     get_mock,
                                     patch_mock,
                                     res_api_mock,
+                                    sub_summary_mock,
+                                    summary_mock,
                                     update_mock,
                                     TEST_URL)
 
@@ -523,3 +525,43 @@ def test_item_types(invoke, mock_bundles):
     for item_type in expected_item_types:
         assert item_type in result.output
     assert result.exit_code == 0
+
+
+@summary_mock
+def test_summarize_subs(invoke):
+    result = invoke(['summarize'])
+
+    assert result.exit_code == 0  # success.
+    summary = json.loads(result.output)
+    assert summary == {
+        "subscriptions": {
+            "preparing": 0,
+            "pending": 0,
+            "running": 0,
+            "completed": 0,
+            "cancelled": 0,
+            "suspended": 0,
+            "failed": 0
+        }
+    }
+
+
+@sub_summary_mock
+def test_summarize_results(invoke):
+    result = invoke(['summarize', '--subscription-id=test'])
+
+    assert result.exit_code == 0  # success.
+    summary = json.loads(result.output)
+    assert summary == {
+        "results": {
+            "created": 0,
+            "queued": 0,
+            "processing": 0,
+            "failed": 0,
+            "cancelled": 0,
+            "success": 0
+        },
+        "subscription": {
+            "status": "pending"
+        }
+    }

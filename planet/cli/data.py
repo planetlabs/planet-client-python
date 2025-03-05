@@ -52,7 +52,7 @@ async def data_client(ctx):
 @click.option('-u',
               '--base-url',
               default=None,
-              help='Assign custom base Orders API URL.')
+              help='Assign custom base Data API URL.')
 def data(ctx, base_url):
     """Commands for interacting with the Data API"""
     ctx.obj['BASE_URL'] = base_url

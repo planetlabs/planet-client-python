@@ -128,19 +128,24 @@ async def list_subscriptions_cmd(ctx,
                                  pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
     async with subscriptions_client(ctx) as client:
+        list_subscriptions_kwargs = {
+            'created': created,
+            'end_time': end_time,
+            'hosting': hosting,
+            'name__contains': name_contains,
+            'name': name,
+            'source_type': source_type,
+            'start_time': start_time,
+            'status': status,
+            'sort_by': sort_by,
+            'updated': updated,
+            'limit': limit,
+        }
+        if page_size is not None:
+            list_subscriptions_kwargs['page_size'] = page_size
+
         async for sub in client.list_subscriptions(
-                created=created,
-                end_time=end_time,
-                hosting=hosting,
-                name__contains=name_contains,
-                name=name,
-                source_type=source_type,
-                start_time=start_time,
-                status=status,
-                sort_by=sort_by,
-                updated=updated,
-                limit=limit,
-                page_size=page_size):
+                **list_subscriptions_kwargs):
             echo_json(sub, pretty)
 
 
@@ -526,3 +531,24 @@ def item_types(ctx):
     click.echo("Valid item types:")
     for it in get_item_types():
         click.echo(f"- {it}")
+
+
+@subscriptions.command()  # type: ignore
+@click.option(
+    '--subscription-id',
+    default=None,
+    help="""Optionally supply a subscription ID to summarize result counts
+    by status. If omitted, the summary will be generated for all
+    subscriptions the requester has created by status.""")
+@pretty
+@click.pass_context
+@translate_exceptions
+@coro
+async def summarize(ctx, subscription_id, pretty):
+    """Summarize the status of all subscriptions or the status of results for a single subscription"""
+    async with subscriptions_client(ctx) as client:
+        if subscription_id:
+            summary = await client.get_subscription_summary(subscription_id)
+        else:
+            summary = await client.get_summary()
+        echo_json(summary, pretty)
