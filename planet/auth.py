@@ -30,52 +30,7 @@ from .auth_builtins import _ProductionEnv, _OIDC_AUTH_CLIENT_CONFIG__USER_SKEL, 
 from .exceptions import PlanetError
 
 
-class AuthType(abc.ABC, httpx.Auth):
-
-    @abc.abstractmethod
-    def user_login(
-        self,
-        allow_open_browser: typing.Optional[bool] = False,
-        allow_tty_prompt: typing.Optional[bool] = False,
-    ):
-        """
-        Perform an interactive login.  User interaction will be via the TTY
-        and/or a local web browser, with the details dependent on the
-        client auth configuration.
-
-        :param allow_open_browser:
-        :param allow_tty_prompt:
-        """
-
-    @abc.abstractmethod
-    def device_user_login_initiate(self) -> dict:
-        """
-        Initiate a user login that uses the OAuth2 Device Code Flow for applications
-        that cannot operate a browser locally.  The returned dictionary should be used
-        to prompt the user to complete the process, and will conform to RFC 8628.
-        """
-
-    @abc.abstractmethod
-    def device_user_login_complete(self, login_initialization_info: dict):
-        """
-        Complete a user login that uses the OAuth2 Device Code Flow for applications
-        that was initiated by a call to `device_user_login_initiate()`.  The structure
-        that was returned from `device_user_login_initiate()` should be passed
-        to this function unaltered after it has been used to prompt the user.
-        """
-
-    @abc.abstractmethod
-    def is_initialized(self) -> bool:
-        """
-        Check whether the user session has been initialized.  For OAuth2
-        user based sessions, this means that a login has been performed
-        or saved login session data has been located.  For M2M and API Key
-        sessions, this should be true if keys or secrets have been
-        properly configured.
-        """
-
-
-class Auth(metaclass=abc.ABCMeta):
+class Auth(abc.ABC, httpx.Auth):
     """
     Handle authentication information for use with Planet APIs.
     Static constructor methods should be used to create an auth context
@@ -92,7 +47,7 @@ class Auth(metaclass=abc.ABCMeta):
         return profile_name.lower()
 
     @staticmethod
-    def from_user_default_session() -> AuthType:
+    def from_user_default_session() -> Auth:
         """
         Create authentication from user defaults.
 
@@ -122,7 +77,7 @@ class Auth(metaclass=abc.ABCMeta):
                               initialize_auth_client_context())
 
     @staticmethod
-    def from_profile(profile_name: str) -> AuthType:
+    def from_profile(profile_name: str) -> Auth:
         """
         Create authentication for a user whose initialized login information
         has been saved to `~/.planet.json` and `~/.planet/`.
@@ -150,7 +105,7 @@ class Auth(metaclass=abc.ABCMeta):
         profile_name: typing.Optional[str] = None,
         storage_provider: typing.Optional[
             planet_auth.ObjectStorageProvider] = None,
-    ) -> AuthType:
+    ) -> Auth:
         """
         Create authentication for the specified registered client
         application.
@@ -211,7 +166,7 @@ class Auth(metaclass=abc.ABCMeta):
         profile_name: typing.Optional[str] = None,
         storage_provider: typing.Optional[
             planet_auth.ObjectStorageProvider] = None
-    ) -> AuthType:
+    ) -> Auth:
         """
         Create authentication for the specified registered client
         application.
@@ -272,7 +227,7 @@ class Auth(metaclass=abc.ABCMeta):
         profile_name: typing.Optional[str] = None,
         storage_provider: typing.Optional[
             planet_auth.ObjectStorageProvider] = None,
-    ) -> AuthType:
+    ) -> Auth:
         """
         Create authentication from the specified OAuth2 service account
         client ID and secret.
@@ -313,7 +268,7 @@ class Auth(metaclass=abc.ABCMeta):
         return Auth._from_plauth(pl_authlib_context)
 
     @staticmethod
-    def _from_plauth(pl_authlib_context: planet_auth.Auth) -> AuthType:
+    def _from_plauth(pl_authlib_context: planet_auth.Auth) -> Auth:
         """
         Create authentication from the provided Planet Auth Library
         Authentication Context.  Generally, applications will want to use one
@@ -328,7 +283,7 @@ class Auth(metaclass=abc.ABCMeta):
         return _PLAuthLibAuth(plauth=pl_authlib_context)
 
     @staticmethod
-    def from_key(key: typing.Optional[str]) -> AuthType:
+    def from_key(key: typing.Optional[str]) -> Auth:
         """Obtain authentication from api key.
 
         Parameters:
@@ -350,8 +305,8 @@ class Auth(metaclass=abc.ABCMeta):
 
     @staticmethod
     def from_file(
-        filename: typing.Optional[typing.Union[str, pathlib.Path]] = None
-    ) -> AuthType:
+        filename: typing.Optional[typing.Union[str,
+                                               pathlib.Path]] = None) -> Auth:
         """Create authentication from secret file.
 
         The default secret file is named `.planet.json` and is stored in the user
@@ -390,7 +345,7 @@ class Auth(metaclass=abc.ABCMeta):
         return _PLAuthLibAuth(plauth=pl_authlib_context)
 
     @staticmethod
-    def from_env(variable_name: typing.Optional[str] = None) -> AuthType:
+    def from_env(variable_name: typing.Optional[str] = None) -> Auth:
         """Create authentication from environment variables.
 
         Reads the `PL_API_KEY` environment variable
@@ -417,7 +372,7 @@ class Auth(metaclass=abc.ABCMeta):
     @staticmethod
     def from_login(email: str,
                    password: str,
-                   base_url: typing.Optional[str] = None) -> AuthType:
+                   base_url: typing.Optional[str] = None) -> Auth:
         """Create authentication from login email and password.
 
         Note: To keep your password secure, the use of `getpass` is
@@ -437,7 +392,7 @@ class Auth(metaclass=abc.ABCMeta):
         )
 
     @classmethod
-    def from_dict(cls, data: dict) -> AuthType:
+    def from_dict(cls, data: dict) -> Auth:
         raise DeprecationWarning("Auth.from_dict() has been deprecated.")
 
     def to_dict(self) -> dict:
@@ -453,13 +408,55 @@ class Auth(metaclass=abc.ABCMeta):
     def value(self):
         raise DeprecationWarning("Auth.value has been deprecated.")
 
+    @abc.abstractmethod
+    def user_login(
+        self,
+        allow_open_browser: typing.Optional[bool] = False,
+        allow_tty_prompt: typing.Optional[bool] = False,
+    ):
+        """
+        Perform an interactive login.  User interaction will be via the TTY
+        and/or a local web browser, with the details dependent on the
+        client auth configuration.
+
+        :param allow_open_browser:
+        :param allow_tty_prompt:
+        """
+
+    @abc.abstractmethod
+    def device_user_login_initiate(self) -> dict:
+        """
+        Initiate a user login that uses the OAuth2 Device Code Flow for applications
+        that cannot operate a browser locally.  The returned dictionary should be used
+        to prompt the user to complete the process, and will conform to RFC 8628.
+        """
+
+    @abc.abstractmethod
+    def device_user_login_complete(self, login_initialization_info: dict):
+        """
+        Complete a user login that uses the OAuth2 Device Code Flow for applications
+        that was initiated by a call to `device_user_login_initiate()`.  The structure
+        that was returned from `device_user_login_initiate()` should be passed
+        to this function unaltered after it has been used to prompt the user.
+        """
+
+    @abc.abstractmethod
+    def is_initialized(self) -> bool:
+        """
+        Check whether the user session has been initialized.  For OAuth2
+        user based sessions, this means that a login has been performed
+        or saved login session data has been located.  For M2M and API Key
+        sessions, this should be true if keys or secrets have been
+        properly configured.
+        """
+
 
 class APIKeyAuthException(PlanetError):
     """exceptions thrown by APIKeyAuth"""
     pass
 
 
-class _PLAuthLibAuth(AuthType):
+class _PLAuthLibAuth(Auth):
     # The Planet Auth Library uses a "has a" authenticator pattern for its
     # planet_auth.Auth context class.  This SDK library employs a "is a"
     # authenticator design pattern for users of its Auth context obtained
@@ -489,3 +486,6 @@ class _PLAuthLibAuth(AuthType):
 
     def is_initialized(self) -> bool:
         return self._plauth.request_authenticator_is_ready()
+
+
+AuthType = Auth
