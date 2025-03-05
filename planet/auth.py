@@ -25,8 +25,6 @@ from typing import List
 import planet_auth
 import planet_auth_utils
 
-from planet_auth import ObjectStorageProvider
-
 from .constants import SECRET_FILE_PATH
 from .auth_builtins import _ProductionEnv, _OIDC_AUTH_CLIENT_CONFIG__USER_SKEL, _OIDC_AUTH_CLIENT_CONFIG__M2M_SKEL
 from .exceptions import PlanetError
@@ -150,7 +148,8 @@ class Auth(metaclass=abc.ABCMeta):
         requested_scopes: typing.Optional[List[str]] = None,
         save_state_to_storage: bool = True,
         profile_name: typing.Optional[str] = None,
-        storage_provider: typing.Optional[ObjectStorageProvider] = None,
+        storage_provider: typing.Optional[
+            planet_auth.ObjectStorageProvider] = None,
     ) -> AuthType:
         """
         Create authentication for the specified registered client
@@ -210,7 +209,8 @@ class Auth(metaclass=abc.ABCMeta):
         requested_scopes: typing.Optional[List[str]] = None,
         save_state_to_storage: bool = True,
         profile_name: typing.Optional[str] = None,
-        storage_provider: typing.Optional[ObjectStorageProvider] = None
+        storage_provider: typing.Optional[
+            planet_auth.ObjectStorageProvider] = None
     ) -> AuthType:
         """
         Create authentication for the specified registered client
@@ -270,7 +270,8 @@ class Auth(metaclass=abc.ABCMeta):
         requested_scopes: typing.Optional[List[str]] = None,
         save_state_to_storage: bool = True,
         profile_name: typing.Optional[str] = None,
-        storage_provider: typing.Optional[planet_auth.ObjectStorageProvider] = None,
+        storage_provider: typing.Optional[
+            planet_auth.ObjectStorageProvider] = None,
     ) -> AuthType:
         """
         Create authentication from the specified OAuth2 service account
