@@ -258,6 +258,56 @@ delivery = amazon_s3(ACCESS_KEY_ID, SECRET_ACCESS_KEY, "test", "us-east-1")
 subscription = pl.subscriptions.create_subscription(request)
 ```
 
+### Features API Collections and Features
+
+The Python SDK now supports [Features API](https://developers.planet.com/docs/apis/features/) Collections and Features (note: in the SDK and API, Features are often referred to as items in a collection).
+
+Collections and Features/items that you create in in the SDK will be visible in Features API and Features Manager.
+
+#### Creating a collection
+
+You can use the Python SDK to create feature collections in the Features API. 
+
+```python
+new_collection = pl.features.create_collection(title="my collection", description="a new collection")
+```
+
+#### Listing collections
+
+```python
+collections = pl.features.list_collections()
+for collection in collections:
+  print(collection)
+```
+
+#### Listing features/items in a collection
+
+```python
+items = pl.features.list_items(collection_id)
+for item in items:
+  print(item)
+
+```
+
+#### Using items as geometries for other methods
+
+You can pass collection items/features directly to other SDK methods. Any method that requires a geometry will accept
+a Features API Feature.
+
+!!!note
+    When passing a Features API Feature to other methods, the [feature ref](https://developers.planet.com/docs/apis/features/feature-references/) will be used. This means any searches or subscriptions you create will be linked to your feature.
+
+```python
+# collection_id: the ID of a collection in Features API
+
+items = pl.features.list_items(collection_id)
+example_feature = next(items)
+results = pl.data.search(["PSScene"], geometry=example_feature)
+```
+
+!!!note
+    Reserving quota for features is currently not supported in the SDK. However, you may create features within the SDK and then use [Features Manager](https://planet.com/features) to reserve quota.
+
 ## API Exceptions
 
 When errors occur, the Planet SDK for Python exception hierarchy is as follows:

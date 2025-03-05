@@ -19,7 +19,7 @@ from pathlib import Path
 import random
 import re
 import string
-from typing import AsyncGenerator, Callable, List, Optional
+from typing import AsyncGenerator, Callable, List, Optional, Protocol, Union, runtime_checkable
 from urllib.parse import urlparse
 
 import httpx
@@ -287,3 +287,30 @@ class Paged:
             LOGGER.debug('end of the pages')
             next_link = False
         return next_link
+
+
+@runtime_checkable
+class GeoInterface(Protocol):
+    """represents a class that implements __geo_interface__"""
+
+    @property
+    def __geo_interface__(self) -> dict:
+        raise NotImplementedError
+
+
+class Feature(dict):
+
+    @property
+    def ref(self):
+        if ref := self.get("properties", {}).get("pl:ref"):
+            return ref
+        raise AttributeError("Feature object does not contain a reference")
+
+
+GeojsonLike = Union[Feature, dict, str]
+"""
+GeojsonLike is a type union that represents:
+* a dict containing a valid GeoJSON Feature or Geometry
+* an instance of a Planet Feature (e.g. the return value from `pl.features.get_items(collection_id)`)
+* an instance of a class that implements __geo_interface__ (Shapely, GeoPandas geometries)
+"""
