@@ -13,7 +13,7 @@ def example_main():
     plsdk_auth = planet.Auth.from_user_default_session()
 
     if not plsdk_auth.is_initialized():
-        print(f"Login required. Execute the following command:\n\n\tplanet auth login\n")
+        print("Login required. Execute the following command:\n\n\tplanet auth login\n")
         sys.exit(99)
 
     # Create a Planet SDK object that uses the loaded auth session.
