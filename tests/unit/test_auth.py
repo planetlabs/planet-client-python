@@ -171,9 +171,6 @@ def test_Auth_from_user_auth_code_client():
     under_test = auth.Auth.from_oauth_user_auth_code(
         client_id="mock_client_id__auth_code_client",
         callback_url="http://localhost:8080",
-        requested_scopes=[
-            PlanetOAuthScopes.PLANET, PlanetOAuthScopes.OFFLINE_ACCESS
-        ],
         save_state_to_storage=False)
 
     assert isinstance(under_test, planet.auth._PLAuthLibAuth)
@@ -188,13 +185,40 @@ def test_Auth_from_user_auth_code_client():
     assert under_test._plauth.auth_client()._authcode_client_config.client_id(
     ) == "mock_client_id__auth_code_client"
 
+    assert under_test._plauth.auth_client()._authcode_client_config.scopes(
+    ) == planet.auth_builtins._OIDC_AUTH_CLIENT_CONFIG__USER_SKEL["scopes"]
+
+
+def test_Auth_from_user_auth_code_client_2():
+    under_test = auth.Auth.from_oauth_user_auth_code(
+        client_id="mock_client_id__auth_code_client_2",
+        callback_url="http://localhost:8080",
+        requested_scopes=[PlanetOAuthScopes.PLANET],
+        profile_name="utest-override-default-profile-name-auth-code-2",
+        save_state_to_storage=False)
+
+    assert isinstance(under_test, planet.auth._PLAuthLibAuth)
+    assert isinstance(under_test._plauth.auth_client(),
+                      planet_auth.AuthCodeAuthClient)
+
+    assert under_test._plauth.auth_client(
+    )._authcode_client_config.auth_server(
+    ) == planet.auth_builtins._ProductionEnv.OAUTH_AUTHORITY_USER[
+        "auth_server"]
+
+    assert under_test._plauth.auth_client()._authcode_client_config.client_id(
+    ) == "mock_client_id__auth_code_client_2"
+
+    assert under_test._plauth.auth_client()._authcode_client_config.scopes(
+    ) == [PlanetOAuthScopes.PLANET]
+
+    assert under_test._plauth.profile_name(
+    ) == "utest-override-default-profile-name-auth-code-2"
+
 
 def test_Auth_from_user_device_code_client():
     under_test = auth.Auth.from_oauth_user_device_code(
         client_id="mock_client_id__device_code_client",
-        requested_scopes=[
-            PlanetOAuthScopes.PLANET, PlanetOAuthScopes.OFFLINE_ACCESS
-        ],
         save_state_to_storage=False)
 
     assert isinstance(under_test, planet.auth._PLAuthLibAuth)
@@ -210,10 +234,47 @@ def test_Auth_from_user_device_code_client():
     )._devicecode_client_config.client_id(
     ) == "mock_client_id__device_code_client"
 
+    assert under_test._plauth.auth_client()._devicecode_client_config.scopes(
+    ) == planet.auth_builtins._OIDC_AUTH_CLIENT_CONFIG__USER_SKEL["scopes"]
+
+
+def test_Auth_from_user_device_code_client_2():
+    under_test = auth.Auth.from_oauth_user_device_code(
+        client_id="mock_client_id__device_code_client_2",
+        requested_scopes=[
+            PlanetOAuthScopes.PLANET,
+        ],
+        profile_name="utest-override-default-profile-name-device-code-2",
+        save_state_to_storage=False)
+
+    assert isinstance(under_test, planet.auth._PLAuthLibAuth)
+    assert isinstance(under_test._plauth.auth_client(),
+                      planet_auth.DeviceCodeAuthClient)
+
+    assert under_test._plauth.auth_client(
+    )._devicecode_client_config.auth_server(
+    ) == planet.auth_builtins._ProductionEnv.OAUTH_AUTHORITY_USER[
+        "auth_server"]
+
+    assert under_test._plauth.auth_client(
+    )._devicecode_client_config.client_id(
+    ) == "mock_client_id__device_code_client_2"
+
+    assert under_test._plauth.auth_client()._devicecode_client_config.scopes(
+    ) == [PlanetOAuthScopes.PLANET]
+
+    assert under_test._plauth.profile_name(
+    ) == "utest-override-default-profile-name-device-code-2"
+
 
 def test_Auth_from_oauth_m2m():
     under_test = auth.Auth.from_oauth_m2m(
-        "mock_client_id__from_oauth_m2m", "mock_client_secret__from_oauth_m2m")
+        client_id="mock_client_id__from_oauth_m2m",
+        client_secret="mock_client_secret__from_oauth_m2m",
+        requested_scopes=[
+            PlanetOAuthScopes.PLANET,
+        ],
+    )
     assert isinstance(under_test, planet.auth._PLAuthLibAuth)
     assert isinstance(under_test._plauth.auth_client(),
                       planet_auth.ClientCredentialsClientSecretAuthClient)
@@ -227,6 +288,27 @@ def test_Auth_from_oauth_m2m():
     assert under_test._plauth.auth_client(
     )._ccauth_client_config.client_secret(
     ) == "mock_client_secret__from_oauth_m2m"
+
+    assert under_test._plauth.auth_client()._ccauth_client_config.scopes() == [
+        PlanetOAuthScopes.PLANET
+    ]
+
+
+def test_Auth_profile_name_normalization():
+    under_test = auth.Auth.from_oauth_m2m(
+        client_id="mock_client_id__from_oauth_m2m",
+        client_secret="mock_client_secret__from_oauth_m2m",
+        profile_name="mIxeD_CaSe")
+
+    assert under_test._plauth.profile_name() == "mixed_case"
+
+
+def test_Auth_profile_name_illegal():
+    with pytest.raises(ValueError):
+        _ = auth.Auth.from_oauth_m2m(
+            client_id="mock_client_id__from_oauth_m2m",
+            client_secret="mock_client_secret__from_oauth_m2m",
+            profile_name="path/sep/not/allowed")
 
 
 def test_auth_value_deprecated():
