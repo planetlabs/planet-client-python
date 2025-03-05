@@ -14,6 +14,7 @@
 # limitations under the License.
 import logging
 
+import planet_auth_utils
 import pytest
 
 import planet.auth
@@ -141,11 +142,73 @@ def test_Auth_from_login(monkeypatch):
 
 
 def test_Auth_from_user_defaults():
-    # The primary implementation is implemented and unit tested by the planet auth libraries.
-    # This tests that it doesn't explode with an exception.
+    # The primary implementation is implemented and unit tested by the planet
+    # auth libraries.  This tests that it doesn't explode with an exception.
     # CI/CD currently is run by configuring auth via PL_API_KEY env var.
-    # What this will actually do in an user env depends on a lot of variables.
+    # What this will actually do in a user's environment depends on a lot
+    # of variables.
     _ = auth.Auth.from_user_default_session()
+
+
+def test_Auth_from_profile__builtin_default_profile():
+    under_test = auth.Auth.from_profile(
+        planet_auth_utils.Builtins.builtin_default_profile_name())
+    assert isinstance(under_test, planet.auth._PLAuthLibAuth)
+    assert isinstance(under_test._plauth.auth_client(),
+                      planet_auth.DeviceCodeAuthClient)
+
+    assert under_test._plauth.auth_client(
+    )._devicecode_client_config.auth_server(
+    ) == planet.auth_builtins._ProductionEnv.OAUTH_AUTHORITY_USER[
+        "auth_server"]
+
+    assert under_test._plauth.auth_client(
+    )._devicecode_client_config.client_id(
+    ) == planet.auth_builtins._SDK_CLIENT_ID_PROD
+
+
+def test_Auth_from_user_auth_code_client():
+    under_test = auth.Auth.from_oauth_user_auth_code(
+        client_id="mock_client_id__auth_code_client",
+        callback_url="http://localhost:8080",
+        requested_scopes=[
+            PlanetOAuthScopes.PLANET, PlanetOAuthScopes.OFFLINE_ACCESS
+        ],
+        save_state_to_storage=False)
+
+    assert isinstance(under_test, planet.auth._PLAuthLibAuth)
+    assert isinstance(under_test._plauth.auth_client(),
+                      planet_auth.AuthCodeAuthClient)
+
+    assert under_test._plauth.auth_client(
+    )._authcode_client_config.auth_server(
+    ) == planet.auth_builtins._ProductionEnv.OAUTH_AUTHORITY_USER[
+        "auth_server"]
+
+    assert under_test._plauth.auth_client()._authcode_client_config.client_id(
+    ) == "mock_client_id__auth_code_client"
+
+
+def test_Auth_from_user_device_code_client():
+    under_test = auth.Auth.from_oauth_user_device_code(
+        client_id="mock_client_id__device_code_client",
+        requested_scopes=[
+            PlanetOAuthScopes.PLANET, PlanetOAuthScopes.OFFLINE_ACCESS
+        ],
+        save_state_to_storage=False)
+
+    assert isinstance(under_test, planet.auth._PLAuthLibAuth)
+    assert isinstance(under_test._plauth.auth_client(),
+                      planet_auth.DeviceCodeAuthClient)
+
+    assert under_test._plauth.auth_client(
+    )._devicecode_client_config.auth_server(
+    ) == planet.auth_builtins._ProductionEnv.OAUTH_AUTHORITY_USER[
+        "auth_server"]
+
+    assert under_test._plauth.auth_client(
+    )._devicecode_client_config.client_id(
+    ) == "mock_client_id__device_code_client"
 
 
 def test_Auth_from_oauth_m2m():
@@ -166,59 +229,21 @@ def test_Auth_from_oauth_m2m():
     ) == "mock_client_secret__from_oauth_m2m"
 
 
-def test_Auth_from_oauth_user_session():
-    under_test = auth.Auth.from_oauth_user_session()
-    assert isinstance(under_test, planet.auth._PLAuthLibAuth)
-    assert isinstance(under_test._plauth.auth_client(),
-                      planet_auth.DeviceCodeAuthClient)
-
-    assert under_test._plauth.auth_client(
-    )._devicecode_client_config.auth_server(
-    ) == planet.auth_builtins._ProductionEnv.OAUTH_AUTHORITY_USER[
-        "auth_server"]
-
-    assert under_test._plauth.auth_client(
-    )._devicecode_client_config.client_id(
-    ) == planet.auth_builtins._SDK_CLIENT_ID_PROD
-
-
-def test_Auth_from_oauth_client_config():
-    under_test = auth.Auth.beta_from_oauth_client_config(
-        client_id="mock_client_id__from_oauth_config",
-        requested_scopes=[
-            PlanetOAuthScopes.PLANET, PlanetOAuthScopes.OFFLINE_ACCESS
-        ],
-        save_token_file=False)
-
-    assert isinstance(under_test, planet.auth._PLAuthLibAuth)
-    assert isinstance(under_test._plauth.auth_client(),
-                      planet_auth.DeviceCodeAuthClient)
-
-    assert under_test._plauth.auth_client(
-    )._devicecode_client_config.auth_server(
-    ) == planet.auth_builtins._ProductionEnv.OAUTH_AUTHORITY_USER[
-        "auth_server"]
-
-    assert under_test._plauth.auth_client(
-    )._devicecode_client_config.client_id(
-    ) == "mock_client_id__from_oauth_config"
-
-
 def test_auth_value_deprecated():
+    test_auth = auth.Auth.from_key("test_deprecated_key")
     with pytest.raises(DeprecationWarning):
-        test_auth = auth.Auth.from_key("test_deprecated_key")
         _ = test_auth.value
 
 
 def test_auth_store_deprecated():
+    test_auth = auth.Auth.from_key("test_deprecated_key")
     with pytest.raises(DeprecationWarning):
-        test_auth = auth.Auth.from_key("test_deprecated_key")
         test_auth.store()
 
 
 def test_auth_to_dict_deprecated():
+    test_auth = auth.Auth.from_key("test_deprecated_key")
     with pytest.raises(DeprecationWarning):
-        test_auth = auth.Auth.from_key("test_deprecated_key")
         _ = test_auth.to_dict()
 
 
