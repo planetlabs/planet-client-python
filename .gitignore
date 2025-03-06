@@ -23,7 +23,9 @@ coverage.xml
 *.pyc
 
 # Editors
+.idea/
 .vscode/
 # Docs build
 site
 .venv
+venv
