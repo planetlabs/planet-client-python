@@ -19,6 +19,9 @@ from planet_auth_utils.builtins_provider import BuiltinConfigurationProviderInte
 os.environ[
     "PL_AUTH_BUILTIN_CONFIG_PROVIDER"] = "planet.auth_builtins._BuiltinConfigurationProvider"
 
+from planet_auth.logging.auth_logger import setStructuredLogging
+# setPyLoggerForAuthLogger(logging.getLogger("planet_auth_sdk"))
+setStructuredLogging(nested_key=None)
 
 # No StrEnum in our lowest supported Python version
 # class PlanetOAuthScopes(enum.StrEnum):
