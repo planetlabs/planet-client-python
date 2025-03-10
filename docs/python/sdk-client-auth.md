@@ -16,7 +16,7 @@ the [Authentication](https://docs.planet.com/develop/authentication) section of 
     developers to register and manage clients has not yet been made public.
     We have also not yet release a way for end-users of such applications to
     manage which applications have been authorized to access the platform on
-    their behalf.)
+    their behalf.
 
     If you would like to developed an interactive application that uses
     Planet's APIs on behalf of a user (as the `planet` CLI utility does),
