@@ -1,6 +1,16 @@
+3.0.0 (Unreleased)
+- Overhaul of planet.Auth AP interface to leverage the
+  [Planet Auth Utility Library](https://github.com/planetlabs/planet-auth-python)
+  and move preferred authentication mechanisms to OAuth2 over API keys.
+  See the Client Authentication Guide in the documentation for details and
+  examples.
+- Overhaul of the `planet auth` CLI to support Auth infrastructure overhaul.
+  Of immediate note to uses is that `planet auth login` should be preferred
+  to `planet auth init` to initialize the CLI client for use.
+
 2.13.0 (2024-12-18)
 - Add Planet class (`from planet import Planet`)
-  - Planet is a client that uses sync methods. Users do not have 
+  - Planet is a client that uses sync methods. Users do not have
     to interact with asyncio to use the sync client.
   - the Planet class is implemented by calling out to the async methods.
     This should be transparent to users. Depending on uptake and feedback,

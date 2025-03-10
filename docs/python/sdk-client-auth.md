@@ -1,9 +1,5 @@
 # Client Authentication Guide
 
-[TOC]
-
-----
-
 ## Introduction
 All calls to Planet APIs must be authenticated.  Only authorized clients may
 use Planet Platform APIs.
@@ -14,11 +10,18 @@ the [Authentication](https://docs.planet.com/develop/authentication) section of 
 !!! warning
     Some statements are forward-looking.  OAuth2 M2M tokens are
     currently only supported by `services.sentine-hub.com` and not supported
-    by `api.planet.com`.  All APIs support interactive user OAuth2 access
-    tokens, but a process for developers to register and manage clients has
-    not yet been made public.  We have also not yet release a way for end-users
-    of such applications to manage which applications have been authorized
-    to access the platform on their behalf.
+    by `api.planet.com`.
+
+    All APIs support interactive user OAuth2 access tokens, but a process for
+    developers to register and manage clients has not yet been made public.
+    We have also not yet release a way for end-users of such applications to
+    manage which applications have been authorized to access the platform on
+    their behalf.)
+
+    If you would like to developed an interactive application that uses
+    Planet's APIs on behalf of a user (as the `planet` CLI utility does),
+    please contact Planet and work with engineering to register your
+    application.
 
 ----
 ## Authentication Protocols
