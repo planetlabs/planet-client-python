@@ -107,7 +107,7 @@ def build_request(name: str,
 def product(item_ids: List[str],
             product_bundle: str,
             item_type: str,
-            fallback_bundle: Optional[str] = None) -> dict:
+            fallback_bundle: Optional[Union[str, List[str]]] = None) -> dict:
     """Product description for an order detail.
 
     Parameters:
@@ -128,10 +128,11 @@ def product(item_ids: List[str],
     validated_product_bundle = specs.validate_bundle(item_type, product_bundle)
 
     if fallback_bundle is not None:
-        validated_fallback_bundle = specs.validate_bundle(
-            item_type, fallback_bundle)
-        validated_product_bundle = ','.join(
-            [validated_product_bundle, validated_fallback_bundle])
+        bundles = fallback_bundle.split(',') if isinstance(fallback_bundle, str) else fallback_bundle
+        validated_bundles = []
+        for bundle in bundles:
+            validated_bundles.append(specs.validate_bundle(item_type, bundle))
+        validated_product_bundle = ','.join([validated_product_bundle, validated_bundles])
 
     product_dict = {
         'item_ids': item_ids,
