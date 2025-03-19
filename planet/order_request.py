@@ -128,12 +128,13 @@ def product(item_ids: List[str],
     validated_product_bundle = specs.validate_bundle(item_type, product_bundle)
 
     if fallback_bundle is not None:
-        bundles = fallback_bundle.split(',') if isinstance(fallback_bundle, str) else fallback_bundle
+        bundles = fallback_bundle.split(',') if isinstance(
+            fallback_bundle, str) else fallback_bundle
         validated_bundles = []
         for bundle in bundles:
             validated_bundles.append(specs.validate_bundle(item_type, bundle))
-        validated_bundles = ','.join(validated_bundles)
-        validated_product_bundle = ','.join([validated_product_bundle, validated_bundles])
+        validated_product_bundle = ','.join(
+            [validated_product_bundle, ','.join(validated_bundles)])
 
     product_dict = {
         'item_ids': item_ids,

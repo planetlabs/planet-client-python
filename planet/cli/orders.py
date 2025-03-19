@@ -361,11 +361,12 @@ async def create(ctx, request, pretty, **kwargs):
               help='Bundle type for the item.',
               type=str,
               callback=check_bundle)
-@click.option('--fallback-bundle',
-              required=False,
-              help='Fallback bundle type(s) for the item if bundle is not available.',
-              type=str,
-              callback=check_bundle)
+@click.option(
+    '--fallback-bundle',
+    required=False,
+    help='Fallback bundle type(s) for the item if bundle is not available.',
+    type=str,
+    callback=check_bundle)
 @click.option('--name',
               required=True,
               help='Order name. Does not need to be unique.',
@@ -451,7 +452,10 @@ async def request(ctx,
     IDs is one or more comma-separated item IDs.
     """
     try:
-        product = planet.order_request.product(ids, bundle, item_type, fallback_bundle)
+        product = planet.order_request.product(ids,
+                                               bundle,
+                                               item_type,
+                                               fallback_bundle)
     except planet.specs.SpecificationException as e:
         raise click.BadParameter(e)
 
