@@ -132,6 +132,7 @@ def product(item_ids: List[str],
         validated_bundles = []
         for bundle in bundles:
             validated_bundles.append(specs.validate_bundle(item_type, bundle))
+        validated_bundles = ','.join(validated_bundles)
         validated_product_bundle = ','.join([validated_product_bundle, validated_bundles])
 
     product_dict = {
