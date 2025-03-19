@@ -483,7 +483,7 @@ def request_catalog(item_types,
 @translate_exceptions
 @click.option(
     '--var-type',
-    required=True,
+    required=False,
     help='A Planetary Variable type. See documentation for all available types.'
 )
 @click.option(
