@@ -24,7 +24,6 @@ LOGGER = logging.getLogger(__name__)
 
 def test_build_request_success(geom_geojson):
     source = {
-        "type": "catalog",
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",
@@ -69,7 +68,6 @@ def test_build_request_success(geom_geojson):
 def test_build_request_clip_to_source_success(geom_geojson):
     """Without a clip tool we can clip to source."""
     source = {
-        "type": "catalog",
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",
@@ -95,7 +93,6 @@ def test_build_request_clip_to_source_success(geom_geojson):
 def test_build_request_clip_to_source_failure(geom_geojson):
     """With a clip tool we can not clip to source."""
     source = {
-        "type": "catalog",
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",
@@ -121,7 +118,6 @@ def test_build_request_clip_to_source_failure(geom_geojson):
 
 def test_build_request_host_sentinel_hub_no_collection(geom_geojson):
     source = {
-        "type": "catalog",
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",
@@ -145,7 +141,6 @@ def test_build_request_host_sentinel_hub_no_collection(geom_geojson):
 
 def test_build_request_host_sentinel_hub_with_collection(geom_geojson):
     source = {
-        "type": "catalog",
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",
@@ -174,7 +169,6 @@ def test_build_request_host_sentinel_hub_with_collection(geom_geojson):
 
 def test_build_request_host_sentinel_hub_create_configuration(geom_geojson):
     source = {
-        "type": "catalog",
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",
@@ -203,7 +197,6 @@ def test_build_request_host_sentinel_hub_create_configuration(geom_geojson):
 def test_build_request_host_sentinel_hub_collection_configuration(
         geom_geojson):
     source = {
-        "type": "catalog",
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",
@@ -556,6 +549,7 @@ def test_toar_tool_success():
     [
         ("biomass_proxy", "BIOMASS-PROXY_V3.0_10"),  # actual real type and id.
         ("var1", "VAR1-ABCD"),  # nonsense type and id
+        (None, "BIOMASS-PROXY_V3.0_10"),  # None type with valid id
     ])
 def test_pv_source_success(geom_geojson, var_type, var_id):
     """Configure a planetary variable subscription source."""
@@ -567,7 +561,10 @@ def test_pv_source_success(geom_geojson, var_type, var_id):
         end_time=datetime(2021, 3, 2),
     )
 
-    assert source["type"] == var_type
+    if var_type is None:
+        assert "type" not in source
+    else:
+        assert source["type"] == var_type
     params = source["parameters"]
     assert params["id"] == var_id
     assert params["geometry"] == geom_geojson
