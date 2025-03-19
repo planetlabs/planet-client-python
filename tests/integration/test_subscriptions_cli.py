@@ -395,12 +395,10 @@ def test_subscriptions_results_csv(invoke):
     assert result.output.splitlines() == ["id,status", "1234-abcd,SUCCESS"]
 
 
-@pytest.mark.parametrize(
-    "geom, source_type", [
-        ("geom_geojson", "biomass_proxy"),
-        ("geom_reference", None),
-        ("str_geom_reference", None)
-    ])
+@pytest.mark.parametrize("geom, source_type",
+                         [("geom_geojson", "biomass_proxy"),
+                          ("geom_reference", None),
+                          ("str_geom_reference", None)])
 def test_request_pv_success(invoke, geom, source_type, request):
     """Request-pv command succeeds"""
     geom = request.getfixturevalue(geom)
