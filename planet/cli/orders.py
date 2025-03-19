@@ -58,6 +58,9 @@ def check_bundle(ctx, param, bundle) -> Optional[List[dict]]:
     if not item_type:
         raise click.BadParameter("Item type is required to validate a bundle.")
 
+    if bundle is None:
+        return bundle
+
     bundles = bundle.split(",")
     for b in bundles:
         try:
