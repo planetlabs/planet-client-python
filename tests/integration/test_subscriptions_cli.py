@@ -370,7 +370,6 @@ def test_request_base_clip_to_source(geom_fixture, request, invoke):
 def test_request_catalog_success(mock_bundles, invoke, geom_geojson):
     """Request-catalog command succeeds"""
     source = {
-        "type": "catalog",
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",

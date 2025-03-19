@@ -242,7 +242,6 @@ def test_catalog_source_success(geom_geojson, mock_bundles):
     )
 
     expected = {
-        "type": "catalog",
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",
@@ -270,7 +269,6 @@ def test_catalog_source_featurecollection(featurecollection_geojson,
     )
 
     expected = {
-        "type": "catalog",
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",
