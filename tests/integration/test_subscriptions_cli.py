@@ -306,7 +306,6 @@ def test_subscriptions_results_success(invoke, options, expected_count):
 def test_request_base_success(invoke, geom_geojson):
     """Request command succeeds."""
     source = json.dumps({
-        "type": "catalog",
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",
@@ -344,7 +343,6 @@ def test_request_base_clip_to_source(geom_fixture, request, invoke):
     """Clip to source using command line option."""
     geom = request.getfixturevalue(geom_fixture)
     source = json.dumps({
-        "type": "catalog",
         "parameters": {
             "geometry": geom,
             "start_time": "2021-03-01T00:00:00Z",
@@ -370,7 +368,6 @@ def test_request_base_clip_to_source(geom_fixture, request, invoke):
 def test_request_catalog_success(mock_bundles, invoke, geom_geojson):
     """Request-catalog command succeeds"""
     source = {
-        "type": "catalog",
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",
@@ -398,24 +395,33 @@ def test_subscriptions_results_csv(invoke):
     assert result.output.splitlines() == ["id,status", "1234-abcd,SUCCESS"]
 
 
-@pytest.mark.parametrize(
-    "geom", ["geom_geojson", "geom_reference", "str_geom_reference"])
-def test_request_pv_success(invoke, geom, request):
+@pytest.mark.parametrize("geom, source_type",
+                         [("geom_geojson", "biomass_proxy"),
+                          ("geom_reference", None),
+                          ("str_geom_reference", None)])
+def test_request_pv_success(invoke, geom, source_type, request):
     """Request-pv command succeeds"""
     geom = request.getfixturevalue(geom)
     if isinstance(geom, dict):
         geom = json.dumps(geom)
-    result = invoke([
+    cmd = [
         "request-pv",
-        "--var-type=biomass_proxy",
         "--var-id=BIOMASS-PROXY_V3.0_10",
         f"--geometry={geom}",
         "--start-time=2021-03-01T00:00:00",
-    ])
+    ]
+
+    if source_type:
+        cmd.append(f"--var-type={source_type}")
+
+    result = invoke(cmd)
 
     assert result.exit_code == 0  # success.
     source = json.loads(result.output)
-    assert source["type"] == "biomass_proxy"
+    if source_type:
+        assert source["type"] == "biomass_proxy"
+    else:
+        assert "type" not in source
     assert source["parameters"]["id"] == "BIOMASS-PROXY_V3.0_10"
 
 
@@ -488,7 +494,6 @@ def test_request_hosting(invoke,
                          expected_success):
     """Test request command with various hosting and collection ID options."""
     source = json.dumps({
-        "type": "catalog",
         "parameters": {
             "geometry": geom_geojson,
             "start_time": "2021-03-01T00:00:00Z",

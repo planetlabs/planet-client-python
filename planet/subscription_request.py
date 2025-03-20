@@ -281,11 +281,11 @@ def catalog_source(
     if time_range_type:
         parameters['time_range_type'] = time_range_type
 
-    return {"type": "catalog", "parameters": parameters}
+    return {"parameters": parameters}
 
 
 def planetary_variable_source(
-    var_type: str,
+    var_type: Optional[str],
     var_id: str,
     geometry: Union[dict, str],
     start_time: datetime,
@@ -305,7 +305,8 @@ def planetary_variable_source(
 
     Parameters:
         var_type: Planetary Variable type. See documentation for all
-            available types.
+            available types.  Used to be a required parameter but
+            is now optional and can be 'None'.
         var_id: A Planetary Variable ID. See documenation for all
             available IDs.
         geometry: The area of interest of the subscription that will be
@@ -369,7 +370,10 @@ def planetary_variable_source(
         except AttributeError:
             raise ClientError('Could not convert end_time to an iso string')
 
-    return {"type": var_type, "parameters": parameters}
+    source: dict[str, Any] = {"parameters": parameters}
+    if var_type:
+        source["type"] = var_type
+    return source
 
 
 def _datetime_to_rfc3339(value: datetime) -> str:
