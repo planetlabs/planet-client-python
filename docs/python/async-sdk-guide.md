@@ -14,7 +14,7 @@ This guide walks you through the steps:
 
 ## Install the Planet Python SDK
 
-Use a package manager (such as `pip`) to install the Planet Python SDK: 
+Use a package manager (such as `pip`) to install the Planet Python SDK:
 
 ```sh
 pip install planet
@@ -55,7 +55,7 @@ auth.store()
 The default authentication behavior of the `Session` can be modified by specifying
 `Auth` explicitly using the methods `Auth.from_file()` and `Auth.from_env()`.
 While `Auth.from_key()` and `Auth.from_login` can be used, it is recommended
-that those functions be used in authentication initialization. Authentication 
+that those functions be used in authentication initialization. Authentication
 information should be stored using `Auth.store()`.
 
 You can customize the manner of retrieval and location to read from when retrieving the authorization information. The file and environment variable read from can be customized in the respective functions. For example, authentication can be read from a custom
@@ -175,8 +175,9 @@ def create_request():
        name='oregon_order',
        products=[
            planet.order_request.product(item_ids=oregon_items,
-                                        product_bundle='analytic_udm2',
-                                        item_type='PSScene')
+                                        product_bundle='analytic_8b_udm2',
+                                        item_type='PSScene'
+                                        fallback_bundle='analytic_udm2,analytic_3b_udm2')
        ],
        tools=[planet.order_request.clip_tool(aoi=oregon_aoi)])
 
@@ -193,7 +194,7 @@ This would be equivalent to a manually created JSON object with the following de
          "Item_ids":["20200909_182525_1014",
                      "20200909_182524_1014"],
          "item_type":"PSScene",
-         "product_bundle":"analytic_sr_udm2"
+         "product_bundle":"analytic_8b_udm2,analytic_udm2,analytic_3b_udm2"
       }
    ],
   "tools": [
@@ -431,7 +432,7 @@ waiting for the asset to be active, downloading the asset, and, optionally,
 validating the downloaded file.
 
 With wait and download, it is often desired to track progress as these
-processes can take a long time. Therefore, in this example, we use a simple 
+processes can take a long time. Therefore, in this example, we use a simple
 print command to report wait status. `download_asset` has reporting built in.
 
 ```python
@@ -444,7 +445,7 @@ async def download_and_validate():
         item_id = '20221003_002705_38_2461'
         asset_type_id = 'ortho_analytic_4b'
         asset = await cl.get_asset(item_type_id, item_id, asset_type_id)
-        
+
         # activate asset
         await cl.activate_asset(asset)
 
@@ -466,7 +467,7 @@ Collections and Features/items that you create in in the SDK will be visible in 
 
 #### Creating a collection
 
-You can use the Python SDK to create Features API collections. 
+You can use the Python SDK to create Features API collections.
 
 ```python
 async with Session() as sess:
