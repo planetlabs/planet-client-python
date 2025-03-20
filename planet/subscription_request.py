@@ -285,7 +285,7 @@ def catalog_source(
 
 
 def planetary_variable_source(
-    var_type: str,
+    var_type: Optional[str],
     var_id: str,
     geometry: Union[dict, str],
     start_time: datetime,
@@ -305,7 +305,8 @@ def planetary_variable_source(
 
     Parameters:
         var_type: Planetary Variable type. See documentation for all
-            available types.
+            available types.  Used to be a required parameter but
+            is now optional and can be 'None'.
         var_id: A Planetary Variable ID. See documenation for all
             available IDs.
         geometry: The area of interest of the subscription that will be
