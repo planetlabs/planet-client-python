@@ -21,7 +21,6 @@ Since there is no UI to easily create subscriptions we’ll start with making a 
 {
   "name": "First Subscription",
   "source": {
-    "type": "catalog",
     "parameters": {
       "asset_types": [
         "ortho_analytic_8b"
@@ -421,7 +420,6 @@ for details. To constrain data delivery by space and time, you will use the
 
 ```sh
 planet subscriptions request-pv \
-    --var-type biomass_proxy \
     --var-id BIOMASS-PROXY_V3.0_10 \
     --geometry geometry.geojson \
     --start-time 2022-08-24T00:00:00-07:00 > request-pv.json

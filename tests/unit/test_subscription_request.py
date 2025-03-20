@@ -561,10 +561,10 @@ def test_pv_source_success(geom_geojson, var_type, var_id):
         end_time=datetime(2021, 3, 2),
     )
 
-    if var_type is None:
-        assert "type" not in source
-    else:
+    if var_type:
         assert source["type"] == var_type
+    else:
+        assert "type" not in source
     params = source["parameters"]
     assert params["id"] == var_id
     assert params["geometry"] == geom_geojson

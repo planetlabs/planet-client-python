@@ -418,10 +418,10 @@ def test_request_pv_success(invoke, geom, source_type, request):
 
     assert result.exit_code == 0  # success.
     source = json.loads(result.output)
-    if source_type is None:
-        assert "type" not in source
-    else:
+    if source_type:
         assert source["type"] == "biomass_proxy"
+    else:
+        assert "type" not in source
     assert source["parameters"]["id"] == "BIOMASS-PROXY_V3.0_10"
 
 
