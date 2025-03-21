@@ -367,7 +367,8 @@ async def create(ctx, request, pretty, **kwargs):
 @click.option(
     '--fallback-bundle',
     required=False,
-    help='Fallback bundle type(s) for the item if bundle is not available.',
+    help="""Fallback bundle type(s) for the item if bundle is not available.
+    Multiple fallback bundles can be specified as a comma-separated string.""",
     type=str,
     callback=check_bundle)
 @click.option('--name',

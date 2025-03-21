@@ -115,9 +115,11 @@ def product(item_ids: List[str],
         product_bundle: Set of asset types for the catalog items.
         item_type: The class of spacecraft and processing characteristics
             for the catalog items.
-        fallback_bundle: In case product_bundle not having
+        fallback_bundle: In case of product_bundle not having
             all asset types available, which would result in failed
-            delivery, try a fallback bundle
+            delivery, try one or more fallback bundles. Multiple
+            fallback bundles may be provided as a list or a comma
+            separated string.
 
     Raises:
         planet.specs.SpecificationException: If bundle or fallback bundle

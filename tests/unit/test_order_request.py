@@ -411,12 +411,17 @@ def test_sentinel_hub_collection_configuration():
     [
         ('analytic_8b_udm2', 'analytic_udm2'),
         ('analytic_8b_udm2', 'analytic_udm2,analytic_3b_udm2'),
+        ('analytic_8b_udm2', ['analytic_udm2', 'analytic_3b_udm2']),
     ])
 def test_fallback_bundle_success(bundle, fallback_bundle):
     product = order_request.product(["20250130_035211_69_2516"],
                                     bundle,
                                     "PSScene",
                                     fallback_bundle=fallback_bundle)
+
+    # Ensure fallback_bundle is a string for the expected output
+    fallback_bundle = fallback_bundle if isinstance(
+        fallback_bundle, str) else ','.join(fallback_bundle)
 
     expected = {
         "item_ids": ["20250130_035211_69_2516"],
@@ -432,6 +437,8 @@ def test_fallback_bundle_success(bundle, fallback_bundle):
         ('analytic_8b_udm2', ''),
         ('analytic_8b_udm2', 'analytic_udm2;analytic_3b_udm2'),
         ('analytic_8b_udm2', 'analytic_udm2,analytic_3b_udm2,fake_bundle'),
+        ('analytic_8b_udm2',
+         ['analytic_udm2', 'analytic_3b_udm2', 'fake_bundle']),
     ])
 def test_fallback_bundle_invalid(bundle, fallback_bundle):
     with pytest.raises(specs.SpecificationException):
