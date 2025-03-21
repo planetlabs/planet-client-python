@@ -107,7 +107,7 @@ def build_request(name: str,
 def product(item_ids: List[str],
             product_bundle: str,
             item_type: str,
-            fallback_bundle: Optional[str] = None) -> dict:
+            fallback_bundle: Optional[Union[str, List[str]]] = None) -> dict:
     """Product description for an order detail.
 
     Parameters:
@@ -115,9 +115,11 @@ def product(item_ids: List[str],
         product_bundle: Set of asset types for the catalog items.
         item_type: The class of spacecraft and processing characteristics
             for the catalog items.
-        fallback_bundle: In case product_bundle not having
+        fallback_bundle: In case of product_bundle not having
             all asset types available, which would result in failed
-            delivery, try a fallback bundle
+            delivery, try one or more fallback bundles. Multiple
+            fallback bundles may be provided as a list or a comma
+            separated string.
 
     Raises:
         planet.specs.SpecificationException: If bundle or fallback bundle
@@ -128,10 +130,13 @@ def product(item_ids: List[str],
     validated_product_bundle = specs.validate_bundle(item_type, product_bundle)
 
     if fallback_bundle is not None:
-        validated_fallback_bundle = specs.validate_bundle(
-            item_type, fallback_bundle)
+        bundles = fallback_bundle.split(',') if isinstance(
+            fallback_bundle, str) else fallback_bundle
+        validated_bundles = []
+        for bundle in bundles:
+            validated_bundles.append(specs.validate_bundle(item_type, bundle))
         validated_product_bundle = ','.join(
-            [validated_product_bundle, validated_fallback_bundle])
+            [validated_product_bundle, ','.join(validated_bundles)])
 
     product_dict = {
         'item_ids': item_ids,

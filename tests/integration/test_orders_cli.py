@@ -514,6 +514,47 @@ def test_cli_orders_request_product_bundle_incompatible(mock_bundles, invoke):
     assert result.exit_code == 2
 
 
+@pytest.mark.parametrize(
+    "bundle, fallback_bundle",
+    [
+        ('analytic_8b_udm2', 'analytic_udm2'),
+        ('analytic_8b_udm2', 'analytic_udm2,analytic_3b_udm2'),
+    ])
+def test_cli_orders_request_fallback_bundle_success(invoke,
+                                                    bundle,
+                                                    fallback_bundle):
+    result = invoke([
+        'request',
+        '--item-type=PSScene',
+        f'--bundle={bundle}',
+        f'--fallback-bundle={fallback_bundle}',
+        '--name=my order',
+        '20250130_035211_69_2516'
+    ])
+    assert result.exit_code == 0
+
+
+@pytest.mark.parametrize(
+    "bundle, fallback_bundle",
+    [
+        ('analytic_8b_udm2', ''),
+        ('analytic_8b_udm2', 'analytic_udm2;analytic_3b_udm2'),
+        ('analytic_8b_udm2', 'analytic_udm2,analytic_3b_udm2,fake_bundle'),
+    ])
+def test_cli_orders_request_fallback_bundle_fail(invoke,
+                                                 bundle,
+                                                 fallback_bundle):
+    result = invoke([
+        'request',
+        '--item-type=PSScene',
+        f'--bundle={bundle}',
+        f'--fallback-bundle={fallback_bundle}',
+        '--name=my order',
+        '20250130_035211_69_2516'
+    ])
+    assert result.exit_code == 2
+
+
 def test_cli_orders_request_id_empty(mock_bundles, invoke):
     result = invoke([
         'request', '--item-type=PSScene', '--bundle=visual', '--name=test', ''

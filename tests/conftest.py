@@ -184,6 +184,16 @@ def mock_bundles(autouse=True, scope="session"):
                     "PSScene": ["ortho_analytic_4b"]
                 }
             },
+            "analytic_3b_udm2": {
+                "assets": {
+                    "PSScene": []
+                }
+            },
+            "analytic_8b_udm2": {
+                "assets": {
+                    "PSScene": []
+                }
+            },
             "analytic_sr": {
                 "assets": {
                     "SkySatScene": [], "PSScene": [], "SkySatCollect": []
