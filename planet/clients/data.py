@@ -435,9 +435,7 @@ class DataClient:
         return response.json()
 
     async def get_item(self, item_type_id: str, item_id: str) -> dict:
-        """Get an item.
-
-        Retrives item details using the provided item_type_id and item_id
+        """Get an item by item_type_id and item_id.
 
         Parameters:
             item_type_id: Item type identifier.
