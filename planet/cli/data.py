@@ -638,22 +638,67 @@ async def asset_wait(ctx, item_type, item_id, asset_type, delay, max_attempts):
     click.echo(status)
 
 
-# @data.command()
-# @click.pass_context
-# @translate_exceptions
-# @coro
-# @click.argument("item_type")
-# @click.argument("item_id")
-# @click.argument("asset_type_id")
-# @pretty
-# async def asset_get(ctx, item_type, item_id, asset_type_id, pretty):
-#     """Get an item asset."""
-#     async with data_client(ctx) as cl:
-#         asset = await cl.get_asset(item_type, item_id, asset_type_id)
-#     echo_json(asset, pretty)
+@data.command()  # type: ignore
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument("item_type")
+@click.argument("item_id")
+@click.argument("asset_type_id")
+async def asset_get(ctx, item_type, item_id, asset_type_id):
+    """Get an item asset."""
+    async with data_client(ctx) as cl:
+        asset = await cl.get_asset(item_type, item_id, asset_type_id)
+        echo_json(asset, pretty)
 
-# TODO: search_run()".
-# TODO: item_get()".
+
+@data.command()  # type: ignore
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument("item_type", type=str, callback=check_item_type)
+@click.argument("item_id")
+async def asset_list(ctx, item_type, item_id):
+    """List item assets."""
+    async with data_client(ctx) as cl:
+        item_assets = await cl.list_item_assets(item_type, item_id)
+        echo_json(item_assets, pretty)
+
+
+@data.command()  # type: ignore
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument("item_type", type=str, callback=check_item_type)
+@click.argument("item_id")
+async def item_get(ctx, item_type, item_id):
+    """Get an item."""
+    async with data_client(ctx) as cl:
+        item = await cl.get_item(item_type, item_id)
+        echo_json(item, pretty)
+
+
+@data.command()  # type: ignore
+@click.pass_context
+@translate_exceptions
+@coro
+@click.argument("item_type", type=str, callback=check_item_type)
+@click.argument("item_id")
+@click.option("--geom",
+              type=types.Geometry(),
+              callback=check_geom,
+              required=True)
+@click.option('--mode', type=str, required=False)
+@click.option('--band', type=str, required=False)
+async def item_coverage(ctx, item_type, item_id, geom, mode, band):
+    """Get item clear coverage."""
+    async with data_client(ctx) as cl:
+        item_assets = await cl.get_item_coverage(item_type,
+                                                 item_id,
+                                                 geom,
+                                                 mode,
+                                                 band)
+        echo_json(item_assets, pretty)
 
 
 @data.command()  # type: ignore
