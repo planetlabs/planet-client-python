@@ -588,7 +588,7 @@ A series of GeoJSON descriptions for each of the returned items.
 ### Interface
 
 ```
-planet data item-get [OPTIONS] ID ITEM_TYPE
+planet data item-get [OPTIONS] ITEM_TYPE ITEM_ID
 
 Get an item.
 
@@ -609,9 +609,151 @@ A full GeoJSON description of the returned item.
 User Story: As a CLI user I would like to get the details of an item
 
 ```
-$ planet data item-get 20210819_162141_68_2276 PSScene
+$ planet data item-get PSScene 20210819_162141_68_2276
 
 {"_links": {...}, ..., "type": "Feature"}
+```
+
+## item-coverage
+
+### Interface
+
+```
+planet data item-coverage [OPTIONS] ITEM_TYPE ITEM_ID
+
+Get item clear coverage within a custom area of interest.
+
+Arguments:
+ITEM_TYPE - The type of item (e.g., PSScene)
+ITEM_ID - The ID of the item
+
+Options:
+--geom TEXT - A GeoJSON geometry or feature reference. [required]
+--mode TEXT - Method used for coverage calculation (e.g., UDM2, estimate)
+--band TEXT - Specific band to extract from UDM2 (e.g., cloud, snow)
+
+Output:
+A JSON description of the clear coverage for the provided AOI within the scene.
+```
+
+### Usage Examples
+
+User Story: As a CLI user I want to get clear coverage information for a specific area within an item.
+
+```console
+$ planet data item-coverage PSScene 20250304_162555_90_24f2 \
+  --geom '{"type":"Polygon","coordinates":[[[-81.45,30.31],[-81.45,30.23],[-81.38,30.23],[-81.45,30.31]]]}'
+```
+response
+```
+{
+  "clear_percent": 95,
+  "status": "complete"
+}
+```
+
+User Story: As a CLI user I want to get snow coverage over my Feature Ref.
+
+```console
+$ planet data item-coverage PSScene 20250304_162555_90_24f2 \
+  --geom 'pl:features/my/[collection-id]/[feature-id]' \
+  --band snow
+```
+response
+```
+{
+  "snow_percent": 0.0,
+  "status": "complete"
+}
+```
+
+## asset-get
+
+### Interface
+
+planet data asset-get [OPTIONS] ITEM_TYPE ITEM_ID ASSET_TYPE_ID
+
+Get an item asset.
+
+Arguments:
+ITEM_TYPE - The type of item (e.g., PSScene, SkySatScene)
+ITEM_ID - The ID of the item
+ASSET_TYPE_ID - The type of asset to get (e.g., basic_udm2)
+
+Output:
+A JSON description of the asset, including its status, permissions, and download location if available.
+
+### Usage Examples
+
+User Story: As a CLI user I want to get information about a specific asset for an item.
+
+```console
+$ planet data asset-get PSScene 20221003_002705_38_2461 basic_udm2
+```
+response
+```
+{
+  "_links": {
+    "_self": "SELFURL",
+    "activate": "ACTIVATEURL",
+    "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+  },
+  "_permissions": ["download"],
+  "md5_digest": null,
+  "status": "inactive",
+  "type": "basic_udm2"
+}
+```
+
+## asset-list
+
+### Interface
+
+planet data asset-list [OPTIONS] ITEM_TYPE ITEM_ID
+
+List all assets available for an item.
+
+Arguments:
+- ITEM_TYPE - The type of item (e.g., PSScene, SkySatScene)
+- ITEM_ID - The ID of the item
+
+Output:
+A JSON dictionary with asset_type_id as keys and asset descriptions as values.
+
+### Usage Examples
+
+User Story: As a CLI user I want to see all available assets for an item.
+
+```console
+$ planet data asset-list PSScene 20221003_002705_38_2461
+```
+response
+```
+{
+  "basic_analytic_4b": {
+    "_links": {
+      "_self": "SELFURL",
+      "activate": "ACTIVATEURL",
+      "type": "https://api.planet.com/data/v1/asset-types/basic_analytic_4b"
+    },
+    "_permissions": ["download"],
+    "md5_digest": null,
+    "status": "inactive",
+    "type": "basic_analytic_4b"
+  },
+  "basic_udm2": {
+    "_links": {
+      "_self": "SELFURL",
+      "activate": "ACTIVATEURL",
+      "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+    },
+    "_permissions": ["download"],
+    "md5_digest": null,
+    "status": "active",
+    "location": "https://api.planet.com/data/v1/1?token=IAmAToken",
+    "type": "basic_udm2"
+  }
+}
 ```
 
 ## asset-activate
@@ -619,13 +761,13 @@ $ planet data item-get 20210819_162141_68_2276 PSScene
 ### Interface
 
 ```
-planet data asset-activate ID ITEM_TYPE ASSET_TYPE
+planet data asset-activate ITEM_TYPE ITEM_ID ASSET_TYPE
 
 Activate an asset.
 
 Arguments:
-ID - string. Item identifier.
 ITEM_TYPE - string. Item type identifier.
+ITEM_ID - string. Item identifier.
 ASSET_TYPE - string. Asset type identifier.
 
 Output:
@@ -637,20 +779,20 @@ None.
 User Story: As a CLI user I would like to activate an asset for download.
 
 ```
-$ planet data asset-activate 20210819_162141_68_2276 PSScene analytic
+$ planet data asset-activate PSScene 20210819_162141_68_2276 basic_analytic_4b
 ```
 
 User Story: As a CLI user I would like to activate, wait, and then download an
 asset.
 
 ```
-$ ID=20210819_162141_68_2276 && \
-ITEM_TYPE=PSScene && \
-ASSET_TYPE=analytic && \
-planet data asset-activate $ID $ITEM_TYPE $ASSET_TYPE && \
-planet data asset-wait $ID $ITEM_TYPE $ASSET_TYPE && \
+$ ITEM_TYPE=PSScene && \
+ITEM_ID=20210819_162141_68_2276 && \
+ASSET_TYPE=basic_analytic_4b && \
+planet data asset-activate $ITEM_TYPE $ITEM_ID $ASSET_TYPE && \
+planet data asset-wait $ITEM_TYPE $ITEM_ID $ASSET_TYPE && \
 planet data asset-download --directory data \
-$ID $ITEM_TYPE $ASSET_TYPE
+$ITEM_TYPE $ITEM_ID $ASSET_TYPE
 
 data/<psscene_naming 20210819_162141_68_2276>.tif
 ```
@@ -660,15 +802,15 @@ data/<psscene_naming 20210819_162141_68_2276>.tif
 ### Interface
 
 ```
-planet data asset-wait ID ITEM_TYPE ASSET_TYPE
+planet data asset-wait ITEM_TYPE ITEM_ID ASSET_TYPE
 
 Wait for an asset to be activated.
 
-Returns when the asset state has reached ‘activated’ and the asset is available.
+Returns when the asset state has reached 'activated' and the asset is available.
 
 Arguments:
-ID - string. Item identifier.
 ITEM_TYPE - string. Item type identifier.
+ITEM_ID - string. Item identifier.
 ASSET_TYPE - string. Asset type identifier.
 
 Output:
@@ -680,15 +822,15 @@ None.
 ### Interface
 
 ```
-planet data asset-download [OPTIONS] ID ITEM_TYPE ASSET_TYPE
+planet data asset-download [OPTIONS] ITEM_TYPE ITEM_ID ASSET_TYPE
 
 Download an activated asset.
 
 Will fail if the asset state is not activated. Consider calling `asset-wait` before this command to ensure the asset is activated.
 
 Arguments:
-ID - string. Item identifier.
 ITEM_TYPE - string. Item type identifier.
+ITEM_ID - string. Item identifier.
 ASSET_TYPE - string. Asset type identifier.
 
 Options:
@@ -708,7 +850,7 @@ directory, overwriting if the file already exists, and silencing reporting.
 $ planet --quiet data asset-download \
 --directory data \
 --overwrite \
-20210819_162141_68_2276 PSScene analytic
+PSScene 20210819_162141_68_2276 basic_analytic_4b
 data/<psscene_naming 20210819_162141_68_2276>.tif
 ```
 

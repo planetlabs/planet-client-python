@@ -413,3 +413,49 @@ class DataAPI:
                 checksums do not match.
         """
         return DataClient.validate_checksum(asset, filename)
+
+    def get_item(self, item_type_id: str, item_id: str) -> Dict[str, Any]:
+        """Get an item by item_type_id and item_id.
+
+        Parameters:
+            item_type_id: Item type identifier.
+            item_id: Item identifier.
+
+        Returns:
+            Description of an item.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        """
+        return self._client._call_sync(
+            self._client.get_item(item_type_id, item_id))
+
+    def get_item_coverage(
+        self,
+        item_type_id: str,
+        item_id: str,
+        geometry: GeojsonLike,
+        mode: Optional[str] = None,
+        band: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Get clear coverage for an item within a custom area of interest.
+
+        Parameters:
+            item_type_id: Item type identifier.
+            item_id: Item identifier.
+            geometry: A feature reference or a GeoJSON
+            mode: Method used for coverage calculation
+            band: Specific band to extract from UDM2
+
+        Returns:
+            Description of the clear coverage for the provided AOI within the scene.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        """
+        return self._client._call_sync(
+            self._client.get_item_coverage(item_type_id=item_type_id,
+                                           item_id=item_id,
+                                           geometry=geometry,
+                                           mode=mode,
+                                           band=band))
