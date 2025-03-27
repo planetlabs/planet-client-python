@@ -4,14 +4,14 @@ title: Python SDK User Guide
 
 This guide is for Planet SDK for Python users who want to use Python code to search, order, customize, and deliver Planet imagery and data. If you’re new to Python, you may want to choose the no-code option of using the [command-line interface (CLI)](../../cli/cli-guide). But if you’ve successfully followed the instructions to [get started](../../get-started/quick-start-guide) and you’re ready to try your hand at Python coding, this guide should be all you need to use this SDK to get Planet data.
 
-!!!note 
+!!!note
     Looking for the asyncio-based SDK? See the [Planet Async SDK guide](./async-sdk-guide.md).
 
 ## Usage
 
 ### Install the Planet Python SDK
 
-Use a package manager (such as `pip`) to install the Planet Python SDK: 
+Use a package manager (such as `pip`) to install the Planet Python SDK:
 
 ```sh
 pip install planet
@@ -146,7 +146,7 @@ waiting for the asset to be active, downloading the asset, and, optionally,
 validating the downloaded file.
 
 With wait and download, it is often desired to track progress as these
-processes can take a long time. Therefore, in this example, we use a simple 
+processes can take a long time. Therefore, in this example, we use a simple
 print command to report wait status. `download_asset` has reporting built in.
 
 !!!note
@@ -198,8 +198,9 @@ def main():
         products=[
            order_request.product(
                item_ids=image_ids,
-               product_bundle='analytic_udm2',
-               item_type='psscene')
+               product_bundle='analytic_8b_udm2',
+               item_type='PSScene',
+               fallback_bundle='analytic_udm2,analytic_3b_udm2')
        ]
     )
 
@@ -266,7 +267,7 @@ Collections and Features/items that you create in in the SDK will be visible in 
 
 #### Creating a collection
 
-You can use the Python SDK to create feature collections in the Features API. 
+You can use the Python SDK to create feature collections in the Features API.
 
 ```python
 new_collection = pl.features.create_collection(title="my collection", description="a new collection")

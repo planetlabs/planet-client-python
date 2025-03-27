@@ -1,3 +1,5 @@
+Changelog moved to https://github.com/planetlabs/planet-client-python/releases
+
 3.0.0 (Unreleased)
 - Overhaul of planet.Auth AP interface to leverage the
   [Planet Auth Utility Library](https://github.com/planetlabs/planet-auth-python)

@@ -50,9 +50,7 @@ RETRY_EXCEPTIONS = [
 MAX_RETRIES = 5
 MAX_RETRY_BACKOFF = 64  # seconds
 
-# For how these settings were determined, see
-# https://github.com/planetlabs/planet-client-python/issues/580
-READ_TIMEOUT = 30.0
+DEFAULT_READ_TIMEOUT_SECS = 125.0
 RATE_LIMIT = 10  # per second
 MAX_ACTIVE = 50
 
@@ -231,17 +229,26 @@ class Session(BaseSession):
     ```
     """
 
-    def __init__(self, auth: Optional[AuthType] = None):
+    def __init__(
+        self,
+        auth: Optional[AuthType] = None,
+        read_timeout_secs: Optional[float] = None,
+    ):
         """Initialize a Session.
 
         Parameters:
             auth: Planet server authentication.
+            read_timeout_secs: Maximum time to wait for data to be received.
         """
         if auth is None:
             auth = Auth.from_user_default_session()
 
-        LOGGER.info(f'Session read timeout set to {READ_TIMEOUT}.')
-        timeout = httpx.Timeout(10.0, read=READ_TIMEOUT)
+        if read_timeout_secs is None:
+            read_timeout_secs = DEFAULT_READ_TIMEOUT_SECS
+
+        LOGGER.info(
+            f'Session read timeout set to {read_timeout_secs} seconds.')
+        timeout = httpx.Timeout(10.0, read=read_timeout_secs)
 
         headers = {
             'User-Agent': self._get_user_agent(), 'X-Planet-App': 'python-sdk'

@@ -5,11 +5,11 @@ title: CLI for Orders API Tutorial
 ## Introduction
 
 The `planet orders` command enables interaction with the [Orders API](https://developers.planet.com/apis/orders/),
-which lets you activate and download Planet data products in bulk, and apply various 
-'tools' to your processes. This tutorial takes you through all the main capabilities 
-of the CLI for creating and downloading orders. It depends on several more advanced 
-command-line concepts, but this tutorial should let you get a sense of what you can do, 
-with enough examples that you should be able to adapt the commands for what you want to do. 
+which lets you activate and download Planet data products in bulk, and apply various
+'tools' to your processes. This tutorial takes you through all the main capabilities
+of the CLI for creating and downloading orders. It depends on several more advanced
+command-line concepts, but this tutorial should let you get a sense of what you can do,
+with enough examples that you should be able to adapt the commands for what you want to do.
 If you’re interested in deeper understanding what is going on
 then check out our [CLI Concepts](cli-intro.md) guide.
 
@@ -41,15 +41,15 @@ planet orders list --pretty
 The `--pretty` flag is built into most Planet CLI commands, and it formats the JSON to be
 more readable.
 
-You can also use `jq`, a powerful command-line JSON-processing tool, that is mentioned in 
+You can also use `jq`, a powerful command-line JSON-processing tool, that is mentioned in
 the [CLI introduction]((cli-intro.md#jq).
 
 ```sh
 planet orders list | jq
 ```
 
-Piping any output through jq will format it nicely and do syntax highlighting. You can 
-also `jq` to just show select information, which can be useful for getting a quick sense 
+Piping any output through jq will format it nicely and do syntax highlighting. You can
+also `jq` to just show select information, which can be useful for getting a quick sense
 of the state of the state of things and pull out id’s for other operations:
 
 ```sh
@@ -146,10 +146,10 @@ planet orders get 782b414e-4e34-4f31-86f4-5b757bd062d7
 To create an order you need a name, a [bundle](https://developers.planet.com/apis/orders/product-bundles-reference/),
  one or more id’s, and an [item type](https://developers.planet.com/docs/apis/data/items-assets/#item-types):
 
-First lets get the ID of an item you have download access to, using the Data API: 
+First lets get the ID of an item you have download access to, using the Data API:
 
 ```sh
-planet data filter | planet data search PSScene --limit 1 --filter - | jq -r .id 
+planet data filter | planet data search PSScene --limit 1 --filter - | jq -r .id
 ```
 
 If you don't have access to PlanetScope data then replace PSScene with SkySatCollect.
@@ -196,6 +196,18 @@ planet orders request \
     "stac": {}
   }
 }
+```
+
+#### Fallback bundles
+Orders API will deliver [fallback bundles](https://developers.planet.com/apis/orders/scenes/#order-type-and-fallback-bundles) if the first choice product bundle fails for any reason.  You can specify one or more fallback bundles by using the `--fallback-bundle` option which accepts a comma separated string of fallback bundles:
+
+```sh
+planet orders request \
+    --item-type PSScene \
+    --bundle analytic_8b_udm2 \
+     --fallback-bundle 'analytic_udm2,analytic_3b_udm2' \
+    --name 'My First Order' \
+    '20250130_035211_69_2516'
 ```
 
 #### Zip archives of bundles and orders
@@ -270,14 +282,14 @@ planet orders request \
     > request-1.json
 ```
 
-Note that `\` just tells the command-line to treat the next line as the same one. It’s used here so it’s 
+Note that `\` just tells the command-line to treat the next line as the same one. It’s used here so it’s
 easier to read, but you can still copy and paste the full line into your command-line and it should work.
 
 This saves the above JSON in a file called `request-1.json`
 
 ### Create an Order
 
-From there you can create the order with the request you just saved: 
+From there you can create the order with the request you just saved:
 
 ```sh
 planet orders create request-1.json
@@ -343,7 +355,7 @@ planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Two 
 20220605_124027_64_242b,20220605_124025_34_242b | planet orders create -
 ```
 
-The Planet CLI is designed to work well with piping, as it aims at small commands that can be 
+The Planet CLI is designed to work well with piping, as it aims at small commands that can be
 combined in powerful ways, so you’ll see it used in a number of the examples.
 
 ### Download an order
@@ -360,14 +372,14 @@ way see the next example.
 
 ### Wait then download an order
 
-The `wait` command is a small, dedicated command that polls the server to 
+The `wait` command is a small, dedicated command that polls the server to
 see if an order is ready for downloading, showing the status. It’s not
 so useful by itself, but can be combined with the `download` command to
 only start the download once the order is ready:
 
 ```sh
 planet orders wait 65df4eb0-e416-4243-a4d2-38afcf382c30 \
-&& planet orders download 65df4eb0-e416-4243-a4d2-38afcf382c30 
+&& planet orders download 65df4eb0-e416-4243-a4d2-38afcf382c30
 ```
 
 This uses the logical AND operator (`&&`) to say "don't run the second command
@@ -375,7 +387,7 @@ until the first is done".
 
 ### Save order ID
 
-You can also use a unix variable to store the order id of your most recently placed order, 
+You can also use a unix variable to store the order id of your most recently placed order,
 and then use that for the wait and download commands:
 
 ```sh
@@ -425,7 +437,7 @@ planet orders download \
 
 ### Verify checksum
 
-The `--checksum` command will do an extra step to make sure the file you got 
+The `--checksum` command will do an extra step to make sure the file you got
 wasn't corrupted along the way (during download, etc). It checks that the bytes
 downloaded are the same as the ones on the server. By default it doesn't show
 anything if the checksums match.
@@ -434,8 +446,8 @@ anything if the checksums match.
 planet orders download 782b414e-4e34-4f31-86f4-5b757bd062d7 --checksum MD5
 ```
 
-This command isn't often necessary in single download commands, but is quite 
-useful if you are downloading thousands of files with a script, as the likelihood 
+This command isn't often necessary in single download commands, but is quite
+useful if you are downloading thousands of files with a script, as the likelihood
 of at least one being corrupted in creases
 
 ## Tools with orders
@@ -490,10 +502,10 @@ Example: `geometry.geojson`
 }
 ```
 
-We’ll work with a geojson that is already saved. You should download the 
+We’ll work with a geojson that is already saved. You should download the
 [geometry](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/geometry.geojson)
 (and you can see it [on github](https://github.com/planetlabs/planet-client-python/blob/main/docs/cli/request-json/geometry.geojson)
-or it is also stored in the repo in the [request-json/](request-json/) directory. 
+or it is also stored in the repo in the [request-json/](request-json/) directory.
 
 You can move that geometry to your current directory and use the following command, or
 tweak the geometry.geojson to refer to where you downloaded it.
@@ -511,8 +523,8 @@ planet orders request \
 ### Additional Tools
 
 Since clip is so heavily used it has its own dedicated command in the CLI. All
-the other tools use the `--tools` option, that points to a file. The file should 
-contain JSON that follows the format for a toolchain, the "tools" section of an order. 
+the other tools use the `--tools` option, that points to a file. The file should
+contain JSON that follows the format for a toolchain, the "tools" section of an order.
 The toolchain options and format are given in
 [Creating Toolchains](https://developers.planet.com/apis/orders/tools/#creating-toolchains).
 
@@ -543,9 +555,9 @@ Example: `tools.json`
 ```
 
 !!!note Note
-    Future of the versions of the CLI will likely add `tools` convenience methods, 
-    so composite, harmonize and other tools work like `--clip`. You can follow issue 
-    [#601](https://github.com/planetlabs/planet-client-python/issues/601): 
+    Future of the versions of the CLI will likely add `tools` convenience methods,
+    so composite, harmonize and other tools work like `--clip`. You can follow issue
+    [#601](https://github.com/planetlabs/planet-client-python/issues/601):
     comment there if you'd like to see it prioritized
 
 ### Compositing
@@ -561,7 +573,7 @@ planet orders request \
     | planet orders create -
 ```
 
-And then you can composite them together, using the 'tools' json. You can 
+And then you can composite them together, using the 'tools' json. You can
 use this, just save it into a file called [tools-composite.json](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/tools-composite.json).
 
 ```json
@@ -573,7 +585,7 @@ use this, just save it into a file called [tools-composite.json](https://raw.git
 ]
 ```
 
-Once you’ve got it saved you call the `--tools` flag to refer to the JSON file, and you 
+Once you’ve got it saved you call the `--tools` flag to refer to the JSON file, and you
 can pipe that to `orders create`.
 
 ```sh
@@ -587,12 +599,12 @@ planet orders request \
     | planet orders create -
 ```
 
-Note that we add the `--no-stac` option as [STAC Metadata](#stac-metadata) is not yet supported by the composite 
+Note that we add the `--no-stac` option as [STAC Metadata](#stac-metadata) is not yet supported by the composite
 operation, but STAC metadata is requested by default with the CLI.
 
 ### Output as COG
 
-If you'd like to ensure the above order is a Cloud-Optimized Geotiff then you can request it 
+If you'd like to ensure the above order is a Cloud-Optimized Geotiff then you can request it
 as COG in the file format tool.
 
 ```json
@@ -616,7 +628,7 @@ planet orders request \
     --tools tools-cog.json
 ```
 
-As shown above you can also pipe that output directly in to `orders create`. 
+As shown above you can also pipe that output directly in to `orders create`.
 
 ### Clip & Composite
 
@@ -713,7 +725,7 @@ planet orders request --item-type PSScene --bundle analytic_sr_udm2 --name 'Harm
 ### STAC Metadata
 
 A relatively recent addition to Planet’s orders delivery is the inclusion of [SpatioTemporal Asset Catalog](https://stacspec.org/en)
-(STAC) metadata in Orders. STAC metadata provides a more standard set of JSON fields that work with 
+(STAC) metadata in Orders. STAC metadata provides a more standard set of JSON fields that work with
 many GIS and geospatial [STAC-enabled tools](https://stacindex.org/ecosystem). The CLI `orders request` command currently requests
 STAC metadata by default, as the STAC files are small and often more useful than the default JSON metadata.
 You can easily turn off STAC output request with the `--no-stac` command:
@@ -727,7 +739,7 @@ planet orders request \
     20220605_124027_64_242b
 ```
 
-Currently this needs to be done for any 'composite' operation, as STAC output from composites is not yet 
+Currently this needs to be done for any 'composite' operation, as STAC output from composites is not yet
 supported (but is coming). You can explicitly add `--stac`, but it is the default, so does not need to
 be included. For more information about Planet’s STAC output see the [Orders API documentation](https://developers.planet.com/apis/orders/delivery/#stac-metadata).
 
@@ -772,7 +784,7 @@ request. So the following call is a quick way to exactly redo a previous order r
 planet orders get <order-id> | planet orders create -
 ```
 
-Realistically you'd more likely want to get a previous order and then change it in some way (new id’s, different 
+Realistically you'd more likely want to get a previous order and then change it in some way (new id’s, different
 tools, etc.). You can remove the 'extra' JSON fields that report on status if you'd like, but the Orders
 API will just ignore them if they are included in a request.
 
@@ -832,7 +844,7 @@ planet orders list --limit 1
 Extract the ID:
 
 ```sh
-planet orders list --limit 1 | jq -r .id 
+planet orders list --limit 1 | jq -r .id
 ```
 
 Use that ID to wait and download when it’s ready:
@@ -870,7 +882,7 @@ planet orders request \
     | planet orders create -
 ```
 
-Or get the 5 latest cloud free images in an area and create an order that clips to that area, using 
+Or get the 5 latest cloud free images in an area and create an order that clips to that area, using
 [geometry.geojson](data/geometry.geojson) from above:
 
 ```sh

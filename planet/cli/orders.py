@@ -58,12 +58,17 @@ def check_bundle(ctx, param, bundle) -> Optional[List[dict]]:
     if not item_type:
         raise click.BadParameter("Item type is required to validate a bundle.")
 
-    try:
-        validate_bundle(item_type, bundle)
-    except SpecificationException as e:
-        raise click.BadParameter(str(e))
-    except FetchBundlesSpecError as e:
-        raise click.ClickException(str(e))
+    if bundle is None:
+        return bundle
+
+    bundles = bundle.split(",")
+    for b in bundles:
+        try:
+            validate_bundle(item_type, b)
+        except SpecificationException as e:
+            raise click.BadParameter(str(e))
+        except FetchBundlesSpecError as e:
+            raise click.ClickException(str(e))
 
     return bundle
 
@@ -359,6 +364,13 @@ async def create(ctx, request, pretty, **kwargs):
               help='Bundle type for the item.',
               type=str,
               callback=check_bundle)
+@click.option(
+    '--fallback-bundle',
+    required=False,
+    help="""Fallback bundle type(s) for the item if bundle is not available.
+    Multiple fallback bundles can be specified as a comma-separated string.""",
+    type=str,
+    callback=check_bundle)
 @click.option('--name',
               required=True,
               help='Order name. Does not need to be unique.',
@@ -420,6 +432,7 @@ async def create(ctx, request, pretty, **kwargs):
 async def request(ctx,
                   item_type,
                   bundle,
+                  fallback_bundle,
                   name,
                   ids,
                   clip,
@@ -443,7 +456,10 @@ async def request(ctx,
     IDs is one or more comma-separated item IDs.
     """
     try:
-        product = planet.order_request.product(ids, bundle, item_type)
+        product = planet.order_request.product(ids,
+                                               bundle,
+                                               item_type,
+                                               fallback_bundle)
     except planet.specs.SpecificationException as e:
         raise click.BadParameter(e)
 
