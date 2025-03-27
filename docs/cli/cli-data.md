@@ -441,7 +441,7 @@ planet data item-get PSScene 20230310_083933_71_2431
 The `item-coverage` command estimates the clear coverage of an item within a specified area of interest (AOI). This is useful for determining how much of your area of interest is covered by clouds or other obstructions:
 
 ```sh
-planet data item-coverage PSScene 20230310_083933_71_2431 --geom geometry.geojson
+planet data item-coverage PSScene 20250304_162555_90_24f2 --geom='{"type":"Polygon","coordinates":[[[-81.45,30.31],[-81.45,30.23],[-81.38,30.23],[-81.45,30.31]]]}'
 ```
 
 You can also specify additional parameters:
@@ -453,7 +453,7 @@ You can also specify additional parameters:
 For example:
 
 ```sh
-planet data item-coverage PSScene 20230310_083933_71_2431 --geom geometry.geojson --band "haze"
+planet data item-coverage PSScene 20250304_162555_90_24f2 --geom='{"type":"Polygon","coordinates":[[[-81.45,30.31],[-81.45,30.23],[-81.38,30.23],[-81.45,30.31]]]}' --band='snow'
 ```
 
 ## Item Asset Management
@@ -475,7 +475,7 @@ This will show you all asset available for the item, including their status and 
 To get detailed information about a specific asset:
 
 ```sh
-planet data asset-get PSScene 20230310_083933_71_2431 ortho_analytic_8b_sr
+planet data asset-get PSScene 20230310_083933_71_2431 ortho_analytic_8b
 ```
 
 This command provides information about the asset's status download availability.

@@ -601,7 +601,7 @@ Options:
 --pretty - flag. Pretty-print output
 
 Output:
-A full GeoJSON description of the item, including its properties, assets, and metadata.
+A full GeoJSON description of the returned item.
 ```
 
 ### Usage Examples
@@ -630,8 +630,7 @@ ITEM_ID - The ID of the item
 Options:
 --geom TEXT - A GeoJSON geometry or feature reference. [required]
 --mode TEXT - Method used for coverage calculation (e.g., UDM2, estimate)
---band TEXT - Specific band to extract from UDM2 (e.g., cloud, haze)
---pretty - Pretty print the output.
+--band TEXT - Specific band to extract from UDM2 (e.g., cloud, snow)
 
 Output:
 A JSON description of the clear coverage for the provided AOI within the scene.
@@ -645,7 +644,7 @@ User Story: As a CLI user I want to get clear coverage information for a specifi
 $ planet data item-coverage PSScene 20250304_162555_90_24f2 \
   --geom '{"type":"Polygon","coordinates":[[[-81.45,30.31],[-81.45,30.23],[-81.38,30.23],[-81.45,30.31]]]}'
 ```
-response (pretty-printed)
+response
 ```
 {
   "clear_percent": 95,
@@ -653,17 +652,17 @@ response (pretty-printed)
 }
 ```
 
-User Story: As a CLI user I want to get haze coverage over my Feature Ref.
+User Story: As a CLI user I want to get snow coverage over my Feature Ref.
 
 ```console
 $ planet data item-coverage PSScene 20250304_162555_90_24f2 \
   --geom 'pl:features/my/[collection-id]/[feature-id]' \
-  --band haze
+  --band snow
 ```
-response (pretty-printed)
+response
 ```
 {
-  "haze_percent": 0.0,
+  "snow_percent": 0.0,
   "status": "complete"
 }
 ```
@@ -691,7 +690,7 @@ User Story: As a CLI user I want to get information about a specific asset for a
 ```console
 $ planet data asset-get PSScene 20221003_002705_38_2461 basic_udm2
 ```
-response (pretty-printed)
+response
 ```
 {
   "_links": {
@@ -714,9 +713,6 @@ planet data asset-list [OPTIONS] ITEM_TYPE ITEM_ID
 
 List all assets available for an item.
 
-Options:
-- --pretty - Pretty print the output.
-
 Arguments:
 - ITEM_TYPE - The type of item (e.g., PSScene, SkySatScene)
 - ITEM_ID - The ID of the item
@@ -731,7 +727,7 @@ User Story: As a CLI user I want to see all available assets for an item.
 ```console
 $ planet data asset-list PSScene 20221003_002705_38_2461
 ```
-response (pretty-printed)
+response
 ```
 {
   "basic_analytic_4b": {
