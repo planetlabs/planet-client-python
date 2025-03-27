@@ -642,17 +642,13 @@ A JSON description of the clear coverage for the provided AOI within the scene.
 User Story: As a CLI user I want to get clear coverage information for a specific area within an item.
 
 ```console
-$ planet data item-coverage PSScene 20221003_002705_38_2461 \
-  --geom '{"type": "Polygon", "coordinates": [[[37.791595458984375, 14.84923123791421],
-  [37.90214538574219, 14.84923123791421],
-  [37.90214538574219, 14.945448293647944],
-  [37.791595458984375, 14.945448293647944],
-  [37.791595458984375, 14.84923123791421]]]}'
+$ planet data item-coverage PSScene 20250304_162555_90_24f2 \
+  --geom '{"type":"Polygon","coordinates":[[[-81.45,30.31],[-81.45,30.23],[-81.38,30.23],[-81.45,30.31]]]}'
 ```
 response (pretty-printed)
 ```
 {
-  "clear_percent": 90.0,
+  "clear_percent": 95,
   "status": "complete"
 }
 ```
@@ -660,14 +656,14 @@ response (pretty-printed)
 User Story: As a CLI user I want to get haze coverage over my Feature Ref.
 
 ```console
-$ planet data item-coverage PSScene 20221003_002705_38_2461 \
+$ planet data item-coverage PSScene 20250304_162555_90_24f2 \
   --geom 'pl:features/my/[collection-id]/[feature-id]' \
   --band haze
 ```
 response (pretty-printed)
 ```
 {
-  "haze_percent": 90.0,
+  "haze_percent": 0.0,
   "status": "complete"
 }
 ```
@@ -705,8 +701,7 @@ response (pretty-printed)
   },
   "_permissions": ["download"],
   "md5_digest": null,
-  "status": "active",
-  "location": "https://api.planet.com/data/v1/1?token=IAmAToken",
+  "status": "inactive",
   "type": "basic_udm2"
 }
 ```
@@ -788,7 +783,7 @@ None.
 User Story: As a CLI user I would like to activate an asset for download.
 
 ```
-$ planet data asset-activate PSScene 20210819_162141_68_2276 analytic
+$ planet data asset-activate PSScene 20210819_162141_68_2276 basic_analytic_4b
 ```
 
 User Story: As a CLI user I would like to activate, wait, and then download an
@@ -797,7 +792,7 @@ asset.
 ```
 $ ITEM_TYPE=PSScene && \
 ITEM_ID=20210819_162141_68_2276 && \
-ASSET_TYPE=analytic && \
+ASSET_TYPE=basic_analytic_4b && \
 planet data asset-activate $ITEM_TYPE $ITEM_ID $ASSET_TYPE && \
 planet data asset-wait $ITEM_TYPE $ITEM_ID $ASSET_TYPE && \
 planet data asset-download --directory data \
@@ -859,7 +854,7 @@ directory, overwriting if the file already exists, and silencing reporting.
 $ planet --quiet data asset-download \
 --directory data \
 --overwrite \
-PSScene 20210819_162141_68_2276 analytic
+PSScene 20210819_162141_68_2276 basic_analytic_4b
 data/<psscene_naming 20210819_162141_68_2276>.tif
 ```
 

@@ -687,9 +687,20 @@ async def item_get(ctx, item_type, item_id):
 @click.option("--geom",
               type=types.Geometry(),
               callback=check_geom,
-              required=True)
-@click.option('--mode', type=str, required=False)
-@click.option('--band', type=str, required=False)
+              required=True,
+              help="""Either a GeoJSON or a Features API reference""")
+@click.option('--mode',
+              type=str,
+              required=False,
+              help="""Method used for coverage calculation.
+    'UDM2': activates UDM2 asset for accurate coverage, may take time.
+    'estimate': provides a quick rough estimate without activation""")
+@click.option('--band',
+              type=str,
+              required=False,
+              help="""Specific band to extract from UDM2
+              (e.g., 'clear', 'cloud', 'snow_ice').
+              For full details, refer to the UDM2 product specifications.""")
 async def item_coverage(ctx, item_type, item_id, geom, mode, band):
     """Get item clear coverage."""
     async with data_client(ctx) as cl:

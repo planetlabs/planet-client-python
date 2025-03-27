@@ -445,10 +445,13 @@ planet data item-coverage PSScene 20230310_083933_71_2431 --geom geometry.geojso
 ```
 
 You can also specify additional parameters:
-- `--mode`: The mode for coverage calculation
-- `--band`: The band to use for coverage calculation
+
+* `--mode`: The mode for coverage calculation
+
+* `--band`: The band to use for coverage calculation
 
 For example:
+
 ```sh
 planet data item-coverage PSScene 20230310_083933_71_2431 --geom geometry.geojson --band "haze"
 ```
