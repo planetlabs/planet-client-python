@@ -1152,7 +1152,7 @@ def test_item_get_not_found(invoke, item_type, item_id):
 def test_item_coverage_success(invoke, item_type, item_id, geom_geojson):
     """Test successful item coverage command."""
     coverage_url = f'{TEST_URL}/item-types/{item_type}/items/{item_id}/coverage'
-    mock_coverage = {"clear_percent": 90.0, "status": "complete"}
+    mock_coverage = {"clear_percent": 90, "status": "complete"}
     mock_resp = httpx.Response(HTTPStatus.OK, json=mock_coverage)
     respx.post(coverage_url).return_value = mock_resp
 
@@ -1165,7 +1165,7 @@ def test_item_coverage_success(invoke, item_type, item_id, geom_geojson):
     ])
     assert result.exit_code == 0
     coverage = json.loads(result.output)
-    assert coverage["clear_percent"] == 90.0
+    assert coverage["clear_percent"] == 90
     assert coverage["status"] == "complete"
 
 
@@ -1176,7 +1176,7 @@ def test_item_coverage_with_mode_and_band(invoke,
                                           geom_geojson):
     """Test item coverage command with mode and band options."""
     coverage_url = f'{TEST_URL}/item-types/{item_type}/items/{item_id}/coverage'
-    mock_coverage = {"cloud_percent": 90.0, "status": "complete"}
+    mock_coverage = {"cloud_percent": 90, "status": "complete"}
     mock_resp = httpx.Response(HTTPStatus.OK, json=mock_coverage)
     respx.post(coverage_url).return_value = mock_resp
 
@@ -1193,7 +1193,7 @@ def test_item_coverage_with_mode_and_band(invoke,
     ])
     assert result.exit_code == 0
     coverage = json.loads(result.output)
-    assert coverage["cloud_percent"] == 90.0
+    assert coverage["cloud_percent"] == 90
     assert coverage["status"] == "complete"
 
 
