@@ -424,6 +424,59 @@ curl -s https://raw.githubusercontent.com/ropensci/geojsonio/main/inst/examples/
 
 Just pipe the results to `jq '.buckets | map(.count) | add'` and it’ll give you the total of all the values.
 
+## Get Item Details and Assess Item Clear Coverage
+
+Once you've found items of interest through search, you may want to examine a specific item in detail. The CLI provides a command to retrieve and display detailed information about a single item.
+
+### Get Item
+
+The `item-get` command allows you to retrieve detailed information about a specific item by its Type and ID:
+
+```sh
+planet data item-get PSScene 20230310_083933_71_2431
+```
+
+### Get Item Coverage
+
+The `item-coverage` command estimates the clear coverage of an item within a specified area of interest (AOI). This is useful for determining how much of your area of interest is covered by clouds or other obstructions:
+
+```sh
+planet data item-coverage PSScene 20230310_083933_71_2431 --geom geometry.geojson
+```
+
+You can also specify additional parameters:
+- `--mode`: The mode for coverage calculation
+- `--band`: The band to use for coverage calculation
+
+For example:
+```sh
+planet data item-coverage PSScene 20230310_083933_71_2431 --geom geometry.geojson --band "haze"
+```
+
+## Item Asset Management
+
+The CLI provides several commands for managing and working with item assets.
+
+### List Available Assets
+
+To see all available assets for a specific item:
+
+```sh
+planet data asset-list PSScene 20230310_083933_71_2431
+```
+
+This will show you all asset available for the item, including their status and activation requirements.
+
+### Get Asset Details
+
+To get detailed information about a specific asset:
+
+```sh
+planet data asset-get PSScene 20230310_083933_71_2431 ortho_analytic_8b_sr
+```
+
+This command provides information about the asset's status download availability.
+
 ## Asset Activation and Download
 
 While we recommend using the Orders or Subscriptions API’s to deliver Planet data, the Data API has the capability
