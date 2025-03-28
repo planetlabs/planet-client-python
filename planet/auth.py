@@ -15,6 +15,7 @@
 """Manage authentication with Planet APIs"""
 from __future__ import annotations  # https://stackoverflow.com/a/33533514
 import abc
+import copy
 import os
 import pathlib
 import typing
@@ -133,7 +134,7 @@ class Auth(abc.ABC, httpx.Auth):
             storage_provider: A custom storage provider to save session state
                 for the application.
         """
-        plauth_config_dict = _OIDC_AUTH_CLIENT_CONFIG__USER_SKEL
+        plauth_config_dict = copy.deepcopy(_OIDC_AUTH_CLIENT_CONFIG__USER_SKEL)
         plauth_config_dict["client_type"] = "oidc_auth_code"
         plauth_config_dict["client_id"] = client_id
         if requested_scopes:
@@ -195,7 +196,7 @@ class Auth(abc.ABC, httpx.Auth):
             storage_provider: A custom storage provider to save session state
                 for the application.
         """
-        plauth_config_dict = _OIDC_AUTH_CLIENT_CONFIG__USER_SKEL
+        plauth_config_dict = copy.deepcopy(_OIDC_AUTH_CLIENT_CONFIG__USER_SKEL)
         plauth_config_dict["client_type"] = "oidc_device_code"
         plauth_config_dict["client_id"] = client_id
         if requested_scopes:
@@ -245,7 +246,7 @@ class Auth(abc.ABC, httpx.Auth):
             storage_provider: A custom storage provider to save session state
                 for the application.
         """
-        plauth_config_dict = _OIDC_AUTH_CLIENT_CONFIG__M2M_SKEL
+        plauth_config_dict = copy.deepcopy(_OIDC_AUTH_CLIENT_CONFIG__M2M_SKEL)
         plauth_config_dict["client_id"] = client_id
         plauth_config_dict["client_secret"] = client_secret
         if requested_scopes:
