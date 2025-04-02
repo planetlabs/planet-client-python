@@ -434,6 +434,63 @@ class DataClient:
                                                json=request)
         return response.json()
 
+    async def get_item(self, item_type_id: str, item_id: str) -> dict:
+        """Get an item by item_type_id and item_id.
+
+        Parameters:
+            item_type_id: Item type identifier.
+            item_id: Item identifier.
+
+        Returns:
+            Description of an item.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        """
+        url = self._item_url(item_type_id, item_id)
+
+        response = await self._session.request(method="GET", url=url)
+        return response.json()
+
+    async def get_item_coverage(
+        self,
+        item_type_id: str,
+        item_id: str,
+        geometry: GeojsonLike,
+        mode: Optional[str] = None,
+        band: Optional[str] = None,
+    ) -> dict:
+        """Estimate the clear coverage over an item within a custom AOI
+
+        Parameters:
+            item_type_id: Item type identifier.
+            item_id: Item identifier.
+            geometry: A feature reference or a GeoJSON
+            mode: Method used for coverage calculation
+            band: Specific band to extract from UDM2
+
+        Returns:
+            Description of the clear coverage for the provided AOI within the scene.
+
+        Raises:
+            planet.exceptions.APIError: On API error.
+        """
+        url = f"{self._item_url(item_type_id, item_id)}/coverage"
+
+        params = {}
+        if mode is not None:
+            params["mode"] = mode
+        if band is not None:
+            params["band"] = band
+
+        request_json = {'geometry': as_geom_or_ref(geometry)}
+
+        response = await self._session.request(method="POST",
+                                               url=url,
+                                               json=request_json,
+                                               params=params)
+        return response.json()
+
     async def list_item_assets(self, item_type_id: str, item_id: str) -> dict:
         """List all assets available for an item.
 
