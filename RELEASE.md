@@ -14,23 +14,20 @@ The SDK follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and t
 
 ## Release Workflow
 
-1. Create a release branch off of `main` that bumps the SDK version number and updates the changelog:
-   * Update `CHANGES.txt`, adhering to [keep a changelog](https://keepachangelog.com/)
-2. Create a PR for the release branch and merge into `main`
-3. Create a new GitHub release:
+1. Create a new GitHub release:
    * From the GitHub UI:
      * Navigate to the releases UI
      * Set tag to release version
      * Set target to `main`
      * Set title to tag release version
-     * Copy description from the new entry in the changelog
+     * Describe the change(s) that are shipping with this version in the release description
    * Alternatively, create a release from the GitHub CLI:
      * Make sure the pre-requisite [gh](https://cli.github.com/manual/gh) CLI is installed, and optionally review the docs for CLI command [gh release create](https://cli.github.com/manual/gh_release_create)
      * By default, `gh release create` will automatically tag releases from the latest state of the default branch
-     * Run CLI command `gh release create {VERSION} --notes "{RELEASE NOTES}"` where `VERSION` is the release version and `RELEASE NOTES` is the description copied from the new entry in the changelog
-4. Verify the successful run of the Github Action `Autopublish to TestPyPI` and validate the test release on [test.pypi.org](https://test.pypi.org/project/planet/)
-5. Run the Github Action `Publish on PyPI`
-6. Verify the successful run of the Github Action `Publish on PyPI` and validate the release on [pypi.org](https://pypi.org/project/planet/)
+     * Run CLI command `gh release create {VERSION} --notes "{RELEASE NOTES}"` where `VERSION` is the release version and `RELEASE NOTES` is the description of changes
+2. Verify the successful run of the Github Action `Autopublish to TestPyPI` and validate the test release on [test.pypi.org](https://test.pypi.org/project/planet/)
+3. Run the Github Action `Publish on PyPI`
+4. Verify the successful run of the Github Action `Publish on PyPI` and validate the release on [pypi.org](https://pypi.org/project/planet/)
 
 
 ## Local publishing
