@@ -20,8 +20,6 @@ from pathlib import Path
 
 DATA_DIR = Path(os.path.dirname(__file__)) / 'data'
 
-ENV_API_KEY = 'PL_API_KEY'
-
 PLANET_BASE_URL = 'https://api.planet.com'
 
 SECRET_FILE_PATH = Path(os.path.expanduser('~')) / '.planet.json'

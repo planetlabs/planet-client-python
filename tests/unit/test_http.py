@@ -195,6 +195,7 @@ async def test_session_contextmanager():
 @pytest.mark.parametrize('data', (None, {'boo': 'baa'}))
 async def test_session_request_success(data):
 
+    # async with http.Session(auth=planet.Auth.from_plauth(pl_authlib_context=planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(auth_profile_opt="none"))) as ps:
     async with http.Session() as ps:
         resp_json = {'foo': 'bar'}
         route = respx.get(TEST_URL)
@@ -282,25 +283,3 @@ def test__calculate_wait():
         # this doesn't really test the randomness but does test exponential
         # and threshold
         assert math.floor(wait) == expected
-
-
-@respx.mock
-@pytest.mark.anyio
-async def test_authsession_request():
-    sess = http.AuthSession()
-    resp_json = {'token': 'foobar'}
-    mock_resp = httpx.Response(HTTPStatus.OK, json=resp_json)
-    respx.get(TEST_URL).return_value = mock_resp
-
-    resp = sess.request(method='GET', url=TEST_URL, json={'foo': 'bar'})
-    assert resp.json() == resp_json
-
-
-def test_authsession__raise_for_status(mock_response):
-    with pytest.raises(exceptions.APIError):
-        http.AuthSession._raise_for_status(
-            mock_response(HTTPStatus.BAD_REQUEST, json={}))
-
-    with pytest.raises(exceptions.APIError):
-        http.AuthSession._raise_for_status(
-            mock_response(HTTPStatus.UNAUTHORIZED, json={}))
