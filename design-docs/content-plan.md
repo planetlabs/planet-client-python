@@ -104,7 +104,7 @@ Add a considerations section to the documentation, either to the getting started
 
 ## readme.rst
 
-The [current readme file](https://github.com/planetlabs/planet-client-python%23readme) follows industry standards and is adequate.
+The [current readme file](https://github.com/planetlabs/planet-client-python/blob/main/README.md) follows industry standards and is adequate.
 
 ### Ticket to be filed
 
@@ -193,7 +193,7 @@ Investigate using MkDocs plugin to derive changes.txt items.
 
 ### Published
 
-[Readme](https://github.com/planetlabs/planet-client-python/tree/ef8a27178d21316256ef8a5de6ee6d0758be981c%23readme)
+[Readme](https://github.com/planetlabs/planet-client-python/blob/main/README.md)
 
 [GitHub Wiki](https://github.com/planetlabs/planet-client-python/wiki)
 
