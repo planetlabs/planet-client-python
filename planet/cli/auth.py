@@ -31,6 +31,9 @@ cmd_auth.add_command(name="login", cmd=planet_auth_utils.cmd_plauth_login)
 cmd_auth.add_command(name="print-access-token",
                      cmd=planet_auth_utils.cmd_oauth_print_access_token)
 cmd_auth.add_command(name="refresh", cmd=planet_auth_utils.cmd_oauth_refresh)
+# TODO: mark as deprecated when we better support M2M tokens
+# planet_auth_utils.cmd_pllegacy_print_api_key.deprecated = True
+cmd_auth.add_command(name="print-api-key", cmd=planet_auth_utils.cmd_pllegacy_print_api_key)
 
 
 # We are only plumbing a sub-set of the util lib's "profile" command,
