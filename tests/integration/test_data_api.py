@@ -1576,3 +1576,157 @@ def test_validate_checksum_sync(hashes_match, md5_entry, expectation, tmpdir):
 
     with expectation:
         DataAPI.validate_checksum(basic_udm2_asset, testfile)
+
+
+@respx.mock
+@pytest.mark.anyio
+async def test_get_item_success(item_descriptions, session):
+    """Test getting an item successfully."""
+    item = item_descriptions[0]
+    item_id = item['id']
+    item_type = item['properties']['item_type']
+    item_url = f'{TEST_URL}/item-types/{item_type}/items/{item_id}'
+
+    respx.get(item_url).return_value = httpx.Response(HTTPStatus.OK, json=item)
+
+    cl = DataClient(session, base_url=TEST_URL)
+    result = await cl.get_item(item_type, item_id)
+
+    assert result == item
+    assert respx.calls.last.request.url == item_url
+    assert respx.calls.last.response.status_code == HTTPStatus.OK
+
+
+@respx.mock
+def test_get_item_success_sync(item_descriptions, data_api):
+    """Test getting an item successfully."""
+    item = item_descriptions[0]
+    item_id = item['id']
+    item_type = item['properties']['item_type']
+    item_url = f'{TEST_URL}/item-types/{item_type}/items/{item_id}'
+
+    respx.get(item_url).return_value = httpx.Response(HTTPStatus.OK, json=item)
+
+    result = data_api.get_item(item_type, item_id)
+
+    assert result == item
+    assert respx.calls.last.request.url == item_url
+    assert respx.calls.last.response.status_code == HTTPStatus.OK
+
+
+@respx.mock
+@pytest.mark.anyio
+async def test_get_item_not_found(item_descriptions, session):
+    """Test getting a non-existent item."""
+    item_type = item_descriptions[0]['properties']['item_type']
+    item_id = 'non-existent-id'
+    item_url = f'{TEST_URL}/item-types/{item_type}/items/{item_id}'
+
+    respx.get(item_url).return_value = httpx.Response(404, json={})
+
+    cl = DataClient(session, base_url=TEST_URL)
+    with pytest.raises(exceptions.MissingResource):
+        await cl.get_item(item_type, item_id)
+
+
+@respx.mock
+def test_get_item_not_found_sync(item_descriptions, data_api):
+    """Test getting a non-existent item."""
+    item_type = item_descriptions[0]['properties']['item_type']
+    item_id = 'non-existent-id'
+    item_url = f'{TEST_URL}/item-types/{item_type}/items/{item_id}'
+
+    respx.get(item_url).return_value = httpx.Response(404, json={})
+
+    with pytest.raises(exceptions.MissingResource):
+        data_api.get_item(item_type, item_id)
+
+
+@respx.mock
+@pytest.mark.anyio
+async def test_get_item_coverage_success(item_descriptions, session):
+    """Test get item coverage successfully."""
+
+    item = item_descriptions[0]
+    item_id = item['id']
+    item_type = item['properties']['item_type']
+
+    mock_response = {'clear_percent': 28, 'status': 'complete'}
+
+    coverage_url = f'{TEST_URL}/item-types/{item_type}/items/{item_id}/coverage'
+    respx.post(coverage_url).return_value = httpx.Response(HTTPStatus.OK,
+                                                           json=mock_response)
+
+    cl = DataClient(session, base_url=TEST_URL)
+    result = await cl.get_item_coverage(item_type_id=item_type,
+                                        item_id=item_id,
+                                        geometry=item['geometry'],
+                                        mode='UDM2',
+                                        band='cloud')
+
+    assert str(respx.calls.last.request.url).split('?')[0] == coverage_url
+
+    assert respx.calls.last.request.url.params['mode'] == 'UDM2'
+    assert respx.calls.last.request.url.params['band'] == 'cloud'
+
+    assert result == mock_response
+
+
+@respx.mock
+@pytest.mark.anyio
+async def test_get_item_coverage_invalid_geometry(item_descriptions, session):
+    item = item_descriptions[0]
+    item_id = item['id']
+    item_type = item['properties']['item_type']
+
+    invalid_geom = copy.deepcopy(item['geometry'])
+    invalid_geom['type'] = 'invalid_type'
+
+    cl = DataClient(session, base_url=TEST_URL)
+    with pytest.raises(exceptions.GeoJSONError):
+        await cl.get_item_coverage(item_type_id=item_type,
+                                   item_id=item_id,
+                                   geometry=invalid_geom)
+
+
+@respx.mock
+def test_get_item_coverage_success_sync(item_descriptions, data_api):
+    """Test get item coverage successfully."""
+    item = item_descriptions[0]
+    item_id = item['id']
+    item_type = item['properties']['item_type']
+
+    mock_response = {'clear_percent': 28, 'status': 'complete'}
+
+    coverage_url = f'{TEST_URL}/item-types/{item_type}/items/{item_id}/coverage'
+    respx.post(coverage_url).return_value = httpx.Response(HTTPStatus.OK,
+                                                           json=mock_response)
+
+    result = data_api.get_item_coverage(item_type_id=item_type,
+                                        item_id=item_id,
+                                        geometry=item['geometry'],
+                                        mode='UDM2',
+                                        band='cloud')
+
+    assert str(respx.calls.last.request.url).split('?')[0] == coverage_url
+
+    assert respx.calls.last.request.url.params['mode'] == 'UDM2'
+    assert respx.calls.last.request.url.params['band'] == 'cloud'
+
+    assert result == mock_response
+
+
+@respx.mock
+def test_get_item_coverage_invalid_geometry_sync(item_descriptions, data_api):
+    """Test get item coverage with invalid geometry."""
+    item = item_descriptions[0]
+    item_id = item['id']
+    item_type = item['properties']['item_type']
+
+    invalid_geom = copy.deepcopy(item['geometry'])
+    invalid_geom['type'] = 'invalid_type'
+
+    with pytest.raises(exceptions.GeoJSONError):
+        data_api.get_item_coverage(item_type_id=item_type,
+                                   item_id=item_id,
+                                   geometry=invalid_geom)
