@@ -447,8 +447,12 @@ planet data item-coverage PSScene 20250304_162555_90_24f2 --geom='{"type":"Polyg
 You can also specify additional parameters:
 
 * `--mode`: The mode for coverage calculation
+    * `UDM2`: calculate clear coverage using a UDM2 asset [default]
+    * `estimate`: estimate clear coverage based on preview imagery
 
 * `--band`: The band to use for coverage calculation
+
+See [Data API documentation](https://docs.planet.com/develop/apis/data/items/#estimate-clear-coverage-over-an-individual-item-with-a-custom-aoi) for an overview of coverage options. 
 
 For example:
 
