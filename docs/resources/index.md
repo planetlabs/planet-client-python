@@ -17,15 +17,15 @@ The following examples were created specifically to show you how to use the SDK 
 
 ### Other examples
 
-Besides the SDK-specific examples, above, you can find many examples that show how to access Planet data in the documentation and Planet School at the [Planet Developers Center](https://developers.planet.com).Also, more working examples are on the [Planet Labs Python notebooks](https://github.com/planetlabs/notebooks) on GitHub.
+Besides the SDK-specific examples, above, you can find many examples that show how to access Planet data in the documentation and Planet School at the [Planet Developers Center](https://docs.planet.com).Also, more working examples are on the [Planet Labs Python notebooks](https://github.com/planetlabs/notebooks) on GitHub.
 
 ## Planet APIs
 
 This pre-release SDK has implemented interfaces for several Planet APIs. Check out the documentation for the underlying API:
 
-* [Data](https://developers.planet.com/docs/apis/data/)
-* [Orders](https://developers.planet.com/apis/orders/)
-* [Subscriptions](https://developers.planet.com/docs/subscriptions/)
+* [Data](https://docs.planet.com/develop/apis/data/)
+* [Orders](https://docs.planet.com/develop/apis/orders/)
+* [Subscriptions](https://docs.planet.com/develop/apis/subscriptions/)
 
 ## Email Developer Relations
 

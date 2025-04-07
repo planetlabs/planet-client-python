@@ -13,18 +13,18 @@ For a complete list of the project board, source, and current documentation buil
 
 ## A note regarding location of qualification documentation:
 
-The SDK and CLI are low-level interfaces mirroring much of the API, itself. While this documentation should make it easy for developers to use the SDK and CLI, core Planet API concepts, clarifying content, and considerations might be better located in the core API documentation on [Planet](https://developers.planet.com/docs/apis/), and then linked to from content produced here.
+The SDK and CLI are low-level interfaces mirroring much of the API, itself. While this documentation should make it easy for developers to use the SDK and CLI, core Planet API concepts, clarifying content, and considerations might be better located in the core API documentation on [Planet](https://docs.planet.com/develop/apis/), and then linked to from content produced here.
 
 ## SSoT
 
-We are currently publishing documentation on [planet.com](https://developers.planet.com/docs/pythonclient/), [github.io](https://planetlabs.github.io/planet-client-python/index.html), [github wiki](https://github.com/planetlabs/planet-client-python/wiki), and on [readthedocs.com](https://planet-sdk-for-python.readthedocs.io/en/latest/). Providing a single source of truth (SSoT) ensures one definitive source of documentation, reducing the dilution of information, errors, and maintenance efforts.
+We are currently publishing documentation on [planet.com](https://docs.planet.com/develop/sdks/#planet-sdk-for-python-and-cli), [github.com](https://github.com/planetlabs/planet-client-python), and on [readthedocs.com](https://planet-sdk-for-python-v2.readthedocs.io). Providing a single source of truth (SSoT) ensures one definitive source of documentation, reducing the dilution of information, errors, and maintenance efforts.
 
 ### Ticket to be filed
 
 Implement mkdocs to leverage features of readthedocs.com, but publish only on one platform. This would be planet.com unless we are making a concerted effort to recruit 3rd party contributors to the SDK, in which case, it could stay on readthedocs.com. So the publication landscape would be as follows:
 
 * Publish the SDK V2 documentation on readthedocs.com.
-* Do not mirror the SDK V2 documentation on developers.planet.com.
+* Do not mirror the SDK V2 documentation on docs.planet.com.
 * End-of-life the GitHub wiki content for V2, and rely on the readme, the contributing, the changes, and the published documentation to convey information published at the wiki in 2017.
 * End-of-life the github.io channel for V2, and rely on readthedocs.com as the single source of truth.
 
@@ -42,7 +42,7 @@ Provide a getting started experience that presumes the user has not used an SDK 
 
 Provide a relational visualization (e.g.: a dashboard of sorts) of the SDK, CLI, and API, and link to the landing page for each.
 
-Platform overview documentation should be created on the DevCenter to explain the SDK and CLI in the context of the other Planet offerings, within the Planet platform. (This is an internal ticket on developers.planet.com, not the SDK GitHub project issues list.) The SDK should reference this overview.
+Platform overview documentation should be created on the DevCenter to explain the SDK and CLI in the context of the other Planet offerings, within the Planet platform. (This is an internal ticket on docs.planet.com, not the SDK GitHub project issues list.) The SDK should reference this overview.
 
 ## Code snippets
 
@@ -197,7 +197,7 @@ Investigate using MkDocs plugin to derive changes.txt items.
 
 [GitHub Wiki](https://github.com/planetlabs/planet-client-python/wiki)
 
-[SDK Devcenter landing page](https://developers.planet.com/open/)
+[SDK Devcenter landing page](https://docs.planet.com/)
 
 [planet · PyPI](https://pypi.org/project/planet/)
 
@@ -213,22 +213,17 @@ Investigate using MkDocs plugin to derive changes.txt items.
 
 [https://github.com/planetlabs/planet-client-python/](https://github.com/planetlabs/planet-client-python/)
 
-#### Current V2 docs (erroneously tagged V1.4.9)
-[https://planet-sdk-for-python.readthedocs.io/en/latest/](https://planet-sdk-for-python.readthedocs.io/en/latest)
-
-#### Current V1.4.9 docs
-[https://developers.planet.com/docs/pythonclient/](https://developers.planet.com/docs/pythonclient/)
+#### Current V2 docs
+[https://planet-sdk-for-python-v2.readthedocs.io/](https://planet-sdk-for-python-v2.readthedocs.io/)
+#### V1.4.9 docs
+[https://planet-sdk-for-python.readthedocs.io/en/latest/](https://planet-sdk-for-python.readthedocs.io)
 
 and
 
 [https://planetlabs.github.io/planet-client-python/index.html](https://planetlabs.github.io/planet-client-python/index.html)
 
-#### Current V1.4.9 docs source
+#### V1.4.9 docs source
 [https://github.com/planetlabs/planet-client-python/tree/master/docs](https://github.com/planetlabs/planet-client-python/tree/master/docs)
-
-and
-
-[https://github.com/planetlabs/planet-client-python//docs](https://github.com/planetlabs/planet-client-python//docs)
 
 ## GitHub flavored markdown
 
