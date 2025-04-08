@@ -1,6 +1,7 @@
 # Planet SDK for Python
 
 [![Build Status](https://github.com/planetlabs/planet-client-python/actions/workflows/test.yml/badge.svg)](https://github.com/planetlabs/planet-client-python/actions/workflows/test.yml)
+[![PyPI Downloads](https://static.pepy.tech/badge/planet)](https://pepy.tech/projects/planet)
 
 The [Planet](https://planet.com) Software Development Kit (SDK) for Python
 provides both a Python API and a command-line interface (CLI)
