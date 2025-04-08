@@ -262,6 +262,29 @@ def test_oracle_cloud_storage():
     assert ocs_config == expected
 
 
+def test_s3_compatible():
+    s3c_config = order_request.s3_compatible('https://test.endpoint.com',
+                                             'test-bucket',
+                                             'us-central-1',
+                                             'test-key-id',
+                                             'test-secret-key',
+                                             use_path_style=True,
+                                             path_prefix='test/path/prefix')
+
+    expected = {
+        's3_compatible': {
+            'endpoint': 'https://test.endpoint.com',
+            'bucket': 'test-bucket',
+            'region': 'us-central-1',
+            'access_key_id': 'test-key-id',
+            'secret_access_key': 'test-secret-key',
+            'use_path_style': True,
+            'path_prefix': 'test/path/prefix'
+        }
+    }
+    assert s3c_config == expected
+
+
 def test__tool():
     test_tool = order_request._tool('bandmath', 'jsonstring')
     assert test_tool == {'bandmath': 'jsonstring'}
