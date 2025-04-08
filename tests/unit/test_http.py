@@ -90,7 +90,7 @@ async def test__Limiter_max_workers(monkeypatch):
 
     async def test_func():
         async with limiter:
-            nonlocal active, calls, hold_flag
+            nonlocal active, calls
             active += 1
             calls += 1
 
@@ -101,7 +101,7 @@ async def test__Limiter_max_workers(monkeypatch):
             active -= 1
 
     async def control():
-        nonlocal active, hold_flag
+        nonlocal hold_flag
 
         # this value seems large enough to allow test functions to start
         # but small enough to not noticeably slow down tests
