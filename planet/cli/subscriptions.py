@@ -152,6 +152,11 @@ async def list_subscriptions_cmd(ctx,
 @subscriptions.command(name="create")  # type: ignore
 @click.argument("request", type=types.JSON())
 @click.option(
+    "--bulk",
+    is_flag=True,
+    help="Bulk create many subscriptions using a feature collection reference.",
+)
+@click.option(
     "--hosting",
     type=click.Choice([
         "sentinel_hub",
@@ -198,9 +203,14 @@ async def create_subscription_cmd(ctx, request, pretty, **kwargs):
         hosting_info = sentinel_hub(collection_id, create_configuration)
         request["hosting"] = hosting_info
 
-    async with subscriptions_client(ctx) as client:
-        sub = await client.create_subscription(request)
-        echo_json(sub, pretty)
+    if kwargs.get("bulk"):
+        async with subscriptions_client(ctx) as client:
+            _ = await client.bulk_create_subscriptions([request])
+            # Bulk create returns no response, so we don't echo anything
+    else:
+        async with subscriptions_client(ctx) as client:
+            sub = await client.create_subscription(request)
+            echo_json(sub, pretty)
 
 
 @subscriptions.command(name='cancel')  # type: ignore
