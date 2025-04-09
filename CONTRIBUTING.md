@@ -5,11 +5,32 @@ document explains how to contribute successfully.
 
 ## Workflows
 
-### Development
+### Branches
 
-#### Development Branch
+#### Mainline Branches
 
-The default branch is always `main` and should be always considered in-development.  Feature enhancements, bug fixes, and other maintenance should be performed in a development branch, starting with the appropriate base branch and merged back into that branch:
+The default branch is always `main`, and will correspond to the current stable major release version.
+This branch should be considered in-development but with tests and other build steps kept in a passing
+and stable state.
+
+Branches for future major releases will be named `main-X.0-dev` where `X.0` is the next major
+release version. These branches will be kept current with the current stable major release
+insofar as is practical within the scope of changes targeted to the next major release.  Per symantec
+versioning, major releases do not guarantee backwards compatibility.  Stability is not guaranteed
+during the development cycle.
+
+During the development cycle of a new major release, `RELEASE-PLANNING-X.0.md` should be maintained
+with a brief summary of the major and breaking changes underpinning the reason for the upcoming
+major release version.  Upon release, this content is expected to be folded into package documentation
+as appropriate, and this file should be removed.
+
+When a new major release is ready, the development mainline branch will be renamed to `main`, and the
+old mainline branch will be renamed to `maint-X.0` and will be used as the base for maintenance releases.
+
+#### Development Branches
+
+Feature enhancements, bug fixes, and other maintenance should be performed in a development
+branch, starting with the appropriate base branch and merged back into that branch:
 
 ```console
 git checkout main
@@ -17,7 +38,7 @@ git pull
 git checkout -b new-branch-name
 ```
 
-#### Branch Naming
+#### Development Branch Naming
 
 Branch names should describe the work performed within the branch, and include a ticket number if applicable.  For example, a branch that corrects typos in documentation and is not ticketed could be named `fix-documentation-typos`, and a branch that adds a new feature and is ticketed could be named `new-feature-123` (where 'new-feature' is the name of the feature and '-123' is the ticket number).
 
