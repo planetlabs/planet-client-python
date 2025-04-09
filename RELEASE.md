@@ -48,30 +48,3 @@ This approach requires specifying the pypi/testpypi api token as the password at
 ## Conda builds
 
 When stable, not pre-release, files are uploaded to PyPI, a bot will detect them and make an automated PR to https://github.com/conda-forge/planet-feedstock/pulls. When a Conda-forge maintainer merges that PR, a package will be built for the new version and will be published to https://anaconda.org/conda-forge/planet/files.
-
-
----- 
-# Scratch - Dump from Ian.  Need to work into doc.  Parking here for branch
-
-SDK versioning, maintenance, stability guidance
-
-current state: 
-github readme contains standard language re semantic versioning
-new doc site notes v1 will remain accessible w/ no new development (and some mushy language re v2 and code-free CLI)
-
-challenges:
-need to make breaking changes in CLI or SDK APIs soon - primary motivating example is removal of basic user email/pass authentication
-we will also have unrelated service API breaking changes (eventual removal of basic user email/pass API in api.planet.com)
-understand that clients will not always be able to immediately upgrade to a new version, so maintenance guidance is warranted
-we don't strive to regularly make breaking changes, but we should have a mechanism for major release planning and updates
-should have explicit guidance on SDK API surface stability, e.g. what is "internal" and open to implementation changes vs. stable API
-release mechanics will need to be updated to support beta version major release
-
-proposal:
-add new section(s) re versioning strategy and maintenance
-continue in the short-term w/ the indefinite support for installation of older versions w/ out feature back-porting, etc. 
-add language re our support of python versions (stick w/ EOL schedule of upstream?)
-ensure notable SDK changes/plans end up in main docs site (changelog or other?) as well as project github
-
-references:
-python version EOL schedule https://devguide.python.org/versions/
