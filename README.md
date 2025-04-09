@@ -51,16 +51,16 @@ as defined below.  Planet Labs PBC makes no formal commitment
 to a specific schedule, but will make every effort to provide reasonable
 notice of upcoming changes to the support status of major versions.
 
-* `**development**` - Unstable. Under active development.  Not recommend
+* **`development`** - Unstable. Under active development.  Not recommend
   for production use.  API stability not guaranteed.  New features from active
   versions will be ported forward to the extent allowed by the scope of the
   new major version under development.
-* `**active**` - Actively maintained and supported. New features and bug fixes.
+* **`active`** - Actively maintained and supported. New features and bug fixes.
   Suitable for production use.  API stability guaranteed according to semantic
   versioning, but subject to changes in the underlying Planet APIs.
-* `**maintenance**` - Critical bug fixes only.
-* `**end-of-life**` - No longer supported.  Software packages will remain available.
-* `**removed**` - No longer available.  Removed from distribution channels.
+* **`maintenance`** - Critical bug fixes only.
+* **`end-of-life`** - No longer supported.  Software packages will remain available.
+* **`removed`** - No longer available.  Removed from distribution channels.
 
 ### Python Version Support
 `Active` minor versions will support Python versions that have not reached
