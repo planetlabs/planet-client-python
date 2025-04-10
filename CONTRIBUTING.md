@@ -229,7 +229,7 @@ type-related bugs. The nox session that calls mypy is named analyze.
 Documentation is built from Markdown files in the `docs` directory using
 [MkDocs](https://www.mkdocs.org/) according to `mkdocs.yml`. The API reference
 is auto-populated from code docstrings. These docstrings must be in the
-[google format](https://mkdocstrings.github.io/handlers/python/#google-style)
+[google format](https://mkdocstrings.github.io/python/usage/docstrings/google/)
 (note: we use `Parameters` in our docstrings).
 
 By default, Nox builds the docs along with other CI checks. However, Nox can

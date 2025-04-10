@@ -396,7 +396,7 @@ def _tool(name: str, parameters: dict) -> dict:
     """Create the API spec representation of a tool.
 
     See [Tools and Toolchains](
-    https://developers.planet.com/docs/orders/tools-toolchains/)
+    https://docs.planet.com/develop/apis/subscriptions/tools)
     for more information on available tools and tool parameters.
 
     Parameters:

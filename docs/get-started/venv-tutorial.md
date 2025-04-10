@@ -106,7 +106,7 @@ Check the version again to confirm it was installed:
 You should see a number that begins with 1.
 
 !!!note "If a version 1 doesn’t appear"
-    If you don’t see a version 1 number, then you may need to adjust your path. If you have trouble getting the version for the Planet SDK v1 that you know you’ve installed, feel free to [discuss with us](https://github.com/planetlabs/planet-client-python/discussions). We can troubleshoot together and then update the steps here.
+    If you don’t see a version 1 number, then you may need to adjust your path. If you have trouble getting the version for the Planet SDK v1 that you know you’ve installed, feel free to [discuss with us](https://community.planet.com). We can troubleshoot together and then update the steps here.
 
 #### Deactivate version 1
 

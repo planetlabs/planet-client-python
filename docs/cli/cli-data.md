@@ -4,11 +4,11 @@ title: CLI for Data API Tutorial
 
 ## Introduction
 
-The `planet data` CLI commands enable interaction with the [Data API](https://developers.planet.com/docs/apis/data/),
+The `planet data` CLI commands enable interaction with the [Data API](https://docs.planet.com/develop/apis/data/),
 which lets you search Planet’s catalog (including select public datasets like Sentinel 2 and Landsat 8).
 Currently the CLI has focused on the core search functionality, implementing
-[Quick Search](https://developers.planet.com/docs/apis/data/reference/#tag/Item-Search/operation/QuickSearch)
-and [stats](https://developers.planet.com/docs/apis/data/reference/#tag/Item-Stats/operation/Stats) plus some
+[Quick Search](https://docs.planet.com/develop/apis/data/reference/#tag/Item-Search/operation/QuickSearch)
+and [stats](https://docs.planet.com/develop/apis/data/reference/#tag/Item-Stats/operation/Stats) plus some
 partial saved search functionality.
 
 ## `data search` command basics
@@ -87,8 +87,8 @@ This outputs the last 100 scenes.
 
 ### Search on Item Type
 
-These first searches were done on the [PSScene](https://developers.planet.com/docs/data/psscene/) 'item type', but you
-can use any [Item Type](https://developers.planet.com/docs/apis/data/items-assets/#item-types) that Planet offers in 
+These first searches were done on the [PSScene](https://docs.planet.com/data/imagery/planetscope/psscene/) 'item type', but you
+can use any [Item Type](https://docs.planet.com/develop/apis/data/items/#item-types) that Planet offers in 
 its catalog. The item type is the first argument of the `search` command, followed by the 'filter'. Note that
 you can specify any number of item types here:
 
@@ -318,8 +318,8 @@ planet data filter --asset ortho_analytic_8b_sr --asset udm2 \
 ```
 
 You can find the list of available assets in each Item Type Page, like 
-[available assets](https://developers.planet.com/docs/data/psscene/#available-asset-types) for PSScene. You can see
-[a table of all Item Types](https://developers.planet.com/docs/data/psscene/#available-asset-types), which links to 
+[available assets](https://docs.planet.com/data/imagery/planetscope/psscene/) for PSScene. You can see
+[a table of all Item Types](https://docs.planet.com/develop/apis/data/items/#item-types), which links to 
 the page for each with their list of asset types.
 
 Note that the asset filter doesn't perform any validation, so if your searches aren't returning anything check to make
@@ -494,7 +494,7 @@ be faster for working with a small number of items & assets.
 ### Activate an Asset
 
 All items in the Data API have a list of assets. This includes the main imagery geotiff files, usually in a few
-different formats, and also accompanying files like the [Usable Data Mask](https://developers.planet.com/docs/data/udm-2/)
+different formats, and also accompanying files like the [Usable Data Mask](https://docs.planet.com/data/imagery/udm/)
  (UDM) and JSON metadata. You can't immediately download them, as they must first be created in the cloud, known as
 'activated'. To activate data you need to get its item id, plus the name of the asset - the available ones
 can be seen by looking at the Item’s JSON. Once you have the item id and asset type you can run the CLI
@@ -542,7 +542,7 @@ Download has a few different options:
 ## Saved Searches
 
 The core `planet data search` command uses what is called a 'quick search' in the API. The API 
-also supports what we call a '[saved searches](https://developers.planet.com/docs/apis/data/quick-saved-search/#saved-search)',
+also supports what we call a '[saved searches](https://docs.planet.com/develop/apis/data/item-search/#saved-search)',
 and the CLI supports this as well. 
 
 ### List Searches

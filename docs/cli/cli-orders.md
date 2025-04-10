@@ -4,7 +4,7 @@ title: CLI for Orders API Tutorial
 
 ## Introduction
 
-The `planet orders` command enables interaction with the [Orders API](https://developers.planet.com/apis/orders/),
+The `planet orders` command enables interaction with the [Orders API](https://docs.planet.com/develop/apis/orders/),
 which lets you activate and download Planet data products in bulk, and apply various
 'tools' to your processes. This tutorial takes you through all the main capabilities
 of the CLI for creating and downloading orders. It depends on several more advanced
@@ -143,8 +143,8 @@ planet orders get 782b414e-4e34-4f31-86f4-5b757bd062d7
 
 ### Create an Order Request
 
-To create an order you need a name, a [bundle](https://developers.planet.com/apis/orders/product-bundles-reference/),
- one or more id’s, and an [item type](https://developers.planet.com/docs/apis/data/items-assets/#item-types):
+To create an order you need a name, a [bundle](https://docs.planet.com/develop/apis/orders/product_bundles),
+ one or more id’s, and an [item type](https://docs.planet.com/develop/apis/data/items/#item-types):
 
 First lets get the ID of an item you have download access to, using the Data API:
 
@@ -199,7 +199,7 @@ planet orders request \
 ```
 
 #### Fallback bundles
-Orders API will deliver [fallback bundles](https://developers.planet.com/apis/orders/scenes/#order-type-and-fallback-bundles) if the first choice product bundle fails for any reason.  You can specify one or more fallback bundles by using the `--fallback-bundle` option which accepts a comma separated string of fallback bundles:
+Orders API will deliver [fallback bundles](https://docs.planet.com/develop/apis/orders/sources/#fallback-bundles) if the first choice product bundle fails for any reason.  You can specify one or more fallback bundles by using the `--fallback-bundle` option which accepts a comma separated string of fallback bundles:
 
 ```sh
 planet orders request \
@@ -265,8 +265,7 @@ planet orders request \
 - The --collection-id is also optional. If you decide to use this, ensure that the order request and the collection have matching bands. If you're unsure, allow the system to create a new collection for you by omitting the --collection-id option. This will ensure the newly set-up collection is configured correctly, and you can subsequently add items to this collection as needed.
 - The --create-configuration option will create a new [layer configuration](https://apps.sentinel-hub.com/dashboard/#/configurations) in Sentinel Hub on your behalf. This option cannot be used with --collection-id.
 
-For more information on Sentinel Hub hosting, see the [Orders API documentation](https://developers.planet.com/apis/orders/delivery/#delivery-to-sentinel-hub-collection) and the [Linking Planet User to Sentinel Hub User
-](https://support.planet.com/hc/en-us/articles/16550358397469-Linking-Planet-User-to-Sentinel-Hub-User) support post.
+For more information on Sentinel Hub hosting, see the [Orders API documentation](https://docs.planet.com/develop/apis/orders/delivery/#image-collection-sentinel-hub)
 
 ### Save an Order Request
 
@@ -526,7 +525,7 @@ Since clip is so heavily used it has its own dedicated command in the CLI. All
 the other tools use the `--tools` option, that points to a file. The file should
 contain JSON that follows the format for a toolchain, the "tools" section of an order.
 The toolchain options and format are given in
-[Creating Toolchains](https://developers.planet.com/apis/orders/tools/#creating-toolchains).
+[Creating Toolchains](https://docs.planet.com/develop/apis/orders/tools/#creating-toolchains).
 
 Example: `tools.json`
 ```
@@ -741,7 +740,7 @@ planet orders request \
 
 Currently this needs to be done for any 'composite' operation, as STAC output from composites is not yet
 supported (but is coming). You can explicitly add `--stac`, but it is the default, so does not need to
-be included. For more information about Planet’s STAC output see the [Orders API documentation](https://developers.planet.com/apis/orders/delivery/#stac-metadata).
+be included. For more information about Planet’s STAC output see the [Orders API documentation](https://docs.planet.com/develop/apis/orders/delivery/#stac-metadata).
 
 Orders with Google Earth Engine delivery will force the STAC flag to false.
 
@@ -750,7 +749,7 @@ Orders with Google Earth Engine delivery will force the STAC flag to false.
 Another option is to deliver your orders directly to a cloud bucket, like AWS S3 or Google Cloud Storage.
 The file given with the `--delivery` option should contain JSON that follows
 the options and format given in
-[Delivery to Cloud Storage](https://developers.planet.com/docs/orders/delivery/#delivery-to-cloud-storage).
+[Delivery to Cloud Storage](https://docs.planet.com/develop/apis/orders/delivery/#delivery-to-cloud-storage).
 
 An example would be:
 
@@ -793,7 +792,7 @@ and use the CLI to customize it.
 
 ### Basemaps Orders
 
-One of the newer features in Planet’s Orders API is the ability to [order basemaps](https://developers.planet.com/apis/orders/basemaps/).
+One of the newer features in Planet’s Orders API is the ability to [order basemaps](https://docs.planet.com/develop/apis/orders/sources/#basemaps-source-type).
 The CLI does not yet support a 'convenience' method to easily create the JSON - you unfortunately
 can't yet use `planet orders request` to help form an orders request. But all the other CLI functionality
 supports ordering basemaps through the Orders API.

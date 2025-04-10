@@ -294,7 +294,7 @@ def planetary_variable_source(
     """Construct a Planetary Variable subscription source.
 
     Planetary Variables come in 4 types and are further subdivided
-    within these types. See [Subscribing to Planetary Variables](https://developers.planet.com/docs/subscriptions/pvs-subs/#planetary-variables-types-and-ids)
+    within these types. See [Subscribing to Planetary Variables](https://docs.planet.com/develop/apis/subscriptions/sources/#planetary-variable-and-analysis-ready-source-types)
     or the [OpenAPI spec](https://api.planet.com/subscriptions/v1/spec) for
     more details.
 

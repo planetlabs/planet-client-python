@@ -30,7 +30,7 @@ class FeaturesClient:
     """Asyncronous Features API client
 
     For more information about the Features API, see the documentation at
-    https://developers.planet.com/docs/apis/features/
+    https://docs.planet.com/develop/apis/features/
 
     Example:
         ```python
