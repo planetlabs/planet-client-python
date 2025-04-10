@@ -37,7 +37,9 @@ class DemoStorageProvider(ObjectStorageProvider):
         demo_obj_filepath = self._demo_obj_filepath(key)
         return demo_obj_filepath.exists()
 
-    def obj_rename(self, src: ObjectStorageProvider_KeyType, dst: ObjectStorageProvider_KeyType) -> None:
+    def obj_rename(self,
+                   src: ObjectStorageProvider_KeyType,
+                   dst: ObjectStorageProvider_KeyType) -> None:
         src_filepath = self._demo_obj_filepath(src)
         dst_filepath = self._demo_obj_filepath(dst)
         src_filepath.rename(dst_filepath)
