@@ -65,7 +65,7 @@ Install YAPF in your local dev environment:
 
 In this repository, Nox is used to automate testing, linting, and to build
 documentation. Nox manages virtual environments for you, specifying Python
-versions and installing the the local, dynamic version of the Plant SDK for
+versions and installing the local, dynamic version of the Planet SDK for
 Python and required development packages.
 
 To run nox with the default sessions (same checks as CI: lint, analyze, test,
