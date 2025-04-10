@@ -399,7 +399,7 @@ def amazon_s3(aws_access_key_id: str,
     Parameters:
         aws_access_key_id: S3 account access key.
         aws_secret_access_key: S3 account secret key.
-        bucket: The name of the bucket that will receive the order output.
+        bucket: The name of the bucket that will receive the subscription output.
         aws_region: The region where the bucket lives in AWS.
         path_prefix: Path prefix for deliveries.
     """
@@ -428,7 +428,7 @@ def azure_blob_storage(account: str,
         container: ABS container name.
         sas_token: Shared-Access Signature token. Token should be specified
             without a leading '?'.
-        storage_endpoint_suffix: Deliver order to a sovereign cloud. The
+        storage_endpoint_suffix: Deliver subscription to a sovereign cloud. The
             default is "core.windows.net".
         path_prefix: Path prefix for deliveries.
     """
@@ -496,7 +496,7 @@ def oracle_cloud_storage(customer_access_key_id: str,
     Parameters:
         customer_access_key_id: Customer Secret Key credentials.
         customer_secret_key: Customer Secret Key credentials.
-        bucket: The name of the bucket that will receive the order output.
+        bucket: The name of the bucket that will receive the subscription output.
         region: The region where the bucket lives in Oracle.
         namespace: Object Storage namespace name.
         path_prefix: Path prefix for deliveries.
@@ -513,6 +513,40 @@ def oracle_cloud_storage(customer_access_key_id: str,
         parameters['path_prefix'] = path_prefix
 
     return _delivery('oracle_cloud_storage', parameters)
+
+
+def s3_compatible(endpoint: str,
+                  bucket: str,
+                  region: str,
+                  access_key_id: str,
+                  secret_access_key: str,
+                  use_path_style: bool = False,
+                  path_prefix: Optional[str] = None) -> dict:
+    """S3 Compatible configuration.
+
+    Parameters:
+        endpoint: S3 compatible endpoint.
+        bucket: S3-compatible bucket that will receive the subscription output.
+        region: Region where the bucket lives in the s3 compatible service.
+        access_key_id: Access key for authentication.
+        secret_access_key: Secret key for authentication.
+        use_path_style: Use path-style addressing with bucket name in URL
+            (default is False).
+        path_prefix: Custom string to prepend to the files delivered to the
+            bucket. A slash (/) character will be treated as a "folder".
+            Any other characters will be added as a prefix to the files.
+    """
+    parameters = {
+        'endpoint': endpoint,
+        'bucket': bucket,
+        'region': region,
+        'access_key_id': access_key_id,
+        'secret_access_key': secret_access_key,
+        'use_path_style': use_path_style,
+    }
+    if path_prefix:
+        parameters['path_prefix'] = path_prefix
+    return _delivery('s3_compatible', parameters)
 
 
 def notifications(url: str, topics: List[str]) -> dict:
@@ -568,7 +602,7 @@ def band_math_tool(b1: str,
     For each band expression, the bandmath tool supports normal arithmetic
     operations and simple math operators offered in the Python numpy package.
     (For a list of supported mathematical functions, see
-    [Bandmath supported numpy math routines](https://developers.planet.com/apis/orders/bandmath-numpy-routines/)).
+    [Band Math documentation](https://docs.planet.com/develop/apis/subscriptions/tools/#band-math)).
 
     One bandmath imagery output file is produced for each product bundle, with
     output bands derived from the band math expressions. nodata pixels are
