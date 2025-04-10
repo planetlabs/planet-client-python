@@ -15,7 +15,7 @@ and stable state.
 
 Branches for future major releases will be named `main-X.0-dev` where `X.0` is the next major
 release version. These branches will be kept current with the current stable major release
-insofar as is practical within the scope of changes targeted to the next major release.  Per symantec
+insofar as is practical within the scope of changes targeted to the next major release.  Per semantic
 versioning, major releases do not guarantee backwards compatibility.  Stability is not guaranteed
 during the development cycle.
 
