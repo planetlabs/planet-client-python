@@ -358,6 +358,40 @@ def oracle_cloud_storage(customer_access_key_id: str,
     return {'oracle_cloud_storage': cloud_details}
 
 
+def s3_compatible(endpoint: str,
+                  bucket: str,
+                  region: str,
+                  access_key_id: str,
+                  secret_access_key: str,
+                  use_path_style: bool = False,
+                  path_prefix: Optional[str] = None) -> dict:
+    """S3 Compatible configuration.
+
+    Parameters:
+        endpoint: S3 compatible endpoint.
+        bucket: S3-compatible bucket that will receive the order output.
+        region: Region where the bucket lives in the s3 compatible service.
+        access_key_id: Access key for authentication.
+        secret_access_key: Secret key for authentication.
+        use_path_style: Use path-style addressing with bucket name in URL
+            (default is False).
+        path_prefix: Custom string to prepend to the files delivered to the
+            bucket. A slash (/) character will be treated as a "folder".
+            Any other characters will be added as a prefix to the files.
+    """
+    parameters = {
+        'endpoint': endpoint,
+        'bucket': bucket,
+        'region': region,
+        'access_key_id': access_key_id,
+        'secret_access_key': secret_access_key,
+        'use_path_style': use_path_style,
+    }
+    if path_prefix:
+        parameters['path_prefix'] = path_prefix
+    return {'s3_compatible': parameters}
+
+
 def _tool(name: str, parameters: dict) -> dict:
     """Create the API spec representation of a tool.
 
@@ -575,7 +609,7 @@ def band_math_tool(b1: str,
     For each band expression, the bandmath tool supports normal arithmetic
     operations and simple math operators offered in the Python numpy package.
     (For a list of supported mathematical functions, see
-    [Bandmath supported numpy math routines](https://developers.planet.com/apis/orders/bandmath-numpy-routines/)).
+    [Band Math documentation](https://docs.planet.com/develop/apis/orders/tools/#band-math)).
 
     One bandmath imagery output file is produced for each product bundle, with
     output bands derived from the band math expressions. nodata pixels are

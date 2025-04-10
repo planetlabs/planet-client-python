@@ -442,6 +442,28 @@ def test_oracle_cloud_storage_path_prefix_success():
     }
 
 
+def test_s3_compatible():
+    s3c_config = subscription_request.s3_compatible(
+        'https://test.endpoint.com',
+        'test-bucket',
+        'us-central-1',
+        'test-key-id',
+        'test-secret-key')
+
+    expected = {
+        'type': 's3_compatible',
+        'parameters': {
+            'endpoint': 'https://test.endpoint.com',
+            'bucket': 'test-bucket',
+            'region': 'us-central-1',
+            'access_key_id': 'test-key-id',
+            'secret_access_key': 'test-secret-key',
+            'use_path_style': False,
+        }
+    }
+    assert s3c_config == expected
+
+
 def test_notifications_success():
     topics = ['delivery.success']
     notifications_config = subscription_request.notifications(url='url',
