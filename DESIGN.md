@@ -17,7 +17,7 @@ operations are supported.
 
 The principles of the interface design, ordered according to priority, are:
 * Map the API names and endpoints as close as possible
-* Synchronoize the Python API and CLI
+* Synchronize the Python API and CLI
 * Adhere to command line design in:
   * Popular SDKs (aws and gcloud)
   * The geospatial toolset (gdal, rasterio)
@@ -51,5 +51,5 @@ that can be returned at the end of running a Planet CLI command.
 | Value | Description |
 | ----------- | ----------- |
 | 0 | Command was run successfully. |
-| 1 | An error occured while the command was running. |
+| 1 | An error occurred while the command was running. |
 | 2 | Command was not run due to invalid syntax or unknown or invalid parameter.|

@@ -165,7 +165,7 @@ class _Limiter:
                     break
                 elif now - self._last_call >= self.cadence:
                     LOGGER.debug(
-                        f'Throught throttle, delta: {now - self._last_call}')
+                        f'Through throttle, delta: {now - self._last_call}')
                     self._last_call = now
                     break
                 await asyncio.sleep(self.retry_interval)
