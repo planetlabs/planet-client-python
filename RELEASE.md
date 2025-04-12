@@ -28,7 +28,7 @@ The SDK follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and t
 2. Verify the successful run of the Github Action `Autopublish to TestPyPI` and validate the test release on [test.pypi.org](https://test.pypi.org/project/planet/)
 3. Run the Github Action `Publish on PyPI`
 4. Verify the successful run of the Github Action `Publish on PyPI` and validate the release on [pypi.org](https://pypi.org/project/planet/)
-
+5. Verify the successful publishing of documentation to [Read the Docs](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/)
 
 ## Local publishing
 
