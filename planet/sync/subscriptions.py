@@ -136,14 +136,14 @@ class SubscriptionsAPI:
         return self._client._call_sync(
             self._client.create_subscription(request))
 
-    def bulk_create_subscriptions(self, requests: List[Dict]) -> None:
+    def bulk_create_subscriptions(self, requests: List[Dict]) -> Dict:
         """Bulk create subscriptions.
 
         Args:
             request (List[dict]): list of descriptions of a bulk creation.
 
         Returns:
-            None
+            response including link to list of created subscriptions
 
         Raises:
             APIError: on an API server error.

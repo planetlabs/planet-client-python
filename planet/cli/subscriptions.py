@@ -205,8 +205,9 @@ async def create_subscription_cmd(ctx, request, pretty, **kwargs):
 
     if kwargs.get("bulk"):
         async with subscriptions_client(ctx) as client:
-            _ = await client.bulk_create_subscriptions([request])
-            # Bulk create returns no response, so we don't echo anything
+            links = await client.bulk_create_subscriptions([request])
+            # Bulk create returns just a link to an endpoint to list created subscriptions.
+            echo_json(links, pretty)
     else:
         async with subscriptions_client(ctx) as client:
             sub = await client.create_subscription(request)
