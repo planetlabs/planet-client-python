@@ -369,6 +369,18 @@ def test_create_subscription_success_sync():
     assert sub['name'] == 'test'
 
 
+@bulk_create_mock
+def test_bulk_create_subscription_success_sync():
+    """Subscription is created, description has the expected items."""
+
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    resp = pl.subscriptions.bulk_create_subscriptions({
+        'name': 'test', 'delivery': 'yes, please', 'source': 'test'
+    })
+    assert '/subscriptions/v1?' in resp['_links']['list']
+
+
 @pytest.mark.anyio
 @create_mock
 async def test_create_subscription_with_hosting_success():
