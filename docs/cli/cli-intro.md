@@ -13,9 +13,9 @@ responses are all textual. For more on what a command-line is see
 ## Why would I use Planet’s CLI?
 
 Planet offers a number of ways to interact with its API’s, from 
-[Planet Explorer](https://developers.planet.com/docs/apps/explorer/), which is a full 
-web-based GUI, to [plug-ins for QGIS](https://developers.planet.com/docs/integrations/qgis/) 
-and [ArcGIS Pro](https://developers.planet.com/docs/integrations/arcgis/) for those who want
+[Planet Explorer](https://docs.planet.com/platform/get-started/access-data/), which is a full 
+web-based GUI, to [plug-ins for QGIS](https://docs.planet.com/platform/integrations/qgis) 
+and [ArcGIS Pro](https://docs.planet.com/platform/integrations/arcgis/) for those who want
 to stay in their desktop GIS environment. 
 
 The Planet CLI offers more direct interaction with the API’s, as its commands more directly

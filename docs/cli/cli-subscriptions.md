@@ -5,7 +5,7 @@ title: CLI for Subscriptions API Tutorial
 ## Introduction
 
 The `planet subscriptions` command enables interaction with the
-[Subscriptions API](https://developers.planet.com/apis/subscriptions/)
+[Subscriptions API](https://docs.planet.com/develop/apis/subscriptions/)
 that make it possible to set up a recurring search criteria. Using `planet subscriptions`, you can automatically process
 and deliver new imagery to a cloud bucket. It also has a powerful 'backfill' capability
 to bulk order historical imagery to your area of interest. This tutorial takes you
@@ -107,7 +107,7 @@ This is a full subscriptions JSON request, with the credentials redacted, so you
 to replace your own for it to work. Below we’ll show the convenience methods that will
 help create a custom one more easily. If you'd like to get things working for now then
 just replace the 'delivery' section with your cloud credentials, see the
-[core subscriptions delivery docs](https://developers.planet.com/docs/subscriptions/delivery/)
+[core subscriptions delivery docs](https://docs.planet.com/develop/apis/subscriptions/delivery/)
 for more information.
 
 To create a new subscription with the CLI, use the `create` command and the json file you just created:
@@ -140,7 +140,7 @@ The `list` command supports filtering on a variety of fields:
 * `--hosting`: Filter on subscriptions containing a hosting location (e.g. SentinelHub). Accepted values are `true` or `false`.
 * `--name-contains`: Filter on subscriptions with a name that contains the provided string.
 * `--name`: Filter on subscriptions with a specific name
-* `--source-type`: Filter by the source type of the subscription. For the full list of available source types, see [Subscription Source Types](https://developers.planet.com/docs/subscriptions/source/#subscription-source-types). Multiple source type args are allowed.
+* `--source-type`: Filter by the source type of the subscription. For the full list of available source types, see [Subscription Source Types](https://docs.planet.com/develop/apis/subscriptions/sources/#catalog-source-type). Multiple source type args are allowed.
 * `--start-time`: Filter on the subscription start time or an interval of start times.
 * `--status`: Filter on the status of the subscription. Status options include `running`, `cancelled`, `preparing`, `pending`, `completed`, `suspended`, and `failed`. Multiple status args are allowed.
 * `--updated`: Filter on the subscription update time or an interval of updated times.
@@ -217,7 +217,7 @@ You can also filter by status:
 planet subscriptions results SUBSCRIPTION_ID --status processing
 ```
 
-See the Subscriptions API documentation for the [official list of available statuses](https://developers.planet.com/docs/subscriptions/#subscription-status).
+See the Subscriptions API documentation for the [official list of available statuses](https://docs.planet.com/develop/apis/subscriptions/#states--status-descriptions).
 
 #### Results as comma-separated values (CSV)
 
@@ -267,7 +267,7 @@ tools to process the data plus notifications on the status.
 ### Catalog Request
 
 The first place to start is the `request-catalog` command, which generates all the JSON for the
-[catalog source](https://developers.planet.com/docs/subscriptions/source/#catalog-source-type) block. The core
+[catalog source](https://docs.planet.com/develop/apis/subscriptions/sources/#catalog-source-type) block. The core
 of this is quite similar to a Data API search request, though with more required fields. The minimal
 required commands would be a request like:
 
@@ -281,8 +281,8 @@ planet subscriptions request-catalog \
 
 You request which item types you want to deliver, and the asset types for it. Note that the `asset-types` are a bit
 different than the `--bundle` command in Orders, a bundle is a set of asset-types. You can see the list of asset types
-for [PSScene](https://developers.planet.com/docs/data/psscene/#available-asset-types), [SkySatCollect](https://developers.planet.com/docs/data/skysatcollect/),
-and [SkySatScene](https://developers.planet.com/docs/data/skysatscene/#available-asset-types). The other item-types
+for [PSScene](https://docs.planet.com/data/imagery/planetscope/psscene/), [SkySatCollect](https://docs.planet.com/data/imagery/skysat/item-types/skysatcollect/),
+and [SkySatScene](https://docs.planet.com/data/imagery/skysat/item-types/skysatscene/). The other item-types
 also have similar listings of their asset types. For the required `start-time` and optional `end-time` you must
 use dates formatted as RFC 3339 or ISO 8601 formats. A nice time converter is available at [time.lol](https://time.lol/).
 Just select 'ISO 8601' (third one on the list), or 'RFC 3339' (8th on the list).
@@ -339,7 +339,7 @@ planet subscriptions request-catalog \
     --rrule 'FREQ=MONTHLY;BYMONTH=3,4,5,6,7,8,9,10'
 ```
 
-For more information on the `rrule` parameter see the [recurrence rules](https://developers.planet.com/docs/subscriptions/source/#rrules-recurrence-rules)
+For more information on the `rrule` parameter see the [recurrence rules](https://docs.planet.com/develop/apis/subscriptions/sources/#rrule-recurrence-rule)
 documentation.
 
 #### Filter
@@ -376,7 +376,7 @@ By using the `--time-range-type` you can choose to temporally filter by
 acquisition or publication time. The `--publishing-stage` option allows you to
 receive the earliest preview imagery or wait until finalized imagery is
 available. See [Catalog Source
-Types:Parameters](https://developers.planet.com/docs/subscriptions/source/#parameters)
+Types:Parameters](https://docs.planet.com/develop/apis/subscriptions/sources/#parameters)
 for more details.
 
 ```sh
@@ -414,7 +414,7 @@ Planet's catalog. The `planet subscriptions request-pv` command can construct th
 part of a Planetary Variable request like `request-catalog` does for cataloged
 imagery. Planetary Variable subscriptions come in 4 types and are further
 subdivided within these types by an identifier. See [Subscribing to Planetary
-Variables](https://developers.planet.com/docs/subscriptions/pvs-subs/#planetary-variables-types-and-ids)
+Variables](https://docs.planet.com/develop/apis/subscriptions/sources/#planetary-variable-and-analysis-ready-source-types)
 for details. To constrain data delivery by space and time, you will use the
 `--geometry`, `start-time`, and `end-time` options described above.
 
@@ -455,7 +455,7 @@ There are some other tools that are often good to include. To use more than one 
 just put them in an array in the JSON:
 
 The toolchain options and format are given in
-[Supported Tools](https://developers.planet.com/docs/subscriptions/tools/#supported-tools)
+[Supported Tools](https://docs.planet.com/develop/apis/subscriptions/tools/#tools-reference)
 section of the subscriptions docs:
 
 Example: `more-tools.json`
@@ -498,7 +498,7 @@ Example: `more-tools.json`
 One other essential block is the `delivery` JSON. Like with tools there is no convenience
 method, as of yet. You must write out the JSON for this section.
 You can find the full documentation for the delivery options in
-the [Subscriptions Delivery documentation](https://developers.planet.com/docs/subscriptions/delivery/).
+the [Subscriptions Delivery documentation](https://docs.planet.com/develop/apis/subscriptions/delivery/).
 
 An example of a delivery.json file that you would save as a file to pass into the
 `subscriptions request` command is:
@@ -552,8 +552,7 @@ planet subscriptions request \
     | planet subscriptions create -
 ```
 
-For more information on Sentinel Hub hosting, see the [Subscriptions API documentation](https://developers.planet.com/docs/subscriptions/delivery/#delivery-to-sentinel-hub-collection) and the [Linking Planet User to Sentinel Hub User
-](https://support.planet.com/hc/en-us/articles/16550358397469-Linking-Planet-User-to-Sentinel-Hub-User) support post.
+For more information on Sentinel Hub hosting, see the [Subscriptions API documentation](https://docs.planet.com/develop/apis/subscriptions/delivery/#image-collection-sentinel-hub)
 
 
 #### Summaries
