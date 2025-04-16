@@ -375,9 +375,9 @@ def test_bulk_create_subscription_success_sync():
 
     pl = Planet()
     pl.subscriptions._client._base_url = TEST_URL
-    resp = pl.subscriptions.bulk_create_subscriptions({
+    resp = pl.subscriptions.bulk_create_subscriptions([{
         'name': 'test', 'delivery': 'yes, please', 'source': 'test'
-    })
+    }])
     assert '/subscriptions/v1?' in resp['_links']['list']
 
 
