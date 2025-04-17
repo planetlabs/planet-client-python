@@ -37,6 +37,10 @@ class DemoStorageProvider(ObjectStorageProvider):
         demo_obj_filepath = self._demo_obj_filepath(key)
         return demo_obj_filepath.exists()
 
+    def mtime(self, key: ObjectStorageProvider_KeyType) -> float:
+        obj_filepath = self._demo_obj_filepath(key)
+        return obj_filepath.stat().st_mtime
+
     def obj_rename(self,
                    src: ObjectStorageProvider_KeyType,
                    dst: ObjectStorageProvider_KeyType) -> None:
