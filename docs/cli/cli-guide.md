@@ -104,7 +104,7 @@ One of the commands you’ll use most frequently is `planet data filter`. This �
 planet data filter --permission --std-quality
 ```
 
-Look at the console output to see some default filters. `PermissionFilter` filters the output to only contain imagery that you have permission to download. You’ll also see `quality_category`, which means the output lists only images in the [`standard quality` category](https://developers.planet.com/docs/data/planetscope/#image-quality-standard-vs-test-imagery). Without these options, an empty filter is generated which would be used to disable filtering and simply return all results.
+Look at the console output to see some default filters. `PermissionFilter` filters the output to only contain imagery that you have permission to download. You’ll also see `quality_category`, which means the output lists only images in the [`standard quality` category](https://docs.planet.com/data/imagery/planetscope/#standard-versus-test-imagery). Without these options, an empty filter is generated which would be used to disable filtering and simply return all results.
 
 !!!note "The --help switch is your friend"
     You can do a lot with this `filter` command. We recommend running `planet data filter --help` often to get a reference of how the commands work.

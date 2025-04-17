@@ -1,7 +1,7 @@
 # Orders Command-Line Interface Specification
 
 This document lays out the command-line interface to interact with the Planet
-[Orders API](https://developers.planet.com/docs/orders/).
+[Orders API](https://docs.planet.com/develop/apis/orders/).
 
 ## list
 

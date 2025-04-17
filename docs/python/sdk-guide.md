@@ -178,7 +178,7 @@ def download_and_validate():
 ### Placing an Order
 
 Once you have a list of scenes you want to download, you can place an order for assets using the Orders API client. Please review
-[Items and Assets](https://developers.planet.com/docs/apis/data/items-assets/) in the Developer Center for a refresher on item types
+[Items and Assets](https://docs.planet.com/develop/apis/data/items/) for a refresher on item types
 and asset types.
 
 Use the `order_request` module to build an order request, and then use the `orders.create_order()` method to place the order.
@@ -261,7 +261,7 @@ subscription = pl.subscriptions.create_subscription(request)
 
 ### Features API Collections and Features
 
-The Python SDK now supports [Features API](https://developers.planet.com/docs/apis/features/) Collections and Features (note: in the SDK and API, Features are often referred to as items in a collection).
+The Python SDK now supports [Features API](https://docs.planet.com/develop/apis/features/) Collections and Features (note: in the SDK and API, Features are often referred to as items in a collection).
 
 Collections and Features/items that you create in in the SDK will be visible in Features API and Features Manager.
 
@@ -296,7 +296,7 @@ You can pass collection items/features directly to other SDK methods. Any method
 a Features API Feature.
 
 !!!note
-    When passing a Features API Feature to other methods, the [feature ref](https://developers.planet.com/docs/apis/features/feature-references/) will be used. This means any searches or subscriptions you create will be linked to your feature.
+    When passing a Features API Feature to other methods, the [feature ref](https://docs.planet.com/develop/apis/features/#feature-references) will be used. This means any searches or subscriptions you create will be linked to your feature.
 
 ```python
 # collection_id: the ID of a collection in Features API

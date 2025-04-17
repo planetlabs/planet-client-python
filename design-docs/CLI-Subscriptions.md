@@ -1,7 +1,7 @@
 # Subscriptions Command-Line Interface Specification
 
 This documents lays out the command-line interface to interact with the 
-Planet [Subscriptions API](https://developers.planet.com/docs/subscriptions/reference/)
+Planet [Subscriptions API](https://docs.planet.com/develop/apis/subscriptions/)
 
 A subscription connects catalog sources to a data processing pipeline. It can 
 run those tools on new data when it is available. It can process existing data 
@@ -21,8 +21,8 @@ be easier to design and implement.
 
 **Essential reading:** 
 
-https://developers.planet.com/docs/subscriptions/reference/
-https://developers.planet.com/docs/subscriptions/
+https://docs.planet.com/develop/apis/subscriptions/
+https://docs.planet.com/develop/apis/subscriptions/reference/
 
 **Commands:**
 
@@ -272,11 +272,10 @@ Options:
 
 Edit a subscription, such as one with a future start date, before it starts running.
 
-https://developers.planet.com/docs/subscriptions/#edit-a-subscription mentions 
 caveats and limitations:
- * Backfill cannot be updated.
- * After a subscription is running, only source items can be modified, and not 
-   all of them.
+ * After a subscription transitions to running, changes to the start_time and item_types fields are not allowed. 
+ * The edit will only apply to future item publications and deliveries and no items will be redelivered.
+ *  Backfill subscriptions cannot be edited.
 
 
 ### Interface

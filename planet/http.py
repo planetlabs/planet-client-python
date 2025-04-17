@@ -364,7 +364,7 @@ class Session(BaseSession):
         in the threshold value being returned.
 
         Ref:
-        * https://developers.planet.com/docs/data/api-mechanics/
+        * https://docs.planet.com/develop/apis/data/#api-mechanics
         * https://cloud.google.com/iot/docs/how-tos/exponential-backoff
         """
         random_number_milliseconds = random.randint(0, 999) / 1000.0

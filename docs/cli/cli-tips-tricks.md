@@ -40,7 +40,7 @@ people will open up a desktop tool like QGIS or ArcGIS Pro and save the file. Bu
 tools that can get you back into the CLI workflow more quickly.
 
 #### Use the Features API
-Rather than using GeoJSON in the SDK, upload your GeoJSON to the [Features API](https://developers.planet.com/docs/apis/features/) and use references
+Rather than using GeoJSON in the SDK, upload your GeoJSON to the [Features API](https://docs.planet.com/develop/apis/features/) and use references
 across the system with the sdk.
 References are used in the geometry block of our services in a GeoJSON blob like:
 ```json

@@ -5,21 +5,21 @@
 
 The [Planet](https://planet.com) Software Development Kit (SDK) for Python
 provides both a Python API and a command-line interface (CLI)
-to make use of [the Planet APIs](https://developers.planet.com/docs/apis/).
+to make use of [the Planet APIs](https://docs.planet.com/develop/apis/).
 Everything you need to get started is found in our
 [online documentation](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/).
 
 Version 2.0 includes support for the core workflows of the following APIs:
 
-* [Data](https://developers.planet.com/docs/data/) - Search for imagery from Planet's data catalog.
-* [Orders](https://developers.planet.com/docs/orders/) - Process and download or deliver imagery.
-* [Subscriptions](https://developers.planet.com/docs/subscriptions/) - Set up a search to auto-process and deliver imagery.
-* [Features](https://developers.planet.com/docs/apis/features/) - Upload areas of interest to the Planet platform.
+* [Data](https://docs.planet.com/develop/apis/data/) - Search for imagery from Planet's data catalog.
+* [Orders](https://docs.planet.com/develop/apis/orders/) - Process and download or deliver imagery.
+* [Subscriptions](https://docs.planet.com/develop/apis/subscriptions/) - Set up a search to auto-process and deliver imagery.
+* [Features](https://docs.planet.com/develop/apis/features/) - Upload areas of interest to the Planet platform.
 
 After the initial 2.0 release there will be additional work to support the
-remaining Planet APIs: [basemaps](https://developers.planet.com/docs/basemaps/),
-[tasking](https://developers.planet.com/docs/tasking/) and
-[analytics](https://developers.planet.com/docs/analytics/).
+remaining Planet APIs: [basemaps](https://docs.planet.com/develop/apis/basemaps/),
+[tasking](https://docs.planet.com/develop/apis/tasking/) and
+[analytics](https://docs.planet.com/develop/apis/analytics/).
 
 ## Versions and Stability
 
