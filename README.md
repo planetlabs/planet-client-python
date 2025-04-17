@@ -30,7 +30,7 @@ patch versions address bugs or trivial changes (like documentation).
 Packages will be released to [PyPi / Planet](https://pypi.org/project/planet/)
 with semantic version identifiers that comply with [PEP 440](https://peps.python.org/pep-0440/).
 
-The Semantic Versioning stability scheme only applies APIs that
+The Semantic Versioning stability scheme only applies to APIs that
 are considered part of the public API.  This includes library APIs exported
 from the `planet` package and documented in our
 [SDK developer documentation](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/),
