@@ -39,20 +39,21 @@ def cmd_auth(ctx):
 
 
 cmd_auth.add_command(name="login", cmd=planet_auth_utils.cmd_plauth_login)
-_monkeypatch_hide_options(planet_auth_utils.cmd_plauth_login,
-                          [
-                              # Hide client ID / client secret until we are ready for OAuth M2M
-                              "auth_client_id",
-                              "auth_client_secret",
-                              # Hide audience and organization.  They are useful for plauth as a
-                              # generic OAuth client, but within the planet SDK we only care about
-                              # the built-ins.
-                              "audience",
-                              "organization",
-                              # Hide project.  We have not finalized or publicly released the
-                              # project selection interface.
-                              "project",
-                          ])
+_monkeypatch_hide_options(
+    planet_auth_utils.cmd_plauth_login,
+    [
+        # Hide client ID / client secret until we are ready for OAuth M2M
+        "auth_client_id",
+        "auth_client_secret",
+        # Hide audience and organization.  They are useful for plauth as a
+        # generic OAuth client, but within the planet SDK we only care about
+        # the built-ins.
+        "audience",
+        "organization",
+        # Hide project.  We have not finalized or publicly released the
+        # project selection interface.
+        "project",
+    ])
 
 # TODO: mark print-api-key as deprecated when we better support M2M tokens
 # planet_auth_utils.cmd_pllegacy_print_api_key.deprecated = True
