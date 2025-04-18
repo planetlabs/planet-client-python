@@ -18,6 +18,7 @@ import planet_auth_utils
 
 LOGGER = logging.getLogger(__name__)
 
+
 def _monkeypatch_hide_options(cmd, hide_options):
     # Monkey patch a command to hide the specified options.
     # This is so we can reuse existing click commands imported from
@@ -40,16 +41,16 @@ def cmd_auth(ctx):
 cmd_auth.add_command(name="login", cmd=planet_auth_utils.cmd_plauth_login)
 _monkeypatch_hide_options(planet_auth_utils.cmd_plauth_login,
                           [
-                              ## Hide client ID / client secret until we are ready for OAuth M2M
+                              # Hide client ID / client secret until we are ready for OAuth M2M
                               "auth_client_id",
                               "auth_client_secret",
-                              ## Hide audience and organization.  They are useful for plauth as a
-                              ## generic OAuth client, but within the planet SDK we only care about
-                              ## the built-ins.
+                              # Hide audience and organization.  They are useful for plauth as a
+                              # generic OAuth client, but within the planet SDK we only care about
+                              # the built-ins.
                               "audience",
                               "organization",
-                              ## Hide project.  We have not finalized or publicly released the
-                              ## project selection interface.
+                              # Hide project.  We have not finalized or publicly released the
+                              # project selection interface.
                               "project",
                           ])
 
