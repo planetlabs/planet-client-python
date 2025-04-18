@@ -1,7 +1,7 @@
 # Data Command-Line Interface Specification
 
 This document lays out the command-line interface to interact with the Planet
-[Data API](https://developers.planet.com/docs/apis/data/).
+[Data API](https://docs.planet.com/develop/apis/data/).
 
 ## Meta: Errors
 

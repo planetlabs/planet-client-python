@@ -23,7 +23,7 @@ Once in Explorer, you can select the user icon in the upper right corner to go t
 
 ### Sign up for the Planet Developer Program
 
-If you don’t have an account, but you’d like to take our APIs for a spin and see how you might intergrate Planet into your existing geospatial workflows, you can sign up for the <a href="https://developers.planet.com/devtrial/" target="_blank">Developer Program</a>.
+If you don’t have an account, but you’d like to take our APIs for a spin and see how you might intergrate Planet into your existing geospatial workflows, you can sign up for the <a href="https://learn.planet.com/developer-trial-request.html" target="_blank">Developer Program</a>.
 
 ## Authenticating with the Planet server
 

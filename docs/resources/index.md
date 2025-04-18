@@ -10,22 +10,22 @@ The following examples were created specifically to show you how to use the SDK 
 
 * [data_download_multiple_assets.py](https://github.com/planetlabs/planet-client-python/blob/main/examples/data_download_multiple_assets.py) - this Python script orders, activates, and downloads two assets
 * [orders_create_and_download_multiple_orders.py](https://github.com/planetlabs/planet-client-python/blob/main/examples/orders_create_and_download_multiple_orders.py) - this Python script creates two orders, each with unique Area of Interest (AoI), preventing a combined download
-* [Planet API Python Client](https://github.com/planetlabs/notebooks/blob/master/jupyter-notebooks/data-api-tutorials/planet_python_client_introduction.ipynb) - a Python notebook to introduce Planet’s Data API and the `planet` module
+* [Planet API Python Client](https://github.com/planetlabs/notebooks/blob/master/jupyter-notebooks/Data-API/planet_python_client_introduction.ipynb) - a Python notebook to introduce Planet’s Data API and the `planet` module
 * [Orders API & Planet SDK](https://github.com/planetlabs/notebooks/blob/665f165e59f2c3584976ad2dde569c649e631c0b/jupyter-notebooks/orders_api_tutorials/Planet_SDK_Orders_demo.ipynb) - a Python notebook shows how to get started with Planet SDK and the Orders API.
 * [Analysis Ready Data Tutorial Part 1: Introduction and Best Practices](https://github.com/planetlabs/notebooks/blob/6cc220ff6db246353af4798be219ee1fe7e858b0/jupyter-notebooks/analysis-ready-data/ard_1_intro_and_best_practices.ipynb) - this Python notebook uses the SDK to prepare Analysis Ready Data.
 * [Analysis Ready Data Tutorial Part 2](https://github.com/planetlabs/notebooks/blob/6cc220ff6db246353af4798be219ee1fe7e858b0/jupyter-notebooks/analysis-ready-data/ard_2_use_case_1.ipynb) - the first use case in this Python notebook leverages the SDK’s `order_request` feature to prepare an NDVI time stack and the second use case visualizes the NDVI imagery.
 
 ### Other examples
 
-Besides the SDK-specific examples, above, you can find many examples that show how to access Planet data in the documentation and Planet School at the [Planet Developers Center](https://developers.planet.com).Also, more working examples are on the [Planet Labs Python notebooks](https://github.com/planetlabs/notebooks) on GitHub.
+Besides the SDK-specific examples, above, you can find many examples that show how to access Planet data in the documentation and Planet School at the [Planet Developers Center](https://docs.planet.com).Also, more working examples are on the [Planet Labs Python notebooks](https://github.com/planetlabs/notebooks) on GitHub.
 
 ## Planet APIs
 
 This pre-release SDK has implemented interfaces for several Planet APIs. Check out the documentation for the underlying API:
 
-* [Data](https://developers.planet.com/docs/apis/data/)
-* [Orders](https://developers.planet.com/apis/orders/)
-* [Subscriptions](https://developers.planet.com/docs/subscriptions/)
+* [Data](https://docs.planet.com/develop/apis/data/)
+* [Orders](https://docs.planet.com/develop/apis/orders/)
+* [Subscriptions](https://docs.planet.com/develop/apis/subscriptions/)
 
 ## Email Developer Relations
 

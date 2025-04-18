@@ -146,7 +146,7 @@ if __name__ == '__main__':
 
 ## Create an order
 
-The Orders Client mostly mirrors the [Planet Orders API](https://developers.planet.com/docs/orders/reference/#tag/Orders). This SDK provides additional abilities, for example to poll for order completion and to download an entire order.
+The Orders Client mostly mirrors the [Planet Orders API](https://docs.planet.com/develop/apis/orders/reference/#tag/Orders). This SDK provides additional abilities, for example to poll for order completion and to download an entire order.
 
 ### Create an order request
 
@@ -366,7 +366,7 @@ orders_list = [o async for o in client.list_orders()]
 ## Query the data catalog
 
 The Data Client mostly mirrors the
-[Data API](https://developers.planet.com/docs/apis/data/reference/),
+[Data API](https://docs.planet.com/develop/apis/data/reference/),
 with the only difference being the addition of functionality to activate an
 asset, poll for when activation is complete, and download the asset.
 
