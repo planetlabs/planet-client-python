@@ -95,11 +95,13 @@ _OIDC_AUTH_CLIENT_CONFIG__M2M_SKEL = {
     # "client_secret": "__MUST_BE_USER_SUPPLIED__",
     # "scopes": ["planet"],
     # "audiences": [""]
+    "_hidden": True,
 }
 
 _LEGACY_AUTH_CLIENT_CONFIG__PROD = {
     **_ProductionEnv.LEGACY_AUTH_AUTHORITY,
     "client_type": "planet_legacy",
+    "_hidden": True,
 }
 
 
