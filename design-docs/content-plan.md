@@ -1,6 +1,6 @@
 # Content Plan Planet SDK (v2)
 
-This document is a response to the issue #353: Quantify 'accurate and complete documentation' required for initial release. After a review of existing content, the following recommendations have been accepted as part of the V2 release. Documentation tickets will be derived from the recommendations, below.
+This document is a response to the [issue #353](https://github.com/planetlabs/planet-client-python/issues/353): Quantify 'accurate and complete documentation' required for initial release. After a review of existing content, the following  recommendations have been accepted as part of the V2 release. Documentation tickets will be derived from the recommendations, below.
 
 ## Overview
 
@@ -19,7 +19,7 @@ The SDK and CLI are low-level interfaces mirroring much of the API, itself. Whil
 
 We are currently publishing documentation on [planet.com](https://docs.planet.com/develop/sdks/#planet-sdk-for-python-and-cli), [github.com](https://github.com/planetlabs/planet-client-python), and on [readthedocs.com](https://planet-sdk-for-python-v2.readthedocs.io). Providing a single source of truth (SSoT) ensures one definitive source of documentation, reducing the dilution of information, errors, and maintenance efforts.
 
-### Ticket to be filed
+### Tickets to be filed
 
 Implement mkdocs to leverage features of readthedocs.com, but publish only on one platform. This would be planet.com unless we are making a concerted effort to recruit 3rd party contributors to the SDK, in which case, it could stay on readthedocs.com. So the publication landscape would be as follows:
 
