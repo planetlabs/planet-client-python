@@ -10,6 +10,10 @@ at [docs.planet.com](https://docs.planet.com/).
 
 ## Version Management
 _ReadTheDocs.io_ hosts multiple versions of the documentation simultaneously.
+All versions of the documentation will be published under a _ReadTheDocs.io_
+URL that explicitly includes the SDK version so that PyPi published packages
+will always have corresponding _ReadTheDocs.io_ documentation for users.
+
 Additionally, the following symbolic names are maintained:
 * [**default**](https://planet-sdk-for-python.readthedocs.io/) - Should point to same version as `stable`.
 * [**stable**](https://planet-sdk-for-python.readthedocs.io/en/stable/) - Should point to the highest stable release version.
