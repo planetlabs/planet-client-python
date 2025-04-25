@@ -2,7 +2,7 @@
 
 ## Overview
 Pursuant to the [Content Plan](./content-plan.md) developed as part of the
-v2.0 release of the SDK, [ReadTheDocs.io](https://planet-sdk-for-python.readthedocs.io/)
+v2.0 release of the SDK, [_ReadTheDocs.io_](https://planet-sdk-for-python.readthedocs.io/)
 is used to host the single source of truth for SDK documentation.  SDK documentation
 is largely confined to the specifics of using the SDK.  More general Planet Platform
 narrative and HTTP API documentation should be hosted on the Planet documentation site
