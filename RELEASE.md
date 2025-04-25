@@ -46,12 +46,12 @@ The SDK follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and t
      * `default`: [https://planet-sdk-for-python.readthedocs.io/](https://planet-sdk-for-python.readthedocs.io/) - Should point to same version as `stable`.
      * `stable`: [https://planet-sdk-for-python.readthedocs.io/en/stable/](https://planet-sdk-for-python.readthedocs.io/en/stable/) - Should point to the highest stable release version.
      * `latest`: [https://planet-sdk-for-python.readthedocs.io/en/latest/](https://planet-sdk-for-python.readthedocs.io/en/latest/) - Should point to the most recent build from `main`.
-     * _version_ : [https://planet-sdk-for-python.readthedocs.io/en/X.YY.ZZ/](https://planet-sdk-for-python.readthedocs.io/en/X.YY.Z/) - Should point to version `X.YY.ZZ`.
+     * _`version`_ : [https://planet-sdk-for-python.readthedocs.io/en/X.YY.ZZ/](https://planet-sdk-for-python.readthedocs.io/en/X.YY.Z/) - Should point to version `X.YY.ZZ`.
    * Published to [planet-sdk-for-python-v2](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/) (Note the older "v2" in the project slug in the DNS name).
      * `default`: [https://planet-sdk-for-python-v2.readthedocs.io/](https://planet-sdk-for-python-v2.readthedocs.io/) - Should point to same version as `stable`.
      * `stable`: [https://planet-sdk-for-python-v2.readthedocs.io/en/stable/](https://planet-sdk-for-python-v2.readthedocs.io/en/stable/) - Should point to the highest stable release version.
      * `latest`: [https://planet-sdk-for-python-v2.readthedocs.io/en/latest/](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/) - Should point to the most recent build from `main`.
-     * _version_ : [https://planet-sdk-for-python-v2.readthedocs.io/en/X.YY.ZZ/](https://planet-sdk-for-python-v2.readthedocs.io/en/X.YY.ZZ/) - Should point to version `X.YY.ZZ`.
+     * _`version`_ : [https://planet-sdk-for-python-v2.readthedocs.io/en/X.YY.ZZ/](https://planet-sdk-for-python-v2.readthedocs.io/en/X.YY.ZZ/) - Should point to version `X.YY.ZZ`.
    * Pre-release versions should _not_ impact the default version of the documentation. Pre-release version may be published as the `latest` version.
 
 
