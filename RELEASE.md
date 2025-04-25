@@ -35,7 +35,7 @@ The SDK follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and t
 3. Run the Github Action [`Publish on PyPI`](https://github.com/planetlabs/planet-client-python/actions/workflows/publish-pypi.yml)
 4. Verify the successful run of the Github Action `Publish on PyPI` and validate the release on [pypi.org](https://pypi.org/project/planet/)
 5. Verify the successful and correct publishing of documentation to Read the Docs.
-   Read the Docs publishing should be triggered automatically by github
+   Read the Docs publishing should be triggered automatically by Github
    [project webhooks](https://github.com/planetlabs/planet-client-python/settings/hooks).
    Correct publishing includes verifying that the `default`, `stable`, and `latest`
    versions of the documentation point to the correct versions, and that the version
