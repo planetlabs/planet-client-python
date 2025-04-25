@@ -47,7 +47,7 @@ section.mdx-container::before{
     background-repeat: no-repeat;
     background-position: right 10% bottom 45%;
     background-size: auto;
-  
+
 }
 
 
@@ -73,6 +73,10 @@ section.mdx-container::before{
 
 .mdx-hero__content > p {
     margin-right: 2.5vw;
+}
+
+.h1_subtitle {
+    font-size: smaller;
 }
 
 @media screen and (min-width:76.25em){

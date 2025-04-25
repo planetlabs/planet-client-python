@@ -64,6 +64,9 @@ plugins:
         - planet
         - docs/custom_theme/
 
+hooks:
+  - docs/hooks/mkdocs_hooks.py
+
 nav:
   - "Get Started":
     - get-started/quick-start-guide.md
