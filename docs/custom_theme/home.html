@@ -5,7 +5,11 @@
     <div class="md-grid md-typeset">
       <div class="mdx-hero">
         <div class="mdx-hero__content">
-          <h1>Welcome to the {{ config.site_name }}</h1>
+          <h1>
+              Welcome to the {{ config.site_name }}
+              <br/>
+              <span class="h1_subtitle">Version {{ config.extra.planet_sdk_version }}</span>
+          </h1>
           <p>{{ config.site_description }}</p>
           <a href="./{{ 'get-started/quick-start-guide' | url }}" title="Get Started" class="md-button md-button--primary md-button--teriary">
             Get started
@@ -30,11 +34,11 @@
       <div class="md-footer-right">
           powered by
           <a href="https://www.mkdocs.org" title="MkDocs">MkDocs</a>
-          and 
+          and
           <a href="https://squidfunk.github.io/mkdocs-material/"
             title="Material for MkDocs">
               Material for MkDocs</a>
-      </div>    
+      </div>
   </div>
 </footer>
 {% endblock %}
