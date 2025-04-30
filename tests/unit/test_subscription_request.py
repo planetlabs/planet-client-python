@@ -576,7 +576,6 @@ def test_toar_tool_success():
 def test_pv_source_success(geom_geojson, var_type, var_id):
     """Configure a planetary variable subscription source."""
     source = subscription_request.planetary_variable_source(
-        var_type,
         var_id,
         geometry=geom_geojson,
         start_time=datetime(2021, 3, 1),
@@ -591,6 +590,17 @@ def test_pv_source_success(geom_geojson, var_type, var_id):
     assert params["id"] == var_id
     assert params["geometry"] == geom_geojson
     assert params["start_time"].startswith("2021-03-01")
+
+
+def test_pv_source_no_type(geom_geojson):
+    """Configure a planetary variable subscription source."""
+    source = subscription_request.planetary_variable_source(
+        "BIOMASS-PROXY_V3.0_10",
+        geometry=geom_geojson,
+        start_time=datetime(2021, 3, 1),
+        end_time=datetime(2021, 3, 2),
+    )
+    assert source.get("type") is None
 
 
 @respx.mock
