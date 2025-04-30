@@ -579,6 +579,7 @@ def test_pv_source_success(geom_geojson, var_type, var_id):
         var_id,
         geometry=geom_geojson,
         start_time=datetime(2021, 3, 1),
+        var_type=var_type,
         end_time=datetime(2021, 3, 2),
     )
 
