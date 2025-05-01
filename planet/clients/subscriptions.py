@@ -1,7 +1,7 @@
 """Planet Subscriptions API Python client."""
 
 import logging
-from typing import Any, AsyncIterator, Awaitable, Dict, Optional, Sequence, TypeVar
+from typing import Any, AsyncIterator, Awaitable, Dict, Optional, Sequence, TypeVar, List
 
 from typing_extensions import Literal
 
@@ -202,6 +202,34 @@ class SubscriptionsClient:
         else:
             sub = resp.json()
             return sub
+
+    async def bulk_create_subscriptions(self, requests: List[dict]) -> Dict:
+        """
+        Create multiple subscriptions in bulk. Currently, the list of requests can only contain one item.
+
+        Args:
+            requests (List[dict]): A list of dictionaries where each dictionary
+            represents a subscription to be created.
+
+        Raises:
+            APIError: If the API returns an error response.
+            ClientError: If there is an issue with the client request.
+
+        Returns:
+            The response including a _links key to the list endpoint for use finding the created subscriptions.
+        """
+        try:
+            url = f'{self._base_url}/bulk'
+            resp = await self._session.request(
+                method='POST', url=url, json={'subscriptions': requests})
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
+        else:
+            return resp.json()
 
     async def cancel_subscription(self, subscription_id: str) -> None:
         """Cancel a Subscription.

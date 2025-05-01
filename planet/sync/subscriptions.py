@@ -1,6 +1,6 @@
 """Planet Subscriptions API Python client."""
 
-from typing import Any, Dict, Iterator, Optional, Sequence, Union
+from typing import Any, Dict, Iterator, Optional, Sequence, Union, List
 
 from typing_extensions import Literal
 
@@ -135,6 +135,22 @@ class SubscriptionsAPI:
         """
         return self._client._call_sync(
             self._client.create_subscription(request))
+
+    def bulk_create_subscriptions(self, requests: List[Dict]) -> Dict:
+        """Bulk create subscriptions.
+
+        Args:
+            request (List[dict]): list of descriptions of a bulk creation.
+
+        Returns:
+            response including link to list of created subscriptions
+
+        Raises:
+            APIError: on an API server error.
+            ClientError: on a client error.
+        """
+        return self._client._call_sync(
+            self._client.bulk_create_subscriptions(requests))
 
     def cancel_subscription(self, subscription_id: str) -> None:
         """Cancel a Subscription.
