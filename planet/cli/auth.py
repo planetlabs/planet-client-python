@@ -19,17 +19,6 @@ import planet_auth_utils
 LOGGER = logging.getLogger(__name__)
 
 
-def _monkeypatch_hide_options(cmd, hide_options):
-    # Monkey patch a command to hide the specified options.
-    # This is so we can reuse existing click commands imported from
-    # the plauth library, but present a masked facade.
-    for hide_option in hide_options:
-        for param in cmd.params:
-            if param.name == hide_option:
-                param.hidden = True
-                break
-
-
 @click.group("auth")  # type: ignore
 @click.pass_context
 def cmd_auth(ctx):
@@ -39,7 +28,7 @@ def cmd_auth(ctx):
 
 
 cmd_auth.add_command(name="login", cmd=planet_auth_utils.cmd_plauth_login)
-_monkeypatch_hide_options(
+planet_auth_utils.monkeypatch_hide_click_cmd_options(
     planet_auth_utils.cmd_plauth_login,
     [
         # Hide client ID / client secret until we are ready for OAuth M2M

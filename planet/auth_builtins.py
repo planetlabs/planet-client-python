@@ -13,16 +13,14 @@
 # limitations under the License.
 import os
 from typing import Dict, List, Optional
-from planet_auth.logging.auth_logger import setStructuredLogging
-from planet_auth_utils.builtins_provider import BuiltinConfigurationProviderInterface
+from planet_auth_config_injection import (
+    AUTH_BUILTIN_PROVIDER,
+    BuiltinConfigurationProviderInterface,
+)
 
-# Needs to be set at runtime (not necessarily at import time) for dependency
-# injection to planet_auth_util
+# Needs to be set before any planet_auth or planet_auth_utils imports.
 os.environ[
-    "PL_AUTH_BUILTIN_CONFIG_PROVIDER"] = "planet.auth_builtins._BuiltinConfigurationProvider"
-
-# setPyLoggerForAuthLogger(logging.getLogger("planet_auth_sdk"))
-setStructuredLogging(nested_key=None)
+    AUTH_BUILTIN_PROVIDER] = "planet.auth_builtins._BuiltinConfigurationProvider"
 
 
 # No StrEnum in our lowest supported Python version
@@ -131,10 +129,6 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
         BUILTIN_PROFILE_NAME_LEGACY: _LEGACY_AUTH_CLIENT_CONFIG__PROD,
     }
 
-    _builtin_profile_aliases: dict[str, str] = {
-        # BUILTIN_PROFILE_ALIAS_PLANET_USER: BUILTIN_PROFILE_NAME_SDKCLI_CLIENT_ID,
-    }
-
     _builtin_profile_default_by_client_type = {
         "oidc_device_code": BUILTIN_PROFILE_NAME_PLANET_USER,
         "oidc_auth_code": BUILTIN_PROFILE_NAME_PLANET_USER,
@@ -150,18 +144,12 @@ class _BuiltinConfigurationProvider(BuiltinConfigurationProviderInterface):
     def builtin_client_authclient_config_dicts(self) -> Dict[str, dict]:
         return self._builtin_profile_auth_client_configs
 
-    def builtin_client_profile_aliases(self) -> Dict[str, str]:
-        return self._builtin_profile_aliases
-
     def builtin_default_profile_by_client_type(self) -> Dict[str, str]:
         return self._builtin_profile_default_by_client_type
 
     def builtin_default_profile(self) -> str:
         # return self.BUILTIN_PROFILE_NAME_DEFAULT
         return self.BUILTIN_PROFILE_NAME_PLANET_USER
-
-    def builtin_trust_environment_names(self) -> List[str]:
-        return list(_BuiltinConfigurationProvider._builtin_trust_realms.keys())
 
     def builtin_trust_environments(self) -> Dict[str, Optional[List[dict]]]:
         return _BuiltinConfigurationProvider._builtin_trust_realms

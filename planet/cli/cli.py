@@ -37,10 +37,10 @@ LOGGER = logging.getLogger(__name__)
               default="warning",
               help=("Optional: set verbosity level to warning, info, or debug.\
                   Defaults to warning."))
-@planet_auth_utils.opt_profile
-@planet_auth_utils.opt_client_id
-@planet_auth_utils.opt_client_secret
-@planet_auth_utils.opt_api_key
+@planet_auth_utils.opt_profile()
+@planet_auth_utils.opt_client_id()
+@planet_auth_utils.opt_client_secret()
+@planet_auth_utils.opt_api_key()
 @cmds.translate_exceptions
 def main(ctx,
          verbosity,

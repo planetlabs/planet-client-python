@@ -23,12 +23,15 @@ import warnings
 import httpx
 from typing import List
 
+from .auth_builtins import _ProductionEnv, _OIDC_AUTH_CLIENT_CONFIG__USER_SKEL, _OIDC_AUTH_CLIENT_CONFIG__M2M_SKEL
 import planet_auth
 import planet_auth_utils
 
 from .constants import SECRET_FILE_PATH
-from .auth_builtins import _ProductionEnv, _OIDC_AUTH_CLIENT_CONFIG__USER_SKEL, _OIDC_AUTH_CLIENT_CONFIG__M2M_SKEL
 from .exceptions import PlanetError
+
+# planet_auth.setPyLoggerForAuthLogger(logging.getLogger("planet_auth_sdk"))
+planet_auth.setStructuredLogging(nested_key=None)
 
 
 class Auth(abc.ABC, httpx.Auth):

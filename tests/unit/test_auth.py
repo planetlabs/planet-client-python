@@ -97,7 +97,7 @@ def test_Auth_from_file_alternate(tmp_path):
 def test_Auth_from_env(monkeypatch):
     monkeypatch.setenv('PL_API_KEY', 'testkey_env')
     test_auth_env = auth.Auth.from_env()
-    # TODO: that I short cicuit between legacy and API key auth impls makes this weird.
+    # TODO: that I short circuit between legacy and API key auth impls makes this weird.
     test_api_key = test_auth_env._plauth.request_authenticator().credential(
     ).api_key()
     assert test_api_key == 'testkey_env'
@@ -332,3 +332,11 @@ def test_auth_to_dict_deprecated():
 def test_auth_from_dict_deprecated():
     with pytest.raises(DeprecationWarning):
         _ = auth.Auth.from_dict({})
+
+
+def test_plauth_builtins_namespace():
+    # Planet auth can prefix environment and config variables with a namespace.
+    # Make sure that is as we want it for the SDK.
+    assert planet_auth_utils.EnvironmentVariables.AUTH_API_KEY == "PL_API_KEY"
+    assert planet_auth_utils.EnvironmentVariables.AUTH_SCOPE == "PL_AUTH_SCOPE"
+    assert planet_auth_utils.EnvironmentVariables.AUTH_PROFILE == "PL_AUTH_PROFILE"
