@@ -17,7 +17,8 @@ dependencies = [
   # "planet-auth==2.0.11b1746511689",
   # "planet-auth @ https://github.com/planetlabs/planet-auth-python/archive/refs/heads/carl/fixing-planet-sdk.zip",
   # "planet-auth @ git+https://github.com/planetlabs/planet-auth-python.git@carl/fixing-planet-sdk#egg=planet-auth",
-  "planet-auth @ git+https://github.com/planetlabs/planet-auth-python.git@carl/fixing-planet-sdk",
+  # "planet-auth @ git+https://github.com/planetlabs/planet-auth-python.git@carl/fixing-planet-sdk",
+  "planet-auth @ git+https://github.com/planetlabs/planet-auth-python.git@b60cc4d9188df47734697e60853ddb3a66289aaa",
 ]
 readme = "README.md"
 requires-python = ">=3.9"
