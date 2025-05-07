@@ -4,9 +4,12 @@ on:
   pull_request:
     branches:
       - main
+      - main-3.0-dev
   push:
     branches:
       - main
+      - main-3.0-dev
+  workflow_dispatch:
 
 jobs:
   lint:
