@@ -15,7 +15,9 @@ dependencies = [
   "tqdm>=4.56",
   "typing-extensions",
   # "planet-auth==2.0.11b1746511689",
-  "planet-auth @ git+https://github.com/planetlabs/planet-auth-python/archive/refs/heads/carl/fixing-planet-sdk.zip",
+  # "planet-auth @ https://github.com/planetlabs/planet-auth-python/archive/refs/heads/carl/fixing-planet-sdk.zip",
+  # "planet-auth @ git+https://github.com/planetlabs/planet-auth-python.git@carl/fixing-planet-sdk#egg=planet-auth",
+  "planet-auth @ git+https://github.com/planetlabs/planet-auth-python.git@carl/fixing-planet-sdk",
 ]
 readme = "README.md"
 requires-python = ">=3.9"
