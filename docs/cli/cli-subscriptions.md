@@ -247,6 +247,49 @@ planet subscriptions patch cb817760-1f07-4ee7-bba6-bcac5346343f \
     patched-attributes.json
 ```
 
+### Bulk Create Subscriptions
+
+To create many subscriptions for different geometries at once, use the `bulk-create` subcommand.
+
+This command allows submitting a bulk create request that references a feature collection defined in
+the Features API, which will create a subscription for every feature in the collection.
+
+Define a subscription that references a feature collection:
+
+```json
+{
+  "name": "new guinea psscene bulk subscription",
+  "source": {
+    "parameters": {
+      "item_types": [
+        "PSScene"
+      ],
+      "asset_types": [
+        "ortho_visual"
+      ],
+      "geometry": {
+        "type": "ref",
+        "content": "pl:features/my/test-new-guinea-10geojson-xqRXaaZ"
+      },
+      "start_time": "2021-01-01T00:00:00Z",
+      "end_time": "2021-01-05T00:00:00Z"
+    }
+  }
+}
+```
+
+And issue the `bulk-create` command with the appropriate hosting or delivery options. A link to list
+the resulting subscriptions will be returned:
+
+```sh
+planet subscriptions bulk-create --hosting sentinel_hub catalog_fc_sub.json
+{
+  "_links": {
+    "list": "https://api.planet.com/subscriptions/v1?created=2025-04-16T23%3A44%3A35Z%2F..&geom_ref=pl%3Afeatures%2Fmy%2Ftest-new-guinea-10geojson-xqRXaaZ&name=new+guinea+psscene+bulk subscription"
+  }
+}
+```
+
 ### Cancel Subscription
 
 Cancelling a subscription is simple with the CLI:

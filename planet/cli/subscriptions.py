@@ -203,6 +203,60 @@ async def create_subscription_cmd(ctx, request, pretty, **kwargs):
         echo_json(sub, pretty)
 
 
+@subscriptions.command(name="bulk-create")  # type: ignore
+@click.argument("request", type=types.JSON())
+@click.option(
+    "--hosting",
+    type=click.Choice([
+        "sentinel_hub",
+    ]),
+    default=None,
+    help='Hosting type. Currently, only "sentinel_hub" is supported.',
+)
+@click.option("--collection-id",
+              default=None,
+              help='Collection ID for Sentinel Hub hosting. '
+              'If omitted, a new collection will be created.')
+@click.option(
+    '--create-configuration',
+    is_flag=True,
+    help='Automatically create a layer configuration for your collection. '
+    'If omitted, no configuration will be created.')
+@pretty
+@click.pass_context
+@translate_exceptions
+@coro
+async def bulk_create_subscription_cmd(ctx, request, pretty, **kwargs):
+    """Bulk create subscriptions.
+
+    Submits a bulk subscription request for creation and prints a link to list
+    the resulting subscriptions.
+
+    REQUEST is the full description of the subscription to be created. It must
+    be JSON and can be specified a json string, filename, or '-' for stdin.
+
+    Other flag options are hosting, collection_id, and create_configuration.
+    The hosting flag specifies the hosting type, the collection_id flag specifies the
+    collection ID for Sentinel Hub, and the create_configuration flag specifies
+    whether or not to create a layer configuration for your collection. If the
+    collection_id is omitted, a new collection will be created. If the
+    create_configuration flag is omitted, no configuration will be created. The
+    collection_id flag and create_configuration flag cannot be used together.
+    """
+    hosting = kwargs.get("hosting", None)
+    collection_id = kwargs.get("collection_id", None)
+    create_configuration = kwargs.get('create_configuration', False)
+
+    if hosting == "sentinel_hub":
+        hosting_info = sentinel_hub(collection_id, create_configuration)
+        request["hosting"] = hosting_info
+
+    async with subscriptions_client(ctx) as client:
+        links = await client.bulk_create_subscriptions([request])
+        # Bulk create returns just a link to an endpoint to list created subscriptions.
+        echo_json(links, pretty)
+
+
 @subscriptions.command(name='cancel')  # type: ignore
 @click.argument('subscription_id')
 @pretty

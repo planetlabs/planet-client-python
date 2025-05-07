@@ -25,6 +25,7 @@ from planet.cli import cli
 from test_subscriptions_api import (api_mock,
                                     cancel_mock,
                                     create_mock,
+                                    bulk_create_mock,
                                     failing_api_mock,
                                     get_mock,
                                     patch_mock,
@@ -129,6 +130,28 @@ def test_subscriptions_create_success(invoke, cmd_arg, runner_input):
     # argument specifies what bytes go to the runner's stdin.
     result = invoke(
         ['create', cmd_arg],
+        input=runner_input,
+        # Note: catch_exceptions=True (the default) is required if we want
+        # to exercise the "translate_exceptions" decorator and test for
+        # failure.
+        catch_exceptions=True)
+
+    assert result.exit_code == 0  # success.
+
+
+@pytest.mark.parametrize('cmd_arg, runner_input',
+                         [('-', json.dumps(GOOD_SUB_REQUEST)),
+                          (json.dumps(GOOD_SUB_REQUEST), None),
+                          ('-', json.dumps(GOOD_SUB_REQUEST_WITH_HOSTING)),
+                          (json.dumps(GOOD_SUB_REQUEST_WITH_HOSTING), None)])
+@bulk_create_mock
+def test_subscriptions_bulk_create_success(invoke, cmd_arg, runner_input):
+    """Subscriptions creation succeeds with a valid subscription request."""
+
+    # The "-" argument says "read from stdin" and the input keyword
+    # argument specifies what bytes go to the runner's stdin.
+    result = invoke(
+        ['bulk-create', cmd_arg],
         input=runner_input,
         # Note: catch_exceptions=True (the default) is required if we want
         # to exercise the "translate_exceptions" decorator and test for
