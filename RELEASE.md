@@ -54,7 +54,6 @@ The SDK follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and t
      * _`version`_: [https://planet-sdk-for-python-v2.readthedocs.io/en/X.YY.ZZ/](https://planet-sdk-for-python-v2.readthedocs.io/en/X.YY.ZZ/) - Should point to version `X.YY.ZZ`.
    * Pre-release versions should _not_ impact the default version of the documentation. Pre-release version may be published as the `latest` version.
 
-
 ## Local publishing
 
 Publishing to testpypi and pypi can also be performed locally with:
