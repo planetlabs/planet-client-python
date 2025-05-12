@@ -14,17 +14,23 @@
 # limitations under the License.
 from .data import DataClient
 from .features import FeaturesClient
+from .mosaics import MosaicsClient
 from .orders import OrdersClient
 from .subscriptions import SubscriptionsClient
 
 __all__ = [
-    'DataClient', 'FeaturesClient', 'OrdersClient', 'SubscriptionsClient'
+    'DataClient',
+    'FeaturesClient',
+    'MosaicsClient',
+    'OrdersClient',
+    'SubscriptionsClient'
 ]
 
 # Organize client classes by their module name to allow lookup.
 _client_directory = {
     'data': DataClient,
     'features': FeaturesClient,
+    'mosaics': MosaicsClient,
     'orders': OrdersClient,
     'subscriptions': SubscriptionsClient
 }

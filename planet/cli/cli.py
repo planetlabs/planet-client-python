@@ -19,6 +19,7 @@ import sys
 import click
 
 import planet
+from planet.cli import mosaics
 
 from . import auth, collect, data, orders, subscriptions, features
 
@@ -79,3 +80,4 @@ main.add_command(orders.orders)  # type: ignore
 main.add_command(subscriptions.subscriptions)  # type: ignore
 main.add_command(collect.collect)  # type: ignore
 main.add_command(features.features)
+main.add_command(mosaics.mosaics)
