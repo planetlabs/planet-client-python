@@ -140,3 +140,14 @@ class DateTime(click.ParamType):
                 self.fail(str(e))
 
         return value
+
+
+class BoundingBox(click.ParamType):
+    name = 'bbox'
+
+    def convert(self, val, param, ctx):
+        try:
+            xmin, ymin, xmax, ymax = map(float, val.split(','))
+        except (TypeError, ValueError):
+            raise click.BadParameter('Invalid bounding box')
+        return (xmin, ymin, xmax, ymax)

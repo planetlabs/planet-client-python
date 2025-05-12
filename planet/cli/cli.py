@@ -20,6 +20,7 @@ import click
 
 import planet_auth_utils
 import planet
+from planet.cli import mosaics
 
 from . import auth, cmds, collect, data, orders, subscriptions, features
 
@@ -128,6 +129,7 @@ main.add_command(orders.orders)  # type: ignore
 main.add_command(subscriptions.subscriptions)  # type: ignore
 main.add_command(collect.collect)  # type: ignore
 main.add_command(features.features)
+main.add_command(mosaics.mosaics)
 
 if __name__ == "__main__":
     main()  # pylint: disable=E1120

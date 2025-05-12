@@ -17,7 +17,7 @@ from . import data_filter, order_request, reporting, subscription_request
 from .__version__ import __version__  # NOQA
 from .auth import Auth
 from .auth_builtins import PlanetOAuthScopes
-from .clients import DataClient, FeaturesClient, OrdersClient, SubscriptionsClient  # NOQA
+from .clients import DataClient, FeaturesClient, MosaicsClient, OrdersClient, SubscriptionsClient  # NOQA
 from .io import collect
 from .sync import Planet
 
@@ -28,6 +28,7 @@ __all__ = [
     'DataClient',
     'data_filter',
     'FeaturesClient',
+    'MosaicsClient',
     'OrdersClient',
     'order_request',
     'Planet',
