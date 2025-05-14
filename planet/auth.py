@@ -30,7 +30,6 @@ import planet_auth_utils
 from .constants import SECRET_FILE_PATH
 from .exceptions import PlanetError
 
-# planet_auth.setPyLoggerForAuthLogger(logging.getLogger("planet_auth_sdk"))
 planet_auth.setStructuredLogging(nested_key=None)
 
 
@@ -340,10 +339,6 @@ class Auth(abc.ABC, httpx.Auth):
         pl_authlib_context = planet_auth.Auth.initialize_from_config_dict(
             client_config=plauth_config,
             token_file=filename or SECRET_FILE_PATH)
-        # planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
-        #    auth_profile_opt=_BuiltinConfigurationProvider.BUILTIN_PROFILE_NAME_LEGACY,
-        #    token_file_opt=filename or SECRET_FILE_PATH
-        # )
         return _PLAuthLibAuth(plauth=pl_authlib_context)
 
     @staticmethod
