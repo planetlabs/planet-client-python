@@ -49,6 +49,9 @@ extra_css:
 
 plugins:
   - search
+  - macros:
+      include_dir: 'examples'
+      on_error_fail: true
   - mkdocstrings:
       handlers:
         python:
@@ -83,6 +86,7 @@ nav:
     - cli/cli-reference.md
   - "Python":
     - python/sdk-guide.md
+    - python/sdk-client-auth.md
     - python/async-sdk-guide.md
     - python/sdk-reference.md
   - "Resources":
