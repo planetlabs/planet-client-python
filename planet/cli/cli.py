@@ -1,5 +1,5 @@
 # Copyright 2017 Planet Labs, Inc.
-# Copyright 2022 Planet Labs PBC.
+# Copyright 2022, 2025 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@ import sys
 
 import click
 
+import planet_auth_utils
 import planet
 
-from . import auth, collect, data, orders, subscriptions, features
+from . import auth, cmds, collect, data, orders, subscriptions, features
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +37,18 @@ LOGGER = logging.getLogger(__name__)
               default="warning",
               help=("Optional: set verbosity level to warning, info, or debug.\
                   Defaults to warning."))
-def main(ctx, verbosity, quiet):
+@planet_auth_utils.opt_profile()
+@planet_auth_utils.opt_client_id()
+@planet_auth_utils.opt_client_secret()
+@planet_auth_utils.opt_api_key()
+@cmds.translate_exceptions
+def main(ctx,
+         verbosity,
+         quiet,
+         auth_profile,
+         auth_client_id,
+         auth_client_secret,
+         auth_api_key):
     """Planet SDK for Python CLI"""
     _configure_logging(verbosity)
 
@@ -44,6 +56,30 @@ def main(ctx, verbosity, quiet):
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
     ctx.obj['QUIET'] = quiet
+
+    _configure_cli_auth_ctx(ctx,
+                            auth_profile,
+                            auth_client_id,
+                            auth_client_secret,
+                            auth_api_key)
+
+
+def _configure_cli_auth_ctx(ctx,
+                            auth_profile,
+                            auth_client_id,
+                            auth_client_secret,
+                            auth_api_key):
+    # planet-auth library Auth context type
+    ctx.obj[
+        'AUTH'] = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
+            auth_profile_opt=auth_profile,
+            auth_client_id_opt=auth_client_id,
+            auth_client_secret_opt=auth_client_secret,
+            auth_api_key_opt=auth_api_key)
+
+    # planet SDK Auth context type
+    ctx.obj['PLSDK_AUTH'] = planet.Auth._from_plauth(
+        pl_authlib_context=ctx.obj['AUTH'])
 
 
 def _configure_logging(verbosity):
@@ -73,9 +109,21 @@ def _configure_logging(verbosity):
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
-main.add_command(auth.auth)  # type: ignore
+# Hide the embedded util from help.  It has many options and use cases that
+# may not be directly the most relevant or user-friendly for the specific
+# case of working against Planet Platform Services.
+# The interface we want to support for the SDK CLI is a specialized
+# subset defined by auth.py.
+planet_auth_utils.cmd_plauth_embedded.hidden = True
+main.add_command(cmd=planet_auth_utils.cmd_plauth_embedded,
+                 name="plauth")  # type: ignore
+
+main.add_command(auth.cmd_auth)  # type: ignore
 main.add_command(data.data)  # type: ignore
 main.add_command(orders.orders)  # type: ignore
 main.add_command(subscriptions.subscriptions)  # type: ignore
 main.add_command(collect.collect)  # type: ignore
 main.add_command(features.features)
+
+if __name__ == "__main__":
+    main()  # pylint: disable=E1120

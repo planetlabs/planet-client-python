@@ -14,6 +14,7 @@ dependencies = [
   "pyjwt>=2.1",
   "tqdm>=4.56",
   "typing-extensions",
+  "planet-auth==2.0.11b1746663950",
 ]
 readme = "README.md"
 requires-python = ">=3.9"
@@ -33,16 +34,29 @@ license = { file = "LICENSE" }
 dynamic = ["version"]
 
 [project.optional-dependencies]
-test = ["pytest==8.3.3", "anyio", "pytest-cov", "respx>=0.22.0"]
-lint = ["flake8", "mypy", "yapf==0.43.0"]
-docs = [
-  "mkdocs==1.4.2",
-  "mkdocs-click==0.7.0",
-  "mkdocs-material==8.2.11",
-  "mkdocstrings==0.18.1",
-  "mkdocs_autorefs==1.0.1",
+test = [
+    "pytest==8.3.3",
+    "anyio",
+    "pytest-cov",
+    "respx>=0.22.0",
+    "coverage[toml]"
 ]
-dev = ["planet[test, docs, lint]"]
+lint = [
+    "flake8",
+    "mypy",
+    "yapf==0.43.0",
+]
+docs = [
+    "mkdocs==1.4.2",
+    "mkdocs-click==0.7.0",
+    "mkdocs-material==8.2.11",
+    "mkdocstrings==0.18.1",
+    "mkdocs_autorefs==1.0.1",
+    "mkdocs-macros-plugin==1.3.7"
+]
+dev = [
+    "planet[test, docs, lint]",
+]
 
 [project.scripts]
 planet = "planet.cli.cli:main"

@@ -20,7 +20,7 @@ import pytest
 import respx
 
 from planet import FeaturesClient, Session
-from planet.auth import APIKeyAuth
+from planet.auth import Auth
 from planet.sync.features import FeaturesAPI
 
 pytestmark = pytest.mark.anyio  # noqa
@@ -47,7 +47,7 @@ TEST_COLLECTION_2 = {
 TEST_COLLECTION_LIST = [TEST_COLLECTION_1, TEST_COLLECTION_2]
 
 # set up test clients
-test_session = Session(auth=APIKeyAuth(key="test"))
+test_session = Session(auth=Auth.from_key(key="test"))
 cl_async = FeaturesClient(test_session, base_url=TEST_URL)
 cl_sync = FeaturesAPI(test_session, base_url=TEST_URL)
 

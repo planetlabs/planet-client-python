@@ -55,6 +55,7 @@ def test(session):
                 '-v',
                 '-Werror',
                 '-Wignore::DeprecationWarning:tqdm.std',
+                '-Wignore::PendingDeprecationWarning:planet.auth',
                 *options)
 
 

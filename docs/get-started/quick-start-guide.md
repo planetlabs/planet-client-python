@@ -27,10 +27,12 @@ pip install planet
 
 ### Authentication
 
-Use the `PL_API_KEY` environment variable to authenticate with the Planet API. For other authentication options, see the [SDK guide](../python/sdk-guide.md).
+Use the `planet auth` CLI command to establish a user login session that will
+be saved to the user's home directory.  For other authentication options, see
+the [Client Authentication Guide](../python/sdk-client-auth.md).
 
 ```bash
-export PL_API_KEY=your_api_key
+planet auth login
 ```
 
 ### The Planet client
@@ -39,7 +41,7 @@ The `Planet` class is the main entry point for the Planet SDK. It provides acces
 
 ```python
 from planet import Planet
-pl = Planet()  # automatically detects PL_API_KEY
+pl = Planet()  # automatically detects authentication configured by `planet auth login`
 ```
 
 The Planet client has members `data`, `orders`, and `subscriptions`, which allow you to interact with the Data API, Orders API, and Subscriptions API. Usage examples for searching, ordering and creating subscriptions can be found in the [SDK guide](../python/sdk-guide.md).

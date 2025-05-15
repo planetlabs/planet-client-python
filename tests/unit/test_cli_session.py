@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-import base64
 from http import HTTPStatus
 import json
 
@@ -23,7 +22,6 @@ import pytest
 # from planet.auth import _SecretFile
 from planet import auth
 from planet.cli import session
-from planet.exceptions import AuthException
 
 TEST_URL = 'mock://mock.com'
 
@@ -63,7 +61,9 @@ async def test_CliSession_headers(test_valid_secretfile):
 @respx.mock
 @pytest.mark.anyio
 async def test_CliSession_auth_valid(test_valid_secretfile):
-    async with session.CliSession() as sess:
+    # The default auth
+    async with session.CliSession(
+            plsdk_auth=auth.Auth.from_key("clisessiontest")) as sess:
         route = respx.get(TEST_URL)
         route.return_value = httpx.Response(HTTPStatus.OK)
 
@@ -71,30 +71,11 @@ async def test_CliSession_auth_valid(test_valid_secretfile):
 
         # the proper headers are included and they have the expected values
         received_request = route.calls.last.request
-        credentials = received_request.headers['authorization'].strip(
-            'Authorization: Basic ')
-        assert base64.b64decode(credentials) == b'clisessiontest:'
-
-
-@respx.mock
-@pytest.mark.anyio
-async def test_CliSession_auth_invalid(tmp_path, monkeypatch):
-    # write invalid secret file
-    secret_path = f'{tmp_path}/secret.test'
-    monkeypatch.setattr(auth, 'SECRET_FILE_PATH', secret_path)
-    with open(secret_path, 'w') as fp:
-        json.dump({'invalidkey': 'clisessiontest'}, fp)
-
-    with pytest.raises(AuthException):
-        session.CliSession()
-
-
-@respx.mock
-@pytest.mark.anyio
-async def test_CliSession_auth_nofile(tmp_path, monkeypatch):
-    # point to non-existant file
-    secret_path = f'{tmp_path}/doesnotexist.test'
-    monkeypatch.setattr(auth, 'SECRET_FILE_PATH', secret_path)
-
-    with pytest.raises(AuthException):
-        session.CliSession()
+        # The planet_auth library sends the api key as bearer token.
+        # The older Planet SDK sent it as HTTP basic.
+        # Most Planet APIs accept either (and API keys are being deprecated.)
+        # credentials = received_request.headers['authorization'].strip(
+        #     'Authorization: Basic ')
+        # assert base64.b64decode(credentials) == b'clisessiontest:'
+        credentials = received_request.headers['authorization']
+        assert credentials == 'api-key clisessiontest'
