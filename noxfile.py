@@ -68,7 +68,7 @@ def lint(session):
 
 @nox.session
 def docs_test(session):
-    session.install("-e", ".[docs]")
+    session.install("-e", ".[docs, test]")
 
     options = session.posargs
 
@@ -88,6 +88,7 @@ def docs_test(session):
 
 @nox.session
 def docs(session):
+    """Build documentation locally"""
     session.install("-e", ".[docs]")
 
     session.run("mkdocs", "build")
