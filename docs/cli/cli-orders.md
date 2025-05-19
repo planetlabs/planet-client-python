@@ -635,6 +635,7 @@ To clip and composite you need to specify the clip in the tools (instead of `--c
 not use `--clip` and `--tools` in the same call. There is not yet CLI calls to generate the `tools.json`,
 so you can just use the [following json](https://raw.githubusercontent.com/planetlabs/planet-client-python/main/docs/cli/request-json/tools-clip-composite.json):
 
+<a name="geometry.geojson"></a>
 ```json
 [
     {
@@ -882,7 +883,7 @@ planet orders request \
 ```
 
 Or get the 5 latest cloud free images in an area and create an order that clips to that area, using
-[geometry.geojson](data/geometry.geojson) from above:
+[geometry.geojson](#geometry.geojson) from above:
 
 ```sh
 ids=$(planet data filter --geom geometry.geojson --range clear_percent gt 90 \
