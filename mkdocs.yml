@@ -75,7 +75,8 @@ nav:
     - get-started/quick-start-guide.md
     - get-started/get-your-planet-account.md
     - get-started/venv-tutorial.md
-    - get-started/upgrading.md
+    - get-started/upgrading-v3.md
+    - get-started/upgrading-v2.md
   - "No Code CLI":
     - cli/cli-guide.md
     - cli/cli-intro.md
