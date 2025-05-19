@@ -12,7 +12,7 @@ were never a [documented API](https://docs.planet.com/develop/apis/), but could
 easily be understood by inspection of the SDK code.
 
 Specifically, what is being deprecated in version 3 are the paths where the SDK
-handled a username and password and obtained the user's API key for forward
+handled a username and password to obtain the user's API key for forward
 operations.  Users may still operate with an API key by retrieving it from the
 Planet user interface under [My Settings](https://www.planet.com/account/#/user-settings)
 and providing it to the SDK, but OAuth2 mechanisms should be preferred
@@ -26,7 +26,7 @@ This new method is intended to offer a number of long term benefits, including:
 * The new method provides the SDK and the CLI with access tokens that may be
   used with both `api.planet.com` and `sentinel-hub.com` endpoints.  The methods
   used by version 2 of the SDK were specific to `api.planet.com` endpoints.
-* This method extends (currently optional) multi-factor authentication (MFA)
+* This method extends (currently optional) multifactor authentication (MFA)
   to SDK and CLI platform use cases.
 * This method is compatible with other platform enhancements currently under
   development by Planet's software engineering team.
@@ -49,15 +49,15 @@ changes are the most important to note:
   or [`planet auth print-api-key`](../../cli/cli-reference/#print-api-key) may
   be used.  The OAuth2 based `print-access-token` should be preferred where possible.
 * The `planet auth store` command has been deprecated. The various invocations
-  of the `planet auth login` command should be suitable for all use cases. 
-  OAuth2 sessions should be favored for user interactive use cases, such as CLI usage.  
+  of the `planet auth login` command should be suitable for all use cases.
+  OAuth2 sessions should be favored for user interactive use cases, such as CLI usage.
   `planet auth login --auth-api-key YOUR_API_KEY` may be used to initialize the SDK
   with API key based authentication where the use case requires it.
 
 #### CLI Session Persistence
 Both version 2 and version 3 of the SDK used the file `~/.planet.json` in the user's
 home directory to store user API key.  If this file is present and was configured
-by version 2 of the SDK, it should continue to work.  
+by version 2 of the SDK, it should continue to work.
 
 While the `~/.planet.json` file continues to be used by version 3, version 3
 will not write the same information to this file that version 2 did. Version 3
