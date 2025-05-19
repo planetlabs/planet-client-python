@@ -87,32 +87,32 @@ def series():
 
 
 @command(mosaics, name="contributions")
-@click.argument("name")
+@click.argument("name_or_id")
 @click.argument("quad")
-async def quad_contributions(ctx, name, quad, pretty):
-    '''Get contributing scenes for a mosaic quad
+async def quad_contributions(ctx, name_or_id, quad, pretty):
+    '''Get contributing scenes for a quad in a mosaic specified by name or ID
 
     Example:
 
     planet mosaics contribution global_monthly_2025_04_mosaic 575-1300
     '''
     async with client(ctx) as cl:
-        item = await cl.get_quad(name, quad)
+        item = await cl.get_quad(name_or_id, quad)
         await _output(cl.get_quad_contributions(item), pretty)
 
 
 @command(mosaics, name="info")
-@click.argument("name", required=True)
+@click.argument("name_or_id", required=True)
 @include_links
-async def mosaic_info(ctx, name, pretty, links):
-    """Get information for a specific mosaic
+async def mosaic_info(ctx, name_or_id, pretty, links):
+    """Get information for a mosaic specified by name or ID
 
     Example:
 
     planet mosaics info global_monthly_2025_04_mosaic
     """
     async with client(ctx) as cl:
-        await _output(cl.get_mosaic(name), pretty, links)
+        await _output(cl.get_mosaic(name_or_id), pretty, links)
 
 
 @command(mosaics, name="list")
@@ -128,11 +128,11 @@ async def mosaics_list(ctx,
                        acquired_lt,
                        pretty,
                        links):
-    """List all mosaics
+    """List information for all available mosaics
 
     Example:
 
-    planet mosaics info global_monthly_2025_04_mosaic
+    planet mosaics list --name-contains global_monthly
     """
     async with client(ctx) as cl:
         await _output(
@@ -145,17 +145,17 @@ async def mosaics_list(ctx,
 
 
 @command(series, name="info")
-@click.argument("name", required=True)
+@click.argument("name_or_id", required=True)
 @include_links
-async def series_info(ctx, name, pretty, links):
-    """Get information for a specific series
+async def series_info(ctx, name_or_id, pretty, links):
+    """Get information for a series specified by name or ID
 
     Example:
 
     planet series info "Global Quarterly"
     """
     async with client(ctx) as cl:
-        await _output(cl.get_series(name), pretty, links)
+        await _output(cl.get_series(name_or_id), pretty, links)
 
 
 @command(series, name="list")
@@ -171,7 +171,7 @@ async def series_list(ctx,
                       acquired_lt,
                       pretty,
                       links):
-    """List series
+    """List information for available series
 
     Example:
 
@@ -180,17 +180,17 @@ async def series_list(ctx,
     async with client(ctx) as cl:
         await _output(
             cl.list_series(
-                name_contains,
-                interval,
-                acquired_gt,
-                acquired_lt,
+                name_contains=name_contains,
+                interval=interval,
+                acquired_gt=acquired_gt,
+                acquired_lt=acquired_lt,
             ),
             pretty,
             links)
 
 
 @command(series, name="list-mosaics")
-@click.argument("name", required=True)
+@click.argument("name_or_id", required=True)
 @click.option("--latest",
               is_flag=True,
               help=("Get the latest mosaic in the series"))
@@ -198,13 +198,13 @@ async def series_list(ctx,
 @acquired_lt
 @include_links
 async def list_series_mosaics(ctx,
-                              name,
+                              name_or_id,
                               acquired_gt,
                               acquired_lt,
                               latest,
-                              links,
-                              pretty):
-    """List mosaics in a series
+                              pretty,
+                              links):
+    """List mosaics in a series specified by name or ID
 
     Example:
 
@@ -212,7 +212,7 @@ async def list_series_mosaics(ctx,
     """
     async with client(ctx) as cl:
         await _output(
-            cl.list_series_mosaics(name,
+            cl.list_series_mosaics(name_or_id,
                                    acquired_gt=acquired_gt,
                                    acquired_lt=acquired_lt,
                                    latest=latest),
@@ -221,24 +221,24 @@ async def list_series_mosaics(ctx,
 
 
 @command(mosaics, name="search")
-@click.argument("name", required=True)
+@click.argument("name_or_id", required=True)
 @bbox
 @geometry
 @click.option("--summary",
               is_flag=True,
               help=("Get a count of how many quads would be returned"))
 @include_links
-async def list_quads(ctx, name, bbox, geometry, summary, links, pretty):
-    """Search quads
+async def list_quads(ctx, name_or_id, bbox, geometry, summary, pretty, links):
+    """Search quads in a mosaic specified by name or ID
 
     Example:
 
     planet mosaics search global_monthly_2025_04_mosaic --bbox -100,40,-100,41
     """
     async with client(ctx) as cl:
-        mosaic = await cl.get_mosaic(name)
+        mosaic = await cl.get_mosaic(name_or_id)
         if mosaic is None:
-            raise click.ClickException("No mosaic named " + name)
+            raise click.ClickException("No mosaic named " + name_or_id)
         await _output(
             cl.list_quads(mosaic,
                           minimal=False,
@@ -250,18 +250,17 @@ async def list_quads(ctx, name, bbox, geometry, summary, links, pretty):
 
 
 @command(mosaics, name="download")
-@click.argument("name", required=True)
+@click.argument("name_or_id", required=True)
 @click.option('--output-dir',
-              default='.',
-              help=('Directory for file download.'),
+              help=('Directory for file download. Defaults to mosaic name'),
               type=click.Path(exists=True,
                               resolve_path=True,
                               writable=True,
                               file_okay=False))
 @bbox
 @geometry
-async def download(ctx, name, output_dir, bbox, geometry, **kwargs):
-    """Download quads from a mosaic
+async def download(ctx, name_or_id, output_dir, bbox, geometry, **kwargs):
+    """Download quads from a mosaic by name or ID
 
     Example:
 
@@ -269,9 +268,9 @@ async def download(ctx, name, output_dir, bbox, geometry, **kwargs):
     """
     quiet = ctx.obj['QUIET']
     async with client(ctx) as cl:
-        mosaic = await cl.get_mosaic(name)
+        mosaic = await cl.get_mosaic(name_or_id)
         if mosaic is None:
-            raise click.ClickException("No mosaic named " + name)
+            raise click.ClickException("No mosaic named " + name_or_id)
         await cl.download_quads(mosaic,
                                 bbox=bbox,
                                 geometry=geometry,
