@@ -42,7 +42,7 @@ The `--pretty` flag is built into most Planet CLI commands, and it formats the J
 more readable.
 
 You can also use `jq`, a powerful command-line JSON-processing tool, that is mentioned in
-the [CLI introduction]((cli-intro.md#jq).
+the [CLI introduction](cli-intro.md#jq).
 
 ```sh
 planet orders list | jq
