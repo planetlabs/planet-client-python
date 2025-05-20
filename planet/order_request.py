@@ -620,7 +620,21 @@ def band_math_tool(b1: str,
     in these files.
 
     Parameters:
-        b1-b15: An expression defining how the output band should be computed.
+        b1: An expression defining how the output band should be computed.
+        b2: An expression defining how the output band should be computed.
+        b3: An expression defining how the output band should be computed.
+        b4: An expression defining how the output band should be computed.
+        b5: An expression defining how the output band should be computed.
+        b6: An expression defining how the output band should be computed.
+        b7: An expression defining how the output band should be computed.
+        b8: An expression defining how the output band should be computed.
+        b9: An expression defining how the output band should be computed.
+        b10: An expression defining how the output band should be computed.
+        b11: An expression defining how the output band should be computed.
+        b12: An expression defining how the output band should be computed.
+        b13: An expression defining how the output band should be computed.
+        b14: An expression defining how the output band should be computed.
+        b15: An expression defining how the output band should be computed.
         pixel_type: A value indicating what the output pixel type should be.
 
     Raises:
