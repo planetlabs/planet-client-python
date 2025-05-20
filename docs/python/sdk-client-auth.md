@@ -215,7 +215,7 @@ complete user authentication.  This architecture allows for greater security
 by keeping the user's password from being directly exposed to the application
 code. This also allows for flexibility in user federation and multifactor
 authentication procedures without the complexity of these needing to
-be exposes to the application developer who is focused on geospatial
+be exposed to the application developer who is focused on geospatial
 operations using the Planet platform, and not the nuances of user
 authentication and authorization.
 
