@@ -62,7 +62,7 @@ plugins:
           selection:
             inherited_members: true
             filters:
-              - "!^_"  # exlude all members starting with _
+              - "!^_"  # exclude all members starting with _
               - "^__init__$"  # but always include __init__ modules and methods
       watch:
         - planet

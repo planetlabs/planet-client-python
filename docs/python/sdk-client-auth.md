@@ -21,7 +21,7 @@ the [Authentication](https://docs.planet.com/develop/authentication) section of 
     their behalf.
 
     If you would like to develop an interactive application that uses
-    Planet's APIs on behalf of a logged in user (as the `planet` CLI utility
+    Planet's APIs on behalf of a logged-in user (as the `planet` CLI utility
     does), please contact Planet support and work with engineering to
     register your application.
 
@@ -215,7 +215,7 @@ complete user authentication.  This architecture allows for greater security
 by keeping the user's password from being directly exposed to the application
 code. This also allows for flexibility in user federation and multifactor
 authentication procedures without the complexity of these needing to
-be exposes to the application developer who is focused on geospatial
+be exposed to the application developer who is focused on geospatial
 operations using the Planet platform, and not the nuances of user
 authentication and authorization.
 
