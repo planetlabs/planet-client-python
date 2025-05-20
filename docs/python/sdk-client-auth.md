@@ -8,9 +8,11 @@ For general information on how to authenticate to Planet APIs, please see
 the [Authentication](https://docs.planet.com/develop/authentication) section of Planet's platform documentation.
 
 !!! warning
-    Some statements are forward-looking.  OAuth2 M2M tokens are
-    currently only supported by `services.sentine-hub.com` and not supported
-    by `api.planet.com`.
+    Some statements in this guide are forward-looking.
+
+    OAuth2 M2M tokens are currently only supported by `services.sentine-hub.com`,
+    and are not yet supported by `api.planet.com`. This is planned for a future date
+    to be announced.
 
     All APIs support interactive user OAuth2 access tokens, but a process for
     developers to register and manage clients has not yet been made public.
@@ -18,10 +20,10 @@ the [Authentication](https://docs.planet.com/develop/authentication) section of 
     manage which applications have been authorized to access the platform on
     their behalf.
 
-    If you would like to developed an interactive application that uses
-    Planet's APIs on behalf of a user (as the `planet` CLI utility does),
-    please contact Planet and work with engineering to register your
-    application.
+    If you would like to develop an interactive application that uses
+    Planet's APIs on behalf of a logged in user (as the `planet` CLI utility
+    does), please contact Planet support and work with engineering to
+    register your application.
 
 ----
 ## Authentication Protocols
