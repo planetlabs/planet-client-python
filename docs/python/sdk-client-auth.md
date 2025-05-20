@@ -21,7 +21,7 @@ the [Authentication](https://docs.planet.com/develop/authentication) section of 
     their behalf.
 
     If you would like to develop an interactive application that uses
-    Planet's APIs on behalf of a logged in user (as the `planet` CLI utility
+    Planet's APIs on behalf of a logged-in user (as the `planet` CLI utility
     does), please contact Planet support and work with engineering to
     register your application.
 

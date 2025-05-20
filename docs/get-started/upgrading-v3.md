@@ -4,7 +4,7 @@ Version 3 of the Planet SDK for Python is a major update of the SDK offering
 new features, not all of which are backwards compatible with version 2.
 
 ## Authentication
-Version 3 of the SDK removed support for Planet's legacy authentication network
+Version 3 of the SDK removes support for Planet's legacy authentication network
 protocols in favor of OAuth2 based mechanisms.  The legacy protocols
 were never a [documented Planet API](https://docs.planet.com/develop/apis/), but could
 easily be understood by inspection of the SDK code.
@@ -23,8 +23,8 @@ be invoked to complete OAuth2 client session initialization.
 This new method is intended to offer a number of long term benefits, including:
 
 * The new method provides the SDK and the CLI with access tokens that may be
-  used with both `api.planet.com` and `services.sentinel-hub.com` endpoints.  The methods
-  used by version 2 of the SDK were specific to `api.planet.com` endpoints, and
+  used with both `api.planet.com` and `services.sentinel-hub.com` endpoints.  The method
+  used by version 2 of the SDK was specific to `api.planet.com` endpoints, and
   will never be supported by `services.sentinel-hub.com` endpoints.
 * The new method extends (currently optional) multifactor authentication (MFA)
   to SDK and CLI client use cases.
@@ -87,5 +87,9 @@ Applications may also continue to initialize the SDK with a specific API key as 
 ```python linenums="1"
 {% include 'auth-session-management/app_managed_auth_state__in_memory__api_key.py' %}
 ```
+
+Users developing new applications should consult the [Client Authentication Guide](../python/sdk-client-auth.md)
+for a complete discussion of all OAuth2 based mechanisms.  OAuth2 mechanisms
+should be preferred to the use of Planet API keys.
 
 ----
