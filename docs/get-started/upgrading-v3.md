@@ -88,4 +88,9 @@ Applications may also continue to initialize the SDK with a specific API key as 
 {% include 'auth-session-management/app_managed_auth_state__in_memory__api_key.py' %}
 ```
 
+The use of API keys is being phased out in favor of OAuth2 service accounts:
+```python linenums="1"
+{% include 'auth-session-management/app_managed_auth_state__in_memory__oauth_m2m.py' %}
+```
+
 ----
