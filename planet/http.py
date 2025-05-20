@@ -456,7 +456,7 @@ class Session(BaseSession):
             A client instance.
 
         Raises:
-            ClientError when no such client can be had.
+            planet.exceptions.ClientError: when no such client can be had.
 
         """
         # To avoid circular dependency.

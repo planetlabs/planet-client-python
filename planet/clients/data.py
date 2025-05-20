@@ -141,7 +141,7 @@ class DataClient:
             search_filter: Structured search criteria to apply. If None,
                 no search criteria is applied.
             sort: Field and direction to order results by. Valid options are
-            given in SEARCH_SORT.
+                given in SEARCH_SORT.
             name: The name of the saved search.
             limit: Maximum number of results to return. When set to 0, no
                 maximum is applied.
@@ -368,7 +368,7 @@ class DataClient:
         Parameters:
             search_id: Stored search identifier.
             sort: Field and direction to order results by. Valid options are
-            given in SEARCH_SORT.
+                given in SEARCH_SORT.
             limit: Maximum number of results to return. When set to 0, no
                 maximum is applied.
 
@@ -531,7 +531,7 @@ class DataClient:
         Raises:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If asset type identifier is not
-            valid.
+                valid.
         """
         item_type_id = validate_data_item_type(item_type_id)
         assets = await self.list_item_assets(item_type_id, item_id)
@@ -554,7 +554,7 @@ class DataClient:
         Raises:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If asset description is not
-            valid.
+                valid.
         """
         try:
             status = asset['status']
@@ -670,7 +670,7 @@ class DataClient:
         Raises:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If asset is not active or asset
-            description is not valid.
+                description is not valid.
         """
         try:
             location = asset['location']

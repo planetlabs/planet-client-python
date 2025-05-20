@@ -113,7 +113,6 @@ class SubscriptionsClient:
             limit (int): limit the number of subscriptions in the
                 results. When set to 0, no maximum is applied.
             page_size (int): number of subscriptions to return per page.
-            TODO: user_id
 
         Datetime args (created, end_time, start_time, updated) can either be a
         date-time or an interval, open or closed. Date and time expressions adhere
@@ -132,6 +131,8 @@ class SubscriptionsClient:
             ClientError: on a client error.
         """
 
+        # TODO from old doc string, which breaks strict document checking:
+        #    Add Parameter user_id
         class _SubscriptionsPager(Paged):
             """Navigates pages of messages about subscriptions."""
             ITEMS_KEY = 'subscriptions'
@@ -209,7 +210,7 @@ class SubscriptionsClient:
 
         Args:
             requests (List[dict]): A list of dictionaries where each dictionary
-            represents a subscription to be created.
+                represents a subscription to be created.
 
         Raises:
             APIError: If the API returns an error response.
@@ -368,7 +369,6 @@ class SubscriptionsClient:
                 filter out results with status not in this set.
             limit (int): limit the number of subscriptions in the
                 results. When set to 0, no maximum is applied.
-            TODO: created, updated, completed, user_id
 
         Yields:
             dict: description of a subscription results.
@@ -378,6 +378,8 @@ class SubscriptionsClient:
             ClientError: on a client error.
         """
 
+        # TODO from old doc string, which breaks strict document checking:
+        #    Add Parameters created, updated, completed, user_id
         class _ResultsPager(Paged):
             """Navigates pages of messages about subscription results."""
             ITEMS_KEY = 'results'
@@ -415,7 +417,6 @@ class SubscriptionsClient:
             subscription_id (str): id of a subscription.
             status (Set[str]): pass result with status in this set,
                 filter out results with status not in this set.
-            TODO: created, updated, completed, user_id
 
         Yields:
             str: a row from a CSV file.
@@ -424,6 +425,8 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
+        # TODO from old doc string, which breaks strict document checking:
+        #    Add Parameters created, updated, completed, user_id
         url = f'{self._base_url}/{subscription_id}/results'
         params = {'status': [val for val in status or {}], 'format': 'csv'}
 
