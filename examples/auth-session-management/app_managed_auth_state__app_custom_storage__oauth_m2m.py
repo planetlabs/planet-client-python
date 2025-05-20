@@ -75,8 +75,7 @@ class DemoStorageProvider(ObjectStorageProvider):
 
 
 def example_main():
-    # Create an auth context with a client ID that
-    # is unique to this application.
+    # Create an auth context with the client ID and secret of the service account.
     plsdk_auth = planet.Auth.from_oauth_m2m(
         client_id="__MUST_BE_END_USER_SUPPLIED__",
         client_secret="__MUST_BE_END_USER_SUPPLIED__",
