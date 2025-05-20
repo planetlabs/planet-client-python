@@ -19,10 +19,12 @@ insofar as is practical within the scope of changes targeted to the next major r
 versioning, major releases do not guarantee backwards compatibility.  Stability is not guaranteed
 during the development cycle.
 
-During the development cycle of a new major release, `RELEASE-PLANNING-X.0.md` should be maintained
-with a brief summary of the major and breaking changes underpinning the reason for the upcoming
-major release version.  Upon release, this content is expected to be folded into package documentation
-as appropriate, and this file should be removed.
+During the development cycle of a new major release, a GitHub Project and Milestone should be
+created to track changes targeted the release.  A file such as `RELEASE-PLANNING-X.0.md` in the
+root of the source tree may be used for early development prior to the creation of a GitHub
+project, but should be retired when a new release becomes more formalized.  Upon release,
+all content is expected to be folded into package documentation as appropriate (announcements,
+company blog posts, changelogs, migration guides, etc.).
 
 When a new major release is ready, the development mainline branch will be renamed to `main`, and the
 old mainline branch will be renamed to `maint-X.0` and will be used as the base for maintenance releases.

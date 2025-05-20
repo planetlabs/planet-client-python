@@ -62,7 +62,7 @@ plugins:
           selection:
             inherited_members: true
             filters:
-              - "!^_"  # exlude all members starting with _
+              - "!^_"  # exclude all members starting with _
               - "^__init__$"  # but always include __init__ modules and methods
       watch:
         - planet
@@ -76,7 +76,9 @@ nav:
     - get-started/quick-start-guide.md
     - get-started/get-your-planet-account.md
     - get-started/venv-tutorial.md
-    - get-started/upgrading.md
+    - "Upgrade Guides":
+      - get-started/upgrading-v3.md
+      - get-started/upgrading-v2.md
   - "No Code CLI":
     - cli/cli-guide.md
     - cli/cli-intro.md

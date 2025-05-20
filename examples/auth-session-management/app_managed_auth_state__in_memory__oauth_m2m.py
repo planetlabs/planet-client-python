@@ -1,13 +1,9 @@
 import json
-import logging
 import planet
-
-logging.basicConfig(level=logging.CRITICAL)
 
 
 def example_main():
-    # Create an auth context with a client ID that
-    # is unique to this application.
+    # Create an auth context with the client ID and secret of the service account.
     plsdk_auth = planet.Auth.from_oauth_m2m(
         client_id="__MUST_BE_END_USER_SUPPLIED__",
         client_secret="__MUST_BE_END_USER_SUPPLIED__",
@@ -17,7 +13,7 @@ def example_main():
     # Explicit login is not required for M2M client use. The above is sufficient.
     # plsdk_auth.user_login()
 
-    # Create a Planet SDK object that uses the loaded auth session/
+    # Create a Planet SDK object that uses the loaded auth session.
     sess = planet.Session(plsdk_auth)
     pl = planet.Planet(sess)
 
