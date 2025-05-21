@@ -314,3 +314,15 @@ GeojsonLike is a type union that represents:
 * an instance of a Planet Feature (e.g. the return value from `pl.features.get_items(collection_id)`)
 * an instance of a class that implements __geo_interface__ (Shapely, GeoPandas geometries)
 """
+
+
+class Mosaic(dict):
+    """The API representation of a Planet mosaic"""
+
+
+class Series(dict):
+    """The API representation of a Planet mosaic series"""
+
+
+class Quad(dict):
+    """The API representation of a mosaic quad"""
