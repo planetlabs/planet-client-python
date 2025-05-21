@@ -1,10 +1,24 @@
+# Copyright 2025 Planet Labs PBC.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not
+# use this file except in compliance with the License. You may obtain a copy of
+# the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations under
+# the License.
+
 import asyncio
 from pathlib import Path
 from typing import AsyncIterator, Awaitable, Optional, Tuple, Type, TypeVar, Union, cast
 from planet.constants import PLANET_BASE_URL
 from planet.exceptions import MissingResource
 from planet.http import Session
-from planet.models import Mosaic, Paged, Quad, Response, Series, StreamingBody
+from planet.models import GeoInterface, Mosaic, Paged, Quad, Response, Series, StreamingBody
 from uuid import UUID
 
 BASE_URL = f'{PLANET_BASE_URL}/basemaps/v1'
@@ -49,7 +63,7 @@ class MosaicsClient:
         >>>
         >>> async def main():
         ...     async with Session() as sess:
-        ...         cl = sess.client('data')
+        ...         cl = sess.client('mosaics')
         ...         # use client here
         ...
         >>> asyncio.run(main())
@@ -74,7 +88,7 @@ class MosaicsClient:
         return self._session._call_sync(f)
 
     def _url(self, path: str) -> str:
-        return f"{BASE_URL}/{path}"
+        return f"{self._base_url}/{path}"
 
     async def _get_by_name(self, path: str, pager: Type[Paged],
                            name: str) -> dict:
@@ -88,7 +102,12 @@ class MosaicsClient:
         listing = response.json()[pager.ITEMS_KEY]
         if len(listing):
             return listing[0]
-        raise MissingResource(f"{name} not found")
+        # mimic the response for 404 when search is empty
+        resource = "Mosaic"
+        if path == "series":
+            resource = "Series"
+        raise MissingResource('{"message":"%s Not Found: %s"}' %
+                              (resource, name))
 
     async def _get_by_id(self, path: str, id: str) -> dict:
         response = await self._session.request(method="GET",
@@ -130,7 +149,7 @@ class MosaicsClient:
             name_contains: Optional[str] = None,
             interval: Optional[str] = None,
             acquired_gt: Optional[str] = None,
-            acquired_lt: Optional[str] = None) -> AsyncIterator[dict]:
+            acquired_lt: Optional[str] = None) -> AsyncIterator[Series]:
         """
         List the series you have access to.
 
@@ -157,7 +176,7 @@ class MosaicsClient:
             params=params,
         )
         async for item in _SeriesPage(resp, self._session.request):
-            yield item
+            yield Series(item)
 
     async def list_mosaics(
         self,
@@ -166,8 +185,7 @@ class MosaicsClient:
         interval: Optional[str] = None,
         acquired_gt: Optional[str] = None,
         acquired_lt: Optional[str] = None,
-        latest: bool = False,
-    ) -> AsyncIterator[dict]:
+    ) -> AsyncIterator[Mosaic]:
         """
         List the mosaics you have access to.
 
@@ -188,15 +206,13 @@ class MosaicsClient:
             params["acquired__gt"] = acquired_gt
         if acquired_lt:
             params["acquired__lt"] = acquired_lt
-        if latest:
-            params["latest"] = "yes"
         resp = await self._session.request(
             method='GET',
             url=self._url("mosaics"),
             params=params,
         )
         async for item in _MosaicsPage(resp, self._session.request):
-            yield item
+            yield Mosaic(item)
 
     async def list_series_mosaics(
         self,
@@ -206,7 +222,7 @@ class MosaicsClient:
         acquired_gt: Optional[str] = None,
         acquired_lt: Optional[str] = None,
         latest: bool = False,
-    ) -> AsyncIterator[dict]:
+    ) -> AsyncIterator[Mosaic]:
         """
         List the mosaics in a series.
 
@@ -218,6 +234,7 @@ class MosaicsClient:
             print(m)
         ```
         """
+        series_id = series
         if isinstance(series, Series):
             series_id = series["id"]
         elif not _is_uuid(series):
@@ -238,7 +255,7 @@ class MosaicsClient:
             params=params,
         )
         async for item in _MosaicsPage(resp, self._session.request):
-            yield item
+            yield Mosaic(item)
 
     async def list_quads(self,
                          /,
@@ -246,7 +263,7 @@ class MosaicsClient:
                          *,
                          minimal: bool = False,
                          bbox: Optional[BBox] = None,
-                         geometry: Optional[dict] = None,
+                         geometry: Optional[Union[dict, GeoInterface]] = None,
                          summary: bool = False) -> AsyncIterator[Quad]:
         """
         List the a mosaic's quads.
@@ -262,6 +279,8 @@ class MosaicsClient:
         """
         mosaic = await self._resolve_mosaic(mosaic)
         if geometry:
+            if isinstance(geometry, GeoInterface):
+                geometry = geometry.__geo_interface__
             resp = await self._quads_geometry(mosaic,
                                               geometry,
                                               minimal,
@@ -364,14 +383,6 @@ class MosaicsClient:
                             directory: str = ".",
                             overwrite: bool = False,
                             progress_bar: bool = False):
-        url = quad["_links"]["download"]
-        Path(directory).mkdir(exist_ok=True, parents=True)
-        async with self._session.stream(method='GET', url=url) as resp:
-            body = StreamingBody(resp)
-            dest = Path(directory, body.name)
-            await body.write(dest,
-                             overwrite=overwrite,
-                             progress_bar=progress_bar)
         """
         Download a quad to a directory.
 
@@ -382,6 +393,14 @@ class MosaicsClient:
         await client.download_quad(quad)
         ```
         """
+        url = quad["_links"]["download"]
+        Path(directory).mkdir(exist_ok=True, parents=True)
+        async with self._session.stream(method='GET', url=url) as resp:
+            body = StreamingBody(resp)
+            dest = Path(directory, body.name)
+            await body.write(dest,
+                             overwrite=overwrite,
+                             progress_bar=progress_bar)
 
     async def download_quads(self,
                              /,
@@ -390,7 +409,8 @@ class MosaicsClient:
                              directory: Optional[str] = None,
                              overwrite: bool = False,
                              bbox: Optional[BBox] = None,
-                             geometry: Optional[dict] = None,
+                             geometry: Optional[Union[dict,
+                                                      GeoInterface]] = None,
                              progress_bar: bool = False,
                              concurrency: int = 4):
         """

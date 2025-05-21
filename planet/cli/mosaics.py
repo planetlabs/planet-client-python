@@ -60,8 +60,6 @@ def _strip_links(resource):
 async def _output(result, pretty, include_links=False):
     if asyncio.iscoroutine(result):
         result = await result
-        if result is None:
-            raise click.ClickException("not found")
         if not include_links:
             _strip_links(result)
         echo_json(result, pretty)
@@ -236,11 +234,8 @@ async def list_quads(ctx, name_or_id, bbox, geometry, summary, pretty, links):
     planet mosaics search global_monthly_2025_04_mosaic --bbox -100,40,-100,41
     """
     async with client(ctx) as cl:
-        mosaic = await cl.get_mosaic(name_or_id)
-        if mosaic is None:
-            raise click.ClickException("No mosaic named " + name_or_id)
         await _output(
-            cl.list_quads(mosaic,
+            cl.list_quads(name_or_id,
                           minimal=False,
                           bbox=bbox,
                           geometry=geometry,
@@ -268,10 +263,7 @@ async def download(ctx, name_or_id, output_dir, bbox, geometry, **kwargs):
     """
     quiet = ctx.obj['QUIET']
     async with client(ctx) as cl:
-        mosaic = await cl.get_mosaic(name_or_id)
-        if mosaic is None:
-            raise click.ClickException("No mosaic named " + name_or_id)
-        await cl.download_quads(mosaic,
+        await cl.download_quads(name_or_id,
                                 bbox=bbox,
                                 geometry=geometry,
                                 directory=output_dir,
