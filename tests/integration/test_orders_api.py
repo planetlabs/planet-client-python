@@ -120,7 +120,7 @@ async def test_list_orders_basic(order_descriptions, session):
 
 
 @respx.mock
-def test_list_orders_basic_sync(order_descriptions, session):
+def test_list_orders_basic_sync(order_descriptions):
     next_page_url = TEST_ORDERS_URL + 'blob/?page_marker=IAmATest'
 
     order1, order2, order3 = order_descriptions
@@ -265,7 +265,7 @@ async def test_create_order_basic(oid,
 def test_create_order_basic_sync(oid,
                                  order_description,
                                  order_request,
-                                 session):
+                                 ):
     route = respx.post(TEST_ORDERS_URL)
     route.return_value = httpx.Response(HTTPStatus.OK, json=order_description)
 
@@ -337,7 +337,7 @@ async def test_get_order(oid, order_description, session):
 
 
 @respx.mock
-def test_get_order_sync(oid, order_description, session):
+def test_get_order_sync(oid, order_description, ):
     get_url = f'{TEST_ORDERS_URL}/{oid}'
     mock_resp = httpx.Response(HTTPStatus.OK, json=order_description)
     respx.get(get_url).return_value = mock_resp
