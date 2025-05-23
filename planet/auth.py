@@ -92,6 +92,8 @@ class Auth(abc.ABC, httpx.Auth):
 
         This method does not support the use a custom storage provider.
         """
+        if not profile_name:
+            raise APIKeyAuthException('Profile name cannot be empty.')
         pl_authlib_context = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
             auth_profile_opt=profile_name)
         return _PLAuthLibAuth(plauth=pl_authlib_context)
