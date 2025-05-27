@@ -16,7 +16,47 @@ import logging
 import click
 import planet_auth_utils
 
+import planet
+
 LOGGER = logging.getLogger(__name__)
+
+
+def prime_cli_auth_ctx(ctx,
+                       auth_profile,
+                       auth_client_id,
+                       auth_client_secret,
+                       auth_api_key):
+    # Delay creating the auth context until we need it.
+    # See below.
+    ctx.obj['PLAUTH_FACTORY_INIT_ARGS'] = {
+        'auth_profile_opt': auth_profile,
+        'auth_client_id_opt': auth_client_id,
+        'auth_client_secret_opt': auth_client_secret,
+        'auth_api_key_opt': auth_api_key,
+        'use_env': True,
+        'use_configfile': True,
+    }
+    return
+
+
+def init_cli_auth_ctx_jit(ctx):
+    """
+    init the planet-auth state stored in the click CLI JIT.
+    Setting this up and pulling the trigger are separated to offer a more ergonomic
+    experience for warnings, suppressing them if they would be irrelevant.
+    """
+    # planet-auth library Auth context type
+    # Embedded click commands imported from planet_auth_utils expect
+    # this in the 'AUTH' context field.
+    if ctx.obj['PLAUTH_FACTORY_INIT_ARGS']:
+        ctx.obj['AUTH'] = (
+            planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
+                **ctx.obj['PLAUTH_FACTORY_INIT_ARGS'])
+        )
+
+    # planet SDK Auth context type
+    ctx.obj['PLSDK_AUTH'] = planet.Auth._from_plauth(
+        pl_authlib_context=ctx.obj['AUTH'])
 
 
 @click.group("auth")  # type: ignore
@@ -25,6 +65,7 @@ def cmd_auth(ctx):
     """
     Commands for working with Planet authentication.
     """
+    init_cli_auth_ctx_jit(ctx)
 
 
 cmd_auth.add_command(name="login", cmd=planet_auth_utils.cmd_plauth_login)
