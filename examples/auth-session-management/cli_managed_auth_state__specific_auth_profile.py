@@ -1,9 +1,6 @@
 import json
-import logging
 import planet
 import sys
-
-logging.basicConfig(level=logging.CRITICAL)
 
 
 def example_main():
