@@ -7,7 +7,7 @@ name = "planet"
 authors = [{ name = "Planet", email = "python-sdk-contributors@planet.com" }]
 description = "Planet SDK for Python"
 dependencies = [
-  "click>=8.0",
+  "click (>=8.0,!=8.2.1)",
   "geojson",
   "httpx>=0.28.0",
   "jsonschema",

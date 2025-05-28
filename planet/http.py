@@ -276,6 +276,12 @@ class Session(BaseSession):
         self._limiter = _Limiter(rate_limit=RATE_LIMIT, max_workers=MAX_ACTIVE)
         self.outcomes: Counter[str] = Counter()
 
+        self._loop: asyncio.AbstractEventLoop = None  # type: ignore
+
+    def _init_loop(self):
+        if self._loop:
+            return
+
         # create a dedicated event loop for this httpx session.
         def _start_background_loop(loop):
             asyncio.set_event_loop(loop)
@@ -288,6 +294,7 @@ class Session(BaseSession):
         self._loop_thread.start()
 
     def _call_sync(self, f: Awaitable[T]) -> T:
+        self._init_loop()
         return asyncio.run_coroutine_threadsafe(f, self._loop).result()
 
     @classmethod
