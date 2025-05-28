@@ -10,7 +10,7 @@ the [Authentication](https://docs.planet.com/develop/authentication) section of 
 !!! warning
     Some statements in this guide are forward-looking.
 
-    OAuth2 M2M tokens are currently only supported by `services.sentine-hub.com`,
+    OAuth2 M2M tokens are currently only supported by `services.sentinel-hub.com`,
     and are not yet supported by `api.planet.com`. This is planned for a future date
     to be announced.
 
