@@ -1,4 +1,4 @@
-# Copyright 2022 Planet Labs PBC.
+# Copyright 2022-2025 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,69 +13,60 @@
 # limitations under the License.
 """Auth API CLI"""
 import logging
-import os
-
 import click
-
-import planet
-from planet.constants import ENV_API_KEY
-from .cmds import translate_exceptions
+import planet_auth_utils
 
 LOGGER = logging.getLogger(__name__)
 
 
-@click.group()  # type: ignore
+@click.group("auth")  # type: ignore
 @click.pass_context
-@click.option('-u',
-              '--base-url',
-              default=None,
-              help='Assign custom base Auth API URL.')
-def auth(ctx, base_url):
-    """Commands for working with Planet authentication"""
-    ctx.obj['BASE_URL'] = base_url
+def cmd_auth(ctx):
+    """
+    Commands for working with Planet authentication.
+    """
 
 
-@auth.command()  # type: ignore
+cmd_auth.add_command(name="login", cmd=planet_auth_utils.cmd_plauth_login)
+planet_auth_utils.monkeypatch_hide_click_cmd_options(
+    planet_auth_utils.cmd_plauth_login,
+    [
+        # Hide client ID / client secret until we are ready for OAuth M2M
+        "auth_client_id",
+        "auth_client_secret",
+        # Hide audience and organization.  They are useful for plauth as a
+        # generic OAuth client, but within the planet SDK we only care about
+        # the built-ins.
+        "audience",
+        "organization",
+        # Hide project.  We have not finalized or publicly released the
+        # project selection interface.
+        "project",
+    ])
+
+# TODO: mark print-api-key as deprecated when we better support M2M tokens
+# planet_auth_utils.cmd_pllegacy_print_api_key.deprecated = True
+cmd_auth.add_command(name="print-api-key",
+                     cmd=planet_auth_utils.cmd_pllegacy_print_api_key)
+cmd_auth.add_command(name="print-access-token",
+                     cmd=planet_auth_utils.cmd_oauth_print_access_token)
+cmd_auth.add_command(name="refresh", cmd=planet_auth_utils.cmd_oauth_refresh)
+cmd_auth.add_command(name="reset", cmd=planet_auth_utils.cmd_plauth_reset)
+
+
+# We are only plumbing a sub-set of the util lib's "profile" command,
+# which is why we shadow it.
+@click.group("profile")
 @click.pass_context
-@translate_exceptions
-@click.option(
-    '--email',
-    default=None,
-    prompt=True,
-    help=('The email address associated with your Planet credentials.'))
-@click.password_option('--password',
-                       confirmation_prompt=False,
-                       help=('Account password. Will not be saved.'))
-def init(ctx, email, password):
-    """Obtain and store authentication information"""
-    base_url = ctx.obj['BASE_URL']
-    plauth = planet.Auth.from_login(email, password, base_url=base_url)
-    plauth.store()
-    click.echo('Initialized')
-    if os.getenv(ENV_API_KEY):
-        click.echo(f'Warning - Environment variable {ENV_API_KEY} already '
-                   'exists. To update, with the new value, use the following:')
-        click.echo(f'export {ENV_API_KEY}=$(planet auth value)')
+def cmd_auth_profile(ctx):
+    """
+    Manage auth profiles.
+    """
 
 
-@auth.command()  # type: ignore
-@translate_exceptions
-def value():
-    """Print the stored authentication information"""
-    click.echo(planet.Auth.from_file().value)
-
-
-@auth.command()  # type: ignore
-@translate_exceptions
-@click.argument('key')
-def store(key):
-    """Store authentication information"""
-    plauth = planet.Auth.from_key(key)
-    if click.confirm('This overrides the stored value. Continue?'):
-        plauth.store()
-        click.echo('Updated')
-        if os.getenv(ENV_API_KEY):
-            click.echo(f'Warning - Environment variable {ENV_API_KEY} already '
-                       'exists. To update, with the new value, use the '
-                       'following:')
-            click.echo(f'export {ENV_API_KEY}=$(planet auth value)')
+cmd_auth_profile.add_command(name="list",
+                             cmd=planet_auth_utils.cmd_profile_list)
+cmd_auth_profile.add_command(name="show",
+                             cmd=planet_auth_utils.cmd_profile_show)
+cmd_auth_profile.add_command(name="set", cmd=planet_auth_utils.cmd_profile_set)
+cmd_auth.add_command(cmd_auth_profile)
