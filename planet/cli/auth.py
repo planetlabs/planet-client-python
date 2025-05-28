@@ -69,5 +69,6 @@ cmd_auth_profile.add_command(name="list",
 cmd_auth_profile.add_command(name="show",
                              cmd=planet_auth_utils.cmd_profile_show)
 cmd_auth_profile.add_command(name="set", cmd=planet_auth_utils.cmd_profile_set)
-cmd_auth_profile.add_command(name="copy", cmd=planet_auth_utils.cmd_profile_copy)
+cmd_auth_profile.add_command(name="copy",
+                             cmd=planet_auth_utils.cmd_profile_copy)
 cmd_auth.add_command(cmd_auth_profile)
