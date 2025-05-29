@@ -44,13 +44,8 @@ class FeaturesAPI:
             print(collection)
         ```
         """
-        collections = self._client.list_collections(limit=limit)
-
-        try:
-            while True:
-                yield self._client._call_sync(collections.__anext__())
-        except StopAsyncIteration:
-            pass
+        return self._client._aiter_to_iter(
+            self._client.list_collections(limit=limit))
 
     def get_collection(self, collection_id: str) -> dict:
         """
@@ -109,13 +104,8 @@ class FeaturesAPI:
             results = pl.data.search(["PSScene"], geometry=feature])
         ```
         """
-        results = self._client.list_items(collection_id, limit=limit)
-
-        try:
-            while True:
-                yield self._client._call_sync(results.__anext__())
-        except StopAsyncIteration:
-            pass
+        return self._client._aiter_to_iter(
+            self._client.list_items(collection_id, limit=limit))
 
     def get_item(self, collection_id: str, feature_id: str) -> Feature:
         """
