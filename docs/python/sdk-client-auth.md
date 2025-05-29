@@ -10,13 +10,13 @@ the [Authentication](https://docs.planet.com/develop/authentication) section of 
 !!! warning
     Some statements in this guide are forward-looking.
 
-    OAuth2 M2M tokens are currently only supported by `services.sentine-hub.com`,
+    OAuth2 M2M tokens are currently only supported by `services.sentinel-hub.com`,
     and are not yet supported by `api.planet.com`. This is planned for a future date
     to be announced.
 
     All APIs support interactive user OAuth2 access tokens, but a process for
     developers to register and manage clients has not yet been made public.
-    We have also not yet release a way for end-users of such applications to
+    We have also not yet released a way for end-users of such applications to
     manage which applications have been authorized to access the platform on
     their behalf.
 
@@ -39,13 +39,13 @@ M2M access tokens.  This is the preferred way for automated processes
 to authenticate to Planet APIs that must operate without a human user.
 No web browser is required, but this method carries some additional
 security considerations.
-* **Planet API keys** - API access as a planet end-user using a simple
+* **Planet API keys** - API access as a Planet end-user using a simple
 fixed string bearer key.  This method is being targeted for deprecation.
 
 ### OAuth2
 OAuth2 authentication requires that the client possesses an access token
-in order to make API calls.  Access tokens are obtained by the client from
-the Planet authorization server that is separate from the API servers, and are
+in order to make API calls. Access tokens are obtained by the client from
+the Planet authorization server, which is separate from the API servers, and are
 presented by the client to API services to prove the client's right to make
 API calls.
 
@@ -55,13 +55,13 @@ However, clients should not refresh access tokens for every API call; clients
 that misbehave in this way will be throttled by the authorization service,
 potentially losing access to APIs.
 
-When using the Planet SDK, the many of the details of obtaining and refreshing
+When using the Planet SDK, many of the details of obtaining and refreshing
 OAuth2 access tokens will be taken care of for you.
 
 Planet OAuth2 access tokens will work for all Planet APIs underneath
 both the `api.planet.com` and `services.sentinel-hub.com` domains.
 
-Planet Access tokens conform to the JSON Web Token (JWT) specification.
+Planet access tokens conform to the JSON Web Token (JWT) specification.
 Tokens may be inspected to determine their expiration time, which will be
 in the `exp` claim.
 
@@ -92,17 +92,17 @@ applications permitted to access Planet APIs on their behalf.
 
 ### Planet API Keys
 Planet API keys are simple fixed strings that may be presented by the client
-to API services that assert the client's right to access APIs.  API keys are
-obtained by the user from their account page, and provided to the client
+to API services to assert the client's right to access APIs.  API keys are
+obtained by the user from their account page and provided to the client
 so that it may make API calls on the user's behalf.
 
-Planet API keys are simpler to use than OAuth2, but are considered less secure
+Planet API keys are simpler to use than OAuth2 mechanisms, but are considered less secure
 in many ways.  Because of this, Planet API keys are targeted for eventual
 deprecation.  Support for this method is maintained for continuity
 while OAuth2 based methods are being rolled out across all Planet APIs and
 clients.
 
-Planet API Keys will work for Planet APIs underneath `api.planet.com`, but
+Planet API keys will work for Planet APIs underneath `api.planet.com`, but
 will **NOT** work for APIs underneath `services.sentinel-hub.com`.
 
 ----
@@ -115,12 +115,12 @@ application's complexity and needs.
 
 In simple cases, this may be managed external to the application
 by using the [`planet auth`](../../cli/cli-reference/#auth)
-command line utility.
+command-line utility.
 
 In more complex cases, an application may need to manage the
 stored session itself independent of utilities provided by the CLI. In such
-cases the application will be responsible for instantiating a `planet.Auth`
-object, initiating user login, and saving the session resulting information.
+cases, the application will be responsible for instantiating a `planet.Auth`
+object, initiating user login, and saving the resulting session information.
 Session information may contain sensitive information such as access and
 refresh tokens, and must be stored securely by the application.  Session
 information will also be regularly updated during SDK operations, so the
@@ -137,7 +137,7 @@ Once a user login session is established using any method, the state should be
 saved to secure persistent storage to allow for continued access to the Planet
 platform without the need to perform the login repeatedly.  If state cannot
 be persisted in the application environment, the application can operate in
-in-memory mode, and will be forced create a new login session every time the
+in-memory mode, and will be forced to create a new login session every time the
 application is run.  In some cases, this may result in throttling by the
 authorization service.
 
@@ -153,11 +153,11 @@ below for more details.
 For simple programs and scripts, it is easiest for the program to defer
 session management to the [`planet auth`](../../cli/cli-reference/#auth)
 CLI.   This method will store session information in the user's home directory
-in the `~/.planet.json` file and `~/.planet/` directory.  The python SDK will
+in the `~/.planet.json` file and `~/.planet/` directory.  The Python SDK will
 use the information saved in these locations to make API calls.
 
 When this approach is taken, the authentication session will be shared between
-actions taken by the `planet` utility, and those taken by the programs built
+actions taken by the `planet` utility and those taken by the programs built
 using the SDK.  Changes made by one will impact the behavior of the other.
 
 **Requirements and Limitations:**
