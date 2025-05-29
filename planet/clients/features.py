@@ -13,8 +13,9 @@
 # the License.
 
 import logging
-from typing import Any, AsyncIterator, Awaitable, Optional, Union, TypeVar
+from typing import Any, AsyncIterator, Optional, Union, TypeVar
 
+from planet.clients.base import _BaseClient
 from planet.http import Session
 from planet.models import Feature, GeoInterface, Paged
 from planet.constants import PLANET_BASE_URL
@@ -26,7 +27,7 @@ BASE_URL = f'{PLANET_BASE_URL}/features/v1/ogc/my/'
 LOGGER = logging.getLogger()
 
 
-class FeaturesClient:
+class FeaturesClient(_BaseClient):
     """Asyncronous Features API client
 
     For more information about the Features API, see the documentation at
@@ -55,15 +56,7 @@ class FeaturesClient:
             base_url: The base URL to use. Defaults to the Features
                 API base url at api.planet.com.
         """
-        self._session = session
-
-        self._base_url = base_url or BASE_URL
-        if self._base_url.endswith('/'):
-            self._base_url = self._base_url[:-1]
-
-    def _call_sync(self, f: Awaitable[T]) -> T:
-        """block on an async function call, using the call_sync method of the session"""
-        return self._session._call_sync(f)
+        super().__init__(session, base_url or BASE_URL)
 
     async def list_collections(self, limit: int = 0) -> AsyncIterator[dict]:
         """

@@ -1,10 +1,11 @@
 """Planet Subscriptions API Python client."""
 
 import logging
-from typing import Any, AsyncIterator, Awaitable, Dict, Optional, Sequence, TypeVar, List
+from typing import Any, AsyncIterator, Dict, Optional, Sequence, TypeVar, List
 
 from typing_extensions import Literal
 
+from planet.clients.base import _BaseClient
 from planet.exceptions import APIError, ClientError
 from planet.http import Session
 from planet.models import Paged
@@ -17,7 +18,7 @@ LOGGER = logging.getLogger()
 T = TypeVar("T")
 
 
-class SubscriptionsClient:
+class SubscriptionsClient(_BaseClient):
     """A Planet Subscriptions Service API 1.0.0 client.
 
     The methods of this class forward request parameters to the
@@ -55,15 +56,7 @@ class SubscriptionsClient:
             base_url: The base URL to use. Defaults to production subscriptions
                 API base url.
         """
-        self._session = session
-
-        self._base_url = base_url or BASE_URL
-        if self._base_url.endswith('/'):
-            self._base_url = self._base_url[:-1]
-
-    def _call_sync(self, f: Awaitable[T]) -> T:
-        """block on an async function call, using the call_sync method of the session"""
-        return self._session._call_sync(f)
+        super().__init__(session, base_url or BASE_URL)
 
     async def list_subscriptions(self,
                                  status: Optional[Sequence[str]] = None,
