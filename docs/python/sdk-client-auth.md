@@ -6,107 +6,154 @@ use Planet Platform APIs.
 
 For general information on how to authenticate to Planet APIs, please see
 the [Authentication](https://docs.planet.com/develop/authentication) section of Planet's platform documentation.
+This documentaiton is focused on use of the Planet Python SDK and
+[`planet`](../../cli/cli-reference) CLI.
 
-!!! warning
-    Some statements in this guide are forward-looking.
+!!! info
+    Work to unify authentication practices between `api.planet.com` and `services.sentinel-hub.com`
+    is ongoing and being rolled out in phases over time. Documentation that may
+    refer to work in progress is marked as such 🚧.
 
-    OAuth2 M2M tokens are currently only supported by `services.sentinel-hub.com`,
-    and are not yet supported by `api.planet.com`. This is planned for a future date
-    to be announced.
-
-    All APIs support interactive user OAuth2 access tokens, but a process for
-    developers to register and manage clients has not yet been made public.
-    We have also not yet released a way for end-users of such applications to
-    manage which applications have been authorized to access the platform on
-    their behalf.
-
-    If you would like to develop an interactive application that uses
-    Planet's APIs on behalf of a logged-in user (as the `planet` CLI utility
-    does), please contact Planet support and work with engineering to
-    register your application.
+    Of particular note is general shift towards OAuth2 based authentication,
+    and a corresponding move away from Planet API keys.
 
 ----
+
 ## Authentication Protocols
-At the API protocol level underneath the SDK, there are several distinct
-ways a client may authenticate to the Planet APIs, depending on the use case:
+At the HTTP protocol level underneath the SDK, there are several distinct
+ways a client may authenticate to the Planet APIs, depending on the use case.
+See [Authentication Protocols](http://docs.planet.com/develop/authentication/#authentication-protocols) for a
+complete discussion of when to chose a particular method.
 
 * **OAuth2 user access tokens** - API access as the end-user, using OAuth2
-user access tokens.  This is the preferred way for user interactive
-applications to authenticate to Planet APIs.  A web browser is required
-to initialize a session, but not required for continued operation.
-* **OAuth2 M2M access tokens** - API access as a service user, using OAuth2
-M2M access tokens.  This is the preferred way for automated processes
-to authenticate to Planet APIs that must operate without a human user.
-No web browser is required, but this method carries some additional
-security considerations.
-* **Planet API keys** - API access as a Planet end-user using a simple
-fixed string bearer key.  This method is being targeted for deprecation.
+  user access tokens.  This is the preferred way for user interactive
+  applications to authenticate to Planet APIs.  A registered client application
+  and a web browser are required to initialize a session. A web browser is not
+  required for continued operation.  The SDK itself is a registered
+  client application that may be used for this purpose.
+  Examples of applications that fall into this category include
+  [ArcGIS Pro](https://www.esri.com/en-us/arcgis/products/arcgis-pro/overview),
+  [QGIS](https://qgis.org/), and the SDK's own [`planet`](../../cli/cli-reference)
+  CLI program.  All Planet first party web applications also use this method.
+* **OAuth2 M2M access tokens** (🚧 _Work in progress_) - API access as a service user, using OAuth2
+  M2M access tokens.  This is the new preferred way for automated processes
+  to authenticate to Planet APIs that must operate without a human user.
+  No web browser is required, but this method carries some additional
+  security considerations.
+* **Planet API keys** (⚠️ _Pending future deprecation_) - API access as a Planet end-user using a simple
+  fixed string bearer key.  This is the method that has historically been
+  documented and recommended for developers using Planet APIs.
 
 ### OAuth2
 OAuth2 authentication requires that the client possesses an access token
 in order to make API calls. Access tokens are obtained by the client from
 the Planet authorization server, which is separate from the API servers, and are
-presented by the client to API services to prove the client's right to make
+presented by the client to API services to assert the client's right to make
 API calls.
 
 Unlike Planet API keys, access tokens do not last forever for a variety of
 reasons and must be regularly refreshed by the client before their expiration.
-However, clients should not refresh access tokens for every API call; clients
-that misbehave in this way will be throttled by the authorization service,
-potentially losing access to APIs.
-
 When using the Planet SDK, many of the details of obtaining and refreshing
 OAuth2 access tokens will be taken care of for you.
 
-Planet OAuth2 access tokens will work for all Planet APIs underneath
-both the `api.planet.com` and `services.sentinel-hub.com` domains.
+OAuth2 defines many different ways to obtain access tokens, and a full discussion
+is beyond the scope of this SDK user guide.  Please refer to the [Resources](#resources)
+below for more information.  Planet broadly divides OAuth2 use cases into
+user interactive and machine-to-machine use cases, as described in this guide.
 
-Planet access tokens conform to the JSON Web Token (JWT) specification.
-Tokens may be inspected to determine their expiration time, which will be
-in the `exp` claim.
+!!! info
+    OAuth2 user access tokens currently work for all Planet APIs under both
+    the `api.planet.com` and `services.sentinel-hub.com` domains.
 
-!!! note
-    Clients should generally treat the access tokens as opaque bearer tokens.
-    While JWTs are open for inspection, Planet does not guarantee the stability
-    of undocumented claims.  Rely only on those documented here.
+    🚧 OAuth2 machine-to-machine (M2M) access tokens are currently available for use
+    with `services.sentinel-hub.com` APIs. Work to support `api.planet.com` is
+    ongoing.
 
-More information regarding OAuth2 and JWTs may be found here:
-
-* [RFC 6749 - The OAuth 2.0 Authorization Framework](https://datatracker.ietf.org/doc/html/rfc6749)
-* [RFC 8628 - OAuth 2.0 Device Authorization Grant](https://datatracker.ietf.org/doc/html/rfc8628)
-* [RFC 7519 - JSON Web Token (JWT)](https://datatracker.ietf.org/doc/html/rfc7519)
-* [RFC 9068 - JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens](https://datatracker.ietf.org/doc/html/rfc9068)
-
-#### OAuth2 Client Registration
-!!! TODO
-    * link to docs for this process
-    * discuss registering a interactive client (that will access Planet
-    as the user) vs registering a M2M client identity (which is really
-    more like creating a new user) vs registering a confidential client.
-    discuss native vs web clients.
-
-Developers of applications must register client applications with Planet, and
-will be issued a Client ID as part of that process.  Developers should register
-a client for each distinct application so that end-users may discretely manage
-applications permitted to access Planet APIs on their behalf.
 
 ### Planet API Keys
 Planet API keys are simple fixed strings that may be presented by the client
 to API services to assert the client's right to access APIs.  API keys are
-obtained by the user from their account page and provided to the client
-so that it may make API calls on the user's behalf.
+obtained by the user from their [Account](https://www.planet.com/account) page
+under the [_My Settings_](https://www.planet.com/account/#/user-settings) tab.
 
-Planet API keys are simpler to use than OAuth2 mechanisms, but are considered less secure
-in many ways.  Because of this, Planet API keys are targeted for eventual
-deprecation.  Support for this method is maintained for continuity
-while OAuth2 based methods are being rolled out across all Planet APIs and
-clients.
+!!! warning
+    Planet API keys are being targeted for eventual deprecation in favor
+    of OAuth2 mechanisms for most use cases. No specific timeframe has been
+    set for disabling API keys, but new development should use OAuth2
+    mechanisms where possible.
 
-Planet API keys will work for Planet APIs underneath `api.planet.com`, but
-will **NOT** work for APIs underneath `services.sentinel-hub.com`.
+    Planet API keys will work for Planet APIs underneath `api.planet.com`, but
+    will **NOT** work for APIs underneath `services.sentinel-hub.com`.
+
+    There is no plan for API keys to ever be supported by APIs underneath
+    `services.sentinel-hub.com`.
 
 ----
+
 ## Authentication with the SDK
+
+### Configuration
+
+When determining how to authenticate requests made against the Planet
+APIs, the SDK and the Planet CLI may load their configuration from a number of
+sources at runtime:
+
+- Highest priority is given to command-line arguments.  This applies
+  only to `planet` CLI use, since programmatic use of the SDK bypasses the CLI program.
+  Configuration persisted by the `planet` CLI is saved to configuration files
+  (below).
+- Next, environment variables are checked.
+  Of these, `PL_API_KEY` has been used by Planet software for many years,
+  and is the most likely to be set in a user's environment.
+  The other environment variables are new to version 3 of the Planet Python SDK.
+  **Note**: This means that environment variables override configuration
+  saved by the `planet` CLI program.  See [Environment Variables](#environment-variables)
+  below.
+- Then, the configuration file `.planet.json` and files underneath
+  the `.planet` directory in the user's home directory are consulted.
+  These configuration files may be managed with the
+  [`planet auth profile`](../../cli/cli-reference/#profile) CLI command.
+- Finally, built-in defaults will be used.
+
+#### Environment Variables
+When the SDK is not otherwise explicitly configured by an application,
+the following environment variables will be used.
+
+| Variable                    | Description                                                                                                                   |
+|-----------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| **`PL_AUTH_PROFILE`**       | Specify a custom CLI managed auth client profile by name.  This must name a valid CLI managed profile or an error will occur. |
+| **`PL_AUTH_CLIENT_ID`**     | Specify an OAuth2 M2M client ID.  `PL_AUTH_CLIENT_SECRET` must also be specified, or this will be ignored.                    |
+| **`PL_AUTH_CLIENT_SECRET`** | Specify an OAuth2 M2M client secret. `PL_AUTH_CLIENT_ID` must also be specified, or this will be ignored.                     |
+| **`PL_AUTH_API_KEY`**       | Specify a legacy Planet API key.                                                                                              |
+
+#### Reset User Configuration
+The following commands may be used to clear an environment of any
+previously configured settings:
+
+```sh title="Clear saved authentication settings"
+unset PL_API_KEY
+unset PL_AUTH_PROFILE
+unset PL_AUTH_CLIENT_ID
+unset PL_AUTH_CLIENT_SECRET
+planet auth reset
+```
+
+### Profiles
+Collectively, the configuration of the SDK to use a specific authentication
+protocol (see above) and a working set of session state information is
+termed a _profile_ by the SDK and the CLI.  Profiles are an abstraction
+of the SDK and the CLI, and are not inherent to authentication to the
+Planet platform generally.
+
+The [`planet auth profile`](../../cli/cli-reference/#profile) CLI command
+is provided to manage persistent profiles and sessions in the user's home
+directory. Home directory persisted profiles are shared between the CLI
+and applications built using the SDK.
+
+Applications built using the SDK may be configured to bypass home directory
+profile and session storage, if this better suits the needs of the application.
+
+### Sessions
 
 Before any calls can be made to a Planet API using the SDK, it is
 necessary for the user to login and establish an authentication session.
@@ -124,32 +171,32 @@ object, initiating user login, and saving the resulting session information.
 Session information may contain sensitive information such as access and
 refresh tokens, and must be stored securely by the application.  Session
 information will also be regularly updated during SDK operations, so the
-application must handle keeping the saved session information up-to-date.
+application must handle callbacks to store updated session information.
 
 Regardless of which authentication protocol is used, the SDK encapsulates
 the details with
 [`planet.Auth`](../sdk-reference/#planet.auth.Auth) and
 [`planet.Session`](../sdk-reference/#planet.http.Session).
 
-#### Session State Storage
+#### Session Persistence
 
 Once a user login session is established using any method, the state should be
 saved to secure persistent storage to allow for continued access to the Planet
 platform without the need to perform the login repeatedly.  If state cannot
 be persisted in the application environment, the application can operate in
-in-memory mode, and will be forced to create a new login session every time the
-application is run.  In some cases, this may result in throttling by the
-authorization service.
+in-memory mode, but will be forced to create a new login session every time the
+application is run.  If the rate of repeated logins is too great, this may
+result in throttling by the authorization service.
 
-By default, the SDK provides the option to save session state in the user's
+The SDK provides the option to save session state in the user's
 home directory in a way that is compatible with the CLI.  The SDK also
 provides a way for the application to provide its own secure storage.
 Applications needing to use their own storage will do so by providing
 the `Auth` layer in the SDK with a custom implementation of the
-`planet_auth.ObjectStorageProvider` abstract base class.  See examples
-below for more details.
+[`planet_auth.ObjectStorageProvider`](https://planet-auth.readthedocs.io/en/latest/api-planet-auth/#planet_auth.ObjectStorageProvider)
+abstract base class.  See examples below for more details.
 
-### Using `planet auth` CLI Managed Auth Session
+### CLI Managed Sessions
 For simple programs and scripts, it is easiest for the program to defer
 session management to the [`planet auth`](../../cli/cli-reference/#auth)
 CLI.   This method will store session information in the user's home directory
@@ -160,6 +207,8 @@ When this approach is taken, the authentication session will be shared between
 actions taken by the `planet` utility and those taken by the programs built
 using the SDK.  Changes made by one will impact the behavior of the other.
 
+CLI managed sessions can be used for all authentication protocols.
+
 **Requirements and Limitations:**
 
 * The program must have read and write access to the user's home directory.
@@ -169,7 +218,7 @@ using the SDK.  Changes made by one will impact the behavior of the other.
 * This approach should not be used on public terminals or in cases where the
   user's home directory cannot be kept confidential.
 
-#### Initialize Session - Login
+#### Initialize Session - CLI Login
 Session login can be performed using the following command.  This command can
 be used to initialize sessions using any of the authentication methods
 discussed above, and will default to creating an OAuth2 user session.
@@ -193,21 +242,29 @@ on SDK default behavior, but it may also be done explicitly.
 {% include 'auth-session-management/cli_managed_auth_state__explicit.py' %}
 ```
 
+Applications may be developed to always select a specific CLI managed profile.
+This may be useful in cases where an application `my-application` may wish to
+guide the user experience towards expecting CLI sessions and `my-application`
+sessions to always be separate from the default CLI user session.
+
 ```python linenums="1" title="Use a specific session that is shared with the CLI"
 {% include 'auth-session-management/cli_managed_auth_state__specific_auth_profile.py' %}
 
 ```
 
-### Manually Creating a Session Using Library Functions
+### Application Managed Sessions
 If an application cannot or should not use a login session initiated by the
 [`planet auth`](../../cli/cli-reference/#auth) CLI command, it will be
 responsible for managing the process on its own, persisting session state as
 needed.
 
-The process differs slightly for applications accessing Planet services on behalf
-of a human user verses accessing Planet services using a service account.  Depending
-on the use case, applications may need to support one or the other or both (just
-as the [`planet`](../../cli/cli-reference) CLI command supports both methods).
+Application managed sessions may be used with all authentication protocols.
+Application developers may control whether sessions are visible to the CLI.
+
+The process varies depending on the authentication protocol used.
+Depending on the use case, applications may need to support multiple authenticaiton
+methods, just as the [`planet`](../../cli/cli-reference) CLI command supports interacting with Planet APIs
+using either a user or a service user account.
 
 #### OAuth2 Session for Users
 User session initialization inherently involves using a web browser to
@@ -234,7 +291,7 @@ To use this method using the SDK, the following requirements must be met:
 * The application must be able to listen on a network port that is accessible
   to the browser.
 
-###### Examples - Authorization Code Flow
+###### Examples - OAuth2 Authorization Code Flow
 ```python linenums="1" title="Login as a user using a local browser with in memory only state persistance"
 {% include 'auth-session-management/app_managed_auth_state__in_memory__oauth_user_authcode__with_browser.py' %}
 ```
@@ -248,11 +305,12 @@ To use this method using the SDK, the following requirements must be met:
 ```
 
 ##### Without a Local Web Browser
-In environments where a local web browsers is not available the process above
-will not work.  For example, a remote shell to a cloud environment is not likely
+In environments where a local web browser is not available, additional steps must
+be taken by the application author to initialize the user session.
+For example, a remote shell to a cloud environment is not likely
 to be able to open a browser on the user's desktop or receive network callbacks
 from the user's desktop browser.  In these cases, a browser is
-still required.  To login in such a case the SDK will generate a URL and a
+still required.  To complete login in such a case, the SDK will generate a URL and a
 verification code that must be presented to the user. The user must visit the
 URL out of band to complete the login process while the application polls for
 the completion of the login process using the SDK.  At a network protocol
@@ -265,7 +323,7 @@ To use this method using the SDK, the following requirements must be met:
 * The application must be able to display instructions to the user, directing
   them to a web location to complete login.
 
-###### Examples - Device Code Flow
+###### Examples - OAuth2 Device Code Flow
 ```python linenums="1" title="Login as a user using an external browser with in memory only state persistance"
 {% include 'auth-session-management/app_managed_auth_state__in_memory__oauth_user_devicecode__external_browser.py' %}
 ```
@@ -304,7 +362,7 @@ security considerations, discussed in
 Because of these consideration, service accounts should only be used for
 workflows that are independent of a controlling user.
 
-##### Examples - Client Credentials Flow
+##### Examples - OAuth2 Client Credentials Flow
 ```python linenums="1" title="Access APIs using a service account with in memory only state persistance"
 {% include 'auth-session-management/app_managed_auth_state__in_memory__oauth_m2m.py' %}
 ```
@@ -344,34 +402,15 @@ development.
 {% include 'auth-session-management/app_managed_auth_state__app_custom_storage__api_key.py' %}
 ```
 
-## OAuth2 Scopes
-OAuth2 uses scopes to allow users to limit how much access clients have to the Planet
-service on their behalf.
-
-* **`planet`** - Use this scope to request access to Planet APIs.
-* **`offline_acess`** - Use this scope to request a refresh token.  This may
-  only be requested by clients that access APIs on behalf of a user.  M2M
-  clients may not request this scope.
-
-
-## Environment Variables
-When session information is not explicitly configured, the following environment variables
-will influence the library behavior when initialized to user default preferences.
-
-* **`PL_AUTH_PROFILE`** - Specify a custom CLI managed auth client profile by name.
-* **`PL_AUTH_CLIENT_ID`** - Specify an OAuth2 M2M client ID.
-* **`PL_AUTH_CLIENT_SECRET`** - Specify an OAuth2 M2M client secret.
-* **`PL_AUTH_API_KEY`** - Specify a legacy Planet API key.
 ----
 
+## Resources
+More information regarding OAuth2 and JWTs may be found here:
 
-## Web Services
-!!! TODO
-    All of the above really deals with native applications running in an
-    environment controlled by the end-user.  The considerations
-    are different if the application being developed is a web service where
-    the end-user is not directly accessing Planet APIs.  This involves
-    "Confidential" OAuth2 client configurations, and needs to be documented
-    here.
+* [RFC 6749 - The OAuth 2.0 Authorization Framework](https://datatracker.ietf.org/doc/html/rfc6749)
+* [RFC 8628 - OAuth 2.0 Device Authorization Grant](https://datatracker.ietf.org/doc/html/rfc8628)
+* [RFC 7519 - JSON Web Token (JWT)](https://datatracker.ietf.org/doc/html/rfc7519)
+* [RFC 9068 - JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens](https://datatracker.ietf.org/doc/html/rfc9068)
+* [RFC 6819 - OAuth 2.0 Threat Model and Security Considerations](https://datatracker.ietf.org/doc/html/rfc6819)
 
 ----
