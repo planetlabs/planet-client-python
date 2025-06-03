@@ -3,7 +3,7 @@
 ## Configuration
 
 When determining how to authenticate requests made against the Planet
-APIs, the SDK and the Planet CLI loads configuration from a number of
+APIs, the SDK and the Planet CLI load configuration from a number of
 sources at runtime:
 
 - Highest priority is given to command-line arguments.  This applies

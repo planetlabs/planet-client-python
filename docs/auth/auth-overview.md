@@ -45,7 +45,7 @@ complete discussion of when to choose a particular method.
   documented and recommended for developers using Planet APIs.
 
 ### OAuth2
-OAuth2 authentication requires that the client possesses an access token
+OAuth2 authentication requires that the client possess an access token
 in order to make API calls. Access tokens are obtained by the client from
 the Planet authorization server, which is separate from the API servers, and are
 presented by the client to API services to assert the client's right to make

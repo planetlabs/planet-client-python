@@ -9,7 +9,7 @@ Application managed sessions may be used with all authentication protocols.
 Application developers may control whether sessions are visible to the CLI.
 
 The process varies depending on the authentication protocol used.
-Depending on the use case, applications may need to support multiple authenticaiton
+Depending on the use case, applications may need to support multiple authentication
 methods, just as the [`planet`](../../cli/cli-reference) CLI command supports interacting with Planet APIs
 using either a user or a service user account.
 
@@ -28,13 +28,13 @@ In environments where a local browser is available, the Planet SDK library can m
 the process of launching the browser locally, transferring control to the Planet
 authorization services for session initialization, and accepting a network
 callback from the local browser to regain control once the authorization
-process is complete. At a network protocol level, this is establishing the user
+process is complete. At a network protocol level, this establishes the user
 login session using the OAuth2 authorization code flow.
 
 To use this method using the SDK, the following requirements must be met:
 
 * The application must be able to launch a local web browser.
-* The web browse must be able to connect to Planet services.
+* The web browser must be able to connect to Planet services.
 * The application must be able to listen on a network port that is accessible
   to the browser.
 
@@ -78,8 +78,8 @@ from the user's desktop browser.  In these cases, a browser is
 still required.  To complete login in such a case, the SDK will generate a URL and a
 verification code that must be presented to the user. The user must visit the
 URL out of band to complete the login process while the application polls for
-the completion of the login process using the SDK.  At a network protocol
-level, this is establishing the user login session using the OAuth2 device
+the completion of the login process using the SDK. At a network protocol
+level, this establishes the user login session using the OAuth2 device
 code flow.
 
 To use this method using the SDK, the following requirements must be met:
@@ -114,7 +114,7 @@ initialization, and does not require a web browser.
 
 While preserving session state for user sessions was a concern driven
 in part by a concern for the user experience of using a web browser for
-initialization, for service account it remains a concern to avoid
+initialization, for service accounts it remains a concern to avoid
 throttling by the authorization service.
 
 If applications are expected to run longer than the life of an access token
@@ -129,9 +129,9 @@ securely.
 
 At a network protocol level, OAuth2 service account sessions are implemented
 using the OAuth2 authorization code flow.  This carries with it some additional
-security considerations, discussed in
+security concerns, discussed in
 [RFC 6819 §4.4.4](https://datatracker.ietf.org/doc/html/rfc6819#section-4.4.4).
-Because of these consideration, service accounts should only be used for
+Because of these considerations, service accounts should only be used for
 workflows that are independent of a controlling user.
 
 As above, this may be done with state only persisted in memory, with state
