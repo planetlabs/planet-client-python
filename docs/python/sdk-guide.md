@@ -38,11 +38,11 @@ planet auth login
 ```
 
 These examples will assume you have done this, and are using the SDK's default
-client authentication mechanisms.  If you are not, please see the
-[Client Authentication Guide](sdk-client-auth.md) for a complete discussion of
+client authentication mechanisms.  For more advanced use cases, see the
+[Client Authentication Guide](../auth/auth-overview.md) for a complete discussion of
 all authentication options provided by the SDK.  This includes user
 authentication with a web browser, service account authentication for detached
-workloads, and support for legacy authentication mechanisms.
+workloads using OAuth2, and support for legacy applications using Planet API keys.
 
 ### Search
 
