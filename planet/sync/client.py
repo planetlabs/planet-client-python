@@ -16,10 +16,11 @@ class Planet:
     Authentication is required: defaults to detecting API key from environment (PL_API_KEY).
 
     Members:
-    `data`: for interacting with the Planet Data API.
-    `orders`: Orders API.
-    `subscriptions`: Subscriptions API.
-    `features`: Features API
+
+    - `data`: for interacting with the Planet Data API.
+    - `orders`: Orders API.
+    - `subscriptions`: Subscriptions API.
+    - `features`: Features API
 
     Quick start example:
     ```python
@@ -35,13 +36,8 @@ class Planet:
 
     Parameters:
         session: Optional Session. The Session can be provided allowing for customization, and
-            will default to standard behavior when not provided. Example:
+            will default to standard behavior when not provided.
 
-          ```python
-          from planet.sync import Planet
-
-          pl = Planet()
-          ````
     """
 
     def __init__(self, session: Optional[Session] = None) -> None:
