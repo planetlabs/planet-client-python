@@ -82,6 +82,8 @@ and applications built using the SDK.
 
 Applications built using the SDK may be configured to bypass home directory
 profile and session storage, if this better suits the needs of the application.
+See [Applicaiton Managed Sessions](../auth-dev-app-managed-oauth) for detailed
+examples.
 
 ## Sessions
 
