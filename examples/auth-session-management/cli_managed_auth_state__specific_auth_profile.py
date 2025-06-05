@@ -11,7 +11,7 @@ def example_main():
     # If this has not been done, the API calls will fail.  This example
     # does not initialize a new session.
     plsdk_auth = planet.Auth.from_profile(
-        profile_name="my-cli-managed-profile")
+        profile_name="my-app-profile")
 
     # If required, how to login depends on what is configured in the specific
     # profile.  See other examples for login calls.
