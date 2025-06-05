@@ -23,10 +23,10 @@ When determining how to authenticate requests made against the Planet
 APIs, the default behavior of the SDK and the Planet CLI is to load
 configuration from a number of sources at runtime:
 
-- Highest priority is given to command-line arguments.  This applies
-  only to `planet` CLI use, since programmatic use of the SDK bypasses the CLI program.
-  Configuration persisted by the `planet` CLI is saved to configuration files
-  (below).
+- Highest priority is given to arguments passed to the [`Auth`](../../python/sdk-reference/#planet.auth.Auth)
+  class (when using the SDK) or via the command line (when using the CLI).
+  When saving preferences using the CLI, configuration is saved to
+  configuration files (below).
 - Next, environment variables are checked.
   Of these, `PL_API_KEY` has been used by Planet software for many years,
   and is the most likely to be set in a user's environment.
