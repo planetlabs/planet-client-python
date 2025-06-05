@@ -26,23 +26,42 @@ See [Authentication Protocols](http://docs.planet.com/develop/authentication/#au
 complete discussion of when to choose a particular method.
 
 * **OAuth2 user access tokens** - API access as the end-user, using OAuth2
-  user access tokens.  This is the preferred way for user-interactive
-  applications to authenticate to Planet APIs.  A registered client application
-  and a web browser are required to initialize a session. A web browser is not
-  required for continued operation.  The SDK itself is a registered
-  client application that may be used for this purpose.
-  Examples of applications that fall into this category include
-  [ArcGIS Pro](https://www.esri.com/en-us/arcgis/products/arcgis-pro/overview),
-  [QGIS](https://qgis.org/), and the SDK's own [`planet`](../../cli/cli-reference)
-  CLI program.  All Planet first-party web applications also use this method.
+    user access tokens.  This is the preferred way for user-interactive
+    applications to authenticate to Planet APIs.  A registered client application
+    and a web browser are required to initialize a session. A web browser is not
+    required for continued operation.  The SDK itself is a registered
+    client application that may be used for this purpose.
+
+    Examples of applications that fall into this category include
+    [ArcGIS Pro](https://www.esri.com/en-us/arcgis/products/arcgis-pro/overview),
+    [QGIS](https://qgis.org/), and the SDK's own [`planet`](../../cli/cli-reference)
+    CLI program.  All Planet first-party web applications also use this method.
+
+    SDK Examples:
+
+     * [Using the CLI (Quick start)](../auth-dev-cli-managed/#planet-auth-login-planet-user)
+     * [Forcing use of SDK Built-in Application ID in code (Quick start)](../auth-dev-cli-managed/#use-cli-session-force-builtin)
+     * [Using a custom registered application ID](../auth-dev-app-managed-oauth/#oauth2-session-for-users)
+
 * **OAuth2 M2M access tokens** (🚧 _Work in progress_) - API access as a service user, using OAuth2
-  M2M access tokens.  This is the new preferred way for automated processes
-  to authenticate to Planet APIs that must operate without a human user.
-  No web browser is required, but this method carries some additional
-  security considerations.
+    M2M access tokens.  This is the new preferred way for automated processes
+    to authenticate to Planet APIs that must operate without a human user.
+    No web browser is required, but this method carries some additional
+    security considerations.
+
+    Examples:
+
+     * [Using the CLI (Quick start)](../auth-dev-cli-managed/#planet-auth-login-planet-m2m)
+     * [Using a M2M Access Token in code](../auth-dev-app-managed-oauth/#oauth2-session-for-service-accounts)
+
 * **Planet API keys** (⚠️ _Pending future deprecation_) - API access as a Planet end-user using a simple
-  fixed string bearer key.  This is the method that has historically been
-  documented and recommended for developers using Planet APIs.
+    fixed string bearer key.  This is the method that has historically been
+    documented and recommended for developers using Planet APIs.
+
+    Examples:
+
+     * [Using the CLI (Quick start)](../auth-dev-cli-managed/#planet-auth-login-planet-apikey)
+     * [Using a Planet API Key in code](../auth-dev-app-managed-apikey)
 
 ### OAuth2
 OAuth2 authentication requires that the client possess an access token
@@ -67,8 +86,10 @@ user-interactive and machine-to-machine use cases, as described in this guide.
 
     🚧 OAuth2 machine-to-machine (M2M) access tokens are currently available for use
     with `services.sentinel-hub.com` APIs. Work to support `api.planet.com` is
-    ongoing.
-
+    ongoing.  It should also be noted that at this time no API clients for
+    `services.sentinel-hub.com` APIs have been incorporated into this SDK.
+    The SDK may still be used to obtain and manage M2M access tokens to
+    support external applications.
 
 ### Planet API Keys
 Planet API keys are simple fixed strings that may be presented by the client

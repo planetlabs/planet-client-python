@@ -7,6 +7,8 @@ needed.
 
 Application managed sessions may be used with all authentication protocols.
 Application developers may control whether sessions are visible to the CLI.
+This is managed with the `save_state_to_storage` parameter on the `planet.Auth`
+constructor methods illustrated below.
 
 The process varies depending on the authentication protocol used.
 Depending on the use case, applications may need to support multiple authentication
@@ -22,6 +24,15 @@ authentication procedures without the complexity of these needing to
 be exposed to the application developer who is focused on geospatial
 operations using the Planet platform, and not the nuances of user
 authentication and authorization.
+
+### OAuth2 User Client Registration
+Developers of applications must register client applications with Planet, and
+will be issued a Client ID as part of that process.  Developers should register
+a client for each distinct application so that end-users may discretely manage
+applications permitted to access Planet APIs on their behalf.
+
+See [OAuth2 Client Registration](http://docs.planet.com/develop/authentication/#interactive-client-registration)
+for more information.
 
 ### With a Local Web Browser
 In environments where a local browser is available, the Planet SDK library can manage
@@ -121,7 +132,7 @@ If applications are expected to run longer than the life of an access token
 (a few hours), then in memory operations are acceptable (for example: a long-running
 data processing job).  If application lifespan is short and frequent,
 then the application should take steps to persist the session state (for
-example: a command line utility run from a shell with a short lifespan).
+example: a command line utility run repeatedly from a shell with a short lifespan).
 
 Like the session state itself, service account initialization parameters are
 sensitive, and it is the responsibility of the application to store them
@@ -136,6 +147,12 @@ workflows that are independent of a controlling user.
 
 As above, this may be done with state only persisted in memory, with state
 shared with the CLI, or with state saved to application provided storage.
+
+### OAuth2 M2M Client Registration
+Service accounts are managed under the
+**OAuth Clients** panel on the [Planet Insights Account](https://insights.planet.com/account/#/) page.
+
+See [Sentinel Hub Authentication](https://docs.sentinel-hub.com/api/latest/api/overview/authentication/) for further information.
 
 ### Examples - OAuth2 Client Credentials Flow
 
