@@ -20,7 +20,7 @@ where the use case allows for it.
 Users may also continue to initialize SDK and CLI sessions with their username
 and password, but rather than being processed by the SDK itself a browser must
 be invoked to complete OAuth2 client session initialization.
-This new method is intended to offer a number of long term benefits, including:
+This new method is intended to offer a number of long-term benefits, including:
 
 * The new method provides the SDK and the CLI with access tokens that may be
   used with both `api.planet.com` and `services.sentinel-hub.com` endpoints.  The method
@@ -57,7 +57,7 @@ of the SDK, the following changes are the most important to note:
 
 ### Session Persistence
 Both version 2 and version 3 of the SDK use the `~/.planet.json` file in the user's
-home directory to store user's API key.  If this file is present and was configured
+home directory to store the user's API key. If this file is present and was configured
 by version 2 of the SDK, it should continue to work.
 
 While the `~/.planet.json` file continues to be used by version 3, and version 3
