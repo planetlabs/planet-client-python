@@ -177,8 +177,7 @@ async def item_delete(ctx, collection_id, feature_id, pretty):
         collection_id, feature_id = split_ref(collection_id)
 
     async with features_client(ctx) as cl:
-        result = await cl.delete_item(collection_id, feature_id)
-        echo_json(result, pretty)
+        await cl.delete_item(collection_id, feature_id)
 
 
 @command(items, name="add")

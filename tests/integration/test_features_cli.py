@@ -18,7 +18,11 @@ def invoke(*args):
 
     result = runner.invoke(cli.main, args=args)
     assert result.exit_code == 0, result.output
-    return json.loads(result.output)
+    if len(result.output) > 0:
+        return json.loads(result.output)
+
+    # some commands (delete) return no value.
+    return None
 
 
 @respx.mock
@@ -140,7 +144,7 @@ def test_get_item():
         assert resp["id"] == "test123"
 
     assertf(invoke("items", "get", collection_id, item_id))
-    assertf(invoke("items", "get", f"pl:ref:my/{collection_id}/{item_id}"))
+    assertf(invoke("items", "get", f"pl:features/my/{collection_id}/{item_id}"))
 
 
 @respx.mock
@@ -158,3 +162,4 @@ def test_delete_item():
         assert resp is None
 
     assertf(invoke("items", "delete", collection_id, item_id))
+    assertf(invoke("items", "delete", f"pl:features/my/{collection_id}/{item_id}"))
