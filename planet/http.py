@@ -1,5 +1,5 @@
 # Copyright 2020 Planet Labs, Inc.
-# Copyright 2022 Planet Labs PBC.
+# Copyright 2022, 2025 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -241,13 +241,7 @@ class Session(BaseSession):
             read_timeout_secs: Maximum time to wait for data to be received.
         """
         if auth is None:
-            # Try getting credentials from environment before checking
-            # in the secret file, this is the conventional order (AWS
-            # CLI, for example.)
-            try:
-                auth = Auth.from_env()
-            except exceptions.PlanetError:
-                auth = Auth.from_file()
+            auth = Auth.from_user_default_session()
 
         if read_timeout_secs is None:
             read_timeout_secs = DEFAULT_READ_TIMEOUT_SECS
@@ -489,44 +483,3 @@ class Session(BaseSession):
             return _client_directory[name](self, base_url=base_url)
         except KeyError:
             raise exceptions.ClientError("No such client.")
-
-
-class AuthSession(BaseSession):
-    """Synchronous connection to the Planet Auth service."""
-
-    def __init__(self):
-        """Initialize an AuthSession.
-        """
-        self._client = httpx.Client(timeout=None)
-        self._client.headers.update({'User-Agent': self._get_user_agent()})
-        self._client.event_hooks['request'] = [self._log_request]
-        self._client.event_hooks['response'] = [
-            self._log_response, self._raise_for_status
-        ]
-
-    def request(self, method: str, url: str, json: dict):
-        """Submit a request
-
-        Parameters:
-            method: HTTP request method.
-            url: Location of the API endpoint.
-            json: JSON to send.
-
-        Returns:
-            Server response.
-
-        Raises:
-            planet.exceptions.APIException: On API error.
-        """
-        request = self._client.build_request(method=method, url=url, json=json)
-        http_resp = self._client.send(request)
-        return models.Response(http_resp)
-
-    @classmethod
-    def _raise_for_status(cls, response):
-        try:
-            super()._raise_for_status(response)
-        except exceptions.BadQuery:
-            raise exceptions.APIError('Not a valid email address.')
-        except exceptions.InvalidAPIKey:
-            raise exceptions.APIError('Incorrect email or password.')

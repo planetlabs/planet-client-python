@@ -76,7 +76,7 @@ def check_bundle(ctx, param, bundle) -> Optional[List[dict]]:
 @asynccontextmanager
 async def orders_client(ctx):
     base_url = ctx.obj['BASE_URL']
-    async with CliSession() as sess:
+    async with CliSession(ctx) as sess:
         cl = OrdersClient(sess, base_url=base_url)
         yield cl
 
