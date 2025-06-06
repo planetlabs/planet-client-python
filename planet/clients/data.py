@@ -17,8 +17,10 @@ import hashlib
 import logging
 from pathlib import Path
 import time
-from typing import Any, AsyncIterator, Awaitable, Callable, Dict, List, Optional, TypeVar, Union
+from typing import Any, AsyncIterator, Callable, Dict, List, Optional, TypeVar, Union
 import uuid
+
+from planet.clients.base import _BaseClient
 
 from ..data_filter import empty_filter
 from .. import exceptions
@@ -67,7 +69,7 @@ class Searches(Paged):
     ITEMS_KEY = 'searches'
 
 
-class DataClient:
+class DataClient(_BaseClient):
     """High-level asynchronous access to Planet's data API.
 
     Example:
@@ -92,15 +94,7 @@ class DataClient:
             base_url: The base URL to use. Defaults to production data API
                 base url.
         """
-        self._session = session
-
-        self._base_url = base_url or BASE_URL
-        if self._base_url.endswith('/'):
-            self._base_url = self._base_url[:-1]
-
-    def _call_sync(self, f: Awaitable[T]) -> T:
-        """block on an async function call, using the call_sync method of the session"""
-        return self._session._call_sync(f)
+        super().__init__(session, base_url or BASE_URL)
 
     @staticmethod
     def _check_search_id(sid):

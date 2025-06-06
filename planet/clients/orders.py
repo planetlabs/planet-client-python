@@ -16,12 +16,14 @@
 import asyncio
 import logging
 import time
-from typing import AsyncIterator, Awaitable, Callable, Dict, List, Optional, Sequence, TypeVar, Union
+from typing import AsyncIterator, Callable, Dict, List, Optional, Sequence, TypeVar, Union
 import uuid
 import json
 import hashlib
 
 from pathlib import Path
+
+from planet.clients.base import _BaseClient
 from .. import exceptions
 from ..constants import PLANET_BASE_URL
 from ..http import Session
@@ -68,7 +70,7 @@ class OrderStates:
         return cls.passed('running', test)
 
 
-class OrdersClient:
+class OrdersClient(_BaseClient):
     """High-level asynchronous access to Planet's orders API.
 
     Example:
@@ -93,15 +95,7 @@ class OrdersClient:
             base_url: The base URL to use. Defaults to production orders API
                 base url.
         """
-        self._session = session
-
-        self._base_url = base_url or BASE_URL
-        if self._base_url.endswith('/'):
-            self._base_url = self._base_url[:-1]
-
-    def _call_sync(self, f: Awaitable[T]) -> T:
-        """block on an async function call, using the call_sync method of the session"""
-        return self._session._call_sync(f)
+        super().__init__(session, base_url or BASE_URL)
 
     @staticmethod
     def _check_order_id(oid):
