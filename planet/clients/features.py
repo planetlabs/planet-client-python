@@ -16,6 +16,7 @@ import logging
 from typing import Any, AsyncIterator, Optional, Union, TypeVar
 
 from planet.clients.base import _BaseClient
+from planet.exceptions import ClientError
 from planet.http import Session
 from planet.models import Feature, GeoInterface, Paged
 from planet.constants import PLANET_BASE_URL
@@ -184,6 +185,11 @@ class FeaturesClient(_BaseClient):
             )
             ```
             """
+
+        # fail early instead of sending a delete request without a feature id.
+        if len(feature_id) < 1:
+            raise ClientError("Must provide a valid feature id")
+
         url = f'{self._base_url}/collections/{collection_id}/items/{feature_id}'
         await self._session.request(method='DELETE', url=url)
 
