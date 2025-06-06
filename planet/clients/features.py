@@ -188,7 +188,7 @@ class FeaturesClient(_BaseClient):
 
         # fail early instead of sending a delete request without a feature id.
         if len(feature_id) < 1:
-            raise ClientError("Must provide a valid feature id")
+            raise ClientError("Must provide a feature id")
 
         url = f'{self._base_url}/collections/{collection_id}/items/{feature_id}'
         await self._session.request(method='DELETE', url=url)
