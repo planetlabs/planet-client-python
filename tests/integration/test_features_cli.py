@@ -144,7 +144,8 @@ def test_get_item():
         assert resp["id"] == "test123"
 
     assertf(invoke("items", "get", collection_id, item_id))
-    assertf(invoke("items", "get", f"pl:features/my/{collection_id}/{item_id}"))
+    assertf(invoke("items", "get",
+                   f"pl:features/my/{collection_id}/{item_id}"))
 
 
 @respx.mock
@@ -162,4 +163,5 @@ def test_delete_item():
         assert resp is None
 
     assertf(invoke("items", "delete", collection_id, item_id))
-    assertf(invoke("items", "delete", f"pl:features/my/{collection_id}/{item_id}"))
+    assertf(
+        invoke("items", "delete", f"pl:features/my/{collection_id}/{item_id}"))
