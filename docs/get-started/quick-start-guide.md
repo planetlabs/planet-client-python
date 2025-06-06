@@ -27,9 +27,10 @@ pip install planet
 
 ### Authentication
 
-Use the `planet auth` CLI command to establish a user login session that will
-be saved to the user's home directory.  For other authentication options, see
-the [Client Authentication Guide](../python/sdk-client-auth.md).
+Use the [`planet auth`](../../cli/cli-reference/#auth) CLI command to establish
+a user login session that will be saved to the user's home directory. This
+session will be picked up by SDK library functions by default.  For other
+authentication options, see the [Client Authentication Guide](../auth/auth-overview.md).
 
 ```bash
 planet auth login

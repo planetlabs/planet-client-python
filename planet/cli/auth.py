@@ -32,8 +32,8 @@ planet_auth_utils.monkeypatch_hide_click_cmd_options(
     planet_auth_utils.cmd_plauth_login,
     [
         # Hide client ID / client secret until we are ready for OAuth M2M
-        "auth_client_id",
-        "auth_client_secret",
+        # "auth_client_id",
+        # "auth_client_secret",
         # Hide audience and organization.  They are useful for plauth as a
         # generic OAuth client, but within the planet SDK we only care about
         # the built-ins.
@@ -69,4 +69,6 @@ cmd_auth_profile.add_command(name="list",
 cmd_auth_profile.add_command(name="show",
                              cmd=planet_auth_utils.cmd_profile_show)
 cmd_auth_profile.add_command(name="set", cmd=planet_auth_utils.cmd_profile_set)
+cmd_auth_profile.add_command(name="copy",
+                             cmd=planet_auth_utils.cmd_profile_copy)
 cmd_auth.add_command(cmd_auth_profile)

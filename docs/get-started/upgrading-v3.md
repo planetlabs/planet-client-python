@@ -20,7 +20,7 @@ where the use case allows for it.
 Users may also continue to initialize SDK and CLI sessions with their username
 and password, but rather than being processed by the SDK itself a browser must
 be invoked to complete OAuth2 client session initialization.
-This new method is intended to offer a number of long term benefits, including:
+This new method is intended to offer a number of long-term benefits, including:
 
 * The new method provides the SDK and the CLI with access tokens that may be
   used with both `api.planet.com` and `services.sentinel-hub.com` endpoints.  The method
@@ -31,7 +31,7 @@ This new method is intended to offer a number of long term benefits, including:
 * The new method is compatible with other platform enhancements currently under
   development by Planet's software engineering team.
 
-For complete details on the new mechanisms, see the [Client Authentication Guide](../python/sdk-client-auth.md).
+For complete details on the new mechanisms, see the [Client Authentication Guide](../auth/auth-overview.md).
 
 ### CLI Usage
 The [`planet auth`](../../cli/cli-reference/#auth) command has been substantially
@@ -57,7 +57,7 @@ of the SDK, the following changes are the most important to note:
 
 ### Session Persistence
 Both version 2 and version 3 of the SDK use the `~/.planet.json` file in the user's
-home directory to store user's API key.  If this file is present and was configured
+home directory to store the user's API key. If this file is present and was configured
 by version 2 of the SDK, it should continue to work.
 
 While the `~/.planet.json` file continues to be used by version 3, and version 3
@@ -71,7 +71,7 @@ command to reset all saved state should it become corrupted.  When this command 
 the old files are moved aside rather than deleted.
 
 ### SDK Session Initialization
-See the [Client Authentication Guide](../python/sdk-client-auth.md) for a complete
+See the [Client Authentication Guide](../auth/auth-overview.md) for a complete
 discussion of all options now available.
 
 Basic SDK use cases should work with no alterations.
@@ -88,7 +88,7 @@ Applications may also continue to initialize the SDK with a specific API key as 
 {% include 'auth-session-management/app_managed_auth_state__in_memory__api_key.py' %}
 ```
 
-Users developing new applications should consult the [Client Authentication Guide](../python/sdk-client-auth.md)
+Users developing new applications should consult the [Client Authentication Guide](../auth/auth-overview.md)
 for a complete discussion of all OAuth2 based mechanisms.  OAuth2 mechanisms
 should be preferred to the use of Planet API keys.
 

@@ -1,9 +1,6 @@
 import json
-import logging
 import planet
 import sys
-
-logging.basicConfig(level=logging.CRITICAL)
 
 
 def example_main():
@@ -13,8 +10,7 @@ def example_main():
     # must have performed a login() elsewhere prior to this example.
     # If this has not been done, the API calls will fail.  This example
     # does not initialize a new session.
-    plsdk_auth = planet.Auth.from_profile(
-        profile_name="my-cli-managed-profile")
+    plsdk_auth = planet.Auth.from_profile(profile_name="my-app-profile")
 
     # If required, how to login depends on what is configured in the specific
     # profile.  See other examples for login calls.

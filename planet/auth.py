@@ -50,50 +50,81 @@ class Auth(abc.ABC, httpx.Auth):
     @staticmethod
     def from_user_default_session() -> Auth:
         """
-        Create authentication from user defaults.
+        Create authentication context from user defaults.
 
         This method should be used when an application wants to defer
         auth profile management to the user and the `planet auth` CLI
         command entirely.
 
-        Users may use the `planet auth login` command to initialize
-        and manage sessions.
+        Users may use the `planet auth login` and `planet auth profile
+        commands to initialize and manage sessions.
 
         Defaults take into account environment variables (highest priority),
-        user configuration saved to `~/.planet.json` and `~/.planet/
+        user configuration saved to `~/.planet.json` and `~/.planet/`
         (next priority), and built-in defaults (lowest priority).
 
         This method does not support the use a custom storage provider.
-        The session must be initialized entirely in memory (e.g. through
-        environment variables), or from on disk CLI managed settings.
 
         Environment Variables:
-            PL_AUTH_CLIENT_ID: Specify an OAuth2 M2M client ID
-            PL_AUTH_CLIENT_SECRET: Specify an OAuth2 M2M client secret
-            PL_AUTH_API_KEY: Specify a legacy Planet API key
-            PL_AUTH_PROFILE: Specify a custom planet_auth library auth
-                client profile (Advanced use cases)
+
+        | Variable Name         | Description                                                        |
+        | --------------------- | ------------------------------------------------------------------ |
+        | PL_AUTH_CLIENT_ID     | Specify an OAuth2 M2M client ID                                    |
+        | PL_AUTH_CLIENT_SECRET | Specify an OAuth2 M2M client secret                                |
+        | PL_AUTH_API_KEY       | Specify a legacy Planet API key                                    |
+        | PL_AUTH_PROFILE       | Specify a previously saved planet_auth library auth client profile |
+
         """
         return _PLAuthLibAuth(plauth=planet_auth_utils.PlanetAuthFactory.
                               initialize_auth_client_context())
 
     @staticmethod
-    def from_profile(profile_name: str) -> Auth:
+    def from_profile(
+        profile_name: str,
+        save_state_to_storage: bool = True,
+    ) -> Auth:
         """
-        Create authentication for a user whose initialized login information
-        has been saved to `~/.planet.json` and `~/.planet/`.
+        Create authentication context from an auth session that has been
+        initialized and saved to `~/.planet.json` and `~/.planet/`.
 
-        A user should perform a login to initialize this session out-of-band
-        using the command `planet auth login`.
+        Users can initialize and save such a session out-of-band
+        using the `planet auth login` and `planet auth profile` commands.
 
         To initialize this session programmatically without the CLI,
         you must complete an OAuth2 user login flow with one of the login
-        methods.
+        methods on this class.  The login method used must be compatible
+        with the specified profile.
 
         This method does not support the use a custom storage provider.
+
+        In addition to sharing sessions with other programs through the user's
+        home directory, this method may also be used to load SDK built-in
+        client profiles. This is provided as a developer convenience.
+        Applications _should_ register unique client IDs with the Planet service
+        and use `from_oauth_user_auth_code()` or `from_oauth_user_device_code()`
+        to create profiles unique to the application.
+        At present, the following built-in profiles are available:
+
+        | Profile Name  | Description                                                          |
+        | ------------  | -------------------------------------------------------------------- |
+        | `planet-user` | User interactive OAuth2 client profile shared with the `planet` CLI. |
+
+        Parameters:
+            profile_name: Named profile from which to load auth configuration
+                and state.  This should be a name of a CLI managed profile.
+            save_state_to_storage: Boolean controlling whether login sessions
+                should be saved to storage. This nearly always should be true,
+                since this constructor exists to share state through storage
+                backed profiles.  The only exception may be when using a SDK
+                built-in profile in an application that should not attempt to
+                save state to disk.
         """
+        if not profile_name:
+            raise APIKeyAuthException('Profile name cannot be empty.')
         pl_authlib_context = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
-            auth_profile_opt=profile_name)
+            auth_profile_opt=profile_name,
+            save_token_file=save_state_to_storage,
+            save_profile_config=save_state_to_storage)
         return _PLAuthLibAuth(plauth=pl_authlib_context)
 
     # TODO: add support for confidential clients
@@ -108,7 +139,7 @@ class Auth(abc.ABC, httpx.Auth):
             planet_auth.ObjectStorageProvider] = None,
     ) -> Auth:
         """
-        Create authentication for the specified registered client
+        Create authentication context for the specified registered client
         application.
 
         Developers of applications must register clients with
@@ -169,7 +200,7 @@ class Auth(abc.ABC, httpx.Auth):
             planet_auth.ObjectStorageProvider] = None
     ) -> Auth:
         """
-        Create authentication for the specified registered client
+        Create authentication context for the specified registered client
         application.
 
         Developers of applications must register clients with
@@ -182,7 +213,8 @@ class Auth(abc.ABC, httpx.Auth):
 
         This method does not perform a user login to initialize a session.
         If not initialized out of band using the CLI, sessions must be initialized
-        with the device login methods before API calls may be made.
+        with the device login methods `device_user_login_initiate()` and
+        `device_user_login_complete()` before API calls may be made.
 
         Parameters:
             client_id: Client ID
@@ -348,17 +380,17 @@ class Auth(abc.ABC, httpx.Auth):
         Reads the `PL_API_KEY` environment variable
 
         Pending Deprecation:
-            This method is pending deprecation. The method `from_defaults()`
+            This method is pending deprecation. The method `from_user_default_session()`
             considers environment variables and configuration files through
             the planet_auth and planet_auth_utils libraries, and works with
-            legacy API keys, OAuth2 M2M clients, OAuth2 interactive profiles.
+            legacy API keys, OAuth2 M2M clients, and OAuth2 interactive profiles.
             This method should be used in most cases as a replacement.
 
         Parameters:
             variable_name: Alternate environment variable.
         """
         warnings.warn(
-            "from_env() will be deprecated. Use from_defaults() in most"
+            "from_env() will be deprecated. Use from_user_default_session() in most"
             " cases, which will consider both environment variables and user"
             " configuration files.",
             PendingDeprecationWarning)
@@ -370,17 +402,6 @@ class Auth(abc.ABC, httpx.Auth):
     def from_login(email: str,
                    password: str,
                    base_url: typing.Optional[str] = None) -> Auth:
-        """Create authentication from login email and password.
-
-        Note: To keep your password secure, the use of `getpass` is
-        recommended.
-
-        Parameters:
-            email: Planet account email address.
-            password: Planet account password.
-            base_url: The base URL to use. Defaults to production
-                authentication API base url.
-        """
         raise DeprecationWarning(
             "Auth.from_login() has been deprecated.  Use Auth.from_user_session()."
         )
