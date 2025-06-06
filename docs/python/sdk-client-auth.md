@@ -1,7 +1,7 @@
 # Authentication SDK Guide
 
 For general information on how to authenticate to Planet APIs, see the
-[Authentication](https://docs.planet.com/develop/authentication) section of Planet's
+[Authentication](https://docs.planet.com/develop/authentication/) section of Planet's
 Insights Platform documentation.
 
 See [Client Authentication Overview](../../auth/auth-overview) for an overview

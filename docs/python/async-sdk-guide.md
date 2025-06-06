@@ -35,7 +35,7 @@ create an `Auth` instance, depending on the use case.  See
 and [Authentication with the SDK](../../auth/auth-sdk/) for more details concerning
 Planet Insights Platform authentication with the SDK.  For general information on
 how to authenticate to Planet APIs, please see the
-[Authentication](https://docs.planet.com/develop/authentication) section of Planet's
+[Authentication](https://docs.planet.com/develop/authentication/) section of Planet's
 platform documentation.
 
 For example, a program may wish create the `Auth` instance prior to setting up

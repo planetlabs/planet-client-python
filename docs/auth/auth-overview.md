@@ -5,7 +5,7 @@ All calls to Planet APIs must be authenticated.  Only authorized clients may
 use Planet Platform APIs.
 
 For general information on how to authenticate to Planet APIs, please see
-the [Authentication](https://docs.planet.com/develop/authentication) section of Planet's platform documentation.
+the [Authentication](https://docs.planet.com/develop/authentication/) section of Planet's platform documentation.
 This documentation focuses on the use of the Planet Python SDK and
 [`planet`](../../cli/cli-reference) CLI.
 
@@ -22,7 +22,7 @@ This documentation focuses on the use of the Planet Python SDK and
 ## Authentication Protocols
 At the HTTP protocol level underneath the SDK, there are several distinct
 ways a client may authenticate to the Planet APIs, depending on the use case.
-See [Authentication Protocols](http://docs.planet.com/develop/authentication/#authentication-protocols) for a
+See [Authentication Protocols](https://docs.planet.com/develop/authentication/#authentication-protocols) for a
 complete discussion of when to choose a particular method.
 
 * **OAuth2 user access tokens** - API access as the end-user, using OAuth2
@@ -116,7 +116,7 @@ under the [_My Settings_](https://www.planet.com/account/#/user-settings) tab.
 More information regarding Authentication to Planet APIs, OAuth2, and JWTs
 may be found here:
 
-* [Planet Authentication](https://docs.planet.com/develop/authentication)
+* [Planet Authentication](https://docs.planet.com/develop/authentication/)
 * [RFC 6749 - The OAuth 2.0 Authorization Framework](https://datatracker.ietf.org/doc/html/rfc6749)
 * [RFC 8628 - OAuth 2.0 Device Authorization Grant](https://datatracker.ietf.org/doc/html/rfc8628)
 * [RFC 7519 - JSON Web Token (JWT)](https://datatracker.ietf.org/doc/html/rfc7519)
