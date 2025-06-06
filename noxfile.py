@@ -88,6 +88,12 @@ def docs_test(session):
 
 
 @nox.session
+def docs_checklinks(session):
+    session.install("-e", ".[docs]")
+    session.run("mkdocs-linkcheck", "-v", "-r", "--sync", "docs")
+
+
+@nox.session
 def docs(session):
     """Build documentation locally"""
     session.install("-e", ".[docs]")
