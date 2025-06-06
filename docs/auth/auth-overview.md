@@ -37,31 +37,15 @@ complete discussion of when to choose a particular method.
     [QGIS](https://qgis.org/), and the SDK's own [`planet`](../../cli/cli-reference)
     CLI program.  All Planet first-party web applications also use this method.
 
-    SDK Examples:
-
-     * [Using the CLI (Quick start)](../auth-dev-cli-managed/#planet-auth-login-planet-user)
-     * [Forcing use of SDK Built-in Application ID in code (Quick start)](../auth-dev-cli-managed/#use-cli-session-force-builtin)
-     * [Using a custom registered application ID](../auth-dev-app-managed-oauth/#oauth2-session-for-users)
-
 * **OAuth2 M2M access tokens** (🚧 _Work in progress_) - API access as a service user, using OAuth2
     M2M access tokens.  This is the new preferred way for automated processes
     to authenticate to Planet APIs that must operate without a human user.
     No web browser is required, but this method carries some additional
     security considerations.
 
-    Examples:
-
-     * [Using the CLI (Quick start)](../auth-dev-cli-managed/#planet-auth-login-planet-m2m)
-     * [Using a M2M Access Token in code](../auth-dev-app-managed-oauth/#oauth2-session-for-service-accounts)
-
 * **Planet API keys** (⚠️ _Pending future deprecation_) - API access as a Planet end-user using a simple
     fixed string bearer key.  This is the method that has historically been
     documented and recommended for developers using Planet APIs.
-
-    Examples:
-
-     * [Using the CLI (Quick start)](../auth-dev-cli-managed/#planet-auth-login-planet-apikey)
-     * [Using a Planet API Key in code](../auth-dev-app-managed-apikey)
 
 ### OAuth2
 OAuth2 authentication requires that the client possess an access token
@@ -80,6 +64,16 @@ is beyond the scope of this SDK user guide.  Please refer to the [Resources](#re
 below for more information.  Planet broadly divides OAuth2 use cases into
 user-interactive and machine-to-machine use cases, as described in this guide.
 
+**SDK Examples:**
+
+* **OAuth2 user access tokens**
+    * [Using the CLI (Quick start)](../auth-dev-cli-managed/#planet-auth-login-planet-user)
+    * [Forcing use of SDK Built-in Application ID in code (Quick start)](../auth-dev-cli-managed/#use-cli-session-force-builtin)
+    * [Using a custom registered application ID](../auth-dev-app-managed-oauth/#oauth2-session-for-users)
+* **OAuth2 M2M access tokens**
+    * [Using the CLI (Quick start)](../auth-dev-cli-managed/#planet-auth-login-planet-m2m)
+    * [Using a M2M Access Token in code](../auth-dev-app-managed-oauth/#oauth2-session-for-service-accounts)
+
 !!! info
     OAuth2 user access tokens currently work for all Planet APIs under both
     the `api.planet.com` and `services.sentinel-hub.com` domains.
@@ -96,6 +90,13 @@ Planet API keys are simple fixed strings that may be presented by the client
 to API services to assert the client's right to access APIs.  API keys are
 obtained by the user from their [Account](https://www.planet.com/account) page
 under the [_My Settings_](https://www.planet.com/account/#/user-settings) tab.
+
+**SDK Examples:**
+
+* **Planet API keys**
+     * [Using the CLI (Quick start)](../auth-dev-cli-managed/#planet-auth-login-planet-apikey)
+     * [Using a Planet API Key in code](../auth-dev-app-managed-apikey)
+
 
 !!! warning
     Planet API keys are being targeted for eventual deprecation in favor
