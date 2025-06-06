@@ -1,3 +1,4 @@
+from http import HTTPStatus
 import tempfile
 import json
 import pytest
@@ -6,7 +7,7 @@ import respx
 from click.testing import CliRunner
 
 from planet.cli import cli
-from tests.integration.test_features_api import TEST_COLLECTION_1, TEST_COLLECTION_LIST, TEST_FEAT, TEST_GEOM, TEST_URL, list_collections_response, list_features_response, mock_response, to_collection_model
+from tests.integration.test_features_api import TEST_COLLECTION_1, TEST_COLLECTION_LIST, TEST_FEAT, TEST_GEOM, TEST_URL, list_collections_response, list_features_response, mock_response, to_collection_model, to_feature_model
 
 
 def invoke(*args):
@@ -122,3 +123,38 @@ def test_add_items(feature, expected_body):
         req_body = json.loads(respx.calls[0].request.content)
         assert req_body["type"] == "Feature"
         assert req_body["geometry"] == expected_body
+
+
+@respx.mock
+def test_get_item():
+    collection_id = "test"
+    item_id = "test123"
+    get_item_url = f'{TEST_URL}/collections/{collection_id}/items/{item_id}'
+
+    mock_response(get_item_url,
+                  json=to_feature_model("test123"),
+                  method="get",
+                  status_code=HTTPStatus.OK)
+
+    def assertf(resp):
+        assert resp["id"] == "test123"
+
+    assertf(invoke("items", "get", collection_id, item_id))
+    assertf(invoke("items", "get", f"pl:ref:my/{collection_id}/{item_id}"))
+
+
+@respx.mock
+def test_delete_item():
+    collection_id = "test"
+    item_id = "test123"
+    delete_item_url = f'{TEST_URL}/collections/{collection_id}/items/{item_id}'
+
+    mock_response(delete_item_url,
+                  json=None,
+                  method="delete",
+                  status_code=HTTPStatus.NO_CONTENT)
+
+    def assertf(resp):
+        assert resp is None
+
+    assertf(invoke("items", "delete", collection_id, item_id))

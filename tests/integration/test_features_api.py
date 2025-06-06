@@ -59,8 +59,11 @@ class ExampleGeoInterface:
         return TEST_GEOM
 
 
-def mock_response(url: str, json: Any, method: str = "get"):
-    mock_resp = httpx.Response(HTTPStatus.OK, json=json)
+def mock_response(url: str,
+                  json: Any,
+                  method: str = "get",
+                  status_code: int = HTTPStatus.OK):
+    mock_resp = httpx.Response(status_code, json=json)
     respx.request(method, url).return_value = mock_resp
 
 
@@ -260,3 +263,36 @@ async def test_add_items(feature, expected_body):
     req_body = json.loads(respx.calls[0].request.content)
     assert req_body["type"] == "Feature"
     assert req_body["geometry"] == expected_body
+
+
+@respx.mock
+async def test_get_item():
+    collection_id = "test"
+    item_id = "test123"
+    items_url = f"{TEST_URL}/collections/{collection_id}/items/{item_id}"
+
+    mock_response(items_url, to_feature_model(item_id))
+
+    def assertf(resp):
+        assert resp["id"] == item_id
+
+    assertf(await cl_async.get_item(collection_id, item_id))
+    assertf(cl_sync.get_item(collection_id, item_id))
+
+
+@respx.mock
+async def test_delete_item():
+    collection_id = "test"
+    item_id = "test123"
+    items_url = f"{TEST_URL}/collections/{collection_id}/items/{item_id}"
+
+    mock_response(items_url,
+                  json=None,
+                  method="delete",
+                  status_code=HTTPStatus.NO_CONTENT)
+
+    def assertf(resp):
+        assert resp is None
+
+    assertf(await cl_async.delete_item(collection_id, item_id))
+    assertf(cl_sync.delete_item(collection_id, item_id))

@@ -167,6 +167,26 @@ class FeaturesClient(_BaseClient):
         response = await self._session.request(method='GET', url=url)
         return Feature(**response.json())
 
+    async def delete_item(self, collection_id: str, feature_id: str) -> None:
+        """
+            Delete a feature from a collection.
+
+            Parameters:
+                collection_id: The ID of the collection containing the feature
+                feature_id: The ID of the feature to delete
+
+            Example:
+
+            ```
+            await features_client.delete_item(
+                collection_id="my-collection",
+                feature_id="feature-123"
+            )
+            ```
+            """
+        url = f'{self._base_url}/collections/{collection_id}/items/{feature_id}'
+        await self._session.request(method='DELETE', url=url)
+
     async def create_collection(self,
                                 title: str,
                                 description: Optional[str] = None) -> str:
