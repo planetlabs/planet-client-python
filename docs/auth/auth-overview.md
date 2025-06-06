@@ -1,6 +1,5 @@
 # Client Authentication Overview
 
-
 ## Introduction
 All calls to Planet APIs must be authenticated.  Only authorized clients may
 use Planet Platform APIs.
