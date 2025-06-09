@@ -99,7 +99,7 @@ async def collection_get(ctx, collection_id, pretty):
 
 @command(collections, name="delete")
 @click.argument("collection_id", required=True)
-async def collection_delete(ctx, collection_id, pretty):
+async def collection_delete(ctx, collection_id, *args, **kwargs):
     """Delete a collection by ID
 
     Example:
@@ -166,7 +166,7 @@ async def item_get(ctx, collection_id, feature_id, pretty):
 @command(items, name="delete")
 @click.argument("collection_id")
 @click.argument("feature_id", required=False)
-async def item_delete(ctx, collection_id, feature_id, pretty):
+async def item_delete(ctx, collection_id, feature_id, *args, **kwargs):
     """Delete a feature in a collection.
 
     You may supply either a collection ID and a feature ID, or
