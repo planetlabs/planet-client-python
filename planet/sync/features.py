@@ -95,7 +95,6 @@ class FeaturesAPI:
         return self._client._call_sync(
             self._client.delete_collection(collection_id))
 
-
     def list_items(self,
                    collection_id: str,
                    limit: int = 0) -> Iterator[Feature]:

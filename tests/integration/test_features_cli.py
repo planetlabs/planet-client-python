@@ -166,6 +166,7 @@ def test_delete_item():
     assertf(
         invoke("items", "delete", f"pl:features/my/{collection_id}/{item_id}"))
 
+
 @respx.mock
 def test_delete_collection():
     collection_id = "test"

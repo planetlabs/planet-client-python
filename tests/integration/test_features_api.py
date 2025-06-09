@@ -297,6 +297,7 @@ async def test_delete_item():
     assertf(await cl_async.delete_item(collection_id, item_id))
     assertf(cl_sync.delete_item(collection_id, item_id))
 
+
 @respx.mock
 async def test_delete_collection():
     collection_id = "test"
