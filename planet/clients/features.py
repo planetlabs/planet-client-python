@@ -218,6 +218,29 @@ class FeaturesClient(_BaseClient):
 
         return resp.json()["id"]
 
+    async def delete_collection(self, collection_id: str) -> None:
+        """
+        Delete a collection.
+
+        Parameters:
+            collection_id: The ID of the collection to delete
+
+        Example:
+
+        ```
+        await features_client.delete_collection(
+            collection_id="my-collection"
+        )
+        ```
+        """
+
+        # fail early instead of sending a delete request without a collection id.
+        if len(collection_id) < 1:
+            raise ClientError("Must provide a collection id")
+
+        url = f'{self._base_url}/collections/{collection_id}'
+        await self._session.request(method='DELETE', url=url)
+
     async def add_items(self,
                         collection_id: str,
                         feature: Union[dict, GeoInterface],

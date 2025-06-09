@@ -165,3 +165,18 @@ def test_delete_item():
     assertf(invoke("items", "delete", collection_id, item_id))
     assertf(
         invoke("items", "delete", f"pl:features/my/{collection_id}/{item_id}"))
+
+@respx.mock
+def test_delete_collection():
+    collection_id = "test"
+    collection_url = f'{TEST_URL}/collections/{collection_id}'
+
+    mock_response(collection_url,
+                  json=None,
+                  method="delete",
+                  status_code=HTTPStatus.NO_CONTENT)
+
+    def assertf(resp):
+        assert resp is None
+
+    assertf(invoke("collections", "delete", collection_id))

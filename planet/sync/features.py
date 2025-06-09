@@ -78,6 +78,24 @@ class FeaturesAPI:
         collection = self._client.create_collection(title, description)
         return self._client._call_sync(collection)
 
+    def delete_collection(self, collection_id: str) -> None:
+        """
+        Delete a collection.
+
+        Parameters:
+            collection_id: The ID of the collection to delete
+
+        Example:
+
+        ```
+        pl = Planet()
+        pl.features.delete_collection(collection_id="my-collection")
+        ```
+        """
+        return self._client._call_sync(
+            self._client.delete_collection(collection_id))
+
+
     def list_items(self,
                    collection_id: str,
                    limit: int = 0) -> Iterator[Feature]:

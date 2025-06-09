@@ -97,6 +97,19 @@ async def collection_get(ctx, collection_id, pretty):
         result = await cl.get_collection(collection_id)
         echo_json(result, pretty)
 
+@command(collections, name="delete")
+@click.argument("collection_id", required=True)
+async def collection_delete(ctx, collection_id, pretty):
+    """Delete a collection by ID
+
+    Example:
+
+    planet features collections delete my-collection-123
+    """
+    async with features_client(ctx) as cl:
+        await cl.delete_collection(collection_id)
+
+
 
 @features.group()
 def items():
