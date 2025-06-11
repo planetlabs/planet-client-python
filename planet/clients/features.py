@@ -16,6 +16,7 @@ import logging
 from typing import Any, AsyncIterator, Optional, Union, TypeVar
 
 from planet.clients.base import _BaseClient
+from planet.exceptions import ClientError
 from planet.http import Session
 from planet.models import Feature, GeoInterface, Paged
 from planet.constants import PLANET_BASE_URL
@@ -167,6 +168,31 @@ class FeaturesClient(_BaseClient):
         response = await self._session.request(method='GET', url=url)
         return Feature(**response.json())
 
+    async def delete_item(self, collection_id: str, feature_id: str) -> None:
+        """
+            Delete a feature from a collection.
+
+            Parameters:
+                collection_id: The ID of the collection containing the feature
+                feature_id: The ID of the feature to delete
+
+            Example:
+
+            ```
+            await features_client.delete_item(
+                collection_id="my-collection",
+                feature_id="feature-123"
+            )
+            ```
+            """
+
+        # fail early instead of sending a delete request without a feature id.
+        if len(feature_id) < 1:
+            raise ClientError("Must provide a feature id")
+
+        url = f'{self._base_url}/collections/{collection_id}/items/{feature_id}'
+        await self._session.request(method='DELETE', url=url)
+
     async def create_collection(self,
                                 title: str,
                                 description: Optional[str] = None) -> str:
@@ -191,6 +217,29 @@ class FeaturesClient(_BaseClient):
         resp = await self._session.request(method='POST', url=url, json=body)
 
         return resp.json()["id"]
+
+    async def delete_collection(self, collection_id: str) -> None:
+        """
+        Delete a collection.
+
+        Parameters:
+            collection_id: The ID of the collection to delete
+
+        Example:
+
+        ```
+        await features_client.delete_collection(
+            collection_id="my-collection"
+        )
+        ```
+        """
+
+        # fail early instead of sending a delete request without a collection id.
+        if len(collection_id) < 1:
+            raise ClientError("Must provide a collection id")
+
+        url = f'{self._base_url}/collections/{collection_id}'
+        await self._session.request(method='DELETE', url=url)
 
     async def add_items(self,
                         collection_id: str,

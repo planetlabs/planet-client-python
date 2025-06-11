@@ -78,6 +78,23 @@ class FeaturesAPI:
         collection = self._client.create_collection(title, description)
         return self._client._call_sync(collection)
 
+    def delete_collection(self, collection_id: str) -> None:
+        """
+        Delete a collection.
+
+        Parameters:
+            collection_id: The ID of the collection to delete
+
+        Example:
+
+        ```
+        pl = Planet()
+        pl.features.delete_collection(collection_id="my-collection")
+        ```
+        """
+        return self._client._call_sync(
+            self._client.delete_collection(collection_id))
+
     def list_items(self,
                    collection_id: str,
                    limit: int = 0) -> Iterator[Feature]:
@@ -113,6 +130,24 @@ class FeaturesAPI:
         """
         return self._client._call_sync(
             self._client.get_item(collection_id, feature_id))
+
+    def delete_item(self, collection_id: str, feature_id: str) -> None:
+        """
+        Delete a feature from a collection.
+
+        Parameters:
+            collection_id: The ID of the collection containing the feature
+            feature_id: The ID of the feature to delete
+
+        Example:
+
+        ```
+        pl = Planet()
+        pl.features.delete_item(collection_id="my-collection", feature_id="feature-123")
+        ```
+        """
+        return self._client._call_sync(
+            self._client.delete_item(collection_id, feature_id))
 
     def add_items(self,
                   collection_id: str,
