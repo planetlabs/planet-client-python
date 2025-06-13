@@ -6,7 +6,7 @@ This guide is for the Planet Async SDK for Python users who want to use asynchro
 
 This guide walks you through the steps:
 
-* **[Authenticate](#authenticate-with-planet-services)**—pass your username and password to Planet services to verify your permissions to data.
+* **[Authenticate](#authenticate-with-planet-services)**—authenticate to Planet services to verify your permissions to data.
 * **[Create a session](#create-a-session)**—set up a context for calling on Planet servers and receiving data back.
 * **[Create an order](#create-an-order)**—build an orders client, send the request within the session context, and download it when it’s ready.
 * **[Collect and list data](#collecting-results)**—handle the potentially large number of results from a search for imagery.
@@ -22,52 +22,36 @@ pip install planet
 
 ## Authenticate with Planet services
 
-An SDK `Session` requires authentication to communicate with Planet services. This
-authentication information is retrieved when a `Session` is created. By default,
-a `Session` retrieves authorization key from the environment variable `PL_API_KEY` or a secret file, in that order of priority.
+An SDK `Session` requires authentication to communicate with Planet services. The
+details of authentication are managed with the [`planet.Auth`](../../python/sdk-reference/#planet.auth.Auth)
+class, and are configured when a `Session` is created.  Default behavior
+shares the responsibility of managing authentication sessions with the [`planet auth`](../../cli/cli-reference/#auth)
+CLI utility, which stores authentication sessions in the user's home directory.
 
-The SDK provides the `auth.Auth` class for managing authentication information.
-This module can be used to obtain authentication information from the username
-and password with `Auth.from_login()`. Additionally, it can be created with
-the API key obtained directly from the Planet account site with `Auth.from_key(<API_KEY>)`.
+The default authentication behavior of the `Session` can be modified by providing an
+`Auth` instance when creating the `Session`.  There are many different ways to
+create an `Auth` instance, depending on the use case.  See
+[Client Authentication Overview](../../auth/auth-overview/)
+and [Authentication with the SDK](../../auth/auth-sdk/) for more details concerning
+Planet Insights Platform authentication with the SDK.  For general information on
+how to authenticate to Planet APIs, please see the
+[Authentication](https://docs.planet.com/develop/authentication/) section of Planet's
+platform documentation.
 
-Once you have provided the authentication information (in other words, the username and API key), it can be accessed by way of the `Auth.value`. The most convenient way of managing it for local use is to write it to a secret file using `Auth.write()`. For example, to obtain and store authentication information:
-
-Once you have provided the authentication information (in other words, the account username and password), it can be accessed by way of `Auth.value`. The most convenient way of managing it for local use is to write it to a secret file using `Auth.write()`.
-It can also be accessed, for example, to store in an environment variable, such as
-`Auth.value`.
-
-Here is an example of retrieving and storing authentication information:
-
-```python
-# Get the user account name and password
-# from the command line and environment,
-# and store credentials in an Auth object
-import getpass
-from planet import Auth
-
-user = input("Username: ")
-pw = getpass.getpass()
-auth = Auth.from_login(user,pw)
-auth.store()
-```
-
-The default authentication behavior of the `Session` can be modified by specifying
-`Auth` explicitly using the methods `Auth.from_file()` and `Auth.from_env()`.
-While `Auth.from_key()` and `Auth.from_login` can be used, it is recommended
-that those functions be used in authentication initialization. Authentication
-information should be stored using `Auth.store()`.
-
-You can customize the manner of retrieval and location to read from when retrieving the authorization information. The file and environment variable read from can be customized in the respective functions. For example, authentication can be read from a custom
-environment variable, as in the following code:
+For example, a program may wish create the `Auth` instance prior to setting up
+the `Session` to guide the user towards external setup steps:
 
 ```python
 import asyncio
-import os
+import sys
 from planet import Auth, Session
 
-auth = Auth.from_env('ALTERNATE_VAR')
+auth = Auth.from_user_default_session()
 async def main():
+    if not auth.is_initialized():
+        print("Login required. Execute the following command:\n\n\tplanet auth login\n")
+        sys.exit(99)
+
     async with Session(auth=auth) as sess:
         # perform operations here
         pass
