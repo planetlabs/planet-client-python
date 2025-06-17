@@ -234,14 +234,16 @@ async def list_quads(ctx, name_or_id, bbox, geometry, summary, pretty, links):
     planet mosaics search global_monthly_2025_04_mosaic --bbox -100,40,-100,41
     """
     async with client(ctx) as cl:
-        await _output(
-            cl.list_quads(name_or_id,
-                          minimal=False,
-                          bbox=bbox,
-                          geometry=geometry,
-                          summary=summary),
-            pretty,
-            links)
+        if summary:
+            result = cl.summarize_quads(name_or_id,
+                                        bbox=bbox,
+                                        geometry=geometry)
+        else:
+            result = cl.list_quads(name_or_id,
+                                   minimal=False,
+                                   bbox=bbox,
+                                   geometry=geometry)
+        await _output(result, pretty, links)
 
 
 @command(mosaics, name="download")

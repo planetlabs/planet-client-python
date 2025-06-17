@@ -40,20 +40,19 @@ def quad_item_downloads(cnt):
     return [{
         "_links": {
             "download": url(f"mosaics/download-a-quad/{i}")
-        }
+        },
+        "id": f"456-789{i}"
     } for i in range(cnt)]
 
 
 def quad_item_download_requests(cnt):
     return [
-        request(
-            f"mosaics/download-a-quad/{i}",
-            None,
-            stream=stream(),
-            headers={
-                "Content-Length": "100",
-                "Content-Disposition": f'attachment: filename="quad-{i}.tif"'
-            }) for i in range(cnt)
+        request(f"mosaics/download-a-quad/{i}",
+                None,
+                stream=stream(),
+                headers={
+                    "Content-Length": "100",
+                }) for i in range(cnt)
     ]
 
 
@@ -274,9 +273,7 @@ search_cases = [
         id="mosaics search bbox summary",
         command=["search"],
         args=[uuid, "--bbox", "-100,40,-100,40", "--summary"],
-        output=[{
-            "total_quads": 1234
-        }],
+        output={"total_quads": 1234},
         requests=[
             request(
                 f"mosaics/{uuid}",
@@ -288,7 +285,7 @@ search_cases = [
                     }
                 }),
             request(
-                "mosaics/09462e5a-2af0-4de3-a710-e9010d8d4e58/quads?bbox=-100.0,40.0,-100.0,40.0&summary=true",
+                "mosaics/09462e5a-2af0-4de3-a710-e9010d8d4e58/quads?bbox=-100.0,40.0,-100.0,40.0&minimal=true&summary=true",
                 {
                     # note this gets stripped from expected output
                     "items": [{
@@ -323,7 +320,7 @@ download_cases = [
             *quad_item_download_requests(1),
         ],
         expect_files=[
-            "a mosaic/quad-0.tif",
+            "a mosaic/456-7890.tif",
         ]),
     CLITestCase(
         id="mosaics download geometry",
@@ -341,11 +338,11 @@ download_cases = [
             *quad_item_download_requests(5),
         ],
         expect_files=[
-            "a mosaic/quad-0.tif",
-            "a mosaic/quad-1.tif",
-            "a mosaic/quad-2.tif",
-            "a mosaic/quad-3.tif",
-            "a mosaic/quad-4.tif",
+            "a mosaic/456-7890.tif",
+            "a mosaic/456-7891.tif",
+            "a mosaic/456-7892.tif",
+            "a mosaic/456-7893.tif",
+            "a mosaic/456-7894.tif",
         ])
 ]
 

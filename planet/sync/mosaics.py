@@ -36,18 +36,16 @@ class MosaicsAPI:
     def get_mosaic(self, name_or_id: str) -> Mosaic:
         """Get the API representation of a mosaic by name or id.
 
-        :param name str: The name or id of the mosaic
-        :returns: dict or None (if searching by name)
-        :raises planet.api.exceptions.APIException: On API error.
+        Parameters:
+            name_or_id: The name or id of the mosaic
         """
         return self._client._call_sync(self._client.get_mosaic(name_or_id))
 
     def get_series(self, name_or_id: str) -> Series:
         """Get the API representation of a series by name or id.
 
-        :param name str: The name or id of the series
-        :returns: dict or None (if searching by name)
-        :raises planet.api.exceptions.APIException: On API error.
+        Parameters:
+            name_or_id: The name or id of the mosaic
         """
         return self._client._call_sync(self._client.get_series(name_or_id))
 
@@ -62,7 +60,7 @@ class MosaicsAPI:
 
         Example:
 
-        ```
+        ```python
         series = client.list_series()
         for s in series:
             print(s)
@@ -87,7 +85,7 @@ class MosaicsAPI:
 
         Example:
 
-        ```
+        ```python
         mosaics = client.list_mosaics()
         for m in mosaics:
             print(m)
@@ -115,7 +113,7 @@ class MosaicsAPI:
 
         Example:
 
-        ```
+        ```python
         mosaics = client.list_series_mosaics("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5")
         for m in mosaics:
             print(m)
@@ -129,22 +127,60 @@ class MosaicsAPI:
                 latest=latest,
             ))
 
-    def list_quads(self,
-                   /,
-                   mosaic: Union[Mosaic, str],
-                   *,
-                   minimal: bool = False,
-                   bbox: Optional[BBox] = None,
-                   geometry: Optional[Union[dict, GeoInterface]] = None,
-                   summary: bool = False) -> Iterator[Quad]:
+    def summarize_quads(
+            self,
+            /,
+            mosaic: Union[Mosaic, str],
+            *,
+            bbox: Optional[BBox] = None,
+            geometry: Optional[Union[dict, GeoInterface]] = None) -> dict:
+        """
+        Get a summary of a quad list for a mosaic.
+
+        If the bbox or geometry is not provided, the entire list is considered.
+
+        Examples:
+
+        Get the total number of quads in the mosaic.
+
+        ```python
+        mosaic = client.get_mosaic("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5")
+        summary = client.summarize_quads(mosaic)
+        print(summary["total_quads"])
+        ```
+        """
+        return self._client._call_sync(
+            self._client.summarize_quads(mosaic, bbox=bbox, geometry=geometry))
+
+    def list_quads(
+        self,
+        /,
+        mosaic: Union[Mosaic, str],
+        *,
+        minimal: bool = False,
+        full_extent: bool = False,
+        bbox: Optional[BBox] = None,
+        geometry: Optional[Union[dict,
+                                 GeoInterface]] = None) -> Iterator[Quad]:
         """
         List the a mosaic's quads.
 
+
+        Parameters:
+            mosaic: the mosaic to list
+            minimal: if False, response includes full metadata
+            full_extent: if True, the mosaic's extent will be used to list
+            bbox: only quads intersecting the bbox will be listed
+            geometry: only quads intersecting the geometry will be listed
+
+        Raises:
+            ValueError: if `geometry`, `bbox` or `full_extent` is not specified.
+
         Example:
 
-        ```
-        mosaic = await client.get_mosaic("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5")
-        quads = await client.list_quads(mosaic)
+        ```python
+        mosaic = client.get_mosaic("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5")
+        quads = client.list_quads(mosaic)
         for q in quads:
             print(q)
         ```
@@ -153,9 +189,9 @@ class MosaicsAPI:
             self._client.list_quads(
                 mosaic,
                 minimal=minimal,
+                full_extent=full_extent,
                 bbox=bbox,
                 geometry=geometry,
-                summary=summary,
             ))
 
     def get_quad(self, mosaic: Union[Mosaic, str], quad_id: str) -> Quad:
@@ -164,8 +200,8 @@ class MosaicsAPI:
 
         Example:
 
-        ```
-        quad = await client.get_quad("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5", "1234-5678")
+        ```python
+        quad = client.get_quad("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5", "1234-5678")
         print(quad)
         ```
         """
@@ -177,9 +213,9 @@ class MosaicsAPI:
 
         Example:
 
-        ```
-        quad = await client.get_quad("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5", "1234-5678")
-        contributions = await client.get_quad_contributions(quad)
+        ```python
+        quad = client.get_quad("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5", "1234-5678")
+        contributions = client.get_quad_contributions(quad)
         print(contributions)
         ```
         """
@@ -198,9 +234,9 @@ class MosaicsAPI:
 
         Example:
 
-        ```
-        quad = await client.get_quad("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5", "1234-5678")
-        await client.download_quad(quad)
+        ```python
+        quad = client.get_quad("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5", "1234-5678")
+        client.download_quad(quad)
         ```
         """
         self._client._call_sync(
@@ -224,8 +260,8 @@ class MosaicsAPI:
 
         Example:
 
-        ```
-        mosaic = await cl.get_mosaic(name)
+        ```python
+        mosaic = cl.get_mosaic(name)
         client.download_quads(mosaic, bbox=(-100, 40, -100, 41))
         ```
         """

@@ -14,10 +14,10 @@
 
 import asyncio
 from pathlib import Path
-from typing import AsyncIterator, Optional, Tuple, Type, TypeVar, Union, cast
+from typing import AsyncIterator, Optional, Sequence, Type, TypeVar, Union, cast
 from planet.clients.base import _BaseClient
 from planet.constants import PLANET_BASE_URL
-from planet.exceptions import MissingResource
+from planet.exceptions import ClientError, MissingResource
 from planet.http import Session
 from planet.models import GeoInterface, Mosaic, Paged, Quad, Response, Series, StreamingBody
 from uuid import UUID
@@ -28,7 +28,11 @@ T = TypeVar("T")
 
 Number = Union[int, float]
 
-BBox = Tuple[Number, Number, Number, Number]
+BBox = Sequence[Number]
+"""BBox is a rectangular area described by 2 corners
+where the positional meaning in the sequence is
+left, bottom, right, and top, respectively
+"""
 
 
 class _SeriesPage(Paged):
@@ -121,18 +125,16 @@ class MosaicsClient(_BaseClient):
     async def get_mosaic(self, name_or_id: str) -> Mosaic:
         """Get the API representation of a mosaic by name or id.
 
-        :param name str: The name or id of the mosaic
-        :returns: dict or None (if searching by name)
-        :raises planet.api.exceptions.APIException: On API error.
+        Parameters:
+            name_or_id: The name or id of the mosaic
         """
         return Mosaic(await self._get(name_or_id, "mosaics", _MosaicsPage))
 
     async def get_series(self, name_or_id: str) -> Series:
         """Get the API representation of a series by name or id.
 
-        :param name str: The name or id of the series
-        :returns: dict or None (if searching by name)
-        :raises planet.api.exceptions.APIException: On API error.
+        Parameters:
+            name_or_id: The name or id of the mosaic
         """
         return Series(await self._get(name_or_id, "series", _SeriesPage))
 
@@ -148,7 +150,7 @@ class MosaicsClient(_BaseClient):
 
         Example:
 
-        ```
+        ```python
         series = await client.list_series()
         async for s in series:
             print(s)
@@ -184,7 +186,7 @@ class MosaicsClient(_BaseClient):
 
         Example:
 
-        ```
+        ```python
         mosaics = await client.list_mosaics()
         async for m in mosaics:
             print(m)
@@ -221,7 +223,7 @@ class MosaicsClient(_BaseClient):
 
         Example:
 
-        ```
+        ```python
         mosaics = await client.list_series_mosaics("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5")
         async for m in mosaics:
             print(m)
@@ -250,26 +252,86 @@ class MosaicsClient(_BaseClient):
         async for item in _MosaicsPage(resp, self._session.request):
             yield Mosaic(item)
 
-    async def list_quads(self,
-                         /,
-                         mosaic: Union[Mosaic, str],
-                         *,
-                         minimal: bool = False,
-                         bbox: Optional[BBox] = None,
-                         geometry: Optional[Union[dict, GeoInterface]] = None,
-                         summary: bool = False) -> AsyncIterator[Quad]:
+    async def summarize_quads(
+            self,
+            /,
+            mosaic: Union[Mosaic, str],
+            *,
+            bbox: Optional[BBox] = None,
+            geometry: Optional[Union[dict, GeoInterface]] = None) -> dict:
+        """
+        Get a summary of a quad list for a mosaic.
+
+        If the bbox or geometry is not provided, the entire list is considered.
+
+        Examples:
+
+        Get the total number of quads in the mosaic.
+
+        ```python
+        mosaic = await client.get_mosaic("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5")
+        summary = await client.summarize_quads(mosaic)
+        print(summary["total_quads"])
+        ```
+        """
+        resp = await self._list_quads(mosaic,
+                                      minimal=True,
+                                      bbox=bbox,
+                                      geometry=geometry,
+                                      summary=True)
+        return resp.json()["summary"]
+
+    async def list_quads(
+        self,
+        /,
+        mosaic: Union[Mosaic, str],
+        *,
+        minimal: bool = False,
+        full_extent: bool = False,
+        bbox: Optional[BBox] = None,
+        geometry: Optional[Union[dict, GeoInterface]] = None
+    ) -> AsyncIterator[Quad]:
         """
         List the a mosaic's quads.
 
+        Parameters:
+            mosaic: the mosaic to list
+            minimal: if False, response includes full metadata
+            full_extent: if True, the mosaic's extent will be used to list
+            bbox: only quads intersecting the bbox will be listed
+            geometry: only quads intersecting the geometry will be listed
+
+        Raises:
+            ClientError: if `geometry`, `bbox` or `full_extent` is not specified.
+
         Example:
 
-        ```
+        List the quad at a single point (note the extent has the same corners)
+
+        ```python
         mosaic = await client.get_mosaic("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5")
-        quads = await client.list_quads(mosaic)
+        quads = await client.list_quads(mosaic, bbox=[-100, 40, -100, 40])
         async for q in quads:
             print(q)
         ```
         """
+        if not any((geometry, bbox, full_extent)):
+            raise ClientError("one of: geometry, bbox, full_extent required")
+        resp = await self._list_quads(mosaic,
+                                      minimal=minimal,
+                                      bbox=bbox,
+                                      geometry=geometry)
+        async for item in _QuadsPage(resp, self._session.request):
+            yield Quad(item)
+
+    async def _list_quads(self,
+                          /,
+                          mosaic: Union[Mosaic, str],
+                          *,
+                          minimal: bool = False,
+                          bbox: Optional[BBox] = None,
+                          geometry: Optional[Union[dict, GeoInterface]] = None,
+                          summary: bool = False) -> Response:
         mosaic = await self._resolve_mosaic(mosaic)
         if geometry:
             if isinstance(geometry, GeoInterface):
@@ -279,21 +341,16 @@ class MosaicsClient(_BaseClient):
                                               minimal,
                                               summary)
         else:
-            if bbox is None:
+            if not bbox:
                 xmin, ymin, xmax, ymax = cast(BBox, mosaic['bbox'])
-                search = (max(-180, xmin),
-                          max(-85, ymin),
-                          min(180, xmax),
-                          min(85, ymax))
-            else:
-                search = bbox
-            resp = await self._quads_bbox(mosaic, search, minimal, summary)
-        # kinda yucky - yields a different "shaped" dict
-        if summary:
-            yield resp.json()["summary"]
-            return
-        async for item in _QuadsPage(resp, self._session.request):
-            yield Quad(item)
+                bbox = [
+                    max(-180, xmin),
+                    max(-85, ymin),
+                    min(180, xmax),
+                    min(85, ymax)
+                ]
+            resp = await self._quads_bbox(mosaic, bbox, minimal, summary)
+        return resp
 
     async def _quads_geometry(self,
                               mosaic: Mosaic,
@@ -305,6 +362,10 @@ class MosaicsClient(_BaseClient):
             params["minimal"] = "true"
         if summary:
             params["summary"] = "true"
+            # this could be fixed in the API ...
+            # for a summary, we don't need to get any listings
+            # zero is ignored, but in case that gets rejected, just use 1
+            params["_page_size"] = "1"
         mosaic_id = mosaic["id"]
         return await self._session.request(
             method="POST",
@@ -338,7 +399,7 @@ class MosaicsClient(_BaseClient):
 
         Example:
 
-        ```
+        ```python
         quad = await client.get_quad("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5", "1234-5678")
         print(quad)
         ```
@@ -357,7 +418,7 @@ class MosaicsClient(_BaseClient):
 
         Example:
 
-        ```
+        ```python
         quad = await client.get_quad("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5", "1234-5678")
         contributions = await client.get_quad_contributions(quad)
         print(contributions)
@@ -381,19 +442,26 @@ class MosaicsClient(_BaseClient):
 
         Example:
 
-        ```
+        ```python
         quad = await client.get_quad("d5098531-aa4f-4ff9-a9d5-74ad4a6301e5", "1234-5678")
         await client.download_quad(quad)
         ```
         """
         url = quad["_links"]["download"]
         Path(directory).mkdir(exist_ok=True, parents=True)
+        dest = Path(directory, quad["id"] + ".tif")
+        # this avoids a request to the download endpoint which would
+        # get counted as a download even if only the headers were read
+        # and the response content is ignored (like if when the file
+        # exists and overwrite is False)
+        if dest.exists() and not overwrite:
+            return
         async with self._session.stream(method='GET', url=url) as resp:
-            body = StreamingBody(resp)
-            dest = Path(directory, body.name)
-            await body.write(dest,
-                             overwrite=overwrite,
-                             progress_bar=progress_bar)
+            await StreamingBody(resp).write(
+                dest,
+                # pass along despite our manual handling
+                overwrite=overwrite,
+                progress_bar=progress_bar)
 
     async def download_quads(self,
                              /,
@@ -409,13 +477,18 @@ class MosaicsClient(_BaseClient):
         """
         Download a mosaics' quads to a directory.
 
+        Raises:
+            ClientError: if `geometry` or `bbox` is not specified.
+
         Example:
 
-        ```
+        ```python
         mosaic = await cl.get_mosaic(name)
-        client.download_quads(mosaic, bbox=(-100, 40, -100, 41))
+        client.download_quads(mosaic, bbox=(-100, 40, -100, 40))
         ```
         """
+        if not any((bbox, geometry)):
+            raise ClientError("bbox or geometry is required")
         jobs = []
         mosaic = await self._resolve_mosaic(mosaic)
         directory = directory or mosaic["name"]
