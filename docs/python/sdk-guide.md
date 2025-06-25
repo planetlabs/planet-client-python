@@ -114,7 +114,7 @@ def main():
         data_filter.date_range_filter('acquired', gt=datetime(2022, 6, 1, 1))
     ])
 
-    for item in pl.data.search(['PSScene'], filter=sfilter, limit=10):
+    for item in pl.data.search(['PSScene'], search_filter=sfilter, limit=10):
         print(item["id"])
 ```
 
