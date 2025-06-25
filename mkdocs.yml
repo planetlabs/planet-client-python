@@ -92,6 +92,12 @@ nav:
     - python/sdk-client-auth.md
     - python/async-sdk-guide.md
     - python/sdk-reference.md
+  - "Client Authentication":
+      - auth/auth-overview.md
+      - auth/auth-sdk.md
+      - auth/auth-dev-cli-managed.md
+      - auth/auth-dev-app-managed-oauth.md
+      - auth/auth-dev-app-managed-apikey.md
   - "Resources":
     - resources/index.md
   - "Home": 'index.md'

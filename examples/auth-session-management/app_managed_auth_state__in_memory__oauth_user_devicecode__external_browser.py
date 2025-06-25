@@ -1,8 +1,5 @@
 import json
-import logging
 import planet
-
-logging.basicConfig(level=logging.CRITICAL)
 
 
 def initialize_user_session(plsdk_auth):
