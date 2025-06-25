@@ -120,7 +120,7 @@ def main():
         data_filter.date_range_filter('acquired', gt=datetime(2022, 6, 1, 1))
     ])
 
-    for item in pl.data.search(['PSScene'], filter=sfilter, limit=10):
+    for item in pl.data.search(['PSScene'], search_filter=sfilter, limit=10):
         print(item["id"])
 ```
 
@@ -331,4 +331,3 @@ If there's something you're missing or are stuck, the development team would lov
 
   - To report a bug or suggest a feature, [raise an issue on GitHub](https://github.com/planetlabs/planet-client-python/issues/new)
   - To get in touch with the development team, email [developers@planet.com](mailto:developers@planet.com)
-
