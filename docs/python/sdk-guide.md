@@ -258,10 +258,11 @@ source = catalog_source(
     time_range_type="acquired",
 )
 
-request = build_request("Standard PSScene Ortho Analytic", source=source, delivery={}, clip_to_source=True)
-
 # define a delivery method. In this example, we're using AWS S3.
 delivery = amazon_s3(ACCESS_KEY_ID, SECRET_ACCESS_KEY, "test", "us-east-1")
+
+# build the request payload
+request = build_request("Standard PSScene Ortho Analytic", source=source, delivery=delivery, clip_to_source=True)
 
 # finally, create the subscription
 subscription = pl.subscriptions.create_subscription(request)
