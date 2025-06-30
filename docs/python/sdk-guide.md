@@ -231,7 +231,7 @@ You will need your ACCESS_KEY_ID, SECRET_ACCESS_KEY, bucket and region name.
 To subscribe to scenes that match a filter, use the `subscription_request` module to build a request, and
 pass it to the `subscriptions.create_subscription()` method of the client.
 
-By default, a request to create a subscription will not clip to the subscription source geometry.  To clip to subscription source geometry, set `planet.subscription_request.build_request()` keyword argument `clip_to_source = True` as in the example below.  To clip to a custom geometry, set `planet.subscription_request.build_request()`  keyword argument `clip_to_source = False` (or omit it entirely to fall back on the default value), and instead configure the custom clip AOI with `planet.subscription_request.clip_tool()`.
+By default, a request to create a subscription will not clip matching imagery which intersects the source geometry.  To clip to the subscription source geometry, set `planet.subscription_request.build_request()` keyword argument `clip_to_source = True` as in the example below.  To clip to a custom geometry, set `planet.subscription_request.build_request()`  keyword argument `clip_to_source = False` (or omit it entirely to fall back on the default value), and instead configure the custom clip AOI with `planet.subscription_request.clip_tool()`.
 
 Warning: the following code will create a subscription, consuming quota based on your plan.
 
