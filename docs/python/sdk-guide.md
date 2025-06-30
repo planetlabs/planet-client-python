@@ -231,6 +231,8 @@ You will need your ACCESS_KEY_ID, SECRET_ACCESS_KEY, bucket and region name.
 To subscribe to scenes that match a filter, use the `subscription_request` module to build a request, and
 pass it to the `subscriptions.create_subscription()` method of the client.
 
+By default, a request to create a subscription will not clip matching imagery which intersects the source geometry.  To clip to the subscription source geometry, set `planet.subscription_request.build_request()` keyword argument `clip_to_source = True` as in the example below.  To clip to a custom geometry, set `planet.subscription_request.build_request()`  keyword argument `clip_to_source = False` (or omit it entirely to fall back on the default value), and instead configure the custom clip AOI with `planet.subscription_request.clip_tool()`.
+
 Warning: the following code will create a subscription, consuming quota based on your plan.
 
 ```python
@@ -256,10 +258,11 @@ source = catalog_source(
     time_range_type="acquired",
 )
 
-request = build_request("Standard PSScene Ortho Analytic", source=source, delivery={})
-
 # define a delivery method. In this example, we're using AWS S3.
 delivery = amazon_s3(ACCESS_KEY_ID, SECRET_ACCESS_KEY, "test", "us-east-1")
+
+# build the request payload
+request = build_request("Standard PSScene Ortho Analytic", source=source, delivery=delivery, clip_to_source=True)
 
 # finally, create the subscription
 subscription = pl.subscriptions.create_subscription(request)
