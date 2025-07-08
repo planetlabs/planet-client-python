@@ -122,6 +122,17 @@ create_mock = respx.mock()
 create_mock.route(M(url=TEST_URL),
                   method='POST').mock(side_effect=modify_response)
 
+bulk_create_mock = respx.mock()
+bulk_create_mock.route(
+    M(url=f'{TEST_URL}/bulk'), method='POST'
+).mock(return_value=Response(
+    200,
+    json={
+        '_links': {
+            'list': f'{TEST_URL}/subscriptions/v1?created={datetime.now().isoformat()}/&geom_ref=pl:features:test_features&name=test-sub'
+        }
+    }))
+
 update_mock = respx.mock()
 update_mock.route(M(url=f'{TEST_URL}/test'),
                   method='PUT').mock(side_effect=modify_response)
@@ -334,6 +345,18 @@ async def test_create_subscription_success():
         assert sub['name'] == 'test'
 
 
+@pytest.mark.anyio
+@bulk_create_mock
+async def test_bulk_create_subscription_success():
+    """Bulk subscription is created, description has the expected items."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        resp = await client.bulk_create_subscriptions([{
+            'name': 'test', 'delivery': 'yes, please', 'source': 'test'
+        }])
+        assert '/subscriptions/v1?' in resp['_links']['list']
+
+
 @create_mock
 def test_create_subscription_success_sync():
     """Subscription is created, description has the expected items."""
@@ -344,6 +367,18 @@ def test_create_subscription_success_sync():
         'name': 'test', 'delivery': 'yes, please', 'source': 'test'
     })
     assert sub['name'] == 'test'
+
+
+@bulk_create_mock
+def test_bulk_create_subscription_success_sync():
+    """Subscription is created, description has the expected items."""
+
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    resp = pl.subscriptions.bulk_create_subscriptions([{
+        'name': 'test', 'delivery': 'yes, please', 'source': 'test'
+    }])
+    assert '/subscriptions/v1?' in resp['_links']['list']
 
 
 @pytest.mark.anyio

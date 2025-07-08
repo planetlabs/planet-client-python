@@ -1,10 +1,11 @@
 """Planet Subscriptions API Python client."""
 
 import logging
-from typing import Any, AsyncIterator, Awaitable, Dict, Optional, Sequence, TypeVar
+from typing import Any, AsyncIterator, Dict, Optional, Sequence, TypeVar, List
 
 from typing_extensions import Literal
 
+from planet.clients.base import _BaseClient
 from planet.exceptions import APIError, ClientError
 from planet.http import Session
 from planet.models import Paged
@@ -17,7 +18,7 @@ LOGGER = logging.getLogger()
 T = TypeVar("T")
 
 
-class SubscriptionsClient:
+class SubscriptionsClient(_BaseClient):
     """A Planet Subscriptions Service API 1.0.0 client.
 
     The methods of this class forward request parameters to the
@@ -55,15 +56,7 @@ class SubscriptionsClient:
             base_url: The base URL to use. Defaults to production subscriptions
                 API base url.
         """
-        self._session = session
-
-        self._base_url = base_url or BASE_URL
-        if self._base_url.endswith('/'):
-            self._base_url = self._base_url[:-1]
-
-    def _call_sync(self, f: Awaitable[T]) -> T:
-        """block on an async function call, using the call_sync method of the session"""
-        return self._session._call_sync(f)
+        super().__init__(session, base_url or BASE_URL)
 
     async def list_subscriptions(self,
                                  status: Optional[Sequence[str]] = None,
@@ -113,7 +106,6 @@ class SubscriptionsClient:
             limit (int): limit the number of subscriptions in the
                 results. When set to 0, no maximum is applied.
             page_size (int): number of subscriptions to return per page.
-            TODO: user_id
 
         Datetime args (created, end_time, start_time, updated) can either be a
         date-time or an interval, open or closed. Date and time expressions adhere
@@ -132,6 +124,8 @@ class SubscriptionsClient:
             ClientError: on a client error.
         """
 
+        # TODO from old doc string, which breaks strict document checking:
+        #    Add Parameter user_id
         class _SubscriptionsPager(Paged):
             """Navigates pages of messages about subscriptions."""
             ITEMS_KEY = 'subscriptions'
@@ -202,6 +196,34 @@ class SubscriptionsClient:
         else:
             sub = resp.json()
             return sub
+
+    async def bulk_create_subscriptions(self, requests: List[dict]) -> Dict:
+        """
+        Create multiple subscriptions in bulk. Currently, the list of requests can only contain one item.
+
+        Args:
+            requests (List[dict]): A list of dictionaries where each dictionary
+                represents a subscription to be created.
+
+        Raises:
+            APIError: If the API returns an error response.
+            ClientError: If there is an issue with the client request.
+
+        Returns:
+            The response including a _links key to the list endpoint for use finding the created subscriptions.
+        """
+        try:
+            url = f'{self._base_url}/bulk'
+            resp = await self._session.request(
+                method='POST', url=url, json={'subscriptions': requests})
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
+        else:
+            return resp.json()
 
     async def cancel_subscription(self, subscription_id: str) -> None:
         """Cancel a Subscription.
@@ -340,7 +362,6 @@ class SubscriptionsClient:
                 filter out results with status not in this set.
             limit (int): limit the number of subscriptions in the
                 results. When set to 0, no maximum is applied.
-            TODO: created, updated, completed, user_id
 
         Yields:
             dict: description of a subscription results.
@@ -350,6 +371,8 @@ class SubscriptionsClient:
             ClientError: on a client error.
         """
 
+        # TODO from old doc string, which breaks strict document checking:
+        #    Add Parameters created, updated, completed, user_id
         class _ResultsPager(Paged):
             """Navigates pages of messages about subscription results."""
             ITEMS_KEY = 'results'
@@ -387,7 +410,6 @@ class SubscriptionsClient:
             subscription_id (str): id of a subscription.
             status (Set[str]): pass result with status in this set,
                 filter out results with status not in this set.
-            TODO: created, updated, completed, user_id
 
         Yields:
             str: a row from a CSV file.
@@ -396,6 +418,8 @@ class SubscriptionsClient:
             APIError: on an API server error.
             ClientError: on a client error.
         """
+        # TODO from old doc string, which breaks strict document checking:
+        #    Add Parameters created, updated, completed, user_id
         url = f'{self._base_url}/{subscription_id}/results'
         params = {'status': [val for val in status or {}], 'format': 'csv'}
 

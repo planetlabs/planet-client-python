@@ -71,15 +71,11 @@ def build_request(name: str,
         hosting: A hosting destination e.g. Sentinel Hub.
         collection_id: A Sentinel Hub collection ID.
         create_configuration: Automatically create a layer configuration for your collection.
-        clip_to_source: whether to clip to the source geometry or not
-            (the default). If True a clip configuration will be added to
-            the list of requested tools unless an existing clip tool
-            exists.  NOTE: Not all data layers support clipping, please
-            consult the Product reference before using this option.
-            NOTE: the next version of the Subscription API will remove
-            the clip tool option and always clip to the source geometry.
-            Thus this is a preview of the next API version's default
-            behavior.
+        clip_to_source: Whether or not to clip to the source geometry (defaults to False). If
+            True, a clip configuration that specifies the subscription source geometry as clip
+            AOI will be added to the list of requested tools.  If True and 'clip_tool()' is
+            also specified, an exception will be raised.  If False, no clip configuration
+            will be added to the list of requested tools unless 'clip_tool()' is specified.
 
     Returns:
         dict: a representation of a Subscriptions API request for
@@ -133,10 +129,7 @@ def build_request(name: str,
 
         # If clip_to_source is True a clip configuration will be added
         # to the list of requested tools unless an existing clip tool
-        # exists. In that case an exception is raised. NOTE: the next
-        # version of the Subscription API will remove the clip tool
-        # option and always clip to the source geometry. Thus this is a
-        # preview of the next API version's default behavior.
+        # exists. In that case an exception is raised.
         if clip_to_source:
             if any(tool.get('type', None) == 'clip' for tool in tool_list):
                 raise ClientError(
@@ -613,7 +606,21 @@ def band_math_tool(b1: str,
     in these files.
 
     Parameters:
-        b1-b15: An expression defining how the output band should be computed.
+        b1: An expression defining how the output band should be computed.
+        b2: An expression defining how the output band should be computed.
+        b3: An expression defining how the output band should be computed.
+        b4: An expression defining how the output band should be computed.
+        b5: An expression defining how the output band should be computed.
+        b6: An expression defining how the output band should be computed.
+        b7: An expression defining how the output band should be computed.
+        b8: An expression defining how the output band should be computed.
+        b9: An expression defining how the output band should be computed.
+        b10: An expression defining how the output band should be computed.
+        b11: An expression defining how the output band should be computed.
+        b12: An expression defining how the output band should be computed.
+        b13: An expression defining how the output band should be computed.
+        b14: An expression defining how the output band should be computed.
+        b15: An expression defining how the output band should be computed.
         pixel_type: A value indicating what the output pixel type should be.
 
     Raises:
@@ -642,6 +649,10 @@ def clip_tool(aoi: Mapping) -> dict:
     the clip aoi is so large that full scenes may be delivered without any
     clipping, those files will not have “_clip” appended to their file name.
 
+    NOTE: To clip to the source geometry, set the 'clip_to_source' parameter
+    of 'planet.subscription_request.build_request()' to True instead of using
+    this tool.
+
     Parameters:
         aoi: GeoJSON polygon or multipolygon defining the clip area, with up to
             500 vertices. The minimum geographic area of any polygon or
@@ -651,6 +662,7 @@ def clip_tool(aoi: Mapping) -> dict:
         planet.exceptions.ClientError: If aoi is not a valid polygon or
             multipolygon.
     """
+
     valid_types = ['Polygon', 'MultiPolygon', 'ref']
 
     geom = geojson.as_geom_or_ref(dict(aoi))

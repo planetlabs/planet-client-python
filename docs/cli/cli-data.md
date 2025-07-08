@@ -41,7 +41,7 @@ command will do the same thing as the previous one:
 planet data search PSScene --filter filter.json | jq > recent-psscene.json
 ```
 
-You can read a bit [more about jq]((cli-intro.md#jq) in the CLI intro.
+You can read a bit [more about jq](cli-intro.md#jq) in the CLI intro.
 
 ### Output to stdin
 
@@ -412,7 +412,7 @@ Will result in output like:
 You can see how the yearly output of Planet has gone up, though it actually went down in 2022 as the upgrade to SuperDove meant much larger swaths, so the number of individual items went down even as we captured the whole earth.
 
 The API does not support an 'all time' interval to get the total of all collections for an area, but
-you can easily use [jq]((cli-intro.md#jq) to total up the results of an interval count:
+you can easily use [jq](cli-intro.md#jq) to total up the results of an interval count:
 
 ```sh
 curl -s https://raw.githubusercontent.com/ropensci/geojsonio/main/inst/examples/california.geojson \
