@@ -14,7 +14,7 @@ dependencies = [
   "pyjwt>=2.1",
   "tqdm>=4.56",
   "typing-extensions",
-  "planet-auth==2.0.11b1748473964",
+  "planet-auth>=2.1.0",
 ]
 readme = "README.md"
 requires-python = ">=3.9"
