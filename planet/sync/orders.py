@@ -307,18 +307,13 @@ class OrdersAPI:
             planet.exceptions.APIError: On API error.
             planet.exceptions.ClientError: If state is not valid.
         """
-        results = self._client.list_orders(state,
-                                           limit,
-                                           source_type,
-                                           name,
-                                           name__contains,
-                                           created_on,
-                                           last_modified,
-                                           hosting,
-                                           sort_by)
-
-        try:
-            while True:
-                yield self._client._call_sync(results.__anext__())
-        except StopAsyncIteration:
-            pass
+        return self._client._aiter_to_iter(
+            self._client.list_orders(state,
+                                     limit,
+                                     source_type,
+                                     name,
+                                     name__contains,
+                                     created_on,
+                                     last_modified,
+                                     hosting,
+                                     sort_by))

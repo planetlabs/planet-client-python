@@ -101,24 +101,19 @@ class SubscriptionsAPI:
             ClientError: on a client error.
         """
 
-        results = self._client.list_subscriptions(status,
-                                                  limit,
-                                                  created,
-                                                  end_time,
-                                                  hosting,
-                                                  name__contains,
-                                                  name,
-                                                  source_type,
-                                                  start_time,
-                                                  sort_by,
-                                                  updated,
-                                                  page_size)
-
-        try:
-            while True:
-                yield self._client._call_sync(results.__anext__())
-        except StopAsyncIteration:
-            pass
+        return self._client._aiter_to_iter(
+            self._client.list_subscriptions(status,
+                                            limit,
+                                            created,
+                                            end_time,
+                                            hosting,
+                                            name__contains,
+                                            name,
+                                            source_type,
+                                            start_time,
+                                            sort_by,
+                                            updated,
+                                            page_size))
 
     def create_subscription(self, request: Dict) -> Dict:
         """Create a Subscription.
@@ -253,13 +248,8 @@ class SubscriptionsAPI:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        results = self._client.get_results(subscription_id, status, limit)
-
-        try:
-            while True:
-                yield self._client._call_sync(results.__anext__())
-        except StopAsyncIteration:
-            pass
+        return self._client._aiter_to_iter(
+            self._client.get_results(subscription_id, status, limit))
 
     def get_results_csv(
         self,
@@ -285,17 +275,13 @@ class SubscriptionsAPI:
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        results = self._client.get_results_csv(subscription_id, status)
         # Note: retries are not implemented yet. This project has
         # retry logic for HTTP requests, but does not handle errors
         # during streaming. We may want to consider a retry decorator
         # for this entire method a la stamina:
         # https://github.com/hynek/stamina.
-        try:
-            while True:
-                yield self._client._call_sync(results.__anext__())
-        except StopAsyncIteration:
-            pass
+        return self._client._aiter_to_iter(
+            self._client.get_results_csv(subscription_id, status))
 
     def get_summary(self) -> Dict[str, Any]:
         """Summarize the status of all subscriptions via GET.

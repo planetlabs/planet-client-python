@@ -13,7 +13,7 @@
 # the License.
 """Functionality for interacting with the data api"""
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterator, List, Optional, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, TypeVar, Union
 
 from planet.models import GeojsonLike
 
@@ -26,6 +26,8 @@ LIST_SEARCH_TYPE_DEFAULT = 'any'
 
 WAIT_DELAY = 5
 WAIT_MAX_ATTEMPTS = 200
+
+T = TypeVar("T")
 
 
 class DataAPI:
@@ -75,18 +77,13 @@ class DataAPI:
                 references
         """
 
-        results = self._client.search(item_types,
-                                      search_filter,
-                                      name,
-                                      sort,
-                                      limit,
-                                      geometry)
-
-        try:
-            while True:
-                yield self._client._call_sync(results.__anext__())
-        except StopAsyncIteration:
-            pass
+        return self._client._aiter_to_iter(
+            self._client.search(item_types,
+                                search_filter,
+                                name,
+                                sort,
+                                limit,
+                                geometry))
 
     def create_search(
         self,
@@ -183,13 +180,9 @@ class DataAPI:
             planet.exceptions.ClientError: If sort or search_type are not
                 valid.
         """
-        results = self._client.list_searches(sort, search_type, limit)
 
-        try:
-            while True:
-                yield self._client._call_sync(results.__anext__())
-        except StopAsyncIteration:
-            pass
+        return self._client._aiter_to_iter(
+            self._client.list_searches(sort, search_type, limit))
 
     def delete_search(self, search_id: str):
         """Delete an existing saved search.
@@ -242,13 +235,8 @@ class DataAPI:
             planet.exceptions.ClientError: If search_id or sort is not valid.
         """
 
-        results = self._client.run_search(search_id, sort, limit)
-
-        try:
-            while True:
-                yield self._client._call_sync(results.__anext__())
-        except StopAsyncIteration:
-            pass
+        return self._client._aiter_to_iter(
+            self._client.run_search(search_id, sort, limit))
 
     def get_stats(self,
                   item_types: List[str],

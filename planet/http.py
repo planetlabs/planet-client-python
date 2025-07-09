@@ -22,7 +22,7 @@ import logging
 import random
 import threading
 import time
-from typing import AsyncGenerator, Awaitable, Optional, TypeVar
+from typing import Any, AsyncGenerator, AsyncIterator, Awaitable, Coroutine, Iterator, Optional, TypeVar
 
 import httpx
 from typing_extensions import Literal
@@ -276,6 +276,12 @@ class Session(BaseSession):
         self._limiter = _Limiter(rate_limit=RATE_LIMIT, max_workers=MAX_ACTIVE)
         self.outcomes: Counter[str] = Counter()
 
+        self._loop: asyncio.AbstractEventLoop = None  # type: ignore
+
+    def _init_loop(self):
+        if self._loop:
+            return
+
         # create a dedicated event loop for this httpx session.
         def _start_background_loop(loop):
             asyncio.set_event_loop(loop)
@@ -287,8 +293,25 @@ class Session(BaseSession):
                                              daemon=True)
         self._loop_thread.start()
 
-    def _call_sync(self, f: Awaitable[T]) -> T:
+    def _call_sync(self, f: Coroutine[Any, Any, T]) -> T:
+        self._init_loop()
         return asyncio.run_coroutine_threadsafe(f, self._loop).result()
+
+    def _aiter_to_iter(self, aiter: AsyncIterator[T]) -> Iterator[T]:
+        self._init_loop()
+
+        # this turns an awaitable into a coroutine - works around typing
+        # check on run_coroutine_threadsafe (which actually does check if
+        # the argument is a coroutine)
+        async def coro(a: Awaitable[T]) -> T:
+            return await a
+
+        try:
+            while True:
+                yield asyncio.run_coroutine_threadsafe(coro(aiter.__anext__()),
+                                                       self._loop).result()
+        except StopAsyncIteration:
+            pass
 
     @classmethod
     async def _raise_for_status(cls, response):
