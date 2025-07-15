@@ -43,4 +43,4 @@ To contribute or develop with this library, see
 
 ## Version 1 of this SDK
 
-[Version 1 of this SDK](https://github.com/planetlabs/planet-client-python/tree/1.5.2) is significantly different (see the [documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/)). Version 2 is not backward compatible. Make sure to create a separate virtual environment if you need to work with both versions. For more information on how to do this, see the [Virtual Environments and the Planet SDK for Python](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/get-started/venv-tutorial/).
+[Version 1 of this SDK](https://github.com/planetlabs/planet-client-python/tree/1.5.2) is significantly different (see the [documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/)). Version 2 was not backward compatible. Make sure to create a separate virtual environment if you need to work with both versions. For more information on how to do this, see the [Virtual Environments and the Planet SDK for Python](https://planet-sdk-for-python.readthedocs.io/en/latest/get-started/venv-tutorial/).
