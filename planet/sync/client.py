@@ -2,6 +2,7 @@ from typing import Optional
 
 from .features import FeaturesAPI
 from .data import DataAPI
+from .destinations import DestinationsAPI
 from .orders import OrdersAPI
 from .subscriptions import SubscriptionsAPI
 from planet.http import Session
@@ -18,6 +19,7 @@ class Planet:
     Members:
 
     - `data`: for interacting with the Planet Data API.
+    - `destinations`: Destinations API.
     - `orders`: Orders API.
     - `subscriptions`: Subscriptions API.
     - `features`: Features API
@@ -48,6 +50,7 @@ class Planet:
         })
 
         self.data = DataAPI(self._session)
+        self.destinations = DestinationsAPI(self._session)
         self.orders = OrdersAPI(self._session)
         self.subscriptions = SubscriptionsAPI(self._session)
         self.features = FeaturesAPI(self._session)
