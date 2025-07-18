@@ -87,7 +87,7 @@ def test_build_request_clip_to_source_success(geom_geojson):
         clip_to_source=True,
     )
     assert req["tools"][1]["type"] == "clip"
-    assert req["tools"][1]["parameters"]["aoi"] == geom_geojson
+    assert req["tools"][1]["parameters"] == {}
 
 
 def test_build_request_clip_to_source_failure(geom_geojson):
@@ -497,17 +497,6 @@ def test_band_math_tool_invalid_pixel_type():
         subscription_request.band_math_tool(b1='b1',
                                             b2='arctan(b1)',
                                             pixel_type="invalid")
-
-
-def test_clip_tool_success(geom_geojson):
-    res = subscription_request.clip_tool(geom_geojson)
-    expected = {"type": "clip", "parameters": {"aoi": geom_geojson}}
-    assert res == expected
-
-
-def test_clip_tool_invalid_type(point_geom_geojson):
-    with pytest.raises(exceptions.ClientError):
-        subscription_request.clip_tool(point_geom_geojson)
 
 
 def test_file_format_tool_success():
