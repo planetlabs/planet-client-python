@@ -455,10 +455,9 @@ planet subscriptions request-catalog \
 Subscribing to Planetary Variables is much like subscribing to imagery from
 Planet's catalog. The `planet subscriptions request-pv` command can construct the source
 part of a Planetary Variable request like `request-catalog` does for cataloged
-imagery. Planetary Variable subscriptions come in 4 types and are further
-subdivided within these types by an identifier. See [Subscribing to Planetary
+imagery. See [Subscribing to Planetary
 Variables](https://docs.planet.com/develop/apis/subscriptions/sources/#planetary-variable-and-analysis-ready-source-types)
-for details. To constrain data delivery by space and time, you will use the
+for details about Planetary Variable product options. To constrain data delivery by space and time, you will use the
 `--geometry`, `start-time`, and `end-time` options described above.
 
 ```sh
