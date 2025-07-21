@@ -87,7 +87,8 @@ def subscriptions(ctx, base_url):
         "pending",
         "completed",
         "suspended",
-        "failed"
+        "failed",
+        "invalid",
     ]),
     multiple=True,
     help="Select subscriptions in one or more states. Default is all.")

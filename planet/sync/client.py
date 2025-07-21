@@ -37,17 +37,27 @@ class Planet:
     Parameters:
         session: Optional Session. The Session can be provided allowing for customization, and
             will default to standard behavior when not provided.
+        data_base_url: Optional base URL for Data API. Defaults to production.
+        orders_base_url: Optional base URL for Orders API. Defaults to production.
+        subscriptions_base_url: Optional base URL for Subscriptions API. Defaults to production.
+        features_base_url: Optional base URL for Features API. Defaults to production.
 
     """
 
-    def __init__(self, session: Optional[Session] = None) -> None:
+    def __init__(self,
+                 session: Optional[Session] = None,
+                 data_base_url: Optional[str] = None,
+                 orders_base_url: Optional[str] = None,
+                 subscriptions_base_url: Optional[str] = None,
+                 features_base_url: Optional[str] = None) -> None:
         self._session = session or Session()
         self._session._client.headers.update({
             "X-Planet-App": SYNC_CLIENT_X_PLANET_APP,
             "User-Agent": f"planet-client-python/{__version__}/sync",
         })
 
-        self.data = DataAPI(self._session)
-        self.orders = OrdersAPI(self._session)
-        self.subscriptions = SubscriptionsAPI(self._session)
-        self.features = FeaturesAPI(self._session)
+        self.data = DataAPI(self._session, data_base_url)
+        self.orders = OrdersAPI(self._session, orders_base_url)
+        self.subscriptions = SubscriptionsAPI(self._session,
+                                              subscriptions_base_url)
+        self.features = FeaturesAPI(self._session, features_base_url)
