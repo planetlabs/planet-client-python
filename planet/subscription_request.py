@@ -273,7 +273,6 @@ def catalog_source(
 
 
 def planetary_variable_source(
-    var_type: Optional[str],
     var_id: str,
     geometry: Union[dict, str],
     start_time: datetime,
@@ -281,10 +280,8 @@ def planetary_variable_source(
 ) -> dict:
     """Construct a Planetary Variable subscription source.
 
-    Planetary Variables come in 4 types and are further subdivided
-    within these types. See [Subscribing to Planetary Variables](https://docs.planet.com/develop/apis/subscriptions/sources/#planetary-variable-and-analysis-ready-source-types)
-    or the [OpenAPI spec](https://api.planet.com/subscriptions/v1/spec) for
-    more details.
+    See [Subscribing to Planetary Variables](https://docs.planet.com/develop/apis/subscriptions/sources/#planetary-variable-and-analysis-ready-source-types)
+    or the [OpenAPI spec](https://api.planet.com/subscriptions/v1/spec) to learn more about Planetary Variable product options.
 
     The return value can be passed to
     [planet.subscription_request.build_request][].
@@ -292,9 +289,6 @@ def planetary_variable_source(
     Note: this function does not validate variable types and ids.
 
     Parameters:
-        var_type: Planetary Variable type. See documentation for all
-            available types.  Used to be a required parameter but
-            is now optional and can be 'None'.
         var_id: A Planetary Variable ID. See documenation for all
             available IDs.
         geometry: The area of interest of the subscription that will be
@@ -316,7 +310,6 @@ def planetary_variable_source(
 
         ```python
         pv_source = planetary_variables_source(
-            "soil_water_content",
             "SWC-AMSR2-C_V1.0_100",
             geometry={
                 "type": "Polygon",
@@ -359,8 +352,6 @@ def planetary_variable_source(
             raise ClientError('Could not convert end_time to an iso string')
 
     source: dict[str, Any] = {"parameters": parameters}
-    if var_type:
-        source["type"] = var_type
     return source
 
 
