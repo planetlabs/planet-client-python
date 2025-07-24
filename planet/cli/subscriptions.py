@@ -535,10 +535,9 @@ def request_catalog(item_types,
 
 @subscriptions.command()  # type: ignore
 @translate_exceptions
-@click.option(
-    '--var-id',
-    required=True,
-    help='A Planetary Variable ID. See documentation for all available IDs.')
+@click.option('--source-id',
+              required=True,
+              help='A source ID. See documentation for all available IDs.')
 @click.option(
     '--geometry',
     required=True,
@@ -554,14 +553,14 @@ def request_catalog(item_types,
               type=types.DateTime(),
               help='Date and time to end subscription.')
 @pretty
-def request_pv(var_id, geometry, start_time, end_time, pretty):
-    """Generate a Planetary Variable subscription source.
+def request_source(source_id, geometry, start_time, end_time, pretty):
+    """Generate a subscription source.
 
-    See [Subscribing to Planetary Variables](https://docs.planet.com/develop/apis/subscriptions/sources/#planetary-variable-and-analysis-ready-source-types)
-    or the [OpenAPI spec](https://api.planet.com/subscriptions/v1/spec) to learn more about Planetary Variable product options.
+    See [Subscribing to Planetary Variables and Analysis Ready sources](https://docs.planet.com/develop/apis/subscriptions/sources/#planetary-variable-and-analysis-ready-source-types)
+    or the [OpenAPI spec](https://api.planet.com/subscriptions/v1/spec) to learn more about different product options.
     """
-    res = subscription_request.planetary_variable_source(
-        var_id,
+    res = subscription_request.subscription_source(
+        source_id,
         geometry,
         start_time,
         end_time=end_time,

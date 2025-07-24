@@ -421,14 +421,14 @@ def test_subscriptions_results_csv(invoke):
 @pytest.mark.parametrize("geom",
                          [("geom_geojson"), ("geom_reference"),
                           ("str_geom_reference")])
-def test_request_pv_success(invoke, geom, request):
-    """Request-pv command succeeds"""
+def test_request_source_success(invoke, geom, request):
+    """Request-source command succeeds"""
     geom = request.getfixturevalue(geom)
     if isinstance(geom, dict):
         geom = json.dumps(geom)
     cmd = [
-        "request-pv",
-        "--var-id=BIOMASS-PROXY_V3.0_10",
+        "request-source",
+        "--source-id=BIOMASS-PROXY_V3.0_10",
         f"--geometry={geom}",
         "--start-time=2021-03-01T00:00:00",
     ]

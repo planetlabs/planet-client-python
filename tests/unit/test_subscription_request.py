@@ -556,22 +556,22 @@ def test_toar_tool_success():
 
 
 @pytest.mark.parametrize(
-    "var_id",
+    "source_id",
     [
         ("BIOMASS-PROXY_V3.0_10"),  # actual valid id.
         ("VAR1-ABCD"),  # nonsense id
     ])
-def test_pv_source_success(geom_geojson, var_id):
+def test_subscription_source_success(geom_geojson, source_id):
     """Configure a planetary variable subscription source."""
-    source = subscription_request.planetary_variable_source(
-        var_id,
+    source = subscription_request.subscription_source(
+        source_id,
         geometry=geom_geojson,
         start_time=datetime(2021, 3, 1),
         end_time=datetime(2021, 3, 2),
     )
 
     params = source["parameters"]
-    assert params["id"] == var_id
+    assert params["id"] == source_id
     assert params["geometry"] == geom_geojson
     assert params["start_time"].startswith("2021-03-01")
 
