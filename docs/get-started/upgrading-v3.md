@@ -92,4 +92,8 @@ Users developing new applications should consult the [Client Authentication Guid
 for a complete discussion of all OAuth2 based mechanisms.  OAuth2 mechanisms
 should be preferred to the use of Planet API keys.
 
+## Additional Breaking Changes
+
+* Deprecated `planet.subscription_request.clip_tool()` method for defining custom clip AOIs with requests to create subscriptions.  Subscriptions API no longer supports custom clip AOIs; instead users can opt-in to clip to their subscription source geometry by including kwarg `clip_to_source=True` when constructing requests via `planet.subscription_request.build_request()`.  See [PR #1169](https://github.com/planetlabs/planet-client-python/pull/1169) for implementation details.
+
 ----
