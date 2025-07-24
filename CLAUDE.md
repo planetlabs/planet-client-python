@@ -7,9 +7,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Testing
 - **Run all tests**: `nox` (runs lint, analyze, test, coverage, docs)
 - **Run tests only**: `nox -s test`
-- **Run tests on specific Python version**: `nox -s test-3.13`
-- **Run single test file**: `nox -s test-3.13 -- tests/unit/test_http.py`
-- **Run tests by keyword**: `nox -s test-3.13 -- -k test__Limiter`
+- **Run tests on specific Python version**: `nox -s test-3.12`
+- **Run single test file**: `nox -s test-3.12 -- tests/unit/test_http.py`
+- **Run tests by keyword**: `nox -s test-3.12 -- -k test__Limiter`
 - **Fast rerun (reuse environments)**: `nox -r`
 
 ### Linting and Code Quality
@@ -41,7 +41,7 @@ The Planet SDK provides both a Python API and CLI for Planet's APIs (Data, Order
 
 **API Clients** (`planet/clients/`):
 - `DataClient` - Search Planet's imagery catalog
-- `OrdersClient` - Process and download imagery 
+- `OrdersClient` - Process and download imagery
 - `SubscriptionsClient` - Auto-process and deliver imagery
 - `FeaturesClient` - Upload areas of interest
 
@@ -60,7 +60,7 @@ The Planet SDK provides both a Python API and CLI for Planet's APIs (Data, Order
 
 **Request Building**:
 - `data_filter.py` - Data API search filters
-- `order_request.py` - Orders API request construction  
+- `order_request.py` - Orders API request construction
 - `subscription_request.py` - Subscriptions API request construction
 
 ### Key Patterns
