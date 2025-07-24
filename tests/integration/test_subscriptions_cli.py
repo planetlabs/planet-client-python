@@ -385,7 +385,7 @@ def test_request_base_clip_to_source(geom_fixture, request, invoke):
     req = json.loads(result.output)
     tool = req["tools"][0]
     assert tool["type"] == "clip"
-    assert tool["parameters"]["aoi"] == geom
+    assert tool["parameters"] == {}
 
 
 def test_request_catalog_success(mock_bundles, invoke, geom_geojson):
