@@ -95,5 +95,6 @@ should be preferred to the use of Planet API keys.
 ## Additional Breaking Changes
 
 * Deprecated `planet.subscription_request.clip_tool()` method for defining custom clip AOIs with requests to create subscriptions.  Subscriptions API no longer supports custom clip AOIs; instead users can opt-in to clip to their subscription source geometry by including kwarg `clip_to_source=True` when constructing requests via `planet.subscription_request.build_request()`.  See [PR #1169](https://github.com/planetlabs/planet-client-python/pull/1169) for implementation details.
+* Renamed `planet.cli.subscriptions.request_pv()` to `planet.cli.subscriptions.request_source()`, and removed `var_type` positional argument from the signature.  This change, in effect renames the CLI argument `planet subscriptions request-pv` to `planet subscriptions request-source`.  Also renamed `planet.subscription_request.planetary_variable_source()` to `planet.subscription_request.subscription_source()`.  Source type positional arguments are removed from these methods in favor of `source_id`.  See [PR #1170](https://github.com/planetlabs/planet-client-python/pull/1170) for implementation details.
 
 ----
