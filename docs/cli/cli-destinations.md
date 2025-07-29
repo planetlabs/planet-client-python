@@ -1,0 +1,51 @@
+---
+title: CLI for Destinations API Tutorial
+---
+
+## Introduction
+TODO - align with docs language
+
+## Core Workflows
+
+### Create a Destination
+To discover the supported cloud destinations, run the command `planet destinations create --help`. Once you have chosen your target cloud destination type, run the command `planet destinations create <type> --help` to discover the required and supported parameters (eg: `planet destinations create s3 --help`).
+
+Finally, submit the full request:
+```sh
+planet destinations create s3 my-bucket us-west-2 AKIA... SECRET... --name my-s3-destination
+```
+
+The destination reference will be printed to standard out and can subsequently be used in Orders API and Subscriptions API requests as the delivery destination.
+
+Please note that destinations are shared within the organization you belong to. Any destination you create can be used by other members of your organization when creating orders or subscriptions. Org administrators can modify any destination in the organization, regardless of ownership.
+
+TODO - mention limits on unarchived destinations, maybe mention in intro? Link limits to docs?
+
+### List Destinations
+Listing destinations can be accomplished with the command `planet destinations list`. This will return all destinations within your organization.
+
+You can get nicer formatting with `--pretty` or pipe it into `jq`, just like the other Planet CLIs.
+
+#### Filtering
+The `list` command supports filtering on a variety of fields. You can discover all filterable fields by running the command `planet destinations list --help`.
+
+* `--archived / --is-not-archived`: Filter by archive status. Use --archived to include only archived destinations, or --is-not-archived to list only active (not archived) destinations.
+* `--is-owner / --is-not-owner`: Filter by ownership. Use --is-owner to include only destinations owned by the requesting user, or --is-not-owner to include destinations not owned by the user.
+* `--can-write / --can-not-write`: Filter by write access. Use --can-write to include only destinations the user can modify, or --can-not-write to list destinations with read-only access for the user.
+
+For example, to list destinations that are not archived and you can modify you would issue the following command:
+```sh
+planet destinations list --not-archived --can-write
+```
+
+As a reminder, destinations are shared across your organization so without using --is-owner, destinations created by anyone in your organization will be returned.
+
+### Update Destinations
+The CLI conveniently moves all update actions to first class commands on the destination. The allowed update actions are archiving, unarchiving, renaming, and updating credentials. To discover all update actions run `planet destinations --help`.
+
+To discover more information about a specific update action, use the `--help` flag (eg: `planet destinations rename --help`, `planet destinations update --help`).
+
+Credential updating might be done if credentials expire or need to be rotated. For example, this is how s3 credentials would be updated.
+```sh
+planet destinations update parameters s3 my-destination-id NEW_ACCESS_KEY NEW_SECRET_KEY
+```

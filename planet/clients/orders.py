@@ -473,7 +473,8 @@ class OrdersClient(_BaseClient):
             created_on: Optional[str] = None,
             last_modified: Optional[str] = None,
             hosting: Optional[bool] = None,
-            sort_by: Optional[str] = None) -> AsyncIterator[dict]:
+            sort_by: Optional[str] = None,
+            destination_ref: Optional[str] = None) -> AsyncIterator[dict]:
         """Iterate over the list of stored orders.
 
         By default, order descriptions are sorted by creation date with the last created
@@ -486,6 +487,8 @@ class OrdersClient(_BaseClient):
 
         Parameters:
             state (str): filter by state.
+            limit (int): maximum number of results to return. When set to 0, no
+                maximum is applied.
             source_type (str): filter by source type.
             name (str): filter by name.
             name__contains (str): only include orders with names containing this string.
@@ -505,8 +508,8 @@ class OrdersClient(_BaseClient):
                  * "name"
                  * "name DESC"
                  * "name,state DESC,last_modified"
-            limit (int): maximum number of results to return. When set to 0, no
-                maximum is applied.
+            destination_ref (str): filter by orders created with the provided
+                destination reference.
 
         Datetime args (created_on and last_modified) can either be a date-time or an
         interval, open or closed. Date and time expressions adhere to RFC 3339. Open

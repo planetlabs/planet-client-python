@@ -122,13 +122,13 @@ class DestinationsClient(_BaseClient):
             return dest
         
     async def patch_destination(self,
-                                destination_ref: str,
+                                destination_id: str,
                                 request: Dict[str, Any]) -> Dict:
         """
-        Update a specific destination by its ref.
+        Update a specific destination by its ID.
 
         Args:
-            destination_ref (str): The ref of the destination to update.
+            destination_id (str): The ID of the destination to update.
             request (dict): Destination content to update, only attributes to update are required.
 
         Returns:
@@ -138,7 +138,7 @@ class DestinationsClient(_BaseClient):
             APIError: If the API returns an error response.
             ClientError: If there is an issue with the client request.
         """
-        url = f'{self._base_url}/{destination_ref}'
+        url = f'{self._base_url}/{destination_id}'
         try:
             response = await self._session.request(method='PATCH',
                                                    url=url,

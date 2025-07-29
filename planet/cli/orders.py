@@ -132,6 +132,7 @@ def orders(ctx, base_url):
     Supported fields: [name, created_on, state, last_modified].
 
     Example: 'name ASC,created_on DESC'""")
+@click.option('--destination-ref', help="Filter by orders created with the provided destination reference.")
 @limit
 @pretty
 async def list(ctx,

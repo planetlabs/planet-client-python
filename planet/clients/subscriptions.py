@@ -70,6 +70,7 @@ class SubscriptionsClient(_BaseClient):
                                  start_time: Optional[str] = None,
                                  sort_by: Optional[str] = None,
                                  updated: Optional[str] = None,
+                                 destination_ref: Optional[str] = None,
                                  page_size: int = 500) -> AsyncIterator[dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
@@ -79,6 +80,9 @@ class SubscriptionsClient(_BaseClient):
             not return a list.
 
         Args:
+            status (Set[str]): include subscriptions with a status in this set.
+            limit (int): limit the number of subscriptions in the
+                results. When set to 0, no maximum is applied.
             created (str): filter by created time or interval.
             end_time (str): filter by end time or interval.
             hosting (bool): only return subscriptions that contain a
@@ -88,7 +92,6 @@ class SubscriptionsClient(_BaseClient):
             name (str): filter by name.
             source_type (str): filter by source type.
             start_time (str): filter by start time or interval.
-            status (Set[str]): include subscriptions with a status in this set.
             sort_by (str): fields to sort subscriptions by. Multiple
                 fields can be specified, separated by commas. The sort
                 direction can be specified by appending ' ASC' or '
@@ -103,8 +106,7 @@ class SubscriptionsClient(_BaseClient):
                  * "name DESC"
                  * "name,end_time DESC,start_time"
             updated (str): filter by updated time or interval.
-            limit (int): limit the number of subscriptions in the
-                results. When set to 0, no maximum is applied.
+            destination_ref (str): filter by destination reference.
             page_size (int): number of subscriptions to return per page.
 
         Datetime args (created, end_time, start_time, updated) can either be a
@@ -151,6 +153,8 @@ class SubscriptionsClient(_BaseClient):
             params['sort_by'] = sort_by
         if updated is not None:
             params['updated'] = updated
+        if destination_ref is not None:
+            params['destination_ref'] = destination_ref
 
         params['page_size'] = page_size
 
