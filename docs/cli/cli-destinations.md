@@ -3,7 +3,7 @@ title: CLI for Destinations API Tutorial
 ---
 
 ## Introduction
-The `planet destinations` command enables interaction with the [Destinations API](https://docs.planet.com/develop/apis/destinations/), that enables the creation, listing, and modifying of destinations as well as using the destination in other services to streamline data delivery. This tutorial takes you through the main command available in the CLI.
+The `planet destinations` command enables interaction with the [Destinations API](https://docs.planet.com/develop/apis/destinations/), which enables the creation, listing, and modifying of destinations as well as using destinations in other services to streamline data delivery. This tutorial takes you through the main commands available in the CLI.
 
 ## Core Workflows
 
@@ -34,8 +34,6 @@ For example, to list destinations that are not archived and you can modify you w
 planet destinations list --not-archived --can-write
 ```
 
-As a reminder, destinations are shared across your organization so without using --is-owner, destinations created by anyone in your organization will be returned.
-
 ### Update Destinations
 The CLI conveniently moves all update actions to first class commands on the destination. The allowed update actions are archiving, unarchiving, renaming, and updating credentials. To discover all update actions run `planet destinations --help`.
 
@@ -47,7 +45,7 @@ planet destinations update parameters s3 my-destination-id NEW_ACCESS_KEY NEW_SE
 ```
 
 ## Using destinations in Subscriptions API
-Now that you have created a destination, it can be used as the delivery location for subscriptions. Use the destination reference in the delivery block instead of credentials.
+After creating a destination, it can be used as the delivery location for subscriptions. Use the destination reference in the delivery block instead of credentials.
 
 The subsequent examples will use the destination ref `pl:destinations/my-s3-destination-6HRjBcW74jeH9SC4VElKqX`.
 ```json
@@ -106,7 +104,7 @@ Then create the subscription, with the json above saved to a file.
 planet subscriptions create my-subscription.json
 ```
 
-The results of the created subscription will be delivered to the destination provided. You may re-use the destinations across an unlimited number of subscriptions.
+The results of the created subscription will be delivered to the destination provided.
 
 To retrieve all subscriptions created with a specific destination, issue the following command:
 ```sh
@@ -114,7 +112,7 @@ planet subscriptions list --destination-ref pl:destinations/my-s3-destination-6H
 ```
 
 ## Using destinations in Orders API
-Now that you have created a destination, it can be used as the delivery location for orders. Use the destination reference in the delivery block instead of credentials.
+After creating a destination, it can be used as the delivery location for orders. Use the destination reference in the delivery block instead of credentials.
 
 The subsequent examples will use the destination ref `pl:destinations/my-s3-destination-6HRjBcW74jeH9SC4VElKqX`.
 ```json
@@ -137,13 +135,12 @@ The subsequent examples will use the destination ref `pl:destinations/my-s3-dest
 }
 ```
 
-
 Then create the order, with the json above saved to a file.
 ```sh
 planet orders create my-order.json
 ```
 
-The results of the created order will be delivered to the destination provided. You may re-use the destinations across an unlimited number of orders (and subscriptions!).
+The results of the created order will be delivered to the destination provided.
 
 To retrieve all orders created with a specific destination, issue the following command:
 ```sh
