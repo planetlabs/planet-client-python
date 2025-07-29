@@ -3,7 +3,7 @@ title: CLI for Destinations API Tutorial
 ---
 
 ## Introduction
-TODO - align with docs language
+The `planet destinations` command enables interaction with the [Destinations API](https://docs.planet.com/develop/apis/destinations/), that enables the creation, listing, and modifying of destinations as well as using the destination in other services to streamline data delivery. This tutorial takes you through the main command available in the CLI.
 
 ## Core Workflows
 
@@ -15,11 +15,7 @@ Finally, submit the full request:
 planet destinations create s3 my-bucket us-west-2 AKIA... SECRET... --name my-s3-destination
 ```
 
-The destination reference will be printed to standard out and can subsequently be used in Orders API and Subscriptions API requests as the delivery destination.
-
-Please note that destinations are shared within the organization you belong to. Any destination you create can be used by other members of your organization when creating orders or subscriptions. Org administrators can modify any destination in the organization, regardless of ownership.
-
-TODO - mention limits on unarchived destinations, maybe mention in intro? Link limits to docs?
+The newly created destination will be printed to standard out, with the destination reference under the key `pl:ref`, which can subsequently be used in Orders API and Subscriptions API requests as the delivery destination.
 
 ### List Destinations
 Listing destinations can be accomplished with the command `planet destinations list`. This will return all destinations within your organization.
@@ -48,4 +44,108 @@ To discover more information about a specific update action, use the `--help` fl
 Credential updating might be done if credentials expire or need to be rotated. For example, this is how s3 credentials would be updated.
 ```sh
 planet destinations update parameters s3 my-destination-id NEW_ACCESS_KEY NEW_SECRET_KEY
+```
+
+## Using destinations in Subscriptions API
+Now that you have created a destination, it can be used as the delivery location for subscriptions. Use the destination reference in the delivery block instead of credentials.
+
+The subsequent examples will use the destination ref `pl:destinations/my-s3-destination-6HRjBcW74jeH9SC4VElKqX`.
+```json
+{
+  "name": "Subscription using a destination",
+  "source": {
+    "parameters": {
+      "asset_types": [
+        "ortho_analytic_8b"
+      ],
+      "end_time": "2023-11-01T00:00:00Z",
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              139.5648193359375,
+              35.42374884923695
+            ],
+            [
+              140.1031494140625,
+              35.42374884923695
+            ],
+            [
+              140.1031494140625,
+              35.77102915686019
+            ],
+            [
+              139.5648193359375,
+              35.77102915686019
+            ],
+            [
+              139.5648193359375,
+              35.42374884923695
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      },
+      "item_types": [
+        "PSScene"
+      ],
+      "start_time": "2023-03-17T04:08:00.0Z"
+    }
+  },
+  "delivery": {
+    "type": "destination",
+    "parameters": {
+      "ref": "pl:destinations/my-s3-destination-6HRjBcW74jeH9SC4VElKqX",
+    }
+  }
+}
+```
+
+Then create the subscription, with the json above saved to a file.
+```sh
+planet subscriptions create my-subscription.json
+```
+
+The results of the created subscription will be delivered to the destination provided. You may re-use the destinations across an unlimited number of subscriptions.
+
+To retrieve all subscriptions created with a specific destination, issue the following command:
+```sh
+planet subscriptions list --destination-ref pl:destinations/my-s3-destination-6HRjBcW74jeH9SC4VElKqX
+```
+
+## Using destinations in Orders API
+Now that you have created a destination, it can be used as the delivery location for orders. Use the destination reference in the delivery block instead of credentials.
+
+The subsequent examples will use the destination ref `pl:destinations/my-s3-destination-6HRjBcW74jeH9SC4VElKqX`.
+```json
+{
+  "name": "Order using a destination",
+  "products": [
+    {
+      "item_ids": [
+        "20220605_124027_64_242b"
+      ],
+      "item_type": "PSScene",
+      "product_bundle": "analytic_sr_udm2"
+    }
+  ],
+  "delivery": {
+    "destination": {
+      "ref": "pl:destinations/cp-gcs-6HRjBcW74jeH9SC4VElKqX"
+    }
+  }
+}
+```
+
+
+Then create the order, with the json above saved to a file.
+```sh
+planet orders create my-order.json
+```
+
+The results of the created order will be delivered to the destination provided. You may re-use the destinations across an unlimited number of orders (and subscriptions!).
+
+To retrieve all orders created with a specific destination, issue the following command:
+```sh
+planet orders list --destination-ref pl:destinations/my-s3-destination-6HRjBcW74jeH9SC4VElKqX
 ```

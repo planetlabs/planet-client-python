@@ -144,6 +144,7 @@ async def list(ctx,
                last_modified,
                hosting,
                sort_by,
+               destination_ref,
                limit,
                pretty):
     """List orders
@@ -163,6 +164,7 @@ async def list(ctx,
                                       last_modified=last_modified,
                                       hosting=hosting,
                                       sort_by=sort_by,
+                                      destination_ref=destination_ref,
                                       limit=limit):
             echo_json(o, pretty)
 

@@ -545,6 +545,8 @@ class OrdersClient(_BaseClient):
             params["hosting"] = hosting
         if sort_by is not None:
             params["sort_by"] = sort_by
+        if destination_ref is not None:
+            params["destination_ref"] = destination_ref
         if state:
             if state not in ORDER_STATE_SEQUENCE:
                 raise exceptions.ClientError(
