@@ -21,7 +21,7 @@ from planet.http import Session
 from ..constants import PLANET_BASE_URL
 
 
-BASE_URL = f'{PLANET_BASE_URL}/public/destinations/v1/'
+BASE_URL = f'{PLANET_BASE_URL}/destinations/v1/'
 
 LOGGER = logging.getLogger()
 
