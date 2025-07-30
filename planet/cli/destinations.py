@@ -447,7 +447,7 @@ async def update_s3(ctx,
     }
 
     if explicit_sse:
-        data["explicit_sse"] = True
+        data["parameters"]["explicit_sse"] = True
 
     await _patch_destination(ctx, destination_id, data, pretty)
 

@@ -35,7 +35,7 @@ planet destinations list --not-archived --can-write
 ```
 
 ### Update Destinations
-The CLI conveniently moves all update actions to first class commands on the destination. The allowed update actions are archiving, unarchiving, renaming, and updating credentials. To discover all update actions run `planet destinations --help`.
+The CLI conveniently moves all update actions to first class commands on the destination. The supported actions are archive, unarchive, rename, and update credentials. To discover all update actions run `planet destinations --help`.
 
 To discover more information about a specific update action, use the `--help` flag (eg: `planet destinations rename --help`, `planet destinations update --help`).
 
