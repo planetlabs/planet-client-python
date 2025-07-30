@@ -94,7 +94,7 @@ class DestinationsAPI:
         Create a new destination.
 
         Args:
-            data (dict): Destination content to create, all attributes are required.
+            request (dict): Destination content to create, all attributes are required.
 
         Returns:
             dict: A dictionary containing the created destination details.

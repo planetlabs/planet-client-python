@@ -3,22 +3,22 @@ title: CLI for Destinations API Tutorial
 ---
 
 ## Introduction
-The `planet destinations` command enables interaction with the [Destinations API](https://docs.planet.com/develop/apis/destinations/), which enables the creation, listing, and modifying of destinations as well as using destinations in other services to streamline data delivery. This tutorial takes you through the main commands available in the CLI.
+The `planet destinations` command provides an interface for creating, listing, and modifying destinations in the [Planet Destinations API](https://docs.planet.com/develop/apis/destinations/). This tutorial takes you through the main commands available in the CLI.
 
 ## Core Workflows
 
 ### Create a Destination
-To discover the supported cloud destinations, run the command `planet destinations create --help`. Once you have chosen your target cloud destination type, run the command `planet destinations create <type> --help` to discover the required and supported parameters (eg: `planet destinations create s3 --help`).
+To discover supported cloud destinations, run the command `planet destinations create --help`. Once you have chosen your target cloud destination type, run the command `planet destinations create <type> --help` to discover the required and supported parameters (eg: `planet destinations create s3 --help`).
 
 Finally, submit the full request:
 ```sh
 planet destinations create s3 my-bucket us-west-2 AKIA... SECRET... --name my-s3-destination
 ```
 
-The newly created destination will be printed to standard out, with the destination reference under the key `pl:ref`, which can subsequently be used in Orders API and Subscriptions API requests as the delivery destination.
+The newly created destination will be printed to stdout, with the destination reference under the key `pl:ref`, which can subsequently be used in Orders API and Subscriptions API requests as the delivery destination.
 
 ### List Destinations
-Listing destinations can be accomplished with the command `planet destinations list`. This will return all destinations within your organization.
+List all destinations within your organization with command `planet destinations list`.
 
 You can get nicer formatting with `--pretty` or pipe it into `jq`, just like the other Planet CLIs.
 
