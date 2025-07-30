@@ -66,23 +66,22 @@ async def _create_destination(ctx, data, pretty):
 
 
 @command(destinations, name="list")
-@click.option(
-    '--archived/--is-not-archived',
-    default=None,
-    help="""Filter by archive status. Use --archived to include only archived
-    destinations, or --is-not-archived to list only active (not archived)
-    destinations.""")
-@click.option(
-    '--is-owner/--is-not-owner',
-    default=None,
-    help="""Filter by ownership. Use --is-owner to include only destinations
-    owned by the requesting user, or --is-not-owner to include destinations
-    not owned by the user.""")
-@click.option('--can-write/--can-not-write',
+@click.option('--archived',
+              type=bool,
               default=None,
-              help="""Filter by write access. Use --can-write to include only
-              destinations the user can modify, or --can-not-write to list destinations
-              with read-only access for the user.""")
+              help="""Set to true to include only archived destinations,
+              false to exclude them.""")
+@click.option('--is-owner',
+              type=bool,
+              default=None,
+              help="""Set to true to include only destinations owned by the
+              requesting user, false to exclude them.""")
+@click.option(
+    '--can-write',
+    type=bool,
+    default=None,
+    help="""Set to true to include only destinations the user can modify,
+    false to exclude them.""")
 async def list_destinations(ctx, archived, is_owner, can_write, pretty):
     """
     List destinations with optional filters
@@ -92,7 +91,7 @@ async def list_destinations(ctx, archived, is_owner, can_write, pretty):
 
     Example:
 
-        planet destinations list --not-archived --is-owner --can-write
+        planet destinations list --archived false --is-owner true --can-write true
     """
     await _list_destinations(ctx, archived, is_owner, can_write, pretty)
 
@@ -120,10 +119,12 @@ def create():
 
 
 @command(create, name="s3")
-@click.argument("bucket")
-@click.argument("region")
-@click.argument("access_key_id")
-@click.argument("secret_access_key")
+@click.option("--bucket", required=True, help="S3 bucket name.")
+@click.option("--region", required=True, help="AWS region.")
+@click.option("--access-key-id", required=True, help="AWS access key ID.")
+@click.option("--secret-access-key",
+              required=True,
+              help="AWS secret access key.")
 @click.option("--explicit-sse",
               is_flag=True,
               help="Explicitly set headers for server-side encryption (SSE).")
@@ -147,7 +148,7 @@ async def create_s3(ctx,
 
     Example:
 
-        planet destinations create s3 my-bucket us-west-2 AKIA... SECRET... --name my-s3-destination
+        planet destinations create s3 --bucket my-bucket --region us-west-2 --access-key-id AKIA... --secret-access-key SECRET... --name my-s3-destination
     """
     data = {
         "type": "amazon_s3",
@@ -168,11 +169,11 @@ async def create_s3(ctx,
 
 
 @command(create, name="s3-compatible")
-@click.argument("bucket")
-@click.argument("endpoint")
-@click.argument("region")
-@click.argument("access_key_id")
-@click.argument("secret_access_key")
+@click.option("--bucket", required=True, help="Bucket name.")
+@click.option("--endpoint", required=True, help="Endpoint URL.")
+@click.option("--region", required=True, help="Region.")
+@click.option("--access-key-id", required=True, help="Access key ID.")
+@click.option("--secret-access-key", required=True, help="Secret access key.")
 @click.option("--use-path-style",
               is_flag=True,
               default=False,
@@ -199,7 +200,7 @@ async def create_s3_compatible(ctx,
 
     Example:
 
-        planet destinations create s3-compatible my-bucket https://objects.example.com us-east-1 AKIA... SECRET... --name my-s3-destination
+        planet destinations create s3-compatible --bucket my-bucket --endpoint https://objects.example.com --region us-east-1 --access-key-id AKIA... --secret-access-key SECRET... --name my-s3-comp-destination
     """
     data = {
         "type": "s3_compatible",
@@ -221,11 +222,19 @@ async def create_s3_compatible(ctx,
 
 
 @command(create, name="ocs")
-@click.argument("bucket")
-@click.argument("access_key_id")
-@click.argument("secret_access_key")
-@click.argument("namespace")
-@click.argument("region")
+@click.option("--bucket", required=True, help="Oracle bucket name.")
+@click.option("--access-key-id",
+              required=True,
+              help="Oracle account access key.")
+@click.option("--secret-access-key",
+              required=True,
+              help="Oracle account secret key.")
+@click.option("--namespace",
+              required=True,
+              help="Oracle Object Storage namespace.")
+@click.option("--region",
+              required=True,
+              help="Oracle region bucket resides in.")
 @click.option('--name',
               help="""Optional name to assign to the destination.
               Otherwise, the bucket name is used.""")
@@ -246,7 +255,7 @@ async def create_ocs(ctx,
 
     Example:
 
-        planet destinations create ocs my-bucket OCID... SECRET... my-namespace us-ashburn-1 --name my-ocs-destination
+        planet destinations create ocs --bucket my-bucket --access-key-id OCID... --secret-access-key SECRET... --namespace my-namespace --region us-ashburn-1 --name my-ocs-destination
     """
     data = {
         "type": "oracle_cloud_storage",
@@ -266,13 +275,16 @@ async def create_ocs(ctx,
 
 
 @command(create, name="azure")
-@click.argument("container")
-@click.argument("account")
-@click.argument("sas_token")
+@click.option("--container",
+              required=True,
+              help="Blob storage container name.")
+@click.option("--account", required=True, help="Azure account.")
+@click.option("--sas-token",
+              required=True,
+              help="Shared-Access Signature token.")
 @click.option('--storage-endpoint-suffix',
               required=False,
-              help="""Custom Azure Storage endpoint suffix
-              (e.g., 'core.windows.net' or for sovereign clouds).""")
+              help="Custom Azure Storage endpoint suffix.")
 @click.option('--name',
               help="""Optional name to assign to the destination.
               Otherwise, the bucket name is used.""")
@@ -286,13 +298,13 @@ async def create_azure(ctx,
     """
     Create a new Azure Blob Storage destination.
 
-    This command configures a destination in Azure Blob Storage using the specified container name,
+    This command sets up a destination in Azure Blob Storage using the specified container name,
     storage account name, and SAS token. You can optionally specify a custom endpoint suffix
     and assign a name to the destination.
 
     Example:
 
-        planet destinations create azure my-container mystorage ?sv=... --name my-azure-destination
+        planet destinations create azure --container my-container --account mystorage --sas-token ?sv=... --name my-azure-destination
     """
 
     data = {
@@ -313,8 +325,10 @@ async def create_azure(ctx,
 
 
 @command(create, name="gcs")
-@click.argument("bucket")
-@click.argument("credentials")
+@click.option("--bucket", required=True, help="GCS bucket name.")
+@click.option("--credentials",
+              required=True,
+              help="Base64-encoded service account credentials (JSON).")
 @click.option('--name',
               help="""Optional name to assign to the destination.
               Otherwise, the bucket name is used.""")
@@ -322,20 +336,21 @@ async def create_gcs(ctx, bucket, credentials, name, pretty):
     """
     Create a new Google Cloud Storage (GCS) destination.
 
-    This command sets up a GCS destination using the specified bucket name and
-    base64-encoded service account credentials (in JSON format). You can optionally
-    assign a name to the destination for easier reference.
+    This command sets up a GCS destination using the specified bucket name
+    and base64-encoded service account credentials (in JSON format). You can
+    optionally assign a name to the destination for easier reference.
 
     Note:
-        The `credentials` argument must be the base64-encoded JSON of your Google Cloud
-        service account key. To encode a JSON file to base64, you can use the following
-        command:
+
+        The `credentials` argument must be the base64-encoded JSON of your
+        Google Cloud service account key. To encode a JSON file to base64,
+        you can use the following command:
 
             cat my_creds.json | base64 | tr -d '\n'
 
     Example:
 
-        planet destinations create gcs my-bucket eyJ0eXAiOiJKV1Qi... --name my-gcs-destination
+        planet destinations create gcs --bucket my-bucket --credentials eyJ0eXAiOiJKV1Qi... --name my-gcs-destination
     """
     data = {
         "type": "google_cloud_storage",
@@ -416,8 +431,10 @@ async def rename(ctx, destination_id, name, pretty):
 
 @command(update, name="s3")
 @click.argument('destination_id')
-@click.argument('access_key_id')
-@click.argument('secret_access_key')
+@click.option('--access-key-id', required=True, help="AWS access key ID.")
+@click.option('--secret-access-key',
+              required=True,
+              help="AWS secret access key.")
 @click.option('--explicit-sse',
               is_flag=True,
               help='Explicitly set headers for server-side encryption (SSE).')
@@ -431,13 +448,13 @@ async def update_s3(ctx,
     Update S3 destination parameters.
 
     This command updates the parameters of an existing S3 destination, including the
-    `access_key_id`, `secret_access_key`, and optionally sets headers for server-side
+    `access-key-id`, `secret-access-key`, and optionally sets headers for server-side
     encryption (SSE) using the `explicit-sse` flag. The updated parameters will be applied
     to the destination configuration without altering the destination’s other properties.
 
     Example:
 
-        planet destinations update parameters s3 my-destination-id NEW_ACCESS_KEY NEW_SECRET_KEY
+        planet destinations update s3 my-destination-id --access-key-id NEW_ACCESS_KEY --secret-access-key NEW_SECRET_KEY
     """
     data = {
         "parameters": {
@@ -454,18 +471,18 @@ async def update_s3(ctx,
 
 @command(update, name="azure")
 @click.argument('destination_id')
-@click.argument('sas_token')
+@click.option('--sas-token', required=True, help="New SAS token.")
 async def update_azure(ctx, destination_id, sas_token, pretty):
     """
     Update Azure destination parameters.
 
     This command updates the parameters of an existing Azure destination, specifically
-    the `sas_token`. The updated SAS token will be applied to the destination configuration
+    the `sas-token`. The updated SAS token will be applied to the destination configuration
     without affecting other destination properties.
 
     Example:
 
-        planet destinations update parameters azure my-destination-id NEW_SAS_TOKEN
+        planet destinations update azure my-destination-id --sas-token NEW_SAS_TOKEN
     """
     data = {"parameters": {"sas_token": sas_token}}
 
@@ -474,7 +491,9 @@ async def update_azure(ctx, destination_id, sas_token, pretty):
 
 @command(update, name="gcs")
 @click.argument('destination_id')
-@click.argument('credentials')
+@click.option('--credentials',
+              required=True,
+              help="Base64-encoded service account credentials (JSON).")
 async def update_gcs(ctx, destination_id, credentials, pretty):
     """
     Update Google Cloud Storage (GCS) destination parameters.
@@ -484,6 +503,7 @@ async def update_gcs(ctx, destination_id, credentials, pretty):
     credentials will be applied to the destination configuration without altering other properties.
 
     Note:
+
         The `credentials` argument must be the base64-encoded JSON of your Google Cloud
         service account key. To encode a JSON file to base64, you can use the following
         command:
@@ -492,7 +512,7 @@ async def update_gcs(ctx, destination_id, credentials, pretty):
 
     Example:
 
-        planet destinations update parameters gcs my-destination-id eyJ0eXAiOiJKV1Qi...
+        planet destinations update gcs my-destination-id --credentials eyJ0eXAiOiJKV1Qi...
     """
     data = {"parameters": {"credentials": credentials}}
 
@@ -501,8 +521,12 @@ async def update_gcs(ctx, destination_id, credentials, pretty):
 
 @command(update, name="ocs")
 @click.argument('destination_id')
-@click.argument('access_key_id')
-@click.argument('secret_access_key')
+@click.option('--access-key-id',
+              required=True,
+              help="Oracle account access key.")
+@click.option('--secret-access-key',
+              required=True,
+              help="Oracle account secret key.")
 async def update_ocs(ctx,
                      destination_id,
                      access_key_id,
@@ -512,12 +536,12 @@ async def update_ocs(ctx,
     Update Oracle Cloud Storage (OCS) destination parameters.
 
     This command updates the parameters of an existing Oracle Cloud Storage destination,
-    including the `access_key_id` and `secret_access_key`. The updated credentials will
+    including the `access-key-id` and `secret-access-key`. The updated credentials will
     be applied to the destination configuration without affecting other properties.
 
     Example:
 
-        planet destinations update parameters ocs my-destination-id NEW_ACCESS_KEY NEW_SECRET_KEY
+        planet destinations update ocs my-destination-id --access-key-id NEW_ACCESS_KEY --secret-access-key NEW_SECRET_KEY
     """
 
     data = {
@@ -532,8 +556,8 @@ async def update_ocs(ctx,
 
 @command(update, name="s3-compatible")
 @click.argument("destination_id")
-@click.argument("access_key_id")
-@click.argument("secret_access_key")
+@click.option("--access-key-id", required=True, help="Access key ID.")
+@click.option("--secret-access-key", required=True, help="Secret access key.")
 @click.option("--use-path-style",
               is_flag=True,
               help="Use path-style addressing with bucket name in the URL.")
@@ -547,13 +571,13 @@ async def update_s3_compatible(ctx,
     Update S3-compatible destination parameters.
 
     This command updates the parameters of an existing S3-compatible destination,
-    including the `access_key_id` and `secret_access_key`. You can also optionally
+    including the `access-key-id` and `secret-access-key`. You can also optionally
     enable path-style addressing using the `--use-path-style` flag. The updated parameters
     will be applied to the destination configuration without affecting other properties.
 
     Example:
 
-        planet destinations update parameters s3-compatible my-destination-id NEW_ACCESS_KEY NEW_SECRET_KEY
+        planet destinations update s3-compatible my-destination-id --access-key-id NEW_ACCESS_KEY --secret-access-key NEW_SECRET_KEY
     """
     data = {
         "parameters": {

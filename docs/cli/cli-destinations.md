@@ -12,7 +12,7 @@ To discover supported cloud destinations, run the command `planet destinations c
 
 Finally, submit the full request:
 ```sh
-planet destinations create s3 my-bucket us-west-2 AKIA... SECRET... --name my-s3-destination
+planet destinations create s3 --bucket my-bucket --region us-west-2 --access-key-id AKIA... --secret-access-key SECRET... --name my-s3-destination
 ```
 
 The newly created destination will be printed to stdout, with the destination reference under the key `pl:ref`, which can subsequently be used in Orders API and Subscriptions API requests as the delivery destination.
@@ -25,23 +25,26 @@ You can get nicer formatting with `--pretty` or pipe it into `jq`, just like the
 #### Filtering
 The `list` command supports filtering on a variety of fields. You can discover all filterable fields by running the command `planet destinations list --help`.
 
-* `--archived / --is-not-archived`: Filter by archive status. Use --archived to include only archived destinations, or --is-not-archived to list only active (not archived) destinations.
-* `--is-owner / --is-not-owner`: Filter by ownership. Use --is-owner to include only destinations owned by the requesting user, or --is-not-owner to include destinations not owned by the user.
-* `--can-write / --can-not-write`: Filter by write access. Use --can-write to include only destinations the user can modify, or --can-not-write to list destinations with read-only access for the user.
+* `--archived`: Set to true to include only archived destinations,
+                false to exclude them.
+* `--is-owner`: Set to true to include only destinations owned by the
+                requesting user, false to exclude them.
+* `--can-write`: Set to true to include only destinations the user can
+                 modify, false to exclude them.
 
 For example, to list destinations that are not archived and you can modify you would issue the following command:
 ```sh
-planet destinations list --not-archived --can-write
+planet destinations list --archived false --can-write true
 ```
 
-### Update Destinations
-The CLI conveniently moves all update actions to first class commands on the destination. The supported actions are archive, unarchive, rename, and update credentials. To discover all update actions run `planet destinations --help`.
+### Modify Destinations
+The CLI conveniently moves all modify actions to first class commands on the destination. The supported actions are archive, unarchive, rename, and update credentials. To discover all update actions run `planet destinations --help`.
 
 To discover more information about a specific update action, use the `--help` flag (eg: `planet destinations rename --help`, `planet destinations update --help`).
 
 Credential updating might be done if credentials expire or need to be rotated. For example, this is how s3 credentials would be updated.
 ```sh
-planet destinations update parameters s3 my-destination-id NEW_ACCESS_KEY NEW_SECRET_KEY
+planet destinations update s3 my-destination-id --access-key-id NEW_ACCESS_KEY --secret-access-key NEW_SECRET_KEY
 ```
 
 ## Using destinations in Subscriptions API
