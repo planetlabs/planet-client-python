@@ -106,7 +106,8 @@ class SubscriptionsClient(_BaseClient):
                  * "name DESC"
                  * "name,end_time DESC,start_time"
             updated (str): filter by updated time or interval.
-            destination_ref (str): filter by destination reference.
+            destination_ref (str): filter by subscriptions created with the
+                provided destination reference.
             page_size (int): number of subscriptions to return per page.
 
         Datetime args (created, end_time, start_time, updated) can either be a

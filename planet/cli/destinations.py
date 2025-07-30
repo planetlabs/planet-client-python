@@ -75,13 +75,14 @@ async def _create_destination(ctx, data, pretty):
 @click.option(
     '--is-owner/--is-not-owner',
     default=None,
-    help="""Filter by ownership. Use --is-owner to include only destinations owned by
-    the requesting user, or --is-not-owner to include destinations not owned by the user.""")
-@click.option(
-    '--can-write/--can-not-write',
-    default=None,
-    help="""Filter by write access. Use --can-write to include only destinations the user can
-    modify, or --can-not-write to list destinations with read-only access for the user.""")
+    help="""Filter by ownership. Use --is-owner to include only destinations
+    owned by the requesting user, or --is-not-owner to include destinations
+    not owned by the user.""")
+@click.option('--can-write/--can-not-write',
+              default=None,
+              help="""Filter by write access. Use --can-write to include only
+              destinations the user can modify, or --can-not-write to list destinations
+              with read-only access for the user.""")
 async def list_destinations(ctx, archived, is_owner, can_write, pretty):
     """
     List destinations with optional filters
@@ -126,8 +127,9 @@ def create():
 @click.option("--explicit-sse",
               is_flag=True,
               help="Explicitly set headers for server-side encryption (SSE).")
-@click.option("--name",
-              help="Optional name to assign to the destination. Otherwise, the bucket name is used.")
+@click.option('--name',
+              help="""Optional name to assign to the destination.
+              Otherwise, the bucket name is used.""")
 async def create_s3(ctx,
                     bucket,
                     region,
@@ -175,9 +177,9 @@ async def create_s3(ctx,
               is_flag=True,
               default=False,
               help="Use path-style addressing with bucket name in the URL.")
-@click.option(
-    "--name",
-    help="""Optional name to assign to the destination. Otherwise, the bucket name is used.""")
+@click.option('--name',
+              help="""Optional name to assign to the destination.
+              Otherwise, the bucket name is used.""")
 async def create_s3_compatible(ctx,
                                bucket,
                                endpoint,
@@ -224,9 +226,9 @@ async def create_s3_compatible(ctx,
 @click.argument("secret_access_key")
 @click.argument("namespace")
 @click.argument("region")
-@click.option(
-    "--name",
-    help="""Optional name to assign to the destination. Otherwise, the bucket name is used.""")
+@click.option('--name',
+              help="""Optional name to assign to the destination.
+              Otherwise, the bucket name is used.""")
 async def create_ocs(ctx,
                      bucket,
                      access_key_id,
@@ -267,13 +269,13 @@ async def create_ocs(ctx,
 @click.argument("container")
 @click.argument("account")
 @click.argument("sas_token")
-@click.option(
-    "--storage-endpoint-suffix",
-    required=False,
-    help="""Custom Azure Storage endpoint suffix (e.g., 'core.windows.net' or for sovereign clouds).""")
-@click.option(
-    "--name",
-    help="""Optional name to assign to the destination. Otherwise, the container name is used.""")
+@click.option('--storage-endpoint-suffix',
+              required=False,
+              help="""Custom Azure Storage endpoint suffix
+              (e.g., 'core.windows.net' or for sovereign clouds).""")
+@click.option('--name',
+              help="""Optional name to assign to the destination.
+              Otherwise, the bucket name is used.""")
 async def create_azure(ctx,
                        container,
                        account,
@@ -313,9 +315,9 @@ async def create_azure(ctx,
 @command(create, name="gcs")
 @click.argument("bucket")
 @click.argument("credentials")
-@click.option(
-    "--name",
-    help="""Optional name to assign to the destination. Otherwise, the bucket name is used.""")
+@click.option('--name',
+              help="""Optional name to assign to the destination.
+              Otherwise, the bucket name is used.""")
 async def create_gcs(ctx, bucket, credentials, name, pretty):
     """
     Create a new Google Cloud Storage (GCS) destination.
