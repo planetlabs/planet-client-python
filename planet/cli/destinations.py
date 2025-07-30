@@ -35,13 +35,17 @@ async def _patch_destination(ctx, destination_id, data, pretty):
         except Exception as e:
             raise ClickException(f"Failed to patch destination: {e}")
 
+
 async def _list_destinations(ctx, archived, is_owner, can_write, pretty):
     async with destinations_client(ctx) as cl:
         try:
-            response = await cl.list_destinations(archived, is_owner, can_write)
+            response = await cl.list_destinations(archived,
+                                                  is_owner,
+                                                  can_write)
             echo_json(response, pretty)
         except Exception as e:
             raise ClickException(f"Failed to list destinations: {e}")
+
 
 async def _get_destination(ctx, destination_id, pretty):
     async with destinations_client(ctx) as cl:
@@ -50,6 +54,7 @@ async def _get_destination(ctx, destination_id, pretty):
             echo_json(response, pretty)
         except Exception as e:
             raise ClickException(f"Failed to get destination: {e}")
+
 
 async def _create_destination(ctx, data, pretty):
     async with destinations_client(ctx) as cl:
@@ -64,18 +69,19 @@ async def _create_destination(ctx, data, pretty):
 @click.option(
     '--archived/--is-not-archived',
     default=None,
-    help='Filter by archive status. Use --archived to include only archived destinations, or --is-not-archived to list only active (not archived) destinations.'
-)
+    help="""Filter by archive status. Use --archived to include only archived
+    destinations, or --is-not-archived to list only active (not archived)
+    destinations.""")
 @click.option(
     '--is-owner/--is-not-owner',
     default=None,
-    help='Filter by ownership. Use --is-owner to include only destinations owned by the requesting user, or --is-not-owner to include destinations not owned by the user.'
-)
+    help="""Filter by ownership. Use --is-owner to include only destinations owned by
+    the requesting user, or --is-not-owner to include destinations not owned by the user.""")
 @click.option(
     '--can-write/--can-not-write',
     default=None,
-    help='Filter by write access. Use --can-write to include only destinations the user can modify, or --can-not-write to list destinations with read-only access for the user.'
-)
+    help="""Filter by write access. Use --can-write to include only destinations the user can
+    modify, or --can-not-write to list destinations with read-only access for the user.""")
 async def list_destinations(ctx, archived, is_owner, can_write, pretty):
     """
     List destinations with optional filters
@@ -105,26 +111,31 @@ async def get_destination(ctx, destination_id, pretty):
     """
     await _get_destination(ctx, destination_id, pretty)
 
+
 @destinations.group()
 def create():
     """Create a new destination."""
     pass
+
 
 @command(create, name="s3")
 @click.argument("bucket")
 @click.argument("region")
 @click.argument("access_key_id")
 @click.argument("secret_access_key")
-@click.option(
-    "--explicit-sse",
-    is_flag=True,
-    help="Explicitly set headers for server-side encryption (SSE)."
-)
-@click.option(
-    "--name",
-    help="Optional name to assign to the destination. Otherwise, the bucket name is used."
-)
-async def create_s3(ctx, bucket, region, access_key_id, secret_access_key, explicit_sse, name, pretty):
+@click.option("--explicit-sse",
+              is_flag=True,
+              help="Explicitly set headers for server-side encryption (SSE).")
+@click.option("--name",
+              help="Optional name to assign to the destination. Otherwise, the bucket name is used.")
+async def create_s3(ctx,
+                    bucket,
+                    region,
+                    access_key_id,
+                    secret_access_key,
+                    explicit_sse,
+                    name,
+                    pretty):
     """
     Create a new Amazon S3 destination.
 
@@ -153,23 +164,29 @@ async def create_s3(ctx, bucket, region, access_key_id, secret_access_key, expli
 
     await _create_destination(ctx, data, pretty)
 
+
 @command(create, name="s3-compatible")
 @click.argument("bucket")
 @click.argument("endpoint")
 @click.argument("region")
 @click.argument("access_key_id")
 @click.argument("secret_access_key")
-@click.option(
-    "--use-path-style",
-    is_flag=True,
-    default=False,
-    help="Use path-style addressing with bucket name in the URL."
-)
+@click.option("--use-path-style",
+              is_flag=True,
+              default=False,
+              help="Use path-style addressing with bucket name in the URL.")
 @click.option(
     "--name",
-    help="Optional name to assign to the destination. Otherwise, the bucket name is used."
-)
-async def create_s3_compatible(ctx, bucket, endpoint, region, access_key_id, secret_access_key, use_path_style, name, pretty):
+    help="""Optional name to assign to the destination. Otherwise, the bucket name is used.""")
+async def create_s3_compatible(ctx,
+                               bucket,
+                               endpoint,
+                               region,
+                               access_key_id,
+                               secret_access_key,
+                               use_path_style,
+                               name,
+                               pretty):
     """
     Create a new S3-compatible destination.
 
@@ -200,6 +217,7 @@ async def create_s3_compatible(ctx, bucket, endpoint, region, access_key_id, sec
 
     await _create_destination(ctx, data, pretty)
 
+
 @command(create, name="ocs")
 @click.argument("bucket")
 @click.argument("access_key_id")
@@ -208,9 +226,15 @@ async def create_s3_compatible(ctx, bucket, endpoint, region, access_key_id, sec
 @click.argument("region")
 @click.option(
     "--name",
-    help="Optional name to assign to the destination. Otherwise, the bucket name is used."
-)
-async def create_ocs(ctx, bucket, access_key_id, secret_access_key, namespace, region, name, pretty):
+    help="""Optional name to assign to the destination. Otherwise, the bucket name is used.""")
+async def create_ocs(ctx,
+                     bucket,
+                     access_key_id,
+                     secret_access_key,
+                     namespace,
+                     region,
+                     name,
+                     pretty):
     """
     Create a new Oracle Cloud Storage (OCS) destination.
 
@@ -238,6 +262,7 @@ async def create_ocs(ctx, bucket, access_key_id, secret_access_key, namespace, r
 
     await _create_destination(ctx, data, pretty)
 
+
 @command(create, name="azure")
 @click.argument("container")
 @click.argument("account")
@@ -245,13 +270,17 @@ async def create_ocs(ctx, bucket, access_key_id, secret_access_key, namespace, r
 @click.option(
     "--storage-endpoint-suffix",
     required=False,
-    help="Custom Azure Storage endpoint suffix (e.g., 'core.windows.net' or for sovereign clouds)."
-)
+    help="""Custom Azure Storage endpoint suffix (e.g., 'core.windows.net' or for sovereign clouds).""")
 @click.option(
     "--name",
-    help="Optional name to assign to the destination. Otherwise, the container name is used."
-)
-async def create_azure(ctx, container, account, sas_token, storage_endpoint_suffix, name, pretty):
+    help="""Optional name to assign to the destination. Otherwise, the container name is used.""")
+async def create_azure(ctx,
+                       container,
+                       account,
+                       sas_token,
+                       storage_endpoint_suffix,
+                       name,
+                       pretty):
     """
     Create a new Azure Blob Storage destination.
 
@@ -280,13 +309,13 @@ async def create_azure(ctx, container, account, sas_token, storage_endpoint_suff
 
     await _create_destination(ctx, data, pretty)
 
+
 @command(create, name="gcs")
 @click.argument("bucket")
 @click.argument("credentials")
 @click.option(
     "--name",
-    help="Optional name to assign to the destination. Otherwise, the bucket name is used."
-)
+    help="""Optional name to assign to the destination. Otherwise, the bucket name is used.""")
 async def create_gcs(ctx, bucket, credentials, name, pretty):
     """
     Create a new Google Cloud Storage (GCS) destination.
@@ -319,10 +348,12 @@ async def create_gcs(ctx, bucket, credentials, name, pretty):
 
     await _create_destination(ctx, data, pretty)
 
+
 @destinations.group()
 def update():
     """Update a destination."""
     pass
+
 
 @command(destinations, name="archive")
 @click.argument('destination_id')
@@ -342,6 +373,7 @@ async def archive(ctx, destination_id, pretty):
 
     await _patch_destination(ctx, destination_id, data, pretty)
 
+
 @command(destinations, name="unarchive")
 @click.argument('destination_id')
 async def unarchive(ctx, destination_id, pretty):
@@ -358,6 +390,7 @@ async def unarchive(ctx, destination_id, pretty):
     data = {"archive": False}
 
     await _patch_destination(ctx, destination_id, data, pretty)
+
 
 @command(destinations, name="rename")
 @click.argument('destination_id')
@@ -378,16 +411,20 @@ async def rename(ctx, destination_id, name, pretty):
 
     await _patch_destination(ctx, destination_id, data, pretty)
 
+
 @command(update, name="s3")
 @click.argument('destination_id')
 @click.argument('access_key_id')
 @click.argument('secret_access_key')
-@click.option(
-    '--explicit-sse',
-    is_flag=True,
-    help='Explicitly set headers for server-side encryption (SSE).'
-)
-async def update_s3(ctx, destination_id, access_key_id, secret_access_key, explicit_sse, pretty):
+@click.option('--explicit-sse',
+              is_flag=True,
+              help='Explicitly set headers for server-side encryption (SSE).')
+async def update_s3(ctx,
+                    destination_id,
+                    access_key_id,
+                    secret_access_key,
+                    explicit_sse,
+                    pretty):
     """
     Update S3 destination parameters.
 
@@ -412,6 +449,7 @@ async def update_s3(ctx, destination_id, access_key_id, secret_access_key, expli
 
     await _patch_destination(ctx, destination_id, data, pretty)
 
+
 @command(update, name="azure")
 @click.argument('destination_id')
 @click.argument('sas_token')
@@ -427,13 +465,10 @@ async def update_azure(ctx, destination_id, sas_token, pretty):
 
         planet destinations update parameters azure my-destination-id NEW_SAS_TOKEN
     """
-    data = {
-        "parameters": {
-            "sas_token": sas_token
-        }
-    }
+    data = {"parameters": {"sas_token": sas_token}}
 
     await _patch_destination(ctx, destination_id, data, pretty)
+
 
 @command(update, name="gcs")
 @click.argument('destination_id')
@@ -457,19 +492,20 @@ async def update_gcs(ctx, destination_id, credentials, pretty):
 
         planet destinations update parameters gcs my-destination-id eyJ0eXAiOiJKV1Qi...
     """
-    data = {
-        "parameters": {
-            "credentials": credentials
-        }
-    }
+    data = {"parameters": {"credentials": credentials}}
 
     await _patch_destination(ctx, destination_id, data, pretty)
+
 
 @command(update, name="ocs")
 @click.argument('destination_id')
 @click.argument('access_key_id')
 @click.argument('secret_access_key')
-async def update_ocs(ctx, destination_id, access_key_id, secret_access_key, pretty):
+async def update_ocs(ctx,
+                     destination_id,
+                     access_key_id,
+                     secret_access_key,
+                     pretty):
     """
     Update Oracle Cloud Storage (OCS) destination parameters.
 
@@ -491,16 +527,20 @@ async def update_ocs(ctx, destination_id, access_key_id, secret_access_key, pret
 
     await _patch_destination(ctx, destination_id, data, pretty)
 
+
 @command(update, name="s3-compatible")
 @click.argument("destination_id")
 @click.argument("access_key_id")
 @click.argument("secret_access_key")
-@click.option(
-    "--use-path-style",
-    is_flag=True,
-    help="Use path-style addressing with bucket name in the URL."
-)
-async def update_s3_compatible(ctx, destination_id, access_key_id, secret_access_key, use_path_style, pretty):
+@click.option("--use-path-style",
+              is_flag=True,
+              help="Use path-style addressing with bucket name in the URL.")
+async def update_s3_compatible(ctx,
+                               destination_id,
+                               access_key_id,
+                               secret_access_key,
+                               use_path_style,
+                               pretty):
     """
     Update S3-compatible destination parameters.
 

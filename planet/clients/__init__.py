@@ -19,7 +19,11 @@ from .orders import OrdersClient
 from .subscriptions import SubscriptionsClient
 
 __all__ = [
-    'DataClient', 'DestinationsClient', 'FeaturesClient', 'OrdersClient', 'SubscriptionsClient'
+    'DataClient',
+    'DestinationsClient',
+    'FeaturesClient',
+    'OrdersClient',
+    'SubscriptionsClient'
 ]
 
 # Organize client classes by their module name to allow lookup.

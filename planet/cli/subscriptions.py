@@ -105,7 +105,10 @@ def subscriptions(ctx, base_url):
               help="""Filter subscriptions by update time or interval. See
     documentation
     for examples.""")
-@click.option('--destination-ref', help="Filter subscriptions created with the provided destination reference.")
+@click.option(
+    '--destination-ref',
+    help="Filter subscriptions created with the provided destination reference."
+)
 @limit
 @click.option('--page-size',
               type=click.INT,

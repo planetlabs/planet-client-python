@@ -13,7 +13,7 @@
 # the License.
 
 import logging
-from typing import Any, AsyncIterator, Dict, Optional, Union, TypeVar
+from typing import Any, Dict, Optional, TypeVar
 
 from planet.clients.base import _BaseClient
 from planet.exceptions import APIError, ClientError
@@ -27,9 +27,10 @@ LOGGER = logging.getLogger()
 
 T = TypeVar("T")
 
+
 class DestinationsClient(_BaseClient):
     """Asynchronous Destinations API client.
-    
+
     Example:
         ```python
         >>> import asyncio
@@ -58,8 +59,7 @@ class DestinationsClient(_BaseClient):
     async def list_destinations(self,
                                 archived: Optional[bool] = None,
                                 is_owner: Optional[bool] = None,
-                                can_write: Optional[bool] = None,
-                                ) -> Dict:
+                                can_write: Optional[bool] = None) -> Dict:
         """
         List all destinations. By default, all non-archived destinations in the requesting user's org are returned.
 
@@ -94,7 +94,7 @@ class DestinationsClient(_BaseClient):
         else:
             dest_response = response.json()
             return dest_response
-    
+
     async def get_destination(self, destination_id: str) -> Dict:
         """
         Get a specific destination by its ID.
@@ -111,8 +111,7 @@ class DestinationsClient(_BaseClient):
         """
         url = f'{self._base_url}/{destination_id}'
         try:
-            response = await self._session.request(method='GET',
-                                                   url=url)
+            response = await self._session.request(method='GET', url=url)
         except APIError:
             raise
         except ClientError:  # pragma: no cover
@@ -120,7 +119,7 @@ class DestinationsClient(_BaseClient):
         else:
             dest = response.json()
             return dest
-        
+
     async def patch_destination(self,
                                 destination_id: str,
                                 request: Dict[str, Any]) -> Dict:

@@ -16,6 +16,7 @@ from typing import Any, Dict, Optional
 from planet.clients.destinations import DestinationsClient
 from planet.http import Session
 
+
 class DestinationsAPI:
 
     _client: DestinationsClient
@@ -30,12 +31,10 @@ class DestinationsAPI:
 
         self._client = DestinationsClient(session, base_url)
 
-
     def list_destinations(self,
-                                archived: Optional[bool] = None,
-                                is_owner: Optional[bool] = None,
-                                can_write: Optional[bool] = None,
-                                ) -> Dict:
+                          archived: Optional[bool] = None,
+                          is_owner: Optional[bool] = None,
+                          can_write: Optional[bool] = None) -> Dict:
         """
         List all destinations. By default, all non-archived destinations in the requesting user's org are returned.
 
@@ -52,10 +51,8 @@ class DestinationsAPI:
             ClientError: If there is an issue with the client request.
         """
         return self._client._call_sync(
-            self._client.list_destinations(archived,
-                                           is_owner,
-                                           can_write))
-    
+            self._client.list_destinations(archived, is_owner, can_write))
+
     def get_destination(self, destination_id: str) -> Dict:
         """
         Get a specific destination by its ID.
@@ -71,12 +68,10 @@ class DestinationsAPI:
             ClientError: If there is an issue with the client request.
         """
         return self._client._call_sync(
-            self._client.get_destination(destination_id)
-        )
+            self._client.get_destination(destination_id))
 
-    def patch_destination(self,
-                                destination_ref: str,
-                                request: Dict[str, Any]) -> Dict:
+    def patch_destination(self, destination_ref: str,
+                          request: Dict[str, Any]) -> Dict:
         """
         Update a specific destination by its ref.
 
@@ -92,8 +87,7 @@ class DestinationsAPI:
             ClientError: If there is an issue with the client request.
         """
         return self._client._call_sync(
-            self._client.patch_destination(destination_ref, request)
-        )
+            self._client.patch_destination(destination_ref, request))
 
     def create_destination(self, request: Dict[str, Any]) -> Dict:
         """
@@ -110,5 +104,4 @@ class DestinationsAPI:
             ClientError: If there is an issue with the client request.
         """
         return self._client._call_sync(
-            self._client.create_destination(request)
-        )
+            self._client.create_destination(request))

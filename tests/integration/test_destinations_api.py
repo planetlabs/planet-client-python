@@ -13,7 +13,6 @@
 # the License.
 
 from http import HTTPStatus
-import json
 import pytest
 import respx
 import httpx
@@ -45,18 +44,22 @@ DEST_1 = {
     "created": "2024-01-01T00:00:00Z",
     "updated": "2024-01-01T00:00:00Z",
     "pl:ref": "ref",
-    "_links": {"_self": "url"},
+    "_links": {
+        "_self": "url"
+    },
     "archived": None,
-    "permissions": {"can_write": True},
-    "ownership": {"is_owner": True, "owner_id": 1}
+    "permissions": {
+        "can_write": True
+    },
+    "ownership": {
+        "is_owner": True, "owner_id": 1
+    }
 }
 
 DEST_2_PATCH_PAYLOAD = {
     "parameters": {
-        "bucket": "bucket2",
-        "credentials": "{}"
-    },
-    "archive": True
+        "bucket": "bucket2", "credentials": "{}"
+    }, "archive": True
 }
 
 DEST_2 = {
@@ -64,16 +67,21 @@ DEST_2 = {
     "name": "Destination 2",
     "type": "google_cloud_storage",
     "parameters": {
-        "bucket": "bucket2",
-        "credentials": "{}"
+        "bucket": "bucket2", "credentials": "{}"
     },
     "created": "2024-01-01T00:00:00Z",
     "updated": "2024-01-01T00:00:00Z",
     "pl:ref": "ref",
-    "_links": {"_self": "url"},
+    "_links": {
+        "_self": "url"
+    },
     "archived": "2024-01-02T00:00:00Z",
-    "permissions": {"can_write": True},
-    "ownership": {"is_owner": True, "owner_id": 2}
+    "permissions": {
+        "can_write": True
+    },
+    "ownership": {
+        "is_owner": True, "owner_id": 2
+    }
 }
 
 DEST_LIST = [DEST_1, DEST_2]
@@ -82,12 +90,18 @@ test_session = Session(auth=APIKeyAuth(key="test"))
 cl_async = DestinationsClient(test_session, base_url=TEST_URL)
 cl_sync = DestinationsAPI(test_session, base_url=TEST_URL)
 
-def mock_response(url: str, json_data, method: str = "get", status_code: int = HTTPStatus.OK):
+
+def mock_response(url: str,
+                  json_data,
+                  method: str = "get",
+                  status_code: int = HTTPStatus.OK):
     mock_resp = httpx.Response(status_code, json=json_data)
     respx.request(method, url).return_value = mock_resp
 
+
 def construct_list_response(destinations):
     return {"destinations": destinations, "_links": {"_self": "url"}}
+
 
 @respx.mock
 async def test_list_destinations():
@@ -99,15 +113,18 @@ async def test_list_destinations():
     assertf(await cl_async.list_destinations())
     assertf(cl_sync.list_destinations())
 
+
 @respx.mock
 async def test_list_destinations_filtering():
-    mock_response(f"{TEST_URL}?archived=false&is_owner=true", construct_list_response([DEST_1]))
+    mock_response(f"{TEST_URL}?archived=false&is_owner=true",
+                  construct_list_response([DEST_1]))
 
     def assertf(resp):
         assert resp == construct_list_response([DEST_1])
 
     assertf(await cl_async.list_destinations(archived=False, is_owner=True))
     assertf(cl_sync.list_destinations(archived=False, is_owner=True))
+
 
 @respx.mock
 async def test_get_destination():
@@ -121,15 +138,20 @@ async def test_get_destination():
     assertf(await cl_async.get_destination(id))
     assertf(cl_sync.get_destination(id))
 
+
 @respx.mock
 async def test_create_destination():
-    mock_response(TEST_URL, DEST_1, method="post", status_code=HTTPStatus.CREATED)
+    mock_response(TEST_URL,
+                  DEST_1,
+                  method="post",
+                  status_code=HTTPStatus.CREATED)
 
     def assertf(resp):
         assert resp == DEST_1
 
     assertf(await cl_async.create_destination(DEST_1_REQ_PAYLOAD))
     assertf(cl_sync.create_destination(DEST_1_REQ_PAYLOAD))
+
 
 @respx.mock
 async def test_patch_destination():
@@ -143,11 +165,15 @@ async def test_patch_destination():
     assertf(await cl_async.patch_destination(id, DEST_2_PATCH_PAYLOAD))
     assertf(cl_sync.patch_destination(id, DEST_2_PATCH_PAYLOAD))
 
+
 @respx.mock
 async def test_get_destination_not_found():
     id = "notfound"
     url = f"{TEST_URL}/{id}"
-    mock_response(url, {"code": 404, "message": "Not found"}, status_code=HTTPStatus.NOT_FOUND)
+    mock_response(url, {
+        "code": 404, "message": "Not found"
+    },
+                  status_code=HTTPStatus.NOT_FOUND)
 
     with pytest.raises(Exception):
         await cl_async.get_destination(id)
