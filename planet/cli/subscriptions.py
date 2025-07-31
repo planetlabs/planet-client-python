@@ -574,10 +574,10 @@ def request_pv(var_type, var_id, geometry, start_time, end_time, pretty):
     more details.
     """
     res = subscription_request.planetary_variable_source(
+        var_type,
         var_id,
         geometry,
         start_time,
-        var_type=var_type,
         end_time=end_time,
     )
     echo_json(res, pretty)
