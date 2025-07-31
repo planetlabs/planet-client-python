@@ -46,6 +46,7 @@ class SubscriptionsAPI:
                            start_time: Optional[str] = None,
                            sort_by: Optional[str] = None,
                            updated: Optional[str] = None,
+                           destination_ref: Optional[str] = None,
                            page_size: int = 500) -> Iterator[dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
@@ -79,6 +80,8 @@ class SubscriptionsAPI:
                  * "name DESC"
                  * "name,end_time DESC,start_time"
             updated (str): filter by updated time or interval.
+            destination_ref (str): filter by subscriptions created with the
+                provided destination reference.
             limit (int): limit the number of subscriptions in the
                 results. When set to 0, no maximum is applied.
             page_size (int): number of subscriptions to return per page.
@@ -113,6 +116,7 @@ class SubscriptionsAPI:
                                             start_time,
                                             sort_by,
                                             updated,
+                                            destination_ref,
                                             page_size))
 
     def create_subscription(self, request: Dict) -> Dict:

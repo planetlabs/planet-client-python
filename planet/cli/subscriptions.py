@@ -105,6 +105,10 @@ def subscriptions(ctx, base_url):
               help="""Filter subscriptions by update time or interval. See
     documentation
     for examples.""")
+@click.option(
+    '--destination-ref',
+    help="Filter subscriptions created with the provided destination reference."
+)
 @limit
 @click.option('--page-size',
               type=click.INT,
@@ -124,6 +128,7 @@ async def list_subscriptions_cmd(ctx,
                                  sort_by,
                                  updated,
                                  limit,
+                                 destination_ref,
                                  page_size,
                                  pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
@@ -140,6 +145,7 @@ async def list_subscriptions_cmd(ctx,
             'sort_by': sort_by,
             'updated': updated,
             'limit': limit,
+            'destination_ref': destination_ref
         }
         if page_size is not None:
             list_subscriptions_kwargs['page_size'] = page_size
