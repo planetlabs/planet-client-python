@@ -59,7 +59,8 @@ class Planet:
 
         # Create API instances with service-specific URL paths
         self.data = DataAPI(self._session, f"{planet_base}/data/v1/")
-        self.destinations = DestinationsAPI(self._session, f"{planet_base}/destinations/v1")
+        self.destinations = DestinationsAPI(self._session,
+                                            f"{planet_base}/destinations/v1")
         self.orders = OrdersAPI(self._session, f"{planet_base}/compute/ops")
         self.subscriptions = SubscriptionsAPI(
             self._session, f"{planet_base}/subscriptions/v1/")
