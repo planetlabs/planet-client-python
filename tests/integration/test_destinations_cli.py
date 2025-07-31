@@ -148,16 +148,16 @@ def test_destinations_cli_get(invoke):
 @respx.mock
 def test_destinations_cli_rename(invoke):
     url = f"{TEST_DESTINATIONS_URL}/fake-dest-id"
-    respx.get(url).return_value = httpx.Response(HTTPStatus.OK, json={})
+    respx.patch(url).return_value = httpx.Response(HTTPStatus.OK, json={})
 
-    result = invoke(['rename', 'fake-dest-id', '--name', 'new-name'])
+    result = invoke(['rename', 'fake-dest-id', 'new-name'])
     assert result.exit_code == 0
 
 
 @respx.mock
 def test_destinations_cli_unarchive(invoke):
     url = f"{TEST_DESTINATIONS_URL}/fake-dest-id"
-    respx.get(url).return_value = httpx.Response(HTTPStatus.OK, json={})
+    respx.patch(url).return_value = httpx.Response(HTTPStatus.OK, json={})
 
     result = invoke(['unarchive', 'fake-dest-id'])
     assert result.exit_code == 0
@@ -200,17 +200,25 @@ def test_destinations_cli_update(invoke):
                                                    json={})
 
     # azure
-    result = invoke(['update', 'azure', '--sas-token', '?sv=...'])
+    result = invoke(
+        ['update', 'azure', 'fake-dest-id', '--sas-token', '?sv=...'])
     assert result.exit_code == 0
 
     # gcs
-    result = invoke(['update', 'gcs', '--credentials', 'eyJ0eXAiOiJKV1Qi...'])
+    result = invoke([
+        'update',
+        'gcs',
+        'fake-dest-id',
+        '--credentials',
+        'eyJ0eXAiOiJKV1Qi...'
+    ])
     assert result.exit_code == 0
 
     # ocs
     result = invoke([
         'update',
         'ocs',
+        'fake-dest-id',
         '--access-key-id',
         'OCID...',
         '--secret-access-key',
@@ -222,6 +230,7 @@ def test_destinations_cli_update(invoke):
     result = invoke([
         'update',
         's3',
+        'fake-dest-id',
         '--access-key-id',
         'AKIA...',
         '--secret-access-key',
@@ -234,6 +243,7 @@ def test_destinations_cli_update(invoke):
     result = invoke([
         'update',
         's3-compatible',
+        'fake-dest-id',
         '--access-key-id',
         'AKIA...',
         '--secret-access-key',
