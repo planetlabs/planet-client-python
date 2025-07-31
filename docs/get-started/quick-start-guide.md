@@ -13,7 +13,7 @@ Your feedback on this version of our client is appreciated. Please raise an issu
 
 This package requires [Python 3.9 or greater](https://python.org/downloads/). A virtual environment is strongly recommended.
 
-You will need your Planet API credentials. You can find your API key in [Planet Explorer](https://planet.com/explorer) under Account Settings.
+You will need your Planet API credentials. You can learn more about [how to get your Planet credentials here](../get-your-planet-account).
 
 ## Installation
 
