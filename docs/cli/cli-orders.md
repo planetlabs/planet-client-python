@@ -83,6 +83,7 @@ The `list` command supports filtering on a variety of fields:
 * `--created-on`: Filter on the order creation time or an interval of creation times.
 * `--last-modified`: Filter on the order's last modified time or an interval of last modified times.
 * `--hosting`: Filter on orders containing a hosting location (e.g. SentinelHub). Accepted values are `true` or `false`.
+* `--destination-ref`: Filter on orders created with the provided destination reference.
 
 Datetime args (`--created-on` and `--last-modified`) can either be a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.
 * A date-time: `2018-02-12T23:20:50Z`
