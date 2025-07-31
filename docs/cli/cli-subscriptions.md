@@ -130,7 +130,7 @@ outputs the JSON for your first 100 subscriptions. If you'd like more you can se
 parameter higher, or you can set it to 0 and there will be no limit.  By default the `list` command will request Subscriptions API with a page size of 500 subscriptions, and can be set lower or higher with the `--page-size` parameter.
 
 You can get nicer formatting with `--pretty` or pipe it into `jq`, just like the other Planet
-CLI’s.
+CLIs.
 
 #### Filtering
 
@@ -139,11 +139,12 @@ The `list` command supports filtering on a variety of fields:
 * `--end-time`: Filter on the subscription end time or an interval of end times.
 * `--hosting`: Filter on subscriptions containing a hosting location (e.g. SentinelHub). Accepted values are `true` or `false`.
 * `--name-contains`: Filter on subscriptions with a name that contains the provided string.
-* `--name`: Filter on subscriptions with a specific name
+* `--name`: Filter on subscriptions with a specific name.
 * `--source-type`: Filter by the source type of the subscription. For the full list of available source types, see [Subscription Source Types](https://docs.planet.com/develop/apis/subscriptions/sources/#catalog-source-type). Multiple source type args are allowed.
 * `--start-time`: Filter on the subscription start time or an interval of start times.
 * `--status`: Filter on the status of the subscription. Status options include `running`, `cancelled`, `preparing`, `pending`, `completed`, `suspended`, and `failed`. Multiple status args are allowed.
 * `--updated`: Filter on the subscription update time or an interval of updated times.
+* `--destination-ref`: Filter on subscriptions created with the provided destination reference.
 
 Datetime args (`--created`, `end-time`, `--start-time`, and `--updated`) can either be a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.
 * A date-time: `2018-02-12T23:20:50Z`
