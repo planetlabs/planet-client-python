@@ -32,7 +32,7 @@ The `list` command supports filtering on a variety of fields. You can discover a
 * `--can-write`: Set to true to include only destinations the user can
                  modify, false to exclude them.
 
-For example, to list destinations that are not archived and you can modify you would issue the following command:
+For example, issue the following command to list destinations that are not archived and you as the user have permission to modify:
 ```sh
 planet destinations list --archived false --can-write true
 ```
