@@ -1,5 +1,6 @@
 from planet import __version__ as _pl_sdk_version
 
+
 def on_config(config):
     """
     This is for injecting the package version into mkdocs

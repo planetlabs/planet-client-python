@@ -87,7 +87,7 @@ def test_build_request_clip_to_source_success(geom_geojson):
         clip_to_source=True,
     )
     assert req["tools"][1]["type"] == "clip"
-    assert req["tools"][1]["parameters"]["aoi"] == geom_geojson
+    assert req["tools"][1]["parameters"] == {}
 
 
 def test_build_request_clip_to_source_failure(geom_geojson):
@@ -499,17 +499,6 @@ def test_band_math_tool_invalid_pixel_type():
                                             pixel_type="invalid")
 
 
-def test_clip_tool_success(geom_geojson):
-    res = subscription_request.clip_tool(geom_geojson)
-    expected = {"type": "clip", "parameters": {"aoi": geom_geojson}}
-    assert res == expected
-
-
-def test_clip_tool_invalid_type(point_geom_geojson):
-    with pytest.raises(exceptions.ClientError):
-        subscription_request.clip_tool(point_geom_geojson)
-
-
 def test_file_format_tool_success():
     res = subscription_request.file_format_tool('COG')
 
@@ -567,28 +556,22 @@ def test_toar_tool_success():
 
 
 @pytest.mark.parametrize(
-    "var_type, var_id",
+    "source_id",
     [
-        ("biomass_proxy", "BIOMASS-PROXY_V3.0_10"),  # actual real type and id.
-        ("var1", "VAR1-ABCD"),  # nonsense type and id
-        (None, "BIOMASS-PROXY_V3.0_10"),  # None type with valid id
+        ("BIOMASS-PROXY_V3.0_10"),  # actual valid id.
+        ("VAR1-ABCD"),  # nonsense id
     ])
-def test_pv_source_success(geom_geojson, var_type, var_id):
+def test_subscription_source_success(geom_geojson, source_id):
     """Configure a planetary variable subscription source."""
-    source = subscription_request.planetary_variable_source(
-        var_type,
-        var_id,
+    source = subscription_request.subscription_source(
+        source_id,
         geometry=geom_geojson,
         start_time=datetime(2021, 3, 1),
         end_time=datetime(2021, 3, 2),
     )
 
-    if var_type:
-        assert source["type"] == var_type
-    else:
-        assert "type" not in source
     params = source["parameters"]
-    assert params["id"] == var_id
+    assert params["id"] == source_id
     assert params["geometry"] == geom_geojson
     assert params["start_time"].startswith("2021-03-01")
 
