@@ -15,6 +15,7 @@ subscriptions.
 * [Orders](CLI-Orders.md)
 * [Data](CLI-Data.md)
 * [Subscriptions](CLI-Subscriptions.md)
+* [Destinations](CLI-Destinations.md)
 
 ## CLI Base
 
