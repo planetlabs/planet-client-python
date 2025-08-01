@@ -13,7 +13,7 @@ Your feedback on this version of our client is appreciated. Please raise an issu
 
 This package requires [Python 3.9 or greater](https://python.org/downloads/). A virtual environment is strongly recommended.
 
-You will need your Planet API credentials. You can find your API key in [Planet Explorer](https://planet.com/explorer) under Account Settings.
+You will need Planet credentials to use this SDK. You can learn more about authentication options and where to find your credentials in our [authentication documentation](https://docs.planet.com/develop/authentication/).
 
 ## Installation
 
@@ -54,4 +54,3 @@ As The Planet SDK (V2) is in active development, features & functionality will c
 If there's something you're missing or are stuck, the development team would love to hear from you.
 
   - To report a bug or suggest a feature, [raise an issue on GitHub](https://github.com/planetlabs/planet-client-python/issues/new)
-  - To get in touch with the development team, email [developers@planet.com](mailto:developers@planet.com)

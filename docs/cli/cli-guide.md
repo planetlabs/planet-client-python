@@ -48,15 +48,7 @@ You should be on some version 2 of the Planet SDK for Python.
 
 ## Step 4: Sign on to your account
 
-Planet SDK for Python, like the Planet APIs, requires an account for use.
-
-### Have your Planet account username and password ready
-
-To confirm your Planet account, or to get one if you don’t already have one, see [Get your Planet Account](../get-started/get-your-planet-account.md).
-
-### Authenticate with the Planet server
-
-Just as you log in when you browse to https://planet.com/account, you’ll want to sign on to your account so you have access to your account and orders.
+Planet SDK for Python, like the Planet APIs, requires an account for use. Just as you log in when you browse to https://planet.com/account, you’ll want to sign on to your account so you have access to your account and orders.
 
 At a terminal console, type the following Planet command:
 
@@ -141,4 +133,3 @@ As The Planet SDK (V2) is in active development, features & functionality will c
 If there's something you're missing or are stuck, the development team would love to hear from you.
 
   - To report a bug or suggest a feature, [raise an issue on GitHub](https://github.com/planetlabs/planet-client-python/issues/new)
-  - To get in touch with the development team, email [developers@planet.com](mailto:developers@planet.com)

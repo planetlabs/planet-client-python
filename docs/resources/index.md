@@ -27,9 +27,6 @@ This pre-release SDK has implemented interfaces for several Planet APIs. Check o
 * [Orders](https://docs.planet.com/develop/apis/orders/)
 * [Subscriptions](https://docs.planet.com/develop/apis/subscriptions/)
 
-## Email Developer Relations
-
-We are eager to share this pre-release with you and encourage you to test your workflows rigorously. Based on your feedback, we may roll out additional updates to improve your experience. Besides joining the discussion, and filing issues and pull requests here, feel free to share your general feedback with us at developers@planet.com.
 ## Contribute to this open source project
 
 To contribute or develop with this library, see
