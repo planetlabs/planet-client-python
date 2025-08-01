@@ -80,6 +80,7 @@ nav:
     - cli/cli-data.md
     - cli/cli-orders.md
     - cli/cli-subscriptions.md
+    - cli/cli-destinations.md
     - cli/cli-tips-tricks.md
     - cli/cli-reference.md
   - "Python":
