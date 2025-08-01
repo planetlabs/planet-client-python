@@ -261,6 +261,7 @@ class OrdersAPI:
                     created_on: Optional[str] = None,
                     last_modified: Optional[str] = None,
                     hosting: Optional[bool] = None,
+                    destination_ref: Optional[str] = None,
                     sort_by: Optional[str] = None) -> Iterator[dict]:
         """Iterate over the list of stored orders.
 
@@ -281,6 +282,8 @@ class OrdersAPI:
             last_modified (str): filter by last modified date-time or interval.
             hosting (bool): only return orders that contain a hosting block
                 (e.g. SentinelHub hosting).
+            destination_ref (str): filter by orders created with the provided
+                destination reference.
             sort_by (str): fields to sort orders by. Multiple fields can be specified,
                 separated by commas. The sort direction can be specified by appending
                 ' ASC' or ' DESC' to the field name. The default sort direction is
@@ -316,4 +319,5 @@ class OrdersAPI:
                                      created_on,
                                      last_modified,
                                      hosting,
+                                     destination_ref,
                                      sort_by))

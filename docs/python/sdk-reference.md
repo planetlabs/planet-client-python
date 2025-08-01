@@ -42,6 +42,14 @@ title: Python SDK API Reference
     rendering:
       show_root_full_path: false
 
+## ::: planet.DestinationsClient
+    rendering:
+        show_root_full_path: false
+
+## ::: planet.FeaturesClient
+    rendering:
+        show_root_full_path: false
+
 ## ::: planet.Planet
     rendering:
       show_root_full_path: false
