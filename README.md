@@ -118,5 +118,4 @@ read from source in the [docs](/docs) directory.
 
 ## Authentication
 
-Planet's APIs require an account for use. To get started you need to
-[Get a Planet Account](https://planet-sdk-for-python.readthedocs.io/en/latest/get-started/get-your-planet-account/).
+Planet's APIs require an account for use. To learn how to authenticate, see the [client authentication overview](https://planet-sdk-for-python.readthedocs.io/en/latest/auth/auth-overview/)

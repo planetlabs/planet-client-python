@@ -47,15 +47,7 @@ You should be on some version 2 of the Planet SDK for Python.
 
 ## Step 4: Sign on to your account
 
-Planet SDK for Python, like the Planet APIs, requires an account for use.
-
-### Have your Planet account username and password ready
-
-To confirm your Planet account, or to get one if you don’t already have one, see [Get your Planet Account](../get-started/get-your-planet-account.md).
-
-### Authenticate with the Planet server
-
-Just as you log in when you browse to https://planet.com/account, you’ll want to sign on to your account so you have access to your account and orders.
+Planet SDK for Python, like the Planet APIs, requires an account for use. Just as you log in when you browse to https://planet.com/account, you’ll want to sign on to your account so you have access to your account and orders.
 
 At a terminal console, type the following Planet command:
 

@@ -74,7 +74,6 @@ hooks:
 nav:
   - "Get Started":
     - get-started/quick-start-guide.md
-    - get-started/get-your-planet-account.md
     - get-started/venv-tutorial.md
     - "Upgrade Guides":
       - get-started/upgrading-v3.md
@@ -100,8 +99,7 @@ nav:
       - auth/auth-dev-app-managed-apikey.md
   - "Resources":
     - resources/index.md
-  - "Home": 'index.md'
-
+    
 markdown_extensions:
   - pymdownx.highlight
   - pymdownx.superfences
