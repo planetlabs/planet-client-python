@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from .data import DataClient
+from .destinations import DestinationsClient
 from .features import FeaturesClient
 from .mosaics import MosaicsClient
 from .orders import OrdersClient
@@ -20,6 +21,7 @@ from .subscriptions import SubscriptionsClient
 
 __all__ = [
     'DataClient',
+    'DestinationsClient',
     'FeaturesClient',
     'MosaicsClient',
     'OrdersClient',
@@ -29,6 +31,7 @@ __all__ = [
 # Organize client classes by their module name to allow lookup.
 _client_directory = {
     'data': DataClient,
+    'destinations': DestinationsClient,
     'features': FeaturesClient,
     'mosaics': MosaicsClient,
     'orders': OrdersClient,
