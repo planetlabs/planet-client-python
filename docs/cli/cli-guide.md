@@ -18,7 +18,8 @@ If you’re already comfortable with CLI tools you can safely skip this section.
 extensive examples.
 * **[CLI for Orders API](cli-orders.md)** dives into the `planet orders` commands
 with numerous samples to get you started.
-* **[CLI for Subscriptions API](cli-subscriptions.md)** - explains the `planet subscriptions` commands
+* **[CLI for Subscriptions API](cli-subscriptions.md)** - explains the `planet subscriptions` commands.
+* **[CLI for Destinations API](cli-destinations.md)** - explores the `planet destinations` commands with examples.
 * **[CLI Tips & Tricks](cli-tips-tricks.md)** highlights a number of interesting 
 geospatial CLI command-line tools and shows you how to use them in conjunction
 with Planet’s tools.

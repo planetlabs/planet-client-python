@@ -15,6 +15,7 @@ Version 2.0 includes support for the core workflows of the following APIs:
 * [Orders](https://docs.planet.com/develop/apis/orders/) - Process and download or deliver imagery.
 * [Subscriptions](https://docs.planet.com/develop/apis/subscriptions/) - Set up a search to auto-process and deliver imagery.
 * [Features](https://docs.planet.com/develop/apis/features/) - Upload areas of interest to the Planet platform.
+* [Destinations](https://docs.planet.com/develop/apis/destinations/) - Create destinations to securely store cloud credentials.
 
 After the initial 2.0 release there will be additional work to support the
 remaining Planet APIs: [basemaps](https://docs.planet.com/develop/apis/basemaps/),
