@@ -27,9 +27,6 @@ This pre-release SDK has implemented interfaces for several Planet APIs. Check o
 * [Orders](https://docs.planet.com/develop/apis/orders/)
 * [Subscriptions](https://docs.planet.com/develop/apis/subscriptions/)
 
-## Email Developer Relations
-
-We are eager to share this pre-release with you and encourage you to test your workflows rigorously. Based on your feedback, we may roll out additional updates to improve your experience. Besides joining the discussion, and filing issues and pull requests here, feel free to share your general feedback with us at developers@planet.com.
 ## Contribute to this open source project
 
 To contribute or develop with this library, see
@@ -43,4 +40,4 @@ To contribute or develop with this library, see
 
 ## Version 1 of this SDK
 
-[Version 1 of this SDK](https://github.com/planetlabs/planet-client-python/tree/1.5.2) is significantly different (see the [documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/)). Version 2 is not backward compatible. Make sure to create a separate virtual environment if you need to work with both versions. For more information on how to do this, see the [Virtual Environments and the Planet SDK for Python](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/get-started/venv-tutorial/).
+[Version 1 of this SDK](https://github.com/planetlabs/planet-client-python/tree/1.5.2) is significantly different (see the [documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/)). Version 2 was not backward compatible. Make sure to create a separate virtual environment if you need to work with both versions. For more information on how to do this, see the [Virtual Environments and the Planet SDK for Python](https://planet-sdk-for-python.readthedocs.io/en/latest/get-started/venv-tutorial/).

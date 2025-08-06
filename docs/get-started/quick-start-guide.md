@@ -13,7 +13,7 @@ Your feedback on this version of our client is appreciated. Please raise an issu
 
 This package requires [Python 3.9 or greater](https://python.org/downloads/). A virtual environment is strongly recommended.
 
-You will need your Planet API credentials. You can find your API key in [Planet Explorer](https://planet.com/explorer) under Account Settings.
+You will need Planet credentials to use this SDK. You can learn more about authentication options and where to find your credentials in our [authentication documentation](https://docs.planet.com/develop/authentication/).
 
 ## Installation
 
@@ -27,10 +27,13 @@ pip install planet
 
 ### Authentication
 
-Use the `PL_API_KEY` environment variable to authenticate with the Planet API. For other authentication options, see the [SDK guide](../python/sdk-guide.md).
+Use the [`planet auth`](../../cli/cli-reference/#auth) CLI command to establish
+a user login session that will be saved to the user's home directory. This
+session will be picked up by SDK library functions by default.  For other
+authentication options, see the [Client Authentication Guide](../auth/auth-overview.md).
 
 ```bash
-export PL_API_KEY=your_api_key
+planet auth login
 ```
 
 ### The Planet client
@@ -39,7 +42,7 @@ The `Planet` class is the main entry point for the Planet SDK. It provides acces
 
 ```python
 from planet import Planet
-pl = Planet()  # automatically detects PL_API_KEY
+pl = Planet()  # automatically detects authentication configured by `planet auth login`
 ```
 
 The Planet client has members `data`, `orders`, and `subscriptions`, which allow you to interact with the Data API, Orders API, and Subscriptions API. Usage examples for searching, ordering and creating subscriptions can be found in the [SDK guide](../python/sdk-guide.md).
@@ -51,4 +54,3 @@ As The Planet SDK (V2) is in active development, features & functionality will c
 If there's something you're missing or are stuck, the development team would love to hear from you.
 
   - To report a bug or suggest a feature, [raise an issue on GitHub](https://github.com/planetlabs/planet-client-python/issues/new)
-  - To get in touch with the development team, email [developers@planet.com](mailto:developers@planet.com)

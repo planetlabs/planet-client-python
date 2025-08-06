@@ -24,7 +24,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip
 
-      - name: Build, verify, and upload to TestPyPI
+      - name: Build, verify, and upload to PyPI
         run: |
           pip install --upgrade nox
           nox -s build publish_pypi

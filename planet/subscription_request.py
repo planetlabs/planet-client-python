@@ -72,10 +72,10 @@ def build_request(name: str,
         collection_id: A Sentinel Hub collection ID.
         create_configuration: Automatically create a layer configuration for your collection.
         clip_to_source: Whether or not to clip to the source geometry (defaults to False). If
-            True, a clip configuration that specifies the subscription source geometry as clip
-            AOI will be added to the list of requested tools.  If True and 'clip_tool()' is
-            also specified, an exception will be raised.  If False, no clip configuration
-            will be added to the list of requested tools unless 'clip_tool()' is specified.
+            True, a clip configuration will be added to the list of requested tools that
+            automatically clips to the subscription source geometry.  If True and a clip tool is
+            also specified in the tools list, an exception will be raised.  If False, no clip
+            configuration will be added to the list of requested tools.
 
     Returns:
         dict: a representation of a Subscriptions API request for
@@ -136,12 +136,7 @@ def build_request(name: str,
                     "clip_to_source option conflicts with a configured clip tool."
                 )
             else:
-                tool_list.append({
-                    'type': 'clip',
-                    'parameters': {
-                        'aoi': source['parameters']['geometry']
-                    }
-                })
+                tool_list.append({'type': 'clip', 'parameters': {}})
 
         details['tools'] = tool_list
 
@@ -277,19 +272,16 @@ def catalog_source(
     return {"parameters": parameters}
 
 
-def planetary_variable_source(
-    var_type: Optional[str],
-    var_id: str,
+def subscription_source(
+    source_id: str,
     geometry: Union[dict, str],
     start_time: datetime,
     end_time: Optional[datetime] = None,
 ) -> dict:
-    """Construct a Planetary Variable subscription source.
+    """Construct a subscription source.
 
-    Planetary Variables come in 4 types and are further subdivided
-    within these types. See [Subscribing to Planetary Variables](https://docs.planet.com/develop/apis/subscriptions/sources/#planetary-variable-and-analysis-ready-source-types)
-    or the [OpenAPI spec](https://api.planet.com/subscriptions/v1/spec) for
-    more details.
+    See [Subscribing to Planetary Variables and Analysis Ready sources](https://docs.planet.com/develop/apis/subscriptions/sources/#planetary-variable-and-analysis-ready-source-types)
+    or the [OpenAPI spec](https://api.planet.com/subscriptions/v1/spec) to learn more about different product options.
 
     The return value can be passed to
     [planet.subscription_request.build_request][].
@@ -297,10 +289,7 @@ def planetary_variable_source(
     Note: this function does not validate variable types and ids.
 
     Parameters:
-        var_type: Planetary Variable type. See documentation for all
-            available types.  Used to be a required parameter but
-            is now optional and can be 'None'.
-        var_id: A Planetary Variable ID. See documenation for all
+        source_id: A source ID. See documenation for all
             available IDs.
         geometry: The area of interest of the subscription that will be
             used to determine matches. May be a geojson-like dict or a
@@ -320,8 +309,7 @@ def planetary_variable_source(
     Examples:
 
         ```python
-        pv_source = planetary_variables_source(
-            "soil_water_content",
+        pv_source = subscription_source(
             "SWC-AMSR2-C_V1.0_100",
             geometry={
                 "type": "Polygon",
@@ -348,7 +336,7 @@ def planetary_variable_source(
     # TODO: validation of variable types and ids.
 
     parameters = {
-        "id": var_id,
+        "id": source_id,
         "geometry": geojson.as_geom_or_ref(geometry),
     }
 
@@ -364,8 +352,6 @@ def planetary_variable_source(
             raise ClientError('Could not convert end_time to an iso string')
 
     source: dict[str, Any] = {"parameters": parameters}
-    if var_type:
-        source["type"] = var_type
     return source
 
 
@@ -636,41 +622,6 @@ def band_math_tool(b1: str,
     # e.g. {"b1": "b1", "b2":"arctan(b1)"} if b1 and b2 are specified
     parameters = dict((k, v) for k, v in locals().items() if v)
     return _tool('bandmath', parameters)
-
-
-def clip_tool(aoi: Mapping) -> dict:
-    """Specify a subscriptions API clip tool.
-
-    Imagery and udm files will be clipped to your area of interest. nodata
-    pixels will be preserved. Xml file attributes “filename”, “numRows”,
-    “numColumns” and “footprint” will be updated based on the clip results.
-
-    The clipped output files will have “_clip” appended to their file names. If
-    the clip aoi is so large that full scenes may be delivered without any
-    clipping, those files will not have “_clip” appended to their file name.
-
-    NOTE: To clip to the source geometry, set the 'clip_to_source' parameter
-    of 'planet.subscription_request.build_request()' to True instead of using
-    this tool.
-
-    Parameters:
-        aoi: GeoJSON polygon or multipolygon defining the clip area, with up to
-            500 vertices. The minimum geographic area of any polygon or
-            internal ring is one square meter.
-
-    Raises:
-        planet.exceptions.ClientError: If aoi is not a valid polygon or
-            multipolygon.
-    """
-
-    valid_types = ['Polygon', 'MultiPolygon', 'ref']
-
-    geom = geojson.as_geom_or_ref(dict(aoi))
-    if geom['type'].lower() not in [v.lower() for v in valid_types]:
-        raise ClientError(
-            f'Invalid geometry type: {geom["type"]} is not in {valid_types}.')
-
-    return _tool('clip', {'aoi': geom})
 
 
 def file_format_tool(file_format: str) -> dict:

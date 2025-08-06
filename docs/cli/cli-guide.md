@@ -35,67 +35,53 @@ Yes. Even if you’re not writing code—and only using the "no code" CLI part o
 Install the Planet SDK for Python using [pip](https://pip.pypa.io):
 
 ```console
-$ pip install planet
+pip install planet
 ```
 
 ## Step 3: Check the Planet SDK for Python version
 
 ```console
-$ planet --version
+planet --version
 ```
 
 You should be on some version 2 of the Planet SDK for Python.
 
 ## Step 4: Sign on to your account
 
-Planet SDK for Python, like the Planet APIs, requires an account for use.
-
-### Have your Planet account username and password ready
-
-To confirm your Planet account, or to get one if you don’t already have one, see [Get your Planet Account](../get-started/get-your-planet-account.md).
-
-### Authenticate with the Planet server
-
-Just as you log in when you browse to https://account.planet.com, you’ll want to sign on to your account so you have access to your account and orders.
+Planet SDK for Python, like the Planet APIs, requires an account for use. Just as you log in when you browse to https://planet.com/account, you’ll want to sign on to your account so you have access to your account and orders.
 
 At a terminal console, type the following Planet command:
 
 ```console
-$ planet auth init
+planet auth login
 ```
 
-You’ll be prompted for the email and password you use to access [your account](https://account.planet.com). When you type in your password, you won’t see any indication that the characters are being accepted. But when you hit enter, you’ll know that you’ve succeeded because you’ll see on the command line:
+A browser window should be opened, and you will be directed to login to your account.  This
+command will wait for the browser login to complete, and should exit shortly afterwards.
+When this process succeeds, you will see the following message on the console:
 
 ```console
-Initialized
+Login succeeded.
 ```
 
-### Get your API key
+If you are in an environment where the `planet` command line utility cannot open a browser (such 
+as a remote shell on a cloud service provider), use the following command and follow the instructions:
+```console
+planet auth login --no-open-browser
+```
 
-Now that you’ve logged in, you can easily retrieve your API key that is being used for requests with the following command:
+### Get your Access Token
+
+Now that you’ve logged in, you can easily retrieve an Access Token that is being used for requests with the following command:
 
 ```console
-planet auth value
+planet auth print-access-token
 ```
 
-Many `planet` calls you make require an API key. This is a very convenient way to quickly grab your API key.
+Many `planet` calls you make require an access token. This is a very convenient way to quickly grab the current access token.
 
-#### Your API Key as an Environment Variable
-
-You can also set the value of your API Key as an environment variable in your terminal at the command line:
-
-```console
-export PL_API_KEY=<your api key>
-```
-
-And you can see that the value was stored successfully as an environment variable with the following command:
-
-```console
-echo $PL_API_KEY
-```
-
-!!!note "The API Key environment variable is ignored by the CLI but used by the Python library"
-    If you do create a `PL_API_KEY` environment variable, the CLI will be unaffected but the Planet library will use this as the source for authorization instead of the value stored in `planet auth init`.
+**Note** : As a security measure, access tokens are time limited. They have a relatively short lifespan, and must
+be refreshed.  The `print-access-token` command takes care of this transparently for the user.
 
 ## Step 5: Search for Planet Imagery
 
@@ -147,4 +133,3 @@ As The Planet SDK (V2) is in active development, features & functionality will c
 If there's something you're missing or are stuck, the development team would love to hear from you.
 
   - To report a bug or suggest a feature, [raise an issue on GitHub](https://github.com/planetlabs/planet-client-python/issues/new)
-  - To get in touch with the development team, email [developers@planet.com](mailto:developers@planet.com)

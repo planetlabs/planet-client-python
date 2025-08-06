@@ -23,32 +23,26 @@ The `Planet` class is the main entry point for the Planet SDK. It provides acces
 
 ```python
 from planet import Planet
-pl = Planet()  # automatically detects PL_API_KEY
+pl = Planet()  # automatically detects authentication configured by `planet auth login`
 ```
 
 The Planet client has members `data`, `orders`, and `subscriptions`, which allow you to interact with the Data API, Orders API, and Subscriptions API.
 
 
 ### Authentication
-
-Use the `PL_API_KEY` environment variable to authenticate with the Planet API.
+To establish a user session that will be saved to the user's home directory
+and will be picked up by the SDK, execute the following command:
 
 ```bash
-export PL_API_KEY=your_api_key
+planet auth login
 ```
 
-These examples will assume you are using the `PL_API_KEY` environment variable. If you are, you can skip to the next section.
-
-#### Authenticate using the Session class
-
-Alternately, you can also authenticate using the `Session` class:
-
-```python
-from planet import Auth, Session, Auth
-from planet.auth import APIKeyAuth
-
-pl = Planet(session=Session(auth=APIKeyAuth(key='your_api_key')))
-```
+These examples will assume you have done this, and are using the SDK's default
+client authentication mechanisms.  For more advanced use cases, see the
+[Client Authentication Guide](../auth/auth-overview.md) for a complete discussion of
+all authentication options provided by the SDK.  This includes user
+authentication with a web browser, service account authentication for detached
+workloads using OAuth2, and support for legacy applications using Planet API keys.
 
 ### Search
 
@@ -231,7 +225,7 @@ You will need your ACCESS_KEY_ID, SECRET_ACCESS_KEY, bucket and region name.
 To subscribe to scenes that match a filter, use the `subscription_request` module to build a request, and
 pass it to the `subscriptions.create_subscription()` method of the client.
 
-By default, a request to create a subscription will not clip matching imagery which intersects the source geometry.  To clip to the subscription source geometry, set `planet.subscription_request.build_request()` keyword argument `clip_to_source = True` as in the example below.  To clip to a custom geometry, set `planet.subscription_request.build_request()`  keyword argument `clip_to_source = False` (or omit it entirely to fall back on the default value), and instead configure the custom clip AOI with `planet.subscription_request.clip_tool()`.
+By default, a request to create a subscription will not clip matching imagery which intersects the source geometry.  To clip to the subscription source geometry, set `planet.subscription_request.build_request()` keyword argument `clip_to_source = True` as in the example below.  Custom clip AOIs are no longer supported in subscriptions.
 
 Warning: the following code will create a subscription, consuming quota based on your plan.
 
@@ -333,4 +327,3 @@ As The Planet SDK (V2) is in active development, features & functionality will c
 If there's something you're missing or are stuck, the development team would love to hear from you.
 
   - To report a bug or suggest a feature, [raise an issue on GitHub](https://github.com/planetlabs/planet-client-python/issues/new)
-  - To get in touch with the development team, email [developers@planet.com](mailto:developers@planet.com)

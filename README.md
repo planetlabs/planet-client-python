@@ -7,7 +7,7 @@ The [Planet](https://planet.com) Software Development Kit (SDK) for Python
 provides both a Python API and a command-line interface (CLI)
 to make use of [the Planet APIs](https://docs.planet.com/develop/apis/).
 Everything you need to get started is found in our
-[online documentation](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/).
+[online documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/).
 
 Version 2.0 includes support for the core workflows of the following APIs:
 
@@ -15,7 +15,7 @@ Version 2.0 includes support for the core workflows of the following APIs:
 * [Orders](https://docs.planet.com/develop/apis/orders/) - Process and download or deliver imagery.
 * [Subscriptions](https://docs.planet.com/develop/apis/subscriptions/) - Set up a search to auto-process and deliver imagery.
 * [Features](https://docs.planet.com/develop/apis/features/) - Upload areas of interest to the Planet platform.
-* [Destinations] (https://docs.planet.com/develop/apis/destinations/) - Create destinations to securely store cloud credentials.
+* [Destinations](https://docs.planet.com/develop/apis/destinations/) - Create destinations to securely store cloud credentials.
 
 After the initial 2.0 release there will be additional work to support the
 remaining Planet APIs: [basemaps](https://docs.planet.com/develop/apis/basemaps/),
@@ -34,7 +34,7 @@ with semantic version identifiers that comply with [PEP 440](https://peps.python
 The Semantic Versioning stability scheme only applies to APIs that
 are considered part of the public API.  This includes library APIs exported
 from the `planet` package and documented in our
-[SDK developer documentation](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/),
+[SDK developer documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/),
 and the `planet` CLI interface used for scripts.  It does not include
 library interfaces below the top level `planet` Python package which are
 considered internal and subject to change without notice.
@@ -82,11 +82,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md#branches) for more information on branches
 
 ##### Current Mainline Versions and Branches
 
-| Version | Status        | Branch                                                                                 | Documentation                                                                                                | Initial Release | End of Active Development | End of Maintenance | Notes                                                                                                                        |
-|---------|---------------|----------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|-----------------|---------------------------|--------------------|------------------------------------------------------------------------------------------------------------------------------|
-| 3.x     | `development` | [`main-3.0-dev`](https://github.com/planetlabs/planet-client-python/tree/main-3.0-dev) | TBD                                                                                                          | TBD             | TBD                       | TBD                | See [RELEASE-PLANNING-X.0.md](https://github.com/planetlabs/planet-client-python/tree/main-3.0-dev/RELEASE-PLANNING-3.0.md). |
-| 2.x     | `active`      | [`main`](https://github.com/planetlabs/planet-client-python/tree/main)                 | [Planet Labs Python Client v2 on Readthedocs.io](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/) | April 2023      | TBD                       | TBD                |                                                                                                                              |
-| 1.x     | `end-of-life` | [`v1`](https://github.com/planetlabs/planet-client-python/tree/v1)                     | [Planet Labs Python Client v1 on Github.io](https://planetlabs.github.io/planet-client-python/)              | April 2017      | April 2023                | TBD                |                                                                                                                              |
+| Version | Status        | Branch                                                                           | Documentation                                                                                                | Initial Release | End of Active Development | End of Maintenance | Notes                                                                                                                        |
+|---------|---------------|----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|-----------------|---------------------------|--------------------|------------------------------------------------------------------------------------------------------------------------------|
+| 3.x     | `active`      | [`main`](https://github.com/planetlabs/planet-client-python/tree/main)           | TBD                                                                                                          | TBD             | TBD                       | TBD                | See [RELEASE-PLANNING-X.0.md](https://github.com/planetlabs/planet-client-python/tree/main-3.0-dev/RELEASE-PLANNING-3.0.md). |
+| 2.x     | `maintenance` | [`maint-2.x`](https://github.com/planetlabs/planet-client-python/tree/maint-2.x) | [Planet Labs Python Client v2 on Readthedocs.io](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/) | April 2023      | TBD                       | TBD                |                                                                                                                              |
+| 1.x     | `end-of-life` | [`v1`](https://github.com/planetlabs/planet-client-python/tree/v1)               | [Planet Labs Python Client v1 on Github.io](https://planetlabs.github.io/planet-client-python/)              | April 2017      | April 2023                | TBD                |                                                                                                                              |
 
 ## Installation and Quick Start
 
@@ -104,7 +104,7 @@ pip install .
 
 Note that the above commands will install the Planet SDK into the global system Python unless a virtual environment is enabled.  For more information on configuring a virtual environment from system Python, see the official Python [venv](https://docs.python.org/3/library/venv.html) documentation.  For users who are running multiple versions of Python via [pyenv](https://github.com/pyenv/pyenv), see the [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv) extension documentation.
 
-Detailed installation instructions for the Planet SDK can be found in the [Quick Start Guide](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/get-started/quick-start-guide/) of the documentation.
+Detailed installation instructions for the Planet SDK can be found in the [Quick Start Guide](https://planet-sdk-for-python.readthedocs.io/en/latest/get-started/quick-start-guide/) of the documentation.
 
 ## Contributing and Development
 
@@ -112,12 +112,11 @@ To contribute or develop with this library, see [CONTRIBUTING.md](CONTRIBUTING.m
 
 ## Documentation
 
-Documentation is currently [hosted online](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/)
+Documentation is currently [hosted online](https://planet-sdk-for-python.readthedocs.io/en/latest/)
 It should be considered 'in progress', with many updates to come. It can also
 be built and hosted locally (see [CONTRIBUTING.md](CONTRIBUTING.md)) or can be
 read from source in the [docs](/docs) directory.
 
 ## Authentication
 
-Planet's APIs require an account for use. To get started you need to
-[Get a Planet Account](https://planet-sdk-for-python-v2.readthedocs.io/en/latest/get-started/get-your-planet-account/).
+Planet's APIs require an account for use. To learn how to authenticate, see the [client authentication overview](https://planet-sdk-for-python.readthedocs.io/en/latest/auth/auth-overview/)

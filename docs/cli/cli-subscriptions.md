@@ -451,22 +451,21 @@ planet subscriptions request-catalog \
     --filter filter.json > request-catalog.json
 ```
 
-### Planetary Variable Request
+### Planetary Variable and Analysis-Ready Source Requests
 
-Subscribing to Planetary Variables is much like subscribing to imagery from
-Planet's catalog. The `planet subscriptions request-pv` command can construct the source
-part of a Planetary Variable request like `request-catalog` does for cataloged
-imagery. Planetary Variable subscriptions come in 4 types and are further
-subdivided within these types by an identifier. See [Subscribing to Planetary
-Variables](https://docs.planet.com/develop/apis/subscriptions/sources/#planetary-variable-and-analysis-ready-source-types)
-for details. To constrain data delivery by space and time, you will use the
+Subscribing to Planetary Variables and Analysis-Ready data is much like subscribing to imagery from
+Planet's catalog. The `planet subscriptions request-source` command can construct the source
+part of a Planetary Variable or Analysis-Ready source request like `request-catalog` does for cataloged
+imagery. See [Subscribing to Planetary
+Variables and Analysis Ready sources](https://docs.planet.com/develop/apis/subscriptions/sources/#planetary-variable-and-analysis-ready-source-types)
+for details about different product options. To constrain data delivery by space and time, you will use the
 `--geometry`, `start-time`, and `end-time` options described above.
 
 ```sh
-planet subscriptions request-pv \
-    --var-id BIOMASS-PROXY_V3.0_10 \
+planet subscriptions request-source \
+    --source-id BIOMASS-PROXY_V3.0_10 \
     --geometry geometry.geojson \
-    --start-time 2022-08-24T00:00:00-07:00 > request-pv.json
+    --start-time 2022-08-24T00:00:00-07:00 > request-source.json
 ```
 
 ### Subscription Tools

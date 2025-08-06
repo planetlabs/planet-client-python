@@ -1,5 +1,5 @@
 site_name: Planet SDK for Python
-site_url: https://planet-sdk-for-python-v2.readthedocs.io/en/latest/
+site_url: https://planet-sdk-for-python.readthedocs.io/en/latest/
 site_author: https://docs.planet.com
 site_description: >-
   A Python library to discover and retrieve earth observation data from Planet Labs PBC.
@@ -50,6 +50,9 @@ extra_css:
 
 plugins:
   - search
+  - macros:
+      include_dir: 'examples'
+      on_error_fail: true
   - mkdocstrings:
       handlers:
         python:
@@ -59,7 +62,7 @@ plugins:
           selection:
             inherited_members: true
             filters:
-              - "!^_"  # exlude all members starting with _
+              - "!^_"  # exclude all members starting with _
               - "^__init__$"  # but always include __init__ modules and methods
       watch:
         - planet
@@ -71,9 +74,10 @@ hooks:
 nav:
   - "Get Started":
     - get-started/quick-start-guide.md
-    - get-started/get-your-planet-account.md
     - get-started/venv-tutorial.md
-    - get-started/upgrading.md
+    - "Upgrade Guides":
+      - get-started/upgrading-v3.md
+      - get-started/upgrading-v2.md
   - "No Code CLI":
     - cli/cli-guide.md
     - cli/cli-intro.md
@@ -85,12 +89,18 @@ nav:
     - cli/cli-reference.md
   - "Python":
     - python/sdk-guide.md
+    - python/sdk-client-auth.md
     - python/async-sdk-guide.md
     - python/sdk-reference.md
+  - "Client Authentication":
+      - auth/auth-overview.md
+      - auth/auth-sdk.md
+      - auth/auth-dev-cli-managed.md
+      - auth/auth-dev-app-managed-oauth.md
+      - auth/auth-dev-app-managed-apikey.md
   - "Resources":
     - resources/index.md
-  - "Home": 'index.md'
-
+    
 markdown_extensions:
   - pymdownx.highlight
   - pymdownx.superfences

@@ -18,7 +18,7 @@ import respx
 import httpx
 
 from planet import DestinationsClient, Session
-from planet.auth import APIKeyAuth
+from planet.auth import Auth
 from planet.sync.destinations import DestinationsAPI
 
 pytestmark = pytest.mark.anyio
@@ -86,7 +86,7 @@ DEST_2 = {
 
 DEST_LIST = [DEST_1, DEST_2]
 
-test_session = Session(auth=APIKeyAuth(key="test"))
+test_session = Session(auth=Auth.from_key(key="test"))
 cl_async = DestinationsClient(test_session, base_url=TEST_URL)
 cl_sync = DestinationsAPI(test_session, base_url=TEST_URL)
 

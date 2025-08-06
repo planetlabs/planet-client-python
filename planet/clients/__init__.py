@@ -15,6 +15,7 @@
 from .data import DataClient
 from .destinations import DestinationsClient
 from .features import FeaturesClient
+from .mosaics import MosaicsClient
 from .orders import OrdersClient
 from .subscriptions import SubscriptionsClient
 
@@ -22,6 +23,7 @@ __all__ = [
     'DataClient',
     'DestinationsClient',
     'FeaturesClient',
+    'MosaicsClient',
     'OrdersClient',
     'SubscriptionsClient'
 ]
@@ -31,6 +33,7 @@ _client_directory = {
     'data': DataClient,
     'destinations': DestinationsClient,
     'features': FeaturesClient,
+    'mosaics': MosaicsClient,
     'orders': OrdersClient,
     'subscriptions': SubscriptionsClient
 }
