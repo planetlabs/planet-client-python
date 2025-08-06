@@ -240,10 +240,10 @@ class MosaicsAPI:
         ```
         """
         self._client._call_sync(
-            self.download_quad(quad,
-                               directory=directory,
-                               overwrite=overwrite,
-                               progress_bar=progress_bar))
+            self._client.download_quad(quad,
+                                       directory=directory,
+                                       overwrite=overwrite,
+                                       progress_bar=progress_bar))
 
     def download_quads(self,
                        /,
