@@ -131,12 +131,6 @@ def test_Auth_from_env_alternate_doesnotexist(monkeypatch):
 
 
 def test_Auth_from_login(monkeypatch):
-    # auth.AuthClient has been completely removed
-    # in the conversion to planet_auth
-    # def login(*args, **kwargs):
-    #     return {'api_key': auth_data}
-    #
-    # monkeypatch.setattr(auth.AuthClient, 'login', login)
     with pytest.raises(DeprecationWarning):
         _ = auth.Auth.from_login('email', 'pw')
 

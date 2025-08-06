@@ -322,11 +322,6 @@ class Auth(abc.ABC, httpx.Auth):
         Parameters:
             key: Planet API key
         """
-        warnings.warn(
-            "Planet API keys will be deprecated for most use cases."
-            " Initialize an OAuth client, or create an OAuth service account."
-            " Proceeding for now.",
-            PendingDeprecationWarning)
         if not key:
             raise APIKeyAuthException('API key cannot be empty.')
 

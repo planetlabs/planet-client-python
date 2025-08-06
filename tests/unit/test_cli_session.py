@@ -73,7 +73,7 @@ async def test_CliSession_auth_valid(test_valid_secretfile):
         received_request = route.calls.last.request
         # The planet_auth library sends the api key as bearer token.
         # The older Planet SDK sent it as HTTP basic.
-        # Most Planet APIs accept either (and API keys are being deprecated.)
+        # Most Planet APIs accept either.
         # credentials = received_request.headers['authorization'].strip(
         #     'Authorization: Basic ')
         # assert base64.b64decode(credentials) == b'clisessiontest:'
