@@ -17,7 +17,7 @@ The SDK and CLI are low-level interfaces mirroring much of the API, itself. Whil
 
 ## SSoT
 
-We are currently publishing documentation on [planet.com](https://docs.planet.com/develop/sdks/#planet-sdk-for-python-and-cli), [github.com](https://github.com/planetlabs/planet-client-python), and on [readthedocs.com](https://planet-sdk-for-python-v2.readthedocs.io). Providing a single source of truth (SSoT) ensures one definitive source of documentation, reducing the dilution of information, errors, and maintenance efforts.
+We are currently publishing documentation on [planet.com](https://docs.planet.com/develop/sdks/#planet-sdk-for-python-and-cli), [github.com](https://github.com/planetlabs/planet-client-python), and on [readthedocs.com](https://planet-sdk-for-python.readthedocs.io). Providing a single source of truth (SSoT) ensures one definitive source of documentation, reducing the dilution of information, errors, and maintenance efforts.
 
 ### Tickets to be filed
 
@@ -213,10 +213,14 @@ Investigate using MkDocs plugin to derive changes.txt items.
 
 [https://github.com/planetlabs/planet-client-python/](https://github.com/planetlabs/planet-client-python/)
 
-#### Current V2 docs
+#### Current V3 docs
+[https://planet-sdk-for-python.readthedocs.io/](https://planet-sdk-for-python.readthedocs.io/)
+#### Current V2 (maintenance) docs
+[https://planet-sdk-for-python.readthedocs.io/en/maint](https://planet-sdk-for-python.readthedocs.io/en/maint)
+#### Former (deprecated) V2 docs
 [https://planet-sdk-for-python-v2.readthedocs.io/](https://planet-sdk-for-python-v2.readthedocs.io/)
-#### V1.4.9 docs
-[https://planet-sdk-for-python.readthedocs.io/en/latest/](https://planet-sdk-for-python.readthedocs.io)
+#### V1.5.2 docs
+[https://planet-sdk-for-python.readthedocs.io/en/1.5.2/](https://planet-sdk-for-python.readthedocs.io/en/1.5.2/)
 
 and
 
