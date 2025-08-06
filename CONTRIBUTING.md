@@ -26,8 +26,8 @@ project, but should be retired when a new release becomes more formalized.  Upon
 all content is expected to be folded into package documentation as appropriate (announcements,
 company blog posts, changelogs, migration guides, etc.).
 
-When a new major release is ready, the development mainline branch will be renamed to `main`, and the
-old mainline branch will be renamed to `maint-X.0` and will be used as the base for maintenance releases.
+When a new major release is ready, the old mainline branch will be copied to `maint-X.x` (e.g. `maint-2.x`), 
+to be used as the base for maintenance releases, and the development mainline branch will be merged into to `main`
 
 #### Development Branches
 
