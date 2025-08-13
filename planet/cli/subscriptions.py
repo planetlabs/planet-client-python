@@ -110,6 +110,9 @@ def subscriptions(ctx, base_url):
     '--destination-ref',
     help="Filter subscriptions created with the provided destination reference."
 )
+@click.option(
+    '--user-id',
+    help="Filter by user ID. Only available to organization admins. Accepts 'all' or a specific user ID.")
 @limit
 @click.option('--page-size',
               type=click.INT,
@@ -130,6 +133,7 @@ async def list_subscriptions_cmd(ctx,
                                  updated,
                                  limit,
                                  destination_ref,
+                                 user_id,
                                  page_size,
                                  pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
@@ -146,7 +150,8 @@ async def list_subscriptions_cmd(ctx,
             'sort_by': sort_by,
             'updated': updated,
             'limit': limit,
-            'destination_ref': destination_ref
+            'destination_ref': destination_ref,
+            'user_id': user_id
         }
         if page_size is not None:
             list_subscriptions_kwargs['page_size'] = page_size

@@ -312,6 +312,17 @@ async def test_list_subscriptions_filtering_and_sorting():
         ]) == 2
 
 
+@pytest.mark.anyio
+@api_mock
+async def test_list_subscriptions_user_id_filtering():
+    """Test user_id parameter filtering for organization admins."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        assert len([
+            sub async for sub in client.list_subscriptions(user_id='all')
+        ]) == 100
+
+
 @pytest.mark.parametrize("page_size, count", [(50, 100), (100, 100)])
 @pytest.mark.anyio
 @api_mock
