@@ -173,7 +173,7 @@ async def test_list_orders_filtering_and_sorting(order_descriptions, session):
 
 @respx.mock
 @pytest.mark.anyio
-@pytest.mark.parametrize("user_id"['all', '123', 456])
+@pytest.mark.parametrize("user_id", ['all', '123', 456])
 async def test_list_orders_user_id_filtering(order_descriptions,
                                              session,
                                              user_id):

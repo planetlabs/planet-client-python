@@ -122,7 +122,7 @@ def test_cli_orders_list_filtering_and_sorting(invoke, order_descriptions):
 
 
 @respx.mock
-@pytest.mark.parametrize("user_id"['all', '123'])
+@pytest.mark.parametrize("user_id", ['all', '123'])
 def test_cli_orders_list_user_id(invoke, order_descriptions, user_id):
     """Test CLI user_id parameter for organization admins."""
     list_url = TEST_ORDERS_URL + f'?source_type=all&user_id={user_id}'
