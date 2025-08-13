@@ -191,9 +191,7 @@ async def test_list_orders_user_id_filtering(order_descriptions, session):
 
     # if the value of user_id doesn't get sent as a url parameter,
     # the mock will fail and this test will fail
-    assert [order1, order2] == [
-        o async for o in cl.list_orders(user_id='all')
-    ]
+    assert [order1, order2] == [o async for o in cl.list_orders(user_id='all')]
 
 
 @respx.mock

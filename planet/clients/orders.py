@@ -551,7 +551,7 @@ class OrdersClient(_BaseClient):
         if destination_ref is not None:
             params["destination_ref"] = destination_ref
         if user_id is not None:
-            params["user_id"] = user_id
+            params["user_id"] = str(user_id)
         if state:
             if state not in ORDER_STATE_SEQUENCE:
                 raise exceptions.ClientError(

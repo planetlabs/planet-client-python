@@ -137,7 +137,9 @@ def orders(ctx, base_url):
     help="Filter by orders created with the provided destination reference.")
 @click.option(
     '--user-id',
-    help="Filter by user ID. Only available to organization admins. Accepts 'all' or a specific user ID.")
+    help=
+    "Filter by user ID. Only available to organization admins. Accepts 'all' or a specific user ID."
+)
 @limit
 @pretty
 async def list(ctx,

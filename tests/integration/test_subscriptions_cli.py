@@ -72,9 +72,7 @@ def invoke():
          '--hosting=true',
          '--sort-by=name DESC'
      ],
-      2),
-     (['--user-id=all'], 100),
-     (['--user-id=12345'], 100)])
+      2), (['--user-id=all'], 100), (['--user-id=12345'], 100)])
 @api_mock
 # Remember, parameters come before fixtures in the function definition.
 def test_subscriptions_list_options(invoke, options, expected_count):

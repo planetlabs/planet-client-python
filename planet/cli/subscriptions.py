@@ -112,7 +112,9 @@ def subscriptions(ctx, base_url):
 )
 @click.option(
     '--user-id',
-    help="Filter by user ID. Only available to organization admins. Accepts 'all' or a specific user ID.")
+    help=
+    "Filter by user ID. Only available to organization admins. Accepts 'all' or a specific user ID."
+)
 @limit
 @click.option('--page-size',
               type=click.INT,

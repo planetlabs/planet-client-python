@@ -138,11 +138,7 @@ def test_cli_orders_list_user_id(invoke, order_descriptions):
 
     # if the value of user_id doesn't get sent as a url parameter,
     # the mock will fail and this test will fail
-    result = invoke([
-        'list',
-        '--user-id',
-        'all'
-    ])
+    result = invoke(['list', '--user-id', 'all'])
     assert result.exit_code == 0
     sequence = '\n'.join([json.dumps(o) for o in [order1, order2]])
     assert result.output == sequence + '\n'
