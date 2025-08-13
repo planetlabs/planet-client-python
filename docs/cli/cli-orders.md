@@ -120,6 +120,16 @@ To list orders with a name containing `xyz`:
 planet orders list --name-contains xyz
 ```
 
+To list orders for all users in your organization (organization admin only):
+```sh
+planet orders list --user-id all
+```
+
+To list orders for a specific user ID (organization admin only):
+```sh
+planet orders list --user-id 12345
+```
+
 #### Sorting
 
 The `list` command also supports sorting the orders on one or more fields: `name`, `created_on`, `state`, and `last_modified`. The sort direction can be specified by appending ` ASC` or ` DESC` to the field name (default is ascending).

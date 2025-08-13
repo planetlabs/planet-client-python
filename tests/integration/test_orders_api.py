@@ -172,6 +172,54 @@ async def test_list_orders_filtering_and_sorting(order_descriptions, session):
 
 
 @respx.mock
+@pytest.mark.anyio
+async def test_list_orders_user_id_filtering(order_descriptions, session):
+    """Test user_id parameter filtering for organization admins."""
+    list_url = TEST_ORDERS_URL + '?source_type=all&user_id=all'
+
+    order1, order2, _ = order_descriptions
+
+    page1_response = {
+        "_links": {
+            "_self": "string"
+        }, "orders": [order1, order2]
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.get(list_url).return_value = mock_resp
+
+    cl = OrdersClient(session, base_url=TEST_URL)
+
+    # if the value of user_id doesn't get sent as a url parameter,
+    # the mock will fail and this test will fail
+    assert [order1, order2] == [
+        o async for o in cl.list_orders(user_id='all')
+    ]
+
+
+@respx.mock
+def test_list_orders_user_id_sync(order_descriptions, session):
+    """Test sync client user_id parameter for organization admins."""
+    list_url = TEST_ORDERS_URL + '?source_type=all&user_id=all'
+
+    order1, order2, _ = order_descriptions
+
+    page1_response = {
+        "_links": {
+            "_self": "string"
+        }, "orders": [order1, order2]
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.get(list_url).return_value = mock_resp
+
+    pl = Planet()
+    pl.orders._client._base_url = TEST_URL
+
+    # if the value of user_id doesn't get sent as a url parameter,
+    # the mock will fail and this test will fail
+    assert [order1, order2] == list(pl.orders.list_orders(user_id='all'))
+
+
+@respx.mock
 def test_list_orders_state_success_sync(order_descriptions, session):
     list_url = TEST_ORDERS_URL + '?source_type=all&state=failed'
 

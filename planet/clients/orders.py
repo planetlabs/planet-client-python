@@ -474,7 +474,8 @@ class OrdersClient(_BaseClient):
             last_modified: Optional[str] = None,
             hosting: Optional[bool] = None,
             destination_ref: Optional[str] = None,
-            sort_by: Optional[str] = None) -> AsyncIterator[dict]:
+            sort_by: Optional[str] = None,
+            user_id: Optional[Union[str, int]] = None) -> AsyncIterator[dict]:
         """Iterate over the list of stored orders.
 
         By default, order descriptions are sorted by creation date with the last created
@@ -510,6 +511,8 @@ class OrdersClient(_BaseClient):
                  * "name"
                  * "name DESC"
                  * "name,state DESC,last_modified"
+            user_id (str or int): filter by user ID. Only available to organization admins.
+                Accepts "all" or a specific user ID.
 
         Datetime args (created_on and last_modified) can either be a date-time or an
         interval, open or closed. Date and time expressions adhere to RFC 3339. Open
@@ -547,6 +550,8 @@ class OrdersClient(_BaseClient):
             params["sort_by"] = sort_by
         if destination_ref is not None:
             params["destination_ref"] = destination_ref
+        if user_id is not None:
+            params["user_id"] = user_id
         if state:
             if state not in ORDER_STATE_SEQUENCE:
                 raise exceptions.ClientError(
