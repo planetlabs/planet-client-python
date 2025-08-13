@@ -312,7 +312,7 @@ async def test_list_subscriptions_filtering_and_sorting():
         ]) == 2
 
 
-@pytest.mark.parametrize("user_id", ['all', '123', 456])
+@pytest.mark.parametrize("user_id", ["all", "123", 456])
 @pytest.mark.anyio
 @api_mock
 async def test_list_subscriptions_user_id_filtering(user_id):
