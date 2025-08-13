@@ -4,6 +4,7 @@ from .features import FeaturesAPI
 from .data import DataAPI
 from .destinations import DestinationsAPI
 from .orders import OrdersAPI
+from .quota import QuotaAPI
 from .subscriptions import SubscriptionsAPI
 from planet.http import Session
 from planet.__version__ import __version__
@@ -24,6 +25,7 @@ class Planet:
     - `orders`: Orders API.
     - `subscriptions`: Subscriptions API.
     - `features`: Features API
+    - `quota`: Quota API
 
     Quick start example:
     ```python
@@ -66,3 +68,4 @@ class Planet:
             self._session, f"{planet_base}/subscriptions/v1/")
         self.features = FeaturesAPI(self._session,
                                     f"{planet_base}/features/v1/ogc/my/")
+        self.quota = QuotaAPI(self._session, f"{planet_base}/quota/v1")
