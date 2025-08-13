@@ -16,7 +16,7 @@
 import asyncio
 import logging
 import time
-from typing import AsyncIterator, Callable, Dict, List, Optional, Sequence, TypeVar, Union
+from typing import Any, AsyncIterator, Callable, Dict, List, Optional, TypeVar, Union
 import uuid
 import json
 import hashlib
@@ -531,7 +531,7 @@ class OrdersClient(_BaseClient):
             planet.exceptions.ClientError: If state is not valid.
         """
         url = self._orders_url()
-        params: Dict[str, Union[str, Sequence[str], bool]] = {}
+        params: Dict[str, Any] = {}
         if source_type is not None:
             params["source_type"] = source_type
         else:
@@ -551,7 +551,7 @@ class OrdersClient(_BaseClient):
         if destination_ref is not None:
             params["destination_ref"] = destination_ref
         if user_id is not None:
-            params["user_id"] = str(user_id)
+            params["user_id"] = user_id
         if state:
             if state not in ORDER_STATE_SEQUENCE:
                 raise exceptions.ClientError(
