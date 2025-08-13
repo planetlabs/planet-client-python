@@ -5,6 +5,7 @@ from .data import DataAPI
 from .destinations import DestinationsAPI
 from .orders import OrdersAPI
 from .subscriptions import SubscriptionsAPI
+from .tasking import TaskingAPI
 from planet.http import Session
 from planet.__version__ import __version__
 from planet.constants import PLANET_BASE_URL
@@ -24,6 +25,7 @@ class Planet:
     - `orders`: Orders API.
     - `subscriptions`: Subscriptions API.
     - `features`: Features API
+    - `tasking`: Tasking API
 
     Quick start example:
     ```python
@@ -66,3 +68,4 @@ class Planet:
             self._session, f"{planet_base}/subscriptions/v1/")
         self.features = FeaturesAPI(self._session,
                                     f"{planet_base}/features/v1/ogc/my/")
+        self.tasking = TaskingAPI(self._session, f"{planet_base}/tasking/v2/")
