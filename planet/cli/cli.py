@@ -22,7 +22,7 @@ import planet_auth_utils
 import planet
 from planet.cli import mosaics
 
-from . import auth, cmds, collect, data, destinations, orders, subscriptions, features
+from . import auth, cmds, collect, data, destinations, orders, reports, subscriptions, features
 
 LOGGER = logging.getLogger(__name__)
 
@@ -126,6 +126,7 @@ main.add_command(cmd=planet_auth_utils.cmd_plauth_embedded,
 main.add_command(auth.cmd_auth)  # type: ignore
 main.add_command(data.data)  # type: ignore
 main.add_command(orders.orders)  # type: ignore
+main.add_command(reports.reports)  # type: ignore
 main.add_command(subscriptions.subscriptions)  # type: ignore
 main.add_command(collect.collect)  # type: ignore
 main.add_command(features.features)  # type: ignore
