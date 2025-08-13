@@ -122,9 +122,10 @@ def test_cli_orders_list_filtering_and_sorting(invoke, order_descriptions):
 
 
 @respx.mock
-def test_cli_orders_list_user_id(invoke, order_descriptions):
+@pytest.mark.parametrize("user_id"['all', '123'])
+def test_cli_orders_list_user_id(invoke, order_descriptions, user_id):
     """Test CLI user_id parameter for organization admins."""
-    list_url = TEST_ORDERS_URL + '?source_type=all&user_id=all'
+    list_url = TEST_ORDERS_URL + f'?source_type=all&user_id={user_id}'
 
     order1, order2, _ = order_descriptions
 
@@ -138,7 +139,7 @@ def test_cli_orders_list_user_id(invoke, order_descriptions):
 
     # if the value of user_id doesn't get sent as a url parameter,
     # the mock will fail and this test will fail
-    result = invoke(['list', '--user-id', 'all'])
+    result = invoke(['list', '--user-id', user_id])
     assert result.exit_code == 0
     sequence = '\n'.join([json.dumps(o) for o in [order1, order2]])
     assert result.output == sequence + '\n'

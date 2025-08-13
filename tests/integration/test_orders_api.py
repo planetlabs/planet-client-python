@@ -173,9 +173,12 @@ async def test_list_orders_filtering_and_sorting(order_descriptions, session):
 
 @respx.mock
 @pytest.mark.anyio
-async def test_list_orders_user_id_filtering(order_descriptions, session):
+@pytest.mark.parametrize("user_id"['all', '123', 456])
+async def test_list_orders_user_id_filtering(order_descriptions,
+                                             session,
+                                             user_id):
     """Test user_id parameter filtering for organization admins."""
-    list_url = TEST_ORDERS_URL + '?source_type=all&user_id=all'
+    list_url = TEST_ORDERS_URL + f'?source_type=all&user_id={user_id}'
 
     order1, order2, _ = order_descriptions
 
@@ -191,7 +194,8 @@ async def test_list_orders_user_id_filtering(order_descriptions, session):
 
     # if the value of user_id doesn't get sent as a url parameter,
     # the mock will fail and this test will fail
-    assert [order1, order2] == [o async for o in cl.list_orders(user_id='all')]
+    assert [order1,
+            order2] == [o async for o in cl.list_orders(user_id=user_id)]
 
 
 @respx.mock
