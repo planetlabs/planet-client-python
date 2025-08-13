@@ -110,11 +110,8 @@ def subscriptions(ctx, base_url):
     '--destination-ref',
     help="Filter subscriptions created with the provided destination reference."
 )
-@click.option(
-    '--user-id',
-    help=
-    "Filter by user ID. Only available to organization admins. Accepts 'all' or a specific user ID."
-)
+@click.option('--user-id',
+              help="Filter by user ID. Accepts 'all' or a specific user ID.")
 @limit
 @click.option('--page-size',
               type=click.INT,
