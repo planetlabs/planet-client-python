@@ -84,6 +84,7 @@ The `list` command supports filtering on a variety of fields:
 * `--last-modified`: Filter on the order's last modified time or an interval of last modified times.
 * `--hosting`: Filter on orders containing a hosting location (e.g. SentinelHub). Accepted values are `true` or `false`.
 * `--destination-ref`: Filter on orders created with the provided destination reference.
+* `--user-id`: Filter by user ID. Only available to organization admins. Accepts "all" or a specific user ID.
 
 Datetime args (`--created-on` and `--last-modified`) can either be a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.
 * A date-time: `2018-02-12T23:20:50Z`
@@ -118,6 +119,16 @@ planet orders list --name "my location xyz"
 To list orders with a name containing `xyz`:
 ```sh
 planet orders list --name-contains xyz
+```
+
+To list orders for all users in your organization (organization admin only):
+```sh
+planet orders list --user-id all
+```
+
+To list orders for a specific user ID (organization admin only):
+```sh
+planet orders list --user-id 12345
 ```
 
 #### Sorting

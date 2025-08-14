@@ -13,7 +13,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 """Functionality for interacting with the orders api"""
-from typing import Any, Callable, Dict, Iterator, List, Optional
+from typing import Any, Callable, Dict, Iterator, List, Optional, Union
 
 from pathlib import Path
 from ..http import Session
@@ -252,17 +252,19 @@ class OrdersAPI:
         return self._client._call_sync(
             self._client.wait(order_id, state, delay, max_attempts, callback))
 
-    def list_orders(self,
-                    state: Optional[str] = None,
-                    limit: int = 100,
-                    source_type: Optional[str] = None,
-                    name: Optional[str] = None,
-                    name__contains: Optional[str] = None,
-                    created_on: Optional[str] = None,
-                    last_modified: Optional[str] = None,
-                    hosting: Optional[bool] = None,
-                    destination_ref: Optional[str] = None,
-                    sort_by: Optional[str] = None) -> Iterator[dict]:
+    def list_orders(
+            self,
+            state: Optional[str] = None,
+            limit: int = 100,
+            source_type: Optional[str] = None,
+            name: Optional[str] = None,
+            name__contains: Optional[str] = None,
+            created_on: Optional[str] = None,
+            last_modified: Optional[str] = None,
+            hosting: Optional[bool] = None,
+            destination_ref: Optional[str] = None,
+            sort_by: Optional[str] = None,
+            user_id: Optional[Union[str, int]] = None) -> Iterator[dict]:
         """Iterate over the list of stored orders.
 
         By default, order descriptions are sorted by creation date with the last created
@@ -296,6 +298,8 @@ class OrdersAPI:
                  * "name"
                  * "name DESC"
                  * "name,state DESC,last_modified"
+            user_id (str or int): filter by user ID. Only available to organization admins.
+                Accepts "all" or a specific user ID.
             limit (int): maximum number of results to return. When set to 0, no
                 maximum is applied.
 
@@ -320,4 +324,5 @@ class OrdersAPI:
                                      last_modified,
                                      hosting,
                                      destination_ref,
-                                     sort_by))
+                                     sort_by,
+                                     user_id))

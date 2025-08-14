@@ -145,6 +145,7 @@ The `list` command supports filtering on a variety of fields:
 * `--status`: Filter on the status of the subscription. Status options include `running`, `cancelled`, `preparing`, `pending`, `completed`, `suspended`, and `failed`. Multiple status args are allowed.
 * `--updated`: Filter on the subscription update time or an interval of updated times.
 * `--destination-ref`: Filter on subscriptions created with the provided destination reference.
+* `--user-id`: Filter by user ID. Only available to organization admins. Accepts "all" or a specific user ID.
 
 Datetime args (`--created`, `end-time`, `--start-time`, and `--updated`) can either be a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.
 * A date-time: `2018-02-12T23:20:50Z`
@@ -169,6 +170,16 @@ planet subscriptions list --created 2024-01-01T00:00:00Z/2025-01-01T00:00:00Z
 To list subscriptions with an end time after Jan 1, 2025:
 ```sh
 planet subscriptions list --end-time 2025-01-01T00:00:00Z/..
+```
+
+To list subscriptions for all users in your organization (organization admin only):
+```sh
+planet subscriptions list --user-id all
+```
+
+To list subscriptions for a specific user ID (organization admin only):
+```sh
+planet subscriptions list --user-id 12345
 ```
 
 To list subscriptions with a hosting location:

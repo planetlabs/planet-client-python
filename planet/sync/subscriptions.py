@@ -47,6 +47,7 @@ class SubscriptionsAPI:
                            sort_by: Optional[str] = None,
                            updated: Optional[str] = None,
                            destination_ref: Optional[str] = None,
+                           user_id: Optional[Union[str, int]] = None,
                            page_size: int = 500) -> Iterator[dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
@@ -82,10 +83,11 @@ class SubscriptionsAPI:
             updated (str): filter by updated time or interval.
             destination_ref (str): filter by subscriptions created with the
                 provided destination reference.
+            user_id (str or int): filter by user ID. Only available to organization admins.
+                Accepts "all" or a specific user ID.
             limit (int): limit the number of subscriptions in the
                 results. When set to 0, no maximum is applied.
             page_size (int): number of subscriptions to return per page.
-            TODO: user_id
 
         Datetime args (created, end_time, start_time, updated) can either be a
         date-time or an interval, open or closed. Date and time expressions adhere
@@ -117,6 +119,7 @@ class SubscriptionsAPI:
                                             sort_by,
                                             updated,
                                             destination_ref,
+                                            user_id,
                                             page_size))
 
     def create_subscription(self, request: Dict) -> Dict:

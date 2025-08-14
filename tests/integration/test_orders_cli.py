@@ -122,6 +122,30 @@ def test_cli_orders_list_filtering_and_sorting(invoke, order_descriptions):
 
 
 @respx.mock
+@pytest.mark.parametrize("user_id", ["all", "123"])
+def test_cli_orders_list_user_id(invoke, order_descriptions, user_id):
+    """Test CLI user_id parameter for organization admins."""
+    list_url = TEST_ORDERS_URL + f'?source_type=all&user_id={user_id}'
+
+    order1, order2, _ = order_descriptions
+
+    page1_response = {
+        "_links": {
+            "_self": "string"
+        }, "orders": [order1, order2]
+    }
+    mock_resp = httpx.Response(HTTPStatus.OK, json=page1_response)
+    respx.get(list_url).return_value = mock_resp
+
+    # if the value of user_id doesn't get sent as a url parameter,
+    # the mock will fail and this test will fail
+    result = invoke(['list', '--user-id', user_id])
+    assert result.exit_code == 0
+    sequence = '\n'.join([json.dumps(o) for o in [order1, order2]])
+    assert result.output == sequence + '\n'
+
+
+@respx.mock
 @pytest.mark.parametrize("limit,limited_list_length", [(None, 100), (0, 102),
                                                        (1, 1)])
 def test_cli_orders_list_limit(invoke,

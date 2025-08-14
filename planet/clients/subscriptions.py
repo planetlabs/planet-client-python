@@ -1,7 +1,7 @@
 """Planet Subscriptions API Python client."""
 
 import logging
-from typing import Any, AsyncIterator, Dict, Optional, Sequence, TypeVar, List
+from typing import Any, AsyncIterator, Dict, Optional, Sequence, TypeVar, List, Union
 
 from typing_extensions import Literal
 
@@ -71,6 +71,7 @@ class SubscriptionsClient(_BaseClient):
                                  sort_by: Optional[str] = None,
                                  updated: Optional[str] = None,
                                  destination_ref: Optional[str] = None,
+                                 user_id: Optional[Union[str, int]] = None,
                                  page_size: int = 500) -> AsyncIterator[dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
@@ -108,6 +109,8 @@ class SubscriptionsClient(_BaseClient):
             updated (str): filter by updated time or interval.
             destination_ref (str): filter by subscriptions created with the
                 provided destination reference.
+            user_id (str or int): filter by user ID. Only available to organization admins.
+                Accepts "all" or a specific user ID.
             page_size (int): number of subscriptions to return per page.
 
         Datetime args (created, end_time, start_time, updated) can either be a
@@ -127,8 +130,6 @@ class SubscriptionsClient(_BaseClient):
             ClientError: on a client error.
         """
 
-        # TODO from old doc string, which breaks strict document checking:
-        #    Add Parameter user_id
         class _SubscriptionsPager(Paged):
             """Navigates pages of messages about subscriptions."""
             ITEMS_KEY = 'subscriptions'
@@ -156,6 +157,8 @@ class SubscriptionsClient(_BaseClient):
             params['updated'] = updated
         if destination_ref is not None:
             params['destination_ref'] = destination_ref
+        if user_id is not None:
+            params['user_id'] = user_id
 
         params['page_size'] = page_size
 

@@ -135,6 +135,8 @@ def orders(ctx, base_url):
 @click.option(
     '--destination-ref',
     help="Filter by orders created with the provided destination reference.")
+@click.option('--user-id',
+              help="Filter by user ID. Accepts 'all' or a specific user ID.")
 @limit
 @pretty
 async def list(ctx,
@@ -147,6 +149,7 @@ async def list(ctx,
                hosting,
                sort_by,
                destination_ref,
+               user_id,
                limit,
                pretty):
     """List orders
@@ -167,6 +170,7 @@ async def list(ctx,
                                       hosting=hosting,
                                       sort_by=sort_by,
                                       destination_ref=destination_ref,
+                                      user_id=user_id,
                                       limit=limit):
             echo_json(o, pretty)
 
