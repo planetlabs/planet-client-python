@@ -18,6 +18,7 @@ from .features import FeaturesClient
 from .mosaics import MosaicsClient
 from .orders import OrdersClient
 from .subscriptions import SubscriptionsClient
+from .tasking import TaskingClient
 
 __all__ = [
     'DataClient',
@@ -25,7 +26,8 @@ __all__ = [
     'FeaturesClient',
     'MosaicsClient',
     'OrdersClient',
-    'SubscriptionsClient'
+    'SubscriptionsClient',
+    'TaskingClient'
 ]
 
 # Organize client classes by their module name to allow lookup.
@@ -35,5 +37,6 @@ _client_directory = {
     'features': FeaturesClient,
     'mosaics': MosaicsClient,
     'orders': OrdersClient,
-    'subscriptions': SubscriptionsClient
+    'subscriptions': SubscriptionsClient,
+    'tasking': TaskingClient
 }
