@@ -4,6 +4,7 @@ from .features import FeaturesAPI
 from .data import DataAPI
 from .destinations import DestinationsAPI
 from .orders import OrdersAPI
+from .reports import ReportsAPI
 from .subscriptions import SubscriptionsAPI
 from planet.http import Session
 from planet.__version__ import __version__
@@ -22,6 +23,7 @@ class Planet:
     - `data`: for interacting with the Planet Data API.
     - `destinations`: Destinations API.
     - `orders`: Orders API.
+    - `reports`: Reports API.
     - `subscriptions`: Subscriptions API.
     - `features`: Features API
 
@@ -62,6 +64,7 @@ class Planet:
         self.destinations = DestinationsAPI(self._session,
                                             f"{planet_base}/destinations/v1")
         self.orders = OrdersAPI(self._session, f"{planet_base}/compute/ops")
+        self.reports = ReportsAPI(self._session, f"{planet_base}/reports/v1/")
         self.subscriptions = SubscriptionsAPI(
             self._session, f"{planet_base}/subscriptions/v1/")
         self.features = FeaturesAPI(self._session,
