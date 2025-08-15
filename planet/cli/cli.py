@@ -58,33 +58,11 @@ def main(ctx,
     ctx.ensure_object(dict)
     ctx.obj['QUIET'] = quiet
 
-    _configure_cli_auth_ctx(ctx,
-                            auth_profile,
-                            auth_client_id,
-                            auth_client_secret,
-                            auth_api_key)
-
-
-def _configure_cli_auth_ctx(ctx,
-                            auth_profile,
-                            auth_client_id,
-                            auth_client_secret,
-                            auth_api_key):
-    # planet-auth library Auth context type
-    # Embedded click commands imported from planet_auth_utils expect
-    # this in the 'AUTH' context field.
-    ctx.obj[
-        'AUTH'] = planet_auth_utils.PlanetAuthFactory.initialize_auth_client_context(
-            auth_profile_opt=auth_profile,
-            auth_client_id_opt=auth_client_id,
-            auth_client_secret_opt=auth_client_secret,
-            auth_api_key_opt=auth_api_key,
-            use_env=True,
-            use_configfile=True)
-
-    # planet SDK Auth context type
-    ctx.obj['PLSDK_AUTH'] = planet.Auth._from_plauth(
-        pl_authlib_context=ctx.obj['AUTH'])
+    auth.prime_cli_auth_ctx(ctx,
+                       auth_profile,
+                       auth_client_id,
+                       auth_client_secret,
+                       auth_api_key)
 
 
 def _configure_logging(verbosity):
