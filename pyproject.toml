@@ -17,7 +17,7 @@ dependencies = [
   "planet-auth>=2.1.0",
 ]
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 keywords = ["planet", "api", "sdk", "client"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
