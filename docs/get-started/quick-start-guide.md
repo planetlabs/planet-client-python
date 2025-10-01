@@ -11,7 +11,7 @@ Your feedback on this version of our client is appreciated. Please raise an issu
 
 ## Dependencies
 
-This package requires [Python 3.9 or greater](https://python.org/downloads/). A virtual environment is strongly recommended.
+This package requires [Python 3.10 or greater](https://python.org/downloads/). A virtual environment is strongly recommended.
 
 You will need Planet credentials to use this SDK. You can learn more about authentication options and where to find your credentials in our [authentication documentation](https://docs.planet.com/develop/authentication/).
 
