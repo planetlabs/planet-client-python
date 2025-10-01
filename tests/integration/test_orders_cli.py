@@ -263,7 +263,7 @@ def test_cli_orders_wait_default(invoke, order_description, oid):
     runner = CliRunner()
     result = invoke(['wait', '--delay', '0', oid], runner=runner)
     assert result.exit_code == 0
-    assert result.output.endswith('success\n')
+    assert 'state: success' in result.output
 
 
 @respx.mock
