@@ -7,7 +7,7 @@ def example_main():
     # specified file that was created with older versions of the SDK
     plsdk_auth = planet.Auth.from_file("legacy_api_key_file.json")
 
-    # Explicit login is not required for API key use. The above sufficient.
+    # Explicit login is not required for API key use. The above is sufficient.
     # plsdk_auth.user_login()
 
     # Create a Planet SDK object that uses the loaded auth session
