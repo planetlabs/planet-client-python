@@ -23,6 +23,9 @@ class TestPlanetSyncClient:
         """Test that Planet client initializes correctly with defaults."""
         pl = Planet()
 
+        assert pl.analytics is not None
+        assert pl.analytics._client._base_url == "https://api.planet.com/analytics/v1"
+
         assert pl.data is not None
         assert pl.data._client._base_url == "https://api.planet.com/data/v1"
 
@@ -38,6 +41,9 @@ class TestPlanetSyncClient:
     def test_planet_custom_base_url_initialization(self):
         """Test that Planet client accepts custom base URL."""
         pl = Planet(base_url="https://custom.planet.com")
+
+        assert pl.analytics is not None
+        assert pl.analytics._client._base_url == "https://custom.planet.com/analytics/v1"
 
         assert pl.data is not None
         assert pl.data._client._base_url == "https://custom.planet.com/data/v1"

@@ -1,5 +1,6 @@
 from typing import Optional
 
+from .analytics import AnalyticsAPI
 from .features import FeaturesAPI
 from .data import DataAPI
 from .destinations import DestinationsAPI
@@ -19,6 +20,7 @@ class Planet:
 
     Members:
 
+    - `analytics`: Analytics API.
     - `data`: for interacting with the Planet Data API.
     - `destinations`: Destinations API.
     - `orders`: Orders API.
@@ -58,6 +60,7 @@ class Planet:
         planet_base = base_url or PLANET_BASE_URL
 
         # Create API instances with service-specific URL paths
+        self.analytics = AnalyticsAPI(self._session, f"{planet_base}/analytics/v1")
         self.data = DataAPI(self._session, f"{planet_base}/data/v1/")
         self.destinations = DestinationsAPI(self._session,
                                             f"{planet_base}/destinations/v1")
