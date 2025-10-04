@@ -35,6 +35,9 @@ class TestPlanetSyncClient:
         assert pl.features is not None
         assert pl.features._client._base_url == "https://api.planet.com/features/v1/ogc/my"
 
+        assert pl.tasking is not None
+        assert pl.tasking._client._base_url == "https://api.planet.com/tasking/v2"
+
     def test_planet_custom_base_url_initialization(self):
         """Test that Planet client accepts custom base URL."""
         pl = Planet(base_url="https://custom.planet.com")
@@ -47,6 +50,9 @@ class TestPlanetSyncClient:
 
         assert pl.subscriptions is not None
         assert pl.subscriptions._client._base_url == "https://custom.planet.com/subscriptions/v1"
+
+        assert pl.tasking is not None
+        assert pl.tasking._client._base_url == "https://custom.planet.com/tasking/v2"
 
         assert pl.features is not None
         assert pl.features._client._base_url == "https://custom.planet.com/features/v1/ogc/my"
