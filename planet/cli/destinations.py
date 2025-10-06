@@ -11,7 +11,7 @@ from .session import CliSession
 
 @asynccontextmanager
 async def destinations_client(ctx):
-    async with CliSession() as sess:
+    async with CliSession(ctx) as sess:
         cl = DestinationsClient(sess, base_url=ctx.obj['BASE_URL'])
         yield cl
 

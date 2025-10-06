@@ -14,7 +14,7 @@ from .session import CliSession
 
 @asynccontextmanager
 async def features_client(ctx):
-    async with CliSession() as sess:
+    async with CliSession(ctx) as sess:
         cl = FeaturesClient(sess, base_url=ctx.obj['BASE_URL'])
         yield cl
 
