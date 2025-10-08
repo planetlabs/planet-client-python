@@ -10,10 +10,10 @@ def example_main():
     # is false, the state will only be persistent in memory and the
     # user will need to login each time the application is run.
     plsdk_auth = planet.Auth.from_profile("planet-user",
-                                          save_state_to_storage=False)
+                                          save_state_to_storage=True)
 
-    if not plsdk_auth.is_initialized():
-        plsdk_auth.user_login(allow_open_browser=True, allow_tty_prompt=True)
+    plsdk_auth.ensure_initialized(allow_open_browser=True,
+                                  allow_tty_prompt=True)
 
     # Create a Planet SDK object that uses the loaded auth session.
     sess = planet.Session(plsdk_auth)

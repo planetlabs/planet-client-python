@@ -15,6 +15,10 @@ def example_main():
         )
         sys.exit(99)
 
+    # Alternatively, an application can call this, which will attempt to
+    # initialize the session if it is not already initialized.
+    # plsdk_auth.ensure_initialized(allow_open_browser=True, allow_tty_prompt=True)
+
     # Create a Planet SDK object that uses the loaded auth session.
     sess = planet.Session(plsdk_auth)
     pl = planet.Planet(sess)
