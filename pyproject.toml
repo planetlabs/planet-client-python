@@ -15,7 +15,7 @@ dependencies = [
   "tqdm>=4.56",
   "typing-extensions",
 #  "planet-auth>=2.3.0",
-  "planet-auth @ https://github.com/planetlabs/planet-auth-python/archive/refs/heads/carl/CG-1904--improve-expired-session-ux.zip",
+  "planet-auth @ git+https://github.com/planetlabs/planet-auth-python.git@73176aa20c55ada7ec8cf9928b720726355a5d3d#egg=planet-auth",
 ]
 readme = "README.md"
 requires-python = ">=3.10"
