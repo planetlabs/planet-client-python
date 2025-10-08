@@ -513,6 +513,7 @@ class Auth(abc.ABC, httpx.Auth):
                 input from the terminal.
         """
 
+
 class APIKeyAuthException(PlanetError):
     """exceptions thrown by APIKeyAuth"""
     pass
@@ -556,5 +557,6 @@ class _PLAuthLibAuth(Auth):
             allow_open_browser=allow_open_browser,
             allow_tty_prompt=allow_tty_prompt,
         )
+
 
 AuthType = Auth
