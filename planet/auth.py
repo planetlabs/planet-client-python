@@ -465,7 +465,9 @@ class Auth(abc.ABC, httpx.Auth):
 
     @abc.abstractmethod
     def ensure_initialized(
-        self, allow_open_browser: typing.Optional[bool] = False, allow_tty_prompt: typing.Optional[bool] = False
+        self,
+        allow_open_browser: typing.Optional[bool] = False,
+        allow_tty_prompt: typing.Optional[bool] = False,
     ) -> None:
         """
         Do everything necessary to ensure the auth context is ready for use,
@@ -551,7 +553,9 @@ class _PLAuthLibAuth(Auth):
         return self._plauth.request_authenticator_is_ready()
 
     def ensure_initialized(
-        self, allow_open_browser: typing.Optional[bool] = False, allow_tty_prompt: typing.Optional[bool] = False
+        self,
+        allow_open_browser: typing.Optional[bool] = False,
+        allow_tty_prompt: typing.Optional[bool] = False,
     ) -> None:
         return self._plauth.ensure_request_authenticator_is_ready(
             allow_open_browser=allow_open_browser,

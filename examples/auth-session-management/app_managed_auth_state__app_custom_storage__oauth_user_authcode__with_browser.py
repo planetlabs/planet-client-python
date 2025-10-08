@@ -95,7 +95,8 @@ def example_main():
     # time, an app with persistent storage can skip user prompts when they
     # are not needed.
     # This helper will prompt the user only when it is necessary.
-    plsdk_auth.ensure_initialized(allow_open_browser=True, allow_tty_prompt=True)
+    plsdk_auth.ensure_initialized(allow_open_browser=True,
+                                  allow_tty_prompt=True)
 
     # Create a Planet SDK object that uses the loaded auth session.
     sess = planet.Session(plsdk_auth)

@@ -12,7 +12,8 @@ def example_main():
     plsdk_auth = planet.Auth.from_profile("planet-user",
                                           save_state_to_storage=True)
 
-    plsdk_auth.ensure_initialized(allow_open_browser=True, allow_tty_prompt=True)
+    plsdk_auth.ensure_initialized(allow_open_browser=True,
+                                  allow_tty_prompt=True)
 
     # Create a Planet SDK object that uses the loaded auth session.
     sess = planet.Session(plsdk_auth)
