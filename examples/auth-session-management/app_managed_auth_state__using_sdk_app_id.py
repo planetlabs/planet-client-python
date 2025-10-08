@@ -10,7 +10,7 @@ def example_main():
     # is false, the state will only be persistent in memory and the
     # user will need to login each time the application is run.
     plsdk_auth = planet.Auth.from_profile("planet-user",
-                                          save_state_to_storage=False)
+                                          save_state_to_storage=True)
 
     plsdk_auth.ensure_initialized(allow_open_browser=True, allow_tty_prompt=True)
 
