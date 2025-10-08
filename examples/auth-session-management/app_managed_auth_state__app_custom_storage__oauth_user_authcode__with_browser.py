@@ -91,10 +91,11 @@ def example_main():
         storage_provider=DemoStorageProvider(),
     )
 
-    # In contrast to an in-memory only application that must initialize a login every
-    # time, an app with persistent storage can skip this when it is not needed.
-    if not plsdk_auth.is_initialized():
-        plsdk_auth.user_login(allow_open_browser=True)
+    # In contrast to in-memory applications that must initialize a login every
+    # time, an app with persistent storage can skip user prompts when they
+    # are not needed.
+    # This helper will prompt the user only when it is necessary.
+    plsdk_auth.ensure_initialized(allow_open_browser=True, allow_tty_prompt=True)
 
     # Create a Planet SDK object that uses the loaded auth session.
     sess = planet.Session(plsdk_auth)

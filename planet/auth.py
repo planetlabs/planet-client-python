@@ -455,7 +455,12 @@ class Auth(abc.ABC, httpx.Auth):
         user based sessions, this means that a login has been performed
         or saved login session data has been located.  For M2M and API Key
         sessions, this should be true if keys or secrets have been
-        properly configured.
+        properly configured.  The network will not be probed, and the user
+        will not be prompted by this method.
+
+        Expired sessions or invalid credentials will not be detected.
+        See `ensure_initialized()` for a method that will check the validity
+        of sessions.
         """
 
     @abc.abstractmethod
@@ -468,7 +473,7 @@ class Auth(abc.ABC, httpx.Auth):
         unnecessary network requests or prompts for user interaction.
 
         This can be more complex than it sounds given the variations in
-        possible session state. Client may be initialized with active
+        possible session state. Clients may be initialized with active
         sessions, initialized with stale but still valid sessions,
         initialized with invalid or expired sessions, or completely
         uninitialized. The process taken to ensure client readiness with
@@ -488,7 +493,8 @@ class Auth(abc.ABC, httpx.Auth):
            the user will be prompted to perform a fresh login, requiring
            user interaction.
         4. If the client has never been logged in and is user interactive
-           client (verses an M2M client), a user interactive login will be initiated.
+           client (verses an M2M client), a user interactive login will be
+           initiated.
 
         There still may be conditions where we believe we are
         ready, but requests will still ultimately fail.  Saved secrets for M2M
@@ -498,11 +504,11 @@ class Auth(abc.ABC, httpx.Auth):
         whether a local web browser may be opened and/or whether the TTY
         may be used to prompt the user.
 
-        If the auth context cannot be made ready, an exception will be thrown.
+        If the auth context cannot be made ready, an exception will be raised.
 
         Parameters:
             allow_open_browser: specify whether login is permitted to open
-                a browser window.
+                a local browser window.
             allow_tty_prompt: specify whether login is permitted to request
                 input from the terminal.
         """
