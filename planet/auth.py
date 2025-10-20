@@ -494,17 +494,19 @@ class Auth(abc.ABC, httpx.Auth):
            This should not require user interaction.  If refresh fails,
            the user will be prompted to perform a fresh login, requiring
            user interaction.
-        4. If the client has never been logged in and is user interactive
+        4. If the client has never been logged in and is a user interactive
            client (verses an M2M client), a user interactive login will be
            initiated.
 
         There still may be conditions where we believe we are
         ready, but requests will still ultimately fail.  Saved secrets for M2M
-        clients could be wrong, or the user could be denied by the API.
+        clients could be wrong, or the user could be denied by API access
+        rules that are independent of session authentication.
 
         When a user interactive login is required, the client must specify
         whether a local web browser may be opened and/or whether the TTY
-        may be used to prompt the user.
+        may be used to prompt the user.  What is appropriate will depend
+        on the nature of the application using the Planet SDK.
 
         If the auth context cannot be made ready, an exception will be raised.
 
