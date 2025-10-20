@@ -21,7 +21,6 @@ import pathlib
 import typing
 import warnings
 import httpx
-from typing import List
 
 from .auth_builtins import _ProductionEnv, _OIDC_AUTH_CLIENT_CONFIG__USER_SKEL, _OIDC_AUTH_CLIENT_CONFIG__M2M_SKEL
 import planet_auth
@@ -132,7 +131,7 @@ class Auth(abc.ABC, httpx.Auth):
     def from_oauth_user_auth_code(
         client_id: str,
         callback_url: str,
-        requested_scopes: typing.Optional[List[str]] = None,
+        requested_scopes: typing.Optional[typing.List[str]] = None,
         save_state_to_storage: bool = True,
         profile_name: typing.Optional[str] = None,
         storage_provider: typing.Optional[
@@ -193,7 +192,7 @@ class Auth(abc.ABC, httpx.Auth):
     @staticmethod
     def from_oauth_user_device_code(
         client_id: str,
-        requested_scopes: typing.Optional[List[str]] = None,
+        requested_scopes: typing.Optional[typing.List[str]] = None,
         save_state_to_storage: bool = True,
         profile_name: typing.Optional[str] = None,
         storage_provider: typing.Optional[
@@ -255,7 +254,7 @@ class Auth(abc.ABC, httpx.Auth):
     def from_oauth_m2m(
         client_id: str,
         client_secret: str,
-        requested_scopes: typing.Optional[List[str]] = None,
+        requested_scopes: typing.Optional[typing.List[str]] = None,
         save_state_to_storage: bool = True,
         profile_name: typing.Optional[str] = None,
         storage_provider: typing.Optional[
@@ -456,7 +455,66 @@ class Auth(abc.ABC, httpx.Auth):
         user based sessions, this means that a login has been performed
         or saved login session data has been located.  For M2M and API Key
         sessions, this should be true if keys or secrets have been
-        properly configured.
+        properly configured.  The network will not be probed, and the user
+        will not be prompted by this method.
+
+        Expired sessions or invalid credentials will not be detected.
+        See `ensure_initialized()` for a method that will check the validity
+        of sessions.
+        """
+
+    @abc.abstractmethod
+    def ensure_initialized(
+        self,
+        allow_open_browser: typing.Optional[bool] = False,
+        allow_tty_prompt: typing.Optional[bool] = False,
+    ) -> None:
+        """
+        Do everything necessary to ensure the auth context is ready for use,
+        while still biasing towards just-in-time operations and not making
+        unnecessary network requests or prompts for user interaction.
+
+        This can be more complex than it sounds given the variations in
+        possible session state. Clients may be initialized with active
+        sessions, initialized with stale but still valid sessions,
+        initialized with invalid or expired sessions, or completely
+        uninitialized. The process taken to ensure client readiness with
+        as little user disruption as possible is as follows:
+
+        1. If the client has been logged in and has a non-expired
+           session, the client will be considered ready without prompting
+           the user or probing the network. This will not require user
+           interaction.
+        2. If the client has not been logged in and is an M2M client,
+           the client will be considered ready without prompting
+           the user or probing the network. This will not require
+           user interaction.  Login will be delayed until it is required.
+        3. If the client has been logged in and has an expired access token,
+           the network will be probed to attempt a refresh of the session.
+           This should not require user interaction.  If refresh fails,
+           the user will be prompted to perform a fresh login, requiring
+           user interaction.
+        4. If the client has never been logged in and is a user interactive
+           client (verses an M2M client), a user interactive login will be
+           initiated.
+
+        There still may be conditions where we believe we are
+        ready, but requests will still ultimately fail.  Saved secrets for M2M
+        clients could be wrong, or the user could be denied by API access
+        rules that are independent of session authentication.
+
+        When a user interactive login is required, the client must specify
+        whether a local web browser may be opened and/or whether the TTY
+        may be used to prompt the user.  What is appropriate will depend
+        on the nature of the application using the Planet SDK.
+
+        If the auth context cannot be made ready, an exception will be raised.
+
+        Parameters:
+            allow_open_browser: specify whether login is permitted to open
+                a local browser window.
+            allow_tty_prompt: specify whether login is permitted to request
+                input from the terminal.
         """
 
 
@@ -495,6 +553,16 @@ class _PLAuthLibAuth(Auth):
 
     def is_initialized(self) -> bool:
         return self._plauth.request_authenticator_is_ready()
+
+    def ensure_initialized(
+        self,
+        allow_open_browser: typing.Optional[bool] = False,
+        allow_tty_prompt: typing.Optional[bool] = False,
+    ) -> None:
+        return self._plauth.ensure_request_authenticator_is_ready(
+            allow_open_browser=allow_open_browser,
+            allow_tty_prompt=allow_tty_prompt,
+        )
 
 
 AuthType = Auth
