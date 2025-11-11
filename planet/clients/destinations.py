@@ -26,6 +26,8 @@ LOGGER = logging.getLogger()
 
 T = TypeVar("T")
 
+DEFAULT_DESTINATION_REF = "pl:destinations/default"
+
 
 class DestinationsClient(_BaseClient):
     """Asynchronous Destinations API client.
@@ -167,6 +169,80 @@ class DestinationsClient(_BaseClient):
             response = await self._session.request(method='POST',
                                                    url=self._base_url,
                                                    json=request)
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
+        else:
+            dest = response.json()
+            return dest
+
+    async def set_default_destination(self, destination_id: str) -> None:
+        """
+        Set an existing destination as the default destination.  Default destinations are globally available
+        to all members of an organization.  An organization can have zero or one default destination at any time.
+        Ability to set a default destination is restricted to organization administrators and destination owners.
+
+        Args:
+            destination_id (str): The ID of the destination to set as default.
+
+        Returns:
+            dict: A dictionary containing the default destination details.
+
+        Raises:
+            APIError: If the API returns an error response.
+            ClientError: If there is an issue with the client request.
+        """
+        url = f'{self._base_url}/default'
+        request = {
+            "destination_id": destination_id
+        }
+        try:
+            response = await self._session.request(method='PUT',
+                                        url=url,
+                                        json=request)
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
+        else:
+            return response.json()
+
+    async def unset_default_destination(self) -> None:
+        """
+        Unset the current default destination.  Ability to unset a default destination is restricted to
+        organization administrators and destination owners.  Returns None (HTTP 204, No Content) on success.
+
+        Returns:
+            None
+
+        Raises:
+            APIError: If the API returns an error response.
+            ClientError: If there is an issue with the client request.
+        """
+        url = f'{self._base_url}/default'
+        try:
+            await self._session.request(method='DELETE', url=url)
+        except APIError:
+            raise
+        except ClientError:  # pragma: no cover
+            raise
+
+    async def get_default_destination(self) -> Dict:
+        """
+        Get the current default destination.  The default destination is globally available to all members of an
+        organization.
+
+        Returns:
+            dict: A dictionary containing the default destination details.
+
+        Raises:
+            APIError: If the API returns an error response.
+            ClientError: If there is an issue with the client request.
+        """
+        url = f'{self._base_url}/default'
+        try:
+            response = await self._session.request(method='GET', url=url)
         except APIError:
             raise
         except ClientError:  # pragma: no cover

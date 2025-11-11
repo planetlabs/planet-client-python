@@ -392,6 +392,35 @@ def s3_compatible(endpoint: str,
     return {'s3_compatible': parameters}
 
 
+def destination(destination_ref: str, path_prefix: Optional[str] = None) -> dict:
+    """Destinations API configuration.
+    Parameters:
+        destination_ref: Reference to an existing Destinations API
+            destination.
+        path_prefix: Path prefix for deliveries.
+    """
+    cloud_details: Dict[str, Any] = {'ref': destination_ref}
+
+    if path_prefix:
+        cloud_details['path_prefix'] = path_prefix
+
+    return {'destination': cloud_details}
+
+
+def default_destination(path_prefix: Optional[str] = None) -> dict:
+    """Default Destinations API configuration.
+
+    Parameters:
+        path_prefix: Path prefix for deliveries.
+    """
+    parameters: Dict[str, Any] = {'ref': 'pl:destinations/default'}
+
+    if path_prefix:
+        parameters['path_prefix'] = path_prefix
+
+    return {'destination': parameters}
+
+
 def _tool(name: str, parameters: dict) -> dict:
     """Create the API spec representation of a tool.
 

@@ -19,6 +19,7 @@ from typing import Any, Dict, Optional, List, Mapping, Sequence, Union
 from typing_extensions import Literal
 
 from . import geojson, specs
+from .clients.destinations import DEFAULT_DESTINATION_REF
 from .exceptions import ClientError
 
 NOTIFICATIONS_TOPICS = ('delivery.success',
@@ -526,6 +527,34 @@ def s3_compatible(endpoint: str,
     if path_prefix:
         parameters['path_prefix'] = path_prefix
     return _delivery('s3_compatible', parameters)
+
+
+def destination(destination_ref: str, path_prefix: Optional[str] = None) -> dict:
+    """Specify a Destinations API destination by its ref.
+
+    Parameters:
+        destination_id: The ID of the destination to deliver to.
+    """
+    parameters: Dict[str, Any] = {"ref": destination_ref}
+
+    if path_prefix:
+        parameters['path_prefix'] = path_prefix
+
+    return _delivery('destination', parameters)
+
+
+def default_destination(path_prefix: Optional[str] = None) -> dict:
+    """Specify the organization's default Destinations API destination.
+
+    Parameters:
+        path_prefix: Path prefix for deliveries.
+    """
+    parameters: Dict[str, Any] = {"ref": DEFAULT_DESTINATION_REF}
+
+    if path_prefix:
+        parameters['path_prefix'] = path_prefix
+
+    return _delivery('destination', parameters)
 
 
 def notifications(url: str, topics: List[str]) -> dict:
