@@ -180,6 +180,9 @@ def test_destinations_cli_list(invoke):
     result = invoke(['list', '--can-write', 'true'])
     assert result.exit_code == 0
 
+    result = invoke(['list', '--is-default', 'true'])
+    assert result.exit_code == 0
+
     result = invoke(['list', '--archived', 'false'])
     assert result.exit_code == 0
 
@@ -187,6 +190,9 @@ def test_destinations_cli_list(invoke):
     assert result.exit_code == 0
 
     result = invoke(['list', '--can-write', 'false'])
+    assert result.exit_code == 0
+
+    result = invoke(['list', '--is-default', 'false'])
     assert result.exit_code == 0
 
     result = invoke(['list', '--archived', 'false', '--is-owner', 'true'])
@@ -251,3 +257,66 @@ def test_destinations_cli_update(invoke):
         '--use-path-style'
     ])
     assert result.exit_code == 0
+
+
+@respx.mock
+def test_destinations_cli_default_set(invoke):
+    url = f"{TEST_DESTINATIONS_URL}/default"
+    respx.put(url).return_value = httpx.Response(HTTPStatus.OK, json={})
+
+    result = invoke(['default', 'set', 'fake-dest-id'])
+    assert result.exit_code == 0
+
+
+@respx.mock
+def test_destinations_cli_default_set_bad_request(invoke):
+    url = f"{TEST_DESTINATIONS_URL}/default"
+    respx.put(url).return_value = httpx.Response(
+        HTTPStatus.BAD_REQUEST,
+        json={"code": 400, "message": "Bad Request: Invalid destination ID"})
+
+    result = invoke(['default', 'set', 'invalid-dest-id'])
+    assert result.exit_code != 0
+    assert "Failed to set default destination" in result.output
+
+
+@respx.mock
+def test_destinations_cli_default_get(invoke):
+    url = f"{TEST_DESTINATIONS_URL}/default"
+    respx.get(url).return_value = httpx.Response(HTTPStatus.OK, json={})
+
+    result = invoke(['default', 'get'])
+    assert result.exit_code == 0
+
+
+@respx.mock
+def test_destinations_cli_default_get_not_found(invoke):
+    url = f"{TEST_DESTINATIONS_URL}/default"
+    respx.get(url).return_value = httpx.Response(
+        HTTPStatus.NOT_FOUND,
+        json={"code": 404, "message": "No default destination configured"})
+
+    result = invoke(['default', 'get'])
+    assert result.exit_code != 0
+    assert "Failed to get default destination" in result.output
+
+
+@respx.mock
+def test_destinations_cli_default_unset(invoke):
+    url = f"{TEST_DESTINATIONS_URL}/default"
+    respx.delete(url).return_value = httpx.Response(HTTPStatus.NO_CONTENT)
+
+    result = invoke(['default', 'unset'])
+    assert result.exit_code == 0
+
+
+@respx.mock
+def test_destinations_cli_default_unset_unauthorized(invoke):
+    url = f"{TEST_DESTINATIONS_URL}/default"
+    respx.delete(url).return_value = httpx.Response(
+        HTTPStatus.UNAUTHORIZED,
+        json={"code": 401, "message": "Unauthorized: Insufficient permissions"})
+
+    result = invoke(['default', 'unset'])
+    assert result.exit_code != 0
+    assert "Failed to unset default destination" in result.output

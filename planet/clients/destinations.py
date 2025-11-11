@@ -60,7 +60,8 @@ class DestinationsClient(_BaseClient):
     async def list_destinations(self,
                                 archived: Optional[bool] = None,
                                 is_owner: Optional[bool] = None,
-                                can_write: Optional[bool] = None) -> Dict:
+                                can_write: Optional[bool] = None,
+                                is_default: Optional[bool] = None) -> Dict:
         """
         List all destinations. By default, all non-archived destinations in the requesting user's org are returned.
 
@@ -68,6 +69,7 @@ class DestinationsClient(_BaseClient):
             archived (bool): If True, include archived destinations.
             is_owner (bool): If True, include only destinations owned by the requesting user.
             can_write (bool): If True, include only destinations the requesting user can modify.
+            is_default (bool): If True, include only the default destination.
 
         Returns:
             dict: A dictionary containing the list of destinations inside the 'destinations' key.
@@ -83,6 +85,8 @@ class DestinationsClient(_BaseClient):
             params["is_owner"] = is_owner
         if can_write is not None:
             params["can_write"] = can_write
+        if is_default is not None:
+            params["is_default"] = is_default
 
         try:
             response = await self._session.request(method='GET',

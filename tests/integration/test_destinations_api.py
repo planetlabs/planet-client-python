@@ -179,3 +179,83 @@ async def test_get_destination_not_found():
         await cl_async.get_destination(id)
     with pytest.raises(Exception):
         cl_sync.get_destination(id)
+
+
+@respx.mock
+async def test_set_default_destination():
+    id = DEST_1["id"]
+    url = f"{TEST_URL}/default"
+    mock_response(url, DEST_1, method="put")
+
+    def assertf(resp):
+        assert resp == DEST_1
+
+    assertf(await cl_async.set_default_destination(id))
+    assertf(cl_sync.set_default_destination(id))
+
+
+@respx.mock
+async def test_set_default_destination_bad_request():
+    id = "invalid_dest_id"
+    url = f"{TEST_URL}/default"
+    mock_response(url, {
+        "code": 400, "message": "Bad Request: Invalid destination ID"
+    },
+                  method="put",
+                  status_code=HTTPStatus.BAD_REQUEST)
+
+    with pytest.raises(Exception):
+        await cl_async.set_default_destination(id)
+    with pytest.raises(Exception):
+        cl_sync.set_default_destination(id)
+
+
+@respx.mock
+async def test_get_default_destination():
+    url = f"{TEST_URL}/default"
+    mock_response(url, DEST_1)
+
+    def assertf(resp):
+        assert resp == DEST_1
+
+    assertf(await cl_async.get_default_destination())
+    assertf(cl_sync.get_default_destination())
+
+
+@respx.mock
+async def test_get_default_destination_not_found():
+    url = f"{TEST_URL}/default"
+    mock_response(url, {
+        "code": 404, "message": "No default destination configured"
+    },
+                  status_code=HTTPStatus.NOT_FOUND)
+
+    with pytest.raises(Exception):
+        await cl_async.get_default_destination()
+    with pytest.raises(Exception):
+        cl_sync.get_default_destination()
+
+
+@respx.mock
+async def test_unset_default_destination():
+    url = f"{TEST_URL}/default"
+    mock_response(url, None, method="delete", status_code=HTTPStatus.NO_CONTENT)
+
+    # unset_default_destination returns None
+    assert await cl_async.unset_default_destination() is None
+    assert cl_sync.unset_default_destination() is None
+
+
+@respx.mock
+async def test_unset_default_destination_unauthorized():
+    url = f"{TEST_URL}/default"
+    mock_response(url, {
+        "code": 401, "message": "Unauthorized: Insufficient permissions"
+    },
+                  method="delete",
+                  status_code=HTTPStatus.UNAUTHORIZED)
+
+    with pytest.raises(Exception):
+        await cl_async.unset_default_destination()
+    with pytest.raises(Exception):
+        cl_sync.unset_default_destination()
