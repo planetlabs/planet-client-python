@@ -18,6 +18,7 @@ import logging
 from typing import Any, Dict, List, Mapping, Optional, Union
 
 from . import geojson, specs
+from .clients.destinations import DEFAULT_DESTINATION_REF
 from .exceptions import ClientError
 
 LOGGER = logging.getLogger(__name__)
@@ -414,7 +415,7 @@ def default_destination(path_prefix: Optional[str] = None) -> dict:
     Parameters:
         path_prefix: Path prefix for deliveries.
     """
-    parameters: Dict[str, Any] = {'ref': 'pl:destinations/default'}
+    parameters: Dict[str, Any] = {'ref': DEFAULT_DESTINATION_REF}
 
     if path_prefix:
         parameters['path_prefix'] = path_prefix
