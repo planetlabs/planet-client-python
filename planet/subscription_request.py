@@ -534,7 +534,7 @@ def destination(destination_ref: str,
     """Specify a Destinations API destination by its ref.
 
     Parameters:
-        destination_id: The ID of the destination to deliver to.
+        destination_ref: The ID of the destination to deliver to.
     """
     parameters: Dict[str, Any] = {"ref": destination_ref}
 
