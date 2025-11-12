@@ -36,7 +36,12 @@ async def _patch_destination(ctx, destination_id, data, pretty):
             raise ClickException(f"Failed to patch destination: {e}")
 
 
-async def _list_destinations(ctx, archived, is_owner, can_write, is_default, pretty):
+async def _list_destinations(ctx,
+                             archived,
+                             is_owner,
+                             can_write,
+                             is_default,
+                             pretty):
     async with destinations_client(ctx) as cl:
         try:
             response = await cl.list_destinations(archived,
@@ -110,13 +115,17 @@ async def _get_default_destination(ctx, pretty):
     default=None,
     help="""Set to true to include only destinations the user can modify,
     false to exclude them.""")
-@click.option(
-    '--is-default',
-    type=bool,
-    default=None,
-    help="""Set to true to include only the default destination,
+@click.option('--is-default',
+              type=bool,
+              default=None,
+              help="""Set to true to include only the default destination,
     false to exclude it.""")
-async def list_destinations(ctx, archived, is_owner, can_write, is_default, pretty):
+async def list_destinations(ctx,
+                            archived,
+                            is_owner,
+                            can_write,
+                            is_default,
+                            pretty):
     """
     List destinations with optional filters
 
@@ -127,7 +136,12 @@ async def list_destinations(ctx, archived, is_owner, can_write, is_default, pret
 
         planet destinations list --archived false --is-owner true --can-write true
     """
-    await _list_destinations(ctx, archived, is_owner, can_write, is_default, pretty)
+    await _list_destinations(ctx,
+                             archived,
+                             is_owner,
+                             can_write,
+                             is_default,
+                             pretty)
 
 
 @command(destinations, name="get")

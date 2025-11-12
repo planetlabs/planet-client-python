@@ -474,11 +474,7 @@ def test_fallback_bundle_invalid(bundle, fallback_bundle):
 def test_destination():
     dest_config = order_request.destination('my-dest-ref')
 
-    expected = {
-        'destination': {
-            'ref': 'my-dest-ref'
-        }
-    }
+    expected = {'destination': {'ref': 'my-dest-ref'}}
     assert dest_config == expected
 
 
@@ -488,8 +484,7 @@ def test_destination_path_prefix():
 
     expected = {
         'destination': {
-            'ref': 'my-dest-ref',
-            'path_prefix': 'my/prefix'
+            'ref': 'my-dest-ref', 'path_prefix': 'my/prefix'
         }
     }
     assert dest_config == expected
@@ -498,11 +493,7 @@ def test_destination_path_prefix():
 def test_default_destination():
     dest_config = order_request.default_destination()
 
-    expected = {
-        'destination': {
-            'ref': 'pl:destinations/default'
-        }
-    }
+    expected = {'destination': {'ref': 'pl:destinations/default'}}
     assert dest_config == expected
 
 
@@ -511,8 +502,7 @@ def test_default_destination_path_prefix():
 
     expected = {
         'destination': {
-            'ref': 'pl:destinations/default',
-            'path_prefix': 'my/prefix'
+            'ref': 'pl:destinations/default', 'path_prefix': 'my/prefix'
         }
     }
     assert dest_config == expected

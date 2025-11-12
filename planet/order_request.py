@@ -392,7 +392,8 @@ def s3_compatible(endpoint: str,
     return {'s3_compatible': parameters}
 
 
-def destination(destination_ref: str, path_prefix: Optional[str] = None) -> dict:
+def destination(destination_ref: str,
+                path_prefix: Optional[str] = None) -> dict:
     """Destinations API configuration.
     Parameters:
         destination_ref: Reference to an existing Destinations API

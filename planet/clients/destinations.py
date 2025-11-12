@@ -198,13 +198,11 @@ class DestinationsClient(_BaseClient):
             ClientError: If there is an issue with the client request.
         """
         url = f'{self._base_url}/default'
-        request = {
-            "destination_id": destination_id
-        }
+        request = {"destination_id": destination_id}
         try:
             response = await self._session.request(method='PUT',
-                                        url=url,
-                                        json=request)
+                                                   url=url,
+                                                   json=request)
         except APIError:
             raise
         except ClientError:  # pragma: no cover

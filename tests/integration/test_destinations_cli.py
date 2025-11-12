@@ -273,7 +273,9 @@ def test_destinations_cli_default_set_bad_request(invoke):
     url = f"{TEST_DESTINATIONS_URL}/default"
     respx.put(url).return_value = httpx.Response(
         HTTPStatus.BAD_REQUEST,
-        json={"code": 400, "message": "Bad Request: Invalid destination ID"})
+        json={
+            "code": 400, "message": "Bad Request: Invalid destination ID"
+        })
 
     result = invoke(['default', 'set', 'invalid-dest-id'])
     assert result.exit_code != 0
@@ -294,7 +296,9 @@ def test_destinations_cli_default_get_not_found(invoke):
     url = f"{TEST_DESTINATIONS_URL}/default"
     respx.get(url).return_value = httpx.Response(
         HTTPStatus.NOT_FOUND,
-        json={"code": 404, "message": "No default destination configured"})
+        json={
+            "code": 404, "message": "No default destination configured"
+        })
 
     result = invoke(['default', 'get'])
     assert result.exit_code != 0
@@ -315,7 +319,9 @@ def test_destinations_cli_default_unset_unauthorized(invoke):
     url = f"{TEST_DESTINATIONS_URL}/default"
     respx.delete(url).return_value = httpx.Response(
         HTTPStatus.UNAUTHORIZED,
-        json={"code": 401, "message": "Unauthorized: Insufficient permissions"})
+        json={
+            "code": 401, "message": "Unauthorized: Insufficient permissions"
+        })
 
     result = invoke(['default', 'unset'])
     assert result.exit_code != 0

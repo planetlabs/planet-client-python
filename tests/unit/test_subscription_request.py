@@ -639,23 +639,17 @@ def test_cloud_filter_tool_success():
 def test_destination_success():
     res = subscription_request.destination(destination_ref='my-dest-ref')
 
-    assert res == {
-        "type": "destination",
-        "parameters": {
-            "ref": "my-dest-ref"
-        }
-    }
+    assert res == {"type": "destination", "parameters": {"ref": "my-dest-ref"}}
 
 
 def test_destination_path_prefix_success():
     res = subscription_request.destination(destination_ref='my-dest-ref',
-                                          path_prefix='my/prefix')
+                                           path_prefix='my/prefix')
 
     assert res == {
         "type": "destination",
         "parameters": {
-            "ref": "my-dest-ref",
-            "path_prefix": "my/prefix"
+            "ref": "my-dest-ref", "path_prefix": "my/prefix"
         }
     }
 
@@ -677,7 +671,6 @@ def test_default_destination_path_prefix_success():
     assert res == {
         "type": "destination",
         "parameters": {
-            "ref": "pl:destinations/default",
-            "path_prefix": "my/prefix"
+            "ref": "pl:destinations/default", "path_prefix": "my/prefix"
         }
     }

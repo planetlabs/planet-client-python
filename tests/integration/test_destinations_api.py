@@ -198,11 +198,12 @@ async def test_set_default_destination():
 async def test_set_default_destination_bad_request():
     id = "invalid_dest_id"
     url = f"{TEST_URL}/default"
-    mock_response(url, {
-        "code": 400, "message": "Bad Request: Invalid destination ID"
-    },
-                  method="put",
-                  status_code=HTTPStatus.BAD_REQUEST)
+    mock_response(
+        url, {
+            "code": 400, "message": "Bad Request: Invalid destination ID"
+        },
+        method="put",
+        status_code=HTTPStatus.BAD_REQUEST)
 
     with pytest.raises(Exception):
         await cl_async.set_default_destination(id)
@@ -239,7 +240,10 @@ async def test_get_default_destination_not_found():
 @respx.mock
 async def test_unset_default_destination():
     url = f"{TEST_URL}/default"
-    mock_response(url, None, method="delete", status_code=HTTPStatus.NO_CONTENT)
+    mock_response(url,
+                  None,
+                  method="delete",
+                  status_code=HTTPStatus.NO_CONTENT)
 
     # unset_default_destination returns None
     assert await cl_async.unset_default_destination() is None
@@ -249,11 +253,12 @@ async def test_unset_default_destination():
 @respx.mock
 async def test_unset_default_destination_unauthorized():
     url = f"{TEST_URL}/default"
-    mock_response(url, {
-        "code": 401, "message": "Unauthorized: Insufficient permissions"
-    },
-                  method="delete",
-                  status_code=HTTPStatus.UNAUTHORIZED)
+    mock_response(
+        url, {
+            "code": 401, "message": "Unauthorized: Insufficient permissions"
+        },
+        method="delete",
+        status_code=HTTPStatus.UNAUTHORIZED)
 
     with pytest.raises(Exception):
         await cl_async.unset_default_destination()

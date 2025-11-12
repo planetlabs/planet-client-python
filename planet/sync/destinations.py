@@ -53,7 +53,10 @@ class DestinationsAPI:
             ClientError: If there is an issue with the client request.
         """
         return self._client._call_sync(
-            self._client.list_destinations(archived, is_owner, can_write, is_default))
+            self._client.list_destinations(archived,
+                                           is_owner,
+                                           can_write,
+                                           is_default))
 
     def get_destination(self, destination_id: str) -> Dict:
         """
@@ -154,5 +157,4 @@ class DestinationsAPI:
             APIError: If the API returns an error response.
             ClientError: If there is an issue with the client request.
         """
-        return self._client._call_sync(
-            self._client.get_default_destination())
+        return self._client._call_sync(self._client.get_default_destination())
