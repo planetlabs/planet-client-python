@@ -181,7 +181,7 @@ class DestinationsClient(_BaseClient):
             dest = response.json()
             return dest
 
-    async def set_default_destination(self, destination_id: str) -> None:
+    async def set_default_destination(self, destination_id: str) -> Dict:
         """
         Set an existing destination as the default destination.  Default destinations are globally available
         to all members of an organization.  An organization can have zero or one default destination at any time.
