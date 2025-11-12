@@ -535,6 +535,7 @@ def destination(destination_ref: str,
 
     Parameters:
         destination_ref: The ID of the destination to deliver to.
+        path_prefix: Path prefix for deliveries.
     """
     parameters: Dict[str, Any] = {"ref": destination_ref}
 
