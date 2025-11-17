@@ -36,12 +36,18 @@ async def _patch_destination(ctx, destination_id, data, pretty):
             raise ClickException(f"Failed to patch destination: {e}")
 
 
-async def _list_destinations(ctx, archived, is_owner, can_write, pretty):
+async def _list_destinations(ctx,
+                             archived,
+                             is_owner,
+                             can_write,
+                             is_default,
+                             pretty):
     async with destinations_client(ctx) as cl:
         try:
             response = await cl.list_destinations(archived,
                                                   is_owner,
-                                                  can_write)
+                                                  can_write,
+                                                  is_default)
             echo_json(response, pretty)
         except Exception as e:
             raise ClickException(f"Failed to list destinations: {e}")
@@ -65,6 +71,33 @@ async def _create_destination(ctx, data, pretty):
             raise ClickException(f"Failed to create destination: {e}")
 
 
+async def _set_default_destination(ctx, destination_id, pretty):
+    async with destinations_client(ctx) as cl:
+        try:
+            response = await cl.set_default_destination(destination_id)
+            echo_json(response, pretty)
+        except Exception as e:
+            raise ClickException(f"Failed to set default destination: {e}")
+
+
+async def _unset_default_destination(ctx, pretty):
+    async with destinations_client(ctx) as cl:
+        try:
+            response = await cl.unset_default_destination()
+            echo_json(response, pretty)
+        except Exception as e:
+            raise ClickException(f"Failed to unset default destination: {e}")
+
+
+async def _get_default_destination(ctx, pretty):
+    async with destinations_client(ctx) as cl:
+        try:
+            response = await cl.get_default_destination()
+            echo_json(response, pretty)
+        except Exception as e:
+            raise ClickException(f"Failed to get default destination: {e}")
+
+
 @command(destinations, name="list")
 @click.option('--archived',
               type=bool,
@@ -82,7 +115,17 @@ async def _create_destination(ctx, data, pretty):
     default=None,
     help="""Set to true to include only destinations the user can modify,
     false to exclude them.""")
-async def list_destinations(ctx, archived, is_owner, can_write, pretty):
+@click.option('--is-default',
+              type=bool,
+              default=None,
+              help="""Set to true to include only the default destination,
+    false to exclude it.""")
+async def list_destinations(ctx,
+                            archived,
+                            is_owner,
+                            can_write,
+                            is_default,
+                            pretty):
     """
     List destinations with optional filters
 
@@ -93,7 +136,12 @@ async def list_destinations(ctx, archived, is_owner, can_write, pretty):
 
         planet destinations list --archived false --is-owner true --can-write true
     """
-    await _list_destinations(ctx, archived, is_owner, can_write, pretty)
+    await _list_destinations(ctx,
+                             archived,
+                             is_owner,
+                             can_write,
+                             is_default,
+                             pretty)
 
 
 @command(destinations, name="get")
@@ -590,3 +638,57 @@ async def update_s3_compatible(ctx,
         data["parameters"]["use_path_style"] = True
 
     await _patch_destination(ctx, destination_id, data, pretty)
+
+
+@destinations.group()
+def default():
+    """Commands for interacting with default destinations."""
+    pass
+
+
+@command(default, name="set")
+@click.argument("destination_id")
+async def set_default_destination(ctx, destination_id, pretty):
+    """
+    Set a default destination.
+
+    This command sets a specified destination as the default for the organization.  Default destinations
+    are globally available to all members of an organization.  An organization can have zero or one default
+    destination at any time.  Ability to set a default destination is restricted to organization
+    administrators and destination owners.
+
+    Example:
+
+        planet destinations default set my-destination-id
+    """
+    await _set_default_destination(ctx, destination_id, pretty)
+
+
+@command(default, name="unset")
+async def unset_default_destination(ctx, pretty):
+    """
+    Unset the current default destination.
+
+    This command unsets the current default destination.  Ability to unset a default destination is restricted
+    to organization administrators and destination owners.  Returns None (HTTP 204, No Content) on success.
+
+    Example:
+
+        planet destinations default unset
+    """
+    await _unset_default_destination(ctx, pretty)
+
+
+@command(default, name="get")
+async def get_default_destination(ctx, pretty):
+    """
+    Get the current default destination.
+
+    This command gets the current default destination for the organization, if one is set.  The default
+    destination is globally available to all members of an organization.
+
+    Example:
+
+        planet destinations default get
+    """
+    await _get_default_destination(ctx, pretty)

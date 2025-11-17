@@ -634,3 +634,43 @@ def test_cloud_filter_tool_success():
     }
 
     assert res == expected
+
+
+def test_destination_success():
+    res = subscription_request.destination(destination_ref='my-dest-ref')
+
+    assert res == {"type": "destination", "parameters": {"ref": "my-dest-ref"}}
+
+
+def test_destination_path_prefix_success():
+    res = subscription_request.destination(destination_ref='my-dest-ref',
+                                           path_prefix='my/prefix')
+
+    assert res == {
+        "type": "destination",
+        "parameters": {
+            "ref": "my-dest-ref", "path_prefix": "my/prefix"
+        }
+    }
+
+
+def test_default_destination_success():
+    res = subscription_request.default_destination()
+
+    assert res == {
+        "type": "destination",
+        "parameters": {
+            "ref": "pl:destinations/default"
+        }
+    }
+
+
+def test_default_destination_path_prefix_success():
+    res = subscription_request.default_destination(path_prefix='my/prefix')
+
+    assert res == {
+        "type": "destination",
+        "parameters": {
+            "ref": "pl:destinations/default", "path_prefix": "my/prefix"
+        }
+    }

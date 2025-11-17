@@ -34,7 +34,8 @@ class DestinationsAPI:
     def list_destinations(self,
                           archived: Optional[bool] = None,
                           is_owner: Optional[bool] = None,
-                          can_write: Optional[bool] = None) -> Dict:
+                          can_write: Optional[bool] = None,
+                          is_default: Optional[bool] = None) -> Dict:
         """
         List all destinations. By default, all non-archived destinations in the requesting user's org are returned.
 
@@ -42,6 +43,7 @@ class DestinationsAPI:
             archived (bool): If True, include archived destinations.
             is_owner (bool): If True, include only destinations owned by the requesting user.
             can_write (bool): If True, include only destinations the requesting user can modify.
+            is_default (bool): If True, include only the default destination.
 
         Returns:
             dict: A dictionary containing the list of destinations inside the 'destinations' key.
@@ -51,7 +53,10 @@ class DestinationsAPI:
             ClientError: If there is an issue with the client request.
         """
         return self._client._call_sync(
-            self._client.list_destinations(archived, is_owner, can_write))
+            self._client.list_destinations(archived,
+                                           is_owner,
+                                           can_write,
+                                           is_default))
 
     def get_destination(self, destination_id: str) -> Dict:
         """
@@ -105,3 +110,51 @@ class DestinationsAPI:
         """
         return self._client._call_sync(
             self._client.create_destination(request))
+
+    def set_default_destination(self, destination_id: str) -> Dict:
+        """
+        Set an existing destination as the default destination.  Default destinations are globally available
+        to all members of an organization.  An organization can have zero or one default destination at any time.
+        Ability to set a default destination is restricted to organization administrators and destination owners.
+
+        Args:
+            destination_id (str): The ID of the destination to set as default.
+
+        Returns:
+            dict: A dictionary containing the default destination details.
+
+        Raises:
+            APIError: If the API returns an error response.
+            ClientError: If there is an issue with the client request.
+        """
+        return self._client._call_sync(
+            self._client.set_default_destination(destination_id))
+
+    def unset_default_destination(self) -> None:
+        """
+        Unset the current default destination.  Ability to unset a default destination is restricted to
+        organization administrators and destination owners.  Returns None (HTTP 204, No Content) on success.
+
+        Returns:
+            None
+
+        Raises:
+            APIError: If the API returns an error response.
+            ClientError: If there is an issue with the client request.
+        """
+        return self._client._call_sync(
+            self._client.unset_default_destination())
+
+    def get_default_destination(self) -> Dict:
+        """
+        Get the current default destination.  The default destination is globally available to all members of an
+        organization.
+
+        Returns:
+            dict: A dictionary containing the default destination details.
+
+        Raises:
+            APIError: If the API returns an error response.
+            ClientError: If there is an issue with the client request.
+        """
+        return self._client._call_sync(self._client.get_default_destination())

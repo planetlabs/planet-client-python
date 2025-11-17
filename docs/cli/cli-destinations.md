@@ -31,10 +31,17 @@ The `list` command supports filtering on a variety of fields. You can discover a
                 requesting user, false to exclude them.
 * `--can-write`: Set to true to include only destinations the user can
                  modify, false to exclude them.
+* `--is-default`: Set to true to include only the default destination,
+                  false to exclude it.
 
 For example, issue the following command to list destinations that are not archived and you as the user have permission to modify:
 ```sh
 planet destinations list --archived false --can-write true
+```
+
+To list only the default destination (if one is set):
+```sh
+planet destinations list --is-default true
 ```
 
 ### Modify Destinations
@@ -46,6 +53,31 @@ Credential updating might be done if credentials expire or need to be rotated. F
 ```sh
 planet destinations update s3 my-destination-id --access-key-id NEW_ACCESS_KEY --secret-access-key NEW_SECRET_KEY
 ```
+
+### Manage Default Destinations
+Default destinations are globally available to all members of an organization. An organization can have zero or one default destination at any time. Managing default destinations (setting, unsetting) is restricted to organization administrators and destination owners.
+
+#### Set a Default Destination
+To set a destination as the default for your organization:
+```sh
+planet destinations default set my-destination-id
+```
+
+#### Get the Current Default Destination
+To retrieve the current default destination (if one is set):
+```sh
+planet destinations default get
+```
+
+If no default destination is set, this command will return an error indicating that no default destination is configured.
+
+#### Unset the Default Destination
+To remove the current default destination:
+```sh
+planet destinations default unset
+```
+
+This command returns no content on success (HTTP 204). Only organization administrators and destination owners can unset the default destination.
 
 ## Using destinations in Subscriptions API
 After creating a destination, it can be used as the delivery location for subscriptions. Use the destination reference in the delivery block instead of credentials.

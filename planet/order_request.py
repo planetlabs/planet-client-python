@@ -18,6 +18,7 @@ import logging
 from typing import Any, Dict, List, Mapping, Optional, Union
 
 from . import geojson, specs
+from .clients.destinations import DEFAULT_DESTINATION_REF
 from .exceptions import ClientError
 
 LOGGER = logging.getLogger(__name__)
@@ -390,6 +391,36 @@ def s3_compatible(endpoint: str,
     if path_prefix:
         parameters['path_prefix'] = path_prefix
     return {'s3_compatible': parameters}
+
+
+def destination(destination_ref: str,
+                path_prefix: Optional[str] = None) -> dict:
+    """Destinations API configuration.
+    Parameters:
+        destination_ref: Reference to an existing Destinations API
+            destination.
+        path_prefix: Path prefix for deliveries.
+    """
+    cloud_details: Dict[str, Any] = {'ref': destination_ref}
+
+    if path_prefix:
+        cloud_details['path_prefix'] = path_prefix
+
+    return {'destination': cloud_details}
+
+
+def default_destination(path_prefix: Optional[str] = None) -> dict:
+    """Default Destinations API configuration.
+
+    Parameters:
+        path_prefix: Path prefix for deliveries.
+    """
+    parameters: Dict[str, Any] = {'ref': DEFAULT_DESTINATION_REF}
+
+    if path_prefix:
+        parameters['path_prefix'] = path_prefix
+
+    return {'destination': parameters}
 
 
 def _tool(name: str, parameters: dict) -> dict:
