@@ -493,7 +493,7 @@ def test_catalog_source_geometry_relation(mock_bundles,
                                           invoke,
                                           geom_geojson,
                                           geometry_relation):
-    """Catalog source time range type is configured."""
+    """Catalog source geometry relation is configured."""
     result = invoke([
         'request-catalog',
         '--item-types=PSScene',

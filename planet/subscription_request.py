@@ -197,10 +197,10 @@ def catalog_source(
         publishing_stages: A sequence of one or more of the values
             "preview", "standard", or "finalized".
         time_range_type: "acquired" (new in 2.1.0) or "published".
-        geometry_relation: The relationship between the subscription geometry and the item geometry. Intersects (default): Returns
-            items whose footprint geometry partially or fully overlaps with the subscription geometry.
-            Contains: Returns items where the footprint geometry fully encloses the AOI.
-            Within: Returns items whose entire footprint geometry is fully contained within the AOI.
+        geometry_relation: The relationship between the subscription geometry and the item geometry.
+            'intersects' (default): Returns items whose footprint geometry partially or fully overlaps with the subscription geometry.
+            'contains': Returns items where the footprint geometry fully encloses the AOI.
+            'within': Returns items whose entire footprint geometry is fully contained within the AOI.
 
     Returns:
         dict: a representation of a subscription source.
