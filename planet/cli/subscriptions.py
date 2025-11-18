@@ -521,13 +521,15 @@ def request(name,
 @click.option(
     '--geometry-relation',
     type=click.Choice(["intersects", "contains", "within"]),
-    help=("The relationship between the subscription geometry and "
-          "the item geometry. Intersects (default): Returns items whose "
-          "footprint geometry partially or fully overlaps with the "
-          "subscription geometry. Contains: Returns items where the "
-          "footprint geometry fully encloses the AOI. Within: Returns "
-          "items whose entire footprint geometry is fully contained "
-          "within the AOI."))
+    help=  # noqa: E251
+    ('\b\n'
+     'The relationship between the subscription geometry and the item geometry.\n'
+     'intersects (default): Returns items whose footprint geometry partially or \n'
+     'fully overlaps with the subscription geometry.\n'
+     'contains: Returns items where the footprint geometry fully encloses the \n'
+     'subscription geometry.\n'
+     'within: Returns items whose entire footprint geometry is fully contained \n'
+     'within the subscription geometry.'))
 @pretty
 def request_catalog(item_types,
                     asset_types,
