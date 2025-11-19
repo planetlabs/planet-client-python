@@ -518,6 +518,18 @@ def request(name,
 @click.option('--time-range-type',
               type=click.Choice(["acquired", "published"]),
               help="Subscribe by acquisition time or time of publication.")
+@click.option(
+    '--geometry-relation',
+    type=click.Choice(["intersects", "contains", "within"]),
+    help=  # noqa: E251
+    ('\b\n'
+     'The relationship between the subscription geometry and the item geometry.\n'
+     'intersects (default): Returns items whose footprint geometry partially or \n'
+     'fully overlaps with the subscription geometry.\n'
+     'contains: Returns items where the footprint geometry fully encloses the \n'
+     'subscription geometry.\n'
+     'within: Returns items whose entire footprint geometry is fully contained \n'
+     'within the subscription geometry.'))
 @pretty
 def request_catalog(item_types,
                     asset_types,
@@ -528,6 +540,7 @@ def request_catalog(item_types,
                     filter,
                     publishing_stages,
                     time_range_type,
+                    geometry_relation,
                     pretty):
     """Generate a subscriptions request catalog source description."""
 
@@ -540,7 +553,8 @@ def request_catalog(item_types,
         rrule=rrule,
         filter=filter,
         publishing_stages=publishing_stages,
-        time_range_type=time_range_type)
+        time_range_type=time_range_type,
+        geometry_relation=geometry_relation)
     echo_json(res, pretty)
 
 

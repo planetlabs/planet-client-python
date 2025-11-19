@@ -487,6 +487,27 @@ def test_catalog_source_time_range_type(mock_bundles,
     assert req['parameters']['time_range_type'] == time_range_type
 
 
+@pytest.mark.parametrize("geometry_relation",
+                         ["intersects", "contains", "within"])
+def test_catalog_source_geometry_relation(mock_bundles,
+                                          invoke,
+                                          geom_geojson,
+                                          geometry_relation):
+    """Catalog source geometry relation is configured."""
+    result = invoke([
+        'request-catalog',
+        '--item-types=PSScene',
+        '--asset-types=ortho_analytic_4b',
+        f"--geometry={json.dumps(geom_geojson)}",
+        '--start-time=2021-03-01T00:00:00',
+        f'--geometry-relation={geometry_relation}',
+    ])
+
+    assert result.exit_code == 0  # success.
+    req = json.loads(result.output)
+    assert req['parameters']['geometry_relation'] == geometry_relation
+
+
 @pytest.mark.parametrize(
     "hosting_option, collection_id_option, configuration_option, expected_success",
     [

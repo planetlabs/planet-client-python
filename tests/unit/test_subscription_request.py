@@ -617,6 +617,20 @@ def test_catalog_source_time_range_type_acquired(geom_geojson, mock_bundles):
     assert source["parameters"]["time_range_type"] == "acquired"
 
 
+@respx.mock
+def test_catalog_source_geometry_relation_contains(geom_geojson, mock_bundles):
+    """Configure 'contains' geometry relation for a catalog source."""
+    source = subscription_request.catalog_source(
+        item_types=["PSScene"],
+        asset_types=["ortho_analytic_4b"],
+        start_time=datetime(2021, 3, 1),
+        geometry_relation="contains",
+        geometry=geom_geojson,
+    )
+
+    assert source["parameters"]["geometry_relation"] == "contains"
+
+
 def test_cloud_filter_tool_success():
     res = subscription_request.cloud_filter_tool(
         clear_percent=subscription_request.FilterValue(gte=90),
