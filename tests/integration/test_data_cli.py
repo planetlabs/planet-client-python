@@ -173,7 +173,6 @@ def assert_and_filters_equal():
     return _func
 
 
-@respx.mock
 def test_data_filter_defaults(invoke, assert_and_filters_equal):
 
     result = invoke(["filter"])
@@ -183,7 +182,6 @@ def test_data_filter_defaults(invoke, assert_and_filters_equal):
     assert_and_filters_equal(json.loads(result.output), empty_filter)
 
 
-@respx.mock
 def test_data_filter_permission(invoke, assert_and_filters_equal):
     result = invoke(["filter", "--permission"])
     assert result.exit_code == 0
@@ -197,7 +195,6 @@ def test_data_filter_permission(invoke, assert_and_filters_equal):
     assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
-@respx.mock
 def test_data_filter_std_quality(invoke, assert_and_filters_equal):
     result = invoke(["filter", '--std-quality'])
     assert result.exit_code == 0
@@ -230,7 +227,6 @@ def test_data_filter_asset(asset, expected, invoke, assert_and_filters_equal):
     assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
-@respx.mock
 def test_data_filter_date_range_success(invoke, assert_and_filters_equal):
     """Check filter is created correctly and that multiple options results in
     multiple filters"""
@@ -262,13 +258,11 @@ def test_data_filter_date_range_success(invoke, assert_and_filters_equal):
     assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
-@respx.mock
 def test_data_filter_date_range_invalid(invoke):
     result = invoke(["filter"] + '--date-range field gt 2021'.split())
     assert result.exit_code == 2
 
 
-@respx.mock
 @pytest.mark.parametrize("geom_fixture",
                          [('geom_geojson'), ('feature_geojson'),
                           ('featurecollection_geojson')])
@@ -296,7 +290,23 @@ def test_data_filter_geom(geom_fixture,
     assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
-@respx.mock
+def test_data_filter_geom_relation(request, invoke):
+    geom = request.getfixturevalue("geom_geojson")
+    geom_str = json.dumps(geom)
+    result = invoke(
+        ["filter", f'--geom={geom_str}', '--geom-relation=disjoint'])
+    assert result.exit_code == 0
+
+    and_filter = json.loads(result.output)
+    assert and_filter["config"][0]["relation"] == "disjoint"
+
+    # --geom-relation is ignored without --geom
+    result = invoke(["filter", '--geom-relation=disjoint'])
+    assert result.exit_code == 0
+    and_filter = json.loads(result.output)
+    assert and_filter["config"] == []
+
+
 def test_data_filter_number_in_success(invoke, assert_and_filters_equal):
 
     result = invoke(["filter"] + '--number-in field 1'.split() +
@@ -317,14 +327,12 @@ def test_data_filter_number_in_success(invoke, assert_and_filters_equal):
     assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
-@respx.mock
 def test_data_filter_number_in_badparam(invoke, assert_and_filters_equal):
 
     result = invoke(["filter"] + '--number-in field 1,str'.split())
     assert result.exit_code == 2
 
 
-@respx.mock
 def test_data_filter_range(invoke, assert_and_filters_equal):
     """Check filter is created correctly, that multiple options results in
     multiple filters, and that floats are processed correctly."""
@@ -352,7 +360,6 @@ def test_data_filter_range(invoke, assert_and_filters_equal):
     assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
-@respx.mock
 def test_data_filter_string_in(invoke, assert_and_filters_equal):
 
     result = invoke(["filter"] + '--string-in field foo'.split() +
@@ -375,7 +382,6 @@ def test_data_filter_string_in(invoke, assert_and_filters_equal):
     assert_and_filters_equal(json.loads(result.output), expected_filt)
 
 
-@respx.mock
 def test_data_filter_update(invoke, assert_and_filters_equal):
     """Check filter is created correctly and that multiple options results in
     multiple filters"""

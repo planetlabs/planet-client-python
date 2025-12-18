@@ -218,7 +218,7 @@ def update_filter(field_name: str,
                          callback=_datetime_to_rfc3339)
 
 
-def geometry_filter(geom: dict) -> dict:
+def geometry_filter(geom: dict, relation: Optional[str] = None) -> dict:
     """Create a GeometryFilter
 
     The GeometryFilter can be used to search for items with a footprint
@@ -237,10 +237,17 @@ def geometry_filter(geom: dict) -> dict:
     Parameters:
         geom: GeoJSON describing the filter geometry, feature, or feature
             collection.
+        relation: Optional geometry search refinement, defaults to intersects.
+            May also be contains, within, or disjoint.
     """
     geom_filter = _field_filter('GeometryFilter',
                                 field_name='geometry',
                                 config=geojson.validate_geom_as_geojson(geom))
+    if relation:
+        allowed = {"intersects", "contains", "disjoint", "within"}
+        if relation not in allowed:
+            raise ValueError(f"relation must be one of {allowed}")
+        geom_filter["relation"] = relation
     return geom_filter
 
 
