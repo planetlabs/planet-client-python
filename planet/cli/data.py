@@ -58,11 +58,6 @@ def data(ctx, base_url):
     ctx.obj['BASE_URL'] = base_url
 
 
-# TODO: filter().
-def geom_to_filter(ctx, param, value: Optional[dict]) -> Optional[dict]:
-    return data_filter.geometry_filter(value) if value else None
-
-
 def assets_to_filter(ctx, param, assets: List[str]) -> Optional[dict]:
     # TODO: validate and normalize
     return data_filter.asset_filter(assets) if assets else None
@@ -172,9 +167,13 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
     DATETIME can be an RFC3339 or ISO 8601 string.""")
 @click.option('--geom',
               type=types.JSON(),
-              callback=geom_to_filter,
-              help="""Filter to items that overlap a given geometry. Can be a
+              help="""Filter to items with a given geometry. Can be a
               json string, filename, or '-' for stdin.""")
+@click.option(
+    "--geom-relation",
+    type=click.Choice(["intersects", "contains", "within", "disjoint"]),
+    help="""Geometry search relation. Options are intersects (default), contains, within, or disjoint.""",
+)
 @click.option('--number-in',
               type=click.Tuple([types.Field(), types.CommaSeparatedFloat()]),
               multiple=True,
@@ -224,6 +223,7 @@ def filter(ctx,
            asset,
            date_range,
            geom,
+           geom_relation,
            number_in,
            nrange,
            string_in,
@@ -245,9 +245,12 @@ def filter(ctx,
     permission = data_filter.permission_filter() if permission else None
     std_quality = data_filter.std_quality_filter() if std_quality else None
 
+    geometry = data_filter.geometry_filter(geom,
+                                           geom_relation) if geom else None
+
     filter_options = (asset,
                       date_range,
-                      geom,
+                      geometry,
                       number_in,
                       nrange,
                       string_in,
