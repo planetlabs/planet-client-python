@@ -44,6 +44,7 @@ class CatalogClient(_BaseClient):
             info = resp.json()
             return info
 
+    # TODO: reconsider the value of including this method because users should already know this info?
     async def get_conformance(self) -> dict:
         """Get information about specifications that this API conforms to
 
