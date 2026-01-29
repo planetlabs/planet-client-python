@@ -22,4 +22,6 @@ DATA_DIR = Path(os.path.dirname(__file__)) / 'data'
 
 PLANET_BASE_URL = 'https://api.planet.com'
 
+SENTINEL_HUB_BASE_URL = 'https://services.sentinel-hub.com'
+
 SECRET_FILE_PATH = Path(os.path.expanduser('~')) / '.planet.json'
