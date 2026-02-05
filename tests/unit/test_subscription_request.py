@@ -82,8 +82,9 @@ def test_build_request_clip_to_source_success(geom_geojson):
         source=source,
         delivery={},
         tools=[{
-            'type': 'toar',
-            'parameters': {'scale_factor': 10000}
+            'type': 'toar', 'parameters': {
+                'scale_factor': 10000
+            }
         }],
         clip_to_source=True,
     )
@@ -908,3 +909,47 @@ def test_build_request_clip_to_source_insertion(geom_geojson,
 
     actual_order = [tool["type"] for tool in req["tools"]]
     assert actual_order == expected_order
+
+
+def test_build_request_tool_missing_type(geom_geojson):
+    """Test that a tool missing 'type' field raises an error."""
+    source = {
+        "parameters": {
+            "geometry": geom_geojson,
+            "start_time": "2021-03-01T00:00:00Z",
+            "item_types": ["PSScene"],
+            "asset_types": ["ortho_analytic_4b"]
+        }
+    }
+
+    tool_without_type = {"parameters": {}}
+
+    with pytest.raises(
+            exceptions.ClientError,
+            match="Tool at position 0 is missing required 'type' field"):
+        subscription_request.build_request('test',
+                                           source=source,
+                                           delivery={},
+                                           tools=[tool_without_type])
+
+
+def test_build_request_tool_invalid_type(geom_geojson):
+    """Test that a tool with invalid/non-existent type raises an error."""
+    source = {
+        "parameters": {
+            "geometry": geom_geojson,
+            "start_time": "2021-03-01T00:00:00Z",
+            "item_types": ["PSScene"],
+            "asset_types": ["ortho_analytic_4b"]
+        }
+    }
+
+    invalid_tool = {"type": "nonexistent_tool"}
+
+    with pytest.raises(
+            exceptions.ClientError,
+            match="Invalid tool type 'nonexistent_tool' at position 0"):
+        subscription_request.build_request('test',
+                                           source=source,
+                                           delivery={},
+                                           tools=[invalid_tool])

@@ -857,8 +857,7 @@ def _validate_tool_order(tool_list: List[dict]) -> None:
         # Check if tool has a type field
         if tool_type is None:
             raise ClientError(
-                f"Tool at position {i} is missing required 'type' field."
-            )
+                f"Tool at position {i} is missing required 'type' field.")
 
         # Check if tool type is valid
         if tool_type not in _SUBSCRIPTION_TOOL_WEIGHT:
