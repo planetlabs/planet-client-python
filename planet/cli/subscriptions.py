@@ -280,6 +280,91 @@ async def cancel_subscription_cmd(ctx, subscription_id, pretty):
         _ = await client.cancel_subscription(subscription_id)
 
 
+@subscriptions.command(name='suspend')  # type: ignore
+@click.argument('subscription_id')
+@click.option('--details',
+              help='Optional details explaining suspension reason')
+@pretty
+@click.pass_context
+@translate_exceptions
+@coro
+async def suspend_subscription_cmd(ctx, subscription_id, details, pretty):
+    """Suspends a subscription and prints the suspended subscription."""
+    async with subscriptions_client(ctx) as client:
+        sub = await client.suspend_subscription(subscription_id, details)
+        echo_json(sub, pretty)
+
+
+@subscriptions.command(name='reactivate')  # type: ignore
+@click.argument('subscription_id')
+@pretty
+@click.pass_context
+@translate_exceptions
+@coro
+async def reactivate_subscription_cmd(ctx, subscription_id, pretty):
+    """Reactivates a subscription."""
+    async with subscriptions_client(ctx) as client:
+        _ = await client.reactivate_subscription(subscription_id)
+
+
+@subscriptions.command(name='bulk-suspend')  # type: ignore
+@click.option('--subscription-ids',
+              type=types.CommaSeparatedString(),
+              help='Comma-separated list of subscription IDs to suspend')
+@click.option('--all',
+              'all_flag',
+              is_flag=True,
+              help='Suspend all organization subscriptions (admin only)')
+@click.option('--details',
+              help='Optional details explaining suspension reason')
+@pretty
+@click.pass_context
+@translate_exceptions
+@coro
+async def bulk_suspend_subscriptions_cmd(ctx,
+                                         subscription_ids,
+                                         all_flag,
+                                         details,
+                                         pretty):
+    """Suspends multiple subscriptions.
+
+    By default (no flags), suspends all of the user's subscriptions.
+    Use --subscription-ids to suspend specific subscriptions.
+    Use --all to suspend all organization subscriptions (requires admin).
+    """
+    async with subscriptions_client(ctx) as client:
+        _ = await client.bulk_suspend_subscriptions(subscription_ids,
+                                                    details,
+                                                    all_flag)
+
+
+@subscriptions.command(name='bulk-reactivate')  # type: ignore
+@click.option('--subscription-ids',
+              type=types.CommaSeparatedString(),
+              help='Comma-separated list of subscription IDs to reactivate')
+@click.option('--all',
+              'all_flag',
+              is_flag=True,
+              help='Reactivate all organization subscriptions (admin only)')
+@pretty
+@click.pass_context
+@translate_exceptions
+@coro
+async def bulk_reactivate_subscriptions_cmd(ctx,
+                                            subscription_ids,
+                                            all_flag,
+                                            pretty):
+    """Reactivates multiple subscriptions.
+
+    By default (no flags), reactivates all of the user's subscriptions.
+    Use --subscription-ids to reactivate specific subscriptions.
+    Use --all to reactivate all organization subscriptions (requires admin).
+    """
+    async with subscriptions_client(ctx) as client:
+        _ = await client.bulk_reactivate_subscriptions(subscription_ids,
+                                                       all_flag)
+
+
 @subscriptions.command(name='update')  # type: ignore
 @click.argument('subscription_id')
 @click.argument('request', type=types.JSON())
