@@ -23,3 +23,14 @@ DATA_DIR = Path(os.path.dirname(__file__)) / 'data'
 PLANET_BASE_URL = 'https://api.planet.com'
 
 SECRET_FILE_PATH = Path(os.path.expanduser('~')) / '.planet.json'
+
+# Tool weights define the required processing order for subscription tools
+_SUBSCRIPTION_TOOL_WEIGHT = {
+    "harmonize": 1,
+    "toar": 2,
+    "clip": 3,
+    "reproject": 3,
+    "bandmath": 3,
+    "cloud_filter": 4,
+    "file_format": 4,
+}
