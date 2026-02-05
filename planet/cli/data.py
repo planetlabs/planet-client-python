@@ -172,7 +172,8 @@ def string_in_to_filter(ctx, param, values) -> Optional[List[dict]]:
 @click.option(
     "--geom-relation",
     type=click.Choice(["intersects", "contains", "within", "disjoint"]),
-    help="""Geometry search relation. Options are intersects (default), contains, within, or disjoint.""",
+    help=
+    """Geometry search relation. Options are intersects (default), contains, within, or disjoint.""",
 )
 @click.option('--number-in',
               type=click.Tuple([types.Field(), types.CommaSeparatedFloat()]),

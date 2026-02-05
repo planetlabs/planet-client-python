@@ -694,61 +694,68 @@ def test_default_destination_path_prefix_success():
     "input_tools,expected_order",
     [
         # Test valid ordering is maintained
-        (
-            [
-                {"type": "harmonize"},
-                {"type": "clip"},
-                {"type": "file_format"}
-            ],
-            ["harmonize", "clip", "file_format"]
-        ),
+        ([{
+            "type": "harmonize"
+        }, {
+            "type": "clip"
+        }, {
+            "type": "file_format"
+        }], ["harmonize", "clip", "file_format"]),
         # Test all tools in correct order
-        (
-            [
-                {"type": "harmonize"},
-                {"type": "toar"},
-                {"type": "clip"},
-                {"type": "reproject"},
-                {"type": "bandmath"},
-                {"type": "cloud_filter"},
-                {"type": "file_format"}
-            ],
-            ["harmonize", "toar", "clip", "reproject", "bandmath", "cloud_filter", "file_format"]
-        ),
+        ([{
+            "type": "harmonize"
+        }, {
+            "type": "toar"
+        }, {
+            "type": "clip"
+        }, {
+            "type": "reproject"
+        }, {
+            "type": "bandmath"
+        }, {
+            "type": "cloud_filter"
+        }, {
+            "type": "file_format"
+        }],
+         [
+             "harmonize",
+             "toar",
+             "clip",
+             "reproject",
+             "bandmath",
+             "cloud_filter",
+             "file_format"
+         ]),
         # Test tools with same weight can be in any order
-        (
-            [
-                {"type": "reproject"},
-                {"type": "clip"},
-                {"type": "bandmath"}
-            ],
-            ["reproject", "clip", "bandmath"]
-        ),
+        ([{
+            "type": "reproject"
+        }, {
+            "type": "clip"
+        }, {
+            "type": "bandmath"
+        }], ["reproject", "clip", "bandmath"]),
         # Test different order for same weight tools
-        (
-            [
-                {"type": "clip"},
-                {"type": "bandmath"},
-                {"type": "reproject"}
-            ],
-            ["clip", "bandmath", "reproject"]
-        ),
+        ([{
+            "type": "clip"
+        }, {
+            "type": "bandmath"
+        }, {
+            "type": "reproject"
+        }], ["clip", "bandmath", "reproject"]),
         # Test single tool
-        (
-            [{"type": "clip"}],
-            ["clip"]
-        ),
+        ([{
+            "type": "clip"
+        }], ["clip"]),
         # Test weight 4 tools can be in any order
-        (
-            [
-                {"type": "file_format"},
-                {"type": "cloud_filter"}
-            ],
-            ["file_format", "cloud_filter"]
-        ),
-    ]
-)
-def test_build_request_tool_order_maintained(geom_geojson, input_tools, expected_order):
+        ([{
+            "type": "file_format"
+        }, {
+            "type": "cloud_filter"
+        }], ["file_format", "cloud_filter"]),
+    ])
+def test_build_request_tool_order_maintained(geom_geojson,
+                                             input_tools,
+                                             expected_order):
     """Test that valid tool ordering is maintained."""
     source = {
         "parameters": {
@@ -759,12 +766,10 @@ def test_build_request_tool_order_maintained(geom_geojson, input_tools, expected
         }
     }
 
-    req = subscription_request.build_request(
-        'test',
-        source=source,
-        delivery={},
-        tools=input_tools
-    )
+    req = subscription_request.build_request('test',
+                                             source=source,
+                                             delivery={},
+                                             tools=input_tools)
 
     actual_order = [tool["type"] for tool in req["tools"]]
     assert actual_order == expected_order
@@ -774,15 +779,32 @@ def test_build_request_tool_order_maintained(geom_geojson, input_tools, expected
     "invalid_tools",
     [
         # clip before harmonize (weight 3 before weight 1)
-        [{"type": "clip"}, {"type": "harmonize"}],
+        [{
+            "type": "clip"
+        }, {
+            "type": "harmonize"
+        }],
         # file_format before toar (weight 4 before weight 2)
-        [{"type": "file_format"}, {"type": "toar"}],
+        [{
+            "type": "file_format"
+        }, {
+            "type": "toar"
+        }],
         # cloud_filter before clip (weight 4 before weight 3)
-        [{"type": "cloud_filter"}, {"type": "clip"}],
+        [{
+            "type": "cloud_filter"
+        }, {
+            "type": "clip"
+        }],
         # Multiple out of order
-        [{"type": "file_format"}, {"type": "harmonize"}, {"type": "clip"}],
-    ]
-)
+        [{
+            "type": "file_format"
+        }, {
+            "type": "harmonize"
+        }, {
+            "type": "clip"
+        }],
+    ])
 def test_build_request_invalid_tool_order(geom_geojson, invalid_tools):
     """Test that invalid tool ordering raises an error."""
     source = {
@@ -794,67 +816,79 @@ def test_build_request_invalid_tool_order(geom_geojson, invalid_tools):
         }
     }
 
-    with pytest.raises(exceptions.ClientError, match="Tools must be ordered according to their processing order"):
-        subscription_request.build_request(
-            'test',
-            source=source,
-            delivery={},
-            tools=invalid_tools
-        )
+    with pytest.raises(
+            exceptions.ClientError,
+            match="Tools must be ordered according to their processing order"):
+        subscription_request.build_request('test',
+                                           source=source,
+                                           delivery={},
+                                           tools=invalid_tools)
 
 
 @pytest.mark.parametrize(
     "existing_tools,expected_order",
     [
         # Clip added to empty list
-        (
-            [],
-            ["clip"]
-        ),
+        ([], ["clip"]),
         # Clip inserted before higher weight tools (weight 4)
-        (
-            [{"type": "file_format"}, {"type": "cloud_filter"}],
-            ["clip", "file_format", "cloud_filter"]
-        ),
+        ([{
+            "type": "file_format"
+        }, {
+            "type": "cloud_filter"
+        }], ["clip", "file_format", "cloud_filter"]),
         # Clip inserted after lower weight tools (weight 1, 2)
-        (
-            [{"type": "harmonize"}, {"type": "toar"}],
-            ["harmonize", "toar", "clip"]
-        ),
+        ([{
+            "type": "harmonize"
+        }, {
+            "type": "toar"
+        }], ["harmonize", "toar", "clip"]),
         # Clip inserted between lower and higher weight tools
-        (
-            [
-                {"type": "harmonize"},
-                {"type": "toar"},
-                {"type": "file_format"}
-            ],
-            ["harmonize", "toar", "clip", "file_format"]
-        ),
+        ([{
+            "type": "harmonize"
+        }, {
+            "type": "toar"
+        }, {
+            "type": "file_format"
+        }], ["harmonize", "toar", "clip", "file_format"]),
         # Clip inserted before tools of same weight (weight 3)
-        (
-            [{"type": "reproject"}, {"type": "bandmath"}],
-            ["clip", "reproject", "bandmath"]
-        ),
+        ([{
+            "type": "reproject"
+        }, {
+            "type": "bandmath"
+        }], ["clip", "reproject", "bandmath"]),
         # Clip inserted at end when all tools have lower weight
-        (
-            [{"type": "harmonize"}, {"type": "toar"}],
-            ["harmonize", "toar", "clip"]
-        ),
+        ([{
+            "type": "harmonize"
+        }, {
+            "type": "toar"
+        }], ["harmonize", "toar", "clip"]),
         # Complex case with all tool types in correct order except clip
-        (
-            [
-                {"type": "harmonize"},
-                {"type": "toar"},
-                {"type": "reproject"},
-                {"type": "bandmath"},
-                {"type": "cloud_filter"},
-                {"type": "file_format"}
-            ],
-            ["harmonize", "toar", "clip", "reproject", "bandmath", "cloud_filter", "file_format"]
-        ),
-    ]
-)
-def test_build_request_clip_to_source_insertion(geom_geojson, existing_tools, expected_order):
+        ([{
+            "type": "harmonize"
+        }, {
+            "type": "toar"
+        }, {
+            "type": "reproject"
+        }, {
+            "type": "bandmath"
+        }, {
+            "type": "cloud_filter"
+        }, {
+            "type": "file_format"
+        }],
+         [
+             "harmonize",
+             "toar",
+             "clip",
+             "reproject",
+             "bandmath",
+             "cloud_filter",
+             "file_format"
+         ]),
+    ])
+def test_build_request_clip_to_source_insertion(geom_geojson,
+                                                existing_tools,
+                                                expected_order):
     """Test that clip tool is inserted at correct position when clip_to_source=True."""
     source = {
         "parameters": {
@@ -865,13 +899,11 @@ def test_build_request_clip_to_source_insertion(geom_geojson, existing_tools, ex
         }
     }
 
-    req = subscription_request.build_request(
-        'test',
-        source=source,
-        delivery={},
-        tools=existing_tools,
-        clip_to_source=True
-    )
+    req = subscription_request.build_request('test',
+                                             source=source,
+                                             delivery={},
+                                             tools=existing_tools,
+                                             clip_to_source=True)
 
     actual_order = [tool["type"] for tool in req["tools"]]
     assert actual_order == expected_order

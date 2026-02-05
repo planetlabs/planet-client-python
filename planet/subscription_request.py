@@ -49,56 +49,6 @@ REPROJECT_KERNEL = ('near',
 REPROJECT_KERNEL_DEFAULT = 'near'
 
 
-def _validate_tool_order(tool_list: List[dict]) -> None:
-    """Validate that tools are ordered according to their processing weights.
-
-    Args:
-        tool_list: List of tool configurations to validate.
-
-    Raises:
-        ClientError: If tools are not in the correct order.
-    """
-    for i in range(1, len(tool_list)):
-        prev_type = tool_list[i - 1].get('type')
-        curr_type = tool_list[i].get('type')
-        prev_weight = _SUBSCRIPTION_TOOL_WEIGHT.get(prev_type)
-        curr_weight = _SUBSCRIPTION_TOOL_WEIGHT.get(curr_type)
-
-        if prev_weight is not None and curr_weight is not None:
-            if prev_weight > curr_weight:
-                raise ClientError(
-                    f"Tools must be ordered according to their processing order. "
-                    f"Tool '{prev_type}' cannot come before tool '{curr_type}'."
-                )
-
-
-def _insert_clip_tool(tool_list: List[dict]) -> None:
-    """Insert clip tool at the correct position in the tool list.
-
-    The clip tool is inserted based on its position relative to other tools in
-    the _SUBSCRIPTION_TOOL_WEIGHT dictionary order (i.e. the order of the
-    dictionary keys), not on the numeric weight values themselves. This means
-    that the clip tool is placed before any tool whose key appears after
-    "clip" in that dictionary.
-
-    Args:
-        tool_list: List of tool configurations (modified in place).
-    """
-    # Create a position mapping from the _SUBSCRIPTION_TOOL_WEIGHT dictionary
-    tool_order = {name: idx for idx, name in enumerate(_SUBSCRIPTION_TOOL_WEIGHT.keys())}
-    clip_position = tool_order['clip']
-    insert_index = len(tool_list)  # default to end
-
-    for i, tool in enumerate(tool_list):
-        tool_type = tool.get('type')
-        if tool_type in tool_order:
-            if tool_order[tool_type] > clip_position:
-                insert_index = i
-                break
-
-    tool_list.insert(insert_index, {'type': 'clip', 'parameters': {}})
-
-
 def build_request(name: str,
                   source: Mapping,
                   delivery: Optional[Mapping] = None,
@@ -889,3 +839,56 @@ def sentinel_hub(collection_id: Optional[str],
     if create_configuration:
         parameters['create_configuration'] = create_configuration
     return _hosting("sentinel_hub", parameters)
+
+
+def _validate_tool_order(tool_list: List[dict]) -> None:
+    """Validate that tools are ordered according to their processing weights.
+
+    Args:
+        tool_list: List of tool configurations to validate.
+
+    Raises:
+        ClientError: If tools are not in the correct order.
+    """
+    for i in range(1, len(tool_list)):
+        prev_type = tool_list[i - 1].get('type')
+        curr_type = tool_list[i].get('type')
+        prev_weight = _SUBSCRIPTION_TOOL_WEIGHT.get(prev_type)
+        curr_weight = _SUBSCRIPTION_TOOL_WEIGHT.get(curr_type)
+
+        if prev_weight is not None and curr_weight is not None:
+            if prev_weight > curr_weight:
+                raise ClientError(
+                    f"Tools must be ordered according to their processing order. "
+                    f"Tool '{prev_type}' cannot come before tool '{curr_type}'."
+                )
+
+
+def _insert_clip_tool(tool_list: List[dict]) -> None:
+    """Insert clip tool at the correct position in the tool list.
+
+    The clip tool is inserted based on its position relative to other tools in
+    the _SUBSCRIPTION_TOOL_WEIGHT dictionary order (i.e. the order of the
+    dictionary keys), not on the numeric weight values themselves. This means
+    that the clip tool is placed before any tool whose key appears after
+    "clip" in that dictionary.
+
+    Args:
+        tool_list: List of tool configurations (modified in place).
+    """
+    # Create a position mapping from the _SUBSCRIPTION_TOOL_WEIGHT dictionary
+    tool_order = {
+        name: idx
+        for idx, name in enumerate(_SUBSCRIPTION_TOOL_WEIGHT.keys())
+    }
+    clip_position = tool_order['clip']
+    insert_index = len(tool_list)  # default to end
+
+    for i, tool in enumerate(tool_list):
+        tool_type = tool.get('type')
+        if tool_type in tool_order:
+            if tool_order[tool_type] > clip_position:
+                insert_index = i
+                break
+
+    tool_list.insert(insert_index, {'type': 'clip', 'parameters': {}})
