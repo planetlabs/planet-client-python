@@ -75,9 +75,13 @@ def _validate_tool_order(tool_list: List[dict]) -> None:
 def _insert_clip_tool(tool_list: List[dict]) -> None:
     """Insert clip tool at the correct position in the tool list.
 
-    The clip tool is inserted based on its position in the _SUBSCRIPTION_TOOL_WEIGHT
-    dictionary, ensuring it comes before any tool that appears after it in the
-    processing order.
+    The clip tool is inserted based on its position relative to other tools in
+    the `_SUBSCRIPTION_TOOL_WEIGHT` dictionary *order* (i.e. the order of the
+    dictionary keys), not on the numeric weight values themselves. This ensures
+    that the clip tool is placed before any tool whose key appears after
+    `"clip"` in that dictionary. When multiple tools share the same weight,
+    their relative order may still be affected by this insertion because the
+    dictionary key order is used to determine positioning.
 
     Args:
         tool_list: List of tool configurations (modified in place).
