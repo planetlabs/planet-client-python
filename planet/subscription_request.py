@@ -848,19 +848,35 @@ def _validate_tool_order(tool_list: List[dict]) -> None:
         tool_list: List of tool configurations to validate.
 
     Raises:
-        ClientError: If tools are not in the correct order.
+        ClientError: If tools are not in the correct order or if an invalid
+            tool is encountered.
     """
-    for i in range(1, len(tool_list)):
-        prev_type = tool_list[i - 1].get('type')
-        curr_type = tool_list[i].get('type')
-        prev_weight = _SUBSCRIPTION_TOOL_WEIGHT.get(prev_type)
-        curr_weight = _SUBSCRIPTION_TOOL_WEIGHT.get(curr_type)
+    for i in range(len(tool_list)):
+        tool_type = tool_list[i].get('type')
 
-        if prev_weight is not None and curr_weight is not None:
+        # Check if tool has a type field
+        if tool_type is None:
+            raise ClientError(
+                f"Tool at position {i} is missing required 'type' field."
+            )
+
+        # Check if tool type is valid
+        if tool_type not in _SUBSCRIPTION_TOOL_WEIGHT:
+            raise ClientError(
+                f"Invalid tool type '{tool_type}' at position {i}. "
+                f"Valid types are: {', '.join(_SUBSCRIPTION_TOOL_WEIGHT.keys())}"
+            )
+
+        # Validate ordering if not the first tool
+        if i > 0:
+            prev_type = tool_list[i - 1]['type']
+            curr_weight = _SUBSCRIPTION_TOOL_WEIGHT[tool_type]
+            prev_weight = _SUBSCRIPTION_TOOL_WEIGHT[prev_type]
+
             if prev_weight > curr_weight:
                 raise ClientError(
                     f"Tools must be ordered according to their processing order. "
-                    f"Tool '{prev_type}' cannot come before tool '{curr_type}'."
+                    f"Tool '{prev_type}' cannot come before tool '{tool_type}'."
                 )
 
 

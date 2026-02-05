@@ -82,7 +82,8 @@ def test_build_request_clip_to_source_success(geom_geojson):
         source=source,
         delivery={},
         tools=[{
-            'type': 'hammer'
+            'type': 'toar',
+            'parameters': {'scale_factor': 10000}
         }],
         clip_to_source=True,
     )
