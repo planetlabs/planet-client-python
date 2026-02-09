@@ -281,6 +281,8 @@ class SubscriptionsClient(_BaseClient):
             resp = await self._session.request(method='POST',
                                                url=url,
                                                json=json_body)
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
         except APIError:
             raise
         except ClientError:  # pragma: no cover
@@ -305,6 +307,8 @@ class SubscriptionsClient(_BaseClient):
 
         try:
             _ = await self._session.request(method='POST', url=url)
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
         except APIError:
             raise
         except ClientError:  # pragma: no cover
@@ -359,6 +363,8 @@ class SubscriptionsClient(_BaseClient):
                                             url=url,
                                             json=json_body,
                                             params=params)
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
         except APIError:
             raise
         except ClientError:  # pragma: no cover
@@ -408,6 +414,8 @@ class SubscriptionsClient(_BaseClient):
                                             url=url,
                                             json=json_body,
                                             params=params)
+        # Forward APIError. We don't strictly need this clause, but it
+        # makes our intent clear.
         except APIError:
             raise
         except ClientError:  # pragma: no cover
