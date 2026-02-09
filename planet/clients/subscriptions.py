@@ -352,13 +352,12 @@ class SubscriptionsClient(_BaseClient):
 
         url = f'{self._base_url}/suspend'
         params = {'user_id': 'all'} if all_subscriptions else None
-        json_body: Dict[str, Any] = {}
+        payload: Dict[str, Any] = {}
         if subscription_ids is not None:
-            json_body['subscription_ids'] = subscription_ids
+            payload["subscription_ids"] = subscription_ids
         if details is not None:
-            json_body['details'] = details
-        if not json_body:
-            json_body = None
+            payload["details"] = details
+        json_body: Optional[Dict[str, Any]] = payload or None
 
         try:
             _ = await self._session.request(method='POST',
@@ -407,11 +406,10 @@ class SubscriptionsClient(_BaseClient):
 
         url = f'{self._base_url}/reactivate'
         params = {'user_id': 'all'} if all_subscriptions else None
-        json_body: Dict[str, Any] = {}
+        payload: Dict[str, Any] = {}
         if subscription_ids is not None:
-            json_body['subscription_ids'] = subscription_ids
-        if not json_body:
-            json_body = None
+            payload["subscription_ids"] = subscription_ids
+        json_body: Optional[Dict[str, Any]] = payload or None
 
         try:
             _ = await self._session.request(method='POST',
