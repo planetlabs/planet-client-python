@@ -20,6 +20,7 @@ from typing_extensions import Literal
 
 from . import geojson, specs
 from .clients.destinations import DEFAULT_DESTINATION_REF
+from .constants import _SUBSCRIPTION_TOOL_WEIGHT
 from .exceptions import ClientError
 
 NOTIFICATIONS_TOPICS = ('delivery.success',
@@ -128,16 +129,17 @@ def build_request(name: str,
     if tools or clip_to_source:
         tool_list = [dict(tool) for tool in (tools or [])]
 
-        # If clip_to_source is True a clip configuration will be added
-        # to the list of requested tools unless an existing clip tool
-        # exists. In that case an exception is raised.
+        # Validate that input tool_list is in correct order
+        _validate_tool_order(tool_list)
+
+        # If clip_to_source is True, insert clip at correct position
         if clip_to_source:
             if any(tool.get('type', None) == 'clip' for tool in tool_list):
                 raise ClientError(
                     "clip_to_source option conflicts with a configured clip tool."
                 )
             else:
-                tool_list.append({'type': 'clip', 'parameters': {}})
+                _insert_clip_tool(tool_list)
 
         details['tools'] = tool_list
 
@@ -837,3 +839,71 @@ def sentinel_hub(collection_id: Optional[str],
     if create_configuration:
         parameters['create_configuration'] = create_configuration
     return _hosting("sentinel_hub", parameters)
+
+
+def _validate_tool_order(tool_list: List[dict]) -> None:
+    """Validate that tools are ordered according to their processing weights.
+
+    Args:
+        tool_list: List of tool configurations to validate.
+
+    Raises:
+        ClientError: If tools are not in the correct order or if an invalid
+            tool is encountered.
+    """
+    for i in range(len(tool_list)):
+        tool_type = tool_list[i].get('type')
+
+        # Check if tool has a type field
+        if tool_type is None:
+            raise ClientError(
+                f"Tool at position {i} is missing required 'type' field.")
+
+        # Check if tool type is valid
+        if tool_type not in _SUBSCRIPTION_TOOL_WEIGHT:
+            raise ClientError(
+                f"Invalid tool type '{tool_type}' at position {i}. "
+                f"Valid types are: {', '.join(_SUBSCRIPTION_TOOL_WEIGHT.keys())}"
+            )
+
+        # Validate ordering if not the first tool
+        if i > 0:
+            prev_type = tool_list[i - 1]['type']
+            curr_weight = _SUBSCRIPTION_TOOL_WEIGHT[tool_type]
+            prev_weight = _SUBSCRIPTION_TOOL_WEIGHT[prev_type]
+
+            if prev_weight > curr_weight:
+                raise ClientError(
+                    f"Tools must be ordered according to their processing order. "
+                    f"Tool '{prev_type}' cannot come before tool '{tool_type}'."
+                )
+
+
+def _insert_clip_tool(tool_list: List[dict]) -> None:
+    """Insert clip tool at the correct position in the tool list.
+
+    The clip tool is inserted based on its position relative to other tools in
+    the _SUBSCRIPTION_TOOL_WEIGHT dictionary order (i.e. the order of the
+    dictionary keys), not on the numeric weight values themselves. This means
+    that the clip tool is placed before any tool whose key appears after
+    "clip" in that dictionary.
+
+    Args:
+        tool_list: List of tool configurations (modified in place).
+    """
+    # Create a position mapping from the _SUBSCRIPTION_TOOL_WEIGHT dictionary
+    tool_order = {
+        name: idx
+        for idx, name in enumerate(_SUBSCRIPTION_TOOL_WEIGHT.keys())
+    }
+    clip_position = tool_order['clip']
+    insert_index = len(tool_list)  # default to end
+
+    for i, tool in enumerate(tool_list):
+        tool_type = tool.get('type')
+        if tool_type in tool_order:
+            if tool_order[tool_type] > clip_position:
+                insert_index = i
+                break
+
+    tool_list.insert(insert_index, {'type': 'clip', 'parameters': {}})
