@@ -357,6 +357,8 @@ class SubscriptionsClient(_BaseClient):
             json_body['subscription_ids'] = subscription_ids
         if details is not None:
             json_body['details'] = details
+        if not json_body:
+            json_body = None
 
         try:
             _ = await self._session.request(method='POST',
@@ -405,9 +407,11 @@ class SubscriptionsClient(_BaseClient):
 
         url = f'{self._base_url}/reactivate'
         params = {'user_id': 'all'} if all_subscriptions else None
-        json_body = {
-            'subscription_ids': subscription_ids
-        } if subscription_ids else None
+        json_body: Dict[str, Any] = {}
+        if subscription_ids is not None:
+            json_body['subscription_ids'] = subscription_ids
+        if not json_body:
+            json_body = None
 
         try:
             _ = await self._session.request(method='POST',
