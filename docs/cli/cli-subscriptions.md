@@ -157,6 +157,11 @@ To list currently active subscriptions:
 planet subscriptions list --status running
 ```
 
+To list suspended subscriptions:
+```sh
+planet subscriptions list --status suspended
+```
+
 To list subscriptions with the `catalog` source type:
 ```sh
 planet subscriptions list --source-type catalog
@@ -312,6 +317,102 @@ planet subscriptions cancel cb817760-1f07-4ee7-bba6-bcac5346343f
 
 That will stop the subscription from producing any more results, but it will stay in the system so you can
 continue to list and get it.
+
+### Suspend Subscription
+
+You can temporarily pause a subscription without canceling it. This is useful when you want to stop processing
+and delivery for a period of time but plan to resume later. Suspended subscriptions can be reactivated at any time.
+
+To suspend a single subscription:
+
+```sh
+planet subscriptions suspend cb817760-1f07-4ee7-bba6-bcac5346343f
+```
+
+You can optionally include details explaining why the subscription is being suspended:
+
+```sh
+planet subscriptions suspend cb817760-1f07-4ee7-bba6-bcac5346343f \
+    --details "Pausing during maintenance window"
+```
+
+The suspend command returns the updated subscription JSON, showing the new status.
+
+### Bulk Suspend Subscriptions
+
+The `bulk-suspend` command provides flexible options for suspending multiple subscriptions at once.
+
+To suspend all of your subscriptions (default behavior):
+
+```sh
+planet subscriptions bulk-suspend
+```
+
+To suspend specific subscriptions:
+
+```sh
+planet subscriptions bulk-suspend \
+    --subscription-ids cb817760-1f07-4ee7-bba6-bcac5346343f,a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6
+```
+
+To suspend all subscriptions across your organization (requires organization admin permissions):
+
+```sh
+planet subscriptions bulk-suspend --all
+```
+
+You can include details explaining the reason for suspension:
+
+```sh
+planet subscriptions bulk-suspend --details "System maintenance scheduled"
+```
+
+Or combine with specific subscription IDs:
+
+```sh
+planet subscriptions bulk-suspend \
+    --subscription-ids cb817760-1f07-4ee7-bba6-bcac5346343f,a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6 \
+    --details "Pausing during data migration"
+```
+
+**Note:** The `--subscription-ids` and `--all` flags are mutually exclusive. If neither flag is provided,
+all of your subscriptions will be suspended.
+
+### Reactivate Subscription
+
+To resume a suspended subscription, use the reactivate command:
+
+```sh
+planet subscriptions reactivate cb817760-1f07-4ee7-bba6-bcac5346343f
+```
+
+The subscription will resume processing and delivering imagery based on its original configuration.
+
+### Bulk Reactivate Subscriptions
+
+The `bulk-reactivate` command provides flexible options for reactivating multiple suspended subscriptions.
+
+To reactivate all of your suspended subscriptions (default behavior):
+
+```sh
+planet subscriptions bulk-reactivate
+```
+
+To reactivate specific subscriptions:
+
+```sh
+planet subscriptions bulk-reactivate \
+    --subscription-ids cb817760-1f07-4ee7-bba6-bcac5346343f,a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6
+```
+
+To reactivate all suspended subscriptions across your organization (requires organization admin permissions):
+
+```sh
+planet subscriptions bulk-reactivate --all
+```
+
+**Note:** The `--subscription-ids` and `--all` flags are mutually exclusive. If neither flag is provided,
+all of your suspended subscriptions will be reactivated.
 
 ## Subscription Request Conveniences
 

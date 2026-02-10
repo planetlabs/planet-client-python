@@ -12,7 +12,7 @@ from respx.patterns import M
 
 from planet.sync import Planet
 from planet.clients.subscriptions import SubscriptionsClient
-from planet.exceptions import APIError, PagingError, ServerError
+from planet.exceptions import APIError, ClientError, PagingError, ServerError
 from planet.http import Session
 
 # M(url=TEST_URL) is case sensitive and matching a lower-case url, and it
@@ -144,6 +144,27 @@ patch_mock.route(M(url=f'{TEST_URL}/test'),
 cancel_mock = respx.mock()
 cancel_mock.route(M(url=f'{TEST_URL}/test/cancel'),
                   method='POST').mock(side_effect=modify_response)
+
+suspend_mock = respx.mock()
+suspend_mock.route(
+    M(url=f'{TEST_URL}/test/suspend'),
+    method='POST').mock(return_value=Response(
+        202,
+        json={
+            'id': 'test', 'status': 'suspended', 'details': 'Suspended'
+        }))
+
+reactivate_mock = respx.mock()
+reactivate_mock.route(M(url=f'{TEST_URL}/test/reactivate'),
+                      method='POST').mock(return_value=Response(202))
+
+bulk_suspend_mock = respx.mock()
+bulk_suspend_mock.route(M(url=f'{TEST_URL}/suspend'),
+                        method='POST').mock(return_value=Response(202))
+
+bulk_reactivate_mock = respx.mock()
+bulk_reactivate_mock.route(M(url=f'{TEST_URL}/reactivate'),
+                           method='POST').mock(return_value=Response(202))
 
 # Mock the subscription description API endpoint.
 get_mock = respx.mock()
@@ -441,6 +462,239 @@ def test_cancel_subscription_success_sync():
     pl = Planet()
     pl.subscriptions._client._base_url = TEST_URL
     _ = pl.subscriptions.cancel_subscription("test")
+
+
+@pytest.mark.anyio
+@failing_api_mock
+async def test_suspend_subscription_failure():
+    """APIError is raised if there is a server error."""
+    with pytest.raises(ServerError):
+        async with Session() as session:
+            client = SubscriptionsClient(session, base_url=TEST_URL)
+            _ = await client.suspend_subscription("lolwut")
+
+
+@pytest.mark.anyio
+@suspend_mock
+async def test_suspend_subscription_success():
+    """Subscription is suspended, description has the expected items."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        result = await client.suspend_subscription("test")
+        assert result['id'] == 'test'
+        assert result['status'] == 'suspended'
+
+
+@pytest.mark.anyio
+@suspend_mock
+async def test_suspend_subscription_with_details():
+    """Subscription is suspended with details."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        result = await client.suspend_subscription("test",
+                                                   details="Test reason")
+        assert result['id'] == 'test'
+
+
+@suspend_mock
+def test_suspend_subscription_success_sync():
+    """Subscription is suspended, description has the expected items."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    result = pl.subscriptions.suspend_subscription("test")
+    assert result['id'] == 'test'
+    assert result['status'] == 'suspended'
+
+
+@pytest.mark.anyio
+@failing_api_mock
+async def test_reactivate_subscription_failure():
+    """APIError is raised if there is a server error."""
+    with pytest.raises(ServerError):
+        async with Session() as session:
+            client = SubscriptionsClient(session, base_url=TEST_URL)
+            _ = await client.reactivate_subscription("lolwut")
+
+
+@pytest.mark.anyio
+@reactivate_mock
+async def test_reactivate_subscription_success():
+    """Subscription is reactivated."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        _ = await client.reactivate_subscription("test")
+
+
+@reactivate_mock
+def test_reactivate_subscription_success_sync():
+    """Subscription is reactivated."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    _ = pl.subscriptions.reactivate_subscription("test")
+
+
+@pytest.mark.anyio
+@failing_api_mock
+async def test_bulk_suspend_subscriptions_failure():
+    """APIError is raised if there is a server error."""
+    with pytest.raises(ServerError):
+        async with Session() as session:
+            client = SubscriptionsClient(session, base_url=TEST_URL)
+            _ = await client.bulk_suspend_subscriptions(
+                subscription_ids=["id1", "id2"])
+
+
+@pytest.mark.anyio
+@bulk_suspend_mock
+async def test_bulk_suspend_subscriptions_success():
+    """Subscriptions are suspended in bulk."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        _ = await client.bulk_suspend_subscriptions(
+            subscription_ids=["id1", "id2"])
+
+
+@pytest.mark.anyio
+@bulk_suspend_mock
+async def test_bulk_suspend_subscriptions_with_details():
+    """Subscriptions are suspended in bulk with details."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        _ = await client.bulk_suspend_subscriptions(
+            subscription_ids=["id1", "id2"], details="Test reason")
+
+
+@pytest.mark.anyio
+@bulk_suspend_mock
+async def test_bulk_suspend_subscriptions_all():
+    """All subscriptions are suspended."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        _ = await client.bulk_suspend_subscriptions(all_subscriptions=True)
+
+
+@bulk_suspend_mock
+def test_bulk_suspend_subscriptions_success_sync():
+    """Subscriptions are suspended in bulk."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    _ = pl.subscriptions.bulk_suspend_subscriptions(
+        subscription_ids=["id1", "id2"])
+
+
+@pytest.mark.anyio
+@failing_api_mock
+async def test_bulk_reactivate_subscriptions_failure():
+    """APIError is raised if there is a server error."""
+    with pytest.raises(ServerError):
+        async with Session() as session:
+            client = SubscriptionsClient(session, base_url=TEST_URL)
+            _ = await client.bulk_reactivate_subscriptions(
+                subscription_ids=["id1", "id2"])
+
+
+@pytest.mark.anyio
+@bulk_reactivate_mock
+async def test_bulk_reactivate_subscriptions_success():
+    """Subscriptions are reactivated in bulk."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        _ = await client.bulk_reactivate_subscriptions(
+            subscription_ids=["id1", "id2"])
+
+
+@pytest.mark.anyio
+@bulk_reactivate_mock
+async def test_bulk_reactivate_subscriptions_all():
+    """All subscriptions are reactivated."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        _ = await client.bulk_reactivate_subscriptions(all_subscriptions=True)
+
+
+@bulk_reactivate_mock
+def test_bulk_reactivate_subscriptions_success_sync():
+    """Subscriptions are reactivated in bulk."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    _ = pl.subscriptions.bulk_reactivate_subscriptions(
+        subscription_ids=["id1", "id2"])
+
+
+@pytest.mark.anyio
+async def test_bulk_suspend_subscriptions_validation_both():
+    """ClientError is raised if both subscription_ids and all_subscriptions are provided."""
+    with pytest.raises(ClientError,
+                       match="Cannot specify both subscription_ids"):
+        async with Session() as session:
+            client = SubscriptionsClient(session, base_url=TEST_URL)
+            _ = await client.bulk_suspend_subscriptions(
+                subscription_ids=["id1"], all_subscriptions=True)
+
+
+@pytest.mark.anyio
+@bulk_suspend_mock
+async def test_bulk_suspend_subscriptions_no_params():
+    """Suspends all user subscriptions when no parameters are provided."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        _ = await client.bulk_suspend_subscriptions()
+
+
+def test_bulk_suspend_subscriptions_validation_both_sync():
+    """ClientError is raised if both subscription_ids and all_subscriptions are provided."""
+    with pytest.raises(ClientError,
+                       match="Cannot specify both subscription_ids"):
+        pl = Planet()
+        pl.subscriptions._client._base_url = TEST_URL
+        _ = pl.subscriptions.bulk_suspend_subscriptions(
+            subscription_ids=["id1"], all_subscriptions=True)
+
+
+@bulk_suspend_mock
+def test_bulk_suspend_subscriptions_no_params_sync():
+    """Suspends all user subscriptions when no parameters are provided."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    _ = pl.subscriptions.bulk_suspend_subscriptions()
+
+
+@pytest.mark.anyio
+async def test_bulk_reactivate_subscriptions_validation_both():
+    """ClientError is raised if both subscription_ids and all_subscriptions are provided."""
+    with pytest.raises(ClientError,
+                       match="Cannot specify both subscription_ids"):
+        async with Session() as session:
+            client = SubscriptionsClient(session, base_url=TEST_URL)
+            _ = await client.bulk_reactivate_subscriptions(
+                subscription_ids=["id1"], all_subscriptions=True)
+
+
+@pytest.mark.anyio
+@bulk_reactivate_mock
+async def test_bulk_reactivate_subscriptions_no_params():
+    """Reactivates all user subscriptions when no parameters are provided."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        _ = await client.bulk_reactivate_subscriptions()
+
+
+def test_bulk_reactivate_subscriptions_validation_both_sync():
+    """ClientError is raised if both subscription_ids and all_subscriptions are provided."""
+    with pytest.raises(ClientError,
+                       match="Cannot specify both subscription_ids"):
+        pl = Planet()
+        pl.subscriptions._client._base_url = TEST_URL
+        _ = pl.subscriptions.bulk_reactivate_subscriptions(
+            subscription_ids=["id1"], all_subscriptions=True)
+
+
+@bulk_reactivate_mock
+def test_bulk_reactivate_subscriptions_no_params_sync():
+    """Reactivates all user subscriptions when no parameters are provided."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    _ = pl.subscriptions.bulk_reactivate_subscriptions()
 
 
 @pytest.mark.anyio

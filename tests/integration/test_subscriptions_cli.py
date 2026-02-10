@@ -23,15 +23,19 @@ import pytest
 from planet.cli import cli
 
 from test_subscriptions_api import (api_mock,
+                                    bulk_create_mock,
+                                    bulk_reactivate_mock,
+                                    bulk_suspend_mock,
                                     cancel_mock,
                                     create_mock,
-                                    bulk_create_mock,
                                     failing_api_mock,
                                     get_mock,
                                     patch_mock,
+                                    reactivate_mock,
                                     res_api_mock,
                                     sub_summary_mock,
                                     summary_mock,
+                                    suspend_mock,
                                     update_mock,
                                     TEST_URL)
 
@@ -206,6 +210,134 @@ def test_subscriptions_cancel_success(invoke):
         catch_exceptions=True)
 
     assert result.exit_code == 0  # success.
+
+
+@failing_api_mock
+def test_subscriptions_suspend_failure(invoke):
+    """Suspend command exits gracefully from an API error."""
+    result = invoke(['suspend', 'test'], catch_exceptions=True)
+    assert result.exit_code == 1  # failure.
+
+
+@suspend_mock
+def test_subscriptions_suspend_success(invoke):
+    """Suspend command succeeds."""
+    result = invoke(['suspend', 'test'], catch_exceptions=True)
+    assert result.exit_code == 0  # success.
+    assert 'test' in result.output
+
+
+@suspend_mock
+def test_subscriptions_suspend_with_details(invoke):
+    """Suspend command succeeds with details."""
+    result = invoke(['suspend', 'test', '--details', 'Test reason'],
+                    catch_exceptions=True)
+    assert result.exit_code == 0  # success.
+    assert 'test' in result.output
+
+
+@failing_api_mock
+def test_subscriptions_reactivate_failure(invoke):
+    """Reactivate command exits gracefully from an API error."""
+    result = invoke(['reactivate', 'test'], catch_exceptions=True)
+    assert result.exit_code == 1  # failure.
+
+
+@reactivate_mock
+def test_subscriptions_reactivate_success(invoke):
+    """Reactivate command succeeds."""
+    result = invoke(['reactivate', 'test'], catch_exceptions=True)
+    assert result.exit_code == 0  # success.
+
+
+@failing_api_mock
+def test_subscriptions_bulk_suspend_failure(invoke):
+    """Bulk suspend command exits gracefully from an API error."""
+    result = invoke(['bulk-suspend', '--subscription-ids', 'id1,id2'],
+                    catch_exceptions=True)
+    assert result.exit_code == 1  # failure.
+
+
+@bulk_suspend_mock
+def test_subscriptions_bulk_suspend_success(invoke):
+    """Bulk suspend command succeeds."""
+    result = invoke(['bulk-suspend', '--subscription-ids', 'id1,id2'],
+                    catch_exceptions=True)
+    assert result.exit_code == 0  # success.
+
+
+@bulk_suspend_mock
+def test_subscriptions_bulk_suspend_with_details(invoke):
+    """Bulk suspend command succeeds with details."""
+    result = invoke([
+        'bulk-suspend',
+        '--subscription-ids',
+        'id1,id2',
+        '--details',
+        'Test reason'
+    ],
+                    catch_exceptions=True)
+    assert result.exit_code == 0  # success.
+
+
+@bulk_suspend_mock
+def test_subscriptions_bulk_suspend_all(invoke):
+    """Bulk suspend command succeeds with --all flag."""
+    result = invoke(['bulk-suspend', '--all'], catch_exceptions=True)
+    assert result.exit_code == 0  # success.
+
+
+@bulk_suspend_mock
+def test_subscriptions_bulk_suspend_no_options(invoke):
+    """Bulk suspend command succeeds with no options (all user subscriptions)."""
+    result = invoke(['bulk-suspend'], catch_exceptions=True)
+    assert result.exit_code == 0  # success.
+
+
+def test_subscriptions_bulk_suspend_both_options(invoke):
+    """Bulk suspend command fails when both options are provided."""
+    result = invoke(['bulk-suspend', '--subscription-ids', 'id1', '--all'],
+                    catch_exceptions=True)
+    assert result.exit_code == 1  # client error.
+    assert 'Cannot specify both subscription_ids and all_subscriptions' in result.output
+
+
+@failing_api_mock
+def test_subscriptions_bulk_reactivate_failure(invoke):
+    """Bulk reactivate command exits gracefully from an API error."""
+    result = invoke(['bulk-reactivate', '--subscription-ids', 'id1,id2'],
+                    catch_exceptions=True)
+    assert result.exit_code == 1  # failure.
+
+
+@bulk_reactivate_mock
+def test_subscriptions_bulk_reactivate_success(invoke):
+    """Bulk reactivate command succeeds."""
+    result = invoke(['bulk-reactivate', '--subscription-ids', 'id1,id2'],
+                    catch_exceptions=True)
+    assert result.exit_code == 0  # success.
+
+
+@bulk_reactivate_mock
+def test_subscriptions_bulk_reactivate_all(invoke):
+    """Bulk reactivate command succeeds with --all flag."""
+    result = invoke(['bulk-reactivate', '--all'], catch_exceptions=True)
+    assert result.exit_code == 0  # success.
+
+
+@bulk_reactivate_mock
+def test_subscriptions_bulk_reactivate_no_options(invoke):
+    """Bulk reactivate command succeeds with no options (all user subscriptions)."""
+    result = invoke(['bulk-reactivate'], catch_exceptions=True)
+    assert result.exit_code == 0  # success.
+
+
+def test_subscriptions_bulk_reactivate_both_options(invoke):
+    """Bulk reactivate command fails when both options are provided."""
+    result = invoke(['bulk-reactivate', '--subscription-ids', 'id1', '--all'],
+                    catch_exceptions=True)
+    assert result.exit_code == 1  # client error.
+    assert 'Cannot specify both subscription_ids and all_subscriptions' in result.output
 
 
 @failing_api_mock

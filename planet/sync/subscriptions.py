@@ -170,10 +170,116 @@ class SubscriptionsAPI:
         return self._client._call_sync(
             self._client.cancel_subscription(subscription_id))
 
+    def suspend_subscription(self,
+                             subscription_id: str,
+                             details: Optional[str] = None) -> dict:
+        """Suspend a Subscription.
+
+        Args:
+            subscription_id (str): id of subscription to suspend.
+            details (str): optional details explaining the reason
+                for suspension.
+
+        Returns:
+            dict: the suspended subscription.
+
+        Raises:
+            APIError: on an API server error.
+            ClientError: on a client error.
+        """
+        return self._client._call_sync(
+            self._client.suspend_subscription(subscription_id, details))
+
+    def reactivate_subscription(self, subscription_id: str) -> None:
+        """Reactivate a Subscription.
+
+        Args:
+            subscription_id (str): id of subscription to reactivate.
+
+        Returns:
+            None
+
+        Raises:
+            APIError: on an API server error.
+            ClientError: on a client error.
+        """
+        return self._client._call_sync(
+            self._client.reactivate_subscription(subscription_id))
+
+    def bulk_suspend_subscriptions(self,
+                                   subscription_ids: Optional[
+                                       List[str]] = None,
+                                   details: Optional[str] = None,
+                                   all_subscriptions: bool = False) -> None:
+        """Suspend multiple Subscriptions.
+
+        This method supports three modes of operation:
+
+        1. Suspend specific subscriptions: provide subscription_ids
+        2. Suspend all user's subscriptions: call with no parameters
+        3. Suspend all organization subscriptions: set all_subscriptions=True
+           (organization admin only)
+
+        Args:
+            subscription_ids (List[str]): list of subscription ids
+                to suspend. If not provided and all_subscriptions is False,
+                suspends all of the user's subscriptions.
+            details (str): optional details explaining the reason
+                for suspension.
+            all_subscriptions (bool): if True, suspend all
+                subscriptions for the organization (requires organization
+                admin permissions). Mutually exclusive with subscription_ids.
+
+        Returns:
+            None
+
+        Raises:
+            ClientError: if both subscription_ids and all_subscriptions are
+                provided.
+            APIError: on an API server error.
+        """
+        return self._client._call_sync(
+            self._client.bulk_suspend_subscriptions(subscription_ids,
+                                                    details,
+                                                    all_subscriptions))
+
+    def bulk_reactivate_subscriptions(self,
+                                      subscription_ids: Optional[
+                                          List[str]] = None,
+                                      all_subscriptions: bool = False) -> None:
+        """Reactivate multiple Subscriptions.
+
+        This method supports three modes of operation:
+
+        1. Reactivate specific subscriptions: provide subscription_ids
+        2. Reactivate all user's subscriptions: call with no parameters
+        3. Reactivate all organization subscriptions: set all_subscriptions=True
+           (organization admin only)
+
+        Args:
+            subscription_ids (List[str]): list of subscription ids
+                to reactivate. If not provided and all_subscriptions is False,
+                reactivates all of the user's subscriptions.
+            all_subscriptions (bool): if True, reactivate all
+                subscriptions for the organization (requires organization
+                admin permissions). Mutually exclusive with subscription_ids.
+
+        Returns:
+            None
+
+        Raises:
+            ClientError: if both subscription_ids and all_subscriptions are
+                provided.
+            APIError: on an API server error.
+        """
+        return self._client._call_sync(
+            self._client.bulk_reactivate_subscriptions(subscription_ids,
+                                                       all_subscriptions))
+
     def update_subscription(self, subscription_id: str, request: dict) -> dict:
         """Update (edit) a Subscription via PUT.
 
-        Args
+        Args:
             subscription_id (str): id of the subscription to update.
             request (dict): subscription content for update, full
                 payload is required.
@@ -192,7 +298,7 @@ class SubscriptionsAPI:
                            request: Dict[str, Any]) -> Dict[str, Any]:
         """Update (edit) a Subscription via PATCH.
 
-        Args
+        Args:
             subscription_id (str): id of the subscription to update.
             request (dict): subscription content for update, only
                 attributes to update are required.
