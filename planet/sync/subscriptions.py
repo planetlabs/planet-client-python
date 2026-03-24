@@ -338,6 +338,10 @@ class SubscriptionsAPI:
                                           "failed",
                                           "success"]]] = None,
         limit: int = 100,
+        created: Optional[str] = None,
+        updated: Optional[str] = None,
+        completed: Optional[str] = None,
+        user_id: Optional[Union[str, int]] = None
     ) -> Iterator[Union[Dict[str, Any], str]]:
         """Iterate over results of a Subscription.
 
@@ -352,7 +356,20 @@ class SubscriptionsAPI:
                 filter out results with status not in this set.
             limit (int): limit the number of subscriptions in the
                 results. When set to 0, no maximum is applied.
-            TODO: created, updated, completed, user_id
+            created (str): filter by created time or interval.
+            updated (str): filter by updated time or interval.
+            completed (str): filter by completed time or interval.
+            user_id (str or int): filter by user ID. Only available to organization admins.
+                Accepts "all" or a specific user ID.
+
+        Datetime args (created, updated, completed) can either be a
+        date-time or an interval, open or closed. Date and time expressions adhere
+        to RFC 3339. Open intervals are expressed using double-dots.
+
+        Examples:
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A closed interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Open intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
 
         Yields:
             dict: description of a subscription results.
@@ -362,24 +379,46 @@ class SubscriptionsAPI:
             ClientError: on a client error.
         """
         return self._client._aiter_to_iter(
-            self._client.get_results(subscription_id, status, limit))
+            self._client.get_results(subscription_id,
+                                     status,
+                                     limit,
+                                     created,
+                                     updated,
+                                     completed,
+                                     user_id))
 
     def get_results_csv(
-        self,
-        subscription_id: str,
-        status: Optional[Sequence[Literal["created",
-                                          "queued",
-                                          "processing",
-                                          "failed",
-                                          "success"]]] = None
-    ) -> Iterator[str]:
+            self,
+            subscription_id: str,
+            status: Optional[Sequence[Literal["created",
+                                              "queued",
+                                              "processing",
+                                              "failed",
+                                              "success"]]] = None,
+            created: Optional[str] = None,
+            updated: Optional[str] = None,
+            completed: Optional[str] = None,
+            user_id: Optional[Union[str, int]] = None) -> Iterator[str]:
         """Iterate over rows of results CSV for a Subscription.
 
         Parameters:
             subscription_id (str): id of a subscription.
             status (Set[str]): pass result with status in this set,
                 filter out results with status not in this set.
-            TODO: created, updated, completed, user_id
+            created (str): filter by created time or interval.
+            updated (str): filter by updated time or interval.
+            completed (str): filter by completed time or interval.
+            user_id (str or int): filter by user ID. Only available to organization admins.
+                Accepts "all" or a specific user ID.
+
+        Datetime args (created, updated, completed) can either be a
+        date-time or an interval, open or closed. Date and time expressions adhere
+        to RFC 3339. Open intervals are expressed using double-dots.
+
+        Examples:
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A closed interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Open intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
 
         Yields:
             str: a row from a CSV file.
@@ -394,7 +433,12 @@ class SubscriptionsAPI:
         # for this entire method a la stamina:
         # https://github.com/hynek/stamina.
         return self._client._aiter_to_iter(
-            self._client.get_results_csv(subscription_id, status))
+            self._client.get_results_csv(subscription_id,
+                                         status,
+                                         created,
+                                         updated,
+                                         completed,
+                                         user_id))
 
     def get_summary(self) -> Dict[str, Any]:
         """Summarize the status of all subscriptions via GET.

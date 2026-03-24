@@ -514,15 +514,19 @@ class SubscriptionsClient(_BaseClient):
             sub = resp.json()
             return sub
 
-    async def get_results(self,
-                          subscription_id: str,
-                          status: Optional[Sequence[Literal[
-                              "created",
-                              "queued",
-                              "processing",
-                              "failed",
-                              "success"]]] = None,
-                          limit: int = 100) -> AsyncIterator[dict]:
+    async def get_results(
+            self,
+            subscription_id: str,
+            status: Optional[Sequence[Literal["created",
+                                              "queued",
+                                              "processing",
+                                              "failed",
+                                              "success"]]] = None,
+            limit: int = 100,
+            created: Optional[str] = None,
+            updated: Optional[str] = None,
+            completed: Optional[str] = None,
+            user_id: Optional[Union[str, int]] = None) -> AsyncIterator[dict]:
         """Iterate over results of a Subscription.
 
         Notes:
@@ -536,6 +540,20 @@ class SubscriptionsClient(_BaseClient):
                 filter out results with status not in this set.
             limit (int): limit the number of subscriptions in the
                 results. When set to 0, no maximum is applied.
+            created (str): filter by created time or interval.
+            updated (str): filter by updated time or interval.
+            completed (str): filter by completed time or interval.
+            user_id (str or int): filter by user ID. Only available to organization admins.
+                Accepts "all" or a specific user ID.
+
+        Datetime args (created, updated, completed) can either be a
+        date-time or an interval, open or closed. Date and time expressions adhere
+        to RFC 3339. Open intervals are expressed using double-dots.
+
+        Examples:
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A closed interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Open intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
 
         Yields:
             dict: description of a subscription results.
@@ -545,13 +563,22 @@ class SubscriptionsClient(_BaseClient):
             ClientError: on a client error.
         """
 
-        # TODO from old doc string, which breaks strict document checking:
-        #    Add Parameters created, updated, completed, user_id
         class _ResultsPager(Paged):
             """Navigates pages of messages about subscription results."""
             ITEMS_KEY = 'results'
 
-        params = {'status': [val for val in status or {}]}
+        params: Dict[str, Any] = {}
+        if status is not None:
+            params['status'] = [val for val in status]
+        if created is not None:
+            params['created'] = created
+        if updated is not None:
+            params['updated'] = updated
+        if completed is not None:
+            params['completed'] = completed
+        if user_id is not None:
+            params['user_id'] = user_id
+
         url = f'{self._base_url}/{subscription_id}/results'
 
         try:
@@ -570,20 +597,37 @@ class SubscriptionsClient(_BaseClient):
             raise
 
     async def get_results_csv(
-        self,
-        subscription_id: str,
-        status: Optional[Sequence[Literal["created",
-                                          "queued",
-                                          "processing",
-                                          "failed",
-                                          "success"]]] = None
-    ) -> AsyncIterator[str]:
+            self,
+            subscription_id: str,
+            status: Optional[Sequence[Literal["created",
+                                              "queued",
+                                              "processing",
+                                              "failed",
+                                              "success"]]] = None,
+            created: Optional[str] = None,
+            updated: Optional[str] = None,
+            completed: Optional[str] = None,
+            user_id: Optional[Union[str, int]] = None) -> AsyncIterator[str]:
         """Iterate over rows of results CSV for a Subscription.
 
         Parameters:
             subscription_id (str): id of a subscription.
             status (Set[str]): pass result with status in this set,
                 filter out results with status not in this set.
+            created (str): filter by created time or interval.
+            updated (str): filter by updated time or interval.
+            completed (str): filter by completed time or interval.
+            user_id (str or int): filter by user ID. Only available to organization admins.
+                Accepts "all" or a specific user ID.
+
+        Datetime args (created, updated, completed) can either be a
+        date-time or an interval, open or closed. Date and time expressions adhere
+        to RFC 3339. Open intervals are expressed using double-dots.
+
+        Examples:
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A closed interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Open intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
 
         Yields:
             str: a row from a CSV file.
@@ -592,10 +636,18 @@ class SubscriptionsClient(_BaseClient):
             APIError: on an API server error.
             ClientError: on a client error.
         """
-        # TODO from old doc string, which breaks strict document checking:
-        #    Add Parameters created, updated, completed, user_id
         url = f'{self._base_url}/{subscription_id}/results'
-        params = {'status': [val for val in status or {}], 'format': 'csv'}
+        params: Dict[str, Any] = {'format': 'csv'}
+        if status is not None:
+            params['status'] = [val for val in status]
+        if created is not None:
+            params['created'] = created
+        if updated is not None:
+            params['updated'] = updated
+        if completed is not None:
+            params['completed'] = completed
+        if user_id is not None:
+            params['user_id'] = user_id
 
         # Note: retries are not implemented yet. This project has
         # retry logic for HTTP requests, but does not handle errors
