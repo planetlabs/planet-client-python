@@ -228,10 +228,48 @@ planet subscriptions results SUBSCRIPTION_ID
 By default this displays the first 100 results. As with other commands, you can use the `--limit` param to
 set a higher limit, or set it to 0 to see all results (this can be quite large with subscriptions results).
 
-You can also filter by status:
+#### Filtering Results
+
+The `results` command supports filtering on several fields:
+
+* `--status`: Filter on the status of results. Status options include `created`, `queued`, `processing`, `failed`, and `success`. Multiple status args are allowed.
+* `--created`: Filter results by creation time or an interval of creation times.
+* `--updated`: Filter results by update time or an interval of update times.
+* `--completed`: Filter results by completion time or an interval of completion times.
+* `--user-id`: Filter by user ID. Only available to organization admins. Accepts "all" or a specific user ID.
+
+Datetime args (`--created`, `--updated`, and `--completed`) can either be a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.
+
+* A date-time: `2018-02-12T23:20:50Z`
+* A closed interval: `2018-02-12T00:00:00Z/2018-03-18T12:31:12Z`
+* Open intervals: `2018-02-12T00:00:00Z/..` or `../2018-03-18T12:31:12Z`
+
+Examples:
+
+To see results that are currently processing:
 
 ```sh
 planet subscriptions results SUBSCRIPTION_ID --status processing
+```
+
+To see successful results completed in the last week:
+
+```sh
+planet subscriptions results SUBSCRIPTION_ID --status success \
+    --completed 2026-03-17T00:00:00Z/..
+```
+
+To see results created in a specific time range:
+
+```sh
+planet subscriptions results SUBSCRIPTION_ID \
+    --created 2024-01-01T00:00:00Z/2024-02-01T00:00:00Z
+```
+
+To see results for all users in your organization (organization admin only):
+
+```sh
+planet subscriptions results SUBSCRIPTION_ID --user-id all
 ```
 
 See the Subscriptions API documentation for the [official list of available statuses](https://docs.planet.com/develop/apis/subscriptions/#states--status-descriptions).
