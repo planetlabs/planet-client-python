@@ -830,6 +830,141 @@ def test_get_results_csv_sync():
     assert rows == [['id', 'status'], ['1234-abcd', 'SUCCESS']]
 
 
+# Mock router for testing query parameter filtering
+results_filter_mock = respx.mock(assert_all_called=False)
+
+# More specific routes (multiple params) must come first
+results_filter_mock.route(
+    M(url__startswith=TEST_URL),
+    M(params__contains={
+        'created': '2024-01-01T00:00:00Z/..', 'user_id': 'all'
+    })
+).mock(
+    side_effect=[Response(200, json={
+        'results': [{
+            'id': '5'
+        }], '_links': {}
+    })])
+
+results_filter_mock.route(
+    M(url__startswith=TEST_URL),
+    M(params__contains={
+        'format': 'csv', 'completed': '2024-01-01T00:00:00Z/..'
+    })).mock(side_effect=[Response(200, text="id,status\n6,SUCCESS\n")])
+
+# Single parameter routes
+results_filter_mock.route(
+    M(url__startswith=TEST_URL),
+    M(params__contains={'created': '2024-01-01T00:00:00Z/..'})
+).mock(
+    side_effect=[Response(200, json={
+        'results': [{
+            'id': '1'
+        }], '_links': {}
+    })])
+
+results_filter_mock.route(
+    M(url__startswith=TEST_URL),
+    M(params__contains={'updated': '../2024-12-31T23:59:59Z'})
+).mock(
+    side_effect=[Response(200, json={
+        'results': [{
+            'id': '2'
+        }], '_links': {}
+    })])
+
+results_filter_mock.route(
+    M(url__startswith=TEST_URL),
+    M(params__contains={
+        'completed': '2024-01-01T00:00:00Z/2024-02-01T00:00:00Z'
+    })
+).mock(
+    side_effect=[Response(200, json={
+        'results': [{
+            'id': '3'
+        }], '_links': {}
+    })])
+
+results_filter_mock.route(
+    M(url__startswith=TEST_URL), M(params__contains={'user_id': 'all'})
+).mock(
+    side_effect=[Response(200, json={
+        'results': [{
+            'id': '4'
+        }], '_links': {}
+    })])
+
+
+@pytest.mark.parametrize(
+    "filter_param,expected_id",
+    [
+        ({
+            "created": "2024-01-01T00:00:00Z/.."
+        }, '1'),
+        ({
+            "updated": "../2024-12-31T23:59:59Z"
+        }, '2'),
+        ({
+            "completed": "2024-01-01T00:00:00Z/2024-02-01T00:00:00Z"
+        }, '3'),
+        ({
+            "user_id": "all"
+        }, '4'),
+    ])
+@pytest.mark.anyio
+@results_filter_mock
+async def test_get_results_with_filter_params(filter_param, expected_id):
+    """get_results passes filter parameters to API."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        results = [
+            res async for res in client.get_results("42", **filter_param)
+        ]
+        assert len(results) == 1
+        assert results[0]['id'] == expected_id
+
+
+@pytest.mark.anyio
+@results_filter_mock
+async def test_get_results_with_multiple_filters():
+    """get_results passes multiple filter parameters to API."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        results = [
+            res async for res in client.get_results(
+                "42", created="2024-01-01T00:00:00Z/..", user_id="all")
+        ]
+        assert len(results) == 1
+        assert results[0]['id'] == '5'
+
+
+@pytest.mark.anyio
+@results_filter_mock
+async def test_get_results_csv_with_filter():
+    """get_results_csv passes filter parameters to API."""
+    async with Session() as session:
+        client = SubscriptionsClient(session, base_url=TEST_URL)
+        results = [
+            res async for res in client.get_results_csv(
+                "42", completed="2024-01-01T00:00:00Z/..")
+        ]
+        rows = list(csv.reader(results))
+        assert rows == [['id', 'status'], ['6', 'SUCCESS']]
+
+
+@results_filter_mock
+def test_get_results_with_filters_sync():
+    """Sync get_results passes filter parameters to API."""
+    pl = Planet()
+    pl.subscriptions._client._base_url = TEST_URL
+    results = list(
+        pl.subscriptions.get_results("42",
+                                     created="2024-01-01T00:00:00Z/..",
+                                     user_id="all"))
+    assert len(results) == 1
+    assert results[0]['id'] == '5'
+
+
 paging_cycle_api_mock = respx.mock()
 
 # Identical next links is a hangup we want to avoid.
