@@ -54,12 +54,11 @@ def subscriptions(ctx, base_url):
 @pretty
 @click.option(
     '--created',
-    help="""Filter subscriptions by creation time or interval. See documentation
-    for examples.""")
-@click.option(
-    '--end-time',
-    help="""Filter subscriptions by end time or interval. See documentation
-    for examples.""")
+    help="""Filter subscriptions by creation time or interval (RFC 3339).
+    See documentation for examples.""")
+@click.option('--end-time',
+              help="""Filter subscriptions by end time or interval (RFC 3339).
+    See documentation for examples.""")
 @click.option(
     '--hosting',
     type=click.BOOL,
@@ -76,8 +75,8 @@ def subscriptions(ctx, base_url):
     available types. Default is all.""")
 @click.option(
     '--start-time',
-    help="""Filter subscriptions by start time or interval. See documentation
-    for examples.""")
+    help="""Filter subscriptions by start time or interval (RFC 3339).
+    See documentation for examples.""")
 @click.option(
     '--status',
     type=click.Choice([
@@ -102,10 +101,10 @@ def subscriptions(ctx, base_url):
     Supported fields: [name, created, updated, start_time, end_time].
 
     Example: 'name ASC,created DESC'""")
-@click.option('--updated',
-              help="""Filter subscriptions by update time or interval. See
-    documentation
-    for examples.""")
+@click.option(
+    '--updated',
+    help="""Filter subscriptions by update time or interval (RFC 3339). See
+    documentation for examples.""")
 @click.option(
     '--destination-ref',
     help="Filter subscriptions created with the provided destination reference."
@@ -437,22 +436,18 @@ async def get_subscription_cmd(ctx, subscription_id, pretty):
               default=False,
               help="Get subscription results as comma-separated fields. When "
               "this flag is included, --limit is ignored")
-@click.option(
-    '--created',
-    help="""Filter results by creation time or interval. See documentation
-    for examples.""")
-@click.option(
-    '--updated',
-    help="""Filter results by update time or interval. See documentation
-    for examples.""")
-@click.option(
-    '--completed',
-    help="""Filter results by completion time or interval. See documentation
-    for examples.""")
-@click.option(
-    '--item-datetime',
-    help="""Filter results by item datetime or interval. See documentation
-    for examples.""")
+@click.option('--created',
+              help="""Filter results by creation time or interval (RFC 3339).
+    See documentation for examples.""")
+@click.option('--updated',
+              help="""Filter results by update time or interval (RFC 3339).
+    See documentation for examples.""")
+@click.option('--completed',
+              help="""Filter results by completion time or interval (RFC 3339).
+    See documentation for examples.""")
+@click.option('--item-datetime',
+              help="""Filter results by item datetime or interval (RFC 3339).
+    See documentation for examples.""")
 @limit
 @click.pass_context
 @translate_exceptions
