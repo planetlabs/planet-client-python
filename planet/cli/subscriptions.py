@@ -449,8 +449,10 @@ async def get_subscription_cmd(ctx, subscription_id, pretty):
     '--completed',
     help="""Filter results by completion time or interval. See documentation
     for examples.""")
-@click.option('--user-id',
-              help="Filter by user ID. Accepts 'all' or a specific user ID.")
+@click.option(
+    '--item-datetime',
+    help="""Filter results by item datetime or interval. See documentation
+    for examples.""")
 @limit
 @click.pass_context
 @translate_exceptions
@@ -463,7 +465,7 @@ async def list_subscription_results_cmd(ctx,
                                         created,
                                         updated,
                                         completed,
-                                        user_id,
+                                        item_datetime,
                                         limit):
     """Print the results of a subscription to stdout.
 
@@ -487,21 +489,23 @@ async def list_subscription_results_cmd(ctx,
     """
     async with subscriptions_client(ctx) as client:
         if csv_flag:
-            async for result in client.get_results_csv(subscription_id,
-                                                       status=status,
-                                                       created=created,
-                                                       updated=updated,
-                                                       completed=completed,
-                                                       user_id=user_id):
+            async for result in client.get_results_csv(
+                    subscription_id,
+                    status=status,
+                    created=created,
+                    updated=updated,
+                    completed=completed,
+                    item_datetime=item_datetime):
                 click.echo(result)
         else:
-            async for result in client.get_results(subscription_id,
-                                                   status=status,
-                                                   limit=limit,
-                                                   created=created,
-                                                   updated=updated,
-                                                   completed=completed,
-                                                   user_id=user_id):
+            async for result in client.get_results(
+                    subscription_id,
+                    status=status,
+                    limit=limit,
+                    created=created,
+                    updated=updated,
+                    completed=completed,
+                    item_datetime=item_datetime):
                 echo_json(result, pretty)
 
 

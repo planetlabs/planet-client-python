@@ -836,9 +836,11 @@ results_filter_mock = respx.mock(assert_all_called=False)
 # More specific routes (multiple params) must come first
 results_filter_mock.route(
     M(url__startswith=TEST_URL),
-    M(params__contains={
-        'created': '2024-01-01T00:00:00Z/..', 'user_id': 'all'
-    })
+    M(
+        params__contains={
+            'created': '2024-01-01T00:00:00Z/..',
+            'item_datetime': '2024-06-01T00:00:00Z/..'
+        })
 ).mock(
     side_effect=[Response(200, json={
         'results': [{
@@ -886,7 +888,8 @@ results_filter_mock.route(
     })])
 
 results_filter_mock.route(
-    M(url__startswith=TEST_URL), M(params__contains={'user_id': 'all'})
+    M(url__startswith=TEST_URL),
+    M(params__contains={'item_datetime': '2024-06-01T00:00:00Z/..'})
 ).mock(
     side_effect=[Response(200, json={
         'results': [{
@@ -908,7 +911,7 @@ results_filter_mock.route(
             "completed": "2024-01-01T00:00:00Z/2024-02-01T00:00:00Z"
         }, '3'),
         ({
-            "user_id": "all"
+            "item_datetime": "2024-06-01T00:00:00Z/.."
         }, '4'),
     ])
 @pytest.mark.anyio
@@ -931,8 +934,9 @@ async def test_get_results_with_multiple_filters():
     async with Session() as session:
         client = SubscriptionsClient(session, base_url=TEST_URL)
         results = [
-            res async for res in client.get_results(
-                "42", created="2024-01-01T00:00:00Z/..", user_id="all")
+            res async for res in
+            client.get_results("42", created="2024-01-01T00:00:00Z/..",
+                               item_datetime="2024-06-01T00:00:00Z/..")
         ]
         assert len(results) == 1
         assert results[0]['id'] == '5'
@@ -960,7 +964,7 @@ def test_get_results_with_filters_sync():
     results = list(
         pl.subscriptions.get_results("42",
                                      created="2024-01-01T00:00:00Z/..",
-                                     user_id="all"))
+                                     item_datetime="2024-06-01T00:00:00Z/.."))
     assert len(results) == 1
     assert results[0]['id'] == '5'
 

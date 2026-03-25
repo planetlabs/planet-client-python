@@ -236,9 +236,9 @@ The `results` command supports filtering on several fields:
 * `--created`: Filter results by creation time or an interval of creation times.
 * `--updated`: Filter results by update time or an interval of update times.
 * `--completed`: Filter results by completion time or an interval of completion times.
-* `--user-id`: Filter by user ID. Only available to organization admins. Accepts "all" or a specific user ID.
+* `--item-datetime`: Filter results by item datetime or an interval of item datetimes.
 
-Datetime args (`--created`, `--updated`, and `--completed`) can either be a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.
+Datetime args (`--created`, `--updated`, `--completed`, and `--item-datetime`) can either be a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.
 
 * A date-time: `2018-02-12T23:20:50Z`
 * A closed interval: `2018-02-12T00:00:00Z/2018-03-18T12:31:12Z`
@@ -266,10 +266,11 @@ planet subscriptions results SUBSCRIPTION_ID \
     --created 2024-01-01T00:00:00Z/2024-02-01T00:00:00Z
 ```
 
-To see results for all users in your organization (organization admin only):
+To see results for imagery captured after a specific date:
 
 ```sh
-planet subscriptions results SUBSCRIPTION_ID --user-id all
+planet subscriptions results SUBSCRIPTION_ID \
+    --item-datetime 2024-01-01T00:00:00Z/..
 ```
 
 See the Subscriptions API documentation for the [official list of available statuses](https://docs.planet.com/develop/apis/subscriptions/#states--status-descriptions).

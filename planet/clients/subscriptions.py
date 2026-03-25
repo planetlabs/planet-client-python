@@ -526,7 +526,7 @@ class SubscriptionsClient(_BaseClient):
             created: Optional[str] = None,
             updated: Optional[str] = None,
             completed: Optional[str] = None,
-            user_id: Optional[Union[str, int]] = None) -> AsyncIterator[dict]:
+            item_datetime: Optional[str] = None) -> AsyncIterator[dict]:
         """Iterate over results of a Subscription.
 
         Notes:
@@ -543,10 +543,9 @@ class SubscriptionsClient(_BaseClient):
             created (str): filter by created time or interval.
             updated (str): filter by updated time or interval.
             completed (str): filter by completed time or interval.
-            user_id (str or int): filter by user ID. Only available to organization admins.
-                Accepts "all" or a specific user ID.
+            item_datetime (str): filter by item datetime or interval.
 
-        Datetime args (created, updated, completed) can either be a
+        Datetime args (created, updated, completed, item_datetime) can either be a
         date-time or an interval, open or closed. Date and time expressions adhere
         to RFC 3339. Open intervals are expressed using double-dots.
 
@@ -576,8 +575,8 @@ class SubscriptionsClient(_BaseClient):
             params['updated'] = updated
         if completed is not None:
             params['completed'] = completed
-        if user_id is not None:
-            params['user_id'] = user_id
+        if item_datetime is not None:
+            params['item_datetime'] = item_datetime
 
         url = f'{self._base_url}/{subscription_id}/results'
 
@@ -607,7 +606,7 @@ class SubscriptionsClient(_BaseClient):
             created: Optional[str] = None,
             updated: Optional[str] = None,
             completed: Optional[str] = None,
-            user_id: Optional[Union[str, int]] = None) -> AsyncIterator[str]:
+            item_datetime: Optional[str] = None) -> AsyncIterator[str]:
         """Iterate over rows of results CSV for a Subscription.
 
         Parameters:
@@ -617,10 +616,9 @@ class SubscriptionsClient(_BaseClient):
             created (str): filter by created time or interval.
             updated (str): filter by updated time or interval.
             completed (str): filter by completed time or interval.
-            user_id (str or int): filter by user ID. Only available to organization admins.
-                Accepts "all" or a specific user ID.
+            item_datetime (str): filter by item datetime or interval.
 
-        Datetime args (created, updated, completed) can either be a
+        Datetime args (created, updated, completed, item_datetime) can either be a
         date-time or an interval, open or closed. Date and time expressions adhere
         to RFC 3339. Open intervals are expressed using double-dots.
 
@@ -646,8 +644,8 @@ class SubscriptionsClient(_BaseClient):
             params['updated'] = updated
         if completed is not None:
             params['completed'] = completed
-        if user_id is not None:
-            params['user_id'] = user_id
+        if item_datetime is not None:
+            params['item_datetime'] = item_datetime
 
         # Note: retries are not implemented yet. This project has
         # retry logic for HTTP requests, but does not handle errors
