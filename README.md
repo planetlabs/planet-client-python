@@ -9,18 +9,19 @@ to make use of [the Planet APIs](https://docs.planet.com/develop/apis/).
 Everything you need to get started is found in our
 [online documentation](https://planet-sdk-for-python.readthedocs.io/en/latest/).
 
-Version 2.0 includes support for the core workflows of the following APIs:
+The current version includes support for the core workflows of the following APIs:
 
 * [Data](https://docs.planet.com/develop/apis/data/) - Search for imagery from Planet's data catalog.
 * [Orders](https://docs.planet.com/develop/apis/orders/) - Process and download or deliver imagery.
 * [Subscriptions](https://docs.planet.com/develop/apis/subscriptions/) - Set up a search to auto-process and deliver imagery.
 * [Features](https://docs.planet.com/develop/apis/features/) - Upload areas of interest to the Planet platform.
 * [Destinations](https://docs.planet.com/develop/apis/destinations/) - Create destinations to securely store cloud credentials.
+* [Mosaics](https://docs.planet.com/develop/apis/basemaps/) - Describe, access, and download Mosaics products.
 
-After the initial 2.0 release there will be additional work to support the
-remaining Planet APIs: [basemaps](https://docs.planet.com/develop/apis/basemaps/),
-[tasking](https://docs.planet.com/develop/apis/tasking/) and
-[analytics](https://docs.planet.com/develop/apis/analytics/).
+Future releases will add support for the remaining Planet APIs: [Quota](https://docs.planet.com/develop/apis/quota/), 
+[Reports](https://docs.planet.com/develop/apis/reports/), and [Tasking](https://docs.planet.com/develop/apis/tasking/).
+Support for the services currently included in [sentinelhub-py](https://github.com/sentinel-hub/sentinelhub-py) is 
+also planned.
 
 ## Versions and Stability
 
