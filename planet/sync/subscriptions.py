@@ -48,6 +48,7 @@ class SubscriptionsAPI:
                            updated: Optional[str] = None,
                            destination_ref: Optional[str] = None,
                            user_id: Optional[Union[str, int]] = None,
+                           geom_ref: Optional[str] = None,
                            page_size: int = 500) -> Iterator[dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
@@ -85,6 +86,7 @@ class SubscriptionsAPI:
                 provided destination reference.
             user_id (str or int): filter by user ID. Only available to organization admins.
                 Accepts "all" or a specific user ID.
+            geom_ref (str): A feature reference to filter by.
             limit (int): limit the number of subscriptions in the
                 results. When set to 0, no maximum is applied.
             page_size (int): number of subscriptions to return per page.
@@ -120,6 +122,7 @@ class SubscriptionsAPI:
                                             updated,
                                             destination_ref,
                                             user_id,
+                                            geom_ref,
                                             page_size))
 
     def create_subscription(self, request: Dict) -> Dict:
