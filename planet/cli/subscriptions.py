@@ -111,8 +111,9 @@ def subscriptions(ctx, base_url):
 )
 @click.option('--user-id',
               help="Filter by user ID. Accepts 'all' or a specific user ID.")
-@click.option('--geom-ref',
-              help="Filter subscriptions created with the provided feature reference.")
+@click.option(
+    '--geom-ref',
+    help="Filter subscriptions created with the provided feature reference.")
 @limit
 @click.option('--page-size',
               type=click.INT,
