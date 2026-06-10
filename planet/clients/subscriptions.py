@@ -72,6 +72,7 @@ class SubscriptionsClient(_BaseClient):
                                  updated: Optional[str] = None,
                                  destination_ref: Optional[str] = None,
                                  user_id: Optional[Union[str, int]] = None,
+                                 geom_ref: Optional[str] = None,
                                  page_size: int = 500) -> AsyncIterator[dict]:
         """Iterate over list of account subscriptions with optional filtering.
 
@@ -111,6 +112,7 @@ class SubscriptionsClient(_BaseClient):
                 provided destination reference.
             user_id (str or int): filter by user ID. Only available to organization admins.
                 Accepts "all" or a specific user ID.
+            geom_ref (str): A feature reference to filter by.
             page_size (int): number of subscriptions to return per page.
 
         Datetime args (created, end_time, start_time, updated) can either be a
@@ -159,6 +161,8 @@ class SubscriptionsClient(_BaseClient):
             params['destination_ref'] = destination_ref
         if user_id is not None:
             params['user_id'] = user_id
+        if geom_ref is not None:
+            params['geom_ref'] = geom_ref
 
         params['page_size'] = page_size
 

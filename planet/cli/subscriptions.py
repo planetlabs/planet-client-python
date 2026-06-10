@@ -111,6 +111,9 @@ def subscriptions(ctx, base_url):
 )
 @click.option('--user-id',
               help="Filter by user ID. Accepts 'all' or a specific user ID.")
+@click.option(
+    '--geom-ref',
+    help="Filter subscriptions created with the provided feature reference.")
 @limit
 @click.option('--page-size',
               type=click.INT,
@@ -132,6 +135,7 @@ async def list_subscriptions_cmd(ctx,
                                  limit,
                                  destination_ref,
                                  user_id,
+                                 geom_ref,
                                  page_size,
                                  pretty):
     """Prints a sequence of JSON-encoded Subscription descriptions."""
@@ -149,7 +153,8 @@ async def list_subscriptions_cmd(ctx,
             'updated': updated,
             'limit': limit,
             'destination_ref': destination_ref,
-            'user_id': user_id
+            'user_id': user_id,
+            'geom_ref': geom_ref
         }
         if page_size is not None:
             list_subscriptions_kwargs['page_size'] = page_size
