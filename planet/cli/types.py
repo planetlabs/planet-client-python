@@ -21,14 +21,15 @@ import click
 from planet import exceptions, io
 
 
-class CommaSeparatedString(click.types.StringParamType):
+class CommaSeparatedString(click.ParamType):
     """A list of strings that is extracted from a comma-separated string."""
+    name = 'VALUE'
 
     def convert(self, value, param, ctx) -> List[str]:
         if isinstance(value, list):
             convlist = value
         else:
-            convstr = super().convert(value, param, ctx)
+            convstr = click.STRING.convert(value, param, ctx)
 
             if convstr == '':
                 self.fail('Entry cannot be an empty string.')
@@ -42,7 +43,7 @@ class CommaSeparatedString(click.types.StringParamType):
         return convlist
 
 
-class CommaSeparatedFloat(click.types.StringParamType):
+class CommaSeparatedFloat(click.ParamType):
     """A list of floats that is extracted from a comma-separated string."""
     name = 'VALUE'
 
