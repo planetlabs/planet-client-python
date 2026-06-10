@@ -138,8 +138,7 @@ async def test_list_reservations_query_params():
             filters={
                 "state": "active", "product_id__in": "1,2"
             },
-            page_size=25,
-        )
+            page_size=25, )
     ]
 
     sent = respx.calls[0].request.url.params

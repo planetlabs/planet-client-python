@@ -25,7 +25,8 @@ class CommaSeparatedString(click.ParamType):
     """A list of strings that is extracted from a comma-separated string."""
     name = 'VALUE'
 
-    def convert(self, value, param, ctx) -> List[str]:
+    def convert(  # type: ignore[override]
+            self, value, param, ctx) -> List[str]:
         if isinstance(value, list):
             convlist = value
         else:
@@ -47,7 +48,8 @@ class CommaSeparatedFloat(click.ParamType):
     """A list of floats that is extracted from a comma-separated string."""
     name = 'VALUE'
 
-    def convert(self, value, param, ctx) -> List[float]:
+    def convert(  # type: ignore[override]
+            self, value, param, ctx) -> List[float]:
         values = CommaSeparatedString().convert(value, param, ctx)
 
         try:
