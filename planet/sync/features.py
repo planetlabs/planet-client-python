@@ -97,7 +97,12 @@ class FeaturesAPI:
 
     def list_items(self,
                    collection_id: str,
-                   limit: int = 0) -> Iterator[Feature]:
+                   limit: int = 0,
+                   bbox: Optional[list[float]] = None,
+                   datetime: Optional[str] = None,
+                   id: Optional[str] = None,
+                   hashid: Optional[str] = None,
+                   sort: Optional[str] = None) -> Iterator[Feature]:
         """
         List features in `collection_id`.
 
@@ -122,7 +127,13 @@ class FeaturesAPI:
         ```
         """
         return self._client._aiter_to_iter(
-            self._client.list_items(collection_id, limit=limit))
+            self._client.list_items(collection_id,
+                                    limit=limit,
+                                    bbox=bbox,
+                                    datetime=datetime,
+                                    id=id,
+                                    hashid=hashid,
+                                    sort=sort))
 
     def get_item(self, collection_id: str, feature_id: str) -> Feature:
         """

@@ -114,6 +114,11 @@ class FeaturesClient(_BaseClient):
         self,
         collection_id: str,
         limit: int = 10,
+        bbox: Optional[list[float]] = None,
+        datetime: Optional[str] = None,
+        id: Optional[str] = None,
+        hashid: Optional[str] = None,
+        sort: Optional[str] = None,
     ) -> AsyncIterator[Feature]:
         """
         List features in `collection_id`.
@@ -123,6 +128,19 @@ class FeaturesClient(_BaseClient):
         The reference can be used in the Data, Orders and Subscriptions
         APIs. Within the Python SDK, the entire Feature can generally be
         passed to functions that accept a geometry.
+
+        Parameters:
+            collection_id: ID of the collection to list features from.
+            limit: Maximum number of features to return. 0 means no limit.
+            bbox: Only return features intersecting this bounding box, given
+                as [xmin, ymin, xmax, ymax].
+            datetime: Only return features matching this datetime. Accepts a
+                single RFC 3339 datetime or an interval, e.g.
+                "2024-01-01T00:00:00Z/2024-12-31T23:59:59Z".
+            id: Only return features whose id matches this value. Prefix the
+                value with "~" for substring (fuzzy) matching.
+            hashid: Only return the feature with this hashid.
+            sort: Sort order for the returned features, e.g. "id" or "-id".
 
         example:
 
@@ -154,7 +172,21 @@ class FeaturesClient(_BaseClient):
 
         url = f'{self._base_url}/collections/{collection_id}/items'
 
-        resp = await self._session.request(method='GET', url=url)
+        params: dict[str, Any] = {}
+        if bbox is not None:
+            params['bbox'] = ','.join(str(coord) for coord in bbox)
+        if datetime is not None:
+            params['datetime'] = datetime
+        if id is not None:
+            params['id'] = id
+        if hashid is not None:
+            params['hashid'] = hashid
+        if sort is not None:
+            params['sort'] = sort
+
+        resp = await self._session.request(method='GET',
+                                           url=url,
+                                           params=params)
         async for feat in _FeaturesPager(resp,
                                          self._session.request,
                                          limit=limit):
