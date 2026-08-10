@@ -46,11 +46,6 @@ def _parse_json_lines(output: str):
     return [json.loads(line) for line in output.splitlines() if line.strip()]
 
 
-# ---------------------------------------------------------------------------
-# products
-# ---------------------------------------------------------------------------
-
-
 @respx.mock
 def test_cli_products_list():
     products = [
@@ -129,11 +124,6 @@ def test_cli_products_list_supports_reservation_flag():
     assert [p["id"] for p in json.loads(result.output)] == [1]
 
 
-# ---------------------------------------------------------------------------
-# reservations list / get
-# ---------------------------------------------------------------------------
-
-
 @respx.mock
 def test_cli_reservations_list():
     mock_response(RESERVATIONS_URL, _reservations_page(0, 3))
@@ -193,11 +183,6 @@ def test_cli_reservations_get():
     mock_response(f"{TEST_URL}/quota-reservations/{rid}", _reservation(rid))
     result = invoke("reservations", "get", str(rid))
     assert json.loads(result.output)["id"] == rid
-
-
-# ---------------------------------------------------------------------------
-# reservations create / bulk-reserve / estimate
-# ---------------------------------------------------------------------------
 
 
 @respx.mock
@@ -334,11 +319,6 @@ def test_cli_reservation_estimate():
         "100",
     )
     assert json.loads(result.output) == payload
-
-
-# ---------------------------------------------------------------------------
-# jobs list / get
-# ---------------------------------------------------------------------------
 
 
 @respx.mock

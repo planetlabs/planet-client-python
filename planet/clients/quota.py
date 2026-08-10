@@ -110,7 +110,7 @@ class QuotaClient(_BaseClient):
         fields: Optional[str] = None,
         sort: Optional[str] = None,
         filters: Optional[Dict[str, Any]] = None,
-        page_size: Optional[int] = None,
+        page_size: int = 500,
     ) -> AsyncIterator[dict]:
         """Iterate over quota reservations.
 
@@ -134,8 +134,7 @@ class QuotaClient(_BaseClient):
             ClientError: on a client error.
         """
         params = self._filter_params(fields=fields, sort=sort, filters=filters)
-        if page_size is not None:
-            params['limit'] = page_size
+        params['limit'] = page_size
 
         url = f'{self._reservations_url}/'
         try:
@@ -225,7 +224,7 @@ class QuotaClient(_BaseClient):
 
         Use this endpoint for large batches of AOI references. The response
         includes a `job_id` whose progress can be tracked with
-        [`get_job`][planet.clients.quota.QuotaClient.get_job].
+        [planet.clients.quota.QuotaClient.get_job][].
 
         Parameters:
             aoi_refs: List of AOI feature references.
@@ -307,7 +306,7 @@ class QuotaClient(_BaseClient):
         fields: Optional[str] = None,
         sort: Optional[str] = None,
         filters: Optional[Dict[str, Any]] = None,
-        page_size: Optional[int] = None,
+        page_size: int = 500,
     ) -> AsyncIterator[dict]:
         """Iterate over bulk quota reservation jobs.
 
@@ -328,8 +327,7 @@ class QuotaClient(_BaseClient):
             ClientError: on a client error.
         """
         params = self._filter_params(fields=fields, sort=sort, filters=filters)
-        if page_size is not None:
-            params['limit'] = page_size
+        params['limit'] = page_size
 
         url = f'{self._reservations_url}/jobs'
         try:
@@ -378,9 +376,9 @@ class QuotaClient(_BaseClient):
         """List products available to the requesting user's organization.
 
         Use this to look up the `product_id` (the `id` field) to pass into
-        [`create_reservation`][planet.clients.quota.QuotaClient.create_reservation],
-        [`bulk_create_reservations`][planet.clients.quota.QuotaClient.bulk_create_reservations],
-        or [`estimate_reservation`][planet.clients.quota.QuotaClient.estimate_reservation].
+        [planet.clients.quota.QuotaClient.create_reservation][],
+        [planet.clients.quota.QuotaClient.bulk_create_reservations][],
+        or [planet.clients.quota.QuotaClient.estimate_reservation][].
 
         Parameters:
             supports_reservation: If True, only return products with

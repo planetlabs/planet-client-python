@@ -51,12 +51,12 @@ class QuotaAPI:
         fields: Optional[str] = None,
         sort: Optional[str] = None,
         filters: Optional[Dict[str, Any]] = None,
-        page_size: Optional[int] = None,
+        page_size: int = 500,
     ) -> Iterator[dict]:
         """Iterate over quota reservations.
 
-        See [QuotaClient.list_reservations][planet.clients.quota.QuotaClient.list_reservations]
-        for parameter details.
+        See [planet.clients.quota.QuotaClient.list_reservations][] for
+        parameter details.
         """
         return self._client._aiter_to_iter(
             self._client.list_reservations(limit=limit,
@@ -98,7 +98,7 @@ class QuotaAPI:
         """Submit a bulk quota reservation job.
 
         Returns a payload with `job_id` and `status` - track progress with
-        [get_job][planet.sync.quota.QuotaAPI.get_job].
+        [planet.sync.quota.QuotaAPI.get_job][].
         """
         return self._client._call_sync(
             self._client.bulk_create_reservations(aoi_refs,
@@ -123,7 +123,7 @@ class QuotaAPI:
         fields: Optional[str] = None,
         sort: Optional[str] = None,
         filters: Optional[Dict[str, Any]] = None,
-        page_size: Optional[int] = None,
+        page_size: int = 500,
     ) -> Iterator[dict]:
         """Iterate over bulk quota reservation jobs."""
         return self._client._aiter_to_iter(
@@ -144,9 +144,9 @@ class QuotaAPI:
         """List products available to the requesting user's organization.
 
         Use this to look up the `product_id` (the `id` field) to pass into
-        [create_reservation][planet.sync.quota.QuotaAPI.create_reservation],
-        [bulk_create_reservations][planet.sync.quota.QuotaAPI.bulk_create_reservations],
-        or [estimate_reservation][planet.sync.quota.QuotaAPI.estimate_reservation].
+        [planet.sync.quota.QuotaAPI.create_reservation][],
+        [planet.sync.quota.QuotaAPI.bulk_create_reservations][],
+        or [planet.sync.quota.QuotaAPI.estimate_reservation][].
 
         Parameters:
             supports_reservation: If True, only return products with

@@ -62,11 +62,6 @@ def quota(ctx, base_url):
     ctx.obj['BASE_URL'] = base_url
 
 
-# ---------------------------------------------------------------------------
-# Products
-# ---------------------------------------------------------------------------
-
-
 @quota.group()
 def products():
     """Commands for inspecting products that support quota reservations."""
@@ -106,11 +101,6 @@ async def products_list(ctx, supports_reservation, pretty, compact):
         echo_json(results, pretty)
 
 
-# ---------------------------------------------------------------------------
-# Reservations
-# ---------------------------------------------------------------------------
-
-
 @quota.group()
 def reservations():
     """Commands for managing quota reservations."""
@@ -131,8 +121,9 @@ def reservations():
               help='Filter by `{field}` or `{field}__{op}`. May be repeated.')
 @click.option('--page-size',
               type=click.INT,
-              default=None,
-              help='Number of reservations to return per page.')
+              default=500,
+              show_default=True,
+              help='Number of results to return per page.')
 async def reservations_list(ctx,
                             pretty,
                             limit,
@@ -275,11 +266,6 @@ async def reservation_estimate(ctx,
     async with quota_client(ctx) as cl:
         result = await cl.estimate_reservation(refs, product_id, collection_id)
         echo_json(result, pretty)
-
-
-# ---------------------------------------------------------------------------
-# Jobs
-# ---------------------------------------------------------------------------
 
 
 @quota.group()

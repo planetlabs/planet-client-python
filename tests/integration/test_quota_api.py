@@ -84,11 +84,6 @@ def _job(jid: str = "job-abc") -> dict:
     }
 
 
-# ---------------------------------------------------------------------------
-# list_reservations
-# ---------------------------------------------------------------------------
-
-
 @respx.mock
 async def test_list_reservations_single_page():
     mock_response(RESERVATIONS_URL, _reservations_page(0, 3))
@@ -116,7 +111,7 @@ async def test_list_reservations_paginated():
 
 @respx.mock
 async def test_list_reservations_respects_limit():
-    # Two pages of two items each — limit=3 cuts iteration short.
+    """Two pages of two items each; limit=3 cuts iteration short."""
     next_url = f"{RESERVATIONS_URL}?cursor=abc"
     respx.get(RESERVATIONS_URL).mock(side_effect=[
         httpx.Response(200, json=_reservations_page(0, 2, next_url=next_url)),
@@ -149,11 +144,6 @@ async def test_list_reservations_query_params():
     assert sent["limit"] == "25"
 
 
-# ---------------------------------------------------------------------------
-# get_reservation
-# ---------------------------------------------------------------------------
-
-
 @respx.mock
 async def test_get_reservation():
     rid = 42
@@ -174,11 +164,6 @@ async def test_get_reservation_api_error():
                   status_code=HTTPStatus.NOT_FOUND)
     with pytest.raises(APIError):
         await cl_async.get_reservation(rid)
-
-
-# ---------------------------------------------------------------------------
-# create_reservation
-# ---------------------------------------------------------------------------
 
 
 @respx.mock
@@ -217,11 +202,6 @@ async def test_create_reservation_omits_collection_id_when_none():
     assert "collection_id" not in req_body
 
 
-# ---------------------------------------------------------------------------
-# bulk_create_reservations
-# ---------------------------------------------------------------------------
-
-
 @respx.mock
 async def test_bulk_create_reservations():
     bulk_url = f"{TEST_URL}/quota-reservations/bulk-reserve"
@@ -236,11 +216,6 @@ async def test_bulk_create_reservations():
 
     req_body = json.loads(respx.calls[0].request.content)
     assert req_body == {"aoi_refs": [AOI_REF], "product_id": 100}
-
-
-# ---------------------------------------------------------------------------
-# estimate_reservation
-# ---------------------------------------------------------------------------
 
 
 @respx.mock
@@ -271,11 +246,6 @@ async def test_estimate_reservation():
     }
 
 
-# ---------------------------------------------------------------------------
-# Jobs
-# ---------------------------------------------------------------------------
-
-
 @respx.mock
 async def test_list_jobs():
     page = {"meta": {"count": 2}, "results": [_job("a"), _job("b")]}
@@ -303,11 +273,6 @@ async def test_get_job():
 async def test_get_job_empty_id_raises():
     with pytest.raises(ClientError):
         await cl_async.get_job("")
-
-
-# ---------------------------------------------------------------------------
-# Products
-# ---------------------------------------------------------------------------
 
 
 @respx.mock
