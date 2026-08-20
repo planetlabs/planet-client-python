@@ -13,7 +13,7 @@
 # the License.
 """Quota Reservations CLI"""
 from contextlib import asynccontextmanager
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import click
 
@@ -164,9 +164,19 @@ async def reservation_get(ctx, reservation_id, pretty):
 
 
 def _aoi_refs_from_options(aoi_ref: Tuple[str, ...],
-                           aoi_refs_json: Optional[List[str]]) -> List[str]:
+                           aoi_refs_json: Any) -> List[str]:
+    """Combine repeated `--aoi-ref` values with a JSON `--aoi-refs` array."""
     refs: List[str] = list(aoi_ref)
-    if aoi_refs_json:
+    if aoi_refs_json is not None:
+        if not isinstance(aoi_refs_json, list):
+            raise click.BadParameter(
+                '--aoi-refs expects a JSON array of AOI refs; got '
+                f'{type(aoi_refs_json).__name__}.')
+        for entry in aoi_refs_json:
+            if not isinstance(entry, str):
+                raise click.BadParameter(
+                    '--aoi-refs entries must be strings; got '
+                    f'{entry!r}.')
         refs.extend(aoi_refs_json)
     if not refs:
         raise click.BadParameter(
@@ -286,7 +296,8 @@ def jobs():
               help='Filter by `{field}` or `{field}__{op}`. May be repeated.')
 @click.option('--page-size',
               type=click.INT,
-              default=None,
+              default=500,
+              show_default=True,
               help='Number of jobs to return per page.')
 async def jobs_list(ctx, pretty, limit, fields, sort, filters, page_size):
     """List bulk quota reservation jobs."""

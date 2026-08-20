@@ -14,7 +14,7 @@
 """Planet Quota Reservations API Python client."""
 
 import logging
-from typing import Any, AsyncIterator, Dict, List, Optional, TypeVar
+from typing import Any, AsyncIterator, Dict, List, Optional
 
 from planet.clients.base import _BaseClient
 from planet.exceptions import APIError, ClientError
@@ -25,8 +25,6 @@ from ..constants import PLANET_BASE_URL
 BASE_URL = f'{PLANET_BASE_URL}/account/v1'
 
 LOGGER = logging.getLogger()
-
-T = TypeVar("T")
 
 
 class _QuotaPaged(Paged):

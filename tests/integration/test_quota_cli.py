@@ -287,6 +287,48 @@ def test_cli_reservation_create_requires_aoi_refs():
     assert "AOI ref" in result.output
 
 
+def test_cli_reservation_create_rejects_non_list_aoi_refs():
+    """A JSON object passed to --aoi-refs fails instead of using its keys."""
+    runner = CliRunner()
+    result = runner.invoke(
+        cli.main,
+        args=[
+            "quota",
+            "--base-url",
+            TEST_URL,
+            "reservations",
+            "create",
+            "--aoi-refs",
+            json.dumps({AOI_REF: 1}),
+            "--product-id",
+            "100",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "JSON array" in result.output
+
+
+def test_cli_reservation_create_rejects_non_string_aoi_refs():
+    """--aoi-refs entries that are not strings are rejected."""
+    runner = CliRunner()
+    result = runner.invoke(
+        cli.main,
+        args=[
+            "quota",
+            "--base-url",
+            TEST_URL,
+            "reservations",
+            "create",
+            "--aoi-refs",
+            json.dumps([AOI_REF, 42]),
+            "--product-id",
+            "100",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "must be strings" in result.output
+
+
 @respx.mock
 def test_cli_reservation_bulk_reserve():
     bulk_url = f"{TEST_URL}/quota-reservations/bulk-reserve"
