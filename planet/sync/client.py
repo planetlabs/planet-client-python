@@ -1,5 +1,6 @@
 from typing import Optional
 
+from .catalog import CatalogAPI
 from .features import FeaturesAPI
 from .data import DataAPI
 from .destinations import DestinationsAPI
@@ -19,6 +20,7 @@ class Planet:
 
     Members:
 
+    - `catalog`: Catalog API.
     - `data`: for interacting with the Planet Data API.
     - `destinations`: Destinations API.
     - `orders`: Orders API.
@@ -66,3 +68,7 @@ class Planet:
             self._session, f"{planet_base}/subscriptions/v1/")
         self.features = FeaturesAPI(self._session,
                                     f"{planet_base}/features/v1/ogc/my/")
+
+        # The Catalog API is hosted by Sentinel Hub, not at planet_base, so it
+        # takes its own default base URL rather than a suffix of planet_base.
+        self.catalog = CatalogAPI(self._session)
