@@ -49,6 +49,7 @@ RETRY_EXCEPTIONS = [
 ]
 MAX_RETRIES = 5
 MAX_RETRY_BACKOFF = 64  # seconds
+MAX_RETRY_JITTER = 1  # seconds
 
 DEFAULT_READ_TIMEOUT_SECS = 125.0
 RATE_LIMIT = 10  # per second
@@ -409,21 +410,25 @@ class Session(BaseSession):
         """Calculates retry wait
 
         Base wait period is calculated as a exponential based on the number of
-        tries. Then, a random jitter of up to 999ms is added to the base wait
-        to avoid waves of requests in the case of multiple requests. Finally,
-        the wait is thresholded to the maximum retry backoff.
+        tries. The base wait is thresholded to the maximum retry backoff, less
+        room for jitter. Then, a random jitter of up to MAX_RETRY_JITTER is
+        added to the base wait to avoid waves of requests in the case of
+        multiple requests.
 
-        Because threshold is applied after jitter, calculations that hit
-        threshold will not have random jitter applied, they will simply result
-        in the threshold value being returned.
+        Because the threshold is applied before jitter, waits that hit the
+        threshold are jittered just like any other wait, and the maximum retry
+        backoff is never exceeded.
 
         Ref:
         * https://docs.planet.com/develop/apis/data/#api-mechanics
         * https://cloud.google.com/iot/docs/how-tos/exponential-backoff
         """
+        # a backoff smaller than the jitter leaves no room for the full
+        # jitter, so the jitter is narrowed to fit within the backoff
+        jitter_secs = min(MAX_RETRY_JITTER, max_retry_backoff)
+        base_wait = min(2**num_tries, max_retry_backoff - jitter_secs)
         random_number_milliseconds = random.randint(0, 999) / 1000.0
-        calc_wait = 2**num_tries + random_number_milliseconds
-        return min(calc_wait, max_retry_backoff)
+        return base_wait + jitter_secs * random_number_milliseconds
 
     async def request(self,
                       method: str,
