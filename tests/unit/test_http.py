@@ -269,6 +269,55 @@ async def test_session__retry():
         assert args == [(1, 64), (2, 64), (3, 64), (4, 64), (5, 64)]
 
 
+@pytest.mark.anyio
+async def test_session_retry_defaults():
+    """Retry defaults to the module-level configuration"""
+    async with http.Session() as ps:
+        assert ps.max_retries == http.MAX_RETRIES
+        assert ps.max_retry_backoff == http.MAX_RETRY_BACKOFF
+
+
+@respx.mock
+@pytest.mark.anyio
+async def test_session__retry_configured():
+    """Retry configuration given to the Session is used by _retry"""
+
+    async def test_func():
+        # directly trigger the retry logic
+        raise exceptions.TooManyRequests
+
+    with patch('planet.http.Session._calculate_wait') as mock_wait:
+        # let's not actually introduce a wait into the tests
+        mock_wait.return_value = 0
+
+        async with http.Session(max_retries=2, max_retry_backoff=8) as ps:
+            with pytest.raises(exceptions.TooManyRequests):
+                await ps._retry(test_func)
+
+        calls = mock_wait.call_args_list
+        args = [c[0] for c in calls]
+        assert args == [(1, 8), (2, 8)]
+
+
+@respx.mock
+@pytest.mark.anyio
+async def test_session__retry_disabled():
+    """A max_retries of zero disables retry"""
+
+    async def test_func():
+        # directly trigger the retry logic
+        raise exceptions.TooManyRequests
+
+    with patch('planet.http.Session._calculate_wait') as mock_wait:
+        mock_wait.return_value = 0
+
+        async with http.Session(max_retries=0) as ps:
+            with pytest.raises(exceptions.TooManyRequests):
+                await ps._retry(test_func)
+
+        assert mock_wait.call_args_list == []
+
+
 def test__calculate_wait():
     max_retry_backoff = 20
     wait_times = [
