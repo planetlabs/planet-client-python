@@ -266,7 +266,8 @@ async def test_session__retry():
 
         calls = mock_wait.call_args_list
         args = [c[0] for c in calls]
-        assert args == [(1, 64), (2, 64), (3, 64), (4, 64), (5, 64)]
+        assert args == [(1, 64, 1), (2, 64, 1), (3, 64, 1), (4, 64, 1),
+                        (5, 64, 1)]
 
 
 @pytest.mark.anyio
@@ -275,6 +276,7 @@ async def test_session_retry_defaults():
     async with http.Session() as ps:
         assert ps.max_retries == http.MAX_RETRIES
         assert ps.max_retry_backoff == http.MAX_RETRY_BACKOFF
+        assert ps.max_retry_jitter == http.MAX_RETRY_JITTER
 
 
 @respx.mock
@@ -290,13 +292,15 @@ async def test_session__retry_configured():
         # let's not actually introduce a wait into the tests
         mock_wait.return_value = 0
 
-        async with http.Session(max_retries=2, max_retry_backoff=8) as ps:
+        async with http.Session(max_retries=2,
+                                max_retry_backoff=8,
+                                max_retry_jitter=2) as ps:
             with pytest.raises(exceptions.TooManyRequests):
                 await ps._retry(test_func)
 
         calls = mock_wait.call_args_list
         args = [c[0] for c in calls]
-        assert args == [(1, 8), (2, 8)]
+        assert args == [(1, 8, 2), (2, 8, 2)]
 
 
 @respx.mock
@@ -365,3 +369,25 @@ def test__calculate_wait_backoff_smaller_than_jitter():
 def test__calculate_wait_backoff_zero():
     """A maximum backoff of zero waits not at all"""
     assert http.Session._calculate_wait(1, 0) == 0
+
+
+def test__calculate_wait_jitter_configured():
+    """The maximum jitter widens the range the wait is drawn from"""
+    max_retry_backoff = 64
+    max_retry_jitter = 8
+
+    wait_times = [
+        http.Session._calculate_wait(1, max_retry_backoff, max_retry_jitter)
+        for _ in range(100)
+    ]
+
+    # 2**1 of base wait plus up to the maximum jitter
+    assert all(2 <= wait <= 2 + max_retry_jitter for wait in wait_times)
+    assert max(wait_times) > 2 + 1  # wider than the default jitter
+
+
+def test__calculate_wait_jitter_zero():
+    """A maximum jitter of zero gives a deterministic wait"""
+    wait_times = [http.Session._calculate_wait(i + 1, 20, 0) for i in range(5)]
+
+    assert wait_times == [2, 4, 8, 16, 20]

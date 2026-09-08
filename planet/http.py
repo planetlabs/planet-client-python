@@ -236,7 +236,9 @@ class Session(BaseSession):
     >>>
     >>> async def main():
     ...     # customize the retry behavior
-    ...     async with Session(max_retries=10, max_retry_backoff=32) as sess:
+    ...     async with Session(max_retries=10,
+    ...                        max_retry_backoff=32,
+    ...                        max_retry_jitter=4) as sess:
     ...         # communicate with services here
     ...         pass
     ...
@@ -251,6 +253,7 @@ class Session(BaseSession):
         read_timeout_secs: Optional[float] = None,
         max_retries: Optional[int] = None,
         max_retry_backoff: Optional[float] = None,
+        max_retry_jitter: Optional[float] = None,
     ):
         """Initialize a Session.
 
@@ -261,6 +264,8 @@ class Session(BaseSession):
                 Zero disables retry.
             max_retry_backoff: Maximum time, in seconds, to wait between
                 retries.
+            max_retry_jitter: Maximum random time, in seconds, added to the
+                wait between retries. Zero disables jitter.
         """
         if auth is None:
             auth = Auth.from_user_default_session()
@@ -273,6 +278,9 @@ class Session(BaseSession):
 
         if max_retry_backoff is None:
             max_retry_backoff = MAX_RETRY_BACKOFF
+
+        if max_retry_jitter is None:
+            max_retry_jitter = MAX_RETRY_JITTER
 
         LOGGER.info(
             f'Session read timeout set to {read_timeout_secs} seconds.')
@@ -300,10 +308,12 @@ class Session(BaseSession):
 
         self.max_retries = max_retries
         self.max_retry_backoff = max_retry_backoff
+        self.max_retry_jitter = max_retry_jitter
 
         LOGGER.debug(f'Session retry set to a maximum of {self.max_retries} '
                      f'retries with a maximum backoff of '
-                     f'{self.max_retry_backoff} seconds.')
+                     f'{self.max_retry_backoff} seconds and a maximum jitter '
+                     f'of {self.max_retry_jitter} seconds.')
 
         self._limiter = _Limiter(rate_limit=RATE_LIMIT, max_workers=MAX_ACTIVE)
         self.outcomes: Counter[str] = Counter()
@@ -396,7 +406,9 @@ class Session(BaseSession):
                         LOGGER.info(f'Try {num_tries}')
                         LOGGER.info(f'Retrying: caught {type(e)}: {e}')
                         wait_time = self._calculate_wait(
-                            num_tries, self.max_retry_backoff)
+                            num_tries,
+                            self.max_retry_backoff,
+                            self.max_retry_jitter)
                         LOGGER.info(f'Retrying: sleeping {wait_time}s')
                         await asyncio.sleep(wait_time)
                 else:
@@ -406,14 +418,14 @@ class Session(BaseSession):
         return resp
 
     @staticmethod
-    def _calculate_wait(num_tries, max_retry_backoff):
+    def _calculate_wait(num_tries, max_retry_backoff, max_retry_jitter=None):
         """Calculates retry wait
 
         Base wait period is calculated as a exponential based on the number of
         tries. The base wait is thresholded to the maximum retry backoff, less
-        room for jitter. Then, a random jitter of up to MAX_RETRY_JITTER is
-        added to the base wait to avoid waves of requests in the case of
-        multiple requests.
+        room for jitter. Then, a random jitter of up to the maximum retry
+        jitter is added to the base wait to avoid waves of requests in the
+        case of multiple requests.
 
         Because the threshold is applied before jitter, waits that hit the
         threshold are jittered just like any other wait, and the maximum retry
@@ -423,9 +435,12 @@ class Session(BaseSession):
         * https://docs.planet.com/develop/apis/data/#api-mechanics
         * https://cloud.google.com/iot/docs/how-tos/exponential-backoff
         """
+        if max_retry_jitter is None:
+            max_retry_jitter = MAX_RETRY_JITTER
+
         # a backoff smaller than the jitter leaves no room for the full
         # jitter, so the jitter is narrowed to fit within the backoff
-        jitter_secs = min(MAX_RETRY_JITTER, max_retry_backoff)
+        jitter_secs = min(max_retry_jitter, max_retry_backoff)
         base_wait = min(2**num_tries, max_retry_backoff - jitter_secs)
         random_number_milliseconds = random.randint(0, 999) / 1000.0
         return base_wait + jitter_secs * random_number_milliseconds
