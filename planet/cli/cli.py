@@ -21,7 +21,7 @@ import click
 import planet_auth_utils
 import planet
 from planet.cli import mosaics
-from planet.http import MAX_RETRIES, MAX_RETRY_BACKOFF
+from planet.http import MAX_RETRIES, MAX_RETRY_BACKOFF, MAX_RETRY_JITTER
 
 from . import auth, cmds, collect, data, destinations, orders, subscriptions, features
 
@@ -50,6 +50,12 @@ LOGGER = logging.getLogger(__name__)
               default=MAX_RETRY_BACKOFF,
               show_default=True,
               help='Maximum time, in seconds, to wait between retries.')
+@click.option('--max-retry-jitter',
+              type=float,
+              default=MAX_RETRY_JITTER,
+              show_default=True,
+              help='Maximum random time, in seconds, added to the wait '
+              'between retries. When set to 0, no jitter is added.')
 @planet_auth_utils.opt_profile()
 @planet_auth_utils.opt_client_id()
 @planet_auth_utils.opt_client_secret()
@@ -60,6 +66,7 @@ def main(ctx,
          quiet,
          max_retries,
          max_retry_backoff,
+         max_retry_jitter,
          auth_profile,
          auth_client_id,
          auth_client_secret,
@@ -73,6 +80,7 @@ def main(ctx,
     ctx.obj['QUIET'] = quiet
     ctx.obj['MAX_RETRIES'] = max_retries
     ctx.obj['MAX_RETRY_BACKOFF'] = max_retry_backoff
+    ctx.obj['MAX_RETRY_JITTER'] = max_retry_jitter
 
     _configure_cli_auth_ctx(ctx,
                             auth_profile,

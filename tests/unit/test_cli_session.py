@@ -93,6 +93,7 @@ async def test_CliSession_retry_defaults(test_valid_secretfile):
     async with session.CliSession() as sess:
         assert sess.max_retries == http.MAX_RETRIES
         assert sess.max_retry_backoff == http.MAX_RETRY_BACKOFF
+        assert sess.max_retry_jitter == http.MAX_RETRY_JITTER
 
 
 @pytest.mark.anyio
@@ -100,11 +101,13 @@ async def test_CliSession_retry_from_ctx(test_valid_secretfile):
     """Retry configuration is read from the click context"""
     ctx = _click_ctx(PLSDK_AUTH=auth.Auth.from_key("clisessiontest"),
                      MAX_RETRIES=2,
-                     MAX_RETRY_BACKOFF=8)
+                     MAX_RETRY_BACKOFF=8,
+                     MAX_RETRY_JITTER=2)
 
     async with session.CliSession(ctx) as sess:
         assert sess.max_retries == 2
         assert sess.max_retry_backoff == 8
+        assert sess.max_retry_jitter == 2
 
 
 @pytest.mark.anyio
@@ -115,3 +118,4 @@ async def test_CliSession_retry_ctx_unset(test_valid_secretfile):
     async with session.CliSession(ctx) as sess:
         assert sess.max_retries == http.MAX_RETRIES
         assert sess.max_retry_backoff == http.MAX_RETRY_BACKOFF
+        assert sess.max_retry_jitter == http.MAX_RETRY_JITTER
