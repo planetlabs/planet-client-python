@@ -325,10 +325,43 @@ def test__calculate_wait():
         for i in range(5)
     ]
 
-    # (min, max): 2**n to 2**n + 1, last entry hit threshold
-    expected_times = [2, 4, 8, 16, 20]
+    # (min, max): 2**n to 2**n + 1, last entry hit threshold, which reserves
+    # room for the jitter
+    expected_times = [2, 4, 8, 16, 19]
 
     for wait, expected in zip(wait_times, expected_times):
         # this doesn't really test the randomness but does test exponential
         # and threshold
         assert math.floor(wait) == expected
+
+
+def test__calculate_wait_thresholded_is_jittered():
+    """Waits that hit the threshold are jittered and never exceed it"""
+    max_retry_backoff = 20
+
+    # 2**5 is beyond the threshold, so every one of these waits is thresholded
+    wait_times = [
+        http.Session._calculate_wait(5, max_retry_backoff) for _ in range(100)
+    ]
+
+    assert all(19 <= wait <= max_retry_backoff for wait in wait_times)
+
+    # the thresholded waits are jittered, not a constant
+    assert len(set(wait_times)) > 1
+
+
+def test__calculate_wait_backoff_smaller_than_jitter():
+    """The jitter is narrowed to fit within a small maximum backoff"""
+    max_retry_backoff = 0.5
+
+    wait_times = [
+        http.Session._calculate_wait(i + 1, max_retry_backoff)
+        for i in range(5)
+    ]
+
+    assert all(0 <= wait <= max_retry_backoff for wait in wait_times)
+
+
+def test__calculate_wait_backoff_zero():
+    """A maximum backoff of zero waits not at all"""
+    assert http.Session._calculate_wait(1, 0) == 0
