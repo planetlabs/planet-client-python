@@ -50,7 +50,7 @@ def test_cli_collect_stdin_features(feature_geojson):
     assert json.loads(result.output) == expected
 
 
-def test_cli_collect_file(feature_geojson):
+def test_cli_collect_file(feature_geojson, tmp_path):
     feature2 = feature_geojson.copy()
     feature2['properties'] = {'foo': 'bar'}
     values = [feature_geojson, feature2]
@@ -58,12 +58,11 @@ def test_cli_collect_file(feature_geojson):
     runner = CliRunner()
     sequence = '\n'.join([json.dumps(v) for v in values])
 
-    with runner.isolated_filesystem():
-        with open('input.json', 'w') as f:
-            f.write(sequence)
+    input_file = tmp_path / 'input.json'
+    input_file.write_text(sequence)
 
-        result = runner.invoke(cli.main, ['collect', 'input.json'])
+    result = runner.invoke(cli.main, ['collect', str(input_file)])
 
-        assert result.exit_code == 0
-        expected = {'type': 'FeatureCollection', 'features': values}
-        assert json.loads(result.output) == expected
+    assert result.exit_code == 0
+    expected = {'type': 'FeatureCollection', 'features': values}
+    assert json.loads(result.output) == expected
