@@ -9,6 +9,8 @@ nox.options.reuse_existing_virtualenvs = False
 nox.options.sessions = ['lint', 'analyze', 'test', 'coverage', 'docs']
 
 source_files = ("planet", "examples", "tests", "setup.py", "noxfile.py")
+# Generated code — excluded from linting and formatting checks
+generated_dirs = ("planet/api_models", )
 
 BUILD_DIRS = ['build', 'dist']
 
@@ -17,7 +19,11 @@ BUILD_DIRS = ['build', 'dist']
 def analyze(session):
     session.install(".[lint]")
 
-    session.run("mypy", "--ignore-missing", "planet")
+    session.run("mypy",
+                "--ignore-missing",
+                "--exclude",
+                "|".join(generated_dirs),
+                "planet")
 
 
 @nox.session
@@ -63,8 +69,9 @@ def test(session):
 def lint(session):
     session.install("-e", ".[lint]")
 
-    session.run("flake8", *source_files)
-    session.run('yapf', '--diff', '-r', *source_files)
+    exclude = ",".join(generated_dirs)
+    session.run("flake8", f"--exclude={exclude}", *source_files)
+    session.run('yapf', '--diff', '-r', f'--exclude={exclude}', *source_files)
 
 
 @nox.session
@@ -112,6 +119,75 @@ def examples(session):
     # Because these example scripts can be long-running, output the
     # example's stdout so we know what's happening
     session.run('pytest', '--no-cov', 'examples/', '-s', *options)
+
+
+@nox.session
+def generate_models(session):
+    """Re-generate Pydantic models for the Destinations API in planet/api_models/.
+
+    Requires datamodel-code-generator to be available on PATH:
+        uv tool install 'datamodel-code-generator[http]'
+
+    Run after a known API spec change to refresh the models, then re-run
+    validate_models to confirm compatibility.
+    """
+    # TODO: extend to other APIs as Pydantic models are adopted:
+    #   "subscriptions": "https://api.planet.com/subscriptions/v1/spec",
+    #   "orders":        "https://api.planet.com/compute/ops/spec",
+    #   "data":          "https://api.planet.com/data/v1/spec",
+    specs = {
+        "destinations": "https://api.planet.com/destinations/v1/spec",
+    }
+
+    header = ("# flake8: noqa\n"
+              "# fmt: off\n"
+              "# Generated code — do not edit manually.\n"
+              "# To regenerate, run:\n"
+              "#   nox -s generate_models\n"
+              "# Requires: uv tool install 'datamodel-code-generator[http]'")
+
+    common_args = [
+        "--output-model-type",
+        "pydantic_v2.BaseModel",
+        "--custom-file-header",
+        header,
+        "--formatters",
+        "builtin",
+    ]
+
+    for name, url in specs.items():
+        session.run(
+            "datamodel-codegen",
+            "--url",
+            url,
+            "--input-file-type",
+            "openapi",
+            "--output",
+            f"planet/api_models/{name}.py",
+            *common_args,
+            external=True,
+        )
+
+
+@nox.session
+def validate_models(session):
+    """Validate committed Pydantic models match the live API specs.
+
+    Fetches live OpenAPI specs from Planet's API and compares against committed
+    snapshots. Fails if any spec has changed. No API key required.
+
+    To refresh snapshots after a deliberate API change, run:
+        nox -s generate_models
+    Intended as a pre-release gate; not included in the default nox session list.
+    """
+    session.install("-e", ".[validate_models]")
+    session.run(
+        "pytest",
+        "tests/drift/validate_models.py",
+        "-v",
+        "--no-cov",
+        "--tb=short",
+    )
 
 
 @nox.session
