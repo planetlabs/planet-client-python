@@ -24,9 +24,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip
 
-      - name: Build, verify, and upload to PyPI
+      - name: Validate models against live API specs
         run: |
           pip install --upgrade nox
+          nox -s validate_models
+
+      - name: Build, verify, and upload to PyPI
+        run: |
           nox -s build publish_pypi
         env:
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}

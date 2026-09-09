@@ -22,6 +22,38 @@ from planet.cli import cli
 
 TEST_DESTINATIONS_URL = 'https://api.planet.com/destinations/v1'
 
+DEST = {
+    "id": "fake-dest-id",
+    "name": "Fake Destination",
+    "type": "amazon_s3",
+    "parameters": {
+        "bucket": "my-bucket",
+        "aws_region": "us-west-2",
+        "aws_access_key_id": "key",
+        "aws_secret_access_key": "secret"
+    },
+    "created": "2024-01-01T00:00:00Z",
+    "updated": "2024-01-01T00:00:00Z",
+    "pl:ref": "pl:destinations/fake-dest-id",
+    "_links": {
+        "_self": "https://api.planet.com/destinations/v1/fake-dest-id"
+    },
+    "archived": None,
+    "permissions": {
+        "can_write": True
+    },
+    "ownership": {
+        "is_owner": True, "owner_id": 1
+    }
+}
+
+DEST_LIST = {
+    "destinations": [DEST],
+    "_links": {
+        "_self": "https://api.planet.com/destinations/v1"
+    }
+}
+
 
 @pytest.fixture
 def invoke():
@@ -37,7 +69,7 @@ def invoke():
 @respx.mock
 def test_destinations_cli_archive(invoke):
     url = f"{TEST_DESTINATIONS_URL}/fake-dest-id"
-    respx.patch(url).return_value = httpx.Response(HTTPStatus.OK, json={})
+    respx.patch(url).return_value = httpx.Response(HTTPStatus.OK, json=DEST)
 
     result = invoke(['archive', 'fake-dest-id'])
     assert result.exit_code == 0
@@ -46,7 +78,7 @@ def test_destinations_cli_archive(invoke):
 @respx.mock
 def test_destinations_cli_create(invoke):
     respx.post(TEST_DESTINATIONS_URL).return_value = httpx.Response(
-        HTTPStatus.ACCEPTED, json={})
+        HTTPStatus.ACCEPTED, json=DEST)
 
     # azure
     result = invoke([
@@ -139,7 +171,7 @@ def test_destinations_cli_create(invoke):
 @respx.mock
 def test_destinations_cli_get(invoke):
     url = f"{TEST_DESTINATIONS_URL}/fake-dest-id"
-    respx.get(url).return_value = httpx.Response(HTTPStatus.OK, json={})
+    respx.get(url).return_value = httpx.Response(HTTPStatus.OK, json=DEST)
 
     result = invoke(['get', 'fake-dest-id'])
     assert result.exit_code == 0
@@ -148,7 +180,7 @@ def test_destinations_cli_get(invoke):
 @respx.mock
 def test_destinations_cli_rename(invoke):
     url = f"{TEST_DESTINATIONS_URL}/fake-dest-id"
-    respx.patch(url).return_value = httpx.Response(HTTPStatus.OK, json={})
+    respx.patch(url).return_value = httpx.Response(HTTPStatus.OK, json=DEST)
 
     result = invoke(['rename', 'fake-dest-id', 'new-name'])
     assert result.exit_code == 0
@@ -157,7 +189,7 @@ def test_destinations_cli_rename(invoke):
 @respx.mock
 def test_destinations_cli_unarchive(invoke):
     url = f"{TEST_DESTINATIONS_URL}/fake-dest-id"
-    respx.patch(url).return_value = httpx.Response(HTTPStatus.OK, json={})
+    respx.patch(url).return_value = httpx.Response(HTTPStatus.OK, json=DEST)
 
     result = invoke(['unarchive', 'fake-dest-id'])
     assert result.exit_code == 0
@@ -166,7 +198,7 @@ def test_destinations_cli_unarchive(invoke):
 @respx.mock
 def test_destinations_cli_list(invoke):
     respx.get(TEST_DESTINATIONS_URL).return_value = httpx.Response(
-        HTTPStatus.OK, json={})
+        HTTPStatus.OK, json=DEST_LIST)
 
     result = invoke(['list'])
     assert result.exit_code == 0
@@ -203,7 +235,7 @@ def test_destinations_cli_list(invoke):
 def test_destinations_cli_update(invoke):
     url = f"{TEST_DESTINATIONS_URL}/fake-dest-id"
     respx.patch(url).return_value = httpx.Response(HTTPStatus.ACCEPTED,
-                                                   json={})
+                                                   json=DEST)
 
     # azure
     result = invoke(
@@ -262,7 +294,7 @@ def test_destinations_cli_update(invoke):
 @respx.mock
 def test_destinations_cli_default_set(invoke):
     url = f"{TEST_DESTINATIONS_URL}/default"
-    respx.put(url).return_value = httpx.Response(HTTPStatus.OK, json={})
+    respx.put(url).return_value = httpx.Response(HTTPStatus.OK, json=DEST)
 
     result = invoke(['default', 'set', 'fake-dest-id'])
     assert result.exit_code == 0
@@ -285,7 +317,7 @@ def test_destinations_cli_default_set_bad_request(invoke):
 @respx.mock
 def test_destinations_cli_default_get(invoke):
     url = f"{TEST_DESTINATIONS_URL}/default"
-    respx.get(url).return_value = httpx.Response(HTTPStatus.OK, json={})
+    respx.get(url).return_value = httpx.Response(HTTPStatus.OK, json=DEST)
 
     result = invoke(['default', 'get'])
     assert result.exit_code == 0
