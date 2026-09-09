@@ -16,7 +16,6 @@ import copy
 import hashlib
 from http import HTTPStatus
 import json
-from pathlib import Path
 from unittest.mock import Mock
 
 from click.testing import CliRunner
@@ -359,81 +358,95 @@ def mock_download_response(oid, order_description):
 
 
 @respx.mock
-def test_cli_orders_download_default(invoke, mock_download_response, oid):
+def test_cli_orders_download_default(invoke,
+                                     mock_download_response,
+                                     oid,
+                                     tmp_path):
     mock_download_response()
 
     runner = CliRunner()
-    with runner.isolated_filesystem() as folder:
-        result = invoke(['download', oid], runner=runner)
-        assert result.exit_code == 0
+    result = invoke(['download', '--directory', str(tmp_path), oid],
+                    runner=runner)
+    assert result.exit_code == 0
 
-        # basic check of progress reporting
-        assert 'm1.json' in result.output
+    # basic check of progress reporting
+    assert 'm1.json' in result.output
 
-        # Check that the files were downloaded and have the correct contents
-        with open(Path(folder) / f'{oid}/itemtype/m1.json') as f:
-            assert json.load(f) == {'key': 'value'}
-        with open(Path(folder) / f'{oid}/itemtype/m2.json') as f:
-            assert json.load(f) == {'key2': 'value2'}
+    # Check that the files were downloaded and have the correct contents
+    with open(tmp_path / f'{oid}/itemtype/m1.json') as f:
+        assert json.load(f) == {'key': 'value'}
+    with open(tmp_path / f'{oid}/itemtype/m2.json') as f:
+        assert json.load(f) == {'key2': 'value2'}
 
 
 @respx.mock
-def test_cli_orders_download_checksum(invoke, mock_download_response, oid):
+def test_cli_orders_download_checksum(invoke,
+                                      mock_download_response,
+                                      oid,
+                                      tmp_path):
     """checksum is successful"""
     mock_download_response()
 
     runner = CliRunner()
-    with runner.isolated_filesystem():
-        result = invoke(['download', oid, '--checksum=MD5'], runner=runner)
-        assert result.exit_code == 0
+    result = invoke(
+        ['download', '--directory', str(tmp_path), oid, '--checksum=MD5'],
+        runner=runner)
+    assert result.exit_code == 0
 
 
 @respx.mock
-def test_cli_orders_download_dest(invoke, mock_download_response, oid):
+def test_cli_orders_download_dest(invoke,
+                                  mock_download_response,
+                                  oid,
+                                  tmp_path):
     mock_download_response()
 
+    dest_dir = tmp_path / 'foobar'
+    dest_dir.mkdir()
+
     runner = CliRunner()
-    with runner.isolated_filesystem() as folder:
-        dest_dir = Path(folder) / 'foobar'
-        dest_dir.mkdir()
-        result = invoke(['download', '--directory', 'foobar', oid],
-                        runner=runner)
-        assert result.exit_code == 0
+    result = invoke(['download', '--directory', str(dest_dir), oid],
+                    runner=runner)
+    assert result.exit_code == 0
 
-        # Check that the files were downloaded to the custom directory
-        with open(dest_dir / f'{oid}/itemtype/m1.json') as f:
-            assert json.load(f) == {'key': 'value'}
+    # Check that the files were downloaded to the custom directory
+    with open(dest_dir / f'{oid}/itemtype/m1.json') as f:
+        assert json.load(f) == {'key': 'value'}
 
-        with open(dest_dir / f'{oid}/itemtype/m2.json') as f:
-            assert json.load(f) == {'key2': 'value2'}
+    with open(dest_dir / f'{oid}/itemtype/m2.json') as f:
+        assert json.load(f) == {'key2': 'value2'}
 
 
 @respx.mock
 def test_cli_orders_download_overwrite(invoke,
                                        mock_download_response,
                                        oid,
-                                       write_to_tmp_json_file):
+                                       write_to_tmp_json_file,
+                                       tmp_path):
     mock_download_response()
 
+    filepath = tmp_path / f'{oid}/itemtype/m1.json'
+    filepath.parent.mkdir(parents=True)
+    filepath.write_text(json.dumps({'foo': 'bar'}))
+
     runner = CliRunner()
-    with runner.isolated_filesystem() as folder:
-        filepath = Path(folder) / f'{oid}/itemtype/m1.json'
-        filepath.parent.mkdir(parents=True)
-        filepath.write_text(json.dumps({'foo': 'bar'}))
 
-        # check the file doesn't get overwritten by default
-        result = invoke(['download', oid], runner=runner)
-        assert result.exit_code == 0
+    # check the file doesn't get overwritten by default
+    result = invoke(['download', '--directory', str(tmp_path), oid],
+                    runner=runner)
+    assert result.exit_code == 0
 
-        with open(filepath, 'r') as f:
-            assert json.load(f) == {'foo': 'bar'}
+    with open(filepath, 'r') as f:
+        assert json.load(f) == {'foo': 'bar'}
 
-        # check the file gets overwritten
-        result = invoke(['download', '--overwrite', oid], runner=runner)
-        assert result.exit_code == 0
+    # check the file gets overwritten
+    result = invoke(
+        ['download', '--overwrite', '--directory', str(tmp_path), oid],
+        runner=runner)
+    assert result.exit_code == 0
 
-        with open(filepath, 'r') as f:
-            assert json.load(f) == {'key': 'value'}
+    with open(filepath, 'r') as f:
+        assert json.load(f) == {'key': 'value'}
 
 
 @respx.mock

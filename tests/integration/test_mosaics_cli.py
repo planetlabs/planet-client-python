@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from pathlib import Path
 import json
+import os
+import tempfile
 from typing import Optional
 import httpx
 import pytest
@@ -383,12 +385,17 @@ def test_cli(tc: CLITestCase):
 @respx.mock
 def run_test(tc: CLITestCase):
     runner = CliRunner()
-    with runner.isolated_filesystem() as folder:
-        for r in tc.requests:
-            r()
+    with tempfile.TemporaryDirectory() as folder:
+        prev_dir = os.getcwd()
+        os.chdir(folder)
+        try:
+            for r in tc.requests:
+                r()
 
-        args = ["mosaics", "-u", baseurl] + tc.command + tc.args
-        result = runner.invoke(cli.main, args=args)
+            args = ["mosaics", "-u", baseurl] + tc.command + tc.args
+            result = runner.invoke(cli.main, args=args)
+        finally:
+            os.chdir(prev_dir)
         # result.exception may be SystemExit which we want to ignore
         # but if we don't raise a "true error" exception, there's no
         # stack trace, making it difficult to diagnose
