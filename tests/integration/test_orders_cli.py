@@ -361,12 +361,13 @@ def mock_download_response(oid, order_description):
 def test_cli_orders_download_default(invoke,
                                      mock_download_response,
                                      oid,
-                                     tmp_path):
+                                     tmp_path,
+                                     monkeypatch):
     mock_download_response()
+    monkeypatch.chdir(tmp_path)
 
     runner = CliRunner()
-    result = invoke(['download', '--directory', str(tmp_path), oid],
-                    runner=runner)
+    result = invoke(['download', oid], runner=runner)
     assert result.exit_code == 0
 
     # basic check of progress reporting
