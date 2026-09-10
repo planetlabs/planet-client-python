@@ -39,6 +39,10 @@ LOGGER = logging.getLogger(__name__)
               default="warning",
               help=("Optional: set verbosity level to warning, info, or debug.\
                   Defaults to warning."))
+@planet_auth_utils.opt_profile()
+@planet_auth_utils.opt_client_id()
+@planet_auth_utils.opt_client_secret()
+@planet_auth_utils.opt_api_key()
 @click.option('--max-retries',
               type=int,
               default=MAX_RETRIES,
@@ -56,21 +60,17 @@ LOGGER = logging.getLogger(__name__)
               show_default=True,
               help='Maximum random time, in seconds, added to the wait '
               'between retries. When set to 0, no jitter is added.')
-@planet_auth_utils.opt_profile()
-@planet_auth_utils.opt_client_id()
-@planet_auth_utils.opt_client_secret()
-@planet_auth_utils.opt_api_key()
 @cmds.translate_exceptions
 def main(ctx,
          verbosity,
          quiet,
-         max_retries,
-         max_retry_backoff,
-         max_retry_jitter,
          auth_profile,
          auth_client_id,
          auth_client_secret,
-         auth_api_key):
+         auth_api_key,
+         max_retries,
+         max_retry_backoff,
+         max_retry_jitter):
     """Planet SDK for Python CLI"""
     _configure_logging(verbosity)
 
