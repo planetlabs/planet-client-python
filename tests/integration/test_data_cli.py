@@ -976,7 +976,8 @@ def test_asset_download_default(invoke,
                                 item_type,
                                 item_id,
                                 asset_type,
-                                dl_url):
+                                dl_url,
+                                tmp_path):
 
     mock_asset_get_response()
 
@@ -1002,36 +1003,36 @@ def test_asset_download_default(invoke,
     respx.get(dl_url).return_value = mock_resp_download
 
     runner = CliRunner()
-    with runner.isolated_filesystem() as folder:
-        if exists:
-            Path(folder, 'img.tif').write_bytes(b'01010')
+    folder = tmp_path
+    if exists:
+        Path(folder, 'img.tif').write_bytes(b'01010')
 
-        asset_download_command = [
-            'asset-download',
-            item_type,
-            item_id,
-            asset_type,
-            f'--directory={Path(folder)}',
-            '--filename',
-            'img.tif'
-        ]
-        if overwrite:
-            asset_download_command.append('--overwrite')
+    asset_download_command = [
+        'asset-download',
+        item_type,
+        item_id,
+        asset_type,
+        f'--directory={Path(folder)}',
+        '--filename',
+        'img.tif'
+    ]
+    if overwrite:
+        asset_download_command.append('--overwrite')
 
-        result = invoke(asset_download_command, runner=runner)
-        assert result.exit_code == 0
+    result = invoke(asset_download_command, runner=runner)
+    assert result.exit_code == 0
 
-        path = Path(folder, 'img.tif')
+    path = Path(folder, 'img.tif')
 
-        assert path.name == 'img.tif'
-        assert path.is_file()
+    assert path.name == 'img.tif'
+    assert path.is_file()
 
-        if exists and not overwrite:
-            assert len(path.read_bytes()) == 5
-            assert len(result.output) == 0
-        else:
-            assert len(path.read_bytes()) == 527
-            assert path.name in result.output
+    if exists and not overwrite:
+        assert len(path.read_bytes()) == 5
+        assert len(result.output) == 0
+    else:
+        assert len(path.read_bytes()) == 527
+        assert path.name in result.output
 
 
 @respx.mock

@@ -34,8 +34,8 @@ def async_wrap(api):
 # @pytest.mark.skip
 @pytest.mark.parametrize(
     "tc", [pytest.param(tc, id=tc.id) for tc in test_mosaics_cli.test_cases])
-def test_api(tc):
+def test_api(tc, cwd_tmp_path):
     api = async_wrap(MosaicsAPI)
     with patch('planet.cli.mosaics.MosaicsClient', api):
-        test_mosaics_cli.run_test(tc)
+        test_mosaics_cli.run_test(tc, cwd_tmp_path)
         api._pool.shutdown()

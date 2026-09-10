@@ -34,6 +34,13 @@ async def session():
 
 
 @pytest.fixture
+def cwd_tmp_path(tmp_path, monkeypatch):
+    """Run the test with cwd set to a fresh tmp_path, restored afterwards."""
+    monkeypatch.chdir(tmp_path)
+    return tmp_path
+
+
+@pytest.fixture
 def order_descriptions(order_description):
     order1 = order_description
     order1['id'] = 'oid1'

@@ -376,32 +376,31 @@ test_cases = info_cases + series_info_cases + list_mosaic_cases + list_series_ca
 
 @pytest.mark.parametrize("tc",
                          [pytest.param(tc, id=tc.id) for tc in test_cases])
-def test_cli(tc: CLITestCase):
-    run_test(tc)
+def test_cli(tc: CLITestCase, cwd_tmp_path):
+    run_test(tc, cwd_tmp_path)
 
 
 @respx.mock
-def run_test(tc: CLITestCase):
+def run_test(tc: CLITestCase, folder):
     runner = CliRunner()
-    with runner.isolated_filesystem() as folder:
-        for r in tc.requests:
-            r()
+    for r in tc.requests:
+        r()
 
-        args = ["mosaics", "-u", baseurl] + tc.command + tc.args
-        result = runner.invoke(cli.main, args=args)
-        # result.exception may be SystemExit which we want to ignore
-        # but if we don't raise a "true error" exception, there's no
-        # stack trace, making it difficult to diagnose
-        if result.exception and tc.exit_code == 0:
-            raise result.exception
-        assert result.exit_code == tc.exit_code, result.output
-        if tc.output:
-            try:
-                # error output (always?) not JSON
-                output = json.loads(result.output)
-            except json.JSONDecodeError:
-                output = result.output
-            assert output == tc.output
-        if tc.expect_files:
-            for f in tc.expect_files:
-                assert Path(folder, f).exists(), f
+    args = ["mosaics", "-u", baseurl] + tc.command + tc.args
+    result = runner.invoke(cli.main, args=args)
+    # result.exception may be SystemExit which we want to ignore
+    # but if we don't raise a "true error" exception, there's no
+    # stack trace, making it difficult to diagnose
+    if result.exception and tc.exit_code == 0:
+        raise result.exception
+    assert result.exit_code == tc.exit_code, result.output
+    if tc.output:
+        try:
+            # error output (always?) not JSON
+            output = json.loads(result.output)
+        except json.JSONDecodeError:
+            output = result.output
+        assert output == tc.output
+    if tc.expect_files:
+        for f in tc.expect_files:
+            assert Path(folder, f).exists(), f
