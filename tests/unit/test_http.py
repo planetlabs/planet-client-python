@@ -239,7 +239,7 @@ async def test_session_request_retry():
             httpx.Response(HTTPStatus.OK, json={})
         ]
 
-        # let's not actually introduce a wait into the tests
+        # avoid introducing a real wait into the test
         ps.max_retry_backoff = 0
 
         resp = await ps.request(method='GET', url=TEST_URL)
@@ -257,7 +257,7 @@ async def test_session__retry():
         raise exceptions.TooManyRequests
 
     with patch('planet.http.Session._calculate_wait') as mock_wait:
-        # let's not actually introduce a wait into the tests
+        # avoid introducing a real wait into the test
         mock_wait.return_value = 0
 
         async with http.Session() as ps:
@@ -289,7 +289,7 @@ async def test_session__retry_configured():
         raise exceptions.TooManyRequests
 
     with patch('planet.http.Session._calculate_wait') as mock_wait:
-        # let's not actually introduce a wait into the tests
+        # avoid introducing a real wait into the test
         mock_wait.return_value = 0
 
         async with http.Session(max_retries=2,
