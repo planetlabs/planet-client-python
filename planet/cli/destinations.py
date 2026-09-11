@@ -31,7 +31,11 @@ async def _patch_destination(ctx, destination_id, data, pretty):
     async with destinations_client(ctx) as cl:
         try:
             response = await cl.patch_destination(destination_id, data)
-            echo_json(response.model_dump(mode='json', by_alias=True), pretty)
+            echo_json(
+                response.model_dump(mode='json',
+                                    by_alias=True,
+                                    exclude_unset=True),
+                pretty)
         except Exception as e:
             raise ClickException(f"Failed to patch destination: {e}")
 
@@ -48,7 +52,11 @@ async def _list_destinations(ctx,
                                                   is_owner,
                                                   can_write,
                                                   is_default)
-            echo_json(response.model_dump(mode='json', by_alias=True), pretty)
+            echo_json(
+                response.model_dump(mode='json',
+                                    by_alias=True,
+                                    exclude_unset=True),
+                pretty)
         except Exception as e:
             raise ClickException(f"Failed to list destinations: {e}")
 
@@ -57,7 +65,11 @@ async def _get_destination(ctx, destination_id, pretty):
     async with destinations_client(ctx) as cl:
         try:
             response = await cl.get_destination(destination_id)
-            echo_json(response.model_dump(mode='json', by_alias=True), pretty)
+            echo_json(
+                response.model_dump(mode='json',
+                                    by_alias=True,
+                                    exclude_unset=True),
+                pretty)
         except Exception as e:
             raise ClickException(f"Failed to get destination: {e}")
 
@@ -66,7 +78,11 @@ async def _create_destination(ctx, data, pretty):
     async with destinations_client(ctx) as cl:
         try:
             response = await cl.create_destination(data)
-            echo_json(response.model_dump(mode='json', by_alias=True), pretty)
+            echo_json(
+                response.model_dump(mode='json',
+                                    by_alias=True,
+                                    exclude_unset=True),
+                pretty)
         except Exception as e:
             raise ClickException(f"Failed to create destination: {e}")
 
@@ -75,7 +91,11 @@ async def _set_default_destination(ctx, destination_id, pretty):
     async with destinations_client(ctx) as cl:
         try:
             response = await cl.set_default_destination(destination_id)
-            echo_json(response.model_dump(mode='json', by_alias=True), pretty)
+            echo_json(
+                response.model_dump(mode='json',
+                                    by_alias=True,
+                                    exclude_unset=True),
+                pretty)
         except Exception as e:
             raise ClickException(f"Failed to set default destination: {e}")
 
@@ -83,10 +103,8 @@ async def _set_default_destination(ctx, destination_id, pretty):
 async def _unset_default_destination(ctx, pretty):
     async with destinations_client(ctx) as cl:
         try:
-            response = await cl.unset_default_destination()
-            if response is not None:
-                echo_json(response.model_dump(mode='json', by_alias=True),
-                          pretty)
+            await cl.unset_default_destination()
+            echo_json(None, pretty)
         except Exception as e:
             raise ClickException(f"Failed to unset default destination: {e}")
 
@@ -95,7 +113,11 @@ async def _get_default_destination(ctx, pretty):
     async with destinations_client(ctx) as cl:
         try:
             response = await cl.get_default_destination()
-            echo_json(response.model_dump(mode='json', by_alias=True), pretty)
+            echo_json(
+                response.model_dump(mode='json',
+                                    by_alias=True,
+                                    exclude_unset=True),
+                pretty)
         except Exception as e:
             raise ClickException(f"Failed to get default destination: {e}")
 

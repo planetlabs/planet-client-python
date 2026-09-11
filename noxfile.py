@@ -1,5 +1,6 @@
 from pathlib import Path
 import shutil
+import sys
 
 import nox
 
@@ -69,9 +70,13 @@ def test(session):
 def lint(session):
     session.install("-e", ".[lint]")
 
-    exclude = ",".join(generated_dirs)
-    session.run("flake8", f"--exclude={exclude}", *source_files)
-    session.run('yapf', '--diff', '-r', f'--exclude={exclude}', *source_files)
+    session.run("flake8",
+                f"--exclude={','.join(generated_dirs)}",
+                *source_files)
+    # yapf --exclude is a repeatable flag taking one fnmatch pattern; a bare
+    # directory name matches nothing, so the trailing /* is required.
+    yapf_excludes = [f"--exclude={d}/*" for d in generated_dirs]
+    session.run('yapf', '--diff', '-r', *yapf_excludes, *source_files)
 
 
 @nox.session
@@ -125,48 +130,21 @@ def examples(session):
 def generate_models(session):
     """Re-generate Pydantic models for the Destinations API in planet/api_models/.
 
-    Requires datamodel-code-generator to be available on PATH:
-        uv tool install 'datamodel-code-generator[http]'
+    Uses the same pinned datamodel-code-generator as `nox -s validate_models`,
+    so the committed output is byte-identical to what the drift check
+    regenerates. Do not reformat the result.
 
     Run after a known API spec change to refresh the models, then re-run
     validate_models to confirm compatibility.
     """
-    # TODO: extend to other APIs as Pydantic models are adopted:
-    #   "subscriptions": "https://api.planet.com/subscriptions/v1/spec",
-    #   "orders":        "https://api.planet.com/compute/ops/spec",
-    #   "data":          "https://api.planet.com/data/v1/spec",
-    specs = {
-        "destinations": "https://api.planet.com/destinations/v1/spec",
-    }
+    session.install("-e", ".[validate_models]")
 
-    header = ("# flake8: noqa\n"
-              "# fmt: off\n"
-              "# Generated code — do not edit manually.\n"
-              "# To regenerate, run:\n"
-              "#   nox -s generate_models\n"
-              "# Requires: uv tool install 'datamodel-code-generator[http]'")
+    sys.path.insert(0, str(Path(__file__).parent / "tests" / "drift"))
+    import codegen_config
 
-    common_args = [
-        "--output-model-type",
-        "pydantic_v2.BaseModel",
-        "--custom-file-header",
-        header,
-        "--formatters",
-        "builtin",
-    ]
-
-    for name, url in specs.items():
-        session.run(
-            "datamodel-codegen",
-            "--url",
-            url,
-            "--input-file-type",
-            "openapi",
-            "--output",
-            f"planet/api_models/{name}.py",
-            *common_args,
-            external=True,
-        )
+    for name, url in codegen_config.SPECS.items():
+        output = Path("planet/api_models") / f"{name}.py"
+        session.run(*codegen_config.codegen_argv(url, output))
 
 
 @nox.session
@@ -184,8 +162,14 @@ def validate_models(session):
     session.run(
         "pytest",
         "tests/drift/validate_models.py",
+        # Stop conftest discovery below tests/, whose conftest imports the
+        # full test-suite dependencies that this extra deliberately omits.
+        "--confcutdir=tests/drift",
+        # setup.cfg addopts injects --cov, but this extra deliberately omits
+        # pytest-cov; clear addopts rather than pull in the full test deps.
+        "-o",
+        "addopts=",
         "-v",
-        "--no-cov",
         "--tb=short",
     )
 

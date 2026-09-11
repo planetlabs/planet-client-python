@@ -18,6 +18,9 @@ How it works:
   - The output is compared against the committed file in planet/api_models/.
   - The test fails if they differ, indicating the spec has changed.
 
+The committed models are raw codegen output. They are excluded from yapf and
+flake8 (see noxfile.py) because reformatting them would break this comparison.
+
 When a test fails:
   1. Review what changed in the spec.
   2. Regenerate the committed models:
@@ -25,44 +28,19 @@ When a test fails:
   3. Update the client code if the API change requires it.
   4. Commit the updated models.
 """
+import difflib
 import pathlib
 import subprocess
 import tempfile
 
 import pytest
 
-REPO_ROOT = pathlib.Path(__file__).parent.parent.parent
-MODELS_DIR = REPO_ROOT / "planet" / "api_models"
-
-HEADER = ("# flake8: noqa\n"
-          "# fmt: off\n"
-          "# Generated code — do not edit manually.\n"
-          "# To regenerate, run:\n"
-          "#   nox -s generate_models\n"
-          "# Requires: uv tool install 'datamodel-code-generator[http]'")
-
-SPECS = {
-    "destinations": "https://api.planet.com/destinations/v1/spec",
-}
+from codegen_config import MODELS_DIR, SPECS, codegen_argv
 
 
 def _regenerate(url: str, output: pathlib.Path) -> None:
     result = subprocess.run(
-        [
-            "datamodel-codegen",
-            "--url",
-            url,
-            "--input-file-type",
-            "openapi",
-            "--output",
-            str(output),
-            "--output-model-type",
-            "pydantic_v2.BaseModel",
-            "--custom-file-header",
-            HEADER,
-            "--formatters",
-            "builtin",
-        ],
+        codegen_argv(url, output),
         capture_output=True,
         text=True,
     )
@@ -84,9 +62,16 @@ def test_models_match_spec(name, url):
         current = committed.read_text()
 
         if generated != current:
+            diff = "".join(
+                difflib.unified_diff(
+                    current.splitlines(keepends=True),
+                    generated.splitlines(keepends=True),
+                    fromfile=f"committed/{name}.py",
+                    tofile=f"regenerated/{name}.py",
+                ))
             pytest.fail(
                 f"planet/api_models/{name}.py is out of date with the live spec.\n"
-                f"Run `nox -s generate_models` to regenerate, then commit the result."
-            )
+                f"Run `nox -s generate_models` to regenerate, then commit the result.\n\n"
+                f"{diff}")
     finally:
         tmp_path.unlink(missing_ok=True)

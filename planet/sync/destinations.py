@@ -48,7 +48,7 @@ class DestinationsAPI:
             is_default (bool): If True, include only the default destination.
 
         Returns:
-            dict: A dictionary containing the list of destinations inside the 'destinations' key.
+            DestinationsResponse: The matching destinations, in its `destinations` attribute.
 
         Raises:
             APIError: If the API returns an error response.
@@ -68,7 +68,7 @@ class DestinationsAPI:
             destination_id (str): The ID of the destination to retrieve.
 
         Returns:
-            dict: A dictionary containing the destination details.
+            Destination: The destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -87,7 +87,7 @@ class DestinationsAPI:
             request (dict): Destination content to update, only attributes to update are required.
 
         Returns:
-            dict: A dictionary containing the updated destination details.
+            Destination: The updated destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -104,7 +104,7 @@ class DestinationsAPI:
             request (dict): Destination content to create, all attributes are required.
 
         Returns:
-            dict: A dictionary containing the created destination details.
+            Destination: The created destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -123,7 +123,7 @@ class DestinationsAPI:
             destination_id (str): The ID of the destination to set as default.
 
         Returns:
-            dict: A dictionary containing the default destination details.
+            Destination: The default destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -153,7 +153,7 @@ class DestinationsAPI:
         organization.
 
         Returns:
-            dict: A dictionary containing the default destination details.
+            Destination: The default destination details.
 
         Raises:
             APIError: If the API returns an error response.

@@ -44,7 +44,9 @@ test = [
 ]
 validate_models = [
     "pytest==8.3.3",
-    "datamodel-code-generator[http]>=0.25",
+    # Pinned exactly: the drift check byte-compares regenerated output, so a
+    # codegen release that changes formatting would fail it and block a release.
+    "datamodel-code-generator[http]==0.79.0",
 ]
 lint = [
     "flake8",
