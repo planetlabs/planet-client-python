@@ -139,12 +139,23 @@ def generate_models(session):
     """
     session.install("-e", ".[validate_models]")
 
+    import json
+    import tempfile
+
     sys.path.insert(0, str(Path(__file__).parent / "tests" / "drift"))
     import codegen_config
 
     for name, url in codegen_config.SPECS.items():
         output = Path("planet/api_models") / f"{name}.py"
-        session.run(*codegen_config.codegen_argv(url, output))
+        spec = codegen_config.fetch_and_patch_spec(url)
+        with tempfile.NamedTemporaryFile(
+                suffix=".json", delete=False, mode="w") as spec_tmp:
+            json.dump(spec, spec_tmp)
+            spec_path = Path(spec_tmp.name)
+        try:
+            session.run(*codegen_config.codegen_argv(spec_path, output))
+        finally:
+            spec_path.unlink(missing_ok=True)
 
 
 @nox.session

@@ -18,7 +18,9 @@ test byte-compares regenerated output against the committed models, so the two
 must build an identical command line from an identical version of
 datamodel-code-generator (pinned in the `validate_models` extra).
 """
+import json
 import pathlib
+import urllib.request
 
 REPO_ROOT = pathlib.Path(__file__).parent.parent.parent
 MODELS_DIR = REPO_ROOT / "planet" / "api_models"
@@ -39,12 +41,64 @@ HEADER = ("# flake8: noqa\n"
           "#   nox -s generate_models")
 
 
-def codegen_argv(url: str, output: pathlib.Path) -> list:
+# Schema names whose anyOf blocks are pure required-field constraints
+# (each entry has only a `required` key, no properties of its own).
+# These exist solely to express "at least one of these fields must be set",
+# which is a server-side validation rule. datamodel-codegen cannot represent
+# that constraint cleanly: it generates N numbered classes (e.g.
+# DestinationPatchRequest1/2/3) that are otherwise identical except for which
+# field is marked required.
+#
+# We drop the anyOf during codegen so the generator emits a single, flat model
+# with all fields optional. The constraint is still enforced server-side; the
+# client SDK's job is to build and send the request, not to duplicate server
+# validation in a way that produces unreadable generated names.
+_DROP_CONSTRAINT_ANY_OF: set[str] = {
+    "DestinationPatchRequest",
+}
+
+
+def fetch_and_patch_spec(url: str) -> dict:
+    """Fetch an OpenAPI spec and strip pure-constraint anyOf blocks.
+
+    Some schemas use ``anyOf`` exclusively to express "at least one of these
+    fields must be present", using inline objects that each carry only a
+    ``required`` key.  datamodel-codegen cannot name these inline schemas and
+    falls back to numbered suffixes (``DestinationPatchRequest1``, etc.).
+
+    This function removes those anyOf blocks before codegen so the generator
+    produces a single, flat model.  The constraint is server-enforced; the
+    client SDK does not need to replicate it.
+    """
+    with urllib.request.urlopen(url) as resp:
+        spec = json.loads(resp.read())
+
+    schemas = spec.get("components", {}).get("schemas", {})
+    for schema_name in _DROP_CONSTRAINT_ANY_OF:
+        schema = schemas.get(schema_name)
+        if schema is None:
+            continue
+        # Only drop anyOf entries that are pure required-field constraints
+        # (no properties of their own). If an entry has properties it is a
+        # real subtype and must be kept.
+        cleaned = [
+            entry for entry in schema.get("anyOf", [])
+            if "properties" in entry or "$ref" in entry
+        ]
+        if cleaned:
+            schema["anyOf"] = cleaned
+        else:
+            schema.pop("anyOf", None)
+
+    return spec
+
+
+def codegen_argv(input_file: pathlib.Path, output: pathlib.Path) -> list:
     """Build the datamodel-codegen command line for one spec."""
     return [
         "datamodel-codegen",
-        "--url",
-        url,
+        "--input",
+        str(input_file),
         "--input-file-type",
         "openapi",
         "--output",

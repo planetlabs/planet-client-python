@@ -333,7 +333,7 @@ class DestinationPatchParameters(
     ]
 
 
-class DestinationPatchRequest1(BaseModel):
+class DestinationPatchRequest(BaseModel):
     model_config = ConfigDict(
         extra='allow',
     )
@@ -349,60 +349,7 @@ class DestinationPatchRequest1(BaseModel):
             min_length=3,
         ),
     ] = None
-    parameters: DestinationPatchParameters
-
-
-class DestinationPatchRequest2(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
-    archive: Annotated[
-        bool, Field(description='True to archive the destination, false to unarchive.')
-    ]
-    name: Annotated[
-        str | None,
-        Field(
-            description='A string to uniquely identify a Destination.',
-            max_length=63,
-            min_length=3,
-        ),
-    ] = None
     parameters: DestinationPatchParameters | None = None
-
-
-class DestinationPatchRequest3(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
-    archive: Annotated[
-        bool | None,
-        Field(description='True to archive the destination, false to unarchive.'),
-    ] = None
-    name: Annotated[
-        str,
-        Field(
-            description='A string to uniquely identify a Destination.',
-            max_length=63,
-            min_length=3,
-        ),
-    ]
-    parameters: DestinationPatchParameters | None = None
-
-
-class DestinationPatchRequest(
-    RootModel[
-        DestinationPatchRequest1
-        | DestinationPatchRequest2
-        | DestinationPatchRequest3
-    ]
-):
-    root: Annotated[
-        DestinationPatchRequest1 | DestinationPatchRequest2 | DestinationPatchRequest3,
-        Field(
-            description='A DestinationPatchRequest is an object describing how to update a Destination.',
-            title='Destination patch request',
-        ),
-    ]
 
 
 class DestinationRequest(BaseModel):

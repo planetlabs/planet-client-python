@@ -20,7 +20,6 @@ import httpx
 from planet import DestinationsClient, Session
 from planet.auth import Auth
 from planet.sync.destinations import DestinationsAPI
-from planet.api_models.destinations import Destination, DestinationsResponse
 
 pytestmark = pytest.mark.anyio
 
@@ -108,8 +107,7 @@ def construct_list_response(destinations):
 async def test_list_destinations():
     mock_response(TEST_URL, construct_list_response(DEST_LIST))
 
-    expected = DestinationsResponse.model_validate(
-        construct_list_response(DEST_LIST))
+    expected = construct_list_response(DEST_LIST)
 
     def assertf(resp):
         assert resp == expected
@@ -123,8 +121,7 @@ async def test_list_destinations_filtering():
     mock_response(f"{TEST_URL}?archived=false&is_owner=true",
                   construct_list_response([DEST_1]))
 
-    expected = DestinationsResponse.model_validate(
-        construct_list_response([DEST_1]))
+    expected = construct_list_response([DEST_1])
 
     def assertf(resp):
         assert resp == expected
@@ -139,10 +136,8 @@ async def test_get_destination():
     url = f"{TEST_URL}/{id}"
     mock_response(url, DEST_1)
 
-    expected = Destination.model_validate(DEST_1)
-
     def assertf(resp):
-        assert resp == expected
+        assert resp == DEST_1
 
     assertf(await cl_async.get_destination(id))
     assertf(cl_sync.get_destination(id))
@@ -155,10 +150,8 @@ async def test_create_destination():
                   method="post",
                   status_code=HTTPStatus.CREATED)
 
-    expected = Destination.model_validate(DEST_1)
-
     def assertf(resp):
-        assert resp == expected
+        assert resp == DEST_1
 
     assertf(await cl_async.create_destination(DEST_1_REQ_PAYLOAD))
     assertf(cl_sync.create_destination(DEST_1_REQ_PAYLOAD))
@@ -170,10 +163,8 @@ async def test_patch_destination():
     url = f"{TEST_URL}/{id}"
     mock_response(url, DEST_2, method="patch")
 
-    expected = Destination.model_validate(DEST_2)
-
     def assertf(resp):
-        assert resp == expected
+        assert resp == DEST_2
 
     assertf(await cl_async.patch_destination(id, DEST_2_PATCH_PAYLOAD))
     assertf(cl_sync.patch_destination(id, DEST_2_PATCH_PAYLOAD))
@@ -200,10 +191,8 @@ async def test_set_default_destination():
     url = f"{TEST_URL}/default"
     mock_response(url, DEST_1, method="put")
 
-    expected = Destination.model_validate(DEST_1)
-
     def assertf(resp):
-        assert resp == expected
+        assert resp == DEST_1
 
     assertf(await cl_async.set_default_destination(id))
     assertf(cl_sync.set_default_destination(id))
@@ -231,10 +220,8 @@ async def test_get_default_destination():
     url = f"{TEST_URL}/default"
     mock_response(url, DEST_1)
 
-    expected = Destination.model_validate(DEST_1)
-
     def assertf(resp):
-        assert resp == expected
+        assert resp == DEST_1
 
     assertf(await cl_async.get_default_destination())
     assertf(cl_sync.get_default_destination())

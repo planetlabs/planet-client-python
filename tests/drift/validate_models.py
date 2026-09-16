@@ -29,23 +29,33 @@ When a test fails:
   4. Commit the updated models.
 """
 import difflib
+import json
 import pathlib
 import subprocess
 import tempfile
 
 import pytest
 
-from codegen_config import MODELS_DIR, SPECS, codegen_argv
+from codegen_config import MODELS_DIR, SPECS, codegen_argv, fetch_and_patch_spec
 
 
 def _regenerate(url: str, output: pathlib.Path) -> None:
-    result = subprocess.run(
-        codegen_argv(url, output),
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        pytest.fail(f"datamodel-codegen failed:\n{result.stderr}")
+    spec = fetch_and_patch_spec(url)
+    with tempfile.NamedTemporaryFile(
+            suffix=".json", delete=False, mode="w") as spec_tmp:
+        json.dump(spec, spec_tmp)
+        spec_path = pathlib.Path(spec_tmp.name)
+
+    try:
+        result = subprocess.run(
+            codegen_argv(spec_path, output),
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            pytest.fail(f"datamodel-codegen failed:\n{result.stderr}")
+    finally:
+        spec_path.unlink(missing_ok=True)
 
 
 @pytest.mark.parametrize("name,url", SPECS.items())

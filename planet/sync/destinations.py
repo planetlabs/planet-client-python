@@ -14,7 +14,6 @@
 
 from typing import Any, Dict, Optional
 from planet.clients.destinations import DestinationsClient
-from planet.api_models.destinations import Destination, DestinationsResponse
 from planet.http import Session
 
 
@@ -37,7 +36,7 @@ class DestinationsAPI:
             archived: Optional[bool] = None,
             is_owner: Optional[bool] = None,
             can_write: Optional[bool] = None,
-            is_default: Optional[bool] = None) -> DestinationsResponse:
+            is_default: Optional[bool] = None) -> Dict[str, Any]:
         """
         List all destinations. By default, all non-archived destinations in the requesting user's org are returned.
 
@@ -48,7 +47,7 @@ class DestinationsAPI:
             is_default (bool): If True, include only the default destination.
 
         Returns:
-            DestinationsResponse: The matching destinations, in its `destinations` attribute.
+            dict: The matching destinations.
 
         Raises:
             APIError: If the API returns an error response.
@@ -60,7 +59,7 @@ class DestinationsAPI:
                                            can_write,
                                            is_default))
 
-    def get_destination(self, destination_id: str) -> Destination:
+    def get_destination(self, destination_id: str) -> Dict[str, Any]:
         """
         Get a specific destination by its ID.
 
@@ -68,7 +67,7 @@ class DestinationsAPI:
             destination_id (str): The ID of the destination to retrieve.
 
         Returns:
-            Destination: The destination details.
+            dict: The destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -78,7 +77,7 @@ class DestinationsAPI:
             self._client.get_destination(destination_id))
 
     def patch_destination(self, destination_ref: str,
-                          request: Dict[str, Any]) -> Destination:
+                          request: Dict[str, Any]) -> Dict[str, Any]:
         """
         Update a specific destination by its ref.
 
@@ -87,7 +86,7 @@ class DestinationsAPI:
             request (dict): Destination content to update, only attributes to update are required.
 
         Returns:
-            Destination: The updated destination details.
+            dict: The updated destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -96,7 +95,7 @@ class DestinationsAPI:
         return self._client._call_sync(
             self._client.patch_destination(destination_ref, request))
 
-    def create_destination(self, request: Dict[str, Any]) -> Destination:
+    def create_destination(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """
         Create a new destination.
 
@@ -104,7 +103,7 @@ class DestinationsAPI:
             request (dict): Destination content to create, all attributes are required.
 
         Returns:
-            Destination: The created destination details.
+            dict: The created destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -113,7 +112,7 @@ class DestinationsAPI:
         return self._client._call_sync(
             self._client.create_destination(request))
 
-    def set_default_destination(self, destination_id: str) -> Destination:
+    def set_default_destination(self, destination_id: str) -> Dict[str, Any]:
         """
         Set an existing destination as the default destination.  Default destinations are globally available
         to all members of an organization.  An organization can have zero or one default destination at any time.
@@ -123,7 +122,7 @@ class DestinationsAPI:
             destination_id (str): The ID of the destination to set as default.
 
         Returns:
-            Destination: The default destination details.
+            dict: The default destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -147,13 +146,13 @@ class DestinationsAPI:
         return self._client._call_sync(
             self._client.unset_default_destination())
 
-    def get_default_destination(self) -> Destination:
+    def get_default_destination(self) -> Dict[str, Any]:
         """
         Get the current default destination.  The default destination is globally available to all members of an
         organization.
 
         Returns:
-            Destination: The default destination details.
+            dict: The default destination details.
 
         Raises:
             APIError: If the API returns an error response.

@@ -18,7 +18,6 @@ from typing import Any, Dict, Optional
 from planet.clients.base import _BaseClient
 from planet.exceptions import APIError, ClientError
 from planet.http import Session
-from ..api_models.destinations import Destination, DestinationsResponse
 from ..constants import PLANET_BASE_URL
 
 BASE_URL = f'{PLANET_BASE_URL}/destinations/v1/'
@@ -61,7 +60,7 @@ class DestinationsClient(_BaseClient):
             archived: Optional[bool] = None,
             is_owner: Optional[bool] = None,
             can_write: Optional[bool] = None,
-            is_default: Optional[bool] = None) -> DestinationsResponse:
+            is_default: Optional[bool] = None) -> Dict[str, Any]:
         """
         List all destinations. By default, all non-archived destinations in the requesting user's org are returned.
 
@@ -72,7 +71,7 @@ class DestinationsClient(_BaseClient):
             is_default (bool): If True, include only the default destination.
 
         Returns:
-            DestinationsResponse: The list of destinations.
+            dict: The list of destinations.
 
         Raises:
             APIError: If the API returns an error response.
@@ -97,9 +96,9 @@ class DestinationsClient(_BaseClient):
         except ClientError:  # pragma: no cover
             raise
         else:
-            return DestinationsResponse.model_validate(response.json())
+            return response.json()
 
-    async def get_destination(self, destination_id: str) -> Destination:
+    async def get_destination(self, destination_id: str) -> Dict[str, Any]:
         """
         Get a specific destination by its ID.
 
@@ -107,7 +106,7 @@ class DestinationsClient(_BaseClient):
             destination_id (str): The ID of the destination to retrieve.
 
         Returns:
-            Destination: The destination details.
+            dict: The destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -121,11 +120,11 @@ class DestinationsClient(_BaseClient):
         except ClientError:  # pragma: no cover
             raise
         else:
-            return Destination.model_validate(response.json())
+            return response.json()
 
     async def patch_destination(self,
                                 destination_id: str,
-                                request: Dict[str, Any]) -> Destination:
+                                request: Dict[str, Any]) -> Dict[str, Any]:
         """
         Update a specific destination by its ID.
 
@@ -134,7 +133,7 @@ class DestinationsClient(_BaseClient):
             request (dict): Destination content to update, only attributes to update are required.
 
         Returns:
-            Destination: The updated destination details.
+            dict: The updated destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -150,9 +149,9 @@ class DestinationsClient(_BaseClient):
         except ClientError:  # pragma: no cover
             raise
         else:
-            return Destination.model_validate(response.json())
+            return response.json()
 
-    async def create_destination(self, request: Dict[str, Any]) -> Destination:
+    async def create_destination(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """
         Create a new destination.
 
@@ -160,7 +159,7 @@ class DestinationsClient(_BaseClient):
             request (dict): Destination content to create, all attributes are required.
 
         Returns:
-            Destination: The created destination details.
+            dict: The created destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -175,10 +174,10 @@ class DestinationsClient(_BaseClient):
         except ClientError:  # pragma: no cover
             raise
         else:
-            return Destination.model_validate(response.json())
+            return response.json()
 
     async def set_default_destination(self,
-                                      destination_id: str) -> Destination:
+                                      destination_id: str) -> Dict[str, Any]:
         """
         Set an existing destination as the default destination.  Default destinations are globally available
         to all members of an organization.  An organization can have zero or one default destination at any time.
@@ -188,7 +187,7 @@ class DestinationsClient(_BaseClient):
             destination_id (str): The ID of the destination to set as default.
 
         Returns:
-            Destination: The default destination details.
+            dict: The default destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -205,7 +204,7 @@ class DestinationsClient(_BaseClient):
         except ClientError:  # pragma: no cover
             raise
         else:
-            return Destination.model_validate(response.json())
+            return response.json()
 
     async def unset_default_destination(self) -> None:
         """
@@ -227,13 +226,13 @@ class DestinationsClient(_BaseClient):
         except ClientError:  # pragma: no cover
             raise
 
-    async def get_default_destination(self) -> Destination:
+    async def get_default_destination(self) -> Dict[str, Any]:
         """
         Get the current default destination.  The default destination is globally available to all members of an
         organization.
 
         Returns:
-            Destination: The default destination details.
+            dict: The default destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -247,4 +246,4 @@ class DestinationsClient(_BaseClient):
         except ClientError:  # pragma: no cover
             raise
         else:
-            return Destination.model_validate(response.json())
+            return response.json()
