@@ -31,12 +31,11 @@ class DestinationsAPI:
 
         self._client = DestinationsClient(session, base_url)
 
-    def list_destinations(
-            self,
-            archived: Optional[bool] = None,
-            is_owner: Optional[bool] = None,
-            can_write: Optional[bool] = None,
-            is_default: Optional[bool] = None) -> Dict[str, Any]:
+    def list_destinations(self,
+                          archived: Optional[bool] = None,
+                          is_owner: Optional[bool] = None,
+                          can_write: Optional[bool] = None,
+                          is_default: Optional[bool] = None) -> Dict[str, Any]:
         """
         List all destinations. By default, all non-archived destinations in the requesting user's org are returned.
 

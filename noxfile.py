@@ -148,8 +148,9 @@ def generate_models(session):
     for name, url in codegen_config.SPECS.items():
         output = Path("planet/api_models") / f"{name}.py"
         spec = codegen_config.fetch_and_patch_spec(url)
-        with tempfile.NamedTemporaryFile(
-                suffix=".json", delete=False, mode="w") as spec_tmp:
+        with tempfile.NamedTemporaryFile(suffix=".json",
+                                         delete=False,
+                                         mode="w") as spec_tmp:
             json.dump(spec, spec_tmp)
             spec_path = Path(spec_tmp.name)
         try:

@@ -40,7 +40,6 @@ HEADER = ("# flake8: noqa\n"
           "# To regenerate, run:\n"
           "#   nox -s generate_models")
 
-
 # Schema names whose anyOf blocks are pure required-field constraints
 # (each entry has only a `required` key, no properties of its own).
 # These exist solely to express "at least one of these fields must be set",

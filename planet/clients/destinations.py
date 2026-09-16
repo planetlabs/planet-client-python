@@ -151,7 +151,8 @@ class DestinationsClient(_BaseClient):
         else:
             return response.json()
 
-    async def create_destination(self, request: Dict[str, Any]) -> Dict[str, Any]:
+    async def create_destination(self, request: Dict[str,
+                                                     Any]) -> Dict[str, Any]:
         """
         Create a new destination.
 

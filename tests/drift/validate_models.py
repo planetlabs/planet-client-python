@@ -41,8 +41,8 @@ from codegen_config import MODELS_DIR, SPECS, codegen_argv, fetch_and_patch_spec
 
 def _regenerate(url: str, output: pathlib.Path) -> None:
     spec = fetch_and_patch_spec(url)
-    with tempfile.NamedTemporaryFile(
-            suffix=".json", delete=False, mode="w") as spec_tmp:
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False,
+                                     mode="w") as spec_tmp:
         json.dump(spec, spec_tmp)
         spec_path = pathlib.Path(spec_tmp.name)
 
