@@ -13,7 +13,7 @@
 # the License.
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TypeVar
 
 from planet.clients.base import _BaseClient
 from planet.exceptions import APIError, ClientError
@@ -23,6 +23,8 @@ from ..constants import PLANET_BASE_URL
 BASE_URL = f'{PLANET_BASE_URL}/destinations/v1/'
 
 LOGGER = logging.getLogger()
+
+T = TypeVar("T")
 
 DEFAULT_DESTINATION_REF = "pl:destinations/default"
 
@@ -55,12 +57,11 @@ class DestinationsClient(_BaseClient):
         """
         super().__init__(session, base_url or BASE_URL)
 
-    async def list_destinations(
-            self,
-            archived: Optional[bool] = None,
-            is_owner: Optional[bool] = None,
-            can_write: Optional[bool] = None,
-            is_default: Optional[bool] = None) -> Dict[str, Any]:
+    async def list_destinations(self,
+                                archived: Optional[bool] = None,
+                                is_owner: Optional[bool] = None,
+                                can_write: Optional[bool] = None,
+                                is_default: Optional[bool] = None) -> Dict:
         """
         List all destinations. By default, all non-archived destinations in the requesting user's org are returned.
 
@@ -71,7 +72,7 @@ class DestinationsClient(_BaseClient):
             is_default (bool): If True, include only the default destination.
 
         Returns:
-            dict: The list of destinations.
+            dict: A dictionary containing the list of destinations inside the 'destinations' key.
 
         Raises:
             APIError: If the API returns an error response.
@@ -96,9 +97,10 @@ class DestinationsClient(_BaseClient):
         except ClientError:  # pragma: no cover
             raise
         else:
-            return response.json()
+            dest_response = response.json()
+            return dest_response
 
-    async def get_destination(self, destination_id: str) -> Dict[str, Any]:
+    async def get_destination(self, destination_id: str) -> Dict:
         """
         Get a specific destination by its ID.
 
@@ -106,7 +108,7 @@ class DestinationsClient(_BaseClient):
             destination_id (str): The ID of the destination to retrieve.
 
         Returns:
-            dict: The destination details.
+            dict: A dictionary containing the destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -120,11 +122,12 @@ class DestinationsClient(_BaseClient):
         except ClientError:  # pragma: no cover
             raise
         else:
-            return response.json()
+            dest = response.json()
+            return dest
 
     async def patch_destination(self,
                                 destination_id: str,
-                                request: Dict[str, Any]) -> Dict[str, Any]:
+                                request: Dict[str, Any]) -> Dict:
         """
         Update a specific destination by its ID.
 
@@ -133,7 +136,7 @@ class DestinationsClient(_BaseClient):
             request (dict): Destination content to update, only attributes to update are required.
 
         Returns:
-            dict: The updated destination details.
+            dict: A dictionary containing the updated destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -149,10 +152,10 @@ class DestinationsClient(_BaseClient):
         except ClientError:  # pragma: no cover
             raise
         else:
-            return response.json()
+            dest = response.json()
+            return dest
 
-    async def create_destination(self, request: Dict[str,
-                                                     Any]) -> Dict[str, Any]:
+    async def create_destination(self, request: Dict[str, Any]) -> Dict:
         """
         Create a new destination.
 
@@ -160,7 +163,7 @@ class DestinationsClient(_BaseClient):
             request (dict): Destination content to create, all attributes are required.
 
         Returns:
-            dict: The created destination details.
+            dict: A dictionary containing the created destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -175,10 +178,10 @@ class DestinationsClient(_BaseClient):
         except ClientError:  # pragma: no cover
             raise
         else:
-            return response.json()
+            dest = response.json()
+            return dest
 
-    async def set_default_destination(self,
-                                      destination_id: str) -> Dict[str, Any]:
+    async def set_default_destination(self, destination_id: str) -> Dict:
         """
         Set an existing destination as the default destination.  Default destinations are globally available
         to all members of an organization.  An organization can have zero or one default destination at any time.
@@ -188,7 +191,7 @@ class DestinationsClient(_BaseClient):
             destination_id (str): The ID of the destination to set as default.
 
         Returns:
-            dict: The default destination details.
+            dict: A dictionary containing the default destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -227,13 +230,13 @@ class DestinationsClient(_BaseClient):
         except ClientError:  # pragma: no cover
             raise
 
-    async def get_default_destination(self) -> Dict[str, Any]:
+    async def get_default_destination(self) -> Dict:
         """
         Get the current default destination.  The default destination is globally available to all members of an
         organization.
 
         Returns:
-            dict: The default destination details.
+            dict: A dictionary containing the default destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -247,4 +250,5 @@ class DestinationsClient(_BaseClient):
         except ClientError:  # pragma: no cover
             raise
         else:
-            return response.json()
+            dest = response.json()
+            return dest

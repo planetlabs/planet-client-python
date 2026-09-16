@@ -35,7 +35,7 @@ class DestinationsAPI:
                           archived: Optional[bool] = None,
                           is_owner: Optional[bool] = None,
                           can_write: Optional[bool] = None,
-                          is_default: Optional[bool] = None) -> Dict[str, Any]:
+                          is_default: Optional[bool] = None) -> Dict:
         """
         List all destinations. By default, all non-archived destinations in the requesting user's org are returned.
 
@@ -46,7 +46,7 @@ class DestinationsAPI:
             is_default (bool): If True, include only the default destination.
 
         Returns:
-            dict: The matching destinations.
+            dict: A dictionary containing the list of destinations inside the 'destinations' key.
 
         Raises:
             APIError: If the API returns an error response.
@@ -58,7 +58,7 @@ class DestinationsAPI:
                                            can_write,
                                            is_default))
 
-    def get_destination(self, destination_id: str) -> Dict[str, Any]:
+    def get_destination(self, destination_id: str) -> Dict:
         """
         Get a specific destination by its ID.
 
@@ -66,7 +66,7 @@ class DestinationsAPI:
             destination_id (str): The ID of the destination to retrieve.
 
         Returns:
-            dict: The destination details.
+            dict: A dictionary containing the destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -76,7 +76,7 @@ class DestinationsAPI:
             self._client.get_destination(destination_id))
 
     def patch_destination(self, destination_ref: str,
-                          request: Dict[str, Any]) -> Dict[str, Any]:
+                          request: Dict[str, Any]) -> Dict:
         """
         Update a specific destination by its ref.
 
@@ -85,7 +85,7 @@ class DestinationsAPI:
             request (dict): Destination content to update, only attributes to update are required.
 
         Returns:
-            dict: The updated destination details.
+            dict: A dictionary containing the updated destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -94,7 +94,7 @@ class DestinationsAPI:
         return self._client._call_sync(
             self._client.patch_destination(destination_ref, request))
 
-    def create_destination(self, request: Dict[str, Any]) -> Dict[str, Any]:
+    def create_destination(self, request: Dict[str, Any]) -> Dict:
         """
         Create a new destination.
 
@@ -102,7 +102,7 @@ class DestinationsAPI:
             request (dict): Destination content to create, all attributes are required.
 
         Returns:
-            dict: The created destination details.
+            dict: A dictionary containing the created destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -111,7 +111,7 @@ class DestinationsAPI:
         return self._client._call_sync(
             self._client.create_destination(request))
 
-    def set_default_destination(self, destination_id: str) -> Dict[str, Any]:
+    def set_default_destination(self, destination_id: str) -> Dict:
         """
         Set an existing destination as the default destination.  Default destinations are globally available
         to all members of an organization.  An organization can have zero or one default destination at any time.
@@ -121,7 +121,7 @@ class DestinationsAPI:
             destination_id (str): The ID of the destination to set as default.
 
         Returns:
-            dict: The default destination details.
+            dict: A dictionary containing the default destination details.
 
         Raises:
             APIError: If the API returns an error response.
@@ -145,13 +145,13 @@ class DestinationsAPI:
         return self._client._call_sync(
             self._client.unset_default_destination())
 
-    def get_default_destination(self) -> Dict[str, Any]:
+    def get_default_destination(self) -> Dict:
         """
         Get the current default destination.  The default destination is globally available to all members of an
         organization.
 
         Returns:
-            dict: The default destination details.
+            dict: A dictionary containing the default destination details.
 
         Raises:
             APIError: If the API returns an error response.
