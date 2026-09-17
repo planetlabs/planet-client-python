@@ -21,6 +21,7 @@ import click
 import planet_auth_utils
 import planet
 from planet.cli import mosaics
+from planet.http import MAX_RETRIES, MAX_RETRY_BACKOFF, MAX_RETRY_JITTER
 
 from . import auth, cmds, collect, data, destinations, orders, subscriptions, features
 
@@ -42,6 +43,23 @@ LOGGER = logging.getLogger(__name__)
 @planet_auth_utils.opt_client_id()
 @planet_auth_utils.opt_client_secret()
 @planet_auth_utils.opt_api_key()
+@click.option('--max-retries',
+              type=int,
+              default=MAX_RETRIES,
+              show_default=True,
+              help='Maximum number of retries of a retryable request. When '
+              'set to 0, requests are not retried.')
+@click.option('--max-retry-backoff',
+              type=float,
+              default=MAX_RETRY_BACKOFF,
+              show_default=True,
+              help='Maximum time, in seconds, to wait between retries.')
+@click.option('--max-retry-jitter',
+              type=float,
+              default=MAX_RETRY_JITTER,
+              show_default=True,
+              help='Maximum random time, in seconds, added to the wait '
+              'between retries. When set to 0, no jitter is added.')
 @cmds.translate_exceptions
 def main(ctx,
          verbosity,
@@ -49,7 +67,10 @@ def main(ctx,
          auth_profile,
          auth_client_id,
          auth_client_secret,
-         auth_api_key):
+         auth_api_key,
+         max_retries,
+         max_retry_backoff,
+         max_retry_jitter):
     """Planet SDK for Python CLI"""
     _configure_logging(verbosity)
 
@@ -57,6 +78,9 @@ def main(ctx,
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
     ctx.obj['QUIET'] = quiet
+    ctx.obj['MAX_RETRIES'] = max_retries
+    ctx.obj['MAX_RETRY_BACKOFF'] = max_retry_backoff
+    ctx.obj['MAX_RETRY_JITTER'] = max_retry_jitter
 
     _configure_cli_auth_ctx(ctx,
                             auth_profile,
