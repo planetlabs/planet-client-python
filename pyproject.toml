@@ -47,7 +47,7 @@ lint = [
     "yapf==0.43.0",
 ]
 docs = [
-    "mkdocs==1.4.2",
+    "mkdocs==1.6.1",
     "mkdocs-click==0.7.0",
     "mkdocs-material==9.7.7",
     "mkdocstrings==0.18.1",
