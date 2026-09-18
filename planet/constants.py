@@ -24,6 +24,11 @@ PLANET_BASE_URL = 'https://api.planet.com'
 
 SECRET_FILE_PATH = Path(os.path.expanduser('~')) / '.planet.json'
 
+# The Catalog API is hosted by Sentinel Hub rather than at PLANET_BASE_URL.
+SENTINEL_HUB_BASE_URL = 'https://services.sentinel-hub.com'
+
+SENTINEL_HUB_US_WEST_2_BASE_URL = 'https://services-uswest2.sentinel-hub.com'
+
 # Tool weights define the required processing order for subscription tools
 _SUBSCRIPTION_TOOL_WEIGHT = {
     "harmonize": 1,
