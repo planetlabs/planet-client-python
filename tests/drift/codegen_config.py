@@ -57,17 +57,71 @@ _DROP_CONSTRAINT_ANY_OF: set[str] = {
 }
 
 
+def _schema_refs(node) -> list:
+    """Collect every ``components/schemas`` name referenced under a node."""
+    found = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if key == "$ref" and isinstance(value, str):
+                found.append(value.rsplit("/", 1)[-1])
+            else:
+                found.extend(_schema_refs(value))
+    elif isinstance(node, list):
+        for value in node:
+            found.extend(_schema_refs(value))
+    return found
+
+
+def response_reachable_schemas(spec: dict) -> set:
+    """Names of schemas the API can return, followed transitively from responses.
+
+    Everything else is request-only.  The two halves want opposite handling of
+    unknown fields, so codegen needs to tell them apart.
+    """
+    schemas = spec.get("components", {}).get("schemas", {})
+
+    pending = []
+    for path_item in spec.get("paths", {}).values():
+        for operation in path_item.values():
+            if isinstance(operation, dict):
+                pending.extend(_schema_refs(operation.get("responses", {})))
+
+    reachable: set = set()
+    while pending:
+        name = pending.pop()
+        if name in reachable or name not in schemas:
+            continue
+        reachable.add(name)
+        pending.extend(_schema_refs(schemas[name]))
+    return reachable
+
+
 def fetch_and_patch_spec(url: str) -> dict:
-    """Fetch an OpenAPI spec and strip pure-constraint anyOf blocks.
+    """Fetch an OpenAPI spec and patch it for codegen.
 
-    Some schemas use ``anyOf`` exclusively to express "at least one of these
-    fields must be present", using inline objects that each carry only a
-    ``required`` key.  datamodel-codegen cannot name these inline schemas and
-    falls back to numbered suffixes (``DestinationPatchRequest1``, etc.).
+    Two patches, both applied before datamodel-codegen sees the spec.
 
-    This function removes those anyOf blocks before codegen so the generator
-    produces a single, flat model.  The constraint is server-enforced; the
-    client SDK does not need to replicate it.
+    1. Strip pure-constraint ``anyOf`` blocks.  Some schemas use ``anyOf``
+       exclusively to express "at least one of these fields must be present",
+       using inline objects that each carry only a ``required`` key.
+       datamodel-codegen cannot name these inline schemas and falls back to
+       numbered suffixes (``DestinationPatchRequest1``, etc.).  Removing the
+       block yields a single, flat model.  The constraint is server-enforced;
+       the client SDK does not need to replicate it.
+
+    2. Relax ``additionalProperties`` on response schemas.  Codegen is run
+       without a global ``--extra-fields`` override, so it honours the spec:
+       ``additionalProperties: false`` becomes ``extra='forbid'``.  That is
+       what we want for request models -- a typo'd key fails client side,
+       before the round trip.  It is wrong for responses: a shipped SDK must
+       not raise when Planet adds a field.  So every schema reachable from a
+       response is forced to ``additionalProperties: true``, giving
+       ``extra='allow'``.
+
+    Note the overlap.  ``AmazonS3Params`` and its siblings appear in both
+    requests and responses, so tolerance wins and they are generated as
+    ``allow``.  Only ``*PatchParams`` and the top-level request bodies are
+    request-only, and those get ``forbid``.
     """
     with urllib.request.urlopen(url) as resp:
         spec = json.loads(resp.read())
@@ -89,6 +143,13 @@ def fetch_and_patch_spec(url: str) -> dict:
         else:
             schema.pop("anyOf", None)
 
+    for name in response_reachable_schemas(spec):
+        schema = schemas[name]
+        # Enums and unions (oneOf/anyOf roots) carry no properties of their
+        # own; additionalProperties is meaningless there and confuses codegen.
+        if "properties" in schema:
+            schema["additionalProperties"] = True
+
     return spec
 
 
@@ -104,10 +165,6 @@ def codegen_argv(input_file: pathlib.Path, output: pathlib.Path) -> list:
         str(output),
         "--output-model-type",
         "pydantic_v2.BaseModel",
-        # Responses must tolerate fields Planet adds to the API. Without this,
-        # an additive server change raises ValidationError in a shipped SDK.
-        "--extra-fields",
-        "allow",
         # Express constraints as Annotated[str, Field(max_length=...)] rather
         # than constr(...), which mypy rejects as an annotation in the modules
         # that import these models.

@@ -41,7 +41,7 @@ class AmazonS3Params(BaseModel):
 
 class AmazonS3PatchParams(BaseModel):
     model_config = ConfigDict(
-        extra='allow',
+        extra='forbid',
     )
     aws_access_key_id: Annotated[
         str, Field(description='AWS access key ID for authentication with Amazon S3.')
@@ -88,7 +88,7 @@ class AzureCloudStorageParams(BaseModel):
 
 class AzureCloudStoragePatchParams(BaseModel):
     model_config = ConfigDict(
-        extra='allow',
+        extra='forbid',
     )
     sas_token: Annotated[
         str,
@@ -100,7 +100,7 @@ class AzureCloudStoragePatchParams(BaseModel):
 
 class DefaultDestinationRequest(BaseModel):
     model_config = ConfigDict(
-        extra='allow',
+        extra='forbid',
     )
     destination_id: Annotated[
         str, Field(description='The ID of the default destination.')
@@ -143,7 +143,7 @@ class GoogleCloudStorageParams(BaseModel):
 
 class GoogleCloudStoragePatchParams(BaseModel):
     model_config = ConfigDict(
-        extra='allow',
+        extra='forbid',
     )
     credentials: Annotated[
         str,
@@ -201,7 +201,7 @@ class OracleCloudStorageParams(BaseModel):
 
 class OracleCloudStoragePatchParams(BaseModel):
     model_config = ConfigDict(
-        extra='allow',
+        extra='forbid',
     )
     customer_access_key_id: Annotated[
         str,
@@ -281,7 +281,7 @@ class S3CompatibleParams(BaseModel):
 
 class S3CompatiblePatchParams(BaseModel):
     model_config = ConfigDict(
-        extra='allow',
+        extra='forbid',
     )
     access_key_id: Annotated[
         str,
@@ -335,7 +335,7 @@ class DestinationPatchParameters(
 
 class DestinationPatchRequest(BaseModel):
     model_config = ConfigDict(
-        extra='allow',
+        extra='forbid',
     )
     archive: Annotated[
         bool | None,
@@ -354,7 +354,7 @@ class DestinationPatchRequest(BaseModel):
 
 class DestinationRequest(BaseModel):
     model_config = ConfigDict(
-        extra='allow',
+        extra='forbid',
     )
     name: Annotated[
         str | None,
