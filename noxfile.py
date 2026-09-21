@@ -11,7 +11,7 @@ nox.options.sessions = ['lint', 'analyze', 'test', 'coverage', 'docs']
 
 source_files = ("planet", "examples", "tests", "setup.py", "noxfile.py")
 # Generated code — excluded from linting and formatting checks
-generated_dirs = ("planet/api_models", )
+generated_dirs = ("planet/types", )
 
 BUILD_DIRS = ['build', 'dist']
 
@@ -128,7 +128,7 @@ def examples(session):
 
 @nox.session
 def generate_models(session):
-    """Re-generate Pydantic models for the Destinations API in planet/api_models/.
+    """Re-generate Pydantic models for the Destinations API in planet/types/.
 
     Uses the same pinned datamodel-code-generator as `nox -s validate_models`,
     so the committed output is byte-identical to what the drift check
@@ -142,11 +142,11 @@ def generate_models(session):
     import json
     import tempfile
 
-    sys.path.insert(0, str(Path(__file__).parent / "tests" / "drift"))
+    sys.path.insert(0, str(Path(__file__).parent / "scripts"))
     import codegen_config
 
     for name, url in codegen_config.SPECS.items():
-        output = Path("planet/api_models") / f"{name}.py"
+        output = Path("planet/types") / f"{name}.py"
         spec = codegen_config.fetch_and_patch_spec(url)
         with tempfile.NamedTemporaryFile(suffix=".json",
                                          delete=False,

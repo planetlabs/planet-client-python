@@ -15,7 +15,7 @@
 
 How it works:
   - datamodel-codegen fetches the live OpenAPI spec and generates models into a temp file.
-  - The output is compared against the committed file in planet/api_models/.
+  - The output is compared against the committed file in planet/types/.
   - The test fails if they differ, indicating the spec has changed.
 
 The committed models are raw codegen output. They are excluded from yapf and
@@ -80,7 +80,7 @@ def test_models_match_spec(name, url):
                     tofile=f"regenerated/{name}.py",
                 ))
             pytest.fail(
-                f"planet/api_models/{name}.py is out of date with the live spec.\n"
+                f"planet/types/{name}.py is out of date with the live spec.\n"
                 f"Run `nox -s generate_models` to regenerate, then commit the result.\n\n"
                 f"{diff}")
     finally:

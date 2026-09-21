@@ -21,7 +21,8 @@ does not break a shipped SDK.
 import pydantic
 import pytest
 
-from planet.api_models.destinations import (
+import planet
+from planet.types.destinations import (
     AmazonS3PatchParams,
     DefaultDestinationRequest,
     Destination,
@@ -119,3 +120,37 @@ def test_destinations_response_round_trips_aliases():
     assert dumped["destinations"][0]["pl:ref"] == "ref"
     assert dumped["destinations"][0]["created"].startswith("2024-01-01")
     assert "field_links" not in dumped["destinations"][0]
+
+
+def test_sdk_does_not_import_pydantic_outside_planet_types():
+    """pydantic is an optional extra: `pip install planet[models]`.
+
+    Nothing outside planet/types may import it, or a plain `pip install planet`
+    breaks at import time. Checked by AST rather than by installing the package
+    two ways, so it runs in the normal suite.
+    """
+    import ast
+    import pathlib
+
+    package = pathlib.Path(planet.__file__).parent
+    types_dir = package / "types"
+
+    offenders = []
+    for path in package.rglob("*.py"):
+        if types_dir in path.parents or path.parent == types_dir:
+            continue
+        tree = ast.parse(path.read_text(), filename=str(path))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                names = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                names = [node.module or ""]
+            else:
+                continue
+            if any(n == "pydantic" or n.startswith("pydantic.")
+                   for n in names):
+                offenders.append(f"{path.relative_to(package)}:{node.lineno}")
+
+    assert not offenders, (
+        "pydantic imported outside planet/types, which breaks "
+        f"`pip install planet` without the models extra: {offenders}")

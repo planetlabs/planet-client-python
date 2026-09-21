@@ -17,44 +17,30 @@ Both `nox -s generate_models` and the drift test import this module. The drift
 test byte-compares regenerated output against the committed models, so the two
 must build an identical command line from an identical version of
 datamodel-code-generator (pinned in the `validate_models` extra).
+
+Spec URLs, output paths and other settings live in codegen_constants.
 """
 import json
 import pathlib
 import urllib.request
 
-REPO_ROOT = pathlib.Path(__file__).parent.parent.parent
-MODELS_DIR = REPO_ROOT / "planet" / "api_models"
+from codegen_constants import (
+    DROP_CONSTRAINT_ANY_OF,
+    HEADER,
+    MODELS_DIR,
+    REPO_ROOT,
+    SPECS,
+    TARGET_PYTHON_VERSION,
+)
 
-# TODO: extend to other APIs as Pydantic models are adopted:
-#   "subscriptions": "https://api.planet.com/subscriptions/v1/spec",
-#   "orders":        "https://api.planet.com/compute/ops/spec",
-#   "data":          "https://api.planet.com/data/v1/spec",
-SPECS = {
-    "destinations": "https://api.planet.com/destinations/v1/spec",
-}
-
-HEADER = ("# flake8: noqa\n"
-          "# fmt: off\n"
-          "# Generated code — do not edit manually.\n"
-          "# Reformatting this file will break `nox -s validate_models`.\n"
-          "# To regenerate, run:\n"
-          "#   nox -s generate_models")
-
-# Schema names whose anyOf blocks are pure required-field constraints
-# (each entry has only a `required` key, no properties of its own).
-# These exist solely to express "at least one of these fields must be set",
-# which is a server-side validation rule. datamodel-codegen cannot represent
-# that constraint cleanly: it generates N numbered classes (e.g.
-# DestinationPatchRequest1/2/3) that are otherwise identical except for which
-# field is marked required.
-#
-# We drop the anyOf during codegen so the generator emits a single, flat model
-# with all fields optional. The constraint is still enforced server-side; the
-# client SDK's job is to build and send the request, not to duplicate server
-# validation in a way that produces unreadable generated names.
-_DROP_CONSTRAINT_ANY_OF: set[str] = {
-    "DestinationPatchRequest",
-}
+__all__ = [
+    "MODELS_DIR",
+    "REPO_ROOT",
+    "SPECS",
+    "codegen_argv",
+    "fetch_and_patch_spec",
+    "response_reachable_schemas",
+]
 
 
 def _schema_refs(node) -> list:
@@ -127,7 +113,7 @@ def fetch_and_patch_spec(url: str) -> dict:
         spec = json.loads(resp.read())
 
     schemas = spec.get("components", {}).get("schemas", {})
-    for schema_name in _DROP_CONSTRAINT_ANY_OF:
+    for schema_name in DROP_CONSTRAINT_ANY_OF:
         schema = schemas.get(schema_name)
         if schema is None:
             continue
@@ -169,11 +155,8 @@ def codegen_argv(input_file: pathlib.Path, output: pathlib.Path) -> list:
         # than constr(...), which mypy rejects as an annotation in the modules
         # that import these models.
         "--use-annotated",
-        # Pinned, not inferred from the interpreter running codegen: output
-        # differs between Python versions, which would fail the drift check.
-        # 3.10 is the project's requires-python floor.
         "--target-python-version",
-        "3.10",
+        TARGET_PYTHON_VERSION,
         # The spec is OpenAPI 3.0.3 and marks fields such as Destination.archived
         # as both required and `nullable: true`. Without this, codegen drops the
         # nullability and the model rejects the null the API actually returns.
