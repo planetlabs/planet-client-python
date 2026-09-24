@@ -11,12 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-"""Constants for Pydantic model code generation.
-
-Separated from the codegen logic so the spec URLs and output paths can be
-read and changed without reading the generator. Adding an API means adding
-one line to SPECS.
-"""
 import pathlib
 
 REPO_ROOT = pathlib.Path(__file__).parent.parent

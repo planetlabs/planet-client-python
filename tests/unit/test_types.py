@@ -14,7 +14,7 @@
 """Contract tests for the generated Destinations models.
 
 These pin the two halves of the unknown-field policy set in
-tests/drift/codegen_config.py. Request models reject unknown fields so a typo
+scripts/type_gen.py. Request models reject unknown fields so a typo
 fails client side. Response models accept them so an additive server change
 does not break a shipped SDK.
 """

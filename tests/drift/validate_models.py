@@ -14,7 +14,8 @@
 """Pre-release drift detection: regenerate Pydantic models and diff against committed files.
 
 How it works:
-  - datamodel-codegen fetches the live OpenAPI spec and generates models into a temp file.
+  - The live OpenAPI spec is fetched, patched, and written to a temp file.
+  - datamodel-codegen reads that file and generates models into another temp file.
   - The output is compared against the committed file in planet/types/.
   - The test fails if they differ, indicating the spec has changed.
 
@@ -36,7 +37,7 @@ import tempfile
 
 import pytest
 
-from codegen_config import MODELS_DIR, SPECS, codegen_argv, fetch_and_patch_spec
+from type_gen import MODELS_DIR, SPECS, codegen_argv, fetch_and_patch_spec
 
 
 def _regenerate(url: str, output: pathlib.Path) -> None:

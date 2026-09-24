@@ -1,8 +1,13 @@
+import json
 from pathlib import Path
 import shutil
 import sys
+import tempfile
 
 import nox
+
+sys.path.insert(0, str(Path(__file__).parent / "scripts"))
+import type_gen  # noqa: E402
 
 nox.options.stop_on_first_error = True
 nox.options.reuse_existing_virtualenvs = False
@@ -71,7 +76,7 @@ def lint(session):
     session.install("-e", ".[lint]")
 
     session.run("flake8",
-                f"--exclude={','.join(generated_dirs)}",
+                f"--extend-exclude={','.join(generated_dirs)}",
                 *source_files)
     # yapf --exclude is a repeatable flag taking one fnmatch pattern; a bare
     # directory name matches nothing, so the trailing /* is required.
@@ -126,40 +131,30 @@ def examples(session):
     session.run('pytest', '--no-cov', 'examples/', '-s', *options)
 
 
-@nox.session
+@nox.session(python="3.12")
 def generate_models(session):
-    """Re-generate Pydantic models for the Destinations API in planet/types/.
+    """Re-generate the Pydantic models in planet/types/ from the live specs.
 
-    Uses the same pinned datamodel-code-generator as `nox -s validate_models`,
-    so the committed output is byte-identical to what the drift check
-    regenerates. Do not reformat the result.
-
-    Run after a known API spec change to refresh the models, then re-run
-    validate_models to confirm compatibility.
+    Output must stay byte-identical to what `nox -s validate_models`
+    regenerates. Run after a spec change, then re-run validate_models.
     """
     session.install("-e", ".[validate_models]")
 
-    import json
-    import tempfile
-
-    sys.path.insert(0, str(Path(__file__).parent / "scripts"))
-    import codegen_config
-
-    for name, url in codegen_config.SPECS.items():
-        output = Path("planet/types") / f"{name}.py"
-        spec = codegen_config.fetch_and_patch_spec(url)
+    for name, url in type_gen.SPECS.items():
+        output = type_gen.MODELS_DIR / f"{name}.py"
+        spec = type_gen.fetch_and_patch_spec(url)
         with tempfile.NamedTemporaryFile(suffix=".json",
                                          delete=False,
                                          mode="w") as spec_tmp:
             json.dump(spec, spec_tmp)
             spec_path = Path(spec_tmp.name)
         try:
-            session.run(*codegen_config.codegen_argv(spec_path, output))
+            session.run(*type_gen.codegen_argv(spec_path, output))
         finally:
             spec_path.unlink(missing_ok=True)
 
 
-@nox.session
+@nox.session(python="3.12")
 def validate_models(session):
     """Validate committed Pydantic models match the live API specs.
 
@@ -168,7 +163,7 @@ def validate_models(session):
 
     To refresh snapshots after a deliberate API change, run:
         nox -s generate_models
-    Intended as a pre-release gate; not included in the default nox session list.
+    Runs in PR CI; not included in the default nox session list.
     """
     session.install("-e", ".[validate_models]")
     session.run(

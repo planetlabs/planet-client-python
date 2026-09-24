@@ -1,4 +1,4 @@
-# Copyright 2024 Planet Labs PBC.
+# Copyright 2026 Planet Labs PBC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -11,20 +11,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-"""Single source of truth for the Pydantic model codegen invocation.
-
-Both `nox -s generate_models` and the drift test import this module. The drift
-test byte-compares regenerated output against the committed models, so the two
-must build an identical command line from an identical version of
-datamodel-code-generator (pinned in the `validate_models` extra).
-
-Spec URLs, output paths and other settings live in codegen_constants.
-"""
 import json
 import pathlib
 import urllib.request
 
-from codegen_constants import (
+from constants import (
     DROP_CONSTRAINT_ANY_OF,
     HEADER,
     MODELS_DIR,
@@ -83,9 +74,9 @@ def response_reachable_schemas(spec: dict) -> set:
 
 
 def fetch_and_patch_spec(url: str) -> dict:
-    """Fetch an OpenAPI spec and patch it for codegen.
+    """Fetch an OpenAPI spec and patch it for generating typed models.
 
-    Two patches, both applied before datamodel-codegen sees the spec.
+    Two patches are applied before datamodel-codegen sees the spec.
 
     1. Strip pure-constraint ``anyOf`` blocks.  Some schemas use ``anyOf``
        exclusively to express "at least one of these fields must be present",

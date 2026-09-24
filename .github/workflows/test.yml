@@ -73,7 +73,6 @@ jobs:
         key: ${{ runner.os }}-pip
         restore-keys: |
           ${{ runner.os }}-pip
-    # Fetches live OpenAPI specs from api.planet.com. No API key required.
     - name: Validate models
       run: |
         pip install --upgrade nox
