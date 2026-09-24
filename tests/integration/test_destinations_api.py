@@ -107,8 +107,10 @@ def construct_list_response(destinations):
 async def test_list_destinations():
     mock_response(TEST_URL, construct_list_response(DEST_LIST))
 
+    expected = construct_list_response(DEST_LIST)
+
     def assertf(resp):
-        assert resp == construct_list_response(DEST_LIST)
+        assert resp == expected
 
     assertf(await cl_async.list_destinations())
     assertf(cl_sync.list_destinations())
@@ -119,8 +121,10 @@ async def test_list_destinations_filtering():
     mock_response(f"{TEST_URL}?archived=false&is_owner=true",
                   construct_list_response([DEST_1]))
 
+    expected = construct_list_response([DEST_1])
+
     def assertf(resp):
-        assert resp == construct_list_response([DEST_1])
+        assert resp == expected
 
     assertf(await cl_async.list_destinations(archived=False, is_owner=True))
     assertf(cl_sync.list_destinations(archived=False, is_owner=True))

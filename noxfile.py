@@ -1,7 +1,13 @@
+import json
 from pathlib import Path
 import shutil
+import sys
+import tempfile
 
 import nox
+
+sys.path.insert(0, str(Path(__file__).parent / "scripts"))
+import type_gen  # noqa: E402
 
 nox.options.stop_on_first_error = True
 nox.options.reuse_existing_virtualenvs = False
@@ -9,6 +15,8 @@ nox.options.reuse_existing_virtualenvs = False
 nox.options.sessions = ['lint', 'analyze', 'test', 'coverage', 'docs']
 
 source_files = ("planet", "examples", "tests", "setup.py", "noxfile.py")
+# Generated code — excluded from linting and formatting checks
+generated_dirs = ("planet/types", )
 
 BUILD_DIRS = ['build', 'dist']
 
@@ -17,7 +25,11 @@ BUILD_DIRS = ['build', 'dist']
 def analyze(session):
     session.install(".[lint]")
 
-    session.run("mypy", "--ignore-missing", "planet")
+    session.run("mypy",
+                "--ignore-missing",
+                "--exclude",
+                "|".join(generated_dirs),
+                "planet")
 
 
 @nox.session
@@ -63,8 +75,13 @@ def test(session):
 def lint(session):
     session.install("-e", ".[lint]")
 
-    session.run("flake8", *source_files)
-    session.run('yapf', '--diff', '-r', *source_files)
+    session.run("flake8",
+                f"--extend-exclude={','.join(generated_dirs)}",
+                *source_files)
+    # yapf --exclude is a repeatable flag taking one fnmatch pattern; a bare
+    # directory name matches nothing, so the trailing /* is required.
+    yapf_excludes = [f"--exclude={d}/*" for d in generated_dirs]
+    session.run('yapf', '--diff', '-r', *yapf_excludes, *source_files)
 
 
 @nox.session
@@ -112,6 +129,56 @@ def examples(session):
     # Because these example scripts can be long-running, output the
     # example's stdout so we know what's happening
     session.run('pytest', '--no-cov', 'examples/', '-s', *options)
+
+
+@nox.session(python="3.12")
+def generate_models(session):
+    """Re-generate the Pydantic models in planet/types/ from the live specs.
+
+    Output must stay byte-identical to what `nox -s validate_models`
+    regenerates. Run after a spec change, then re-run validate_models.
+    """
+    session.install("-e", ".[validate_models]")
+
+    for name, url in type_gen.SPECS.items():
+        output = type_gen.MODELS_DIR / f"{name}.py"
+        spec = type_gen.fetch_and_patch_spec(url)
+        with tempfile.NamedTemporaryFile(suffix=".json",
+                                         delete=False,
+                                         mode="w") as spec_tmp:
+            json.dump(spec, spec_tmp)
+            spec_path = Path(spec_tmp.name)
+        try:
+            session.run(*type_gen.codegen_argv(spec_path, output))
+        finally:
+            spec_path.unlink(missing_ok=True)
+
+
+@nox.session(python="3.12")
+def validate_models(session):
+    """Validate committed Pydantic models match the live API specs.
+
+    Fetches live OpenAPI specs from Planet's API and compares against committed
+    snapshots. Fails if any spec has changed. No API key required.
+
+    To refresh snapshots after a deliberate API change, run:
+        nox -s generate_models
+    Runs in PR CI; not included in the default nox session list.
+    """
+    session.install("-e", ".[validate_models]")
+    session.run(
+        "pytest",
+        "tests/drift/validate_models.py",
+        # Stop conftest discovery below tests/, whose conftest imports the
+        # full test-suite dependencies that this extra deliberately omits.
+        "--confcutdir=tests/drift",
+        # setup.cfg addopts injects --cov, but this extra deliberately omits
+        # pytest-cov; clear addopts rather than pull in the full test deps.
+        "-o",
+        "addopts=",
+        "-v",
+        "--tb=short",
+    )
 
 
 @nox.session

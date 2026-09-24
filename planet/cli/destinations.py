@@ -83,8 +83,8 @@ async def _set_default_destination(ctx, destination_id, pretty):
 async def _unset_default_destination(ctx, pretty):
     async with destinations_client(ctx) as cl:
         try:
-            response = await cl.unset_default_destination()
-            echo_json(response, pretty)
+            await cl.unset_default_destination()
+            echo_json(None, pretty)
         except Exception as e:
             raise ClickException(f"Failed to unset default destination: {e}")
 

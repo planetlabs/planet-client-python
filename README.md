@@ -97,6 +97,13 @@ The Planet SDK for Python is [hosted on PyPI](https://pypi.org/project/planet/) 
 pip install planet
 ```
 
+For optional typed request and response models, generated from Planet's OpenAPI
+specs, install the `models` extra. It adds a `pydantic` dependency:
+
+```console
+pip install planet[models]
+```
+
 To install from source, first clone this repository, then navigate to the root directory (where `setup.py` lives) and run:
 
 ```console

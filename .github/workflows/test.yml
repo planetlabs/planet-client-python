@@ -56,6 +56,28 @@ jobs:
         pip install --upgrade nox
         nox -s analyze
 
+  validate-models:
+    name: Validate Models Against Live Specs
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.12
+    - name: Pip cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip
+        restore-keys: |
+          ${{ runner.os }}-pip
+    - name: Validate models
+      run: |
+        pip install --upgrade nox
+        nox -s validate_models
+
   test:
     name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
