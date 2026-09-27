@@ -462,12 +462,18 @@ class Session(BaseSession):
             await response.aclose()
 
     def client(self,
-               name: Literal['data', 'orders', 'subscriptions'],
+               name: Literal['catalog',
+                             'data',
+                             'destinations',
+                             'features',
+                             'mosaics',
+                             'orders',
+                             'subscriptions'],
                base_url: Optional[str] = None) -> object:
         """Get a client by its module name.
 
         Parameters:
-            name: one of 'data', 'orders', or 'subscriptions'.
+            name: the module name of a client, e.g. 'data' or 'catalog'.
 
         Returns:
             A client instance.
