@@ -275,8 +275,17 @@ async def test_get_job_empty_id_raises():
         await cl_async.get_job("")
 
 
+def _products_page(products: list, next_url: Optional[str] = None) -> dict:
+    return {
+        "meta": {
+            "count": len(products), "next": next_url
+        },
+        "results": products,
+    }
+
+
 @respx.mock
-async def test_list_products_list_payload():
+async def test_list_products():
     products = [
         {
             "id": 1, "supports_reservation": True
@@ -285,60 +294,65 @@ async def test_list_products_list_payload():
             "id": 2, "supports_reservation": False
         },
     ]
-    mock_response(PRODUCTS_URL, products)
+    mock_response(PRODUCTS_URL, _products_page(products))
 
     def assertf(resp):
         assert [p["id"] for p in resp] == [1, 2]
 
-    assertf(await cl_async.list_products())
-    assertf(cl_sync.list_products())
+    assertf([p async for p in cl_async.list_products()])
+    assertf(list(cl_sync.list_products()))
 
 
 @respx.mock
-async def test_list_products_results_wrapper():
-    """`/my/products` may wrap items in `results` — accept that shape too."""
-    payload = {
-        "results": [{
-            "id": 7, "supports_reservation": True
-        }],
-    }
-    mock_response(PRODUCTS_URL, payload)
-    products = await cl_async.list_products()
-    assert [p["id"] for p in products] == [7]
+async def test_list_products_paginated():
+    """Follow meta.next so products past the first page aren't dropped."""
+    next_url = f"{PRODUCTS_URL}?limit=2&offset=2"
+    page1 = _products_page([{"id": 1}, {"id": 2}], next_url=next_url)
+    page2 = _products_page([{"id": 3}])
+    respx.get(PRODUCTS_URL).mock(side_effect=[
+        httpx.Response(200, json=page1),
+        httpx.Response(200, json=page2),
+    ])
+
+    products = [p async for p in cl_async.list_products(page_size=2)]
+    assert [p["id"] for p in products] == [1, 2, 3]
+    assert respx.calls[0].request.url.params["limit"] == "2"
 
 
 @respx.mock
-async def test_list_products_products_wrapper():
-    """And the `products` wrapper key is also tolerated."""
-    payload = {
-        "products": [{
-            "id": 8, "supports_reservation": False
-        }],
-    }
-    mock_response(PRODUCTS_URL, payload)
-    products = await cl_async.list_products()
-    assert [p["id"] for p in products] == [8]
+async def test_list_products_respects_limit():
+    """Two pages of two items each; limit=3 cuts iteration short."""
+    next_url = f"{PRODUCTS_URL}?limit=2&offset=2"
+    page1 = _products_page([{"id": 1}, {"id": 2}], next_url=next_url)
+    page2 = _products_page([{"id": 3}, {"id": 4}])
+    respx.get(PRODUCTS_URL).mock(side_effect=[
+        httpx.Response(200, json=page1),
+        httpx.Response(200, json=page2),
+    ])
+
+    products = [p async for p in cl_async.list_products(limit=3)]
+    assert [p["id"] for p in products] == [1, 2, 3]
 
 
 @respx.mock
-async def test_list_products_supports_reservation_filter():
-    products = [
-        {
-            "id": 1, "supports_reservation": True
-        },
-        {
-            "id": 2, "supports_reservation": False
-        },
-        {
-            "id": 3, "supports_reservation": True
-        },
+async def test_list_products_default_params():
+    mock_response(PRODUCTS_URL, _products_page([]))
+    _ = [p async for p in cl_async.list_products()]
+    sent = respx.calls[0].request.url.params
+    assert sent["limit"] == "500"
+    assert "supports_reservation" not in sent
+
+
+@pytest.mark.parametrize("supports_reservation, expected", [(True, "true"),
+                                                            (False, "false")])
+@respx.mock
+async def test_list_products_supports_reservation_filter(
+        supports_reservation, expected):
+    """The filter is sent to the server rather than applied client-side."""
+    mock_response(PRODUCTS_URL, _products_page([]))
+    _ = [
+        p async for p in cl_async.list_products(
+            supports_reservation=supports_reservation)
     ]
-    # Each filter invocation makes a fresh request — return the same list each time.
-    respx.get(PRODUCTS_URL).mock(
-        side_effect=lambda req: httpx.Response(200, json=products))
-
-    supported = await cl_async.list_products(supports_reservation=True)
-    assert [p["id"] for p in supported] == [1, 3]
-
-    unsupported = await cl_async.list_products(supports_reservation=False)
-    assert [p["id"] for p in unsupported] == [2]
+    sent = respx.calls[0].request.url.params
+    assert sent["supports_reservation"] == expected

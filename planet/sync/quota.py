@@ -140,17 +140,22 @@ class QuotaAPI:
     def list_products(
         self,
         supports_reservation: Optional[bool] = None,
-    ) -> List[Dict[str, Any]]:
-        """List products available to the requesting user's organization.
+        limit: int = 100,
+        page_size: int = 500,
+    ) -> Iterator[dict]:
+        """Iterate over products available to the requesting user's
+        organization.
 
         Use this to look up the `product_id` (the `id` field) to pass into
         [planet.sync.quota.QuotaAPI.create_reservation][],
         [planet.sync.quota.QuotaAPI.bulk_create_reservations][],
         or [planet.sync.quota.QuotaAPI.estimate_reservation][].
 
-        Parameters:
-            supports_reservation: If True, only return products with
-                `supports_reservation: true`.
+        See [planet.clients.quota.QuotaClient.list_products][] for
+        parameter details.
         """
-        return self._client._call_sync(
-            self._client.list_products(supports_reservation))
+        return self._client._aiter_to_iter(
+            self._client.list_products(
+                supports_reservation=supports_reservation,
+                limit=limit,
+                page_size=page_size))

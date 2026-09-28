@@ -68,12 +68,23 @@ def products():
     pass
 
 
-@command(products, name='list', extra_args=[compact])
-@click.option(
-    '--supports-reservation/--no-supports-reservation',
-    default=None,
-    help='Filter products by whether they support quota reservations.')
-async def products_list(ctx, supports_reservation, pretty, compact):
+@command(products, name='list', extra_args=[compact, limit])
+@click.option('--supports-reservation',
+              type=bool,
+              default=None,
+              help="""Set to true to include only products that support quota
+              reservations, false to exclude them.""")
+@click.option('--page-size',
+              type=click.INT,
+              default=500,
+              show_default=True,
+              help='Number of results to return per page.')
+async def products_list(ctx,
+                        supports_reservation,
+                        pretty,
+                        compact,
+                        limit,
+                        page_size):
     """List products available to your organization.
 
     Each product's `id` is the value to pass as `--product-id` when creating
@@ -81,24 +92,23 @@ async def products_list(ctx, supports_reservation, pretty, compact):
 
     Example:
 
-    planet quota products list --supports-reservation
+    planet quota products list --supports-reservation true
     """
+    keys = ('id',
+            'name',
+            'title',
+            'supports_reservation',
+            'quota_total',
+            'quota_used',
+            'unlimited_quota')
     async with quota_client(ctx) as cl:
-        results = await cl.list_products(
-            supports_reservation=supports_reservation)
-        if compact:
-            keys = ('id',
-                    'name',
-                    'title',
-                    'supports_reservation',
-                    'quota_total',
-                    'quota_used',
-                    'unlimited_quota')
-            results = [{
-                k: v
-                for k, v in p.items() if k in keys
-            } for p in results]
-        echo_json(results, pretty)
+        results = cl.list_products(supports_reservation=supports_reservation,
+                                   limit=limit,
+                                   page_size=page_size)
+        async for item in results:
+            if compact:
+                item = {k: v for k, v in item.items() if k in keys}
+            echo_json(item, pretty)
 
 
 @quota.group()

@@ -16,17 +16,19 @@ Every reservation is made against a product, identified by a numeric `product_id
 planet quota products list
 ```
 
-To narrow the list to products that actually support quota reservations:
+To narrow the list to products that actually support quota reservations (use `false` to list only those that don't):
 
 ```sh
-planet quota products list --supports-reservation
+planet quota products list --supports-reservation true
 ```
 
 The response can be long, so `--compact` trims each product down to the fields most useful for choosing one — `id`, `name`, `title`, `supports_reservation`, `quota_total`, `quota_used`, and `unlimited_quota`:
 
 ```sh
-planet quota products list --supports-reservation --compact --pretty
+planet quota products list --supports-reservation true --compact --pretty
 ```
+
+Each product is printed as its own JSON object, one per line. Like `reservations list`, the output is capped by `--limit`, which defaults to 100; set `--limit 0` to list every product.
 
 The `id` from this listing is the value you pass as `--product-id` below.
 

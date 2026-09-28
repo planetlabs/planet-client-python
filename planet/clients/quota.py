@@ -19,7 +19,7 @@ from typing import Any, AsyncIterator, Dict, List, Optional
 from planet.clients.base import _BaseClient
 from planet.exceptions import APIError, ClientError
 from planet.http import Session
-from planet.models import Paged, Response
+from planet.models import Paged
 from ..constants import PLANET_BASE_URL
 
 BASE_URL = f'{PLANET_BASE_URL}/account/v1'
@@ -370,8 +370,11 @@ class QuotaClient(_BaseClient):
     async def list_products(
         self,
         supports_reservation: Optional[bool] = None,
-    ) -> List[dict]:
-        """List products available to the requesting user's organization.
+        limit: int = 100,
+        page_size: int = 500,
+    ) -> AsyncIterator[dict]:
+        """Iterate over products available to the requesting user's
+        organization.
 
         Use this to look up the `product_id` (the `id` field) to pass into
         [planet.clients.quota.QuotaClient.create_reservation][],
@@ -383,36 +386,33 @@ class QuotaClient(_BaseClient):
                 `supports_reservation: true`. If False, only return products
                 without reservation support. If None (default), return all
                 accessible products.
+            limit: Maximum number of products to return. When set to 0,
+                no maximum is applied.
+            page_size: Number of results to fetch per page.
 
-        Returns:
-            list[dict]: products in the user's organization.
+        Yields:
+            dict: A description of a product.
 
         Raises:
             APIError: on an API server error.
             ClientError: on a client error.
         """
+        params: Dict[str, Any] = {'limit': page_size}
+        if supports_reservation is not None:
+            params['supports_reservation'] = str(supports_reservation).lower()
+
         try:
-            resp: Response = await self._session.request(
-                method='GET', url=self._products_url)
+            response = await self._session.request(method='GET',
+                                                   url=self._products_url,
+                                                   params=params)
+            async for item in _QuotaPaged(response,
+                                          self._session.request,
+                                          limit=limit):
+                yield item
         except APIError:
             raise
         except ClientError:  # pragma: no cover
             raise
-
-        payload = resp.json()
-        # /my/products returns either a list or a dict wrapping a list under
-        # a 'results' / 'products' key; tolerate both shapes.
-        if isinstance(payload, dict):
-            products = payload.get('results') or payload.get('products') or []
-        else:
-            products = payload
-
-        if supports_reservation is None:
-            return list(products)
-        return [
-            p for p in products
-            if bool(p.get('supports_reservation')) == supports_reservation
-        ]
 
 
 __all__ = ['QuotaClient']

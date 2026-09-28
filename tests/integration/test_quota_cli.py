@@ -15,6 +15,7 @@
 import json
 import tempfile
 
+import pytest
 import respx
 from click.testing import CliRunner
 
@@ -27,6 +28,7 @@ from tests.integration.test_quota_api import (
     RESERVATIONS_URL,
     TEST_URL,
     _job,
+    _products_page,
     _reservation,
     _reservations_page,
     mock_response,
@@ -69,11 +71,11 @@ def test_cli_products_list():
             "extra": "still-here-without-compact",
         },
     ]
-    mock_response(PRODUCTS_URL, products)
+    mock_response(PRODUCTS_URL, _products_page(products))
 
     # Default: every key surfaces.
     result = invoke("products", "list")
-    data = json.loads(result.output)
+    data = _parse_json_lines(result.output)
     assert [p["id"] for p in data] == [1, 2]
     assert data[0]["extra"] == "dropped-when-compact"
 
@@ -92,10 +94,10 @@ def test_cli_products_list_compact():
             "extra": "dropped-when-compact",
         },
     ]
-    mock_response(PRODUCTS_URL, products)
+    mock_response(PRODUCTS_URL, _products_page(products))
 
     result = invoke("products", "list", "--compact")
-    data = json.loads(result.output)
+    data = _parse_json_lines(result.output)
     assert "extra" not in data[0]
     assert set(data[0].keys()) == {
         "id",
@@ -108,20 +110,29 @@ def test_cli_products_list_compact():
     }
 
 
+@pytest.mark.parametrize("value", ["true", "false"])
 @respx.mock
-def test_cli_products_list_supports_reservation_flag():
-    products = [
-        {
-            "id": 1, "supports_reservation": True
-        },
-        {
-            "id": 2, "supports_reservation": False
-        },
-    ]
-    respx.get(PRODUCTS_URL).respond(json=products)
+def test_cli_products_list_supports_reservation(value):
+    mock_response(PRODUCTS_URL, _products_page([]))
+    invoke("products", "list", "--supports-reservation", value)
+    params = respx.calls[0].request.url.params
+    assert params["supports_reservation"] == value
 
-    result = invoke("products", "list", "--supports-reservation")
-    assert [p["id"] for p in json.loads(result.output)] == [1]
+
+@respx.mock
+def test_cli_products_list_supports_reservation_omitted():
+    mock_response(PRODUCTS_URL, _products_page([]))
+    invoke("products", "list")
+    assert "supports_reservation" not in respx.calls[0].request.url.params
+
+
+@respx.mock
+def test_cli_products_list_limit_and_page_size():
+    products = [{"id": 1}, {"id": 2}, {"id": 3}]
+    mock_response(PRODUCTS_URL, _products_page(products))
+    result = invoke("products", "list", "--limit", "2", "--page-size", "50")
+    assert [p["id"] for p in _parse_json_lines(result.output)] == [1, 2]
+    assert respx.calls[0].request.url.params["limit"] == "50"
 
 
 @respx.mock
