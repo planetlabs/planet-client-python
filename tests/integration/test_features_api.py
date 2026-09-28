@@ -229,6 +229,38 @@ async def test_list_items():
 
 
 @respx.mock
+async def test_list_items_with_filters():
+    collection_id = "test"
+    items_url = f"{TEST_URL}/collections/{collection_id}/items"
+
+    mock_response(items_url,
+                  list_features_response(collection_id, num_features=1))
+
+    filters = dict(
+        bbox=[1.0, 2.0, 3.0, 4.0],
+        datetime="2024-01-01T00:00:00Z/2024-12-31T23:59:59Z",
+        id="~abc",
+        hashid="deadbeef",
+        sort="-id",
+    )
+
+    # async client forwards every filter as a query parameter
+    [feat async for feat in cl_async.list_items(collection_id, **filters)]
+    sent = respx.calls[-1].request.url.params
+    assert sent["bbox"] == "1.0,2.0,3.0,4.0"
+    assert sent["datetime"] == filters["datetime"]
+    assert sent["id"] == "~abc"
+    assert sent["hashid"] == "deadbeef"
+    assert sent["sort"] == "-id"
+
+    # sync wrapper forwards them too
+    list(cl_sync.list_items(collection_id, **filters))
+    sent_sync = respx.calls[-1].request.url.params
+    assert sent_sync["bbox"] == "1.0,2.0,3.0,4.0"
+    assert sent_sync["sort"] == "-id"
+
+
+@respx.mock
 @pytest.mark.parametrize(
     "feature, expected_body",
     [
