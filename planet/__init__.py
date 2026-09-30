@@ -13,15 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from .http import Session
-from . import data_filter, order_request, reporting, subscription_request
+from . import async_processing_request, data_filter, order_request, reporting, subscription_request
 from .__version__ import __version__  # NOQA
 from .auth import Auth
 from .auth_builtins import PlanetOAuthScopes
-from .clients import DataClient, DestinationsClient, FeaturesClient, MosaicsClient, OrdersClient, QuotaClient, SubscriptionsClient  # NOQA
+from .clients import AsyncProcessingClient, DataClient, DestinationsClient, FeaturesClient, MosaicsClient, OrdersClient, QuotaClient, SubscriptionsClient  # NOQA
 from .io import collect
 from .sync import Planet
 
 __all__ = [
+    'AsyncProcessingClient',
+    'async_processing_request',
     'Auth',
     'PlanetOAuthScopes',
     'collect',
