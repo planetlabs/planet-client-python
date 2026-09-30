@@ -1,5 +1,6 @@
 from typing import Optional
 
+from .async_processing import AsyncProcessingAPI
 from .features import FeaturesAPI
 from .data import DataAPI
 from .destinations import DestinationsAPI
@@ -20,6 +21,7 @@ class Planet:
 
     Members:
 
+    - `async_processing`: Async Processing API.
     - `data`: for interacting with the Planet Data API.
     - `destinations`: Destinations API.
     - `orders`: Orders API.
@@ -69,3 +71,5 @@ class Planet:
         self.features = FeaturesAPI(self._session,
                                     f"{planet_base}/features/v1/ogc/my/")
         self.quota = QuotaAPI(self._session, f"{planet_base}/account/v1")
+        # Served from services.sentinel-hub.com, not the Planet base URL.
+        self.async_processing = AsyncProcessingAPI(self._session)
