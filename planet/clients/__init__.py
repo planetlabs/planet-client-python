@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from .async_processing import AsyncProcessingClient
 from .data import DataClient
 from .destinations import DestinationsClient
 from .features import FeaturesClient
@@ -21,6 +22,7 @@ from .quota import QuotaClient
 from .subscriptions import SubscriptionsClient
 
 __all__ = [
+    'AsyncProcessingClient',
     'DataClient',
     'DestinationsClient',
     'FeaturesClient',
@@ -32,6 +34,7 @@ __all__ = [
 
 # Organize client classes by their module name to allow lookup.
 _client_directory = {
+    'async_processing': AsyncProcessingClient,
     'data': DataClient,
     'destinations': DestinationsClient,
     'features': FeaturesClient,

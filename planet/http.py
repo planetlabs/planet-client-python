@@ -462,7 +462,10 @@ class Session(BaseSession):
             await response.aclose()
 
     def client(self,
-               name: Literal['data', 'orders', 'subscriptions'],
+               name: Literal['async_processing',
+                             'data',
+                             'orders',
+                             'subscriptions'],
                base_url: Optional[str] = None) -> object:
         """Get a client by its module name.
 
