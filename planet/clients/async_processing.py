@@ -30,9 +30,6 @@ DEPLOYMENT_URLS: Dict[str, str] = {
 }
 DEFAULT_DEPLOYMENT = 'aws-eu-central-1'
 
-# The only status the API reports. Finished requests return 404.
-RUNNING = 'RUNNING'
-
 LOGGER = logging.getLogger(__name__)
 
 
