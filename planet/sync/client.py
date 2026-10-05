@@ -1,11 +1,13 @@
 from typing import Optional
 
+from .async_processing import AsyncProcessingAPI
 from .features import FeaturesAPI
 from .data import DataAPI
 from .destinations import DestinationsAPI
 from .orders import OrdersAPI
 from .quota import QuotaAPI
 from .subscriptions import SubscriptionsAPI
+from planet.clients.async_processing import DEFAULT_DEPLOYMENT
 from planet.http import Session
 from planet.__version__ import __version__
 from planet.constants import PLANET_BASE_URL
@@ -20,6 +22,7 @@ class Planet:
 
     Members:
 
+    - `async_processing`: Async Processing API.
     - `data`: for interacting with the Planet Data API.
     - `destinations`: Destinations API.
     - `orders`: Orders API.
@@ -44,12 +47,17 @@ class Planet:
             will default to standard behavior when not provided.
         base_url: Optional base URL for Planet APIs. Defaults to (https://api.planet.com).
             Each API will append its specific path suffix (/data/v1, /compute/ops, etc.).
+        async_processing_deployment: Deployment for `async_processing`:
+            `aws-eu-central-1` (default) or `aws-us-west-2`. Not affected by
+            `base_url`.
 
     """
 
-    def __init__(self,
-                 session: Optional[Session] = None,
-                 base_url: Optional[str] = None) -> None:
+    def __init__(
+            self,
+            session: Optional[Session] = None,
+            base_url: Optional[str] = None,
+            async_processing_deployment: str = DEFAULT_DEPLOYMENT) -> None:
         self._session = session or Session()
         self._session._client.headers.update({
             "X-Planet-App": SYNC_CLIENT_X_PLANET_APP,
@@ -69,3 +77,6 @@ class Planet:
         self.features = FeaturesAPI(self._session,
                                     f"{planet_base}/features/v1/ogc/my/")
         self.quota = QuotaAPI(self._session, f"{planet_base}/account/v1")
+        # Served from services.sentinel-hub.com, not the Planet base URL.
+        self.async_processing = AsyncProcessingAPI(
+            self._session, deployment=async_processing_deployment)

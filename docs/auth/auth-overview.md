@@ -80,10 +80,10 @@ user-interactive and machine-to-machine use cases, as described in this guide.
 
     🚧 OAuth2 machine-to-machine (M2M) access tokens are currently available for use
     with `services.sentinel-hub.com` APIs. Work to support `api.planet.com` is
-    ongoing.  It should also be noted that at this time no API clients for
-    `services.sentinel-hub.com` APIs have been incorporated into this SDK.
-    The SDK may still be used to obtain and manage M2M access tokens to
-    support external applications.
+    ongoing.  The SDK's Async Processing API client
+    (`planet async-processing`) is served from `services.sentinel-hub.com`
+    and accepts both user and M2M access tokens. The SDK may also be used to
+    obtain and manage M2M access tokens to support external applications.
 
 ### Planet API Keys
 Planet API keys are simple fixed strings that may be presented by the client
