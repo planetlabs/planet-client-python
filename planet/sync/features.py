@@ -190,3 +190,32 @@ class FeaturesAPI:
                                                    property_id)
 
         return self._client._call_sync(uploaded_features)
+
+    def update_item(self, collection_id: str, feature_id: str, feature: Union[dict, GeoInterface]) -> Feature:
+        """
+        Update an existing Feature identified by `feature_id` and `collection_id`.
+        Returns a Feature.
+
+        Note the Features API only accepts Polygon and MultiPolygon.
+
+        collection_id: the collection to add the feature to
+        feature: a dict containing a geojson Feature or FeatureCollection, or an
+          instance of a class that implements __geo_interface__ (e.g. a Shapely or
+          GeoPandas geometry object)
+
+        Example:
+
+        ```
+        updated_feature = await features_client.update_feature(
+          collection_id="my-collection",
+          feature_id="my-feature"
+          feature=feature,
+        )
+        ```
+
+        note: if a geojson Geometry is supplied, it will be converted
+        to a Feature. However, we recommend doing this conversion yourself
+        so that you can set a title and description property.
+        """
+        return self._client._call_sync(
+            self._client.update_item(collection_id, feature_id, feature))
