@@ -39,8 +39,6 @@ from typing import Any, Dict, List, Optional
 
 from planet.exceptions import ClientError
 
-DEFAULT_CRS = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
-
 
 def build_request(input: dict,
                   output: dict,
