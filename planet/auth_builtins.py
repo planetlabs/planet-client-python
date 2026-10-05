@@ -64,9 +64,9 @@ _OIDC_AUTH_CLIENT_CONFIG__USER_SKEL = {
     "scopes": [
         PlanetOAuthScopes.PLANET,
         PlanetOAuthScopes.OFFLINE_ACCESS,
-        # PlanetOAuthScopes.OPENID,
-        # PlanetOAuthScopes.PROFILE,
-        # PlanetOAuthScopes.EMAIL
+        PlanetOAuthScopes.OPENID,
+        PlanetOAuthScopes.PROFILE,
+        PlanetOAuthScopes.EMAIL
     ],
     # "client_type": "oidc_device_code",  # Must be provided when hydrating the SKEL
     # "client_id": _SDK_CLIENT_ID_PROD,   # Must be provided when hydrating the SKEL
