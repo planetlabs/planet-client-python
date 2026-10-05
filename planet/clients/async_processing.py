@@ -29,7 +29,6 @@ DEPLOYMENT_URLS: Dict[str, str] = {
     'aws-us-west-2': 'https://services-uswest2.sentinel-hub.com/async/v1',
 }
 DEFAULT_DEPLOYMENT = 'aws-eu-central-1'
-BASE_URL = DEPLOYMENT_URLS[DEFAULT_DEPLOYMENT]
 
 # The only status the API reports. Finished requests return 404.
 RUNNING = 'RUNNING'
@@ -65,14 +64,26 @@ class AsyncProcessingClient(_BaseClient):
 
     def __init__(self,
                  session: Session,
-                 base_url: Optional[str] = None) -> None:
+                 base_url: Optional[str] = None,
+                 *,
+                 deployment: str = DEFAULT_DEPLOYMENT) -> None:
         """
         Parameters:
             session: Open session connected to server.
-            base_url: The base URL to use. Defaults to the AWS EU
-                (Frankfurt) deployment. See `DEPLOYMENT_URLS` for others.
+            base_url: Custom base URL. Overrides `deployment`.
+            deployment: Deployment to send requests to: `aws-eu-central-1`
+                (Frankfurt) or `aws-us-west-2` (Oregon). Input data must
+                be hosted on the same deployment, and request IDs are only
+                known to the deployment that created them.
+
+        Raises:
+            planet.exceptions.ClientError: If deployment is unknown.
         """
-        super().__init__(session, base_url or BASE_URL)
+        if deployment not in DEPLOYMENT_URLS:
+            raise ClientError(
+                f'Unknown deployment {deployment!r}. Expected one of '
+                f'{", ".join(DEPLOYMENT_URLS)}.')
+        super().__init__(session, base_url or DEPLOYMENT_URLS[deployment])
         self._process_url = f'{self._base_url}/process'
 
     async def create_request(self, request: dict) -> dict:

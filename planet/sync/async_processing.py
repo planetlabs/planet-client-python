@@ -15,7 +15,8 @@
 
 from typing import Any, Callable, Dict, Optional
 
-from planet.clients.async_processing import AsyncProcessingClient
+from planet.clients.async_processing import (AsyncProcessingClient,
+                                             DEFAULT_DEPLOYMENT)
 from planet.http import Session
 
 
@@ -36,14 +37,19 @@ class AsyncProcessingAPI:
 
     def __init__(self,
                  session: Session,
-                 base_url: Optional[str] = None) -> None:
+                 base_url: Optional[str] = None,
+                 *,
+                 deployment: str = DEFAULT_DEPLOYMENT) -> None:
         """
         Parameters:
             session: Open session connected to server.
-            base_url: The base URL to use. Defaults to the AWS EU
-                (Frankfurt) deployment.
+            base_url: Custom base URL. Overrides `deployment`.
+            deployment: Deployment to send requests to. See
+                [planet.clients.async_processing.AsyncProcessingClient][].
         """
-        self._client = AsyncProcessingClient(session, base_url)
+        self._client = AsyncProcessingClient(session,
+                                             base_url,
+                                             deployment=deployment)
 
     def create_request(self, request: dict) -> Dict[str, Any]:
         """Submit an async processing request.
