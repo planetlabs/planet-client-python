@@ -205,7 +205,9 @@ async def request(ctx,
     Give --evalscript or --evalscript-url.
 
     S3 delivery needs --iam-role-arn, or --aws-access-key-id and
-    --aws-secret-access-key. GCS delivery needs --gcs-credentials.
+    --aws-secret-access-key. GCS delivery needs --gcs-credentials. The
+    credentials need read and write access to the bucket. On GCS,
+    roles/storage.objectCreator is not enough; use roles/storage.objectAdmin.
 
     Example:
 
@@ -267,8 +269,9 @@ async def create(ctx, request, pretty):
     REQUEST is the request JSON: a JSON string, a filename, or - for stdin.
     Generate one with `planet async-processing request`.
 
-    Prints the request ID and status. Invalid requests fail here. Errors
-    during processing are written to error.json in the delivery bucket.
+    Prints the request ID and status. Malformed requests fail here. Other
+    errors, including bucket access errors, may only appear during
+    processing. These are written to error.json in the delivery bucket.
 
     Example:
 

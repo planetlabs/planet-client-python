@@ -80,7 +80,7 @@ GCS needs a service account key file. The CLI base64-encodes it for you:
 --delivery gs://my-bucket/ndvi --gcs-credentials key.json
 ```
 
-See the [API documentation](https://docs.planet.com/develop/apis/async-processing/) for the bucket permissions the service needs.
+The service account needs read and write access to the bucket. `roles/storage.objectCreator` is not enough; use `roles/storage.objectAdmin`. See the [API documentation](https://docs.planet.com/develop/apis/async-processing/) for the bucket permissions the service needs.
 
 ### Stored Evalscripts
 To use an evalscript kept in your bucket, pass `--evalscript-url` instead of `--evalscript`. It uses the same credential options as `--delivery`:
@@ -104,7 +104,7 @@ planet async-processing create request.json
 planet async-processing request ... | planet async-processing create -
 ```
 
-The API rejects invalid requests here. It also rejects a request when you have reached your concurrent request limit.
+The API rejects malformed requests here. It also rejects a request when you have reached your concurrent request limit. Other errors, such as missing bucket permissions, may only appear during processing, in `error.json`.
 
 ### Track
 `get` shows the status of a running request:
