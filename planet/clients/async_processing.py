@@ -78,8 +78,10 @@ class AsyncProcessingClient(_BaseClient):
     async def create_request(self, request: dict) -> dict:
         """Submit an async processing request.
 
-        Errors in the request are raised here. Errors during processing are
-        written to `error.json` in the delivery bucket.
+        Malformed requests are raised here. Other errors, including bucket
+        access errors, may only appear during processing. These are written
+        to `error.json` in the delivery bucket, so a successful submit does
+        not mean the request will succeed.
 
         Parameters:
             request: The request body. See

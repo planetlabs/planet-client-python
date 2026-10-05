@@ -276,7 +276,10 @@ def gs_bucket(url: str, credentials: str) -> dict:
 
     Parameters:
         url: `gs://bucket/prefix`.
-        credentials: Base64-encoded service account key JSON.
+        credentials: Base64-encoded service account key JSON. The account
+            needs read and write access to the bucket, e.g.
+            `roles/storage.objectAdmin`. `roles/storage.objectCreator` is
+            not enough.
 
     Raises:
         planet.exceptions.ClientError: If url is not a gs:// URL.
