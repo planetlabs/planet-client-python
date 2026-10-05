@@ -239,7 +239,7 @@ async def test_session_request_retry():
             httpx.Response(HTTPStatus.OK, json={})
         ]
 
-        # let's not actually introduce a wait into the tests
+        # avoid introducing a real wait into the test
         ps.max_retry_backoff = 0
 
         resp = await ps.request(method='GET', url=TEST_URL)
@@ -257,7 +257,7 @@ async def test_session__retry():
         raise exceptions.TooManyRequests
 
     with patch('planet.http.Session._calculate_wait') as mock_wait:
-        # let's not actually introduce a wait into the tests
+        # avoid introducing a real wait into the test
         mock_wait.return_value = 0
 
         async with http.Session() as ps:
@@ -266,7 +266,60 @@ async def test_session__retry():
 
         calls = mock_wait.call_args_list
         args = [c[0] for c in calls]
-        assert args == [(1, 64), (2, 64), (3, 64), (4, 64), (5, 64)]
+        assert args == [(1, 64, 1), (2, 64, 1), (3, 64, 1), (4, 64, 1),
+                        (5, 64, 1)]
+
+
+@pytest.mark.anyio
+async def test_session_retry_defaults():
+    """Retry defaults to the module-level configuration"""
+    async with http.Session() as ps:
+        assert ps.max_retries == http.MAX_RETRIES
+        assert ps.max_retry_backoff == http.MAX_RETRY_BACKOFF
+        assert ps.max_retry_jitter == http.MAX_RETRY_JITTER
+
+
+@respx.mock
+@pytest.mark.anyio
+async def test_session__retry_configured():
+    """Retry configuration given to the Session is used by _retry"""
+
+    async def test_func():
+        # directly trigger the retry logic
+        raise exceptions.TooManyRequests
+
+    with patch('planet.http.Session._calculate_wait') as mock_wait:
+        # avoid introducing a real wait into the test
+        mock_wait.return_value = 0
+
+        async with http.Session(max_retries=2,
+                                max_retry_backoff=8,
+                                max_retry_jitter=2) as ps:
+            with pytest.raises(exceptions.TooManyRequests):
+                await ps._retry(test_func)
+
+        calls = mock_wait.call_args_list
+        args = [c[0] for c in calls]
+        assert args == [(1, 8, 2), (2, 8, 2)]
+
+
+@respx.mock
+@pytest.mark.anyio
+async def test_session__retry_disabled():
+    """A max_retries of zero disables retry"""
+
+    async def test_func():
+        # directly trigger the retry logic
+        raise exceptions.TooManyRequests
+
+    with patch('planet.http.Session._calculate_wait') as mock_wait:
+        mock_wait.return_value = 0
+
+        async with http.Session(max_retries=0) as ps:
+            with pytest.raises(exceptions.TooManyRequests):
+                await ps._retry(test_func)
+
+        assert mock_wait.call_args_list == []
 
 
 def test__calculate_wait():
@@ -276,10 +329,65 @@ def test__calculate_wait():
         for i in range(5)
     ]
 
-    # (min, max): 2**n to 2**n + 1, last entry hit threshold
-    expected_times = [2, 4, 8, 16, 20]
+    # (min, max): 2**n to 2**n + 1, last entry hit threshold, which reserves
+    # room for the jitter
+    expected_times = [2, 4, 8, 16, 19]
 
     for wait, expected in zip(wait_times, expected_times):
         # this doesn't really test the randomness but does test exponential
         # and threshold
         assert math.floor(wait) == expected
+
+
+def test__calculate_wait_thresholded_is_jittered():
+    """Waits that hit the threshold are jittered and never exceed it"""
+    max_retry_backoff = 20
+
+    # 2**5 is beyond the threshold, so every one of these waits is thresholded
+    wait_times = [
+        http.Session._calculate_wait(5, max_retry_backoff) for _ in range(100)
+    ]
+
+    assert all(19 <= wait <= max_retry_backoff for wait in wait_times)
+
+    # the thresholded waits are jittered, not a constant
+    assert len(set(wait_times)) > 1
+
+
+def test__calculate_wait_backoff_smaller_than_jitter():
+    """The jitter is narrowed to fit within a small maximum backoff"""
+    max_retry_backoff = 0.5
+
+    wait_times = [
+        http.Session._calculate_wait(i + 1, max_retry_backoff)
+        for i in range(5)
+    ]
+
+    assert all(0 <= wait <= max_retry_backoff for wait in wait_times)
+
+
+def test__calculate_wait_backoff_zero():
+    """A maximum backoff of zero waits not at all"""
+    assert http.Session._calculate_wait(1, 0) == 0
+
+
+def test__calculate_wait_jitter_configured():
+    """The maximum jitter widens the range the wait is drawn from"""
+    max_retry_backoff = 64
+    max_retry_jitter = 8
+
+    wait_times = [
+        http.Session._calculate_wait(1, max_retry_backoff, max_retry_jitter)
+        for _ in range(100)
+    ]
+
+    # 2**1 of base wait plus up to the maximum jitter
+    assert all(2 <= wait <= 2 + max_retry_jitter for wait in wait_times)
+    assert max(wait_times) > 2 + 1  # wider than the default jitter
+
+
+def test__calculate_wait_jitter_zero():
+    """A maximum jitter of zero gives a deterministic wait"""
+    wait_times = [http.Session._calculate_wait(i + 1, 20, 0) for i in range(5)]
+
+    assert wait_times == [2, 4, 8, 16, 20]
