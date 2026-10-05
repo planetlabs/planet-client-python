@@ -38,7 +38,9 @@ NOT_RUNNING = ('Request {} is not running. It has finished or does not '
 @asynccontextmanager
 async def async_processing_client(ctx):
     async with CliSession(ctx) as sess:
-        cl = AsyncProcessingClient(sess, base_url=ctx.obj['BASE_URL'])
+        cl = AsyncProcessingClient(sess,
+                                   deployment=ctx.obj['DEPLOYMENT'],
+                                   base_url=ctx.obj['BASE_URL'])
         yield cl
 
 
@@ -76,7 +78,8 @@ def async_processing(ctx, deployment, base_url):
     planet async-processing create request.json
     planet async-processing wait <REQUEST_ID>
     """
-    ctx.obj['BASE_URL'] = base_url or DEPLOYMENT_URLS[deployment]
+    ctx.obj['DEPLOYMENT'] = deployment
+    ctx.obj['BASE_URL'] = base_url
 
 
 def _parse_responses(values: Tuple[str, ...]) -> List[dict]:

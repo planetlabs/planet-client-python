@@ -21,7 +21,7 @@ import respx
 
 from planet import AsyncProcessingClient, Planet, Session
 from planet.auth import Auth
-from planet.clients.async_processing import BASE_URL, DEPLOYMENT_URLS
+from planet.clients.async_processing import DEPLOYMENT_URLS
 from planet.exceptions import (BadQuery,
                                ClientError,
                                MissingResource,
@@ -67,11 +67,43 @@ def status_route():
     return respx.get(f"{PROCESS_URL}/{REQUEST_ID}")
 
 
-def test_default_base_url():
-    assert BASE_URL == "https://services.sentinel-hub.com/async/v1"
-    assert AsyncProcessingClient(test_session)._process_url == \
-        f"{BASE_URL}/process"
+EU_URL = "https://services.sentinel-hub.com/async/v1"
+US_URL = "https://services-uswest2.sentinel-hub.com/async/v1"
+
+
+def test_default_deployment():
     assert set(DEPLOYMENT_URLS) == {"aws-eu-central-1", "aws-us-west-2"}
+    assert AsyncProcessingClient(test_session)._process_url == \
+        f"{EU_URL}/process"
+
+
+@pytest.mark.parametrize("deployment, url",
+                         [("aws-eu-central-1", EU_URL),
+                          ("aws-us-west-2", US_URL)])
+def test_deployment(deployment, url):
+    assert AsyncProcessingClient(test_session,
+                                 deployment=deployment)._base_url == url
+    assert AsyncProcessingAPI(test_session,
+                              deployment=deployment)._client._base_url == url
+
+
+def test_base_url_overrides_deployment():
+    cl = AsyncProcessingClient(test_session,
+                               deployment="aws-us-west-2",
+                               base_url=TEST_URL)
+    assert cl._base_url == TEST_URL
+
+
+def test_positional_base_url():
+    # Same (session, base_url) order as the other clients.
+    assert AsyncProcessingClient(test_session, TEST_URL)._base_url == TEST_URL
+    assert AsyncProcessingAPI(test_session,
+                              TEST_URL)._client._base_url == TEST_URL
+
+
+def test_unknown_deployment():
+    with pytest.raises(ClientError, match="aws-eu-central-1, aws-us-west-2"):
+        AsyncProcessingClient(test_session, deployment="aws-ap-south-1")
 
 
 def test_session_client_lookup():
@@ -81,7 +113,13 @@ def test_session_client_lookup():
 
 def test_planet_sync_client_uses_sentinel_hub():
     pl = Planet(session=test_session, base_url="http://test.planet.com")
-    assert pl.async_processing._client._base_url == BASE_URL
+    assert pl.async_processing._client._base_url == EU_URL
+
+
+def test_planet_sync_client_deployment():
+    pl = Planet(session=test_session,
+                async_processing_deployment="aws-us-west-2")
+    assert pl.async_processing._client._base_url == US_URL
 
 
 @respx.mock

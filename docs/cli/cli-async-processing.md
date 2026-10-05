@@ -163,4 +163,4 @@ req = pl.async_processing.create_request(request)
 pl.async_processing.wait(req['id'])
 ```
 
-Use `planet.AsyncProcessingClient` for the async interface, and pass `base_url` to select a deployment.
+Both clients default to `aws-eu-central-1`. Select the US deployment with `Planet(async_processing_deployment='aws-us-west-2')`, or `AsyncProcessingClient(sess, deployment='aws-us-west-2')` for the async interface.
