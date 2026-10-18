@@ -1381,6 +1381,44 @@ async def test_wait_asset_max_attempts(session):
 
 @respx.mock
 @pytest.mark.anyio
+async def test_wait_asset_active_on_last_attempt(session):
+    asset_url = f'{TEST_URL}/asset'
+
+    basic_udm2_asset = {
+        "_links": {
+            "_self": asset_url,
+            "activate": "ACTIVATEURL",
+            "type": "https://api.planet.com/data/v1/asset-types/basic_udm2"
+        },
+        "_permissions": ["download"],
+        "md5_digest": None,
+        "status": 'activating',
+        "type": "basic_udm2"
+    }
+
+    basic_udm2_asset_active = copy.deepcopy(basic_udm2_asset)
+    basic_udm2_asset_active['status'] = 'active'
+
+    route = respx.get(asset_url)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset),
+        httpx.Response(HTTPStatus.OK, json=basic_udm2_asset_active)
+    ]
+
+    statuses = []
+    cl = DataClient(session, base_url=TEST_URL)
+    asset = await cl.wait_asset(basic_udm2_asset,
+                                delay=0,
+                                max_attempts=2,
+                                callback=statuses.append)
+
+    assert asset == basic_udm2_asset_active
+    assert statuses == ['activating', 'activating', 'active']
+    assert route.call_count == 2
+
+
+@respx.mock
+@pytest.mark.anyio
 @pytest.mark.parametrize("exists, overwrite",
                          [(False, False), (True, False), (True, True),
                           (False, True)])
