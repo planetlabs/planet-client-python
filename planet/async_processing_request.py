@@ -290,3 +290,45 @@ def gs_bucket(url: str, credentials: str) -> dict:
     if not url.startswith('gs://'):
         raise ClientError(f'GCS url must start with gs://; got {url!r}.')
     return {'gs': {'url': url, 'credentials': credentials}}
+
+
+def result_paths(request: dict, request_id: str) -> Dict[str, str]:
+    """Locations of a finished request's files in the delivery bucket.
+
+    The API does not report results. Once a request finishes, read these
+    files with your own storage client to tell success from failure.
+
+    Results go to `<url>/<REQUEST_ID>/` unless the delivery url contains
+    the `<REQUEST_ID>` placeholder. A trailing `<OUTPUT>` segment is
+    dropped.
+
+    Parameters:
+        request: The request body given to `create_request`.
+        request_id: ID returned by `create_request`.
+
+    Returns:
+        dict: `folder` holds the outputs. `error` is `error.json`, written
+            only on failure. `request` is `<REQUEST_ID>.json`, a copy of
+            the request including its cost.
+
+    Raises:
+        planet.exceptions.ClientError: If the request has no delivery url.
+    """
+    try:
+        delivery = request['output']['delivery']
+        url = next(iter(delivery.values()))['url']
+    except (KeyError, TypeError, StopIteration, AttributeError):
+        raise ClientError('Request has no output.delivery url.')
+
+    url = url.rstrip('/')
+    if url.endswith('<OUTPUT>'):
+        url = url[:-len('<OUTPUT>')].rstrip('/')
+    if '<REQUEST_ID>' in url:
+        folder = url.replace('<REQUEST_ID>', request_id)
+    else:
+        folder = f'{url}/{request_id}'
+    return {
+        'folder': folder,
+        'error': f'{folder}/error.json',
+        'request': f'{folder}/{request_id}.json',
+    }
