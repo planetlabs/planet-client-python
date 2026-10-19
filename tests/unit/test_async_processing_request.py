@@ -224,3 +224,36 @@ def test_gs_bucket():
 def test_gs_bucket_invalid():
     with pytest.raises(ClientError):
         apr.gs_bucket('s3://b', 'c')
+
+
+@pytest.mark.parametrize('url, folder',
+                         [('gs://b/p', 'gs://b/p/id1'),
+                          ('gs://b/p/', 'gs://b/p/id1'),
+                          ('s3://b/<REQUEST_ID>/<OUTPUT>', 's3://b/id1'),
+                          ('s3://b/x/<REQUEST_ID>', 's3://b/x/id1')])
+def test_result_paths(url, folder):
+    request = {'output': {'delivery': {'s3': {'url': url}}}}
+    assert apr.result_paths(request, 'id1') == {
+        'folder': folder,
+        'error': f'{folder}/error.json',
+        'request': f'{folder}/id1.json',
+    }
+
+
+def test_result_paths_planet_destination():
+    request = {
+        'output': {
+            'delivery': {
+                'pl:destinations': {
+                    'url': 'gs://b/p', 'pl:ref': 'pl:destinations/r'
+                }
+            }
+        }
+    }
+    assert apr.result_paths(request, 'id1')['error'] == \
+        'gs://b/p/id1/error.json'
+
+
+def test_result_paths_no_delivery():
+    with pytest.raises(ClientError, match='delivery'):
+        apr.result_paths({'output': {}}, 'id1')
