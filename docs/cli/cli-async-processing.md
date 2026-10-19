@@ -5,7 +5,7 @@ title: CLI for Async Processing API Tutorial
 ## Introduction
 The `planet async-processing` command submits and tracks requests to the [Async Processing API](https://docs.planet.com/develop/apis/async-processing/). The API runs large Process API requests in the background. Outputs may be up to 10000 pixels in each dimension. Results go to your S3 or GCS bucket, not back to the CLI.
 
-The API is served from `services.sentinel-hub.com`. It needs an OAuth2 login. Planet API keys do not work.
+The API is served from `services.sentinel-hub.com`. It needs an OAuth2 login. Planet API keys do not work: the API rejects them with an authentication error.
 
 ```sh
 planet auth login
@@ -56,6 +56,8 @@ Give the area as `--bbox`, `--geometry` or both. Coordinates are WGS84 longitude
 
 `--geometry` accepts a GeoJSON geometry, Feature or FeatureCollection. It may be a string, a file, or `-` for stdin.
 
+`--upsampling` and `--downsampling` set the interpolation: `NEAREST` (server default), `BILINEAR` or `BICUBIC`. Upsampling applies when output pixels are smaller than the source data, which is common for small areas.
+
 Each `--response IDENTIFIER:FORMAT` adds an output file. The identifier must match an output `id` in the evalscript's `setup()`, or be `userdata`. The default is `default:image/tiff`.
 
 ### Delivery
@@ -69,12 +71,21 @@ S3 accepts an IAM role (recommended) or an access key pair:
 
 ```sh
 --delivery s3://my-bucket/ndvi --iam-role-arn arn:aws:iam::123456789012:role/planet
---delivery s3://my-bucket/ndvi --aws-access-key-id AKIA... --aws-secret-access-key ...
 ```
+
+To keep an access key pair out of your shell history, set it in the environment instead of on the command line:
+
+```sh
+export PL_ASYNC_AWS_ACCESS_KEY_ID=AKIA...
+export PL_ASYNC_AWS_SECRET_ACCESS_KEY=...
+planet async-processing request ... --delivery s3://my-bucket/ndvi > request.json
+```
+
+When set, these variables are used for every S3 URL in the request. The generated request contains the credentials in plain text, as the API requires. Keep `request.json` private and delete it after use.
 
 Add `--aws-region` if the bucket is in a different region from the deployment.
 
-GCS needs a service account key file. The CLI base64-encodes it for you:
+GCS needs a service account key file. The CLI base64-encodes it for you, so the request contains the key:
 
 ```sh
 --delivery gs://my-bucket/ndvi --gcs-credentials key.json
@@ -88,6 +99,8 @@ To use an evalscript kept in your bucket, pass `--evalscript-url` instead of `--
 ```sh
 --evalscript-url s3://my-bucket/scripts/ndvi.js
 ```
+
+Delivery and the evalscript may use different providers, e.g. S3 delivery with a GCS evalscript. Pass the credentials for each. The CLI rejects credential options that no URL uses, such as `--iam-role-arn` with only `gs://` URLs.
 
 ### Submit
 ```sh
@@ -138,6 +151,14 @@ Input data must be hosted on the deployment the request goes to. The default is 
 planet async-processing --deployment aws-us-west-2 create request.json
 ```
 
+Planet collections such as `psscene-browse` are on the `eu-1` and `us-1` deployments. Use `--item-id` to select catalog items:
+
+```sh
+planet async-processing request --collection psscene-browse \
+    --item-id 20260905_184144_99_2552 ... > request.json
+planet async-processing --deployment us-1 create request.json
+```
+
 ## Python
 The same operations are available in the SDK:
 
@@ -163,4 +184,4 @@ req = pl.async_processing.create_request(request)
 pl.async_processing.wait(req['id'])
 ```
 
-Both clients default to `aws-eu-central-1`. Select the US deployment with `Planet(async_processing_deployment='aws-us-west-2')`, or `AsyncProcessingClient(sess, deployment='aws-us-west-2')` for the async interface.
+Both clients default to `aws-eu-central-1`. Select another deployment with `Planet(async_processing_deployment='us-1')`, or `AsyncProcessingClient(sess, deployment='us-1')` for the async interface.

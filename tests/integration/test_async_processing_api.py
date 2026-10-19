@@ -24,6 +24,7 @@ from planet.auth import Auth
 from planet.clients.async_processing import DEPLOYMENT_URLS
 from planet.exceptions import (BadQuery,
                                ClientError,
+                               InvalidAPIKey,
                                MissingResource,
                                TooManyRequests)
 from planet.sync.async_processing import AsyncProcessingAPI
@@ -69,17 +70,22 @@ def status_route():
 
 EU_URL = "https://services.sentinel-hub.com/async/v1"
 US_URL = "https://services-uswest2.sentinel-hub.com/async/v1"
+PLANET_US1_URL = "https://api.us-1.planet.com/async/v1"
+PLANET_EU1_URL = "https://api.eu-1.planet.com/async/v1"
 
 
 def test_default_deployment():
-    assert set(DEPLOYMENT_URLS) == {"aws-eu-central-1", "aws-us-west-2"}
+    assert set(DEPLOYMENT_URLS) == {
+        "aws-eu-central-1", "aws-us-west-2", "eu-1", "us-1"
+    }
     assert AsyncProcessingClient(test_session)._process_url == \
         f"{EU_URL}/process"
 
 
 @pytest.mark.parametrize("deployment, url",
                          [("aws-eu-central-1", EU_URL),
-                          ("aws-us-west-2", US_URL)])
+                          ("aws-us-west-2", US_URL), ("eu-1", PLANET_EU1_URL),
+                          ("us-1", PLANET_US1_URL)])
 def test_deployment(deployment, url):
     assert AsyncProcessingClient(test_session,
                                  deployment=deployment)._base_url == url
@@ -102,7 +108,8 @@ def test_positional_base_url():
 
 
 def test_unknown_deployment():
-    with pytest.raises(ClientError, match="aws-eu-central-1, aws-us-west-2"):
+    with pytest.raises(ClientError,
+                       match="aws-eu-central-1, aws-us-west-2, eu-1, us-1"):
         AsyncProcessingClient(test_session, deployment="aws-ap-south-1")
 
 
@@ -145,6 +152,23 @@ async def test_create_request_bad_request():
         }})
     with pytest.raises(BadQuery):
         await cl_async.create_request(REQUEST)
+
+
+@respx.mock
+async def test_create_request_unauthorized():
+    respx.post(PROCESS_URL).return_value = httpx.Response(
+        HTTPStatus.UNAUTHORIZED, json={"error": {
+            "message": "bad token"
+        }})
+    with pytest.raises(InvalidAPIKey, match="planet auth login.*bad token"):
+        await cl_async.create_request(REQUEST)
+
+
+@respx.mock
+async def test_get_request_unauthorized():
+    status_route().return_value = httpx.Response(HTTPStatus.UNAUTHORIZED)
+    with pytest.raises(InvalidAPIKey, match="API keys are not accepted"):
+        await cl_async.get_request(REQUEST_ID)
 
 
 @respx.mock

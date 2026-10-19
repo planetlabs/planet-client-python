@@ -123,6 +123,17 @@ def test_data_source_open_time_range():
     assert src['dataFilter'] == {'timeRange': {'to': '2024-02-01T00:00:00Z'}}
 
 
+def test_data_source_item_ids():
+    src = apr.data_source('psscene-browse',
+                          item_ids=['20260905_184144_99_2552'])
+    assert src == {
+        'type': 'psscene-browse',
+        'dataFilter': {
+            'ids': ['20260905_184144_99_2552']
+        }
+    }
+
+
 def test_process_output_size():
     out = apr.process_output(BUCKET,
                              width=100,
