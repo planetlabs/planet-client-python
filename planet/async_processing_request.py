@@ -122,7 +122,8 @@ def data_source(type: str,
                 max_cloud_coverage: Optional[float] = None,
                 mosaicking_order: Optional[str] = None,
                 id: Optional[str] = None,
-                processing: Optional[dict] = None) -> dict:
+                processing: Optional[dict] = None,
+                item_ids: Optional[List[str]] = None) -> dict:
     """Prepare one entry of `input.data`.
 
     Parameters:
@@ -137,6 +138,8 @@ def data_source(type: str,
             the request fuses several sources.
         processing: Extra processing options, e.g.
             `{'upsampling': 'BICUBIC'}`.
+        item_ids: Use only these catalog items, e.g.
+            `['20260905_184144_99_2552']`.
     """
     source: Dict[str, Any] = {'type': type}
     if id is not None:
@@ -154,6 +157,8 @@ def data_source(type: str,
         data_filter['maxCloudCoverage'] = max_cloud_coverage
     if mosaicking_order is not None:
         data_filter['mosaickingOrder'] = mosaicking_order
+    if item_ids:
+        data_filter['ids'] = list(item_ids)
     if data_filter:
         source['dataFilter'] = data_filter
 

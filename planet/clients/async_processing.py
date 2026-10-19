@@ -19,7 +19,10 @@ import time
 from typing import Callable, Dict, Optional
 
 from planet.clients.base import _BaseClient
-from planet.exceptions import APIError, ClientError, MissingResource
+from planet.exceptions import (APIError,
+                               ClientError,
+                               InvalidAPIKey,
+                               MissingResource)
 from planet.http import Session
 
 # Async Processing is served per deployment. Data must come from the same
@@ -27,8 +30,14 @@ from planet.http import Session
 DEPLOYMENT_URLS: Dict[str, str] = {
     'aws-eu-central-1': 'https://services.sentinel-hub.com/async/v1',
     'aws-us-west-2': 'https://services-uswest2.sentinel-hub.com/async/v1',
+    'eu-1': 'https://api.eu-1.planet.com/async/v1',
+    'us-1': 'https://api.us-1.planet.com/async/v1',
 }
 DEFAULT_DEPLOYMENT = 'aws-eu-central-1'
+
+AUTH_HELP = ('Authentication failed. The Async Processing API requires an '
+             'OAuth2 login (`planet auth login`) or M2M access token. Planet '
+             'API keys are not accepted. Server response: ')
 
 LOGGER = logging.getLogger(__name__)
 
@@ -69,9 +78,11 @@ class AsyncProcessingClient(_BaseClient):
             session: Open session connected to server.
             base_url: Custom base URL. Overrides `deployment`.
             deployment: Deployment to send requests to: `aws-eu-central-1`
-                (Frankfurt) or `aws-us-west-2` (Oregon). Input data must
-                be hosted on the same deployment, and request IDs are only
-                known to the deployment that created them.
+                (Frankfurt) or `aws-us-west-2` (Oregon) for Sentinel Hub
+                data, or `eu-1` or `us-1` for Planet data such as
+                `psscene-browse`. Input data must be hosted on the same
+                deployment, and request IDs are only known to the
+                deployment that created them.
 
         Raises:
             planet.exceptions.ClientError: If deployment is unknown.
@@ -99,6 +110,8 @@ class AsyncProcessingClient(_BaseClient):
             dict: `id` and `status` of the submitted request.
 
         Raises:
+            planet.exceptions.InvalidAPIKey: If authentication fails, e.g.
+                when using a Planet API key instead of OAuth2.
             planet.exceptions.APIError: On API error, including
                 `TooManyRequests` when the concurrent request limit is
                 reached.
@@ -107,6 +120,8 @@ class AsyncProcessingClient(_BaseClient):
             resp = await self._session.request(method='POST',
                                                url=self._process_url,
                                                json=request)
+        except InvalidAPIKey as e:
+            raise InvalidAPIKey(AUTH_HELP + str(e)) from e
         except APIError:
             raise
         except ClientError:  # pragma: no cover
@@ -129,6 +144,8 @@ class AsyncProcessingClient(_BaseClient):
         Raises:
             planet.exceptions.MissingResource: If the request has finished
                 or does not exist.
+            planet.exceptions.InvalidAPIKey: If authentication fails, e.g.
+                when using a Planet API key instead of OAuth2.
             planet.exceptions.APIError: On other API errors.
             planet.exceptions.ClientError: If request_id is empty.
         """
@@ -138,6 +155,8 @@ class AsyncProcessingClient(_BaseClient):
         url = f'{self._process_url}/{request_id}'
         try:
             resp = await self._session.request(method='GET', url=url)
+        except InvalidAPIKey as e:
+            raise InvalidAPIKey(AUTH_HELP + str(e)) from e
         except APIError:
             raise
         except ClientError:  # pragma: no cover

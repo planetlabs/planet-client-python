@@ -48,12 +48,15 @@ REQUIRED = [
 ]
 
 
-def invoke(*args, input=None, base_url=TEST_URL):
+def invoke(*args, input=None, base_url=TEST_URL, env=None):
     runner = CliRunner()
     group = ["async-processing"]
     if base_url:
         group += ["--base-url", base_url]
-    return runner.invoke(cli.main, args=group + list(args), input=input)
+    return runner.invoke(cli.main,
+                         args=group + list(args),
+                         input=input,
+                         env=env)
 
 
 @pytest.fixture
@@ -126,6 +129,10 @@ def test_request_full(evalscript):
                     "20",
                     "--mosaicking-order",
                     "leastCC",
+                    "--item-id",
+                    "a",
+                    "--item-id",
+                    "b",
                     "--geometry",
                     json.dumps(geom),
                     "--crs",
@@ -163,7 +170,8 @@ def test_request_full(evalscript):
             "from": "2024-01-01T00:00:00Z", "to": "2024-02-01T00:00:00Z"
         },
         "maxCloudCoverage": 20.0,
-        "mosaickingOrder": "leastCC"
+        "mosaickingOrder": "leastCC",
+        "ids": ["a", "b"]
     }
     assert req["output"]["resx"] == 10.0
     assert [r["identifier"]
@@ -181,7 +189,7 @@ def test_request_full(evalscript):
 def test_request_gcs_and_evalscript_url(tmp_path):
     creds = tmp_path / "key.json"
     creds.write_bytes(b'{"type": "service_account"}')
-    args = [a if a != "s3://b/p" else "gs://b/p" for a in REQUIRED]
+    args = GCS_REQUIRED
     result = invoke("request",
                     *args,
                     "--evalscript-url",
@@ -225,10 +233,109 @@ def test_request_invalid(evalscript, extra, message):
 
 
 def test_request_gcs_requires_credentials(evalscript):
-    args = [a if a != "s3://b/p" else "gs://b/p" for a in REQUIRED]
+    args = GCS_REQUIRED
     result = invoke("request", *args, "--evalscript", evalscript)
     assert result.exit_code != 0
     assert "--gcs-credentials is required" in result.output
+
+
+@pytest.fixture
+def gcs_key(tmp_path):
+    path = tmp_path / "key.json"
+    path.write_bytes(b'{"type": "service_account"}')
+    return str(path)
+
+
+GCS_REQUIRED = [a if a != "s3://b/p" else "gs://b/p" for a in REQUIRED[:-2]]
+AWS_ENV = {
+    "PL_ASYNC_AWS_ACCESS_KEY_ID": "envkey",
+    "PL_ASYNC_AWS_SECRET_ACCESS_KEY": "envsecret",
+}
+
+
+def test_request_resampling(evalscript):
+    result = invoke("request",
+                    *REQUIRED,
+                    "--upsampling",
+                    "BILINEAR",
+                    "--downsampling",
+                    "BICUBIC",
+                    "--evalscript",
+                    evalscript)
+    assert result.exit_code == 0, result.output
+    source = json.loads(result.output)["input"]["data"][0]
+    assert source["processing"] == {
+        "upsampling": "BILINEAR", "downsampling": "BICUBIC"
+    }
+
+
+def test_request_aws_keys_from_env(evalscript):
+    result = invoke("request",
+                    *REQUIRED[:-2],
+                    "--evalscript",
+                    evalscript,
+                    env=AWS_ENV)
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.output)["output"]["delivery"] == {
+        "s3": {
+            "url": "s3://b/p",
+            "accessKey": "envkey",
+            "secretAccessKey": "envsecret"
+        }
+    }
+
+
+def test_request_s3_option_with_gcs(evalscript, gcs_key):
+    result = invoke("request",
+                    *GCS_REQUIRED,
+                    "--gcs-credentials",
+                    gcs_key,
+                    "--iam-role-arn",
+                    "arn",
+                    "--evalscript",
+                    evalscript)
+    assert result.exit_code != 0
+    assert "--iam-role-arn given, but no s3:// URL uses it" in result.output
+
+
+def test_request_aws_env_ignored_for_gcs(evalscript, gcs_key):
+    result = invoke("request",
+                    *GCS_REQUIRED,
+                    "--gcs-credentials",
+                    gcs_key,
+                    "--evalscript",
+                    evalscript,
+                    env=AWS_ENV)
+    assert result.exit_code == 0, result.output
+    assert "gs" in json.loads(result.output)["output"]["delivery"]
+
+
+def test_request_gcs_credentials_without_gcs(evalscript, gcs_key):
+    result = invoke("request",
+                    *REQUIRED,
+                    "--gcs-credentials",
+                    gcs_key,
+                    "--evalscript",
+                    evalscript)
+    assert result.exit_code != 0
+    assert "no gs:// URL uses it" in result.output
+
+
+def test_request_s3_delivery_gcs_evalscript(gcs_key):
+    result = invoke("request",
+                    *REQUIRED,
+                    "--evalscript-url",
+                    "gs://b/script.js",
+                    "--gcs-credentials",
+                    gcs_key)
+    assert result.exit_code == 0, result.output
+    req = json.loads(result.output)
+    assert req["output"]["delivery"] == {
+        "s3": {
+            "url": "s3://b/p", "iamRoleARN": "arn"
+        }
+    }
+    assert req["evalscriptReference"]["gs"]["url"] == "gs://b/script.js"
 
 
 def test_request_s3_requires_credentials(evalscript):
@@ -266,6 +373,15 @@ def test_create_bad_request():
     result = invoke("create", json.dumps(REQUEST))
     assert result.exit_code == 1
     assert "bad bbox" in result.output
+
+
+@respx.mock
+def test_create_unauthorized():
+    respx.post(PROCESS_URL).return_value = httpx.Response(
+        HTTPStatus.UNAUTHORIZED)
+    result = invoke("create", json.dumps(REQUEST))
+    assert result.exit_code == 1
+    assert "planet auth login" in result.output
 
 
 @respx.mock
@@ -315,6 +431,7 @@ def test_wait_max_attempts():
     [
         ("aws-eu-central-1", "services.sentinel-hub.com"),
         ("aws-us-west-2", "services-uswest2.sentinel-hub.com"),
+        ("us-1", "api.us-1.planet.com"),
     ])
 @respx.mock
 def test_deployment_selects_host(deployment, host):

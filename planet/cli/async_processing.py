@@ -17,6 +17,7 @@ from contextlib import asynccontextmanager
 from typing import List, Tuple
 
 import click
+from click.core import ParameterSource
 
 from planet import async_processing_request as apr
 from planet import exceptions, geojson
@@ -30,6 +31,13 @@ from .session import CliSession
 from . import types
 
 FORMATS = ['image/tiff', 'image/png', 'image/jpeg', 'application/json']
+RESAMPLING = ['NEAREST', 'BILINEAR', 'BICUBIC']
+S3_OPTIONS = {
+    'iam_role_arn': '--iam-role-arn',
+    'aws_access_key_id': '--aws-access-key-id',
+    'aws_secret_access_key': '--aws-secret-access-key',
+    'aws_region': '--aws-region',
+}
 
 NOT_RUNNING = ('Request {} is not running. It has finished or does not '
                'exist. Check the delivery bucket for results or error.json.')
@@ -118,7 +126,8 @@ def _bucket(url,
 @click.option('--collection',
               required=True,
               help='Data collection type, e.g. sentinel-2-l2a, '
-              'sentinel-1-grd, landsat-ot-l2, or byoc-<collection-id>.')
+              'sentinel-1-grd, landsat-ot-l2, byoc-<collection-id>, or '
+              'psscene-browse on the us-1 deployment.')
 @click.option('--time-from',
               help='Start of the time range, ISO 8601, e.g. '
               '2024-06-01T00:00:00Z.')
@@ -129,6 +138,18 @@ def _bucket(url,
 @click.option('--mosaicking-order',
               type=click.Choice(['mostRecent', 'leastRecent', 'leastCC']),
               help='Order in which scenes are mosaicked.')
+@click.option('--item-id',
+              'item_ids',
+              multiple=True,
+              help='Use only this catalog item. Repeat for several.')
+@click.option('--upsampling',
+              type=click.Choice(RESAMPLING),
+              help='Interpolation when output pixels are smaller than the '
+              'data. Server default: NEAREST.')
+@click.option('--downsampling',
+              type=click.Choice(RESAMPLING),
+              help='Interpolation when output pixels are larger than the '
+              'data. Server default: NEAREST.')
 @click.option('--bbox',
               type=types.CommaSeparatedFloat(),
               help='Bounding box as minx,miny,maxx,maxy in --crs.')
@@ -169,8 +190,15 @@ def _bucket(url,
               '<REQUEST_ID> or <OUTPUT> placeholders.')
 @click.option('--iam-role-arn',
               help='S3: IAM role for the service to assume. Recommended.')
-@click.option('--aws-access-key-id', help='S3: access key ID.')
-@click.option('--aws-secret-access-key', help='S3: secret access key.')
+@click.option('--aws-access-key-id',
+              envvar='PL_ASYNC_AWS_ACCESS_KEY_ID',
+              show_envvar=True,
+              help='S3: access key ID.')
+@click.option('--aws-secret-access-key',
+              envvar='PL_ASYNC_AWS_SECRET_ACCESS_KEY',
+              show_envvar=True,
+              help='S3: secret access key. Prefer the environment variable '
+              'to keep it out of shell history.')
 @click.option('--aws-region',
               help='S3: bucket region, if it differs from the deployment.')
 @click.option('--gcs-credentials',
@@ -182,6 +210,9 @@ async def request(ctx,
                   time_to,
                   max_cloud_coverage,
                   mosaicking_order,
+                  item_ids,
+                  upsampling,
+                  downsampling,
                   bbox,
                   geometry,
                   crs,
@@ -212,6 +243,8 @@ async def request(ctx,
     credentials need read and write access to the bucket. On GCS,
     roles/storage.objectCreator is not enough; use roles/storage.objectAdmin.
 
+    The printed request contains the credentials. Keep it private.
+
     Example:
 
     \b
@@ -225,8 +258,28 @@ async def request(ctx,
         raise click.UsageError(
             'Give exactly one of --evalscript and --evalscript-url.')
 
+    urls = [u for u in (delivery, evalscript_url) if u]
+    if not any(u.startswith('gs://') for u in urls) and gcs_credentials:
+        raise click.UsageError(
+            '--gcs-credentials given, but no gs:// URL uses it.')
+    if all(u.startswith('gs://') for u in urls):
+        # Options from environment variables are ignored, not errors.
+        given = [
+            flag for name, flag in S3_OPTIONS.items()
+            if ctx.get_parameter_source(name) == ParameterSource.COMMANDLINE
+        ]
+        if given:
+            raise click.UsageError(
+                f'{", ".join(given)} given, but no s3:// URL uses it.')
+
     if geometry is not None:
         geometry = geojson.geom_from_geojson(geometry)
+
+    processing = {}
+    if upsampling:
+        processing['upsampling'] = upsampling
+    if downsampling:
+        processing['downsampling'] = downsampling
 
     # Read once: delivery and the evalscript reference may both use it.
     gcs_creds = None
@@ -247,7 +300,9 @@ async def request(ctx,
                             time_from=time_from,
                             time_to=time_to,
                             max_cloud_coverage=max_cloud_coverage,
-                            mosaicking_order=mosaicking_order)
+                            mosaicking_order=mosaicking_order,
+                            processing=processing,
+                            item_ids=list(item_ids))
         ],
                                 bbox=bbox,
                                 geometry=geometry,

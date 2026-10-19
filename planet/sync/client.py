@@ -19,6 +19,8 @@ class Planet:
     """Planet API client. This client contains non-async methods.
 
     Authentication is required: defaults to detecting API key from environment (PL_API_KEY).
+    `async_processing` is the exception: it requires an OAuth2 login
+    (`planet auth login`) or M2M token, and does not accept API keys.
 
     Members:
 
@@ -48,8 +50,8 @@ class Planet:
         base_url: Optional base URL for Planet APIs. Defaults to (https://api.planet.com).
             Each API will append its specific path suffix (/data/v1, /compute/ops, etc.).
         async_processing_deployment: Deployment for `async_processing`:
-            `aws-eu-central-1` (default) or `aws-us-west-2`. Not affected by
-            `base_url`.
+            `aws-eu-central-1` (default), `aws-us-west-2`, `eu-1` or `us-1`.
+            Not affected by `base_url`.
 
     """
 
