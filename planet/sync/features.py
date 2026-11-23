@@ -13,6 +13,7 @@
 # the License.
 
 from typing import Iterator, Optional, Union
+from typing_extensions import Literal
 from planet.clients.features import FeaturesClient
 from planet.http import Session
 from planet.models import Feature, GeoInterface
@@ -95,9 +96,16 @@ class FeaturesAPI:
         return self._client._call_sync(
             self._client.delete_collection(collection_id))
 
-    def list_items(self,
-                   collection_id: str,
-                   limit: int = 0) -> Iterator[Feature]:
+    def list_items(
+        self,
+        collection_id: str,
+        limit: int = 0,
+        bbox: Optional[list[float]] = None,
+        id: Optional[str] = None,
+        hashid: Optional[str] = None,
+        sort: Optional[str] = None,
+        view: Optional[Literal["items", "wkb64", "basic", "refs"]] = None,
+    ) -> Iterator[Feature]:
         """
         List features in `collection_id`.
 
@@ -106,6 +114,20 @@ class FeaturesAPI:
         The reference can be used in the Data, Orders and Subscriptions
         APIs. Within the Python SDK, the entire Feature can generally be
         passed to functions that accept a geometry.
+
+        Parameters:
+            collection_id: ID of the collection to list features from.
+            limit: Maximum number of features to return. 0 means no limit.
+            bbox: Only return features intersecting this bounding box, given
+                as [xmin, ymin, xmax, ymax].
+            id: Only return features whose id matches this value. Prefix the
+                value with "~" for substring (fuzzy) matching.
+            hashid: Only return the feature with this hashid.
+            sort: Sort order for the returned features, "id" or "-id".
+            view: Response format, sent as the `_view` query parameter.
+                "items" (the API default) returns full features, "wkb64"
+                returns geometry as base64-encoded WKB, "basic" excludes
+                geometry and "refs" returns minimal reference info.
 
         example:
 
@@ -122,7 +144,13 @@ class FeaturesAPI:
         ```
         """
         return self._client._aiter_to_iter(
-            self._client.list_items(collection_id, limit=limit))
+            self._client.list_items(collection_id,
+                                    limit=limit,
+                                    bbox=bbox,
+                                    id=id,
+                                    hashid=hashid,
+                                    sort=sort,
+                                    view=view))
 
     def get_item(self, collection_id: str, feature_id: str) -> Feature:
         """

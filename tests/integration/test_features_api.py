@@ -229,6 +229,35 @@ async def test_list_items():
 
 
 @respx.mock
+async def test_list_items_with_filters():
+    collection_id = "test"
+    items_url = f"{TEST_URL}/collections/{collection_id}/items"
+
+    mock_response(items_url,
+                  list_features_response(collection_id, num_features=1))
+
+    filters = dict(
+        bbox=[1.0, 2.0, 3.0, 4.0],
+        id="~abc",
+        hashid="deadbeef",
+        sort="-id",
+        view="basic",
+    )
+    expected = dict(filters, bbox="1.0,2.0,3.0,4.0", _view="basic")
+    del expected["view"]
+
+    def check_params():
+        sent = respx.calls[-1].request.url.params
+        assert dict(sent) == expected
+
+    [feat async for feat in cl_async.list_items(collection_id, **filters)]
+    check_params()
+
+    list(cl_sync.list_items(collection_id, **filters))
+    check_params()
+
+
+@respx.mock
 @pytest.mark.parametrize(
     "feature, expected_body",
     [
