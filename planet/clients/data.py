@@ -599,7 +599,7 @@ class DataClient(_BaseClient):
         # loop without end if max_attempts is zero
         # otherwise, loop until num_attempts reaches max_attempts
         num_attempts = 0
-        while not max_attempts or num_attempts < max_attempts:
+        while True:
             t = time.time()
 
             try:
@@ -615,6 +615,10 @@ class DataClient(_BaseClient):
             if current_status == 'active':
                 break
 
+            if max_attempts and num_attempts >= max_attempts:
+                raise exceptions.ClientError(
+                    f'Maximum number of attempts ({max_attempts}) reached.')
+
             sleep_time = max(delay - (time.time() - t), 0)
             LOGGER.debug(f'sleeping {sleep_time}s')
             await asyncio.sleep(sleep_time)
@@ -629,10 +633,6 @@ class DataClient(_BaseClient):
 
             response = await self._session.request(method='GET', url=asset_url)
             asset = response.json()
-
-        if max_attempts and num_attempts >= max_attempts:
-            raise exceptions.ClientError(
-                f'Maximum number of attempts ({max_attempts}) reached.')
 
         return asset
 
