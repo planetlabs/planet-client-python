@@ -238,26 +238,23 @@ async def test_list_items_with_filters():
 
     filters = dict(
         bbox=[1.0, 2.0, 3.0, 4.0],
-        datetime="2024-01-01T00:00:00Z/2024-12-31T23:59:59Z",
         id="~abc",
         hashid="deadbeef",
         sort="-id",
+        view="basic",
     )
+    expected = dict(filters, bbox="1.0,2.0,3.0,4.0", _view="basic")
+    del expected["view"]
 
-    # async client forwards every filter as a query parameter
+    def check_params():
+        sent = respx.calls[-1].request.url.params
+        assert dict(sent) == expected
+
     [feat async for feat in cl_async.list_items(collection_id, **filters)]
-    sent = respx.calls[-1].request.url.params
-    assert sent["bbox"] == "1.0,2.0,3.0,4.0"
-    assert sent["datetime"] == filters["datetime"]
-    assert sent["id"] == "~abc"
-    assert sent["hashid"] == "deadbeef"
-    assert sent["sort"] == "-id"
+    check_params()
 
-    # sync wrapper forwards them too
     list(cl_sync.list_items(collection_id, **filters))
-    sent_sync = respx.calls[-1].request.url.params
-    assert sent_sync["bbox"] == "1.0,2.0,3.0,4.0"
-    assert sent_sync["sort"] == "-id"
+    check_params()
 
 
 @respx.mock

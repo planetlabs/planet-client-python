@@ -15,6 +15,8 @@
 import logging
 from typing import Any, AsyncIterator, Optional, Union, TypeVar
 
+from typing_extensions import Literal
+
 from planet.clients.base import _BaseClient
 from planet.exceptions import ClientError
 from planet.http import Session
@@ -115,10 +117,10 @@ class FeaturesClient(_BaseClient):
         collection_id: str,
         limit: int = 10,
         bbox: Optional[list[float]] = None,
-        datetime: Optional[str] = None,
         id: Optional[str] = None,
         hashid: Optional[str] = None,
         sort: Optional[str] = None,
+        view: Optional[Literal["items", "wkb64", "basic", "refs"]] = None,
     ) -> AsyncIterator[Feature]:
         """
         List features in `collection_id`.
@@ -134,13 +136,14 @@ class FeaturesClient(_BaseClient):
             limit: Maximum number of features to return. 0 means no limit.
             bbox: Only return features intersecting this bounding box, given
                 as [xmin, ymin, xmax, ymax].
-            datetime: Only return features matching this datetime. Accepts a
-                single RFC 3339 datetime or an interval, e.g.
-                "2024-01-01T00:00:00Z/2024-12-31T23:59:59Z".
             id: Only return features whose id matches this value. Prefix the
                 value with "~" for substring (fuzzy) matching.
             hashid: Only return the feature with this hashid.
-            sort: Sort order for the returned features, e.g. "id" or "-id".
+            sort: Sort order for the returned features, "id" or "-id".
+            view: Response format, sent as the `_view` query parameter.
+                "items" (the API default) returns full features, "wkb64"
+                returns geometry as base64-encoded WKB, "basic" excludes
+                geometry and "refs" returns minimal reference info.
 
         example:
 
@@ -175,14 +178,14 @@ class FeaturesClient(_BaseClient):
         params: dict[str, Any] = {}
         if bbox is not None:
             params['bbox'] = ','.join(str(coord) for coord in bbox)
-        if datetime is not None:
-            params['datetime'] = datetime
         if id is not None:
             params['id'] = id
         if hashid is not None:
             params['hashid'] = hashid
         if sort is not None:
             params['sort'] = sort
+        if view is not None:
+            params['_view'] = view
 
         resp = await self._session.request(method='GET',
                                            url=url,
