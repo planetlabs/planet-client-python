@@ -435,6 +435,25 @@ def test_data_search_cmd_item_types(mock_bundles,
 
 
 @respx.mock
+def test_data_search_cmd_max_retries(mock_bundles):
+    """The --max-retries option is passed through to the session"""
+    route = respx.post(TEST_QUICKSEARCH_URL)
+    route.side_effect = [
+        httpx.Response(HTTPStatus.TOO_MANY_REQUESTS, json={}),
+        httpx.Response(HTTPStatus.OK, json={'features': [{
+            "key": "value"
+        }]})
+    ]
+
+    # retry disabled, so the first response is not retried
+    result = CliRunner().invoke(
+        cli.main, args=['--max-retries', '0', 'data', 'search', 'PSScene'])
+
+    assert result.exit_code == 1
+    assert route.call_count == 1
+
+
+@respx.mock
 @pytest.mark.parametrize("geom_fixture",
                          [('geom_geojson'), ('feature_geojson'),
                           ('featurecollection_geojson'), ('geom_reference'),

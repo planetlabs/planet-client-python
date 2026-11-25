@@ -14,13 +14,14 @@
 from http import HTTPStatus
 import json
 
+import click
 import httpx
 import respx
 
 import pytest
 
 # from planet.auth import _SecretFile
-from planet import auth
+from planet import auth, http
 from planet.cli import session
 
 TEST_URL = 'mock://mock.com'
@@ -79,3 +80,42 @@ async def test_CliSession_auth_valid(test_valid_secretfile):
         # assert base64.b64decode(credentials) == b'clisessiontest:'
         credentials = received_request.headers['authorization']
         assert credentials == 'api-key clisessiontest'
+
+
+def _click_ctx(**obj):
+    """A click context carrying the given context object entries"""
+    return click.Context(click.Command('test'), obj=obj)
+
+
+@pytest.mark.anyio
+async def test_CliSession_retry_defaults(test_valid_secretfile):
+    """Retry defaults to the module-level configuration"""
+    async with session.CliSession() as sess:
+        assert sess.max_retries == http.MAX_RETRIES
+        assert sess.max_retry_backoff == http.MAX_RETRY_BACKOFF
+        assert sess.max_retry_jitter == http.MAX_RETRY_JITTER
+
+
+@pytest.mark.anyio
+async def test_CliSession_retry_from_ctx(test_valid_secretfile):
+    """Retry configuration is read from the click context"""
+    ctx = _click_ctx(PLSDK_AUTH=auth.Auth.from_key("clisessiontest"),
+                     MAX_RETRIES=2,
+                     MAX_RETRY_BACKOFF=8,
+                     MAX_RETRY_JITTER=2)
+
+    async with session.CliSession(ctx) as sess:
+        assert sess.max_retries == 2
+        assert sess.max_retry_backoff == 8
+        assert sess.max_retry_jitter == 2
+
+
+@pytest.mark.anyio
+async def test_CliSession_retry_ctx_unset(test_valid_secretfile):
+    """Retry falls back to the defaults when the context does not set it"""
+    ctx = _click_ctx(PLSDK_AUTH=auth.Auth.from_key("clisessiontest"))
+
+    async with session.CliSession(ctx) as sess:
+        assert sess.max_retries == http.MAX_RETRIES
+        assert sess.max_retry_backoff == http.MAX_RETRY_BACKOFF
+        assert sess.max_retry_jitter == http.MAX_RETRY_JITTER

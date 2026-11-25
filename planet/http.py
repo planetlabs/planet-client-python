@@ -49,6 +49,7 @@ RETRY_EXCEPTIONS = [
 ]
 MAX_RETRIES = 5
 MAX_RETRY_BACKOFF = 64  # seconds
+MAX_RETRY_JITTER = 1  # seconds
 
 DEFAULT_READ_TIMEOUT_SECS = 125.0
 RATE_LIMIT = 10  # per second
@@ -227,24 +228,59 @@ class Session(BaseSession):
     >>> asyncio.run(main())
 
     ```
+
+    Example:
+    ```python
+    >>> import asyncio
+    >>> from planet import Session
+    >>>
+    >>> async def main():
+    ...     # customize the retry behavior
+    ...     async with Session(max_retries=10,
+    ...                        max_retry_backoff=32,
+    ...                        max_retry_jitter=4) as sess:
+    ...         # communicate with services here
+    ...         pass
+    ...
+    >>> asyncio.run(main())
+
+    ```
     """
 
     def __init__(
         self,
         auth: Optional[AuthType] = None,
         read_timeout_secs: Optional[float] = None,
+        max_retries: Optional[int] = None,
+        max_retry_backoff: Optional[float] = None,
+        max_retry_jitter: Optional[float] = None,
     ):
         """Initialize a Session.
 
         Parameters:
             auth: Planet server authentication.
             read_timeout_secs: Maximum time to wait for data to be received.
+            max_retries: Maximum number of retries of a retryable request.
+                Zero disables retry.
+            max_retry_backoff: Maximum time, in seconds, to wait between
+                retries.
+            max_retry_jitter: Maximum random time, in seconds, added to the
+                wait between retries. Zero disables jitter.
         """
         if auth is None:
             auth = Auth.from_user_default_session()
 
         if read_timeout_secs is None:
             read_timeout_secs = DEFAULT_READ_TIMEOUT_SECS
+
+        if max_retries is None:
+            max_retries = MAX_RETRIES
+
+        if max_retry_backoff is None:
+            max_retry_backoff = MAX_RETRY_BACKOFF
+
+        if max_retry_jitter is None:
+            max_retry_jitter = MAX_RETRY_JITTER
 
         LOGGER.info(
             f'Session read timeout set to {read_timeout_secs} seconds.')
@@ -270,8 +306,14 @@ class Session(BaseSession):
             alog_response, self._raise_for_status
         ]
 
-        self.max_retries = MAX_RETRIES
-        self.max_retry_backoff = MAX_RETRY_BACKOFF
+        self.max_retries = max_retries
+        self.max_retry_backoff = max_retry_backoff
+        self.max_retry_jitter = max_retry_jitter
+
+        LOGGER.debug(f'Session retry set to a maximum of {self.max_retries} '
+                     f'retries with a maximum backoff of '
+                     f'{self.max_retry_backoff} seconds and a maximum jitter '
+                     f'of {self.max_retry_jitter} seconds.')
 
         self._limiter = _Limiter(rate_limit=RATE_LIMIT, max_workers=MAX_ACTIVE)
         self.outcomes: Counter[str] = Counter()
@@ -364,7 +406,9 @@ class Session(BaseSession):
                         LOGGER.info(f'Try {num_tries}')
                         LOGGER.info(f'Retrying: caught {type(e)}: {e}')
                         wait_time = self._calculate_wait(
-                            num_tries, self.max_retry_backoff)
+                            num_tries,
+                            self.max_retry_backoff,
+                            self.max_retry_jitter)
                         LOGGER.info(f'Retrying: sleeping {wait_time}s')
                         await asyncio.sleep(wait_time)
                 else:
@@ -374,25 +418,32 @@ class Session(BaseSession):
         return resp
 
     @staticmethod
-    def _calculate_wait(num_tries, max_retry_backoff):
+    def _calculate_wait(num_tries, max_retry_backoff, max_retry_jitter=None):
         """Calculates retry wait
 
         Base wait period is calculated as a exponential based on the number of
-        tries. Then, a random jitter of up to 999ms is added to the base wait
-        to avoid waves of requests in the case of multiple requests. Finally,
-        the wait is thresholded to the maximum retry backoff.
+        tries. The base wait is thresholded to the maximum retry backoff, less
+        room for jitter. Then, a random jitter of up to the maximum retry
+        jitter is added to the base wait to avoid waves of requests in the
+        case of multiple requests.
 
-        Because threshold is applied after jitter, calculations that hit
-        threshold will not have random jitter applied, they will simply result
-        in the threshold value being returned.
+        Because the threshold is applied before jitter, waits that hit the
+        threshold are jittered just like any other wait, and the maximum retry
+        backoff is never exceeded.
 
         Ref:
         * https://docs.planet.com/develop/apis/data/#api-mechanics
         * https://cloud.google.com/iot/docs/how-tos/exponential-backoff
         """
+        if max_retry_jitter is None:
+            max_retry_jitter = MAX_RETRY_JITTER
+
+        # a backoff smaller than the jitter leaves no room for the full
+        # jitter, so the jitter is narrowed to fit within the backoff
+        jitter_secs = min(max_retry_jitter, max_retry_backoff)
+        base_wait = min(2**num_tries, max_retry_backoff - jitter_secs)
         random_number_milliseconds = random.randint(0, 999) / 1000.0
-        calc_wait = 2**num_tries + random_number_milliseconds
-        return min(calc_wait, max_retry_backoff)
+        return base_wait + jitter_secs * random_number_milliseconds
 
     async def request(self,
                       method: str,
